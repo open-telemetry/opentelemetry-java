@@ -7,14 +7,16 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -28,15 +30,18 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   private final DeltaMetricStorage<T> deltaMetricStorage;
   private final TemporalMetricStorage<T> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
+  @Nullable private final AggregationTemporality configuredTemporality;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      @Nullable AggregationTemporality configuredTemporality) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
     this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);
     this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
+    this.configuredTemporality = configuredTemporality;
   }
 
   // This is a storage handle to use when the attributes processor requires
@@ -95,14 +100,31 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   @Override
   @Nullable
   public MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
+      CollectionInfo collectionInfo,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
+    AggregationTemporality temporality =
+        TemporalityUtils.resolveTemporality(
+            collectionInfo.getSupportedAggregation(),
+            collectionInfo.getPreferredAggregation(),
+            configuredTemporality);
     Map<Attributes, T> result =
-        deltaMetricStorage.collectFor(collector, allCollectors, suppressSynchronousCollection);
-    return temporalMetricStorage.buildMetricFor(collector, result, startEpochNanos, epochNanos);
+        deltaMetricStorage.collectFor(
+            collectionInfo.getCollector(),
+            collectionInfo.getAllCollectors(),
+            suppressSynchronousCollection);
+    return temporalMetricStorage.buildMetricFor(
+        collectionInfo.getCollector(),
+        resource,
+        instrumentationLibraryInfo,
+        getMetricDescriptor(),
+        temporality,
+        result,
+        startEpochNanos,
+        epochNanos);
   }
 
   @Override

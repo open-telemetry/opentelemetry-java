@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -36,18 +35,18 @@ class LongSumAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
 
+  private static final Resource resource = Resource.getDefault();
+  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor metricDescriptor =
+      MetricDescriptor.create("name", "description", "unit");
   private static final LongSumAggregator aggregator =
       new LongSumAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "instrument_name",
               "instrument_description",
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
-          MetricDescriptor.create("name", "description", "unit"),
-          AggregationTemporality.CUMULATIVE,
           ExemplarReservoir::noSamples);
 
   @Test
@@ -105,16 +104,12 @@ class LongSumAggregatorTest {
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
         new LongSumAggregator(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.empty(),
             InstrumentDescriptor.create(
                 "instrument_name",
                 "instrument_description",
                 "instrument_unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG),
-            MetricDescriptor.create("name", "description", "unit"),
-            AggregationTemporality.CUMULATIVE,
             () -> reservoir);
     AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
@@ -123,7 +118,7 @@ class LongSumAggregatorTest {
   }
 
   @Test
-  void merge() {
+  void mergeAndDiff() {
     ExemplarData exemplar =
         DoubleExemplarData.create(Attributes.empty(), 2L, "spanid", "traceid", 1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
@@ -131,23 +126,26 @@ class LongSumAggregatorTest {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         LongSumAggregator aggregator =
             new LongSumAggregator(
-                Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                MetricDescriptor.create("name", "description", "unit"),
-                temporality,
                 ExemplarReservoir::noSamples);
-        MergeStrategy expectedMergeStrategy =
-            AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         LongAccumulation merged =
             aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(merged.getValue())
             .withFailMessage(
                 "Invalid merge result for instrumentType %s, temporality %s: %s",
                 instrumentType, temporality, merged)
-            .isEqualTo(expectedMergeStrategy == MergeStrategy.SUM ? 3 : 1);
+            .isEqualTo(3);
         assertThat(merged.getExemplars()).containsExactly(exemplar);
+
+        LongAccumulation diffed =
+            aggregator.diff(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
+        assertThat(diffed.getValue())
+            .withFailMessage(
+                "Invalid diff result for instrumentType %s, temporality %s: %s",
+                instrumentType, temporality, merged)
+            .isEqualTo(1);
+        assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }
     }
   }
@@ -160,8 +158,12 @@ class LongSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            resource,
+            library,
+            metricDescriptor,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+            AggregationTemporality.CUMULATIVE,
             0,
             10,
             100);
@@ -189,7 +191,14 @@ class LongSumAggregatorTest {
     LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
-                Collections.singletonMap(Attributes.empty(), accumulation), 0, 10, 100))
+                resource,
+                library,
+                metricDescriptor,
+                Collections.singletonMap(Attributes.empty(), accumulation),
+                AggregationTemporality.CUMULATIVE,
+                0,
+                10,
+                100))
         .hasLongSum()
         .points()
         .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));
