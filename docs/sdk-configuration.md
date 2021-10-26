@@ -203,10 +203,9 @@ class HelloWorld {
             .setClock(clock)
             .registerView(
                 InstrumentSelector.builder()
-                        .setInstrumentType(InstrumentType.COUNTER)
-                        .build(),
-                    View.builder()
-                    .build())
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .build(),
+                View.builder().build())
             .registerMetricReader(periodicMetricReaderFactory)
             .buildAndRegisterGlobal();
  }
@@ -296,8 +295,7 @@ public class OpenTelemetryModule {
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.COUNTER)
                     .build(),
-                View.builder()
-                    .build())
+                View.builder().build())
             .build();
     }
 
