@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
@@ -93,7 +92,7 @@ final class MetricDataUtils {
     accumulationMap.forEach(
         (attributes, aggregator) ->
             points.add(
-                DoubleExponentialHistogramPointData.create(
+                ExponentialHistogramPointData.create(
                     aggregator.getScale(),
                     aggregator.getSum(),
                     aggregator.getZeroCount(),

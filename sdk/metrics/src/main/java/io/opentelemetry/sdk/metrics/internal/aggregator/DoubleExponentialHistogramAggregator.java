@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -97,7 +97,7 @@ final class DoubleExponentialHistogramAggregator
         getMetricDescriptor().getName(),
         getMetricDescriptor().getDescription(),
         getMetricDescriptor().getUnit(),
-        DoubleExponentialHistogramData.create(
+        ExponentialHistogramData.create(
             this.isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
             MetricDataUtils.toExponentialHistogramPointList(
                 accumulationByLabels, startEpochNanos, epochNanos)));

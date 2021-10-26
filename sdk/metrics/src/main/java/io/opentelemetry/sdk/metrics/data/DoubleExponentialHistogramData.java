@@ -17,10 +17,10 @@ import java.util.Collections;
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
  */
 @AutoValue
-public abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
+abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
 
-  static final DoubleExponentialHistogramData EMPTY =
-      create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
+  static final ExponentialHistogramData EMPTY =
+      ExponentialHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   DoubleExponentialHistogramData() {}
 
@@ -29,7 +29,7 @@ public abstract class DoubleExponentialHistogramData implements ExponentialHisto
    *
    * @return a DoubleExponentialHistogramData
    */
-  public static DoubleExponentialHistogramData create(
+  static DoubleExponentialHistogramData create(
       AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
     return new AutoValue_DoubleExponentialHistogramData(temporality, points);
   }

@@ -16,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-public abstract class DoubleExponentialHistogramPointData implements ExponentialHistogramPointData {
+abstract class DoubleExponentialHistogramPointData implements ExponentialHistogramPointData {
 
   DoubleExponentialHistogramPointData() {}
 
@@ -25,7 +25,7 @@ public abstract class DoubleExponentialHistogramPointData implements Exponential
    *
    * @return a DoubleExponentialHistogramPointData.
    */
-  public static DoubleExponentialHistogramPointData create(
+  static DoubleExponentialHistogramPointData create(
       int scale,
       double sum,
       long zeroCount,
