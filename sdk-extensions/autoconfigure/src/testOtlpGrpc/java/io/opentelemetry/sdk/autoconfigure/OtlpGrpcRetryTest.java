@@ -15,6 +15,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.grpc.Status;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -92,6 +93,7 @@ class OtlpGrpcRetryTest {
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+    testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
   }
 
   @Test
@@ -107,6 +109,7 @@ class OtlpGrpcRetryTest {
 
     testRetryableStatusCodes(
         () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+    testDefaultRetryPolicy(() -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
   }
 
   private static <T> void testRetryableStatusCodes(
@@ -133,5 +136,25 @@ class OtlpGrpcRetryTest {
           .as("status code %s should make %s requests", code, expectedRequests)
           .isEqualTo(expectedRequests);
     }
+  }
+
+  private static <T> void testDefaultRetryPolicy(
+      Supplier<T> dataSupplier,
+      Function<T, CompletableResultCode> exporter,
+      Supplier<Integer> serverRequestCountSupplier) {
+    server.reset();
+
+    // Set the server to fail with a retryable status code for the max attempts
+    int maxAttempts = RetryPolicy.getDefault().getMaxAttempts();
+    Status.Code retryableCode = retryableStatusCodes().get(0);
+    for (int i = 0; i < maxAttempts; i++) {
+      server.responseStatuses.add(Status.fromCode(retryableCode));
+    }
+
+    // Result should be failure, sever should have received maxAttempts requests
+    CompletableResultCode resultCode =
+        exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isSuccess()).isFalse();
+    assertThat(serverRequestCountSupplier.get()).isEqualTo(maxAttempts);
   }
 }

@@ -88,7 +88,10 @@ public final class ManagedChannelUtil {
     }
   }
 
-  /** Convert the {@link RetryPolicy} into a gRPC service config for the {@code serviceName}. */
+  /**
+   * Convert the {@link RetryPolicy} into a gRPC service config for the {@code serviceName}. The
+   * resulting map can be passed to {@link ManagedChannelBuilder#defaultServiceConfig(Map)}.
+   */
   public static Map<String, ?> toServiceConfig(String serviceName, RetryPolicy retryPolicy) {
     List<Double> retryableStatusCodes =
         RETRYABLE_STATUS_CODES.stream().map(Code::value).map(i -> (double) i).collect(toList());

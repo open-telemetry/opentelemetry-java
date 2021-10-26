@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder {
 
-  private static final String GRPC_SERVICE_NAME =
-      "opentelemetry.proto.collector.trace.v1.TraceService";
+  // Visible for testing
+  static final String GRPC_SERVICE_NAME = "opentelemetry.proto.collector.trace.v1.TraceService";
   // Visible for testing
   static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
 

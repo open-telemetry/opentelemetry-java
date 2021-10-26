@@ -42,6 +42,7 @@ dependencies {
   testImplementation("com.fasterxml.jackson.core:jackson-core")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
+  testImplementation("org.skyscreamer:jsonassert")
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
