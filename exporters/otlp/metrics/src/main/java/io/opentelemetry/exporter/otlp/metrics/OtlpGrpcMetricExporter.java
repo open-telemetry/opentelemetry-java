@@ -49,6 +49,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   @Override
   public AggregationTemporality getPreferredTemporality() {
     // TODO: Lookup based on specification, or constructor
+    // https://github.com/open-telemetry/opentelemetry-java/issues/3790
     return null;
   }
 
