@@ -29,14 +29,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
-  compileOnly("io.grpc:grpc-netty")
-  compileOnly("io.grpc:grpc-netty-shaded")
-  compileOnly("io.grpc:grpc-okhttp")
-
-  compileOnly("com.squareup.okhttp3:okhttp")
-
-  api("io.grpc:grpc-stub")
-  implementation("io.grpc:grpc-api")
+  compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:testing"))
 
@@ -63,7 +56,6 @@ dependencies {
 
   add("testOkhttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
   add("testOkhttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testOkhttpOnlyImplementation", "com.squareup.okhttp3:okhttp")
   add("testOkhttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
   add("testOkhttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
