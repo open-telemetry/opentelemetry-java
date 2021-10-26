@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -22,13 +21,13 @@ public class MapCounter implements ExponentialCounter {
 
   private static final long NULL_INDEX = Long.MIN_VALUE;
 
-  private final Map<Integer, AtomicLong> backing;
+  private final ConcurrentHashMap<Integer, AtomicLong> backing;
   private long indexStart;
   private long indexEnd;
 
   /** Instantiate a MapCounter. */
   public MapCounter() {
-    this.backing = new HashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
+    this.backing = new ConcurrentHashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
     this.indexEnd = NULL_INDEX;
     this.indexStart = NULL_INDEX;
   }
@@ -39,7 +38,7 @@ public class MapCounter implements ExponentialCounter {
    * @param otherCounter another exponential counter to make a deep copy of.
    */
   public MapCounter(ExponentialCounter otherCounter) {
-    this.backing = new HashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
+    this.backing = new ConcurrentHashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
     this.indexStart = otherCounter.getIndexStart();
     this.indexEnd = otherCounter.getIndexEnd();
 
