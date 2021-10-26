@@ -18,8 +18,7 @@ testSets {
 
 dependencies {
   api(project(":sdk:metrics"))
-
-  implementation(project(":exporters:otlp:common"))
+  api(project(":exporters:otlp:common"))
 
   compileOnly("io.grpc:grpc-stub")
 

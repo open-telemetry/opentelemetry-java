@@ -22,6 +22,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
@@ -152,6 +153,16 @@ class OtlpGrpcLogsExporterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+  }
+
+  @Test
+  void testBuilderDelegate() {
+    assertThatCode(
+            () ->
+                DefaultGrpcExporterBuilder.getDelegateBuilder(
+                        OtlpGrpcLogExporterBuilder.class, OtlpGrpcLogExporter.builder())
+                    .addRetryPolicy(RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test

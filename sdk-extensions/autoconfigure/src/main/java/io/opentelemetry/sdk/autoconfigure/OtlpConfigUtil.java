@@ -6,11 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -163,16 +161,6 @@ final class OtlpConfigUtil {
       default:
         throw new IllegalArgumentException(
             "Cannot determine signal path for unrecognized data type: " + dataType);
-    }
-  }
-
-  static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
-    try {
-      Field field = type.getDeclaredField("delegate");
-      field.setAccessible(true);
-      return (DefaultGrpcExporterBuilder<?>) field.get(instance);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new IllegalStateException("Unable to access delegate reflectively.", e);
     }
   }
 

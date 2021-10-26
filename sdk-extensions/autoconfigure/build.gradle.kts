@@ -31,7 +31,6 @@ dependencies {
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
-  compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:otlp:metrics"))
   compileOnly(project(":exporters:otlp-http:trace"))
   compileOnly(project(":exporters:otlp-http:metrics"))
@@ -41,7 +40,6 @@ dependencies {
   testImplementation(project(path = ":sdk:trace-shaded-deps"))
 
   testImplementation(project(":sdk:testing"))
-  testImplementation(project(":exporters:otlp:common"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
