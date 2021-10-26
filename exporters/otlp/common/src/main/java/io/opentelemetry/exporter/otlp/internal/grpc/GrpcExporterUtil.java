@@ -17,9 +17,9 @@ final class GrpcExporterUtil {
 
   static {
     boolean useOkhttp = true;
-    // Use the OkHttp exporter if ManagedChannel.
+    // Use the OkHttp exporter unless grpc-stub is on the classpath.
     try {
-      Class.forName("io.grpc.ManagedChannel");
+      Class.forName("io.grpc.stub.AbstractStub");
       useOkhttp = false;
     } catch (ClassNotFoundException e) {
       // Fall through
