@@ -10,22 +10,14 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/** Sdk implementation of {@link LogRecord}. */
 @AutoValue
 @Immutable
-public abstract class ReadableLogRecord implements LogRecord {
+abstract class SdkLogRecord implements LogRecord {
 
-  ReadableLogRecord() {}
+  SdkLogRecord() {}
 
-  /**
-   * Create a {@link ReadableLogRecordBuilder} instance.
-   *
-   * @return the instance
-   */
-  public static ReadableLogRecordBuilder builder() {
-    return new ReadableLogRecordBuilder();
-  }
-
-  static ReadableLogRecord create(
+  static SdkLogRecord create(
       long epochNanos,
       @Nullable String traceId,
       @Nullable String spanId,
@@ -35,7 +27,7 @@ public abstract class ReadableLogRecord implements LogRecord {
       @Nullable String name,
       Body body,
       Attributes attributes) {
-    return new AutoValue_ReadableLogRecord(
+    return new AutoValue_SdkLogRecord(
         epochNanos, traceId, spanId, flags, severity, severityText, name, body, attributes);
   }
 }

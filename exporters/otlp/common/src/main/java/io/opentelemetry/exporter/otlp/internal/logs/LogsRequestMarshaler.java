@@ -11,14 +11,12 @@ import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.collector.logs.v1.internal.ExportLogsServiceRequest;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecordBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.Collection;
 
 /**
- * {@link Marshaler} to convert SDK {@link ReadableLogRecordBuilder} to OTLP
- * ExportLogsServiceRequest.
+ * {@link Marshaler} to convert SDK {@link LogData} to OTLP ExportLogsServiceRequest.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

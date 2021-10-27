@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ class SdkLogEmitterTest {
   @Test
   void emit() {
     LogRecord logRecord =
-        ReadableLogRecord.builder()
+        LogRecord.builder()
             .setEpochMillis(System.currentTimeMillis())
             .setBody(Body.stringBody("message"))
             .build();

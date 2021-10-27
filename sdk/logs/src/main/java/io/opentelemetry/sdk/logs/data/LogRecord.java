@@ -15,70 +15,39 @@ import javax.annotation.Nullable;
  */
 public interface LogRecord {
 
-  /**
-   * Returns the epoch timestamp in nanos when the log was recorded.
-   *
-   * @return the epoch timestamp in nanos
-   */
+  /** Returns a new {@link LogRecordBuilder}. */
+  static LogRecordBuilder builder() {
+    return new SdkLogRecordBuilder();
+  }
+
+  /** Returns the epoch timestamp in nanos when the log was recorded. */
   long getEpochNanos();
 
-  /**
-   * Returns the trace id for this log.
-   *
-   * @return the trace id
-   */
+  /** Returns the trace id for this log. */
   @Nullable
   String getTraceId();
 
-  /**
-   * Returns the span id for this log.
-   *
-   * @return the span id
-   */
+  /** Returns the span id for this log. */
   @Nullable
   String getSpanId();
 
-  /**
-   * Returns the flags for this log.
-   *
-   * @return the flags
-   */
+  /** Returns the flags for this log. */
   int getFlags();
 
-  /**
-   * Returns the severity for this log.
-   *
-   * @return the severity
-   */
+  /** Returns the severity for this log. */
   Severity getSeverity();
 
-  /**
-   * Returns the severity text for this log.
-   *
-   * @return the severity text
-   */
+  /** Returns the severity text for this log. */
   @Nullable
   String getSeverityText();
 
-  /**
-   * Returns the name for this log.
-   *
-   * @return the name
-   */
+  /** Returns the name for this log. */
   @Nullable
   String getName();
 
-  /**
-   * Returns the body for this log.
-   *
-   * @return the body
-   */
+  /** Returns the body for this log. */
   Body getBody();
 
-  /**
-   * Returns the attributes for this log.
-   *
-   * @return the attributes
-   */
+  /** Returns the attributes for this log. */
   Attributes getAttributes();
 }

@@ -24,8 +24,7 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -51,10 +50,10 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                ReadableLogData.create(
+                LogData.create(
                     Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
                     InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"),
-                    ReadableLogRecord.builder()
+                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
                         .setName(NAME)
                         .setBody(BODY)
                         .setSeverity(Severity.INFO)
@@ -85,10 +84,10 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                ReadableLogData.create(
+                LogData.create(
                     Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                     InstrumentationLibraryInfo.create("instrumentation", "1"),
-                    ReadableLogRecord.builder()
+                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
                         .setName(NAME)
                         .setBody(BODY)
                         .setSeverity(Severity.INFO)
@@ -119,10 +118,10 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                ReadableLogData.create(
+                LogData.create(
                     Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                     InstrumentationLibraryInfo.create("instrumentation", "1"),
-                    ReadableLogRecord.builder()
+                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
                         .setBody(BODY)
                         .setSeverity(Severity.INFO)
                         .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))

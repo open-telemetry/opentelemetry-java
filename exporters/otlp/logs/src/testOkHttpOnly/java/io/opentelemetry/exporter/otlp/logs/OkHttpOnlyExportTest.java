@@ -20,8 +20,7 @@ import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
+import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
@@ -41,10 +40,10 @@ class OkHttpOnlyExportTest {
 
   private static final List<LogData> LOGS =
       Collections.singletonList(
-          ReadableLogData.create(
+          LogData.create(
               Resource.create(Attributes.builder().put("testKey", "testValue").build()),
               InstrumentationLibraryInfo.create("instrumentation", "1"),
-              ReadableLogRecord.builder()
+              LogRecord.builder()
                   .setEpochMillis(System.currentTimeMillis())
                   .setTraceId(TraceId.getInvalid())
                   .setSpanId(SpanId.getInvalid())

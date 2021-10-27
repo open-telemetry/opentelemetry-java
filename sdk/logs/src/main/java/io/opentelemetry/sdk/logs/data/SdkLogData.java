@@ -10,25 +10,18 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
+/** Sdk implementation of {@link LogData}. */
 @AutoValue
 @Immutable
-public abstract class ReadableLogData implements LogData {
+abstract class SdkLogData implements LogData {
 
-  ReadableLogData() {}
+  SdkLogData() {}
 
-  /**
-   * Create a {@link ReadableLogData} instance.
-   *
-   * @param resource the resource
-   * @param instrumentationLibraryInfo the instrumentation library info
-   * @param logRecord the log record
-   * @return the instance
-   */
-  public static ReadableLogData create(
+  static SdkLogData create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       LogRecord logRecord) {
-    return new AutoValue_ReadableLogData(
+    return new AutoValue_SdkLogData(
         logRecord.getEpochNanos(),
         logRecord.getTraceId(),
         logRecord.getSpanId(),

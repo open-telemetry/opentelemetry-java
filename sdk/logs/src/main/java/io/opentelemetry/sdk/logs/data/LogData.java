@@ -15,17 +15,17 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface LogData extends LogRecord {
 
-  /**
-   * Returns the resource of this log.
-   *
-   * @return the resource.
-   */
+  /** Create a log data instance. */
+  static LogData create(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      LogRecord logRecord) {
+    return SdkLogData.create(resource, instrumentationLibraryInfo, logRecord);
+  }
+
+  /** Returns the resource of this log. */
   Resource getResource();
 
-  /**
-   * Returns the instrumentation library that generated this log.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo}.
-   */
+  /** Returns the instrumentation library that generated this log. */
   InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 }

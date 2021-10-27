@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
 
 /** {@link SdkLogEmitter} is the SDK implementation of {@link LogEmitter}. */
 final class SdkLogEmitter implements LogEmitter {
@@ -27,7 +27,7 @@ final class SdkLogEmitter implements LogEmitter {
     logEmitterSharedState
         .getActiveLogProcessor()
         .emit(
-            ReadableLogData.create(
+            LogData.create(
                 logEmitterSharedState.getResource(), instrumentationLibraryInfo, logRecord));
   }
 

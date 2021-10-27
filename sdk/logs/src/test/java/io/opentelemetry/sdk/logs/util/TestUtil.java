@@ -12,15 +12,13 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 
 public final class TestUtil {
 
   public static LogRecord createLogRecord(Severity severity, String message) {
-    return ReadableLogRecord.builder()
+    return LogRecord.builder()
         .setEpochMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -34,7 +32,7 @@ public final class TestUtil {
   }
 
   public static LogData createLogData(Severity severity, String message) {
-    return ReadableLogData.create(
+    return LogData.create(
         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
         InstrumentationLibraryInfo.create("instrumentation", "1"),
         createLogRecord(severity, message));

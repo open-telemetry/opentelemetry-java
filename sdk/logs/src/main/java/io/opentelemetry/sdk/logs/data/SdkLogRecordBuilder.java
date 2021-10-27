@@ -10,8 +10,8 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** Builder for {@link ReadableLogRecordBuilder}. */
-public final class ReadableLogRecordBuilder {
+/** Builder for {@link SdkLogRecordBuilder}. */
+final class SdkLogRecordBuilder implements LogRecordBuilder {
 
   private long epochNanos;
   @Nullable private String traceId;
@@ -23,71 +23,78 @@ public final class ReadableLogRecordBuilder {
   private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  ReadableLogRecordBuilder() {}
+  SdkLogRecordBuilder() {}
 
-  public ReadableLogRecordBuilder setEpochNanos(long timestamp) {
+  @Override
+  public SdkLogRecordBuilder setEpochNanos(long timestamp) {
     this.epochNanos = timestamp;
     return this;
   }
 
-  public ReadableLogRecordBuilder setEpochMillis(long timestamp) {
+  @Override
+  public SdkLogRecordBuilder setEpochMillis(long timestamp) {
     return setEpochNanos(TimeUnit.MILLISECONDS.toNanos(timestamp));
   }
 
-  public ReadableLogRecordBuilder setTraceId(String traceId) {
+  @Override
+  public SdkLogRecordBuilder setTraceId(String traceId) {
     this.traceId = traceId;
     return this;
   }
 
-  public ReadableLogRecordBuilder setSpanId(String spanId) {
+  @Override
+  public SdkLogRecordBuilder setSpanId(String spanId) {
     this.spanId = spanId;
     return this;
   }
 
-  public ReadableLogRecordBuilder setFlags(int flags) {
+  @Override
+  public SdkLogRecordBuilder setFlags(int flags) {
     this.flags = flags;
     return this;
   }
 
-  public ReadableLogRecordBuilder setSeverity(Severity severity) {
+  @Override
+  public SdkLogRecordBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
 
-  public ReadableLogRecordBuilder setSeverityText(String severityText) {
+  @Override
+  public SdkLogRecordBuilder setSeverityText(String severityText) {
     this.severityText = severityText;
     return this;
   }
 
-  public ReadableLogRecordBuilder setName(String name) {
+  @Override
+  public SdkLogRecordBuilder setName(String name) {
     this.name = name;
     return this;
   }
 
-  public ReadableLogRecordBuilder setBody(Body body) {
+  @Override
+  public SdkLogRecordBuilder setBody(Body body) {
     this.body = body;
     return this;
   }
 
-  public ReadableLogRecordBuilder setBody(String body) {
+  @Override
+  public SdkLogRecordBuilder setBody(String body) {
     return setBody(Body.stringBody(body));
   }
 
-  public ReadableLogRecordBuilder setAttributes(Attributes attributes) {
+  @Override
+  public SdkLogRecordBuilder setAttributes(Attributes attributes) {
     this.attributeBuilder.putAll(attributes);
     return this;
   }
 
-  /**
-   * Build a {@link ReadableLogRecord} instance.
-   *
-   * @return the instance
-   */
-  public ReadableLogRecord build() {
+  @Override
+  public SdkLogRecord build() {
     if (epochNanos == 0) {
       epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
-    return ReadableLogRecord.create(
+    return SdkLogRecord.create(
         epochNanos,
         traceId,
         spanId,
