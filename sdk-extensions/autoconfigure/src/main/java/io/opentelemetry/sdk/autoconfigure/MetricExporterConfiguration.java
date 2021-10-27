@@ -44,8 +44,6 @@ final class MetricExporterConfiguration {
             "opentelemetry-exporter-logging");
         configureLoggingMetrics(config, sdkMeterProviderBuilder);
         return;
-      case "none":
-        return;
       default:
         MetricExporter spiExporter = configureSpiExporter(name, config);
         if (spiExporter == null) {
