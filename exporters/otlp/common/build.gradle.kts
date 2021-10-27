@@ -39,7 +39,7 @@ dependencies {
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("com.fasterxml.jackson.core:jackson-core")
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.skyscreamer:jsonassert")

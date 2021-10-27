@@ -7,7 +7,8 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.util.Map;
@@ -18,7 +19,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 class ManagedChannelUtilTest {
 
   @Test
-  void toServiceConfig() throws JSONException {
+  void toServiceConfig() throws JSONException, JsonProcessingException {
     // Validate that the map matches the protobuf to JSON translation of the
     // grpc.service_config.ServiceConfig protobuf definition described at:
     // https://github.com/grpc/grpc/blob/master/doc/service_config.md
@@ -40,7 +41,8 @@ class ManagedChannelUtilTest {
             + "    }]\n"
             + "  }]\n"
             + "}";
-    JSONAssert.assertEquals(expectedServiceConfig, new Gson().toJson(serviceConfig), false);
+    JSONAssert.assertEquals(
+        expectedServiceConfig, new ObjectMapper().writeValueAsString(serviceConfig), false);
 
     // Validate that the map format does not throw when passed to managed channel builder.
     // Any type mismatch will throw.
