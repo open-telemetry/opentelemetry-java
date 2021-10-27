@@ -423,19 +423,19 @@ class AttributesTest {
   }
 
   @Test
-  void remove_AttributeKey() {
+  void remove() {
     AttributesBuilder builder = Attributes.builder();
     assertThat(builder.remove(stringKey(""))).isEqualTo(builder);
 
     Attributes attributes = Attributes.builder().remove(stringKey("key1")).build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
 
     attributes =
         Attributes.builder().put("key1", "value1").build().toBuilder()
             .remove(stringKey("key1"))
             .remove(stringKey("key1"))
             .build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
 
     attributes =
         Attributes.builder()
@@ -445,50 +445,63 @@ class AttributesTest {
             .put("key3", "value3")
             .remove(stringKey("key1"))
             .build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
-    assertThat(attributes.get(stringKey("key2"))).isEqualTo("value2");
-    assertThat(attributes.get(stringKey("key3"))).isEqualTo("value3");
+    assertThat(attributes)
+        .isEqualTo(Attributes.builder().put("key2", "value2").put("key3", "value3").build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", true)
+            .remove(stringKey("key1"))
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("key1", true).build());
+  }
+
+  @Test
+  void removeIf() {
+    AttributesBuilder builder = Attributes.builder();
+    assertThat(builder.removeIf(unused -> true)).isEqualTo(builder);
+
+    Attributes attributes =
+        Attributes.builder().removeIf(key -> key.getKey().equals("key1")).build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder().put("key1", "value1").build().toBuilder()
+            .removeIf(key -> key.getKey().equals("key1"))
+            .removeIf(key -> key.getKey().equals("key1"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", "value2")
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .removeIf(key -> key.getKey().equals("key1"))
+            .build();
+    assertThat(attributes)
+        .isEqualTo(Attributes.builder().put("key2", "value2").put("key3", "value3").build());
 
     attributes =
         Attributes.builder()
             .put("key1", "value1A")
             .put("key1", true)
-            .remove(stringKey("key1"))
-            .remove(stringKey("key1"))
+            .removeIf(
+                key -> key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
             .build();
-    assertThat(attributes.get(booleanKey("key1"))).isEqualTo(true);
-  }
-
-  @Test
-  void remove_String() {
-    AttributesBuilder builder = Attributes.builder();
-    assertThat(builder.remove("")).isEqualTo(builder);
-
-    Attributes attributes = Attributes.builder().remove("key1").build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
-
-    attributes =
-        Attributes.builder().put("key1", "value1").build().toBuilder()
-            .remove("key1")
-            .remove("key1")
-            .build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("key1", true).build());
 
     attributes =
         Attributes.builder()
             .put("key1", "value1")
-            .put("key1", "value2")
             .put("key2", "value2")
-            .put("key3", "value3")
-            .remove("key1")
+            .put("foo", "bar")
+            .removeIf(key -> key.getKey().matches("key.*"))
             .build();
-    assertThat(attributes.get(stringKey("key1"))).isNull();
-    assertThat(attributes.get(stringKey("key2"))).isEqualTo("value2");
-    assertThat(attributes.get(stringKey("key3"))).isEqualTo("value3");
-
-    attributes =
-        Attributes.builder().put("key1", "value1A").put("key1", true).remove("key1").build();
-    assertThat(attributes.get(booleanKey("key1"))).isNull();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("foo", "bar").build());
   }
 
   @Test
@@ -517,6 +530,6 @@ class AttributesTest {
         };
 
     assertThatCode(() -> myAttributesBuilder.remove(stringKey("foo"))).doesNotThrowAnyException();
-    assertThatCode(() -> myAttributesBuilder.remove("foo")).doesNotThrowAnyException();
+    assertThatCode(() -> myAttributesBuilder.removeIf(unused -> false)).doesNotThrowAnyException();
   }
 }

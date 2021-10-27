@@ -23,7 +23,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public Attributes build() {
-    if (data.size() == 2) {
+    // If only one key-value pair AND the entry hasn't been set to null (by #remove(AttributeKey<T>)
+    // or #removeIf(Predicate<AttributeKey<?>>)), then we can bypass sorting and filtering
+    if (data.size() == 2 && data.get(0) != null) {
       return new ArrayBackedAttributes(data.toArray());
     }
     return ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
@@ -67,14 +69,10 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
-  public AttributesBuilder remove(String key) {
-    if (key == null || key.isEmpty()) {
+  public AttributesBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
+    if (predicate == null) {
       return this;
     }
-    return removeIf(entryKey -> key.equals(entryKey.getKey()));
-  }
-
-  private AttributesBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
     for (int i = 0; i < data.size() - 1; i += 2) {
       Object entry = data.get(i);
       if (entry instanceof AttributeKey && predicate.test((AttributeKey<?>) entry)) {

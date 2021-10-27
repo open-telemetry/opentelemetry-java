@@ -4,7 +4,8 @@
 
 ### API
 
-- New `AttributesBuilder#remove(String)` method improves ergonomics of modifying attributes.
+- New `AttributesBuilder#remove(String)` and `AttributeBuilder#removeIf(Predicate<AttributeKey<?>>)`
+  methods improve ergonomics of modifying attributes.
 
 ### Auto-configuration (alpha)
 

@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 /** A builder of {@link Attributes} supporting an arbitrary number of key-value pairs. */
 public interface AttributesBuilder {
@@ -152,7 +153,7 @@ public interface AttributesBuilder {
   AttributesBuilder putAll(Attributes attributes);
 
   /**
-   * Remove any attributes where {@link AttributeKey#getKey()} and {@link AttributeKey#getType()}
+   * Remove all attributes where {@link AttributeKey#getKey()} and {@link AttributeKey#getType()}
    * match the {@code key}.
    *
    * @return this Builder
@@ -163,11 +164,12 @@ public interface AttributesBuilder {
   }
 
   /**
-   * Remove any attributes where {@link AttributeKey#getKey()} matches the {@code key}.
+   * Remove all attributes that satisfy the given predicate. Errors or runtime exceptions thrown by
+   * the predicate are relayed to the caller.
    *
    * @return this Builder
    */
-  default AttributesBuilder remove(String key) {
+  default AttributesBuilder removeIf(Predicate<AttributeKey<?>> filter) {
     // default implementation is no-op
     return this;
   }
