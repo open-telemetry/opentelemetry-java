@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.exemplar;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -136,8 +137,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
     if (metricPoint.isEmpty()) {
       return original;
     }
-    AttributesBuilder result = original.toBuilder();
-    metricPoint.asMap().keySet().forEach(result::remove);
-    return result.build();
+    Set<AttributeKey<?>> metricPointKeys = metricPoint.asMap().keySet();
+    return original.toBuilder().removeIf(metricPointKeys::contains).build();
   }
 }
