@@ -8,9 +8,11 @@ package io.opentelemetry.exporter.otlp.metrics;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
@@ -41,6 +43,14 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   OtlpGrpcMetricExporter(GrpcExporter<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
+  }
+
+  @Nullable
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    // TODO: Lookup based on specification, or constructor
+    // https://github.com/open-telemetry/opentelemetry-java/issues/3790
+    return null;
   }
 
   /**

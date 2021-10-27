@@ -58,8 +58,8 @@ public interface MeterProvider {
    */
   MeterBuilder meterBuilder(String instrumentationName);
 
-  /** Returns a MeterProvider that does nothing. */
-  public static MeterProvider noop() {
+  /** Returns a no-op {@link MeterProvider} which provides meters which do not record or emit. */
+  static MeterProvider noop() {
     return NoopMeterProvider.getInstance();
   }
 }

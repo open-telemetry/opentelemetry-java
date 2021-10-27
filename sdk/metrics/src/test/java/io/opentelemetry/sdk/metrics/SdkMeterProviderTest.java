@@ -430,7 +430,7 @@ class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10)),
@@ -442,7 +442,7 @@ class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10.1)));
@@ -633,9 +633,7 @@ class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeHistogram() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder,
-        Aggregation.explicitBucketHistogram(
-            AggregationTemporality.CUMULATIVE, Collections.emptyList()));
+        sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
@@ -693,7 +691,9 @@ class SdkMeterProviderTest {
             "testDoubleValueObserver");
 
     testClock.advance(Duration.ofNanos(50));
-
+    // When collecting the next set of async measurements, we still only have 1 count per bucket
+    // because we assume ALL measurements are cumulative and come in the async callback.
+    // Note: We do not support "gauge histogram".
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
             metric ->
@@ -711,7 +711,7 @@ class SdkMeterProviderTest {
                                 .hasStartEpochNanos(testClock.now() - 100)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(2)))
+                                .hasBucketCounts(1)))
         .extracting(metric -> metric.getName())
         .containsExactlyInAnyOrder(
             "testLongSumObserver",

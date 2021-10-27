@@ -5,18 +5,18 @@
 
 ## Getting Started
 
-If you are looking for an all-in-one, easy-to-install auto-instrumentation javaagent, please visit our sibling project,
-[opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
+If you are looking for an all-in-one, easy-to-install **auto-instrumentation
+javaagent**, see [opentelemetry-java-instrumentation][].
 
-If you are looking for examples on how to use the OpenTelemetry APIs to write your own manual instrumentation, or
-how to set up the OpenTelemetry Java SDK, please visit our [quickstart guide](QUICKSTART.md). We also have
-fully-functioning example projects in our [examples sub-module](examples), which can be a good way to get
-your feet wet in a local environment.
+If you are looking for **examples** on how to use the OpenTelemetry API to
+write your own **manual instrumentation**, or how to set up the OpenTelemetry
+Java SDK, see [Manual instrumentation][]. Fully-functional examples
+are available from the [examples](examples) directory.
 
-If you are looking to get involved with the project, please read our [contributing guide](CONTRIBUTING.md). We welcome
+For a general overview of OpenTelemetry, visit [opentelemetry.io][].
+
+Would you like to get involved with the project? Read our [contributing guide](CONTRIBUTING.md). We welcome
 contributions!
-
-If you are looking for a general overview of the OpenTelemetry project, please visit the [official website](https://opentelemetry.io).
 
 ## Contacting us
 
@@ -68,10 +68,6 @@ Please don't hesitate to use them if you find them useful.
 ## Project setup and contributing
 
 Please refer to the [contribution guide](CONTRIBUTING.md) on how to set up for development and contribute!
-
-## Quick Start
-
-Please refer to the [quick start guide](QUICKSTART.md) on how to use the OpenTelemetry API.
 
 ## Published Releases
 
@@ -245,5 +241,8 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 [ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3Aci+branch%3Amain
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
+[Manual instrumentation]: https://opentelemetry.io/docs/java/manual_instrumentation/
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
+[opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
+[opentelemetry.io]: https://opentelemetry.io

@@ -134,11 +134,7 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    // If no exporters are configured, optimize by returning no-op implementation.
-    if (metricReaders.isEmpty()) {
-      return new NoopSdkMeterProvider();
-    }
-    return new DefaultSdkMeterProvider(
+    return new SdkMeterProvider(
         metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
   }
 }

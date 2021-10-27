@@ -34,12 +34,4 @@ class SdkMeterProviderBuilderTest {
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("resource", Resource.getDefault());
   }
-
-  @Test
-  void stubsWithNoReaders() {
-    // We need a reader to have a resource.
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
-
-    assertThat(meterProvider).isInstanceOf(NoopSdkMeterProvider.class);
-  }
 }

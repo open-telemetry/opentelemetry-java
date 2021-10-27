@@ -6,19 +6,12 @@
 package io.opentelemetry.sdk.metrics.testing;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link InMemoryMetricExporter}. */
-class InMemoryMetricReaderTest {
+class InMemoryMetricReaderCumulativeTest {
 
   private SdkMeterProvider provider;
   private InMemoryMetricReader reader;
@@ -26,15 +19,7 @@ class InMemoryMetricReaderTest {
   @BeforeEach
   void setup() {
     reader = InMemoryMetricReader.create();
-    provider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-                View.builder()
-                    .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
-                    .build())
-            .build();
+    provider = SdkMeterProvider.builder().registerMetricReader(reader).build();
   }
 
   private void generateFakeMetric(int index) {
@@ -51,13 +36,16 @@ class InMemoryMetricReaderTest {
   }
 
   @Test
-  void test_reset() {
+  void test_reset_preserves_cumulatives() {
     generateFakeMetric(1);
     generateFakeMetric(2);
     generateFakeMetric(3);
 
     assertThat(reader.collectAllMetrics()).hasSize(3);
-    assertThat(reader.collectAllMetrics()).hasSize(0);
+
+    // Add more data, should join.
+    generateFakeMetric(1);
+    assertThat(reader.collectAllMetrics()).hasSize(3);
   }
 
   @Test
@@ -67,7 +55,7 @@ class InMemoryMetricReaderTest {
     generateFakeMetric(3);
     // TODO: Better assertions for CompletableResultCode.
     assertThat(reader.flush()).isNotNull();
-    assertThat(reader.collectAllMetrics()).hasSize(0);
+    assertThat(reader.collectAllMetrics()).hasSize(3);
   }
 
   @Test
@@ -75,6 +63,6 @@ class InMemoryMetricReaderTest {
     generateFakeMetric(1);
     assertThat(reader.collectAllMetrics()).hasSize(1);
     assertThat(reader.shutdown()).isNotNull();
-    assertThat(reader.collectAllMetrics()).hasSize(0);
+    // Post shutdown, collectAllMetrics should not be called.
   }
 }

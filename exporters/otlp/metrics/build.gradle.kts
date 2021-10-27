@@ -21,7 +21,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
-  api("io.grpc:grpc-stub")
+  compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:testing"))
 
@@ -48,7 +48,6 @@ dependencies {
 
   add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
   add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp")
   add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
   add("testOkHttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 }

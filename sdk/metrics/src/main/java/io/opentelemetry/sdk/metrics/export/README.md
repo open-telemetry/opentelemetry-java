@@ -30,30 +30,41 @@ public final class PushMetricExporter implements MetricExporter {
 }
 
 /**
- * Class that periodically reads from all MetricProducers and pushes metrics using the
- * PushMetricExporter.
+ * Class to build and register MeterProvider globally. MeterProvider is
+ * initialized with PeriodicMetricReader which wraps the MetricsExporter
+ * and automatically reads and exports the metrics every export interval.
  */
 public final class PushExporter {
-  private final PushMetricExporter metricExporter;
-  // IntervalMetricReader reads metrics from all producers periodically.
-  private final IntervalMetricReader intervalMetricReader;
+  // The number of milliseconds between metric exports.
+  private static final long METRIC_EXPORT_INTERVAL_MS = 800L;
 
-  public PushExporter(Collection<MetricProducer> producers) {
+  private final PushMetricExporter metricExporter;
+  // This will be used to create instruments
+  private final SdkMeterProvider meterProvider;
+
+  public PushExporter() {
     metricExporter = new PushMetricExporter();
-    intervalMetricReader =
-        IntervalMetricReader.builder()
-                    .readEnvironment() // Read configuration from environment variables
-                    .readSystemProperties() // Read configuration from system properties
-                    .setExportIntervalMillis(100_000)
-                    .setMetricExporter(metricExporter)
-                    .setMetricProducers(Collections.singletonList(producers))
-                    .build();
+    // Create an instance of PeriodicMetricReaderFactory and configure it
+    // to export via the Metrics exporter
+    MetricReaderFactory periodicReaderFactory =
+        PeriodicMetricReader.create(
+            metricExporter, Duration.ofMillis(METRIC_EXPORT_INTERVAL_MS));
+    meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(periodicReaderFactory)
+            .buildAndRegisterGlobal();
   }
 
   // Can be accessed by any "push based" library to export metrics.
   public MetricExporter getMetricExporter() {
     return metricExporter;
   }
+
+  // GlobalMeterProvider can also be used to achieve the same.
+  public SdkMeterProvider getSdkMeterProvider() {
+    return meterProvider;
+  }
+
 }
 ```
 

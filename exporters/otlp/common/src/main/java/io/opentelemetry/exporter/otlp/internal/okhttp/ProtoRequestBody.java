@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal;
+package io.opentelemetry.exporter.otlp.internal.okhttp;
 
+import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.io.IOException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;

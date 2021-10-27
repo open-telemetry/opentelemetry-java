@@ -6,52 +6,51 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /** A sum aggregation configuration. */
 class SumAggregation extends Aggregation {
-  static final SumAggregation DEFAULT = new SumAggregation(AggregationTemporality.CUMULATIVE);
+  static final SumAggregation DEFAULT = new SumAggregation(null);
 
-  private final AggregationTemporality temporality;
+  @Nullable private final AggregationTemporality temporality;
 
-  SumAggregation(AggregationTemporality temporality) {
+  SumAggregation(@Nullable AggregationTemporality temporality) {
     this.temporality = temporality;
   }
 
-  /** Returns the configured temporality for the sum aggregation. */
-  public AggregationTemporality getTemporality() {
+  @Override
+  public AggregationTemporality getConfiguredTemporality() {
     return temporality;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
-      ExemplarFilter exemplarFilter) {
-    return AggregatorFactory.sum(temporality)
-        .create(
-            resource,
-            instrumentationLibraryInfo,
-            instrumentDescriptor,
-            metricDescriptor,
-            () ->
-                ExemplarReservoir.filtered(
-                    exemplarFilter,
-                    ExemplarReservoir.fixedSizeReservoir(
-                        Clock.getDefault(),
-                        Runtime.getRuntime().availableProcessors(),
-                        RandomSupplier.platformDefault())));
+      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+    Supplier<ExemplarReservoir> reservoirFactory =
+        () ->
+            ExemplarReservoir.filtered(
+                exemplarFilter,
+                ExemplarReservoir.fixedSizeReservoir(
+                    Clock.getDefault(),
+                    Runtime.getRuntime().availableProcessors(),
+                    RandomSupplier.platformDefault()));
+    switch (instrumentDescriptor.getValueType()) {
+      case LONG:
+        return (Aggregator<T>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+      case DOUBLE:
+        return (Aggregator<T>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+    }
+    throw new IllegalArgumentException("Invalid instrument value type");
   }
 
   @Override

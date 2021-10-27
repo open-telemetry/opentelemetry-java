@@ -7,10 +7,11 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import java.util.Set;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
 final class EmptyMetricStorage implements SynchronousMetricStorage {
@@ -44,8 +45,9 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   @Nullable
   @Override
   public MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
+      CollectionInfo collectionInfo,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {

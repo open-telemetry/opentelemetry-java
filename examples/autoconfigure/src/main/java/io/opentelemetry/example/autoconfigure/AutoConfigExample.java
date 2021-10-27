@@ -13,10 +13,6 @@ public final class AutoConfigExample {
   private static final String INSTRUMENTATION_NAME = AutoConfigExample.class.getName();
 
   public static void main(String[] args) throws InterruptedException {
-    // Turn off metrics for this example
-    // TODO: this won't be needed after 1.1.0 release
-    System.setProperty("otel.metrics.exporter", "none");
-
     // Let the SDK configure itself using environment variables and system properties
     OpenTelemetry openTelemetry = OpenTelemetrySdkAutoConfiguration.initialize();
 
