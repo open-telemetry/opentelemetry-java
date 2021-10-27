@@ -48,13 +48,13 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   public boolean record(double value) {
-    long index = bucketMapper.valueToIndex(Math.abs(value));
+    int index = bucketMapper.valueToIndex(Math.abs(value));
     return this.counts.increment(index, 1);
   }
 
   @Override
   public int getOffset() {
-    return (int) counts.getIndexStart();
+    return counts.getIndexStart();
   }
 
   @Nonnull
@@ -63,7 +63,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     if (counts.isEmpty()) {
       return Collections.emptyList();
     }
-    int length = (int) (counts.getIndexEnd() - counts.getIndexStart() + 1);
+    int length = counts.getIndexEnd() - counts.getIndexStart() + 1;
     Long[] countsArr = new Long[length];
     for (int i = 0; i < length; i++) {
       countsArr[i] = counts.get(i + counts.getIndexStart());
@@ -74,7 +74,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   @Override
   public long getTotalCount() {
     long totalCount = 0;
-    for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
+    for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
       totalCount += counts.get(i);
     }
     return totalCount;
@@ -95,7 +95,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     if (!counts.isEmpty()) {
       ExponentialCounter newCounts = new MapCounter();
 
-      for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
+      for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         long count = counts.get(i);
         if (count > 0) {
           if (!newCounts.increment(i >> by, count)) {
@@ -169,7 +169,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     // since we changed scale of this, we need to know the new difference between the two scales
     deltaOther = other.scale - this.scale;
 
-    for (long i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
+    for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
       if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
         throw new IllegalStateException("Failed to merge exponential histogram buckets.");
@@ -257,8 +257,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     @Override
-    public long valueToIndex(double value) {
-      return (long) Math.floor(Math.log(value) * scaleFactor);
+    public int valueToIndex(double value) {
+      return (int) Math.floor(Math.log(value) * scaleFactor);
     }
   }
 }

@@ -48,7 +48,7 @@ public class DoubleExponentialHistogramDataAggregatorTest {
           /* stateful= */ false,
           ExemplarReservoir::noSamples);
 
-  private static long valueToIndex(int scale, double value) {
+  private static int valueToIndex(int scale, double value) {
     double scaleFactor = Math.scalb(1D / Math.log(2), scale);
     return (int) Math.floor(Math.log(value) * scaleFactor);
   }
@@ -93,21 +93,17 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     // Assert positive recordings are at correct index
     int posOffset = acc.getPositiveBuckets().getOffset();
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(5);
-    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 0.5) - posOffset)).isEqualTo(1);
-    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 1.0) - posOffset)).isEqualTo(1);
-    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 12.0) - posOffset))
-        .isEqualTo(2);
-    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 15.213) - posOffset))
-        .isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 0.5) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 1.0) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 12.0) - posOffset)).isEqualTo(2);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 15.213) - posOffset)).isEqualTo(1);
 
     // Assert negative recordings are at correct index
     int negOffset = acc.getNegativeBuckets().getOffset();
     assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(3);
-    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 13.2) - negOffset))
-        .isEqualTo(1);
-    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 2.01) - negOffset))
-        .isEqualTo(1);
-    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 13.2) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 2.01) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
   }
 
   @Test
@@ -285,7 +281,7 @@ public class DoubleExponentialHistogramDataAggregatorTest {
                     .hasExemplars(exemplar);
                 assertThat(point.getPositiveBuckets())
                     .hasCounts(Collections.singletonList(1L))
-                    .hasOffset((int) valueToIndex(20, 123.456))
+                    .hasOffset(valueToIndex(20, 123.456))
                     .hasTotalCount(1);
                 assertThat(point.getNegativeBuckets())
                     .hasTotalCount(0)
@@ -336,27 +332,22 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     // Verify positive buckets have correct counts
     List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();
     assertThat(
-            posCounts.get(
-                (int) valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
+            posCounts.get(valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            posCounts.get(
-                (int) valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
+            posCounts.get(valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            posCounts.get(
-                (int) valueToIndex(acc.getScale(), 100) - acc.getPositiveBuckets().getOffset()))
+            posCounts.get(valueToIndex(acc.getScale(), 100) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
 
     // Verify negative buckets have correct counts
     List<Long> negCounts = acc.getNegativeBuckets().getBucketCounts();
     assertThat(
-            negCounts.get(
-                (int) valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
+            negCounts.get(valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            negCounts.get(
-                (int) valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
+            negCounts.get(valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
   }
 

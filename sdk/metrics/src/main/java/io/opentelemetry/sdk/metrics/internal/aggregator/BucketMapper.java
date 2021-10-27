@@ -17,5 +17,5 @@ interface BucketMapper {
    * @param value Measured value
    * @return the index of the bucket which the value maps to.
    */
-  long valueToIndex(double value);
+  int valueToIndex(double value);
 }

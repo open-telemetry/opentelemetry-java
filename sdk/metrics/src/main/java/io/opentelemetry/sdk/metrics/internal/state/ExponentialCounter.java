@@ -17,14 +17,14 @@ public interface ExponentialCounter {
    *
    * @return the first index with a recording.
    */
-  long getIndexStart();
+  int getIndexStart();
 
   /**
    * The last index with a recording. May be negative.
    *
    * @return The last index with a recording.
    */
-  long getIndexEnd();
+  int getIndexEnd();
 
   /**
    * Persist new data at index, incrementing by delta amount.
@@ -33,14 +33,14 @@ public interface ExponentialCounter {
    * @param delta How much to increment the index by.
    * @return success status.
    */
-  boolean increment(long index, long delta);
+  boolean increment(int index, long delta);
 
   /**
    * Get the number of recordings for the given index.
    *
    * @return the number of recordings for the index.
    */
-  long get(long index);
+  long get(int index);
 
   /**
    * Boolean denoting if the backing structure has recordings or not.

@@ -19,11 +19,11 @@ public class MapCounter implements ExponentialCounter {
 
   public static final int MAX_SIZE = 320;
 
-  private static final long NULL_INDEX = Long.MIN_VALUE;
+  private static final int NULL_INDEX = Integer.MIN_VALUE;
 
   private final ConcurrentHashMap<Integer, AtomicLong> backing;
-  private long indexStart;
-  private long indexEnd;
+  private int indexStart;
+  private int indexEnd;
 
   /** Instantiate a MapCounter. */
   public MapCounter() {
@@ -43,57 +43,56 @@ public class MapCounter implements ExponentialCounter {
     this.indexEnd = otherCounter.getIndexEnd();
 
     // copy values
-    for (long i = indexStart; i <= indexEnd; i++) {
+    for (int i = indexStart; i <= indexEnd; i++) {
       long val = otherCounter.get(i);
       if (val != 0) {
-        this.backing.put((int) i, new AtomicLong(val));
+        this.backing.put(i, new AtomicLong(val));
       }
     }
   }
 
   @Override
-  public long getIndexStart() {
+  public int getIndexStart() {
     return indexStart;
   }
 
   @Override
-  public long getIndexEnd() {
+  public int getIndexEnd() {
     return indexEnd;
   }
 
   @Override
-  public boolean increment(long index, long delta) {
-    int i = (int) index;
+  public boolean increment(int index, long delta) {
     if (indexStart == NULL_INDEX) {
       indexStart = index;
       indexEnd = index;
-      doIncrement(i, delta);
+      doIncrement(index, delta);
       return true;
     }
 
     // Extend window if possible. if it would exceed maxSize, then return false.
-    if (i > indexEnd) {
-      if (i - indexStart + 1 > MAX_SIZE) {
+    if (index > indexEnd) {
+      if (index - indexStart + 1 > MAX_SIZE) {
         return false;
       }
-      indexEnd = i;
-    } else if (i < indexStart) {
-      if (indexEnd - i + 1 > MAX_SIZE) {
+      indexEnd = index;
+    } else if (index < indexStart) {
+      if (indexEnd - index + 1 > MAX_SIZE) {
         return false;
       }
-      indexStart = i;
+      indexStart = index;
     }
 
-    doIncrement(i, delta);
+    doIncrement(index, delta);
     return true;
   }
 
   @Override
-  public long get(long index) {
+  public long get(int index) {
     if (index < indexStart || index > indexEnd) {
       throw new IndexOutOfBoundsException(String.format("Index %d out of range.", index));
     }
-    AtomicLong result = backing.get((int) index);
+    AtomicLong result = backing.get(index);
     if (result == null) {
       return 0;
     }
