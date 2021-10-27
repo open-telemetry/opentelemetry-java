@@ -5,14 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -31,14 +28,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class DoubleHistogramBenchmark {
   private static final Aggregator<HistogramAccumulation> aggregator =
-      AggregatorFactory.histogram(Arrays.asList(10.0, 100.0, 1_000.0), AggregationTemporality.DELTA)
-          .create(
-              Resource.getDefault(),
-              InstrumentationLibraryInfo.empty(),
+      Aggregation.explicitBucketHistogram(Arrays.asList(10.0, 100.0, 1_000.0))
+          .createAggregator(
               InstrumentDescriptor.create(
                   "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
-              MetricDescriptor.create("name", "description", "1"),
-              ExemplarReservoir::noSamples);
+              ExemplarFilter.neverSample());
   private AggregatorHandle<HistogramAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)

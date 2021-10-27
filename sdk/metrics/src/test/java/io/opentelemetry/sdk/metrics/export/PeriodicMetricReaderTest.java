@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -195,6 +196,16 @@ class PeriodicMetricReaderTest {
 
     private WaitingMetricExporter(boolean shouldThrow) {
       this.shouldThrow = shouldThrow;
+    }
+
+    @Override
+    public EnumSet<AggregationTemporality> getSupportedTemporality() {
+      return EnumSet.allOf(AggregationTemporality.class);
+    }
+
+    @Override
+    public AggregationTemporality getPreferredTemporality() {
+      return null;
     }
 
     @Override

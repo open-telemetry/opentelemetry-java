@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +52,16 @@ public final class PeriodicMetricReader implements MetricReader {
     this.exporter = exporter;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
+  }
+
+  @Override
+  public EnumSet<AggregationTemporality> getSupportedTemporality() {
+    return exporter.getSupportedTemporality();
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return exporter.getPreferredTemporality();
   }
 
   @Override

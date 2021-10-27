@@ -12,8 +12,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import java.util.Set;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MetricStorageRegistry}. */
@@ -84,8 +84,9 @@ class MetricStorageRegistryTest {
 
     @Override
     public MetricData collectAndReset(
-        CollectionHandle collector,
-        Set<CollectionHandle> all,
+        CollectionInfo collectionInfo,
+        Resource resource,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
         long startEpochNanos,
         long epochNanos,
         boolean suppressSynchronousCollection) {
@@ -113,8 +114,9 @@ class MetricStorageRegistryTest {
 
     @Override
     public MetricData collectAndReset(
-        CollectionHandle collector,
-        Set<CollectionHandle> allCollectors,
+        CollectionInfo collectionInfo,
+        Resource resource,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
         long startEpochNanos,
         long epochNanos,
         boolean suppressSynchronousCollection) {

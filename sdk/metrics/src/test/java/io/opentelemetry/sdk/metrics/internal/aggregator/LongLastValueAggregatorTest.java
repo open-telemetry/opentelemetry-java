@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
@@ -23,12 +24,13 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
   private static final LongLastValueAggregator aggregator =
-      new LongLastValueAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"),
-          ExemplarReservoir::noSamples);
+      new LongLastValueAggregator(ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -80,9 +82,13 @@ class LongLastValueAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-            0,
+            AggregationTemporality.CUMULATIVE,
+            2,
             10,
             100);
     assertThat(metricData)
@@ -95,6 +101,6 @@ class LongLastValueAggregatorTest {
                 "unit",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPointData.create(0, 100, Attributes.empty(), 10)))));
+                        LongPointData.create(2, 100, Attributes.empty(), 10)))));
   }
 }

@@ -22,10 +22,11 @@ dependencies {
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))
 
+  implementation("com.squareup.okhttp3:okhttp")
+
   // We include helpers shared by gRPC or okhttp exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
-  compileOnly("com.squareup.okhttp3:okhttp")
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
