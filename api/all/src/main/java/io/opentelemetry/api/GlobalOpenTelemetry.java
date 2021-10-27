@@ -161,14 +161,17 @@ public final class GlobalOpenTelemetry {
     final Class<?> openTelemetrySdkAutoConfiguration;
     try {
       openTelemetrySdkAutoConfiguration =
-          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
+          Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
     } catch (ClassNotFoundException e) {
       return null;
     }
 
     try {
       Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
-      return (OpenTelemetry) initialize.invoke(null);
+      Object autoConfiguredSdk = initialize.invoke(null);
+      Method getOpenTelemetrySdk =
+          openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
+      return (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk);
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "OpenTelemetrySdkAutoConfiguration detected on classpath "

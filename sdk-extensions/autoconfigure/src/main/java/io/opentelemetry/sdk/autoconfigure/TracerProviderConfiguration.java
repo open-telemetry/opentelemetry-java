@@ -27,19 +27,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
-  static SdkTracerProvider configureTracerProvider(Resource resource, ConfigProperties config) {
+  static SdkTracerProvider configureTracerProvider(
+      Resource resource,
+      ConfigProperties config,
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          spanExporterCustomizer,
+      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
             .setSpanLimits(configureSpanLimits(config));
 
     String sampler = config.getString("otel.traces.sampler");
-    if (sampler != null) {
-      tracerProviderBuilder.setSampler(configureSampler(sampler, config));
+    if (sampler == null) {
+      sampler = "parentbased_always_on";
     }
+    tracerProviderBuilder.setSampler(
+        samplerCustomizer.apply(configureSampler(sampler, config), config));
 
     // Run user configuration before setting exporters from environment to allow user span
     // processors to effect export.
@@ -49,7 +57,7 @@ final class TracerProviderConfiguration {
     }
 
     Map<String, SpanExporter> exportersByName =
-        SpanExporterConfiguration.configureSpanExporters(config);
+        SpanExporterConfiguration.configureSpanExporters(config, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName)
         .forEach(tracerProviderBuilder::addSpanProcessor);

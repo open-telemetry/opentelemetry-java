@@ -174,6 +174,10 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build(),
             KeyValue.newBuilder()
+                .setKey("wrapped")
+                .setValue(AnyValue.newBuilder().setIntValue(1).build())
+                .build(),
+            KeyValue.newBuilder()
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());

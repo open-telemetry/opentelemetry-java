@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 final class SpanExporterConfiguration {
@@ -39,7 +40,10 @@ final class SpanExporterConfiguration {
   private static final String EXPORTER_NONE = "none";
 
   // Visible for testing
-  static Map<String, SpanExporter> configureSpanExporters(ConfigProperties config) {
+  static Map<String, SpanExporter> configureSpanExporters(
+      ConfigProperties config,
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          spanExporterCustomizer) {
     List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
@@ -58,7 +62,12 @@ final class SpanExporterConfiguration {
         throw new ConfigurationException(
             "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
-      return Collections.emptyMap();
+      SpanExporter noop = SpanExporter.composite();
+      SpanExporter customized = spanExporterCustomizer.apply(noop, config);
+      if (customized == noop) {
+        return Collections.emptyMap();
+      }
+      return Collections.singletonMap("none", customized);
     }
 
     if (exporterNames.isEmpty()) {
@@ -77,7 +86,9 @@ final class SpanExporterConfiguration {
         .collect(
             toMap(
                 Function.identity(),
-                exporterName -> configureExporter(exporterName, config, spiExporters)));
+                exporterName ->
+                    spanExporterCustomizer.apply(
+                        configureExporter(exporterName, config, spiExporters), config)));
   }
 
   // Visible for testing
