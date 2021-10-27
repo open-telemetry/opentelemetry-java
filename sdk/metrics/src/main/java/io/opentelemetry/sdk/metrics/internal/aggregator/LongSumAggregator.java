@@ -20,19 +20,19 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
-final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
+/**
+ * Sum aggregator that keeps values as {@code long}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  LongSumAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
-      AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(
-        resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
+  public LongSumAggregator(
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
+    super(instrumentDescriptor);
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -42,41 +42,41 @@ final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
   }
 
   @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(value);
-  }
-
-  @Override
-  LongAccumulation mergeSum(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+  public LongAccumulation merge(
+      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
     return LongAccumulation.create(
         previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  LongAccumulation mergeDiff(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+  public LongAccumulation diff(
+      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
     return LongAccumulation.create(
         accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor descriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    MetricDescriptor descriptor = getMetricDescriptor();
     return MetricData.createLongSum(
-        getResource(),
-        getInstrumentationLibraryInfo(),
+        resource,
+        instrumentationLibraryInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
         LongSumData.create(
             isMonotonic(),
-            temporality(),
+            temporality,
             MetricDataUtils.toLongPointList(
                 accumulationByLabels,
-                temporality() == AggregationTemporality.CUMULATIVE
+                temporality == AggregationTemporality.CUMULATIVE
                     ? startEpochNanos
                     : lastCollectionEpoch,
                 epochNanos)));

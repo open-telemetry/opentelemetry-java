@@ -7,12 +7,18 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
 /** {@link SumData} recorded uses {@code double}s. */
 @Immutable
 @AutoValue
 public abstract class DoubleSumData implements SumData<DoublePointData> {
+
+  static final DoubleSumData EMPTY =
+      DoubleSumData.create(
+          /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
+
   DoubleSumData() {}
 
   public static DoubleSumData create(

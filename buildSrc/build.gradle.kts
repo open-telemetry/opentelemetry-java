@@ -23,3 +23,19 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.1.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.5.3")
 }
+
+// We can't apply conventions to this build so include important ones such as the Java compilation
+// target.
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
+
+tasks {
+  withType<JavaCompile>().configureEach {
+    with(options) {
+      release.set(8)
+    }
+  }
+}

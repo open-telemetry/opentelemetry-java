@@ -52,6 +52,7 @@ dependencies {
   add("testOtlpCommonImplementation", "org.testcontainers:junit-jupiter")
 
   add("testOtlpRuntimeOnly", "io.grpc:grpc-netty-shaded")
+  add("testOtlpRuntimeOnly", "io.grpc:grpc-stub")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
   add("testJaegerImplementation", project(":semconv"))
@@ -61,13 +62,5 @@ dependencies {
 tasks {
   check {
     dependsOn("testJaeger", "testOtlp", "testOtlpNoGrpcJava")
-  }
-}
-
-configurations {
-  named("testOtlpNoGrpcJavaRuntimeClasspath") {
-    dependencies {
-      exclude("io.grpc")
-    }
   }
 }

@@ -42,6 +42,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,6 +74,15 @@ class OtlpHttpConfigTest {
   private static final BlockingQueue<ExportMetricsServiceRequest> metricRequests =
       new LinkedBlockingDeque<>();
   private static final BlockingQueue<RequestHeaders> requestHeaders = new LinkedBlockingDeque<>();
+  private static final String canonicalHostName;
+
+  static {
+    try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Error resolving canonical host name.", e);
+    }
+  }
 
   @RegisterExtension
   @Order(1)
@@ -87,7 +97,7 @@ class OtlpHttpConfigTest {
       heldCertificate =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
       Path file = Files.createTempFile("test-cert", ".pem");
       Files.write(file, heldCertificate.certificatePem().getBytes(StandardCharsets.UTF_8));
@@ -161,7 +171,8 @@ class OtlpHttpConfigTest {
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
-    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
+    props.put(
+        "otel.exporter.otlp.endpoint", "https://" + canonicalHostName + ":" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
@@ -173,7 +184,7 @@ class OtlpHttpConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -191,7 +202,7 @@ class OtlpHttpConfigTest {
                     && headers.contains("content-encoding", "gzip"));
 
     assertThat(metricExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -223,7 +234,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.traces.endpoint",
-        "https://localhost:" + server.httpsPort() + "/v1/traces");
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/traces");
     props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
@@ -233,7 +244,7 @@ class OtlpHttpConfigTest {
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     assertThat(spanExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -265,7 +276,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.metrics.endpoint",
-        "https://localhost:" + server.httpsPort() + "/v1/metrics");
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/metrics");
     props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
@@ -275,7 +286,7 @@ class OtlpHttpConfigTest {
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
     assertThat(metricExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -349,7 +360,8 @@ class OtlpHttpConfigTest {
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty(
-        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
+        "otel.exporter.otlp.endpoint",
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/");
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
     System.setProperty("otel.imr.export.interval", "1s");
 

@@ -23,6 +23,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
@@ -59,13 +60,15 @@ class OtlpHttpMetricExporterTest {
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
   private static final HeldCertificate HELD_CERTIFICATE;
+  private static final String canonicalHostName;
 
   static {
     try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
       HELD_CERTIFICATE =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Error building certificate.", e);
@@ -81,8 +84,7 @@ class OtlpHttpMetricExporterTest {
         }
       };
 
-  @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpMetricExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
 
   private OtlpHttpMetricExporterBuilder builder;
 
@@ -90,7 +92,7 @@ class OtlpHttpMetricExporterTest {
   void setup() {
     builder =
         OtlpHttpMetricExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/metrics")
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/metrics")
             .addHeader("foo", "bar")
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));

@@ -23,6 +23,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -62,13 +63,15 @@ class OtlpHttpLogExporterTest {
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
   private static final HeldCertificate HELD_CERTIFICATE;
+  private static final String canonicalHostName;
 
   static {
     try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
       HELD_CERTIFICATE =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Error building certificate.", e);
@@ -86,8 +89,7 @@ class OtlpHttpLogExporterTest {
         }
       };
 
-  @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpLogExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
 
   private OtlpHttpLogExporterBuilder builder;
 
@@ -95,7 +97,7 @@ class OtlpHttpLogExporterTest {
   void setup() {
     builder =
         OtlpHttpLogExporter.builder()
-            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/logs")
+            .setEndpoint("http://" + canonicalHostName + ":" + server.httpPort() + "/v1/logs")
             .addHeader("foo", "bar");
   }
 
@@ -111,13 +113,20 @@ class OtlpHttpLogExporterTest {
     assertThatCode(() -> OtlpHttpLogExporter.builder().setTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setEndpoint("http://localhost:4317"))
+    assertThatCode(
+            () ->
+                OtlpHttpLogExporter.builder().setEndpoint("http://" + canonicalHostName + ":4317"))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setEndpoint("http://localhost"))
+    assertThatCode(
+            () -> OtlpHttpLogExporter.builder().setEndpoint("http://" + canonicalHostName + ""))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setEndpoint("https://localhost"))
+    assertThatCode(
+            () -> OtlpHttpLogExporter.builder().setEndpoint("https://" + canonicalHostName + ""))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setEndpoint("http://foo:bar@localhost"))
+    assertThatCode(
+            () ->
+                OtlpHttpLogExporter.builder()
+                    .setEndpoint("http://foo:bar@" + canonicalHostName + ""))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> OtlpHttpLogExporter.builder().setCompression("gzip"))
@@ -152,15 +161,21 @@ class OtlpHttpLogExporterTest {
     assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint("😺://localhost"))
+    assertThatThrownBy(
+            () -> OtlpHttpLogExporter.builder().setEndpoint("😺://" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint("localhost"))
+        .hasMessage("Invalid endpoint, must be a URL: 😺://" + canonicalHostName + "");
+    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint("" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint("gopher://localhost"))
+        .hasMessage(
+            "Invalid endpoint, must start with http:// or https://: " + canonicalHostName + "");
+    assertThatThrownBy(
+            () -> OtlpHttpLogExporter.builder().setEndpoint("gopher://" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+        .hasMessage(
+            "Invalid endpoint, must start with http:// or https://: gopher://"
+                + canonicalHostName
+                + "");
 
     assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setCompression(null))
         .isInstanceOf(NullPointerException.class)
@@ -191,7 +206,7 @@ class OtlpHttpLogExporterTest {
     server.enqueue(successResponse());
     OtlpHttpLogExporter exporter =
         builder
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/logs")
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/logs")
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();

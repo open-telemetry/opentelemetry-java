@@ -184,21 +184,6 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
 
-  testCompileOnly("com.google.auto.value:auto-value-annotations")
-  testCompileOnly("com.google.errorprone:error_prone_annotations")
-  testCompileOnly("com.google.code.findbugs:jsr305")
-
-  testImplementation("org.junit.jupiter:junit-jupiter-api")
-  testImplementation("org.junit.jupiter:junit-jupiter-params")
-  testImplementation("nl.jqno.equalsverifier:equalsverifier")
-  testImplementation("org.mockito:mockito-core")
-  testImplementation("org.mockito:mockito-junit-jupiter")
-  testImplementation("org.assertj:assertj-core")
-  testImplementation("org.awaitility:awaitility")
-  testImplementation("io.github.netmikey.logunit:logunit-jul")
-
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
   errorprone("com.google.errorprone:error_prone_core")
   errorprone("com.uber.nullaway:nullaway")
 
@@ -207,4 +192,27 @@ dependencies {
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
   compileOnly("javax.annotation:javax.annotation-api")
+}
+
+testing {
+  suites.withType(JvmTestSuite::class).configureEach {
+    dependencies {
+      implementation(project)
+
+      compileOnly("com.google.auto.value:auto-value-annotations")
+      compileOnly("com.google.errorprone:error_prone_annotations")
+      compileOnly("com.google.code.findbugs:jsr305")
+
+      implementation("org.junit.jupiter:junit-jupiter-api")
+      implementation("org.junit.jupiter:junit-jupiter-params")
+      implementation("nl.jqno.equalsverifier:equalsverifier")
+      implementation("org.mockito:mockito-core")
+      implementation("org.mockito:mockito-junit-jupiter")
+      implementation("org.assertj:assertj-core")
+      implementation("org.awaitility:awaitility")
+      implementation("io.github.netmikey.logunit:logunit-jul")
+
+      runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    }
+  }
 }

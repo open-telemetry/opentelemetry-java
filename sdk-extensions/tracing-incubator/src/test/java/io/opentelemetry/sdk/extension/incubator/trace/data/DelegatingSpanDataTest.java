@@ -20,6 +20,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Tests deprecated class
 class DelegatingSpanDataTest {
 
   private static final AttributeKey<String> CLIENT_TYPE_KEY = stringKey("client_type");

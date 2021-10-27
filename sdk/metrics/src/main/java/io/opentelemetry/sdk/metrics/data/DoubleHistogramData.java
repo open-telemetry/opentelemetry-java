@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -21,6 +22,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class DoubleHistogramData implements Data<DoubleHistogramPointData> {
+
+  static final DoubleHistogramData EMPTY =
+      DoubleHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
+
   DoubleHistogramData() {}
 
   public static DoubleHistogramData create(

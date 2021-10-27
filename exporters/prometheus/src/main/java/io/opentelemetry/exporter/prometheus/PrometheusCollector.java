@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -15,6 +16,7 @@ import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -45,6 +47,16 @@ public final class PrometheusCollector extends Collector implements MetricReader
    */
   public static MetricReaderFactory create() {
     return new Factory();
+  }
+
+  @Override
+  public EnumSet<AggregationTemporality> getSupportedTemporality() {
+    return EnumSet.of(AggregationTemporality.CUMULATIVE);
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   // Prometheus cannot flush.

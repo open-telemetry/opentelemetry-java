@@ -45,7 +45,11 @@ import javax.annotation.Nullable;
  * //   }
  * // }
  * }</pre>
+ *
+ * @deprecated Use {@link io.opentelemetry.sdk.trace.data.DelegatingSpanData}, which is the exact
+ *     same as this one.
  */
+@Deprecated
 public abstract class DelegatingSpanData implements SpanData {
 
   private final SpanData delegate;

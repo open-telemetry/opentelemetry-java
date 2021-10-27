@@ -25,6 +25,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -60,13 +61,15 @@ class OtlpHttpSpanExporterTest {
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
   private static final HeldCertificate HELD_CERTIFICATE;
+  private static final String canonicalHostName;
 
   static {
     try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
       HELD_CERTIFICATE =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Error building certificate.", e);
@@ -84,8 +87,7 @@ class OtlpHttpSpanExporterTest {
         }
       };
 
-  @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpSpanExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
 
   private OtlpHttpSpanExporterBuilder builder;
 
@@ -93,7 +95,7 @@ class OtlpHttpSpanExporterTest {
   void setup() {
     builder =
         OtlpHttpSpanExporter.builder()
-            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/traces")
+            .setEndpoint("http://" + canonicalHostName + ":" + server.httpPort() + "/v1/traces")
             .addHeader("foo", "bar");
   }
 
@@ -189,7 +191,7 @@ class OtlpHttpSpanExporterTest {
     server.enqueue(successResponse());
     OtlpHttpSpanExporter exporter =
         builder
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/traces")
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();

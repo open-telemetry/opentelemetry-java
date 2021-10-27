@@ -21,23 +21,11 @@ import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-final class CountAggregator extends AbstractAggregator<LongAccumulation> {
-  private final AggregationTemporality temporality;
+final class CountAggregator implements Aggregator<LongAccumulation> {
   // Workaround
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  CountAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor,
-      AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor,
-        temporality == AggregationTemporality.CUMULATIVE);
-    this.temporality = temporality;
+  CountAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -47,32 +35,34 @@ final class CountAggregator extends AbstractAggregator<LongAccumulation> {
   }
 
   @Override
-  public LongAccumulation accumulateDouble(double value) {
-    return LongAccumulation.create(1L);
-  }
-
-  @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(1L);
-  }
-
-  @Override
   public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
     return LongAccumulation.create(
         previous.getValue() + current.getValue(), current.getExemplars());
   }
 
   @Override
+  public LongAccumulation diff(LongAccumulation previous, LongAccumulation current) {
+    // For count of measurements, `diff` returns the "DELTA" of measurements that occurred.
+    // Given how we aggregate, this effectively is just the current value for async
+    // instruments.
+    return current;
+  }
+
+  @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibrary,
+      MetricDescriptor metricDescriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
     return MetricData.createLongSum(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
+        resource,
+        instrumentationLibrary,
+        metricDescriptor.getName(),
+        metricDescriptor.getDescription(),
         "1",
         LongSumData.create(
             /* isMonotonic= */ true,

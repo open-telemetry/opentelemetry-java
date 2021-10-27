@@ -7,21 +7,16 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 
-abstract class AbstractMinMaxSumCountAggregator
-    extends AbstractAggregator<MinMaxSumCountAccumulation> {
+abstract class AbstractMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountAccumulation> {
 
-  AbstractMinMaxSumCountAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor metricDescriptor) {
-    super(resource, instrumentationLibraryInfo, metricDescriptor, /* stateful= */ false);
-  }
+  AbstractMinMaxSumCountAggregator() {}
 
   @Override
   public final MinMaxSumCountAccumulation merge(
@@ -34,17 +29,29 @@ abstract class AbstractMinMaxSumCountAggregator
   }
 
   @Override
+  public final MinMaxSumCountAccumulation diff(
+      MinMaxSumCountAccumulation previousCumulative, MinMaxSumCountAccumulation currentCumulative) {
+    // Summary does not support CUMULATIVE vs. DELTA.
+    return currentCumulative;
+  }
+
+  @Override
   public final MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibrary,
+      MetricDescriptor metricDescriptor,
       Map<Attributes, MinMaxSumCountAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
+    // We always report as "summary" temporality.
     return MetricData.createDoubleSummary(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
+        resource,
+        instrumentationLibrary,
+        metricDescriptor.getName(),
+        metricDescriptor.getDescription(),
+        metricDescriptor.getUnit(),
         DoubleSummaryData.create(
             MetricDataUtils.toDoubleSummaryPointList(
                 accumulationByLabels, lastCollectionEpoch, epochNanos)));

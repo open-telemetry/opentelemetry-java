@@ -16,15 +16,17 @@ dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":api:all"))
-  api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
+  api(project(":api:metrics"))
+
+  compileOnly(project(":sdk:metrics"))
+  compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))
 
-  compileOnly("com.fasterxml.jackson.core:jackson-core")
+  implementation("com.squareup.okhttp3:okhttp")
 
-  // Similar to above note about :proto, we include helpers shared by gRPC or okhttp exporters but
-  // do not want to impose these dependency on all of our consumers.
-  compileOnly("com.squareup.okhttp3:okhttp")
+  // We include helpers shared by gRPC or okhttp exporters but do not want to impose these
+  // dependency on all of our consumers.
+  compileOnly("com.fasterxml.jackson.core:jackson-core")
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
@@ -32,6 +34,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":sdk:metrics"))
+  testImplementation(project(":sdk:trace"))
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
 
