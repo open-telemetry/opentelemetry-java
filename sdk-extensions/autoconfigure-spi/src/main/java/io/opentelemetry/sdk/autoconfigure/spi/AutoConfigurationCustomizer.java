@@ -11,15 +11,14 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** A builder for customizing OpenTelemetry auto-configuration. */
 public interface AutoConfigurationCustomizer {
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link TextMapPropagator}
+   * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
@@ -29,8 +28,8 @@ public interface AutoConfigurationCustomizer {
           propagatorCustomizer);
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link Resource} to allow
-   * customization. The return value of the {@link Function} will replace the passed-in argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link Resource} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
@@ -38,8 +37,8 @@ public interface AutoConfigurationCustomizer {
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer);
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link Sampler} to allow
-   * customization. The return value of the {@link Function} will replace the passed-in argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link Sampler} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
@@ -47,8 +46,9 @@ public interface AutoConfigurationCustomizer {
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer);
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link SpanExporter} to allow
-   * customization. The return value of the {@link Function} will replace the passed-in argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link SpanExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
