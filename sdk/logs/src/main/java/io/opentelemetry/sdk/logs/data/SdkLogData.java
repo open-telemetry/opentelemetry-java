@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
-/** Sdk implementation of {@link LogData}. */
+/** SDK implementation of {@link LogData}. */
 @AutoValue
 @Immutable
 abstract class SdkLogData implements LogData {

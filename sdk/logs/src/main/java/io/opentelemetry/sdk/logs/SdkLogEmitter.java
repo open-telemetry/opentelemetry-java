@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
 
-/** {@link SdkLogEmitter} is the SDK implementation of {@link LogEmitter}. */
+/** SDK implementation of {@link LogEmitter}. */
 final class SdkLogEmitter implements LogEmitter {
 
   private final LogEmitterSharedState logEmitterSharedState;

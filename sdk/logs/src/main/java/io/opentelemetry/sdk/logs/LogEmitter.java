@@ -13,7 +13,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A {@link LogEmitter} is the entry point into a log pipeline. Log emitters accept {@link
- * LogRecord}, and after associating them with a {@link Resource} and {@link
+ * LogRecord}s, and after associating them with a {@link Resource} and {@link
  * InstrumentationLibraryInfo}, pushes them to downstream {@link LogProcessor#emit(LogData)}.
  */
 @ThreadSafe

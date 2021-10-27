@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** Sdk implementation of {@link LogRecord}. */
+/** SDK implementation of {@link LogRecord}. */
 @AutoValue
 @Immutable
 abstract class SdkLogRecord implements LogRecord {
