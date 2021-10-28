@@ -7,19 +7,17 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.util.Map;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 class ManagedChannelUtilTest {
 
   @Test
-  void toServiceConfig() throws JSONException, JsonProcessingException {
+  void toServiceConfig() throws Exception {
     // Validate that the map matches the protobuf to JSON translation of the
     // grpc.service_config.ServiceConfig protobuf definition described at:
     // https://github.com/grpc/grpc/blob/master/doc/service_config.md
