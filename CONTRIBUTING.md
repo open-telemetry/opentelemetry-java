@@ -143,6 +143,18 @@ It does not support all required rules, so you still have to run `spotlessApply`
 
 ## Specific tasks
 
+### Creating a new API
+
+If you need to prototype a new API (and not just add a couple of features to an existing one), it is easiest to do so by adding a new subproject, in the same way that `:api:metrics` is handled. This keeps the changes self-contained and should allow for easier rebasing while you're experimenting.
+
+### Updating the Snapshot build number
+
+The overall version number for opentelemetry-java is determined from git tags, and not fixed in any file.
+
+This means it will not update, even if you `git pull` from the repo tip. It will still produce a set of libraries with the old version number.
+
+To update it, you must fetch the tags, via `git fetch --all --tags` - which should work, even if you have forked the repo, as long as the trunk repo is set as an upstream remote.
+
 ### Updating OTLP proto dependency version
 
 The OTLP proto dependency version is defined [here](proto/build.gradle). To bump the version,
