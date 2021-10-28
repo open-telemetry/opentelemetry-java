@@ -131,7 +131,7 @@ class JaegerGrpcSpanExporterTest {
 
     // test
     CompletableResultCode result = exporter.export(Collections.singletonList(span));
-    result.join(1, TimeUnit.SECONDS);
+    result.join(10, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
@@ -207,7 +207,7 @@ class JaegerGrpcSpanExporterTest {
 
     // test
     CompletableResultCode result = exporter.export(Arrays.asList(span, span2));
-    result.join(1, TimeUnit.SECONDS);
+    result.join(10, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
