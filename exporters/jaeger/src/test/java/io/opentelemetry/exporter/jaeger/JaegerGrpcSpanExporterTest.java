@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -35,6 +34,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -206,7 +206,7 @@ class JaegerGrpcSpanExporterTest {
             .build();
 
     // test
-    CompletableResultCode result = exporter.export(Lists.newArrayList(span, span2));
+    CompletableResultCode result = exporter.export(Arrays.asList(span, span2));
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
