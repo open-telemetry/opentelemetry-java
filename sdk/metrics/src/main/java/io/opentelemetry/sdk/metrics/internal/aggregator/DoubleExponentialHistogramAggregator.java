@@ -19,36 +19,17 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 final class DoubleExponentialHistogramAggregator
-    extends AbstractAggregator<ExponentialHistogramAccumulation> {
+    implements Aggregator<ExponentialHistogramAccumulation> {
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleExponentialHistogramAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor metricDescriptor,
-      boolean stateful,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-
-    super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
+  DoubleExponentialHistogramAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<ExponentialHistogramAccumulation> createHandle() {
     return new Handle(reservoirSupplier.get());
-  }
-
-  @Override
-  public ExponentialHistogramAccumulation accumulateLong(long value) {
-    return accumulateDouble((double) value);
-  }
-
-  @Override
-  public ExponentialHistogramAccumulation accumulateDouble(double value) {
-    AggregatorHandle<ExponentialHistogramAccumulation> handle = this.createHandle();
-    handle.recordDouble(value);
-    return handle.accumulateThenReset(Attributes.empty());
   }
 
   /**
@@ -85,22 +66,44 @@ final class DoubleExponentialHistogramAggregator
         posBuckets.getScale(), sum, posBuckets, negBuckets, zeroCount, accumulation.getExemplars());
   }
 
+  /**
+   * Returns a new DELTA aggregation by comparing two cumulative measurements.
+   *
+   * @param previousCumulative the previously captured accumulation.
+   * @param currentCumulative the newly captured (cumulative) accumulation.
+   * @return The resulting delta accumulation.
+   */
+  @Override
+  public ExponentialHistogramAccumulation diff(
+      ExponentialHistogramAccumulation previousCumulative,
+      ExponentialHistogramAccumulation currentCumulative) {
+    return null;
+  }
+
   @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibrary,
+      MetricDescriptor metricDescriptor,
       Map<Attributes, ExponentialHistogramAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
     return MetricData.createExponentialHistogram(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
+        resource,
+        instrumentationLibrary,
+        metricDescriptor.getName(),
+        metricDescriptor.getDescription(),
+        metricDescriptor.getUnit(),
         ExponentialHistogramData.create(
-            this.isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
+            temporality,
             MetricDataUtils.toExponentialHistogramPointList(
-                accumulationByLabels, startEpochNanos, epochNanos)));
+                accumulationByLabels,
+                (temporality == AggregationTemporality.CUMULATIVE)
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {

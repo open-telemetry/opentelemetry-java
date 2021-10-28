@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
@@ -41,12 +42,12 @@ public class DoubleExponentialHistogramDataAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"),
-          /* stateful= */ false,
-          ExemplarReservoir::noSamples);
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::noSamples);
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
 
   private static int valueToIndex(int scale, double value) {
     double scaleFactor = Math.scalb(1D / Math.log(2), scale);
@@ -109,12 +110,7 @@ public class DoubleExponentialHistogramDataAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.empty(),
-            MetricDescriptor.create("name", "description", "unit"),
-            /* stateful= */ false,
-            () -> reservoir);
+        new DoubleExponentialHistogramAggregator(() -> reservoir);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
@@ -146,9 +142,15 @@ public class DoubleExponentialHistogramDataAggregatorTest {
 
   @Test
   void testAccumulateData() {
-    ExponentialHistogramAccumulation acc = aggregator.accumulateDouble(1.2);
+    ExponentialHistogramAccumulation acc =
+        aggregator.accumulateDoubleMeasurement(1.2, Attributes.empty(), Context.current());
     ExponentialHistogramAccumulation expected = getTestAccumulation(Collections.emptyList(), 1.2);
     assertThat(acc).isEqualTo(expected);
+  }
+
+  @Test
+  void diffAccumulation() {
+    // todo
   }
 
   @Test
@@ -247,12 +249,7 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.empty(),
-            MetricDescriptor.create("name", "description", "unit"),
-            /* stateful= */ true,
-            reservoirSupplier);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier);
 
     AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle =
         cumulativeAggregator.createHandle();
@@ -263,7 +260,14 @@ public class DoubleExponentialHistogramDataAggregatorTest {
 
     MetricData metricData =
         cumulativeAggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), acc), 0, 10, 100);
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
+            Collections.singletonMap(Attributes.empty(), acc),
+            AggregationTemporality.CUMULATIVE,
+            0,
+            10,
+            100);
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
