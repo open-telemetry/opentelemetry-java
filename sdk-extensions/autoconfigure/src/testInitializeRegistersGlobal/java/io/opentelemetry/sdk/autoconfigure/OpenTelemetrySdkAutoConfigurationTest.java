@@ -49,7 +49,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // OTEL_METRICS_EXPORTER=none so the metrics SDK should be completely disabled.
     // This is a bit of an odd test, so we just ensure that we don't have the same impl class as if
     // we instantiated an SDK with a reader.
-    OpenTelemetrySdkAutoConfiguration.initialize();
+    AutoConfiguredOpenTelemetrySdk.initialize();
     assertThat(GlobalMeterProvider.get()).isInstanceOf(NoopMeterProvider.class);
   }
 }
