@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
-class SdkLogEmitterBuilder implements LogEmitterBuilder {
+final class SdkLogEmitterBuilder implements LogEmitterBuilder {
 
   private final ComponentRegistry<SdkLogEmitter> registry;
   private final String instrumentationName;
