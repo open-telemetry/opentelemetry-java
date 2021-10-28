@@ -14,6 +14,7 @@ jobs:
       matrix:
         os:
           - macos-latest
+          - windows-latest
           - ubuntu-20.04
         test-java-version:
           - 8
