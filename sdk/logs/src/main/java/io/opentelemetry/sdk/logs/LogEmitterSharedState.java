@@ -17,20 +17,20 @@ import javax.annotation.Nullable;
 final class LogEmitterSharedState {
   private final Object lock = new Object();
   private final Resource resource;
-  private final LogProcessor activeLogProcessor;
+  private final LogProcessor logProcessor;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LogEmitterSharedState(Resource resource, List<LogProcessor> logProcessors) {
     this.resource = resource;
-    this.activeLogProcessor = LogProcessor.composite(logProcessors);
+    this.logProcessor = LogProcessor.composite(logProcessors);
   }
 
   Resource getResource() {
     return resource;
   }
 
-  LogProcessor getActiveLogProcessor() {
-    return activeLogProcessor;
+  LogProcessor getLogProcessor() {
+    return logProcessor;
   }
 
   boolean hasBeenShutdown() {
@@ -42,7 +42,7 @@ final class LogEmitterSharedState {
       if (shutdownResult != null) {
         return shutdownResult;
       }
-      shutdownResult = activeLogProcessor.shutdown();
+      shutdownResult = logProcessor.shutdown();
       return shutdownResult;
     }
   }

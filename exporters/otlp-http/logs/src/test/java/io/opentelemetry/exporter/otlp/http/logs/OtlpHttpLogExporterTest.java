@@ -330,7 +330,7 @@ class OtlpHttpLogExporterTest {
             .setSeverityText(Severity.INFO.name())
             .setTraceId(IdGenerator.random().generateTraceId())
             .setSpanId(IdGenerator.random().generateSpanId())
-            .setEpochNanos(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
+            .setEpoch(Instant.now())
             .setFlags(0)
             .build());
   }

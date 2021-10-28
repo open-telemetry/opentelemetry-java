@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -44,7 +45,7 @@ class OkHttpOnlyExportTest {
               Resource.create(Attributes.builder().put("testKey", "testValue").build()),
               InstrumentationLibraryInfo.create("instrumentation", "1"),
               LogRecord.builder()
-                  .setEpochMillis(System.currentTimeMillis())
+                  .setEpoch(Instant.now())
                   .setTraceId(TraceId.getInvalid())
                   .setSpanId(SpanId.getInvalid())
                   .setFlags(TraceFlags.getDefault().asByte())

@@ -23,6 +23,32 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LogProcessor extends Closeable {
 
   /**
+   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
+   * processors} in order.
+   */
+  static LogProcessor composite(LogProcessor... processors) {
+    return composite(Arrays.asList(processors));
+  }
+
+  /**
+   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
+   * processors} in order.
+   */
+  static LogProcessor composite(Iterable<LogProcessor> processors) {
+    List<LogProcessor> processorList = new ArrayList<>();
+    for (LogProcessor processor : processors) {
+      processorList.add(processor);
+    }
+    if (processorList.isEmpty()) {
+      return NoopLogProcessor.getInstance();
+    }
+    if (processorList.size() == 1) {
+      return processorList.get(0);
+    }
+    return MultiLogProcessor.create(processorList);
+  }
+
+  /**
    * Emit a log.
    *
    * @param logData the log
@@ -53,31 +79,5 @@ public interface LogProcessor extends Closeable {
   @Override
   default void close() {
     shutdown().join(10, TimeUnit.SECONDS);
-  }
-
-  /**
-   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
-   * processors} in order.
-   */
-  static LogProcessor composite(LogProcessor... processors) {
-    return composite(Arrays.asList(processors));
-  }
-
-  /**
-   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
-   * processors} in order.
-   */
-  static LogProcessor composite(Iterable<LogProcessor> processors) {
-    List<LogProcessor> processorList = new ArrayList<>();
-    for (LogProcessor processor : processors) {
-      processorList.add(processor);
-    }
-    if (processorList.isEmpty()) {
-      return NoopLogProcessor.getInstance();
-    }
-    if (processorList.size() == 1) {
-      return processorList.get(0);
-    }
-    return MultiLogProcessor.create(processorList);
   }
 }

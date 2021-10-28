@@ -31,7 +31,7 @@ class InMemoryLogExporterTest {
         SdkLogEmitterProvider.builder()
             .addLogProcessor(SimpleLogProcessor.create(exporter))
             .build();
-    logEmitter = logEmitterProvider.get(null, null);
+    logEmitter = logEmitterProvider.logEmitterBuilder("emitter").build();
   }
 
   @AfterEach

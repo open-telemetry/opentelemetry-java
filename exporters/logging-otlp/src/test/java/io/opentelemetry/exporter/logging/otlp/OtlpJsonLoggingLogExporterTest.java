@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -42,7 +43,7 @@ class OtlpJsonLoggingLogExporterTest {
               .setSeverityText("INFO")
               .setSpanId("8765432112345876")
               .setTraceId("12345678876543211234567887654322")
-              .setEpochMillis(1631533710L)
+              .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
               .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
               .build());
 
@@ -58,7 +59,7 @@ class OtlpJsonLoggingLogExporterTest {
               .setSeverityText("INFO")
               .setSpanId("8765432112345875")
               .setTraceId("12345678876543211234567887654322")
-              .setEpochMillis(1631533710L)
+              .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
               .setAttributes(Attributes.of(booleanKey("important"), true))
               .build());
 

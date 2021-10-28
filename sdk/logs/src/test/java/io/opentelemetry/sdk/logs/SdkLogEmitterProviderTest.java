@@ -61,7 +61,7 @@ class SdkLogEmitterProviderTest {
   void builder_noProcessor() {
     assertThat(SdkLogEmitterProvider.builder().build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getActiveLogProcessor)
+        .extracting(LogEmitterSharedState::getLogProcessor)
         .isSameAs(NoopLogProcessor.getInstance());
   }
 
@@ -73,7 +73,7 @@ class SdkLogEmitterProviderTest {
                 .addLogProcessor(logProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getActiveLogProcessor)
+        .extracting(LogEmitterSharedState::getLogProcessor)
         .satisfies(
             activeLogProcessor -> {
               assertThat(activeLogProcessor).isInstanceOf(MultiLogProcessor.class);
@@ -85,18 +85,23 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
-  void get_SameName() {
-    assertThat(sdkLogEmitterProvider.get("test"))
-        .isSameAs(sdkLogEmitterProvider.get("test"))
-        .isSameAs(sdkLogEmitterProvider.get("test", null))
+  void logEmitterBuilder_SameName() {
+    assertThat(sdkLogEmitterProvider.logEmitterBuilder("test").build())
         .isSameAs(sdkLogEmitterProvider.logEmitterBuilder("test").build())
-        .isNotSameAs(sdkLogEmitterProvider.get("test", "version"));
+        .isNotSameAs(
+            sdkLogEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .build());
   }
 
   @Test
-  void get_SameNameAndVersion() {
-    assertThat(sdkLogEmitterProvider.get("test", "version"))
-        .isSameAs(sdkLogEmitterProvider.get("test", "version"))
+  void logEmitterBuilder_SameNameAndVersion() {
+    assertThat(
+            sdkLogEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .build())
         .isSameAs(
             sdkLogEmitterProvider
                 .logEmitterBuilder("test")

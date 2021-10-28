@@ -6,15 +6,17 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
-/** Interface for building for {@link LogRecord}. */
+/** Builder for {@link LogRecord}. */
 public interface LogRecordBuilder {
 
-  /** Set the epoch timestamp in nanos. */
-  LogRecordBuilder setEpochNanos(long timestamp);
+  /** Set the epoch timestamp using the timestamp and unit. */
+  LogRecordBuilder setEpoch(long timestamp, TimeUnit unit);
 
-  /** Set the epoch timestamp in millis. */
-  LogRecordBuilder setEpochMillis(long timestamp);
+  /** Set the epoch timestamp using the instant. */
+  LogRecordBuilder setEpoch(Instant instant);
 
   /** Set the trace id. */
   LogRecordBuilder setTraceId(String traceId);

@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -361,7 +362,7 @@ class OtlpGrpcLogsExporterTest {
         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
         InstrumentationLibraryInfo.create("instrumentation", "1"),
         LogRecord.builder()
-            .setEpochMillis(System.currentTimeMillis())
+            .setEpoch(Instant.now())
             .setTraceId(TraceId.getInvalid())
             .setSpanId(SpanId.getInvalid())
             .setFlags(TraceFlags.getDefault().asByte())

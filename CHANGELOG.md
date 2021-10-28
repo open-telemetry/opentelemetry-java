@@ -2,6 +2,16 @@
 
 ## Version 1.8.0 (unreleased):
 
+### SDK
+
+#### Logging (alpha)
+
+- This release includes a rework of the Log SDK to
+  implement [OTEP-0150](https://github.com/open-telemetry/oteps/blob/main/text/logs/0150-logging-library-sdk.md)
+  and to have more symmetry to the Trace SDK. `LogSink` is now `LogEmitter`. `LogEmitter` instances
+  are obtained from `SdkLogEmitterProvider`. Other additions include `MultiLogProcessor` (accessed
+  via `LogProcessor#composite(...)`), `SimpleLogProcessor`, and `InMemoryLogExporter`.
+
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: Remove deprecated `otel.experimental.exporter.otlp.protocol`,

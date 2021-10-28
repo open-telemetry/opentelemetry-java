@@ -73,7 +73,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -388,7 +387,7 @@ abstract class OtlpExporterIntegrationTest {
                 .setSeverityText("DEBUG")
                 .setTraceId(IdGenerator.random().generateTraceId())
                 .setSpanId(IdGenerator.random().generateSpanId())
-                .setEpochNanos(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
+                .setEpoch(Instant.now())
                 .setFlags(0)
                 .build());
 

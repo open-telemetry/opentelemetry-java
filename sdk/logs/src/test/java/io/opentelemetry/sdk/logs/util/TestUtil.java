@@ -14,12 +14,13 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.concurrent.TimeUnit;
 
 public final class TestUtil {
 
   public static LogRecord createLogRecord(Severity severity, String message) {
     return LogRecord.builder()
-        .setEpochMillis(System.currentTimeMillis())
+        .setEpoch(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())

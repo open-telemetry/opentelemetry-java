@@ -13,10 +13,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
-/** SDK implementation of {@link LogEmitterProvider}. */
-public final class SdkLogEmitterProvider implements LogEmitterProvider, Closeable {
+/** SDK registry for creating {@link LogEmitter}s. */
+public final class SdkLogEmitterProvider implements Closeable {
 
   static final String DEFAULT_EMITTER_NAME = "unknown";
   private static final Logger LOGGER = Logger.getLogger(SdkLogEmitterProvider.class.getName());
@@ -41,20 +40,13 @@ public final class SdkLogEmitterProvider implements LogEmitterProvider, Closeabl
                 new SdkLogEmitter(sharedState, instrumentationLibraryInfo));
   }
 
-  @Override
-  public LogEmitter get(String instrumentationName) {
-    return logEmitterBuilder(instrumentationName).build();
-  }
-
-  @Override
-  public LogEmitter get(String instrumentationName, String instrumentationVersion) {
-    return logEmitterBuilder(instrumentationName)
-        .setInstrumentationVersion(instrumentationVersion)
-        .build();
-  }
-
-  @Override
-  public LogEmitterBuilder logEmitterBuilder(@Nullable String instrumentationName) {
+  /**
+   * Creates a {@link LogEmitterBuilder} instance.
+   *
+   * @param instrumentationName the name of the instrumentation library
+   * @return a log emitter builder instance
+   */
+  public LogEmitterBuilder logEmitterBuilder(String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("LogEmitter requested without instrumentation name.");
       instrumentationName = DEFAULT_EMITTER_NAME;
@@ -68,7 +60,7 @@ public final class SdkLogEmitterProvider implements LogEmitterProvider, Closeabl
    * @return a {@link CompletableResultCode} which is completed when the flush is finished
    */
   public CompletableResultCode forceFlush() {
-    return sharedState.getActiveLogProcessor().forceFlush();
+    return sharedState.getLogProcessor().forceFlush();
   }
 
   /**

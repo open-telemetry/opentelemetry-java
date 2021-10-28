@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class LogsRequestMarshalerTest {
@@ -61,7 +62,7 @@ class LogsRequestMarshalerTest {
                         .setTraceId(TRACE_ID)
                         .setSpanId(SPAN_ID)
                         .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpochNanos(12345)
+                        .setEpoch(12345, TimeUnit.NANOSECONDS)
                         .build())));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
@@ -95,7 +96,7 @@ class LogsRequestMarshalerTest {
                         .setTraceId(TRACE_ID)
                         .setSpanId(SPAN_ID)
                         .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpochNanos(12345)
+                        .setEpoch(12345, TimeUnit.NANOSECONDS)
                         .build())));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -125,7 +126,7 @@ class LogsRequestMarshalerTest {
                         .setBody(BODY)
                         .setSeverity(Severity.INFO)
                         .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpochNanos(12345)
+                        .setEpoch(12345, TimeUnit.NANOSECONDS)
                         .build())));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEmpty();

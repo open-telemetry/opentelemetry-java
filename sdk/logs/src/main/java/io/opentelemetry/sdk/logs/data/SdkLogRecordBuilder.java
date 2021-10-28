@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -26,14 +27,15 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   SdkLogRecordBuilder() {}
 
   @Override
-  public SdkLogRecordBuilder setEpochNanos(long timestamp) {
-    this.epochNanos = timestamp;
+  public SdkLogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
+    this.epochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
-  public SdkLogRecordBuilder setEpochMillis(long timestamp) {
-    return setEpochNanos(TimeUnit.MILLISECONDS.toNanos(timestamp));
+  public SdkLogRecordBuilder setEpoch(Instant instant) {
+    this.epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+    return this;
   }
 
   @Override

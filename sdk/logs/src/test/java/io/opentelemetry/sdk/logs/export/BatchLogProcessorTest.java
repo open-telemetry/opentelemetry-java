@@ -36,7 +36,8 @@ class BatchLogProcessorTest {
             .build();
     SdkLogEmitterProvider provider =
         SdkLogEmitterProvider.builder().addLogProcessor(processor).build();
-    LogEmitter emitter = provider.get("test", "0.1a");
+    LogEmitter emitter =
+        provider.logEmitterBuilder("test").setInstrumentationVersion("0.1a").build();
 
     for (int i = 0; i < 7; i++) {
       emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
@@ -68,7 +69,8 @@ class BatchLogProcessorTest {
             .build();
     SdkLogEmitterProvider provider =
         SdkLogEmitterProvider.builder().addLogProcessor(processor).build();
-    LogEmitter emitter = provider.get("test", "0.1a");
+    LogEmitter emitter =
+        provider.logEmitterBuilder("test").setInstrumentationVersion("0.1a").build();
 
     long start = System.currentTimeMillis();
     int testRecordCount = 700;

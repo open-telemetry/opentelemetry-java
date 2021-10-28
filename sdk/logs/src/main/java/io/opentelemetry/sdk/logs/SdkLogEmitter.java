@@ -25,7 +25,7 @@ final class SdkLogEmitter implements LogEmitter {
   @Override
   public void emit(LogRecord logRecord) {
     logEmitterSharedState
-        .getActiveLogProcessor()
+        .getLogProcessor()
         .emit(
             LogData.create(
                 logEmitterSharedState.getResource(), instrumentationLibraryInfo, logRecord));

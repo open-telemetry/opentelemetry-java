@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SystemOutLogExporterTest {
@@ -57,7 +58,7 @@ class SystemOutLogExporterTest {
             .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
             .setBody(Body.stringBody("message"))
             .setSeverity(Severity.ERROR3)
-            .setEpochMillis(timestamp)
+            .setEpoch(timestamp, TimeUnit.MILLISECONDS)
             .setTraceId(TraceId.fromLongs(1, 2))
             .setSpanId(SpanId.fromLong(3))
             .build());
