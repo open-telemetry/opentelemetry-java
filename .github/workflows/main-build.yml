@@ -51,8 +51,7 @@ jobs:
         with:
           job-id: jdk${{ matrix.test-java-version }}
           remote-build-cache-proxy-enabled: false
-          read-only: true
-          arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }} --info
+          arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }}
           properties: |
             testJavaVersion=${{ matrix.test-java-version }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-16.outputs.path }},${{ steps.setup-java-17.outputs.path }}
