@@ -12,11 +12,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableList;
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.client.encoding.DecodingClient;
+import com.linecorp.armeria.client.logging.LoggingClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
+import com.linecorp.armeria.common.logging.LogLevel;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -51,7 +53,14 @@ class PrometheusHttpServerTest {
                 .newMetricReaderFactory()
                 .apply(metricProducer);
 
-    client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
+    client =
+        WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+            .decorator(
+                LoggingClient.builder()
+                    .requestLogLevel(LogLevel.INFO)
+                    .successfulResponseLogLevel(LogLevel.INFO)
+                    .newDecorator())
+            .build();
   }
 
   @AfterAll
