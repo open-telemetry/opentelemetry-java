@@ -43,6 +43,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
@@ -56,6 +58,8 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");
+
+  private static final Logger logger = Logger.getLogger(PrometheusHttpServer.class.getName());
 
   private final HttpServer server;
   private final ExecutorService executor;
@@ -160,6 +164,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+      try {
+        doHandle(exchange);
+      } catch (Throwable t) {
+        logger.log(Level.WARNING, "Error handling Prometheus scrape.", t);
+        throw t;
+      }
+    }
+
+    private void doHandle(HttpExchange exchange) throws IOException {
       String contentType =
           TextFormat.chooseContentType(exchange.getRequestHeaders().getFirst("Accept"));
       exchange.getResponseHeaders().set("Content-Type", contentType);
