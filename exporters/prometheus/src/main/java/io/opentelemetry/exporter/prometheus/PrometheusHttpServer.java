@@ -169,6 +169,8 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
       } catch (Throwable t) {
         logger.log(Level.WARNING, "Error handling Prometheus scrape.", t);
         throw t;
+      } finally {
+        exchange.close();
       }
     }
 
@@ -213,7 +215,6 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
           writer.close();
         }
       }
-      exchange.close();
     }
   }
 
