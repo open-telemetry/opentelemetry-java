@@ -25,6 +25,7 @@
 
 package io.opentelemetry.context.internal.shaded;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -151,26 +152,30 @@ class WeakConcurrentMapTest {
       }
       assertThat(values.isEmpty(), is(true));
       key1 = key2 = null; // Make eligible for GC
-      System.gc();
-      Thread.sleep(200L);
-      triggerClean();
-      assertThat(map.get(key3), is(value3));
-      assertThat(map.getIfPresent(key3), is(value3));
-      assertThat(map.get(key4), is(value4));
-      assertThat(map.approximateSize(), is(2));
-      assertThat(map.target.size(), is(2));
-      assertThat(map.remove(key3), is(value3));
-      assertThat(map.get(key3), nullValue());
-      assertThat(map.getIfPresent(key3), nullValue());
-      assertThat(map.get(key4), is(value4));
-      assertThat(map.approximateSize(), is(1));
-      assertThat(map.target.size(), is(1));
-      map.clear();
-      assertThat(map.get(key3), nullValue());
-      assertThat(map.get(key4), nullValue());
-      assertThat(map.approximateSize(), is(0));
-      assertThat(map.target.size(), is(0));
-      assertThat(map.iterator().hasNext(), is(false));
+      await()
+          .untilAsserted(
+              () -> {
+                System.gc();
+                Thread.sleep(200L);
+                triggerClean();
+                assertThat(map.get(key3), is(value3));
+                assertThat(map.getIfPresent(key3), is(value3));
+                assertThat(map.get(key4), is(value4));
+                assertThat(map.approximateSize(), is(2));
+                assertThat(map.target.size(), is(2));
+                assertThat(map.remove(key3), is(value3));
+                assertThat(map.get(key3), nullValue());
+                assertThat(map.getIfPresent(key3), nullValue());
+                assertThat(map.get(key4), is(value4));
+                assertThat(map.approximateSize(), is(1));
+                assertThat(map.target.size(), is(1));
+                map.clear();
+                assertThat(map.get(key3), nullValue());
+                assertThat(map.get(key4), nullValue());
+                assertThat(map.approximateSize(), is(0));
+                assertThat(map.target.size(), is(0));
+                assertThat(map.iterator().hasNext(), is(false));
+              });
     }
 
     protected void triggerClean() {}
