@@ -7,29 +7,24 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import java.util.List;
-import javax.annotation.Nullable;
 
 /** Explicit bucket histogram aggregation configuration. */
 class ExplicitBucketHistogramAggregation extends Aggregation {
 
   static final Aggregation DEFAULT =
       new ExplicitBucketHistogramAggregation(
-          null, ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
 
-  @Nullable private final AggregationTemporality temporality;
   private final List<Double> bucketBoundaries;
   private final double[] bucketBoundaryArray;
 
-  ExplicitBucketHistogramAggregation(
-      @Nullable AggregationTemporality temporality, List<Double> bucketBoundaries) {
-    this.temporality = temporality;
+  ExplicitBucketHistogramAggregation(List<Double> bucketBoundaries) {
     this.bucketBoundaries = bucketBoundaries;
     // We need to fail here if our bucket boundaries are ill-configured.
     this.bucketBoundaryArray = ExplicitBucketHistogramUtils.createBoundaryArray(bucketBoundaries);
@@ -38,12 +33,6 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
   /** Returns the configured bucket boundaries for the histogram aggregation. */
   public List<Double> getBucketBoundaries() {
     return bucketBoundaries;
-  }
-
-  @Override
-  @Nullable
-  public AggregationTemporality getConfiguredTemporality() {
-    return temporality;
   }
 
   @Override
@@ -62,6 +51,6 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "ExplicitBucketHistogramAggregation(" + temporality + ")";
+    return "ExplicitBucketHistogramAggregation(" + bucketBoundaries.toString() + ")";
   }
 }
