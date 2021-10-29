@@ -8,18 +8,12 @@ package io.opentelemetry.exporter.jaeger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
-import io.grpc.ManagedChannel;
-import io.grpc.Server;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.stub.StreamObserver;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -29,7 +23,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -40,51 +33,71 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
   private static final String SPAN_ID_2 = "0000000000aef789";
 
-  private final Closer closer = Closer.create();
-  private ArgumentCaptor<Collector.PostSpansRequest> requestCaptor;
-  private JaegerGrpcSpanExporter exporter;
+  private static final BlockingQueue<Collector.PostSpansRequest> postedRequests =
+      new LinkedBlockingDeque<>();
 
-  @BeforeEach
-  public void beforeEach() throws Exception {
-    String serverName = InProcessServerBuilder.generateName();
-    requestCaptor = ArgumentCaptor.forClass(Collector.PostSpansRequest.class);
+  @RegisterExtension
+  static final ServerExtension server =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          sb.service(
+              JaegerGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
+              new AbstractUnaryGrpcService() {
+                @Override
+                protected CompletionStage<byte[]> handleMessage(
+                    ServiceRequestContext ctx, byte[] message) {
+                  try {
+                    postedRequests.add(Collector.PostSpansRequest.parseFrom(message));
+                  } catch (InvalidProtocolBufferException e) {
+                    CompletableFuture<byte[]> future = new CompletableFuture<>();
+                    future.completeExceptionally(e);
+                    return future;
+                  }
+                  return CompletableFuture.completedFuture(
+                      Collector.PostSpansResponse.getDefaultInstance().toByteArray());
+                }
+              });
+        }
+      };
 
-    Server server =
-        InProcessServerBuilder.forName(serverName)
-            .directExecutor()
-            .addService(service)
-            .build()
-            .start();
-    closer.register(server::shutdownNow);
+  private static JaegerGrpcSpanExporter exporter;
 
-    ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
-    exporter = JaegerGrpcSpanExporter.builder().setChannel(channel).build();
+  @BeforeAll
+  static void setUp() {
+    exporter = JaegerGrpcSpanExporter.builder().setEndpoint(server.httpUri().toString()).build();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    exporter.shutdown();
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    closer.close();
+  void reset() {
+    postedRequests.clear();
   }
-
-  private final CollectorServiceGrpc.CollectorServiceImplBase service =
-      mock(
-          CollectorServiceGrpc.CollectorServiceImplBase.class,
-          delegatesTo(new MockCollectorService()));
 
   @Test
   void testExport() throws Exception {
@@ -118,13 +131,12 @@ class JaegerGrpcSpanExporterTest {
 
     // test
     CompletableResultCode result = exporter.export(Collections.singletonList(span));
-    result.join(1, TimeUnit.SECONDS);
+    result.join(10, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    verify(service).postSpans(requestCaptor.capture(), ArgumentMatchers.any());
-
-    Model.Batch batch = requestCaptor.getValue().getBatch();
+    assertThat(postedRequests).hasSize(1);
+    Model.Batch batch = postedRequests.poll().getBatch();
     assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
 
@@ -194,14 +206,13 @@ class JaegerGrpcSpanExporterTest {
             .build();
 
     // test
-    CompletableResultCode result = exporter.export(Lists.newArrayList(span, span2));
-    result.join(1, TimeUnit.SECONDS);
+    CompletableResultCode result = exporter.export(Arrays.asList(span, span2));
+    result.join(10, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    verify(service, times(2)).postSpans(requestCaptor.capture(), ArgumentMatchers.any());
-
-    List<Collector.PostSpansRequest> requests = requestCaptor.getAllValues();
+    assertThat(postedRequests).hasSize(2);
+    List<Collector.PostSpansRequest> requests = new ArrayList<>(postedRequests);
     assertThat(requests).hasSize(2);
     for (Collector.PostSpansRequest request : requests) {
       Model.Batch batch = request.getBatch();
@@ -305,17 +316,9 @@ class JaegerGrpcSpanExporterTest {
 
   @Test
   void doubleShutdown() {
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.builder().setEndpoint(server.httpUri().toString()).build();
     assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
-  }
-
-  static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {
-    @Override
-    public void postSpans(
-        Collector.PostSpansRequest request,
-        StreamObserver<Collector.PostSpansResponse> responseObserver) {
-      responseObserver.onNext(Collector.PostSpansResponse.newBuilder().build());
-      responseObserver.onCompleted();
-    }
   }
 }

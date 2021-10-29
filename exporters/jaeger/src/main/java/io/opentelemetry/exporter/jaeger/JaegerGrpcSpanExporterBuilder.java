@@ -9,23 +9,33 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
 public final class JaegerGrpcSpanExporterBuilder {
+
+  // Visible for testing
+  static final String GRPC_ENDPOINT_PATH = "/jaeger.api_v2.CollectorService/PostSpans";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:14250";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private URI endpoint = DEFAULT_ENDPOINT;
-  @Nullable private ManagedChannel channel;
-  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
+  private final GrpcExporterBuilder<PostSpansRequestMarshaler> delegate;
+
+  JaegerGrpcSpanExporterBuilder() {
+    delegate =
+        GrpcExporter.builder(
+            "span",
+            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_ENDPOINT,
+            () -> MarshalerCollectorServiceGrpc::newFutureStub,
+            GRPC_ENDPOINT_PATH);
+  }
 
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
@@ -35,7 +45,7 @@ public final class JaegerGrpcSpanExporterBuilder {
    * @return this.
    */
   public JaegerGrpcSpanExporterBuilder setChannel(ManagedChannel channel) {
-    this.channel = channel;
+    delegate.setChannel(channel);
     return this;
   }
 
@@ -45,21 +55,7 @@ public final class JaegerGrpcSpanExporterBuilder {
    */
   public JaegerGrpcSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = uri;
+    delegate.setEndpoint(endpoint);
     return this;
   }
 
@@ -70,7 +66,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   public JaegerGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    timeoutNanos = unit.toNanos(timeout);
+    delegate.setTimeout(timeout, unit);
     return this;
   }
 
@@ -80,7 +76,8 @@ public final class JaegerGrpcSpanExporterBuilder {
    */
   public JaegerGrpcSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setTimeout(timeout);
+    return this;
   }
 
   /**
@@ -89,21 +86,6 @@ public final class JaegerGrpcSpanExporterBuilder {
    * @return a new exporter's instance.
    */
   public JaegerGrpcSpanExporter build() {
-    ManagedChannel channel = this.channel;
-    if (channel == null) {
-      ManagedChannelBuilder<?> managedChannelBuilder =
-          ManagedChannelBuilder.forTarget(endpoint.getAuthority());
-
-      if (endpoint.getScheme().equals("https")) {
-        managedChannelBuilder.useTransportSecurity();
-      } else {
-        managedChannelBuilder.usePlaintext();
-      }
-
-      channel = managedChannelBuilder.build();
-    }
-    return new JaegerGrpcSpanExporter(channel, timeoutNanos);
+    return new JaegerGrpcSpanExporter(delegate.build());
   }
-
-  JaegerGrpcSpanExporterBuilder() {}
 }

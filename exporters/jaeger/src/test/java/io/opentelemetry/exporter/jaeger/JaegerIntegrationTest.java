@@ -8,8 +8,6 @@ package io.opentelemetry.exporter.jaeger;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.stree.JacksonJrsTreeCodec;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -55,13 +53,9 @@ class JaegerIntegrationTest {
   }
 
   private static OpenTelemetry initOpenTelemetry() {
-    ManagedChannel jaegerChannel =
-        ManagedChannelBuilder.forAddress("127.0.0.1", jaegerContainer.getMappedPort(COLLECTOR_PORT))
-            .usePlaintext()
-            .build();
     SpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.builder()
-            .setChannel(jaegerChannel)
+            .setEndpoint("http://localhost:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setTimeout(Duration.ofSeconds(30))
             .build();
     return OpenTelemetrySdk.builder()
