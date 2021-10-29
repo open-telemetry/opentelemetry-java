@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -22,7 +23,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public Attributes build() {
-    if (data.size() == 2) {
+    // If only one key-value pair AND the entry hasn't been set to null (by #remove(AttributeKey<T>)
+    // or #removeIf(Predicate<AttributeKey<?>>)), then we can bypass sorting and filtering
+    if (data.size() == 2 && data.get(0) != null) {
       return new ArrayBackedAttributes(data.toArray());
     }
     return ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
@@ -52,6 +55,32 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     // Attributes must iterate over their entries with matching types for key / value, so this
     // downcast to the raw type is safe.
     attributes.forEach((key, value) -> put((AttributeKey) key, value));
+    return this;
+  }
+
+  @Override
+  public <T> AttributesBuilder remove(AttributeKey<T> key) {
+    if (key == null || key.getKey().isEmpty()) {
+      return this;
+    }
+    return removeIf(
+        entryKey ->
+            key.getKey().equals(entryKey.getKey()) && key.getType().equals(entryKey.getType()));
+  }
+
+  @Override
+  public AttributesBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
+    if (predicate == null) {
+      return this;
+    }
+    for (int i = 0; i < data.size() - 1; i += 2) {
+      Object entry = data.get(i);
+      if (entry instanceof AttributeKey && predicate.test((AttributeKey<?>) entry)) {
+        // null items are filtered out in ArrayBackedAttributes
+        data.set(i, null);
+        data.set(i + 1, null);
+      }
+    }
     return this;
   }
 

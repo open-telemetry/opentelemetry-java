@@ -2,6 +2,11 @@
 
 ## Version 1.8.0 (unreleased):
 
+### API
+
+- New `AttributesBuilder#remove(String)` and `AttributeBuilder#removeIf(Predicate<AttributeKey<?>>)`
+  methods improve ergonomics of modifying attributes.
+
 ### SDK
 
 #### Logging (alpha)

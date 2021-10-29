@@ -61,7 +61,7 @@ class JaegerConfigTest {
 
     System.setProperty("otel.exporter.jaeger.endpoint", endpoint);
 
-    OpenTelemetrySdkAutoConfiguration.initialize();
+    AutoConfiguredOpenTelemetrySdk.initialize();
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
 

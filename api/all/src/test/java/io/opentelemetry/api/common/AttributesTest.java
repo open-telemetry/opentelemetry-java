@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -419,5 +420,116 @@ class AttributesTest {
     Attributes attributes = Attributes.of(stringKey("animal"), "cat");
     assertThat(attributes.get(stringKey("animal"))).isEqualTo("cat");
     assertThat(attributes.get(longKey("animal"))).isNull();
+  }
+
+  @Test
+  void remove() {
+    AttributesBuilder builder = Attributes.builder();
+    assertThat(builder.remove(stringKey(""))).isEqualTo(builder);
+
+    Attributes attributes = Attributes.builder().remove(stringKey("key1")).build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder().put("key1", "value1").build().toBuilder()
+            .remove(stringKey("key1"))
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", "value2")
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes)
+        .isEqualTo(Attributes.builder().put("key2", "value2").put("key3", "value3").build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", true)
+            .remove(stringKey("key1"))
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("key1", true).build());
+  }
+
+  @Test
+  void removeIf() {
+    AttributesBuilder builder = Attributes.builder();
+    assertThat(builder.removeIf(unused -> true)).isEqualTo(builder);
+
+    Attributes attributes =
+        Attributes.builder().removeIf(key -> key.getKey().equals("key1")).build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder().put("key1", "value1").build().toBuilder()
+            .removeIf(key -> key.getKey().equals("key1"))
+            .removeIf(key -> key.getKey().equals("key1"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", "value2")
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .removeIf(key -> key.getKey().equals("key1"))
+            .build();
+    assertThat(attributes)
+        .isEqualTo(Attributes.builder().put("key2", "value2").put("key3", "value3").build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1A")
+            .put("key1", true)
+            .removeIf(
+                key -> key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("key1", true).build());
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key2", "value2")
+            .put("foo", "bar")
+            .removeIf(key -> key.getKey().matches("key.*"))
+            .build();
+    assertThat(attributes).isEqualTo(Attributes.builder().put("foo", "bar").build());
+  }
+
+  @Test
+  void remove_defaultImplementationDoesNotThrow() {
+    AttributesBuilder myAttributesBuilder =
+        new AttributesBuilder() {
+          @Override
+          public Attributes build() {
+            return null;
+          }
+
+          @Override
+          public <T> AttributesBuilder put(AttributeKey<Long> key, int value) {
+            return null;
+          }
+
+          @Override
+          public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
+            return null;
+          }
+
+          @Override
+          public AttributesBuilder putAll(Attributes attributes) {
+            return null;
+          }
+        };
+
+    assertThatCode(() -> myAttributesBuilder.remove(stringKey("foo"))).doesNotThrowAnyException();
+    assertThatCode(() -> myAttributesBuilder.removeIf(unused -> false)).doesNotThrowAnyException();
   }
 }

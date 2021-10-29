@@ -7,8 +7,13 @@ package io.opentelemetry.exporter.jaeger;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
+import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import java.io.InputStream;
 
 // Adapted from the protoc generated code for CollectorServiceGrpc.
@@ -51,26 +56,26 @@ final class MarshalerCollectorServiceGrpc {
               .setResponseMarshaller(RESPONSE_MARSHALER)
               .build();
 
-  static CollectorServiceFutureStub newFutureStub(io.grpc.Channel channel) {
+  static CollectorServiceFutureStub newFutureStub(Channel channel) {
     return CollectorServiceFutureStub.newStub(CollectorServiceFutureStub::new, channel);
   }
 
   static final class CollectorServiceFutureStub
-      extends io.grpc.stub.AbstractFutureStub<
-          MarshalerCollectorServiceGrpc.CollectorServiceFutureStub> {
-    private CollectorServiceFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+      extends MarshalerServiceStub<
+          PostSpansRequestMarshaler, PostSpansResponse, CollectorServiceFutureStub> {
+    private CollectorServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @Override
     protected MarshalerCollectorServiceGrpc.CollectorServiceFutureStub build(
-        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+        Channel channel, CallOptions callOptions) {
       return new MarshalerCollectorServiceGrpc.CollectorServiceFutureStub(channel, callOptions);
     }
 
-    com.google.common.util.concurrent.ListenableFuture<PostSpansResponse> postSpans(
-        PostSpansRequestMarshaler request) {
-      return io.grpc.stub.ClientCalls.futureUnaryCall(
+    @Override
+    public ListenableFuture<PostSpansResponse> export(PostSpansRequestMarshaler request) {
+      return ClientCalls.futureUnaryCall(
           getChannel().newCall(getPostSpansMethod, getCallOptions()), request);
     }
   }

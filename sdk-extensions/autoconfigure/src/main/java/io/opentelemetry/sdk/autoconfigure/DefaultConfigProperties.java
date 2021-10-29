@@ -30,18 +30,22 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
-  static ConfigProperties get() {
-    return new DefaultConfigProperties(System.getProperties(), System.getenv());
+  static ConfigProperties get(Map<String, String> defaultProperties) {
+    return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
   }
 
   // Visible for testing
   static ConfigProperties createForTest(Map<String, String> properties) {
-    return new DefaultConfigProperties(properties, Collections.emptyMap());
+    return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
   }
 
   private DefaultConfigProperties(
-      Map<?, ?> systemProperties, Map<String, String> environmentVariables) {
+      Map<?, ?> systemProperties,
+      Map<String, String> environmentVariables,
+      Map<String, String> defaultProperties) {
     Map<String, String> config = new HashMap<>();
+    defaultProperties.forEach(
+        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('-', '.'), value));
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(

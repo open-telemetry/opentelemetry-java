@@ -130,7 +130,8 @@ class NotOnClasspathTest {
             () ->
                 PropagatorConfiguration.configurePropagators(
                     DefaultConfigProperties.createForTest(
-                        Collections.singletonMap("otel.propagators", "b3"))))
+                        Collections.singletonMap("otel.propagators", "b3")),
+                    (a, config) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");
   }
