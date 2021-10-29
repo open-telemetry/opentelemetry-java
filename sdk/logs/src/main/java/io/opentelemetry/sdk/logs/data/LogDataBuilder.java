@@ -7,12 +7,17 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** Builder for {@link SdkLogRecordBuilder}. */
-final class SdkLogRecordBuilder implements LogRecordBuilder {
+/** Builder for {@link LogData}. */
+public final class LogDataBuilder {
+
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   private long epochNanos;
   @Nullable private String traceId;
@@ -24,79 +29,84 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  SdkLogRecordBuilder() {}
+  LogDataBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.resource = resource;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+  }
 
-  @Override
-  public SdkLogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
+  /** Set the epoch timestamp using the timestamp and unit. */
+  public LogDataBuilder setEpoch(long timestamp, TimeUnit unit) {
     this.epochNanos = unit.toNanos(timestamp);
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setEpoch(Instant instant) {
+  /** Set the epoch timestamp using the instant. */
+  public LogDataBuilder setEpoch(Instant instant) {
     this.epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setTraceId(String traceId) {
+  /** Set the trace id. */
+  public LogDataBuilder setTraceId(String traceId) {
     this.traceId = traceId;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setSpanId(String spanId) {
+  /** Set the span id. */
+  public LogDataBuilder setSpanId(String spanId) {
     this.spanId = spanId;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setFlags(int flags) {
+  /** Set the flags. */
+  public LogDataBuilder setFlags(int flags) {
     this.flags = flags;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setSeverity(Severity severity) {
+  /** Set the severity. */
+  public LogDataBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setSeverityText(String severityText) {
+  /** Set the severity text. */
+  public LogDataBuilder setSeverityText(String severityText) {
     this.severityText = severityText;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setName(String name) {
+  /** Set the name. */
+  public LogDataBuilder setName(String name) {
     this.name = name;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setBody(Body body) {
+  /** Set the body. */
+  public LogDataBuilder setBody(Body body) {
     this.body = body;
     return this;
   }
 
-  @Override
-  public SdkLogRecordBuilder setBody(String body) {
+  /** Set the body string. */
+  public LogDataBuilder setBody(String body) {
     return setBody(Body.stringBody(body));
   }
 
-  @Override
-  public SdkLogRecordBuilder setAttributes(Attributes attributes) {
+  /** Set the attributes. */
+  public LogDataBuilder setAttributes(Attributes attributes) {
     this.attributeBuilder.putAll(attributes);
     return this;
   }
 
-  @Override
-  public SdkLogRecord build() {
+  /** Build a {@link LogData} instance from the configured properties. */
+  public LogData build() {
     if (epochNanos == 0) {
       epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
-    return SdkLogRecord.create(
+    return LogDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
         epochNanos,
         traceId,
         spanId,

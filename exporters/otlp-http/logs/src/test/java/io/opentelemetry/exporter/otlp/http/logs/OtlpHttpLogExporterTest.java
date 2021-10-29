@@ -31,7 +31,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -319,19 +318,18 @@ class OtlpHttpLogExporterTest {
   }
 
   private static LogData generateFakeLog() {
-    return LogData.create(
-        Resource.getDefault(),
-        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"),
-        LogRecord.builder()
-            .setName("log-name")
-            .setBody(Body.stringBody("log body"))
-            .setAttributes(Attributes.builder().put("key", "value").build())
-            .setSeverity(Severity.INFO)
-            .setSeverityText(Severity.INFO.name())
-            .setTraceId(IdGenerator.random().generateTraceId())
-            .setSpanId(IdGenerator.random().generateSpanId())
-            .setEpoch(Instant.now())
-            .setFlags(0)
-            .build());
+    return LogData.builder(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+        .setName("log-name")
+        .setBody(Body.stringBody("log body"))
+        .setAttributes(Attributes.builder().put("key", "value").build())
+        .setSeverity(Severity.INFO)
+        .setSeverityText(Severity.INFO.name())
+        .setTraceId(IdGenerator.random().generateTraceId())
+        .setSpanId(IdGenerator.random().generateSpanId())
+        .setEpoch(Instant.now())
+        .setFlags(0)
+        .build();
   }
 }

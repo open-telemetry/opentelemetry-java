@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs.export;
 
 import static io.opentelemetry.sdk.logs.util.TestUtil.createLogData;
-import static io.opentelemetry.sdk.logs.util.TestUtil.createLogRecord;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -40,7 +39,7 @@ class BatchLogProcessorTest {
         provider.logEmitterBuilder("test").setInstrumentationVersion("0.1a").build();
 
     for (int i = 0; i < 7; i++) {
-      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
+      emitter.logBuilder().setSeverity(Severity.WARN).setBody("test #" + i).emit();
     }
     // Ensure that more than batch size kicks off a flush
     await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
@@ -75,7 +74,7 @@ class BatchLogProcessorTest {
     long start = System.currentTimeMillis();
     int testRecordCount = 700;
     for (int i = 0; i < testRecordCount; i++) {
-      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
+      emitter.logBuilder().setSeverity(Severity.WARN).setBody("test #" + i).emit();
     }
     long end = System.currentTimeMillis();
     Assertions.assertThat(end - start).isLessThan(250L);

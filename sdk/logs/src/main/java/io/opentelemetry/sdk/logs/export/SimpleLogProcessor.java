@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An implementation of the {@link LogProcessor} that passes {@link LogRecord }it directly to the
+ * An implementation of the {@link LogProcessor} that passes {@link LogData} directly to the
  * configured exporter.
  *
  * <p>This processor will cause all logs to be exported directly as they finish, meaning each export

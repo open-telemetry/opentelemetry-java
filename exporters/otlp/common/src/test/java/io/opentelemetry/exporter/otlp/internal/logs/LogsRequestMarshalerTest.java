@@ -51,19 +51,18 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                LogData.create(
-                    Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
-                    InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"),
-                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
-                        .setName(NAME)
-                        .setBody(BODY)
-                        .setSeverity(Severity.INFO)
-                        .setSeverityText("INFO")
-                        .setTraceId(TRACE_ID)
-                        .setSpanId(SPAN_ID)
-                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpoch(12345, TimeUnit.NANOSECONDS)
-                        .build())));
+                LogData.builder(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
+                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .setName(NAME)
+                    .setBody(BODY)
+                    .setSeverity(Severity.INFO)
+                    .setSeverityText("INFO")
+                    .setTraceId(TRACE_ID)
+                    .setSpanId(SPAN_ID)
+                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
+                    .build()));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
 
@@ -85,19 +84,18 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                LogData.create(
-                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                    InstrumentationLibraryInfo.create("instrumentation", "1"),
-                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
-                        .setName(NAME)
-                        .setBody(BODY)
-                        .setSeverity(Severity.INFO)
-                        .setSeverityText("INFO")
-                        .setTraceId(TRACE_ID)
-                        .setSpanId(SPAN_ID)
-                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpoch(12345, TimeUnit.NANOSECONDS)
-                        .build())));
+                LogData.builder(
+                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                        InstrumentationLibraryInfo.create("instrumentation", "1"))
+                    .setName(NAME)
+                    .setBody(BODY)
+                    .setSeverity(Severity.INFO)
+                    .setSeverityText("INFO")
+                    .setTraceId(TRACE_ID)
+                    .setSpanId(SPAN_ID)
+                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
+                    .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -119,15 +117,14 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                LogData.create(
-                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                    InstrumentationLibraryInfo.create("instrumentation", "1"),
-                    io.opentelemetry.sdk.logs.data.LogRecord.builder()
-                        .setBody(BODY)
-                        .setSeverity(Severity.INFO)
-                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                        .setEpoch(12345, TimeUnit.NANOSECONDS)
-                        .build())));
+                LogData.builder(
+                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                        InstrumentationLibraryInfo.create("instrumentation", "1"))
+                    .setBody(BODY)
+                    .setSeverity(Severity.INFO)
+                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
+                    .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEmpty();
     assertThat(logRecord.getSpanId().toByteArray()).isEmpty();

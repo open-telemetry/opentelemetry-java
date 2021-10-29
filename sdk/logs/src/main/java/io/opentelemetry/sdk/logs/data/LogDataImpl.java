@@ -7,17 +7,20 @@ package io.opentelemetry.sdk.logs.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** SDK implementation of {@link LogRecord}. */
 @AutoValue
 @Immutable
-abstract class SdkLogRecord implements LogRecord {
+abstract class LogDataImpl implements LogData {
 
-  SdkLogRecord() {}
+  LogDataImpl() {}
 
-  static SdkLogRecord create(
+  static LogDataImpl create(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       long epochNanos,
       @Nullable String traceId,
       @Nullable String spanId,
@@ -27,7 +30,17 @@ abstract class SdkLogRecord implements LogRecord {
       @Nullable String name,
       Body body,
       Attributes attributes) {
-    return new AutoValue_SdkLogRecord(
-        epochNanos, traceId, spanId, flags, severity, severityText, name, body, attributes);
+    return new AutoValue_LogDataImpl(
+        resource,
+        instrumentationLibraryInfo,
+        epochNanos,
+        traceId,
+        spanId,
+        flags,
+        severity,
+        severityText,
+        name,
+        body,
+        attributes);
   }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * {@link LogProcessor} is the interface to allow synchronous hooks for when {@link
- * SdkLogEmitter#emit(LogRecord)} is called.
+ * {@link LogProcessor} is the interface to allow synchronous hooks for logs emitted by {@link
+ * LogEmitter}s.
  */
 @ThreadSafe
 public interface LogProcessor extends Closeable {

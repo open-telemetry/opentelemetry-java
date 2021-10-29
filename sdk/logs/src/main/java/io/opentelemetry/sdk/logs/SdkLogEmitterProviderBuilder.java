@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +34,8 @@ public final class SdkLogEmitterProviderBuilder {
   }
 
   /**
-   * Add a log processor. {@link LogProcessor#emit(LogData)} will be called each time {@link
-   * LogEmitter#emit(LogRecord)} is called for emitter instances obtained from the {@link
-   * SdkLogEmitterProvider}.
+   * Add a log processor. {@link LogProcessor#emit(LogData)} will be called each time a log is
+   * emitted by {@link LogEmitter} instances obtained from the {@link SdkLogEmitterProvider}.
    *
    * @param processor the log processor
    * @return this

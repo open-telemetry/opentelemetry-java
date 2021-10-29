@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.LocalDateTime;
@@ -51,16 +50,13 @@ class SystemOutLogExporterTest {
   }
 
   private static LogData sampleLog(long timestamp) {
-    return LogData.create(
-        Resource.empty(),
-        InstrumentationLibraryInfo.create("logTest", "1.0"),
-        LogRecord.builder()
-            .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
-            .setBody(Body.stringBody("message"))
-            .setSeverity(Severity.ERROR3)
-            .setEpoch(timestamp, TimeUnit.MILLISECONDS)
-            .setTraceId(TraceId.fromLongs(1, 2))
-            .setSpanId(SpanId.fromLong(3))
-            .build());
+    return LogData.builder(Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
+        .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
+        .setBody(Body.stringBody("message"))
+        .setSeverity(Severity.ERROR3)
+        .setEpoch(timestamp, TimeUnit.MILLISECONDS)
+        .setTraceId(TraceId.fromLongs(1, 2))
+        .setSpanId(SpanId.fromLong(3))
+        .build();
   }
 }

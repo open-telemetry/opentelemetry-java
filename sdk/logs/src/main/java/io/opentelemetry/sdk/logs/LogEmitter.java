@@ -5,25 +5,22 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A {@link LogEmitter} is the entry point into a log pipeline. Log emitters accept {@link
- * LogRecord}s, and after associating them with a {@link Resource} and {@link
- * InstrumentationLibraryInfo}, pushes them to downstream {@link LogProcessor#emit(LogData)}.
+ * A {@link LogEmitter} is the entry point into a log pipeline.
+ *
+ * <p>Obtain a log builder via {@link #logBuilder()}, add properties using the setters, and emit it
+ * to downstream {@link LogProcessor}(s) via {@link LogBuilder#emit()}.
  */
 @ThreadSafe
 public interface LogEmitter {
 
   /**
-   * Emit a log record. Associates the log with a {@link Resource} and {@link
-   * InstrumentationLibraryInfo}, and pushes it to {@link LogProcessor#emit(LogData)}.
+   * Return a {@link LogBuilder} to emit a log.
    *
-   * @param logRecord the log record
+   * <p>Build the log using the {@link LogBuilder} setters, and emit it to downstream {@link
+   * LogProcessor}(s) via {@link LogBuilder#emit()}.
    */
-  void emit(LogRecord logRecord);
+  LogBuilder logBuilder();
 }

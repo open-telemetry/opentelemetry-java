@@ -11,15 +11,16 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 
 public final class TestUtil {
 
-  public static LogRecord createLogRecord(Severity severity, String message) {
-    return LogRecord.builder()
+  public static LogData createLogData(Severity severity, String message) {
+    return LogData.builder(
+            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+            InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setEpoch(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -30,13 +31,6 @@ public final class TestUtil {
         .setBody(message)
         .setAttributes(Attributes.builder().put("animal", "cat").build())
         .build();
-  }
-
-  public static LogData createLogData(Severity severity, String message) {
-    return LogData.create(
-        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-        InstrumentationLibraryInfo.create("instrumentation", "1"),
-        createLogRecord(severity, message));
   }
 
   private TestUtil() {}
