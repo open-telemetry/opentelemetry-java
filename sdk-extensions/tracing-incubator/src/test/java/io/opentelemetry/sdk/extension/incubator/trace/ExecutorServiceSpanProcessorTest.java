@@ -472,13 +472,12 @@ class ExecutorServiceSpanProcessorTest {
   }
 
   @Test
-  @Timeout(10)
   void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     // Set the export delay to large value, in order to confirm the #flush() below works
 
-    sdkTracerProvider =
+    SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 ExecutorServiceSpanProcessor.builder(waitingSpanExporter, executor, false)
@@ -486,13 +485,14 @@ class ExecutorServiceSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+    Span span2 = sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan();
+    span2.end();
 
     // Force a shutdown, which forces processing of all remaining spans.
     sdkTracerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<SpanData> exported = waitingSpanExporter.getExported();
-    assertThat(exported).containsExactly(span2.toSpanData());
+    assertThat(exported).containsExactly(((ReadableSpan) span2).toSpanData());
     assertThat(waitingSpanExporter.shutDownCalled.get()).isTrue();
   }
 

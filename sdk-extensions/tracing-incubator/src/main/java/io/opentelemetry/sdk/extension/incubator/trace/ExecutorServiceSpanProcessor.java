@@ -145,6 +145,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   private static class Worker implements Runnable {
 
+    private final AtomicBoolean running = new AtomicBoolean();
     private final AtomicLong nextExportTime = new AtomicLong();
     private final ArrayBlockingQueue<SpanData> batch;
     private final AtomicBoolean isShutdown;
@@ -212,6 +213,9 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     @Override
     public void run() {
       // nextExportTime is set for the first time in the constructor
+      if (!running.compareAndSet(false, true)) {
+        return;
+      }
 
       boolean continueWork = true;
       while (continueWork && !isShutdown.get()) {
@@ -238,6 +242,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
       if (flushRequested.get() != null) {
         workerExporter.flush(batch, queue);
       }
+      running.set(false);
     }
 
     private void scheduleNextRun() {
@@ -275,7 +280,10 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     public CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
-      flushRequested.compareAndSet(null, flushResult);
+      if (flushRequested.compareAndSet(null, flushResult)) {
+        executorService.execute(this);
+        return flushResult;
+      }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
       // get what's in the atomic. In that case, just return success, since we know it succeeded in
