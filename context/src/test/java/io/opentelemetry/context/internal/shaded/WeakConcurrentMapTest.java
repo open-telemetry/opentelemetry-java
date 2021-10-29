@@ -66,8 +66,7 @@ class WeakConcurrentMapTest {
     thread.start();
     new MapTestCase(map).doTest();
     thread.interrupt();
-    Thread.sleep(200L);
-    assertThat(thread.isAlive(), is(false));
+    await().untilAsserted(() -> assertThat(thread.isAlive(), is(false)));
   }
 
   @Test
@@ -76,8 +75,7 @@ class WeakConcurrentMapTest {
     assertThat(map.getCleanerThread(), not(nullValue(Thread.class)));
     new MapTestCase(map).doTest();
     map.getCleanerThread().interrupt();
-    Thread.sleep(200L);
-    assertThat(map.getCleanerThread().isAlive(), is(false));
+    await().untilAsserted(() -> assertThat(map.getCleanerThread().isAlive(), is(false)));
   }
 
   static class KeyEqualToWeakRefOfItself {
@@ -156,7 +154,6 @@ class WeakConcurrentMapTest {
           .untilAsserted(
               () -> {
                 System.gc();
-                Thread.sleep(200L);
                 triggerClean();
                 assertThat(map.get(key3), is(value3));
                 assertThat(map.getIfPresent(key3), is(value3));
