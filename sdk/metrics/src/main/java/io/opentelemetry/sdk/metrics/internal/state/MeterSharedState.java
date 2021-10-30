@@ -91,7 +91,7 @@ public abstract class MeterSharedState {
       try {
         storage.add(getMetricStorageRegistry().register(currentStorage));
       } catch (DuplicateMetricStorageException e) {
-        logger.warning(DebugUtils.duplicateMetricErrorMessage(e));
+        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(e), e);
       }
     }
     if (storage.size() == 1) {
