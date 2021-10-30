@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 /**
  * Utilities for logging metric diagnostic issues.
  *
- * <p>This is a publicly accessible class purely for testing.</p>
+ * <p>This is a publicly accessible class purely for testing.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -35,7 +35,9 @@ public final class DebugUtils {
           .getSourceView()
           .ifPresent(v -> result.append(v.getSourceInfo().multiLineDebugString()));
       result
-          .append("\tFROM instrument ").append(conflict.getSourceInstrument().getName()).append("\n")
+          .append("\tFROM instrument ")
+          .append(conflict.getSourceInstrument().getName())
+          .append("\n")
           .append(conflict.getSourceInstrument().getSourceInfo().multiLineDebugString());
     } else {
       result
