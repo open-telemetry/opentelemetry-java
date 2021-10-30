@@ -7,8 +7,15 @@ package io.opentelemetry.sdk.metrics.common;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Describes an instrument that was registered to record data.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @AutoValue
 @Immutable
 public abstract class InstrumentDescriptor {
@@ -18,7 +25,8 @@ public abstract class InstrumentDescriptor {
       String unit,
       InstrumentType type,
       InstrumentValueType valueType) {
-    return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType);
+    return new AutoValue_InstrumentDescriptor(
+        name, description, unit, type, valueType, SourceInfo.fromCurrentStack());
   }
 
   public abstract String getName();
@@ -30,6 +38,9 @@ public abstract class InstrumentDescriptor {
   public abstract InstrumentType getType();
 
   public abstract InstrumentValueType getValueType();
+
+  /** Debugging information for this instrument. */
+  public abstract SourceInfo getSourceInfo();
 
   @Memoized
   @Override

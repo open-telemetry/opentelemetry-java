@@ -8,7 +8,10 @@ package io.opentelemetry.sdk.metrics.internal.descriptor;
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.View;
+import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -23,8 +26,19 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricDescriptor {
 
+  /**
+   * Constructs a metric descriptor with no source instrument/view.
+   *
+   * <p>Used for testing + empty-storage only.
+   */
   public static MetricDescriptor create(String name, String description, String unit) {
-    return new AutoValue_MetricDescriptor(name, description, unit);
+    return new AutoValue_MetricDescriptor(
+        name,
+        description,
+        unit,
+        Optional.empty(),
+        InstrumentDescriptor.create(
+            name, description, unit, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE));
   }
 
   /** Constructs a metric descriptor for a given View + instrument. */
@@ -32,7 +46,8 @@ public abstract class MetricDescriptor {
     final String name = (view.getName() == null) ? instrument.getName() : view.getName();
     final String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
-    return create(name, description, instrument.getUnit());
+    return new AutoValue_MetricDescriptor(
+        name, description, instrument.getUnit(), Optional.of(view), instrument);
   }
 
   public abstract String getName();
@@ -41,12 +56,25 @@ public abstract class MetricDescriptor {
 
   public abstract String getUnit();
 
+  /** The view that lead to the creation of this metric, if applicable. */
+  public abstract Optional<View> getSourceView();
+  /** The instrument which lead to the creation of this metric. */
+  public abstract InstrumentDescriptor getSourceInstrument();
+
   @Memoized
   @Override
   public abstract int hashCode();
 
   public boolean isCompatibleWith(MetricDescriptor other) {
-    // TODO: implement.
-    return equals(other);
+    return sameString(getName(), other.getName())
+        && sameString(getDescription(), other.getDescription())
+        && sameString(getUnit(), other.getUnit());
+  }
+
+  private static boolean sameString(String lhs, String rhs) {
+    if (lhs == null) {
+      return rhs == null;
+    }
+    return lhs.equals(rhs);
   }
 }

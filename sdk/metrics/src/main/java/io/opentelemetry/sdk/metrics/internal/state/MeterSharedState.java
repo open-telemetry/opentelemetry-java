@@ -91,7 +91,7 @@ public abstract class MeterSharedState {
       try {
         storage.add(getMetricStorageRegistry().register(currentStorage));
       } catch (DuplicateMetricStorageException e) {
-        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
+        logger.warning(DebugUtils.duplicateMetricErrorMessage(e));
       }
     }
     if (storage.size() == 1) {
