@@ -42,7 +42,7 @@ public interface SourceInfo {
    * <p>This will attempt to ignore SDK classes.
    */
   static SourceInfo fromCurrentStack() {
-    if (!isDebugEnabled()) {
+    if (!DebugConfig.isMetricsDebugEnabled()) {
       return noSourceInfo();
     }
     // Use exceptions to pull current stack trace.
@@ -59,16 +59,6 @@ public interface SourceInfo {
    * @param lineNumber A line number in the source, denoting where the configuration resides.
    */
   static SourceInfo fromConfigFile(String sourcePath, int lineNumber) {
-    // TODO - We should use range-positions (start/stop line+col for better error messages.
-    if (!isDebugEnabled()) {
-      return noSourceInfo();
-    }
     return new CustomSourceInfo(sourcePath, lineNumber);
-  }
-
-  /** Returns true if metrics debugging should be enabled. */
-  static boolean isDebugEnabled() {
-    // TODO: Implement.
-    return true;
   }
 }

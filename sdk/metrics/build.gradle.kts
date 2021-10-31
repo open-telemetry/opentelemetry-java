@@ -31,6 +31,20 @@ dependencies {
   jmh(project(":sdk:trace"))
 }
 
+testing {
+  suites {
+    val debugEnabledTest by registering(JvmTestSuite::class) {
+      targets {
+        all {
+          testTask.configure {
+            jvmArgs("-Dio.opentelemetry.sdk.metrics.debug=true")
+          }
+        }
+      }
+    }
+  }
+}
+
 tasks {
   named<JavaCompile>("compileJava") {
     with(options) {
@@ -38,5 +52,8 @@ tasks {
         severity.set(OFF)
       }
     }
+  }
+  named("check") {
+    dependsOn(testing.suites)
   }
 }

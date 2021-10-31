@@ -30,13 +30,6 @@ class TestSourceInfo {
   }
 
   @Test
-  void sourceInfoUsesCustomValues() {
-    SourceInfo info = SourceInfo.fromConfigFile("mypath.yml", 20);
-    assertThat(info.shortDebugString()).isEqualTo("mypath.yml:20");
-    assertThat(info.multiLineDebugString()).isEqualTo("\tat mypath.yml:20");
-  }
-
-  @Test
   void testDuplicateExceptionMessage_pureInstruments() {
     MetricDescriptor simple =
         MetricDescriptor.create(

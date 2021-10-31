@@ -15,7 +15,6 @@ enum NoSourceInfo implements SourceInfo {
 
   @Override
   public String multiLineDebugString() {
-    return "\tat unknown source"
-        + "\n\tTo enable debugging, please ensure OTEL_METRICS_DBEUGGING=true in the environment.";
+    return "\tat unknown source" + "\n\t\t" + DebugConfig.getHowToEnableMessage();
   }
 }
