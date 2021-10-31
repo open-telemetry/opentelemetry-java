@@ -22,6 +22,18 @@ public final class DebugUtils {
     return duplicateMetricErrorMessage(ex.getExisting(), ex.getConflict());
   }
 
+  /**
+   * Creates a detailed error message comparing two MetricDescriptors.
+   *
+   * <p>This should identify all issues between the descriptor and log information on where they are
+   * defined. Users should be able to find/fix issues based on this error.
+   *
+   * <p>Visible for testing.
+   *
+   * @param existing The already registered metric stream.
+   * @param conflict The about-to-be registered metric stream.
+   * @return A multi-line debugging string.
+   */
   public static String duplicateMetricErrorMessage(
       MetricDescriptor existing, MetricDescriptor conflict) {
     StringBuffer result = new StringBuffer("Found duplicate metric definition: ");

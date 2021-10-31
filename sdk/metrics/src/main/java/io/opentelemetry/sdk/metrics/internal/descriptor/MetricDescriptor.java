@@ -64,6 +64,7 @@ public abstract class MetricDescriptor {
   @Override
   public abstract int hashCode();
 
+  /** Returns true if another metric descriptor is compatible with this one. */
   public boolean isCompatibleWith(MetricDescriptor other) {
     return sameString(getName(), other.getName())
         && sameString(getDescription(), other.getDescription())
