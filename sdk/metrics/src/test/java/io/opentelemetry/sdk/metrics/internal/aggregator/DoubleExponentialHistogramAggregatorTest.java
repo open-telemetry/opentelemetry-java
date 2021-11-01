@@ -148,7 +148,6 @@ public class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc).isEqualTo(expected);
   }
 
-  // currently not working because offset difference which makes sense I suppose
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
