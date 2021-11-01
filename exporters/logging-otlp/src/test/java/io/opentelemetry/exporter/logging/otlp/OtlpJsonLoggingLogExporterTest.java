@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -34,7 +35,7 @@ class OtlpJsonLoggingLogExporterTest {
       LogData.builder(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
           .setName("testLog1")
           .setBody("body1")
-          .setFlags(0)
+          .setTraceFlags(TraceFlags.getDefault())
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
           .setSpanId("8765432112345876")
@@ -47,7 +48,7 @@ class OtlpJsonLoggingLogExporterTest {
       LogData.builder(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .setName("testLog2")
           .setBody("body2")
-          .setFlags(0)
+          .setTraceFlags(TraceFlags.getDefault())
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
           .setSpanId("8765432112345875")

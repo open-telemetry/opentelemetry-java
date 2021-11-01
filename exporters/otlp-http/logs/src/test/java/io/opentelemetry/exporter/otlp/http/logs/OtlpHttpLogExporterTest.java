@@ -22,6 +22,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
@@ -329,7 +330,7 @@ class OtlpHttpLogExporterTest {
         .setTraceId(IdGenerator.random().generateTraceId())
         .setSpanId(IdGenerator.random().generateSpanId())
         .setEpoch(Instant.now())
-        .setFlags(0)
+        .setTraceFlags(TraceFlags.getDefault())
         .build();
   }
 }

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -22,7 +23,7 @@ public final class LogDataBuilder {
   private long epochNanos;
   @Nullable private String traceId;
   @Nullable private String spanId;
-  private int flags;
+  private TraceFlags traceFlags = TraceFlags.getDefault();
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private String name;
@@ -58,9 +59,9 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /** Set the flags. */
-  public LogDataBuilder setFlags(int flags) {
-    this.flags = flags;
+  /** Set the trace flags. */
+  public LogDataBuilder setTraceFlags(TraceFlags traceFlags) {
+    this.traceFlags = traceFlags;
     return this;
   }
 
@@ -110,7 +111,7 @@ public final class LogDataBuilder {
         epochNanos,
         traceId,
         spanId,
-        flags,
+        traceFlags,
         severity,
         severityText,
         name,

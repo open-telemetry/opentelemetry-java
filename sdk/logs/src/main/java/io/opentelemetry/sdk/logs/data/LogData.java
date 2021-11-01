@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -42,8 +43,8 @@ public interface LogData {
   @Nullable
   String getSpanId();
 
-  /** Returns the flags for this log. */
-  int getFlags();
+  /** Returns the trace flags for this log. */
+  TraceFlags getTraceFlags();
 
   /** Returns the severity for this log. */
   Severity getSeverity();

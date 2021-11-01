@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -31,8 +32,8 @@ public interface LogBuilder {
   /** Set the span id. */
   LogBuilder setSpanId(String spanId);
 
-  /** Set the flags. */
-  LogBuilder setFlags(int flags);
+  /** Set the trace flags. */
+  LogBuilder setTraceFlags(TraceFlags traceFlags);
 
   /** Set the severity. */
   LogBuilder setSeverity(Severity severity);

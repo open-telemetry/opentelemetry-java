@@ -387,7 +387,7 @@ abstract class OtlpExporterIntegrationTest {
             .setTraceId(IdGenerator.random().generateTraceId())
             .setSpanId(IdGenerator.random().generateSpanId())
             .setEpoch(Instant.now())
-            .setFlags(0)
+            .setTraceFlags(TraceFlags.getSampled())
             .build();
 
     logExporter.export(Collections.singletonList(logData));
@@ -430,7 +430,7 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(logData.getTraceId());
     assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray())).isEqualTo(logData.getSpanId());
     assertThat(protoLog.getTimeUnixNano()).isEqualTo(logData.getEpochNanos());
-    assertThat(protoLog.getFlags()).isEqualTo(logData.getFlags());
+    assertThat(TraceFlags.fromByte((byte) protoLog.getFlags())).isEqualTo(logData.getTraceFlags());
   }
 
   private static class OtlpGrpcServer extends ServerExtension {

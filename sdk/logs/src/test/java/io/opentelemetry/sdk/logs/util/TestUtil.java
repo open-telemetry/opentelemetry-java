@@ -24,7 +24,7 @@ public final class TestUtil {
         .setEpoch(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault().asByte())
+        .setTraceFlags(TraceFlags.getDefault())
         .setSeverity(severity)
         .setSeverityText("really severe")
         .setName("log1")

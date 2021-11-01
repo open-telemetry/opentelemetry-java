@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
@@ -93,12 +94,14 @@ class LogsRequestMarshalerTest {
                     .setSeverityText("INFO")
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
+                    .setTraceFlags(TraceFlags.getSampled())
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
+    assertThat(TraceFlags.fromByte((byte) logRecord.getFlags())).isEqualTo(TraceFlags.getSampled());
     assertThat(logRecord.getName()).isEqualTo(NAME);
     assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());

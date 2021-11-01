@@ -46,7 +46,7 @@ class OkHttpOnlyExportTest {
               .setEpoch(Instant.now())
               .setTraceId(TraceId.getInvalid())
               .setSpanId(SpanId.getInvalid())
-              .setFlags(TraceFlags.getDefault().asByte())
+              .setTraceFlags(TraceFlags.getDefault())
               .setSeverity(Severity.ERROR)
               .setSeverityText("really severe")
               .setName("log1")

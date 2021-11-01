@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -71,8 +72,8 @@ final class SdkLogEmitter implements LogEmitter {
     }
 
     @Override
-    public LogBuilder setFlags(int flags) {
-      logDataBuilder.setFlags(flags);
+    public LogBuilder setTraceFlags(TraceFlags traceFlags) {
+      logDataBuilder.setTraceFlags(traceFlags);
       return this;
     }
 
