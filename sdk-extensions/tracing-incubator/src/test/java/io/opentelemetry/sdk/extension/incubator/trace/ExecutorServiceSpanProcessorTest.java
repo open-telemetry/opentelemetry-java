@@ -339,6 +339,7 @@ class ExecutorServiceSpanProcessorTest {
   @Test
   void exporterThrowsException() {
     SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
