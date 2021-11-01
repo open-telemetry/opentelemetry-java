@@ -69,6 +69,9 @@ final class DoubleExponentialHistogramAggregator
   /**
    * Returns a new DELTA aggregation by comparing two cumulative measurements.
    *
+   * <p>It is similar to merge(), however it decrements counts and sum instead of incrementing. It
+   * does not modify the accumulations.
+   *
    * @param previousCumulative the previously captured accumulation.
    * @param currentCumulative the newly captured (cumulative) accumulation.
    * @return The resulting delta accumulation.
