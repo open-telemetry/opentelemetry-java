@@ -212,7 +212,6 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
     @Override
     public void run() {
-      // nextExportTime is set for the first time in the constructor
       if (!running.compareAndSet(false, true)) {
         return;
       }
