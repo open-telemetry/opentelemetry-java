@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DoubleExponentialHistogramDataAggregatorTest {
+public class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
 
@@ -148,9 +148,24 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     assertThat(acc).isEqualTo(expected);
   }
 
+  // currently not working because offset difference which makes sense I suppose
   @Test
   void diffAccumulation() {
-    // todo
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+
+    ExponentialHistogramAccumulation nextAccumulation =
+        getTestAccumulation(exemplars, 0, 0, 1, 1, -1);
+    ExponentialHistogramAccumulation previousAccumulation =
+        getTestAccumulation(previousExemplars, 0, 1, -1);
+
+    // Assure most recent exemplars are kept
+    assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
+        .isEqualTo(getTestAccumulation(exemplars, 0, 1));
   }
 
   @Test

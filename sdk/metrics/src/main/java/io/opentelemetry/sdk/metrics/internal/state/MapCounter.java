@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -104,7 +105,25 @@ public class MapCounter implements ExponentialCounter {
     return backing.isEmpty();
   }
 
-  private void doIncrement(int index, long delta) {
-    backing.computeIfAbsent(index, k -> new AtomicLong(0)).getAndAdd(delta);
+  private synchronized void doIncrement(int index, long delta) {
+    long prevValue = backing.computeIfAbsent(index, k -> new AtomicLong(0)).getAndAdd(delta);
+
+    // in the case of a decrement result may be 0, so we remove the entry
+    if (prevValue + delta == 0) {
+      backing.remove(index);
+      if (isEmpty()) {
+        indexStart = NULL_INDEX;
+        indexEnd = NULL_INDEX;
+      } else {
+        // find largest and smallest index to remap window
+        indexStart = Collections.min(backing.keySet());
+        indexEnd = Collections.max(backing.keySet());
+      }
+    }
+  }
+
+  @Override
+  public String toString() {
+    return backing.toString();
   }
 }

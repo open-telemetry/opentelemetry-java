@@ -112,6 +112,23 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   /**
+   * Return buckets a subtracted by buckets b. May perform downscaling if required.
+   *
+   * @param a the minuend of the subtraction.
+   * @param b the subtrahend of the subtraction.
+   * @return buckets a subtracted by buckets b.
+   */
+  static DoubleExponentialHistogramBuckets diff(
+      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
+
+    DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
+    if (!b.counts.isEmpty()) {
+      copy.mergeWith(b, /* additive= */ false);
+    }
+    return copy;
+  }
+
+  /**
    * Immutable method for merging. This method copies the first set of buckets, performs the merge
    * on the copy, and returns the copy.
    *
@@ -127,7 +144,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       return new DoubleExponentialHistogramBuckets(b);
     }
     DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
-    copy.mergeWith(b);
+    copy.mergeWith(b, /* additive= */ true);
     return copy;
   }
 
@@ -136,9 +153,15 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * counts and scale of this instance only, so it is to be used with caution. For immutability, use
    * the static merge() method.
    *
+   * <p>The bucket counts of this instance will be added to or subtracted from depending on the
+   * additive parameter.
+   *
    * <p>This algorithm for merging is adapted from NrSketch.
+   *
+   * @param other the histogram that will be merged into this one
+   * @param additive whether the bucket counts will be added or subtracted (diff vs merge).
    */
-  private void mergeWith(DoubleExponentialHistogramBuckets other) {
+  private void mergeWith(DoubleExponentialHistogramBuckets other, boolean additive) {
     if (other.counts.isEmpty()) {
       return;
     }
@@ -169,8 +192,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     // since we changed scale of this, we need to know the new difference between the two scales
     deltaOther = other.scale - this.scale;
 
+    // do actual merging of other into this. Will decrement or increment depending on sign.
+    int sign = additive ? 1 : -1;
     for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
-      if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
+      if (!this.counts.increment(i >> deltaOther, sign * other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
         throw new IllegalStateException("Failed to merge exponential histogram buckets.");
       }
@@ -239,11 +264,9 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     return "DoubleExponentialHistogramBuckets{"
         + "scale: "
         + scale
-        + ", "
-        + "offset: "
+        + ", offset: "
         + getOffset()
-        + ", "
-        + "counts: "
+        + ", counts: "
         + counts
         + " }";
   }

@@ -38,24 +38,24 @@ final class DoubleExponentialHistogramAggregator
    * accumulations.
    *
    * @param previousAccumulation the previously captured accumulation
-   * @param accumulation the newly captured accumulation
-   * @return the merged accumulation.
+   * @param delta the newly captured (delta) accumulation
+   * @return the result of the merge of the given accumulations.
    */
   @Override
   public ExponentialHistogramAccumulation merge(
       ExponentialHistogramAccumulation previousAccumulation,
-      ExponentialHistogramAccumulation accumulation) {
+      ExponentialHistogramAccumulation delta) {
 
-    double sum = previousAccumulation.getSum() + accumulation.getSum();
-    long zeroCount = previousAccumulation.getZeroCount() + accumulation.getZeroCount();
+    double sum = previousAccumulation.getSum() + delta.getSum();
+    long zeroCount = previousAccumulation.getZeroCount() + delta.getZeroCount();
 
     // Create merged buckets
     DoubleExponentialHistogramBuckets posBuckets =
         DoubleExponentialHistogramBuckets.merge(
-            previousAccumulation.getPositiveBuckets(), accumulation.getPositiveBuckets());
+            previousAccumulation.getPositiveBuckets(), delta.getPositiveBuckets());
     DoubleExponentialHistogramBuckets negBuckets =
         DoubleExponentialHistogramBuckets.merge(
-            previousAccumulation.getNegativeBuckets(), accumulation.getNegativeBuckets());
+            previousAccumulation.getNegativeBuckets(), delta.getNegativeBuckets());
 
     // resolve possible scale difference due to merge
     int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
@@ -63,7 +63,7 @@ final class DoubleExponentialHistogramAggregator
     negBuckets.downscale(negBuckets.getScale() - commonScale);
 
     return ExponentialHistogramAccumulation.create(
-        posBuckets.getScale(), sum, posBuckets, negBuckets, zeroCount, accumulation.getExemplars());
+        posBuckets.getScale(), sum, posBuckets, negBuckets, zeroCount, delta.getExemplars());
   }
 
   /**
@@ -77,7 +77,30 @@ final class DoubleExponentialHistogramAggregator
   public ExponentialHistogramAccumulation diff(
       ExponentialHistogramAccumulation previousCumulative,
       ExponentialHistogramAccumulation currentCumulative) {
-    return null;
+
+    // or maybe just do something similar to merge instead minus rather than increment?
+    double sum = currentCumulative.getSum() - previousCumulative.getSum();
+    long zeroCount = currentCumulative.getZeroCount() - previousCumulative.getZeroCount();
+
+    DoubleExponentialHistogramBuckets posBuckets =
+        DoubleExponentialHistogramBuckets.diff(
+            currentCumulative.getPositiveBuckets(), previousCumulative.getPositiveBuckets());
+    DoubleExponentialHistogramBuckets negBuckets =
+        DoubleExponentialHistogramBuckets.diff(
+            currentCumulative.getNegativeBuckets(), previousCumulative.getNegativeBuckets());
+
+    // resolve possible scale difference due to merge
+    int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
+    posBuckets.downscale(posBuckets.getScale() - commonScale);
+    negBuckets.downscale(negBuckets.getScale() - commonScale);
+
+    return ExponentialHistogramAccumulation.create(
+        posBuckets.getScale(),
+        sum,
+        posBuckets,
+        negBuckets,
+        zeroCount,
+        currentCumulative.getExemplars());
   }
 
   @Override
