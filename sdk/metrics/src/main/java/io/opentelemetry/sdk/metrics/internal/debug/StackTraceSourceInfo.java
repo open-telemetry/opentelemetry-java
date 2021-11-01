@@ -18,7 +18,7 @@ final class StackTraceSourceInfo implements SourceInfo {
   public String shortDebugString() {
     if (stackTraceElements.length > 0) {
       for (StackTraceElement e : stackTraceElements) {
-        if (!isOTelSdkStackTrace(e)) {
+        if (!isUninterestingStackTrace(e)) {
           return String.format("%s:%d", e.getFileName(), e.getLineNumber());
         }
       }
@@ -32,7 +32,7 @@ final class StackTraceSourceInfo implements SourceInfo {
       // TODO - Limit trace length
       StringBuffer result = new StringBuffer("");
       for (StackTraceElement e : stackTraceElements) {
-        if (!isOTelSdkStackTrace(e)) {
+        if (!isUninterestingStackTrace(e)) {
           result.append("\tat ").append(e).append("\n");
         }
       }
@@ -41,8 +41,9 @@ final class StackTraceSourceInfo implements SourceInfo {
     return "\tat unknown source";
   }
 
-  private static boolean isOTelSdkStackTrace(StackTraceElement e) {
+  private static boolean isUninterestingStackTrace(StackTraceElement e) {
     return (e.getClassName() != null)
-        && e.getClassName().startsWith("io.opentelemetry.sdk.metrics");
+        && (e.getClassName().startsWith("io.opentelemetry.sdk.metrics")
+            || e.getClassName().startsWith("java.lang"));
   }
 }

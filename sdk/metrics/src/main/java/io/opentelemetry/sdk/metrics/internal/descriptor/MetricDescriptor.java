@@ -10,6 +10,7 @@ import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.View;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
@@ -66,15 +67,8 @@ public abstract class MetricDescriptor {
 
   /** Returns true if another metric descriptor is compatible with this one. */
   public boolean isCompatibleWith(MetricDescriptor other) {
-    return sameString(getName(), other.getName())
-        && sameString(getDescription(), other.getDescription())
-        && sameString(getUnit(), other.getUnit());
-  }
-
-  private static boolean sameString(String lhs, String rhs) {
-    if (lhs == null) {
-      return rhs == null;
-    }
-    return lhs.equals(rhs);
+    return Objects.equals(getName(), other.getName())
+        && Objects.equals(getDescription(), other.getDescription())
+        && Objects.equals(getUnit(), other.getUnit());
   }
 }

@@ -45,9 +45,7 @@ public interface SourceInfo {
     if (!DebugConfig.isMetricsDebugEnabled()) {
       return noSourceInfo();
     }
-    // Use exceptions to pull current stack trace.
-    Exception e = new Exception();
-    return new StackTraceSourceInfo(e.getStackTrace());
+    return new StackTraceSourceInfo(Thread.currentThread().getStackTrace());
   }
 
   /**
