@@ -183,7 +183,7 @@ public class DoubleExponentialHistogramAggregatorTest {
 
     // Assure most recent exemplars are kept
     ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
-    assertThat(diff).isEqualTo(getTestAccumulation(exemplars,  1, 100, -100));
+    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 1, 100, -100));
   }
 
   @Test
