@@ -32,7 +32,6 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +39,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -357,10 +357,10 @@ class OtlpGrpcLogsExporterTest {
   }
 
   private static LogData generateFakeLog() {
-    return LogRecord.builder(
+    return LogData.builder(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
-        .setEpochMillis(System.currentTimeMillis())
+        .setEpoch(Instant.now())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())

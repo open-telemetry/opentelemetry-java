@@ -12,18 +12,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-@Immutable
 @AutoValue
-public abstract class LogRecord implements LogData {
+@Immutable
+abstract class LogDataImpl implements LogData {
 
-  LogRecord() {}
+  LogDataImpl() {}
 
-  public static LogRecordBuilder builder(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new LogRecordBuilder(resource, instrumentationLibraryInfo);
-  }
-
-  static LogRecord create(
+  static LogDataImpl create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       long epochNanos,
@@ -35,7 +30,7 @@ public abstract class LogRecord implements LogData {
       @Nullable String name,
       Body body,
       Attributes attributes) {
-    return new AutoValue_LogRecord(
+    return new AutoValue_LogDataImpl(
         resource,
         instrumentationLibraryInfo,
         epochNanos,

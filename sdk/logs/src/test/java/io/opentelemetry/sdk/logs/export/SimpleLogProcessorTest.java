@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.util.TestUtil;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,18 +50,18 @@ class SimpleLogProcessorTest {
 
   @Test
   void addLogRecord() {
-    LogRecord logRecord = TestUtil.createLog(DEBUG, "Log message");
-    logProcessor.addLogRecord(logRecord);
-    verify(logExporter).export(Collections.singletonList(logRecord));
+    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    logProcessor.emit(logData);
+    verify(logExporter).export(Collections.singletonList(logData));
   }
 
   @Test
   void addLogRecord_ExporterError() {
-    LogRecord logRecord = TestUtil.createLog(DEBUG, "Log message");
+    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
     when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
-    logProcessor.addLogRecord(logRecord);
-    logProcessor.addLogRecord(logRecord);
-    verify(logExporter, times(2)).export(Collections.singletonList(logRecord));
+    logProcessor.emit(logData);
+    logProcessor.emit(logData);
+    verify(logExporter, times(2)).export(Collections.singletonList(logData));
   }
 
   @Test
@@ -71,11 +71,11 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogRecord logRecord = TestUtil.createLog(DEBUG, "Log message");
-    logProcessor.addLogRecord(logRecord);
-    logProcessor.addLogRecord(logRecord);
+    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    logProcessor.emit(logData);
+    logProcessor.emit(logData);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(logRecord));
+    verify(logExporter, times(2)).export(Collections.singletonList(logData));
 
     CompletableResultCode flush = logProcessor.forceFlush();
     assertThat(flush.isDone()).isFalse();
@@ -95,11 +95,11 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogRecord logRecord = TestUtil.createLog(DEBUG, "Log message");
-    logProcessor.addLogRecord(logRecord);
-    logProcessor.addLogRecord(logRecord);
+    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    logProcessor.emit(logData);
+    logProcessor.emit(logData);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(logRecord));
+    verify(logExporter, times(2)).export(Collections.singletonList(logData));
 
     CompletableResultCode shutdown = logProcessor.shutdown();
     assertThat(shutdown.isDone()).isFalse();

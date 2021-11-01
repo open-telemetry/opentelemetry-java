@@ -12,91 +12,53 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The interface for a log as defined in the <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md">OpenTelemetry
- * logging model</a>.
+ * Log definition as described in <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md">OpenTelemetry
+ * Log Data Model</a>.
  */
 @Immutable
 public interface LogData {
 
-  /**
-   * Returns the resource of this log.
-   *
-   * @return the resource.
-   */
+  /** Returns a new {@link LogDataBuilder}. */
+  static LogDataBuilder builder(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new LogDataBuilder(resource, instrumentationLibraryInfo);
+  }
+
+  /** Returns the resource of this log. */
   Resource getResource();
 
-  /**
-   * Returns the instrumentation library that generated this log.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo}.
-   */
+  /** Returns the instrumentation library that generated this log. */
   InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
-  /**
-   * Returns the epoch timestamp in nanos when the log was recorded.
-   *
-   * @return the epoch timestamp in nanos.
-   */
+  /** Returns the epoch timestamp in nanos when the log was recorded. */
   long getEpochNanos();
 
-  /**
-   * Returns the trace id for this log.
-   *
-   * @return the trace id.
-   */
+  /** Returns the trace id for this log. */
   @Nullable
   String getTraceId();
 
-  /**
-   * Returns the span id for this log.
-   *
-   * @return the span id.
-   */
+  /** Returns the span id for this log. */
   @Nullable
   String getSpanId();
 
-  /**
-   * Returns the flags for this log.
-   *
-   * @return the flags.
-   */
+  /** Returns the flags for this log. */
   int getFlags();
 
-  /**
-   * Returns the severity for this log.
-   *
-   * @return the severity.
-   */
+  /** Returns the severity for this log. */
   Severity getSeverity();
 
-  /**
-   * Returns the severity text for this log.
-   *
-   * @return the severity text.
-   */
+  /** Returns the severity text for this log. */
   @Nullable
   String getSeverityText();
 
-  /**
-   * Returns the name for this log.
-   *
-   * @return the name.
-   */
+  /** Returns the name for this log. */
   @Nullable
   String getName();
 
-  /**
-   * Returns the body for this log.
-   *
-   * @return the body.
-   */
+  /** Returns the body for this log. */
   Body getBody();
 
-  /**
-   * Returns the attributes for this log.
-   *
-   * @return the attributes.
-   */
+  /** Returns the attributes for this log. */
   Attributes getAttributes();
 }

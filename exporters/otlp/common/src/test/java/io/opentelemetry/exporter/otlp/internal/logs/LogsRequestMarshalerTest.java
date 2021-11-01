@@ -24,6 +24,7 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -33,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class LogsRequestMarshalerTest {
@@ -49,7 +51,7 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
+                LogData.builder(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
                         InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
@@ -59,7 +61,7 @@ class LogsRequestMarshalerTest {
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
@@ -82,7 +84,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
+                LogData.builder(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setName(NAME)
@@ -92,7 +94,7 @@ class LogsRequestMarshalerTest {
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -115,13 +117,13 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
+                LogData.builder(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
+                    .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEmpty();

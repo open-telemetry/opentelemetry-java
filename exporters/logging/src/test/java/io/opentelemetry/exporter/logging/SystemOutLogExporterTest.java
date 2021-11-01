@@ -17,12 +17,12 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SystemOutLogExporterTest {
@@ -50,11 +50,11 @@ class SystemOutLogExporterTest {
   }
 
   private static LogData sampleLog(long timestamp) {
-    return LogRecord.builder(Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
+    return LogData.builder(Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody(Body.stringBody("message"))
         .setSeverity(Severity.ERROR3)
-        .setEpochMillis(timestamp)
+        .setEpoch(timestamp, TimeUnit.MILLISECONDS)
         .setTraceId(TraceId.fromLongs(1, 2))
         .setSpanId(SpanId.fromLong(3))
         .build();
