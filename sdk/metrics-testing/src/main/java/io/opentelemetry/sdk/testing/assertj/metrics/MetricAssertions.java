@@ -53,11 +53,13 @@ public final class MetricAssertions extends Assertions {
     return new DoubleSummaryPointDataAssert(point);
   }
 
+  /** Returns an assertion for {@link ExponentialHistogramPointData}. */
   public static ExponentialHistogramPointDataAssert assertThat(
       ExponentialHistogramPointData point) {
     return new ExponentialHistogramPointDataAssert(point);
   }
 
+  /** Returns an assertion for {@link ExponentialHistogramBuckets}. */
   public static ExponentialHistogramBucketsAssert assertThat(ExponentialHistogramBuckets buckets) {
     return new ExponentialHistogramBucketsAssert(buckets);
   }

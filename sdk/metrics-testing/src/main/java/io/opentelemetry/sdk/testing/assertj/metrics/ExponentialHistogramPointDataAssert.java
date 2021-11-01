@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.testing.assertj.metrics;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link ExponentialHistogramPointData}. */
 public class ExponentialHistogramPointDataAssert
     extends AbstractPointDataAssert<
         ExponentialHistogramPointDataAssert, ExponentialHistogramPointData> {
