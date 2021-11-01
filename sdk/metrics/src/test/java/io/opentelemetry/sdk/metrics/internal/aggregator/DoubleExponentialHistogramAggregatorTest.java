@@ -168,6 +168,25 @@ public class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
+  void diffDownScaledAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+
+    ExponentialHistogramAccumulation nextAccumulation =
+        getTestAccumulation(exemplars, 1, 1, 100, -1, -100);
+    ExponentialHistogramAccumulation previousAccumulation =
+        getTestAccumulation(previousExemplars, 1, -1);
+
+    // Assure most recent exemplars are kept
+    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
+    assertThat(diff).isEqualTo(getTestAccumulation(exemplars,  1, 100, -100));
+  }
+
+  @Test
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
