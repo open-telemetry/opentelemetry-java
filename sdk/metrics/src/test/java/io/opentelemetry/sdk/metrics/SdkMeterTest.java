@@ -25,7 +25,7 @@ class SdkMeterTest {
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
-  private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = testMeterProvider.meterBuilder(getClass().getName()).build();
 
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);
 

@@ -36,7 +36,8 @@ class PrometheusTest {
     AutoConfiguredOpenTelemetrySdk.initialize();
 
     GlobalMeterProvider.get()
-        .get("test")
+        .meterBuilder("test")
+        .build()
         .gaugeBuilder("test")
         .ofLongs()
         .buildWithCallback(result -> result.observe(2, Attributes.empty()));

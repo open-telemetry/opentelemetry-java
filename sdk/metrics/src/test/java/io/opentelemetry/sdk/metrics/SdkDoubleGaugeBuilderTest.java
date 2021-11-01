@@ -31,7 +31,7 @@ class SdkDoubleGaugeBuilderTest {
           .setResource(RESOURCE)
           .registerMetricReader(sdkMeterReader)
           .build();
-  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
 
   @Test
   void collectMetrics_NoRecords() {

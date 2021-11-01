@@ -53,7 +53,8 @@ class SdkMeterProviderTest {
   @Test
   void defaultMeterName() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    assertThat(sdkMeterProvider.get(null)).isSameAs(sdkMeterProvider.get("unknown"));
+    assertThat(sdkMeterProvider.meterBuilder(null).build())
+        .isSameAs(sdkMeterProvider.meterBuilder("unknown").build());
   }
 
   @Test
@@ -63,7 +64,7 @@ class SdkMeterProviderTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
 
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
     LongUpDownCounter longUpDownCounter =
@@ -186,7 +187,7 @@ class SdkMeterProviderTest {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
 
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
@@ -239,7 +240,7 @@ class SdkMeterProviderTest {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
     LongUpDownCounter longUpDownCounter =
@@ -329,7 +330,7 @@ class SdkMeterProviderTest {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     sdkMeter
         .counterBuilder("testLongSumObserver")
         .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
@@ -463,7 +464,7 @@ class SdkMeterProviderTest {
                     .setAggregation(Aggregation.lastValue())
                     .build())
             .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Meter meter = provider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     meter
         .gaugeBuilder("test")
         .setDescription("desc")
@@ -507,7 +508,7 @@ class SdkMeterProviderTest {
                     .setAggregation(Aggregation.sum())
                     .build())
             .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Meter meter = provider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     DoubleHistogram histogram =
         meter.histogramBuilder("test").setDescription("desc").setUnit("unit").build();
     histogram.record(1.0);
@@ -555,7 +556,7 @@ class SdkMeterProviderTest {
                     .setAggregation(Aggregation.sum())
                     .build())
             .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Meter meter = provider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     meter
         .gaugeBuilder("test")
         .setDescription("desc")
@@ -595,7 +596,7 @@ class SdkMeterProviderTest {
                     .appendAllBaggageAttributes()
                     .build())
             .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Meter meter = provider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     Baggage baggage = Baggage.builder().put("baggage", "value").build();
     Context context = Context.root().with(baggage);
     LongCounter counter = meter.counterBuilder("test").build();
@@ -633,7 +634,7 @@ class SdkMeterProviderTest {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     sdkMeter
         .counterBuilder("testLongSumObserver")
         .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
@@ -728,7 +729,7 @@ class SdkMeterProviderTest {
             .registerMetricReader(collector1)
             .registerMetricReader(collector2)
             .build();
-    Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = meterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     final long startTime = testClock.now();
 
@@ -807,7 +808,7 @@ class SdkMeterProviderTest {
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
-    Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = meterProvider.meterBuilder(SdkMeterProviderTest.class.getName()).build();
     final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     final long startTime = testClock.now();
 

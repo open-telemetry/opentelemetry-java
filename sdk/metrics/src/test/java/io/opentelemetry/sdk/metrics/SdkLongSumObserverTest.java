@@ -37,7 +37,8 @@ class SdkLongSumObserverTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .setDescription("My own LongSumObserver")
         .setUnit("ms")
@@ -52,7 +53,8 @@ class SdkLongSumObserverTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
@@ -114,7 +116,8 @@ class SdkLongSumObserverTest {
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));

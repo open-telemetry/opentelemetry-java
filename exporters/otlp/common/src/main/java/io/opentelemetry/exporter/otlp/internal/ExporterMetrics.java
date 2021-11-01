@@ -63,12 +63,14 @@ public class ExporterMetrics {
   /** Create an instance for recording OTLP gRPC exporter metrics. */
   public static ExporterMetrics createGrpc(String type) {
     return new ExporterMetrics(
-        GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc"), type);
+        GlobalMeterProvider.get().meterBuilder("io.opentelemetry.exporters.otlp-grpc").build(),
+        type);
   }
 
   /** Create an instance for recording OTLP http/protobuf exporter metrics. */
   public static ExporterMetrics createHttpProtobuf(String type) {
     return new ExporterMetrics(
-        GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http"), type);
+        GlobalMeterProvider.get().meterBuilder("io.opentelemetry.exporters.otlp-http").build(),
+        type);
   }
 }

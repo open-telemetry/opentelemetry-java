@@ -37,7 +37,8 @@ class SdkDoubleSumObserverTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .ofDoubles()
         .setDescription("My own DoubleSumObserver")
@@ -53,7 +54,8 @@ class SdkDoubleSumObserverTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .ofDoubles()
         .setDescription("My own DoubleSumObserver")
@@ -120,7 +122,8 @@ class SdkDoubleSumObserverTest {
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     sdkMeterProvider
-        .get(getClass().getName())
+        .meterBuilder(getClass().getName())
+        .build()
         .counterBuilder("testObserver")
         .ofDoubles()
         .setDescription("My own DoubleSumObserver")
