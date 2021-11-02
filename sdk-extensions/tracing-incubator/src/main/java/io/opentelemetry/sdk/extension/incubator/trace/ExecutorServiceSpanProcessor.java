@@ -33,8 +33,12 @@ import java.util.logging.Logger;
 /**
  * A Batch {@link SpanProcessor} that uses a user-provided {@link
  * java.util.concurrent.ScheduledExecutorService} to run background tasks.
+ *
+ * @deprecated Use {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. This class will be
+ *     removed in 1.8.0.
  */
 @SuppressWarnings("FutureReturnValueIgnored")
+@Deprecated
 public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_KEY =
@@ -62,7 +66,10 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
    * @param ownsExecutorService Whether this component can be considered the "owner" of the provided
    *     {@link ScheduledExecutorService}. If true, the {@link ScheduledExecutorService} will be
    *     shut down when this SpanProcessor is shut down.
+   * @deprecated Use {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. This class will
+   *     be removed in 1.8.0.
    */
+  @Deprecated
   public static ExecutorServiceSpanProcessorBuilder builder(
       SpanExporter spanExporter,
       ScheduledExecutorService executorService,
