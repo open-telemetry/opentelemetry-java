@@ -94,6 +94,7 @@ public final class OkHttpExporter<T extends Marshaler> {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
+                  response.close();
                   exporterMetrics.addSuccess(numItems);
                   result.succeed();
                   return;
