@@ -101,7 +101,7 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /** Sets the clock to be used for the current epoch nanos (if it is not set) */
+  /** Sets the clock to be used for the current epoch nanos (if it is not set). */
   public LogDataBuilder setClock(Clock clock) {
     this.clock = clock;
     return this;

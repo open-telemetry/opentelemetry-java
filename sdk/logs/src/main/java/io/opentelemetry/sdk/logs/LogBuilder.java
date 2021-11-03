@@ -53,7 +53,7 @@ public interface LogBuilder {
   /** Set the attributes. */
   LogBuilder setAttributes(Attributes attributes);
 
-  /** Sets the clock */
+  /** Sets the clock. */
   LogBuilder setClock(Clock clock);
 
   /** Emit the log to downstream {@link LogProcessor}(s). */

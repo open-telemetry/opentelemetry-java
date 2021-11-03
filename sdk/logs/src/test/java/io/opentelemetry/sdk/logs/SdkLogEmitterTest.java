@@ -44,8 +44,7 @@ class SdkLogEmitterTest {
   @BeforeEach
   void setup() {
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    sdkLogEmitterProvider = SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
     sdkLogEmitter = buildLogEmitter();
   }
 
