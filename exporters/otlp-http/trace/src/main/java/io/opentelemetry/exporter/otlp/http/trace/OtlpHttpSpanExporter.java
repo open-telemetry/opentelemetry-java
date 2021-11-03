@@ -118,24 +118,26 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
               @Override
               public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
-                  spansExportedSuccess.add(spans.size());
-                  result.succeed();
-                  return;
+                try (ResponseBody body = response.body()) {
+                  if (response.isSuccessful()) {
+                    spansExportedSuccess.add(spans.size());
+                    result.succeed();
+                    return;
+                  }
+
+                  spansExportedFailure.add(spans.size());
+                  int code = response.code();
+
+                  String status = extractErrorStatus(response, body);
+
+                  logger.log(
+                      Level.WARNING,
+                      "Failed to export spans. Server responded with HTTP status code "
+                          + code
+                          + ". Error message: "
+                          + status);
+                  result.fail();
                 }
-
-                spansExportedFailure.add(spans.size());
-                int code = response.code();
-
-                String status = extractErrorStatus(response);
-
-                logger.log(
-                    Level.WARNING,
-                    "Failed to export spans. Server responded with HTTP status code "
-                        + code
-                        + ". Error message: "
-                        + status);
-                result.fail();
               }
             });
 
@@ -163,8 +165,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     };
   }
 
-  private static String extractErrorStatus(Response response) {
-    ResponseBody responseBody = response.body();
+  private static String extractErrorStatus(Response response, @Nullable ResponseBody responseBody) {
     if (responseBody == null) {
       return "Response body missing, HTTP status message: " + response.message();
     }
