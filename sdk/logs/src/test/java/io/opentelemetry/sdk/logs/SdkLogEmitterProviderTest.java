@@ -12,9 +12,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,15 +30,19 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkLogEmitterProviderTest {
 
+  private static final long NOW = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   @Mock private LogProcessor logProcessor;
+  @Mock private Clock clock;
 
   private SdkLogEmitterProvider sdkLogEmitterProvider;
 
   @BeforeEach
   void setup() {
-    sdkLogEmitterProvider = SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
     when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(clock.now()).thenReturn(NOW);
   }
 
   @Test

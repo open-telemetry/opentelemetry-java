@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -19,17 +20,20 @@ final class SdkLogEmitter implements LogEmitter {
 
   private final LogEmitterSharedState logEmitterSharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final Clock clock;
 
   SdkLogEmitter(
       LogEmitterSharedState logEmitterSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Clock clock) {
     this.logEmitterSharedState = logEmitterSharedState;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.clock = clock;
   }
 
   @Override
   public LogBuilder logBuilder() {
-    return new SdkLogBuilder();
+    return new SdkLogBuilder().setClock(clock);
   }
 
   // VisibleForTesting
@@ -109,6 +113,12 @@ final class SdkLogEmitter implements LogEmitter {
     @Override
     public LogBuilder setAttributes(Attributes attributes) {
       logDataBuilder.setAttributes(attributes);
+      return this;
+    }
+
+    @Override
+    public LogBuilder setClock(Clock clock) {
+      logDataBuilder.setClock(clock);
       return this;
     }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -51,6 +52,9 @@ public interface LogBuilder {
 
   /** Set the attributes. */
   LogBuilder setAttributes(Attributes attributes);
+
+  /** Sets the clock */
+  LogBuilder setClock(Clock clock);
 
   /** Emit the log to downstream {@link LogProcessor}(s). */
   void emit();

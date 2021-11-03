@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -27,6 +28,7 @@ public final class LogDataBuilder {
   @Nullable private String severityText;
   @Nullable private String name;
   private Body body = Body.stringBody("");
+  private Clock clock = Clock.getDefault();
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
   LogDataBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
@@ -99,10 +101,16 @@ public final class LogDataBuilder {
     return this;
   }
 
+  /** Sets the clock to be used for the current epoch nanos (if it is not set) */
+  public LogDataBuilder setClock(Clock clock) {
+    this.clock = clock;
+    return this;
+  }
+
   /** Build a {@link LogData} instance from the configured properties. */
   public LogData build() {
     if (epochNanos == 0) {
-      epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+      epochNanos = clock.now();
     }
     return LogDataImpl.create(
         resource,

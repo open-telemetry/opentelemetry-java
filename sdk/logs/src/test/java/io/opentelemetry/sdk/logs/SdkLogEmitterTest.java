@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
@@ -34,15 +35,19 @@ class SdkLogEmitterTest {
   private static final String INSTRUMENTATION_LIBRARY_NAME = SdkLogEmitter.class.getName();
   private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.0.1";
   private static final String SCHEMA_URL = "http://schemaurl";
+  private static final long NOW = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
 
   @Mock private LogProcessor logProcessor;
+  @Mock private Clock clock;
   private SdkLogEmitterProvider sdkLogEmitterProvider;
   private LogEmitter sdkLogEmitter;
 
   @BeforeEach
   void setup() {
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    sdkLogEmitterProvider = SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    when(clock.now()).thenReturn(NOW);
+    sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).setClock(clock).build();
     sdkLogEmitter =
         sdkLogEmitterProvider
             .logEmitterBuilder(INSTRUMENTATION_LIBRARY_NAME)

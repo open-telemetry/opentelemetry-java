@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -32,12 +33,12 @@ public final class SdkLogEmitterProvider implements Closeable {
     return new SdkLogEmitterProviderBuilder();
   }
 
-  SdkLogEmitterProvider(Resource resource, List<LogProcessor> processors) {
+  SdkLogEmitterProvider(Resource resource, List<LogProcessor> processors, Clock clock) {
     this.sharedState = new LogEmitterSharedState(resource, processors);
     this.logEmitterComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
-                new SdkLogEmitter(sharedState, instrumentationLibraryInfo));
+                new SdkLogEmitter(sharedState, instrumentationLibraryInfo, clock));
   }
 
   /**
