@@ -28,7 +28,7 @@ final class SdkLogEmitter implements LogEmitter {
 
   @Override
   public LogBuilder logBuilder() {
-    return new SdkLogBuilder();
+    return new SdkLogBuilder(logEmitterSharedState, instrumentationLibraryInfo);
   }
 
   // VisibleForTesting
@@ -36,13 +36,15 @@ final class SdkLogEmitter implements LogEmitter {
     return instrumentationLibraryInfo;
   }
 
-  // TODO: Can we make this class static
-  private final class SdkLogBuilder implements LogBuilder {
+  private static final class SdkLogBuilder implements LogBuilder {
 
     private final LogDataBuilder logDataBuilder;
+    private final LogEmitterSharedState logEmitterSharedState;
 
-    SdkLogBuilder() {
-      // TODO: Maybe refactor this to just pass in the shared state?
+    private SdkLogBuilder(
+        LogEmitterSharedState logEmitterSharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      this.logEmitterSharedState = logEmitterSharedState;
       this.logDataBuilder =
           LogDataBuilder.create(
               logEmitterSharedState.getResource(),
