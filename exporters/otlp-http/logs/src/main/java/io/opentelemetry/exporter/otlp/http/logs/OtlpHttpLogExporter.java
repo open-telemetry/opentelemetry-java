@@ -118,24 +118,26 @@ public final class OtlpHttpLogExporter implements LogExporter {
 
               @Override
               public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
-                  logsExportedSuccess.add(logs.size());
-                  result.succeed();
-                  return;
+                try (ResponseBody body = response.body()) {
+                  if (response.isSuccessful()) {
+                    logsExportedSuccess.add(logs.size());
+                    result.succeed();
+                    return;
+                  }
+
+                  logsExportedFailure.add(logs.size());
+                  int code = response.code();
+
+                  String status = extractErrorStatus(response, body);
+
+                  logger.log(
+                      Level.WARNING,
+                      "Failed to export logs. Server responded with HTTP status code "
+                          + code
+                          + ". Error message: "
+                          + status);
+                  result.fail();
                 }
-
-                logsExportedFailure.add(logs.size());
-                int code = response.code();
-
-                String status = extractErrorStatus(response);
-
-                logger.log(
-                    Level.WARNING,
-                    "Failed to export logs. Server responded with HTTP status code "
-                        + code
-                        + ". Error message: "
-                        + status);
-                result.fail();
               }
             });
 
@@ -163,8 +165,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
     };
   }
 
-  private static String extractErrorStatus(Response response) {
-    ResponseBody responseBody = response.body();
+  private static String extractErrorStatus(Response response, @Nullable ResponseBody responseBody) {
     if (responseBody == null) {
       return "Response body missing, HTTP status message: " + response.message();
     }
