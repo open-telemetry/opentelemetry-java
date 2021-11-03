@@ -93,26 +93,28 @@ public final class OkHttpExporter<T extends Marshaler> {
 
               @Override
               public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
-                  exporterMetrics.addSuccess(numItems);
-                  result.succeed();
-                  return;
+                try (ResponseBody body = response.body()) {
+                  if (response.isSuccessful()) {
+                    exporterMetrics.addSuccess(numItems);
+                    result.succeed();
+                    return;
+                  }
+
+                  exporterMetrics.addFailed(numItems);
+                  int code = response.code();
+
+                  String status = extractErrorStatus(response, body);
+
+                  logger.log(
+                      Level.WARNING,
+                      "Failed to export "
+                          + type
+                          + "s. Server responded with HTTP status code "
+                          + code
+                          + ". Error message: "
+                          + status);
+                  result.fail();
                 }
-
-                exporterMetrics.addFailed(numItems);
-                int code = response.code();
-
-                String status = extractErrorStatus(response);
-
-                logger.log(
-                    Level.WARNING,
-                    "Failed to export "
-                        + type
-                        + "s. Server responded with HTTP status code "
-                        + code
-                        + ". Error message: "
-                        + status);
-                result.fail();
               }
             });
 
@@ -148,8 +150,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     };
   }
 
-  private static String extractErrorStatus(Response response) {
-    ResponseBody responseBody = response.body();
+  private static String extractErrorStatus(Response response, @Nullable ResponseBody responseBody) {
     if (responseBody == null) {
       return "Response body missing, HTTP status message: " + response.message();
     }
