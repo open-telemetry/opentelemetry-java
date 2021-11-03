@@ -6,10 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -20,20 +18,17 @@ final class SdkLogEmitter implements LogEmitter {
 
   private final LogEmitterSharedState logEmitterSharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  private final Clock clock;
 
   SdkLogEmitter(
       LogEmitterSharedState logEmitterSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Clock clock) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.logEmitterSharedState = logEmitterSharedState;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.clock = clock;
   }
 
   @Override
   public LogBuilder logBuilder() {
-    return new SdkLogBuilder().setClock(clock);
+    return new SdkLogBuilder();
   }
 
   // VisibleForTesting
@@ -41,13 +36,18 @@ final class SdkLogEmitter implements LogEmitter {
     return instrumentationLibraryInfo;
   }
 
+  // TODO: Can we make this class static
   private final class SdkLogBuilder implements LogBuilder {
 
     private final LogDataBuilder logDataBuilder;
 
     SdkLogBuilder() {
+      // TODO: Maybe refactor this to just pass in the shared state?
       this.logDataBuilder =
-          LogData.builder(logEmitterSharedState.getResource(), instrumentationLibraryInfo);
+          LogDataBuilder.create(
+              logEmitterSharedState.getResource(),
+              instrumentationLibraryInfo,
+              logEmitterSharedState.getClock());
     }
 
     @Override
@@ -113,12 +113,6 @@ final class SdkLogEmitter implements LogEmitter {
     @Override
     public LogBuilder setAttributes(Attributes attributes) {
       logDataBuilder.setAttributes(attributes);
-      return this;
-    }
-
-    @Override
-    public LogBuilder setClock(Clock clock) {
-      logDataBuilder.setClock(clock);
       return this;
     }
 

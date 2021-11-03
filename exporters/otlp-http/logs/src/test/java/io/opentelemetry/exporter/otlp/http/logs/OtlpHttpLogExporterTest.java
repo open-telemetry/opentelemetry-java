@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -318,7 +319,7 @@ class OtlpHttpLogExporterTest {
   }
 
   private static LogData generateFakeLog() {
-    return LogData.builder(
+    return LogDataBuilder.create(
             Resource.getDefault(),
             InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
         .setName("log-name")

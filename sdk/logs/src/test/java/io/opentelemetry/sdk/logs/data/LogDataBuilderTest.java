@@ -20,12 +20,10 @@ class LogDataBuilderTest {
   void canSetClock() {
     Resource resource = Resource.getDefault();
     InstrumentationLibraryInfo libraryInfo = InstrumentationLibraryInfo.empty();
-    LogDataBuilder builder = new LogDataBuilder(resource, libraryInfo);
-
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(12L);
+    LogDataBuilder builder = LogDataBuilder.create(resource, libraryInfo, clock);
 
-    builder.setClock(clock);
     LogData result = builder.build();
     assertEquals(12L, result.getEpochNanos());
   }

@@ -14,6 +14,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,7 +32,7 @@ class OtlpJsonLoggingLogExporterTest {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final LogData LOG1 =
-      LogData.builder(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
+      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
           .setName("testLog1")
           .setBody("body1")
           .setFlags(0)
@@ -44,7 +45,7 @@ class OtlpJsonLoggingLogExporterTest {
           .build();
 
   private static final LogData LOG2 =
-      LogData.builder(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
+      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .setName("testLog2")
           .setBody("body2")
           .setFlags(0)

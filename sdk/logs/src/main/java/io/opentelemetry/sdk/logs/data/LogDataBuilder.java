@@ -28,12 +28,26 @@ public final class LogDataBuilder {
   @Nullable private String severityText;
   @Nullable private String name;
   private Body body = Body.stringBody("");
-  private Clock clock = Clock.getDefault();
+  private final Clock clock;
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogDataBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+  private LogDataBuilder(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.clock = clock;
+  }
+
+  /** Returns a new {@link LogDataBuilder} with the default clock. */
+  public static LogDataBuilder create(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return create(resource, instrumentationLibraryInfo, Clock.getDefault());
+  }
+
+  /** Returns a new {@link LogDataBuilder}. */
+  public static LogDataBuilder create(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
+    return new LogDataBuilder(resource, instrumentationLibraryInfo, clock);
   }
 
   /** Set the epoch timestamp using the timestamp and unit. */
@@ -98,12 +112,6 @@ public final class LogDataBuilder {
   /** Set the attributes. */
   public LogDataBuilder setAttributes(Attributes attributes) {
     this.attributeBuilder.putAll(attributes);
-    return this;
-  }
-
-  /** Sets the clock to be used for the current epoch nanos (if it is not set). */
-  public LogDataBuilder setClock(Clock clock) {
-    this.clock = clock;
     return this;
   }
 
