@@ -20,8 +20,7 @@ class DuplicateMetricStorageException extends IllegalArgumentException {
 
   DuplicateMetricStorageException(
       MetricDescriptor existing, MetricDescriptor next, String message) {
-    // TODO: Better error messages including async vs. sync instruments.
-    super(message + " Found: " + existing + ", Want: " + next);
+    super(message + " Found previous metric: " + existing + ", cannot register metric: " + next);
     this.existing = existing;
     this.conflict = next;
   }

@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class TestSourceInfo {
+class SourceInfoTest {
   @Test
   void noSourceInfo_includesEnableDebugMessage() {
     assertThat(SourceInfo.noSourceInfo().multiLineDebugString())
@@ -26,12 +26,5 @@ class TestSourceInfo {
   void doesGrabStackWhenEnabled() {
     DebugConfig.enableForTesting(true);
     assertThat(SourceInfo.fromCurrentStack()).isInstanceOf(StackTraceSourceInfo.class);
-  }
-
-  @Test
-  void sourceInfoUsesCustomValues() {
-    SourceInfo info = SourceInfo.fromConfigFile("mypath.yml", 20);
-    assertThat(info.shortDebugString()).isEqualTo("mypath.yml:20");
-    assertThat(info.multiLineDebugString()).isEqualTo("\tat mypath.yml:20");
   }
 }

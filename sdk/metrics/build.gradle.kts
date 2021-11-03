@@ -37,7 +37,7 @@ testing {
       targets {
         all {
           testTask.configure {
-            jvmArgs("-Dio.opentelemetry.sdk.metrics.debug=true")
+            jvmArgs("-Dotel.experimental.sdk.metrics.debug=true")
           }
         }
       }

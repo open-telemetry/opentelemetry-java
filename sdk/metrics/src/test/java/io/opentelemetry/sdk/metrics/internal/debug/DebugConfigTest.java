@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class TestDebugConfig {
+class DebugConfigTest {
 
   @Test
   void enableForTests() {
@@ -22,6 +22,6 @@ class TestDebugConfig {
   @Test
   void hasActionableMessage() {
     // Ensure error message includes system property.
-    assertThat(DebugConfig.getHowToEnableMessage()).contains("io.opentelemetry.sdk.metrics.debug");
+    assertThat(DebugConfig.getHowToEnableMessage()).contains("-D");
   }
 }

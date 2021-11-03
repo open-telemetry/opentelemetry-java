@@ -47,16 +47,4 @@ public interface SourceInfo {
     }
     return new StackTraceSourceInfo(Thread.currentThread().getStackTrace());
   }
-
-  /**
-   * Constructs a custom source information object that is meant to represent a non-code source of
-   * metric configuration.
-   *
-   * @param sourcePath A URI, filename or other user-identifying feature of where the metric
-   *     configuration came from.
-   * @param lineNumber A line number in the source, denoting where the configuration resides.
-   */
-  static SourceInfo fromConfigFile(String sourcePath, int lineNumber) {
-    return new CustomSourceInfo(sourcePath, lineNumber);
-  }
 }

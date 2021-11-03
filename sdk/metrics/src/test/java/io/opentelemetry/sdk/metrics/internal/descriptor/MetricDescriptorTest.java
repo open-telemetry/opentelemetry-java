@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
-class TestMetricDescriptor {
+class MetricDescriptorTest {
 
   @Test
   void metricDescriptor_preservesInstrumentDescriptor() {
