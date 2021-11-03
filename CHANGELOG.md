@@ -24,6 +24,16 @@
   `otel.exporter.otlp.protocol`, `otel.exporter.otlp.{signal}.protocol` instead.
 
 ---
+## Version 1.7.1 (2021-11-03):
+
+### Exporters:
+
+- [BUGFIX](https://github.com/open-telemetry/opentelemetry-java/issues/3813): In 1.7.0, the
+  okhttp-based exporters (`OtlpHttpSpanExporter`, `OtlpHttpMetricExporter`, `OtlpHttpLogExporter`)
+  did not properly close the okhttp message and hence would leak connections. This has been fixed in
+  1.7.1.
+
+---
 ## Version 1.7.0 (2021-10-08):
 
 ### General
