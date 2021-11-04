@@ -8,14 +8,11 @@ package io.opentelemetry.sdk.extension.incubator.trace;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -102,26 +99,6 @@ public class SpanPipelineBenchmark {
     @Threads(1)
     public void measureSpanPipeline() {
       runThePipeline();
-    }
-  }
-
-  public static class ExecutorServiceSpanProcessorBenchmark extends AbstractProcessorBenchmark {
-
-    @Override
-    protected SpanProcessor getSpanProcessor(String collectorAddress) {
-      return ExecutorServiceSpanProcessor.builder(
-              OtlpGrpcSpanExporter.builder()
-                  .setEndpoint(collectorAddress)
-                  .setTimeout(Duration.ofSeconds(50))
-                  .build(),
-              Executors.newSingleThreadScheduledExecutor(),
-              true)
-          .build();
-    }
-
-    @Override
-    protected void runThePipeline() {
-      doWork();
     }
   }
 }

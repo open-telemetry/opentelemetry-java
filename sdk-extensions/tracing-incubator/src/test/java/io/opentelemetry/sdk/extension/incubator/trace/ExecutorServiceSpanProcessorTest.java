@@ -45,7 +45,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-@SuppressWarnings("PreferJavaTimeOverload")
+// Tests deprecated class.
+@SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ExecutorServiceSpanProcessorTest {
