@@ -22,7 +22,7 @@ class SdkLogEmitterTest {
   void logBuilder() {
     Instant now = Instant.now();
     LogEmitterSharedState state = mock(LogEmitterSharedState.class);
-    InstrumentationLibraryInfo info = mock(InstrumentationLibraryInfo.class);
+    InstrumentationLibraryInfo info = InstrumentationLibraryInfo.create("foo", "bar");
     AtomicReference<LogData> seenLog = new AtomicReference<>();
     LogProcessor logProcessor = seenLog::set;
 
