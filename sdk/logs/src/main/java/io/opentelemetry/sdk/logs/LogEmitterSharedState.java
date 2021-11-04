@@ -36,7 +36,7 @@ final class LogEmitterSharedState {
     return logProcessor;
   }
 
-  public Clock getClock() {
+  Clock getClock() {
     return clock;
   }
 
