@@ -74,7 +74,7 @@ public class GrpcGzipBenchmark {
                         .build()))
             .build();
 
-    Meter meter1 = meterProvider.meterBuilder("longinstrumentation").build();
+    Meter meter1 = meterProvider.get("longinstrumentation");
     meter1
         .gaugeBuilder("gauge")
         .setDescription("gauge description")
@@ -102,7 +102,7 @@ public class GrpcGzipBenchmark {
     longUpDownCounter.add(-1, Attributes.of(AttributeKey.booleanKey("on"), true));
     longUpDownCounter.add(1);
 
-    Meter meter2 = meterProvider.meterBuilder("doubleinstrumentation").build();
+    Meter meter2 = meterProvider.get("doubleinstrumentation");
     meter2
         .gaugeBuilder("doublegauge")
         .setDescription("doublegauge")

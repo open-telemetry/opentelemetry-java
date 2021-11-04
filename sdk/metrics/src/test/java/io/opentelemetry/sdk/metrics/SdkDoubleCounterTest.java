@@ -36,7 +36,7 @@ class SdkDoubleCounterTest {
           .registerMetricReader(sdkMeterReader)
           .setResource(RESOURCE)
           .build();
-  private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullAttributes() {

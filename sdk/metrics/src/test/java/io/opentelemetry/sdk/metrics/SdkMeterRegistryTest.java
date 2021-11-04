@@ -56,27 +56,24 @@ class SdkMeterRegistryTest {
   }
 
   @Test
-  void meterBuilder_SameName() {
-    assertThat(meterProvider.meterBuilder("test").build())
-        .isSameAs(meterProvider.meterBuilder("test").build())
-        .isNotSameAs(
-            meterProvider.meterBuilder("test").setInstrumentationVersion("version").build());
+  void defaultGet() {
+    assertThat(meterProvider.get("test")).isInstanceOf(SdkMeter.class);
   }
 
   @Test
-  void meterBuilder_SameNameAndVersion() {
+  void getSameInstanceForSameName_WithoutVersion() {
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test"));
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.meterBuilder("test").build());
+  }
+
+  @Test
+  void getSameInstanceForSameName_WithVersion() {
     assertThat(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build())
-        .isSameAs(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build())
-        .isNotSameAs(
-            meterProvider
-                .meterBuilder("test")
-                .setInstrumentationVersion("version")
-                .setSchemaUrl("http://url")
-                .build());
+        .isSameAs(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build());
   }
 
   @Test
-  void meterBuilder_SameNameVersionAndSchema() {
+  void getSameInstanceForSameName_WithVersionAndSchema() {
     assertThat(
             meterProvider
                 .meterBuilder("test")
@@ -106,29 +103,12 @@ class SdkMeterRegistryTest {
   }
 
   @Test
-  void meterBuilder_DefaultMeterName() {
-    assertThat(
-            ((SdkMeter) meterProvider.meterBuilder(null).build())
-                .getInstrumentationLibraryInfo()
-                .getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
-
-    assertThat(
-            ((SdkMeter) meterProvider.meterBuilder("").build())
-                .getInstrumentationLibraryInfo()
-                .getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
-  }
-
-  @Test
   @SuppressWarnings("unchecked")
   void metricProducer_GetAllMetrics() {
-    Meter sdkMeter1 =
-        meterProvider.meterBuilder("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1").build();
+    Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounter longCounter1 = sdkMeter1.counterBuilder("testLongCounter").build();
     longCounter1.add(10, Attributes.empty());
-    Meter sdkMeter2 =
-        meterProvider.meterBuilder("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2").build();
+    Meter sdkMeter2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
     LongCounter longCounter2 = sdkMeter2.counterBuilder("testLongCounter").build();
     longCounter2.add(10, Attributes.empty());
 
@@ -151,5 +131,27 @@ class SdkMeterRegistryTest {
         .containsExactlyInAnyOrder(
             ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
             ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo());
+  }
+
+  @Test
+  void suppliesDefaultMeterForNullName() {
+    SdkMeter meter = (SdkMeter) meterProvider.get(null);
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+
+    meter = (SdkMeter) meterProvider.meterBuilder(null).build();
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+  }
+
+  @Test
+  void suppliesDefaultMeterForEmptyName() {
+    SdkMeter meter = (SdkMeter) meterProvider.get("");
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+
+    meter = (SdkMeter) meterProvider.meterBuilder("").build();
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 }

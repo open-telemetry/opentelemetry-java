@@ -9,6 +9,11 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import org.junit.jupiter.api.Test;
 
 public class NoopMeterProviderTest {
+  @Test
+  void noopMeterProvider_getDoesNotThrow() {
+    MeterProvider provider = MeterProvider.noop();
+    provider.get("user-instrumentation");
+  }
 
   @Test
   void noopMeterProvider_builderDoesNotThrow() {

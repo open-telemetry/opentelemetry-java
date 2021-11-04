@@ -21,7 +21,7 @@ public enum TestSdk {
       new SdkBuilder() {
         @Override
         Meter build() {
-          return MeterProvider.noop().meterBuilder("io.opentelemetry.sdk.metrics").build();
+          return MeterProvider.noop().get("io.opentelemetry.sdk.metrics");
         }
       }),
   SDK_NO_EXEMPLARS(
@@ -35,8 +35,7 @@ public enum TestSdk {
               .registerMetricReader(InMemoryMetricReader.create())
               .setExemplarFilter(ExemplarFilter.neverSample())
               .build()
-              .meterBuilder("io.opentelemetry.sdk.metrics")
-              .build();
+              .get("io.opentelemetry.sdk.metrics");
         }
       }),
   SDK(
@@ -49,8 +48,7 @@ public enum TestSdk {
               // Must register reader for real SDK.
               .registerMetricReader(InMemoryMetricReader.create())
               .build()
-              .meterBuilder("io.opentelemetry.sdk.metrics")
-              .build();
+              .get("io.opentelemetry.sdk.metrics");
         }
       });
 

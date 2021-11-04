@@ -82,10 +82,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
 
-    Meter meter =
-        GlobalMeterProvider.get()
-            .meterBuilder("io.opentelemetry.exporters.otlp-grpc-okhttp")
-            .build();
+    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc-okhttp");
     Attributes attributes = Attributes.builder().put("type", type).build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();

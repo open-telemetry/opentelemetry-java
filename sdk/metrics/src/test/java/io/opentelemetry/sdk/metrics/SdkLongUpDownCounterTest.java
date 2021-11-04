@@ -36,7 +36,7 @@ class SdkLongUpDownCounterTest {
           .setResource(RESOURCE)
           .registerMetricReader(sdkMeterReader)
           .build();
-  private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullAttributes() {

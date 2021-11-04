@@ -23,7 +23,7 @@ class InMemoryMetricReaderCumulativeTest {
   }
 
   private void generateFakeMetric(int index) {
-    provider.meterBuilder("test").build().counterBuilder("test" + index).build().add(1);
+    provider.get("test").counterBuilder("test" + index).build().add(1);
   }
 
   @Test

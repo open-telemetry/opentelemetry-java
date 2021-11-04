@@ -27,9 +27,7 @@ public interface MeterProvider {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a meter instance.
-   * @deprecated Use {@link #meterBuilder(String)}
    */
-  @Deprecated
   default Meter get(String instrumentationName) {
     return meterBuilder(instrumentationName).build();
   }
