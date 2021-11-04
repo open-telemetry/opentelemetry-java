@@ -27,8 +27,7 @@ public class ExponentialHistogramAssert
       failWithActualExpectedAndMessage(
           actual,
           "aggregationTemporality: CUMULATIVE",
-          "Exepcted Histogram to have cumulative aggregation but found <%s>",
-          AggregationTemporality.CUMULATIVE,
+          "Expected Histogram to have cumulative aggregation but found <%s>",
           actual.getAggregationTemporality());
     }
     return this;
