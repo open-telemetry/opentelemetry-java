@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 abstract class AbstractSumAggregator<T> implements Aggregator<T> {
   private final boolean isMonotonic;
