@@ -67,7 +67,7 @@ public final class ContainerResource {
       Optional<String> value =
           lines
               .filter(line -> !line.isEmpty())
-              .map(line -> getIdFromLine(line))
+              .map(ContainerResource::getIdFromLine)
               .filter(Objects::nonNull)
               .findFirst();
       if (value.isPresent()) {
@@ -82,14 +82,14 @@ public final class ContainerResource {
   @Nullable
   private static String getIdFromLine(String line) {
     // This cgroup output line should have the container id in it
-    int lastSlashIdx = line.lastIndexOf("/");
+    int lastSlashIdx = line.lastIndexOf('/');
     if (lastSlashIdx < 0) {
       return null;
     }
 
     String lastSection = line.substring(lastSlashIdx + 1);
-    int startIdx = lastSection.indexOf("-");
-    int endIdx = lastSection.lastIndexOf(".");
+    int startIdx = lastSection.lastIndexOf('-');
+    int endIdx = lastSection.lastIndexOf('.');
 
     String containerId =
         lastSection.substring(
