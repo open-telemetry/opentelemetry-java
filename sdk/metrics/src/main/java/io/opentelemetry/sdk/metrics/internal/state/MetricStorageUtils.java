@@ -20,6 +20,7 @@ final class MetricStorageUtils {
    */
   static <T> void mergeInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
+    result.entrySet().removeIf(entry -> !toMerge.containsKey(entry.getKey()));
     toMerge.forEach(
         (k, v) -> {
           result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.merge(v2, v) : v);
@@ -35,6 +36,7 @@ final class MetricStorageUtils {
    */
   static <T> void diffInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
+    result.entrySet().removeIf(entry -> !toDiff.containsKey(entry.getKey()));
     toDiff.forEach(
         (k, v) -> {
           result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.diff(v2, v) : v);
