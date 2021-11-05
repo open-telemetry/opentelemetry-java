@@ -57,7 +57,7 @@ class MetricStorageUtilsTest {
   }
 
   @Test
-  void diff() {
+  void diffInPlace() {
     Aggregator<String> agg = new TestAggregator();
     MetricStorageUtils.diffInPlace(result, toMerge, agg);
 
