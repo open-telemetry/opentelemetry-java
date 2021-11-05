@@ -67,7 +67,8 @@ class TemporalMetricStorage<T> {
       //    Here we diff with last cumulative to get a delta.
       // 2. Cumulative Aggregation + Delta recording (sync instrument).
       //    Here we merge with our last record to get a cumulative aggregation.
-      // 3. Cumulative Aggregation + Cumulative recording - do nothing
+      // 3. Cumulative Aggregation + Cumulative recording
+      //    Here we copy last accumulations into current if they don't exist to retain history.
       // 4. Delta Aggregation + Delta recording - do nothing.
       if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
         MetricStorageUtils.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
@@ -77,6 +78,8 @@ class TemporalMetricStorage<T> {
         // for the next cumulative measurement.
         MetricStorageUtils.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
+      } else if (temporality == AggregationTemporality.CUMULATIVE) { // && !isSynchronous
+        last.getAccumlation().forEach(currentAccumulation::putIfAbsent);
       }
     }
     // Update last reported (cumulative) accumulation.
