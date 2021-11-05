@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.internal.state.MetricStorage.MAX_ACCUMULATIONS;
+
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -25,6 +28,9 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 class DeltaMetricStorage<T> {
+
+  private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
+
   private final Aggregator<T> aggregator;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> activeCollectionStorage =
       new ConcurrentHashMap<>();
@@ -47,9 +53,13 @@ class DeltaMetricStorage<T> {
       return aggregatorHandle;
     }
 
-    // Missing entry or no longer mapped, try to add a new entry.
+    // Missing entry or no longer mapped. Try to add a new one if not exceeded cardinality limits.
     aggregatorHandle = aggregator.createHandle();
     while (true) {
+      if (activeCollectionStorage.size() >= MAX_ACCUMULATIONS) {
+        // TODO: provide useful diagnostics when max accumulations has been reached
+        return NOOP_STORAGE_HANDLE;
+      }
       AggregatorHandle<?> boundAggregatorHandle =
           activeCollectionStorage.putIfAbsent(attributes, aggregatorHandle);
       if (boundAggregatorHandle != null) {
@@ -120,5 +130,18 @@ class DeltaMetricStorage<T> {
     if (!result.isEmpty()) {
       unreportedDeltas.add(new DeltaAccumulation<>(result));
     }
+  }
+
+  /** An implementation of {@link BoundStorageHandle} that does not record. */
+  private static class NoopBoundHandle implements BoundStorageHandle {
+
+    @Override
+    public void recordLong(long value, Attributes attributes, Context context) {}
+
+    @Override
+    public void recordDouble(double value, Attributes attributes, Context context) {}
+
+    @Override
+    public void release() {}
   }
 }

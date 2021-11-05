@@ -162,6 +162,10 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     private Map<Attributes, T> currentAccumulation = new HashMap<>();
 
     public void record(Attributes attributes, T accumulation) {
+      if (currentAccumulation.size() >= MAX_ACCUMULATIONS) {
+        // TODO: provide useful diagnostics when max accumulations has been reached
+        return;
+      }
       // TODO: error on metric overwrites
       currentAccumulation.put(attributes, accumulation);
     }

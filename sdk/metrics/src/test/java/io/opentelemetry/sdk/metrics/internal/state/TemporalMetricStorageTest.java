@@ -197,15 +197,15 @@ class TemporalMetricStorageTest {
     Attributes attr1 = Attributes.builder().put("key", "value1").build();
     measurement1.put(attr1, DoubleAccumulation.create(3));
     assertThat(
-        storage.buildMetricFor(
-            collector1,
-            Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
-            METRIC_DESCRIPTOR,
-            AggregationTemporality.DELTA,
-            measurement1,
-            0,
-            10))
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement1,
+                0,
+                10))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -219,15 +219,15 @@ class TemporalMetricStorageTest {
     Attributes attr2 = Attributes.builder().put("key", "value2").build();
     measurement2.put(attr2, DoubleAccumulation.create(7));
     assertThat(
-        storage.buildMetricFor(
-            collector1,
-            Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
-            METRIC_DESCRIPTOR,
-            AggregationTemporality.DELTA,
-            measurement2,
-            0,
-            20))
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement2,
+                0,
+                20))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -536,15 +536,15 @@ class TemporalMetricStorageTest {
     Attributes attr1 = Attributes.builder().put("key", "value1").build();
     measurement1.put(attr1, DoubleAccumulation.create(3));
     assertThat(
-        storage.buildMetricFor(
-            collector1,
-            Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
-            METRIC_DESCRIPTOR,
-            AggregationTemporality.DELTA,
-            measurement1,
-            0,
-            10))
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement1,
+                0,
+                10))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -558,15 +558,15 @@ class TemporalMetricStorageTest {
     Attributes attr2 = Attributes.builder().put("key", "value2").build();
     measurement2.put(attr2, DoubleAccumulation.create(7));
     assertThat(
-        storage.buildMetricFor(
-            collector1,
-            Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
-            METRIC_DESCRIPTOR,
-            AggregationTemporality.DELTA,
-            measurement2,
-            0,
-            20))
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement2,
+                0,
+                20))
         .hasDoubleSum()
         .isDelta()
         .points()
