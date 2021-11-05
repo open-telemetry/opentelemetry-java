@@ -32,8 +32,6 @@ final class MetricStorageUtils {
    *
    * <p>If no prior value is found, then the value from {@code toDiff} is used.
    *
-   * <p>Removes accumulations from {@code result} that don't appear in {@code toMerge}.
-   *
    * <p>Note: This mutates the result map.
    */
   static <T> void diffInPlace(
@@ -42,8 +40,5 @@ final class MetricStorageUtils {
         (k, v) -> {
           result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.diff(v2, v) : v);
         });
-    // Remove keys from result that don't appear in toDiff
-    Set<Attributes> toDiffKeys = toDiff.keySet();
-    result.entrySet().removeIf(entry -> !toDiffKeys.contains(entry.getKey()));
   }
 }
