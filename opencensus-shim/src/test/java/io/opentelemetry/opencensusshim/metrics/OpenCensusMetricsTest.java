@@ -30,16 +30,16 @@ class OpenCensusMetricsTest {
     // Record an otel metric.
     otelMetrics.meterBuilder("otel").build().counterBuilder("otel.sum").build().add(1);
     // Record an OpenCensus metric.
-    Measure.MeasureLong MEASURE = Measure.MeasureLong.create("oc.measure", "oc.desc", "oc.unit");
+    Measure.MeasureLong measure = Measure.MeasureLong.create("oc.measure", "oc.desc", "oc.unit");
     Stats.getViewManager()
         .registerView(
             View.create(
                 View.Name.create("oc.sum"),
                 "oc.desc",
-                MEASURE,
+                measure,
                 Aggregation.Count.create(),
                 Collections.emptyList()));
-    STATS_RECORDER.newMeasureMap().put(MEASURE, 1).record();
+    STATS_RECORDER.newMeasureMap().put(measure, 1).record();
 
     // Wait for OpenCensus propagation.
     Thread.sleep(1000);
