@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /** Adapts an OpenCensus metric into the OpenTelemetry metric data API. */
 public final class MetricAdapter {
@@ -343,7 +344,11 @@ public final class MetricAdapter {
         exemplar.getValue());
   }
 
-  static long mapTimestamp(Timestamp time) {
+  static long mapTimestamp(@Nullable Timestamp time) {
+    // Treat all empty timestamps as "0" (proto3)
+    if (time == null) {
+      return 0;
+    }
     return TimeUnit.SECONDS.toNanos(time.getSeconds()) + time.getNanos();
   }
 

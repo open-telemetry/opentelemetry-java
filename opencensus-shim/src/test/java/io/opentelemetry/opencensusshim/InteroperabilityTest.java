@@ -18,9 +18,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.opencensus.common.Duration;
 import io.opencensus.stats.Aggregation;
-import io.opencensus.stats.BucketBoundaries;
 import io.opencensus.stats.Measure;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -50,9 +48,12 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.opencensusshim.metrics.OpenCensusMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -357,7 +358,7 @@ class InteroperabilityTest {
 
   @Test
   @SuppressWarnings({"deprecation", "unchecked"}) // Summary is deprecated in census
-  void testSupportedMetricsExportedCorrectly() {
+  void testSupportedMetricsExportedCorrectly() throws InterruptedException {
     Tagger tagger = Tags.getTagger();
     Measure.MeasureLong latency =
         Measure.MeasureLong.create("task_latency", "The task latency in milliseconds", "ms");
@@ -399,9 +400,15 @@ class InteroperabilityTest {
     viewManager.registerView(longGaugeView);
     viewManager.registerView(doubleSumView);
     viewManager.registerView(doubleGaugeView);
+    // Create Otel SDK that also reads from OpenCensus.
     FakeMetricExporter metricExporter = new FakeMetricExporter();
-    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 5000));
-
+    SdkMeterProvider.builder()
+        .registerMetricReader(
+            OpenCensusMetrics.attachTo(
+                PeriodicMetricReader.builder(metricExporter)
+                    .setInterval(java.time.Duration.ofNanos(5000))
+                    .newMetricReaderFactory()))
+        .buildAndRegisterGlobal();
     TagContext tagContext =
         tagger
             .emptyBuilder()
@@ -411,6 +418,8 @@ class InteroperabilityTest {
       statsRecorder.newMeasureMap().put(latency, 50).record();
       statsRecorder.newMeasureMap().put(latency2, 60).record();
     }
+    // Slow down for OpenCensus to catch up.
+    Thread.sleep(500);
     List<List<MetricData>> exported = metricExporter.waitForNumberOfExports(3);
     List<MetricData> metricData =
         exported.get(2).stream()
@@ -462,49 +471,6 @@ class InteroperabilityTest {
                     .attributes()
                     .hasSize(1)
                     .containsEntry(tagKey.getName(), tagValue.asString()));
-  }
-
-  @Test
-  void testUnsupportedMetricsDoesNotGetExported() throws InterruptedException {
-    Tagger tagger = Tags.getTagger();
-    Measure.MeasureLong latency =
-        Measure.MeasureLong.create(
-            "task_latency_distribution", "The task latency in milliseconds", "ms");
-    StatsRecorder statsRecorder = Stats.getStatsRecorder();
-    TagKey tagKey = TagKey.create("tagKey");
-    TagValue tagValue = TagValue.create("tagValue");
-    View view =
-        View.create(
-            View.Name.create("task_latency_distribution"),
-            "The distribution of the task latencies.",
-            latency,
-            Aggregation.Distribution.create(
-                BucketBoundaries.create(ImmutableList.of(100.0, 150.0, 200.0))),
-            ImmutableList.of(tagKey));
-    ViewManager viewManager = Stats.getViewManager();
-    viewManager.registerView(view);
-    FakeMetricExporter metricExporter = new FakeMetricExporter();
-    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
-
-    TagContext tagContext =
-        tagger
-            .emptyBuilder()
-            .put(tagKey, tagValue, TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION))
-            .build();
-    try (io.opencensus.common.Scope ss = tagger.withTagContext(tagContext)) {
-      statsRecorder.newMeasureMap().put(latency, 50).record();
-    }
-    // Sleep so that there is time for export() to be called.
-    Thread.sleep(2);
-    // This is 0 in case this test gets run first, or by itself.
-    // If other views have already been registered in other tests, they will produce metric data, so
-    // we are testing for the absence of this particular view's metric data.
-    List<List<MetricData>> allExports = metricExporter.waitForNumberOfExports(0);
-    if (!allExports.isEmpty()) {
-      for (MetricData metricData : allExports.get(allExports.size() - 1)) {
-        assertThat(metricData.getName()).isNotEqualTo("task_latency_distribution");
-      }
-    }
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(

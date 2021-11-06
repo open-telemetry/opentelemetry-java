@@ -29,7 +29,7 @@ SdkMeterProvider.builder()
             .registerMetricReader(
                 OpenCensusMetrics.attachTo(readerFactory)
             )
-        .buildAndRegisterGlobal(
+        .buildAndRegisterGlobal();
 ```
 
 For example, if a logging exporter were configured, the following would be
@@ -41,10 +41,10 @@ SdkMeterProvider.builder()
             .registerMetricReader(
                 OpenCensusMetrics.attachTo(
                   PeriodicMetricReader.builder(metricExporter)
-                  .build()
+                  .newMetricReaderFactory()
                 )
             )
-        .buildAndRegisterGlobal(
+        .buildAndRegisterGlobal();
 ```
 
 ## Known Problems
