@@ -419,7 +419,7 @@ class InteroperabilityTest {
       statsRecorder.newMeasureMap().put(latency2, 60).record();
     }
     // Slow down for OpenCensus to catch up.
-    Thread.sleep(500);
+    Thread.sleep(1000);
     List<List<MetricData>> exported = metricExporter.waitForNumberOfExports(3);
     List<MetricData> metricData =
         exported.get(2).stream()
