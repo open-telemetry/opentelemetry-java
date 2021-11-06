@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+@Deprecated
 public final class OpenTelemetryMetricsExporter extends MetricExporter {
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryMetricsExporter.class.getName());
