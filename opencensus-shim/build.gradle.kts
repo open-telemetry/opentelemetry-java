@@ -22,3 +22,10 @@ dependencies {
   testImplementation("org.slf4j:slf4j-simple")
   testImplementation("io.opencensus:opencensus-impl")
 }
+
+tasks.named<Test>("test") {
+  // We must force a fork per-test class because OpenCensus pollutes globals with no restorative
+  // methods available.
+  setForkEvery(1)
+  maxParallelForks = 3
+}
