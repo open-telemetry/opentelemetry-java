@@ -5,7 +5,6 @@
 
 package io.opentelemetry.opencensusshim;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -18,18 +17,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.opencensus.stats.Aggregation;
-import io.opencensus.stats.Measure;
-import io.opencensus.stats.Stats;
-import io.opencensus.stats.StatsRecorder;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewManager;
-import io.opencensus.tags.TagContext;
-import io.opencensus.tags.TagKey;
-import io.opencensus.tags.TagMetadata;
-import io.opencensus.tags.TagValue;
-import io.opencensus.tags.Tagger;
-import io.opencensus.tags.Tags;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Link;
@@ -48,12 +35,8 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.opencensusshim.metrics.OpenCensusMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -61,10 +44,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -354,123 +334,6 @@ class InteroperabilityTest {
     }
     Tracing.getExportComponent().shutdown();
     verify(spanExporter, never()).export(anyCollection());
-  }
-
-  @Test
-  @SuppressWarnings({"deprecation", "unchecked"}) // Summary is deprecated in census
-  void testSupportedMetricsExportedCorrectly() throws InterruptedException {
-    Tagger tagger = Tags.getTagger();
-    Measure.MeasureLong latency =
-        Measure.MeasureLong.create("task_latency", "The task latency in milliseconds", "ms");
-    Measure.MeasureDouble latency2 =
-        Measure.MeasureDouble.create("task_latency_2", "The task latency in milliseconds 2", "ms");
-    StatsRecorder statsRecorder = Stats.getStatsRecorder();
-    TagKey tagKey = TagKey.create("tagKey");
-    TagValue tagValue = TagValue.create("tagValue");
-    View longSumView =
-        View.create(
-            View.Name.create("long_sum"),
-            "long sum",
-            latency,
-            Aggregation.Sum.create(),
-            ImmutableList.of(tagKey));
-    View longGaugeView =
-        View.create(
-            View.Name.create("long_gauge"),
-            "long gauge",
-            latency,
-            Aggregation.LastValue.create(),
-            ImmutableList.of(tagKey));
-    View doubleSumView =
-        View.create(
-            View.Name.create("double_sum"),
-            "double sum",
-            latency2,
-            Aggregation.Sum.create(),
-            ImmutableList.of());
-    View doubleGaugeView =
-        View.create(
-            View.Name.create("double_gauge"),
-            "double gauge",
-            latency2,
-            Aggregation.LastValue.create(),
-            ImmutableList.of());
-    ViewManager viewManager = Stats.getViewManager();
-    viewManager.registerView(longSumView);
-    viewManager.registerView(longGaugeView);
-    viewManager.registerView(doubleSumView);
-    viewManager.registerView(doubleGaugeView);
-    // Create Otel SDK that also reads from OpenCensus.
-    FakeMetricExporter metricExporter = new FakeMetricExporter();
-    SdkMeterProvider.builder()
-        .registerMetricReader(
-            OpenCensusMetrics.attachTo(
-                PeriodicMetricReader.builder(metricExporter)
-                    .setInterval(java.time.Duration.ofNanos(5000))
-                    .newMetricReaderFactory()))
-        .buildAndRegisterGlobal();
-    TagContext tagContext =
-        tagger
-            .emptyBuilder()
-            .put(tagKey, tagValue, TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION))
-            .build();
-    try (io.opencensus.common.Scope ss = tagger.withTagContext(tagContext)) {
-      statsRecorder.newMeasureMap().put(latency, 50).record();
-      statsRecorder.newMeasureMap().put(latency2, 60).record();
-    }
-    // Slow down for OpenCensus to catch up.
-    Thread.sleep(1000);
-    List<List<MetricData>> exported = metricExporter.waitForNumberOfExports(3);
-    List<MetricData> metricData =
-        exported.get(2).stream()
-            .sorted(Comparator.comparing(MetricData::getName))
-            .collect(Collectors.toList());
-    assertThat(metricData.size()).isEqualTo(4);
-
-    MetricData metric = metricData.get(0);
-    assertThat(metric)
-        .hasName("double_gauge")
-        .hasDescription("double gauge")
-        .hasUnit("ms")
-        .hasDoubleGauge()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(60).attributes().hasSize(0));
-    metric = metricData.get(1);
-    assertThat(metric)
-        .hasName("double_sum")
-        .hasDescription("double sum")
-        .hasUnit("ms")
-        .hasDoubleSum()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(60).attributes().hasSize(0));
-    metric = metricData.get(2);
-    assertThat(metric)
-        .hasName("long_gauge")
-        .hasDescription("long gauge")
-        .hasUnit("ms")
-        .hasLongGauge()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasValue(50)
-                    .attributes()
-                    .hasSize(1)
-                    .containsEntry(tagKey.getName(), tagValue.asString()));
-    metric = metricData.get(3);
-    assertThat(metric)
-        .hasName("long_sum")
-        .hasDescription("long sum")
-        .hasUnit("ms")
-        .hasLongSum()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasValue(50)
-                    .attributes()
-                    .hasSize(1)
-                    .containsEntry(tagKey.getName(), tagValue.asString()));
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(
