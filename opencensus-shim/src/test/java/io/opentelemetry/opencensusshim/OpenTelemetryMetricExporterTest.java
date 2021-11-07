@@ -1,8 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.opencensusshim;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 import com.google.common.collect.ImmutableList;
 import io.opencensus.common.Duration;
@@ -34,8 +38,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Test;
 
 class OpenTelemetryMetricExporterTest {
 
@@ -86,7 +90,7 @@ class OpenTelemetryMetricExporterTest {
     // Create OpenCensus -> OpenTelemetry Exporter bridge
     WaitingMetricExporter exporter = new WaitingMetricExporter();
     OpenTelemetryMetricsExporter otelExporter =
-    OpenTelemetryMetricsExporter.createAndRegister(exporter, Duration.create(0, 5000));
+        OpenTelemetryMetricsExporter.createAndRegister(exporter, Duration.create(0, 5000));
     try {
       TagContext tagContext =
           tagger
@@ -100,9 +104,10 @@ class OpenTelemetryMetricExporterTest {
       // Slow down for OpenCensus to catch up.
       List<List<MetricData>> result = exporter.waitForNumberOfExports(3);
       // Just look at last export.
-      List<MetricData> metricData = result.get(2).stream()
-          .sorted(Comparator.comparing(MetricData::getName))
-          .collect(Collectors.toList());
+      List<MetricData> metricData =
+          result.get(2).stream()
+              .sorted(Comparator.comparing(MetricData::getName))
+              .collect(Collectors.toList());
       assertThat(metricData.size()).isEqualTo(4);
 
       MetricData metric = metricData.get(0);
