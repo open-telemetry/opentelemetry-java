@@ -16,8 +16,10 @@ import io.opencensus.stats.StatsRecorder;
 import io.opencensus.stats.View;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 class OpenCensusMetricProducerTest {
@@ -44,25 +46,29 @@ class OpenCensusMetricProducerTest {
     Stats.getViewManager().registerView(view);
     STATS_RECORDER.newMeasureMap().put(LATENCY_MS, 50).record();
     // Wait for measurement to hit the aggregator.
-    Thread.sleep(1000);
 
-    assertThat(openCensusMetrics.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("task_latency_distribution")
-                    .hasDescription("The distribution of the task latencies.")
-                    .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .isCumulative()
-                    .points()
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () ->
+                assertThat(openCensusMetrics.collectAllMetrics())
                     .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(50)
-                                .hasCount(1)
-                                .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
-                                .hasBucketBoundaries(100d, 200d, 400d, 1000d, 2000d, 4000d)
-                                .hasExemplars()));
+                        metric ->
+                            assertThat(metric)
+                                .hasName("task_latency_distribution")
+                                .hasDescription("The distribution of the task latencies.")
+                                .hasUnit("ms")
+                                .hasDoubleHistogram()
+                                .isCumulative()
+                                .points()
+                                .satisfiesExactly(
+                                    point ->
+                                        assertThat(point)
+                                            .hasSum(50)
+                                            .hasCount(1)
+                                            .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
+                                            .hasBucketBoundaries(
+                                                100d, 200d, 400d, 1000d, 2000d, 4000d)
+                                            .hasExemplars())));
   }
 }

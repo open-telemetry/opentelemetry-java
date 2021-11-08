@@ -14,7 +14,9 @@ import io.opencensus.stats.StatsRecorder;
 import io.opencensus.stats.View;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import java.time.Duration;
 import java.util.Collections;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 class OpenCensusMetricsTest {
@@ -42,11 +44,13 @@ class OpenCensusMetricsTest {
     STATS_RECORDER.newMeasureMap().put(measure, 1).record();
 
     // Wait for OpenCensus propagation.
-    Thread.sleep(1000);
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric -> assertThat(metric).hasName("otel.sum").hasLongSum(),
-            metric -> assertThat(metric).hasName("oc.sum").hasLongSum());
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(5))
+        .untilAsserted(
+            () ->
+                assertThat(reader.collectAllMetrics())
+                    .satisfiesExactly(
+                        metric -> assertThat(metric).hasName("otel.sum").hasLongSum(),
+                        metric -> assertThat(metric).hasName("oc.sum").hasLongSum()));
   }
 }

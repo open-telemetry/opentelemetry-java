@@ -22,23 +22,13 @@ import io.opencensus.tags.TagMetadata;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetryMetricExporterTest {
@@ -88,9 +78,9 @@ class OpenTelemetryMetricExporterTest {
     viewManager.registerView(doubleSumView);
     viewManager.registerView(doubleGaugeView);
     // Create OpenCensus -> OpenTelemetry Exporter bridge
-    WaitingMetricExporter exporter = new WaitingMetricExporter();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     OpenTelemetryMetricsExporter otelExporter =
-        OpenTelemetryMetricsExporter.createAndRegister(exporter, Duration.create(0, 5000));
+        OpenTelemetryMetricsExporter.createAndRegister(exporter, Duration.create(1, 0));
     try {
       TagContext tagContext =
           tagger
@@ -101,127 +91,74 @@ class OpenTelemetryMetricExporterTest {
         statsRecorder.newMeasureMap().put(latency, 50).record();
         statsRecorder.newMeasureMap().put(latency2, 60).record();
       }
+      Set<String> allowedMetrics = new HashSet<>();
+      allowedMetrics.add("double_gauge");
+      allowedMetrics.add("double_sum");
+      allowedMetrics.add("long_gauge");
+      allowedMetrics.add("long_sum");
       // Slow down for OpenCensus to catch up.
-      List<List<MetricData>> result = exporter.waitForNumberOfExports(3);
-      // Just look at last export.
-      List<MetricData> metricData =
-          result.get(2).stream()
-              .sorted(Comparator.comparing(MetricData::getName))
-              .collect(Collectors.toList());
-      assertThat(metricData.size()).isEqualTo(4);
-
-      MetricData metric = metricData.get(0);
-      MetricAssertions.assertThat(metric)
-          .hasName("double_gauge")
-          .hasDescription("double gauge")
-          .hasUnit("ms")
-          .hasDoubleGauge()
-          .points()
-          .satisfiesExactly(
-              point -> MetricAssertions.assertThat(point).hasValue(60).attributes().hasSize(0));
-      metric = metricData.get(1);
-      MetricAssertions.assertThat(metric)
-          .hasName("double_sum")
-          .hasDescription("double sum")
-          .hasUnit("ms")
-          .hasDoubleSum()
-          .points()
-          .satisfiesExactly(
-              point -> MetricAssertions.assertThat(point).hasValue(60).attributes().hasSize(0));
-      metric = metricData.get(2);
-      MetricAssertions.assertThat(metric)
-          .hasName("long_gauge")
-          .hasDescription("long gauge")
-          .hasUnit("ms")
-          .hasLongGauge()
-          .points()
-          .satisfiesExactly(
-              point ->
-                  MetricAssertions.assertThat(point)
-                      .hasValue(50)
-                      .attributes()
-                      .hasSize(1)
-                      .containsEntry(tagKey.getName(), tagValue.asString()));
-      metric = metricData.get(3);
-      MetricAssertions.assertThat(metric)
-          .hasName("long_sum")
-          .hasDescription("long sum")
-          .hasUnit("ms")
-          .hasLongSum()
-          .points()
-          .satisfiesExactly(
-              point ->
-                  MetricAssertions.assertThat(point)
-                      .hasValue(50)
-                      .attributes()
-                      .hasSize(1)
-                      .containsEntry(tagKey.getName(), tagValue.asString()));
+      Awaitility.await()
+          .atMost(java.time.Duration.ofSeconds(10))
+          .untilAsserted(
+              () ->
+                  assertThat(
+                          exporter.getFinishedMetricItems().stream()
+                              .filter(metric -> allowedMetrics.contains(metric.getName()))
+                              .sorted(Comparator.comparing(MetricData::getName))
+                              .collect(Collectors.toList()))
+                      .satisfiesExactly(
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("double_gauge")
+                                  .hasDescription("double gauge")
+                                  .hasUnit("ms")
+                                  .hasDoubleGauge()
+                                  .points()
+                                  .satisfiesExactly(
+                                      point ->
+                                          assertThat(point).hasValue(60).attributes().hasSize(0)),
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("double_sum")
+                                  .hasDescription("double sum")
+                                  .hasUnit("ms")
+                                  .hasDoubleSum()
+                                  .points()
+                                  .satisfiesExactly(
+                                      point ->
+                                          assertThat(point).hasValue(60).attributes().hasSize(0)),
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("long_gauge")
+                                  .hasDescription("long gauge")
+                                  .hasUnit("ms")
+                                  .hasLongGauge()
+                                  .points()
+                                  .satisfiesExactly(
+                                      point ->
+                                          assertThat(point)
+                                              .hasValue(50)
+                                              .attributes()
+                                              .hasSize(1)
+                                              .containsEntry(
+                                                  tagKey.getName(), tagValue.asString())),
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("long_sum")
+                                  .hasDescription("long sum")
+                                  .hasUnit("ms")
+                                  .hasLongSum()
+                                  .points()
+                                  .satisfiesExactly(
+                                      point ->
+                                          assertThat(point)
+                                              .hasValue(50)
+                                              .attributes()
+                                              .hasSize(1)
+                                              .containsEntry(
+                                                  tagKey.getName(), tagValue.asString()))));
     } finally {
       otelExporter.stop();
-    }
-  }
-
-  // Straight copy-paste from PeriodicMetricReaderTest.  Should likely move into metrics-testing.
-  private static class WaitingMetricExporter implements MetricExporter {
-
-    private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
-    private final boolean shouldThrow;
-    private final BlockingQueue<List<MetricData>> queue = new LinkedBlockingQueue<>();
-    private final List<Long> exportTimes = Collections.synchronizedList(new ArrayList<>());
-
-    private WaitingMetricExporter() {
-      this(false);
-    }
-
-    private WaitingMetricExporter(boolean shouldThrow) {
-      this.shouldThrow = shouldThrow;
-    }
-
-    @Override
-    public EnumSet<AggregationTemporality> getSupportedTemporality() {
-      return EnumSet.allOf(AggregationTemporality.class);
-    }
-
-    @Override
-    public AggregationTemporality getPreferredTemporality() {
-      return null;
-    }
-
-    @Override
-    public CompletableResultCode export(Collection<MetricData> metricList) {
-      exportTimes.add(System.currentTimeMillis());
-      queue.offer(new ArrayList<>(metricList));
-
-      if (shouldThrow) {
-        throw new RuntimeException("Export Failed!");
-      }
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode flush() {
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      hasShutdown.set(true);
-      return CompletableResultCode.ofSuccess();
-    }
-
-    /**
-     * Waits until export is called for numberOfExports times. Returns the list of exported lists of
-     * metrics.
-     */
-    @Nullable
-    List<List<MetricData>> waitForNumberOfExports(int numberOfExports) throws Exception {
-      List<List<MetricData>> result = new ArrayList<>();
-      while (result.size() < numberOfExports) {
-        List<MetricData> export = queue.poll(5, TimeUnit.SECONDS);
-        assertThat(export).isNotNull();
-        result.add(export);
-      }
-      return result;
     }
   }
 }
