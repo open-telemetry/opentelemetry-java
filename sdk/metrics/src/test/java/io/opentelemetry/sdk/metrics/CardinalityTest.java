@@ -5,14 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.metrics.internal.state.MetricStorage.MAX_ACCUMULATIONS;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,6 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CardinalityTest {
+
+  /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
+  private static final int MAX_ACCUMULATIONS = 2000;
 
   private InMemoryMetricReader deltaReader;
   private InMemoryMetricReader cumulativeReader;
@@ -120,8 +121,8 @@ class CardinalityTest {
   }
 
   /**
-   * Records to sync instruments, many distinct attributes. Validates that the {@link
-   * MetricStorage#MAX_ACCUMULATIONS} is enforced for each instrument.
+   * Records to sync instruments, many distinct attributes. Validates that the {@code
+   * MetricStorageUtils#MAX_ACCUMULATIONS} is enforced for each instrument.
    */
   @Test
   void cardinalityLimits_synchronousInstrument() {
@@ -172,8 +173,8 @@ class CardinalityTest {
   }
 
   /**
-   * Records to sync instruments, many distinct attributes. Validates that the {@link
-   * MetricStorage#MAX_ACCUMULATIONS} is enforced for each instrument.
+   * Records to sync instruments, many distinct attributes. Validates that the {@code
+   * MetricStorageUtils#MAX_ACCUMULATIONS} is enforced for each instrument.
    */
   @Test
   void cardinalityLimits_asynchronousInstrument() {

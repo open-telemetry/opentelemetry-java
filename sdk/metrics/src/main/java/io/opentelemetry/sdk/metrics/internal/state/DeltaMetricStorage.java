@@ -5,12 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.MetricStorage.MAX_ACCUMULATIONS;
+import static io.opentelemetry.sdk.metrics.internal.state.MetricStorageUtils.MAX_ACCUMULATIONS;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,15 +33,19 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class DeltaMetricStorage<T> {
 
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(DeltaMetricStorage.class.getName()));
   private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
 
   private final Aggregator<T> aggregator;
+  private final InstrumentDescriptor instrument;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> activeCollectionStorage =
       new ConcurrentHashMap<>();
   private final List<DeltaAccumulation<T>> unreportedDeltas = new ArrayList<>();
 
-  DeltaMetricStorage(Aggregator<T> aggregator) {
+  DeltaMetricStorage(Aggregator<T> aggregator, InstrumentDescriptor instrument) {
     this.aggregator = aggregator;
+    this.instrument = instrument;
   }
 
   /**
@@ -57,7 +65,13 @@ class DeltaMetricStorage<T> {
     aggregatorHandle = aggregator.createHandle();
     while (true) {
       if (activeCollectionStorage.size() >= MAX_ACCUMULATIONS) {
-        // TODO: provide useful diagnostics when max accumulations has been reached
+        logger.log(
+            Level.WARNING,
+            "Instrument "
+                + instrument.getName()
+                + " has exceeded the maximum allowed accumulations ("
+                + MAX_ACCUMULATIONS
+                + ").");
         return NOOP_STORAGE_HANDLE;
       }
       AggregatorHandle<?> boundAggregatorHandle =

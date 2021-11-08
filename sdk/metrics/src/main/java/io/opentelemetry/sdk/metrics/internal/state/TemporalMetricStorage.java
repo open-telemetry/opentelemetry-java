@@ -81,7 +81,7 @@ class TemporalMetricStorage<T> {
     }
     // Update last reported (cumulative) accumulation.
     // For synchronous instruments, we need the merge result.
-    // For asynchronous isntruments, we need the recorded value.
+    // For asynchronous instruments, we need the recorded value.
     // This assumes aggregation remains consistent for the lifetime of a collector, and
     // could be optimised to not record results for cases 3+4 listed above.
     if (isSynchronous) {
@@ -107,17 +107,16 @@ class TemporalMetricStorage<T> {
 
   /** Remembers what was presented to a specific exporter. */
   private static class LastReportedAccumulation<T> {
-    @Nullable private final Map<Attributes, T> accumulation;
+    private final Map<Attributes, T> accumulation;
     private final long epochNanos;
 
     /**
      * Constructs a new reporting record.
      *
-     * @param accumulation The last accumulation of metric data or {@code null} if the accumulator
-     *     is not stateful.
+     * @param accumulation The last accumulation of metric data.
      * @param epochNanos The timestamp the data was reported.
      */
-    LastReportedAccumulation(@Nullable Map<Attributes, T> accumulation, long epochNanos) {
+    LastReportedAccumulation(Map<Attributes, T> accumulation, long epochNanos) {
       this.accumulation = accumulation;
       this.epochNanos = epochNanos;
     }
@@ -126,7 +125,6 @@ class TemporalMetricStorage<T> {
       return epochNanos;
     }
 
-    @Nullable
     Map<Attributes, T> getAccumlation() {
       return accumulation;
     }

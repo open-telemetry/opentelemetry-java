@@ -11,10 +11,14 @@ import java.util.Map;
 
 /** Utilities to help deal w/ {@code Map<Attributes, Accumulation>} in metric storage. */
 final class MetricStorageUtils {
+  /** The max number of metric accumulations for a particular {@link MetricStorage}. */
+  static final int MAX_ACCUMULATIONS = 2000;
+
   private MetricStorageUtils() {}
 
   /**
-   * Merges accumulations from {@code toMerge} into {@code result}.
+   * Merges accumulations from {@code toMerge} into {@code result}. Keys from {@code result} which
+   * don't appear in {@code toMerge} are removed.
    *
    * <p>Note: This mutates the result map.
    */
@@ -28,7 +32,8 @@ final class MetricStorageUtils {
   }
 
   /**
-   * Diffs accumulations from {@code toMerge} into {@code result}.
+   * Diffs accumulations from {@code toMerge} into {@code result}. Keys from {@code result} which
+   * don't appear in {@code toMerge} are removed.
    *
    * <p>If no prior value is found, then the value from {@code toDiff} is used.
    *
