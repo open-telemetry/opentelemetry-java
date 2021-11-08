@@ -139,7 +139,10 @@ final class MetricExporterConfiguration {
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       MetricExporter exporter) {
 
-    Duration exportInterval = config.getDuration("otel.imr.export.interval");
+    Duration exportInterval = config.getDuration("otel.metric.export.interval");
+    if (exportInterval == null) {
+      exportInterval = config.getDuration("otel.imr.export.interval");
+    }
     if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }

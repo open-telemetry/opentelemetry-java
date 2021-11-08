@@ -221,11 +221,12 @@ These properties can be used to control the maximum size of recordings per span.
 |--------------------------|--------------------------|-----------------------------------------------------------------------------------|
 | otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`.|
 
-## Interval metric reader
+## Periodic Metric Reader
 
 | System property          | Environment variable     | Description                                                                       |
 |--------------------------|--------------------------|-----------------------------------------------------------------------------------|
-| otel.imr.export.interval | OTEL_IMR_EXPORT_INTERVAL | The interval, in milliseconds, between pushes to the exporter. Default is `60000`.|
+| otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`.|
+| otel.imr.export.interval | OTEL_IMR_EXPORT_INTERVAL | **DEPRECATED for removal in 1.10.0.** The interval, in milliseconds, between the start of two export attempts. Default is `60000`.|
 
 ## Customizing the OpenTelemetry SDK
 
@@ -233,5 +234,5 @@ Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/open
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure.svg
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry- sdk-extension-autoconfigure.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure
