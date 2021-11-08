@@ -7,6 +7,7 @@ package io.opentelemetry.opencensusshim.metrics;
 
 import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.MetricProducerManager;
+import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;

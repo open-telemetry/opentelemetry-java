@@ -13,7 +13,7 @@ import io.opencensus.exporter.metrics.util.MetricReader;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.Metric;
 import io.opencensus.metrics.export.MetricDescriptor;
-import io.opentelemetry.opencensusshim.metrics.MetricAdapter;
+import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
