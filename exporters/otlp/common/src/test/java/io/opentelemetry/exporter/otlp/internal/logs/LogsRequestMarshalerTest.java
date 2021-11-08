@@ -14,8 +14,13 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -58,8 +63,15 @@ class LogsRequestMarshalerTest {
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
-                    .setTraceId(TRACE_ID)
-                    .setSpanId(SPAN_ID)
+                    .setContext(
+                        Context.root()
+                            .with(
+                                Span.wrap(
+                                    SpanContext.create(
+                                        TRACE_ID,
+                                        SPAN_ID,
+                                        TraceFlags.getDefault(),
+                                        TraceState.getDefault()))))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
@@ -91,8 +103,15 @@ class LogsRequestMarshalerTest {
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
-                    .setTraceId(TRACE_ID)
-                    .setSpanId(SPAN_ID)
+                    .setContext(
+                        Context.root()
+                            .with(
+                                Span.wrap(
+                                    SpanContext.create(
+                                        TRACE_ID,
+                                        SPAN_ID,
+                                        TraceFlags.getDefault(),
+                                        TraceState.getDefault()))))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
@@ -120,23 +139,17 @@ class LogsRequestMarshalerTest {
                 LogData.builder(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
-                    .setBody(BODY)
-                    .setSeverity(Severity.INFO)
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
-    assertThat(logRecord.getTraceId().toByteArray()).isEmpty();
-    assertThat(logRecord.getSpanId().toByteArray()).isEmpty();
+    assertThat(logRecord.getTraceId()).isEmpty();
+    assertThat(logRecord.getSpanId()).isEmpty();
     assertThat(logRecord.getName()).isBlank();
     assertThat(logRecord.getSeverityText()).isBlank();
-    assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
-    assertThat(logRecord.getAttributesList())
-        .containsExactly(
-            KeyValue.newBuilder()
-                .setKey("key")
-                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
-                .build());
+    assertThat(logRecord.getSeverityNumber().getNumber())
+        .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());
+    assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue("").build());
+    assertThat(logRecord.getAttributesList()).isEmpty();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 

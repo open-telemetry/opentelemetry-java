@@ -6,9 +6,6 @@
 package io.opentelemetry.sdk.logs.util;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -22,9 +19,6 @@ public final class TestUtil {
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setEpoch(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault().asByte())
         .setSeverity(severity)
         .setSeverityText("really severe")
         .setName("log1")

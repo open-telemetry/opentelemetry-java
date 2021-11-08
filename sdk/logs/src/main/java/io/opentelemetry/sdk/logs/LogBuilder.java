@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -25,14 +25,8 @@ public interface LogBuilder {
   /** Set the epoch timestamp using the instant. */
   LogBuilder setEpoch(Instant instant);
 
-  /** Set the trace id. */
-  LogBuilder setTraceId(String traceId);
-
-  /** Set the span id. */
-  LogBuilder setSpanId(String spanId);
-
-  /** Set the flags. */
-  LogBuilder setFlags(int flags);
+  /** Set the context. */
+  LogBuilder setContext(Context context);
 
   /** Set the severity. */
   LogBuilder setSeverity(Severity severity);
@@ -42,9 +36,6 @@ public interface LogBuilder {
 
   /** Set the name. */
   LogBuilder setName(String name);
-
-  /** Set the body. */
-  LogBuilder setBody(Body body);
 
   /** Set the body string. */
   LogBuilder setBody(String body);

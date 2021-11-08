@@ -16,5 +16,14 @@ class BodyTest {
     Body value = Body.stringBody("foobar");
     assertThat(value.asString()).isEqualTo("foobar");
     assertThat(value.getType()).isEqualTo(Body.Type.STRING);
+    assertThat(value).isEqualTo(Body.stringBody("foobar"));
+  }
+
+  @Test
+  void emptyValue() {
+    Body value = Body.emptyBody();
+    assertThat(value.asString()).isEqualTo("");
+    assertThat(value.getType()).isEqualTo(Body.Type.EMPTY);
+    assertThat(value).isEqualTo(Body.emptyBody());
   }
 }

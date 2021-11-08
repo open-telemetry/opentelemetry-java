@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -34,31 +35,23 @@ public interface LogData {
   /** Returns the epoch timestamp in nanos when the log was recorded. */
   long getEpochNanos();
 
-  /** Returns the trace id for this log. */
-  @Nullable
-  String getTraceId();
+  /** Return the span context for this log, or {@link SpanContext#getInvalid()} if unset. */
+  SpanContext getSpanContext();
 
-  /** Returns the span id for this log. */
-  @Nullable
-  String getSpanId();
-
-  /** Returns the flags for this log. */
-  int getFlags();
-
-  /** Returns the severity for this log. */
+  /** Returns the severity for this log, or {@link Severity#UNDEFINED_SEVERITY_NUMBER} if unset. */
   Severity getSeverity();
 
-  /** Returns the severity text for this log. */
+  /** Returns the severity text for this log, or null if unset. */
   @Nullable
   String getSeverityText();
 
-  /** Returns the name for this log. */
+  /** Returns the name for this log, or null if unset. */
   @Nullable
   String getName();
 
-  /** Returns the body for this log. */
+  /** Returns the body for this log, or {@link Body#emptyBody()} if unset. */
   Body getBody();
 
-  /** Returns the attributes for this log. */
+  /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();
 }

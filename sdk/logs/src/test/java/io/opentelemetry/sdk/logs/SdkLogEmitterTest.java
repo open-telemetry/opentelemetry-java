@@ -54,7 +54,7 @@ class SdkLogEmitterTest {
   @Test
   void emit() {
     long epochMillis = System.currentTimeMillis();
-    Body body = Body.stringBody("message");
+    String body = "message";
     sdkLogEmitter.logBuilder().setEpoch(epochMillis, TimeUnit.MILLISECONDS).setBody(body).emit();
 
     ArgumentCaptor<LogData> captor = ArgumentCaptor.forClass(LogData.class);
@@ -67,7 +67,7 @@ class SdkLogEmitterTest {
             InstrumentationLibraryInfo.create(
                 INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION, SCHEMA_URL));
     assertThat(logData.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(epochMillis));
-    assertThat(logData.getBody()).isEqualTo(body);
+    assertThat(logData.getBody()).isEqualTo(Body.stringBody(body));
   }
 
   @Test

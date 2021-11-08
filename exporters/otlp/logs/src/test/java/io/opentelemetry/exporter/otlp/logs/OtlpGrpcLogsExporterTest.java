@@ -19,9 +19,6 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
@@ -361,9 +358,6 @@ class OtlpGrpcLogsExporterTest {
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setEpoch(Instant.now())
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault().asByte())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
         .setName("log1")

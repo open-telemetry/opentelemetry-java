@@ -18,6 +18,7 @@ public interface Body {
 
   /** An enum that represents all the possible value types for an {@code Body}. */
   enum Type {
+    EMPTY,
     STRING
   }
 
@@ -31,8 +32,18 @@ public interface Body {
     return StringBody.create(stringValue);
   }
 
+  /**
+   * Return an empty {@code Body}.
+   *
+   * @return a {@code Body} without a value.
+   */
+  static Body emptyBody() {
+    return EmptyBody.INSTANCE;
+  }
+
   /** Returns the String value of this {@code Body}. */
   String asString();
 
+  /** Returns the type of the {@code Body}. */
   Type getType();
 }
