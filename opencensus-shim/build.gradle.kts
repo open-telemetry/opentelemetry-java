@@ -21,6 +21,7 @@ dependencies {
 
   testImplementation("org.slf4j:slf4j-simple")
   testImplementation("io.opencensus:opencensus-impl")
+  testImplementation("io.opencensus:opencensus-contrib-exemplar-util")
 }
 
 tasks.named<Test>("test") {

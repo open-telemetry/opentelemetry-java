@@ -58,8 +58,10 @@ public final class MetricAdapter {
       InstrumentationLibraryInfo.create("io.opentelemetry.opencensusshim", null);
 
   // Parser for string value of `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
+  // // SpanContext{traceId=TraceId{traceId=(id))}, spanId=SpanId{spanId=(id), ...}
   private static final Pattern OPENCENSUS_TRACE_ATTACHMENT_PATTERN =
-      Pattern.compile("SpanContext\\(traceId=([0-9A-Ga-g]+), spanId=([0-9A-Ga-g]+),.*\\)");
+      Pattern.compile(
+          "SpanContext\\{traceId=TraceId\\{traceId=([0-9A-Ga-g]+)\\}, spanId=SpanId\\{spanId=([0-9A-Ga-g]+)\\},.*\\}");
   /**
    * Converts an open-census metric into the OTLP format.
    *
@@ -332,7 +334,7 @@ public final class MetricAdapter {
     if (exemplar.getAttachments().containsKey("SpanContext")) {
       // We need to use `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
       // The `toString` will be the following:
-      // SpanContext(traceId={traceId}, spanId={spanId}, traceOptions={traceOptions})
+      // SpanContext{traceId=TraceId{traceId=(id))}, spanId=SpanId{spanId=(id), ...}
       // We *attempt* parse it rather than pull in yet another dependency.
       String spanContextToString = exemplar.getAttachments().get("SpanContext").getValue();
       Matcher m = OPENCENSUS_TRACE_ATTACHMENT_PATTERN.matcher(spanContextToString);

@@ -193,7 +193,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext(traceId=1234, spanId=5678, others=stuff)"));
+            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
@@ -306,7 +306,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext(traceId=1234, spanId=5678, others=stuff)"));
+            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
