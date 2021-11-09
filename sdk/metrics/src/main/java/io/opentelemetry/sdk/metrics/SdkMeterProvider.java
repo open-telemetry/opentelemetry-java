@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /** SDK implementation for {@link MeterProvider}. */
 public final class SdkMeterProvider implements MeterProvider, Closeable {
@@ -91,7 +90,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   @Override
-  public MeterBuilder meterBuilder(@Nullable String instrumentationName) {
+  public MeterBuilder meterBuilder(String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;

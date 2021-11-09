@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -104,7 +103,7 @@ class SdkLongUpDownSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
             .registerMetricReader(sdkMeterReader)
@@ -112,9 +111,7 @@ class SdkLongUpDownSumObserverTest {
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
                     .build(),
-                View.builder()
-                    .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
-                    .build())
+                View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     sdkMeterProvider
         .get(getClass().getName())

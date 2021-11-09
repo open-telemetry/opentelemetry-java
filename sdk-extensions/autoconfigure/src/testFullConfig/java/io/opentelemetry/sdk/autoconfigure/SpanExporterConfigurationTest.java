@@ -67,7 +67,7 @@ class SpanExporterConfigurationTest {
               JaegerGrpcSpanExporter.class,
               jaeger ->
                   assertThat(jaeger)
-                      .extracting("timeoutNanos")
+                      .extracting("delegate.timeoutNanos")
                       .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
     } finally {
       exporter.shutdown();

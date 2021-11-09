@@ -37,6 +37,8 @@ dependencies {
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(path = ":sdk:trace-shaded-deps"))
 
   testImplementation(project(":sdk:testing"))
@@ -98,6 +100,7 @@ tasks {
     environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
     environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
     environment("OTEL_TEST_CONFIGURED", "true")
+    environment("OTEL_TEST_WRAPPED", "1")
   }
 
   val testInitializeRegistersGlobal by existing(Test::class) {

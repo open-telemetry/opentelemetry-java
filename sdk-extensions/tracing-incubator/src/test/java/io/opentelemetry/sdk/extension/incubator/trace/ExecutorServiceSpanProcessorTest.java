@@ -45,7 +45,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-@SuppressWarnings("PreferJavaTimeOverload")
+// Tests deprecated class.
+@SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ExecutorServiceSpanProcessorTest {
@@ -339,6 +340,7 @@ class ExecutorServiceSpanProcessorTest {
   @Test
   void exporterThrowsException() {
     SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
@@ -396,6 +398,7 @@ class ExecutorServiceSpanProcessorTest {
     // Still processing new spans.
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(
             argThat(
                 spans -> {
@@ -472,13 +475,12 @@ class ExecutorServiceSpanProcessorTest {
   }
 
   @Test
-  @Timeout(10)
   void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     // Set the export delay to large value, in order to confirm the #flush() below works
 
-    sdkTracerProvider =
+    SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 ExecutorServiceSpanProcessor.builder(waitingSpanExporter, executor, false)
@@ -486,13 +488,14 @@ class ExecutorServiceSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+    Span span2 = sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan();
+    span2.end();
 
     // Force a shutdown, which forces processing of all remaining spans.
     sdkTracerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<SpanData> exported = waitingSpanExporter.getExported();
-    assertThat(exported).containsExactly(span2.toSpanData());
+    assertThat(exported).containsExactly(((ReadableSpan) span2).toSpanData());
     assertThat(waitingSpanExporter.shutDownCalled.get()).isTrue();
   }
 

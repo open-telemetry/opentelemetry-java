@@ -68,7 +68,8 @@ public class GrpcExporterBenchmark {
                 "span",
                 MarshalerTraceServiceGrpc::newFutureStub,
                 10,
-                URI.create("http://localhost:" + server.activeLocalPort()))
+                URI.create("http://localhost:" + server.activeLocalPort()),
+                OtlpGrpcSpanExporterBuilder.GRPC_SERVICE_NAME)
             .build();
 
     okhttpGrpcExporter =

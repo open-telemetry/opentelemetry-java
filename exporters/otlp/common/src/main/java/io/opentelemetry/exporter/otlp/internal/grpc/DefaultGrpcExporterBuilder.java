@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.toServiceConfig;
 
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
@@ -13,6 +14,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -32,6 +35,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   private final String type;
   private final Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory;
+  private final String grpcServiceName;
 
   @Nullable private ManagedChannel channel;
   private long timeoutNanos;
@@ -39,6 +43,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private RetryPolicy retryPolicy;
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
   // Visible for testing
@@ -46,9 +51,11 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
       String type,
       Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
       long defaultTimeoutSecs,
-      URI defaultEndpoint) {
+      URI defaultEndpoint,
+      String grpcServiceName) {
     this.type = type;
     this.stubFactory = stubFactory;
+    this.grpcServiceName = grpcServiceName;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
   }
@@ -111,6 +118,12 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
+  public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
+    this.retryPolicy = retryPolicy;
+    return this;
+  }
+
+  @Override
   public GrpcExporter<T> build() {
     ManagedChannel channel = this.channel;
     if (channel == null) {
@@ -139,6 +152,10 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
         }
       }
 
+      if (retryPolicy != null) {
+        managedChannelBuilder.defaultServiceConfig(toServiceConfig(grpcServiceName, retryPolicy));
+      }
+
       channel = managedChannelBuilder.build();
     }
 
@@ -146,5 +163,26 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
     return new DefaultGrpcExporter<>(type, channel, stub, timeoutNanos, compressionEnabled);
+  }
+
+  /**
+   * Reflectively access a {@link DefaultGrpcExporterBuilder} instance in field called "delegate" of
+   * the instance.
+   *
+   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
+   *     type {@link DefaultGrpcExporterBuilder}
+   */
+  public static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
+    try {
+      Field field = type.getDeclaredField("delegate");
+      field.setAccessible(true);
+      Object value = field.get(instance);
+      if (!(value instanceof DefaultGrpcExporterBuilder)) {
+        throw new IllegalArgumentException("delegate field is not type DefaultGrpcExporterBuilder");
+      }
+      return (DefaultGrpcExporterBuilder<?>) value;
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
+    }
   }
 }

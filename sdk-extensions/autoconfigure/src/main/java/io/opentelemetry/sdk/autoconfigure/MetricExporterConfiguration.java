@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
@@ -98,7 +99,8 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          (unused) -> {});
 
       exporter = builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -122,7 +124,11 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          retryPolicy ->
+              DefaultGrpcExporterBuilder.getDelegateBuilder(
+                      OtlpGrpcMetricExporterBuilder.class, builder)
+                  .addRetryPolicy(retryPolicy));
 
       exporter = builder.build();
     } else {
@@ -139,7 +145,10 @@ final class MetricExporterConfiguration {
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       MetricExporter exporter) {
 
-    Duration exportInterval = config.getDuration("otel.imr.export.interval");
+    Duration exportInterval = config.getDuration("otel.metric.export.interval");
+    if (exportInterval == null) {
+      exportInterval = config.getDuration("otel.imr.export.interval");
+    }
     if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }

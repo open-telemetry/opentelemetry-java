@@ -2,11 +2,36 @@
 
 ## Version 1.8.0 (unreleased):
 
+### API
+
+- New `AttributesBuilder#remove(String)` and `AttributeBuilder#removeIf(Predicate<AttributeKey<?>>)`
+  methods improve ergonomics of modifying attributes.
+
+### SDK
+
+#### Logging (alpha)
+
+- This release includes a rework of the Log SDK to
+  implement [OTEP-0150](https://github.com/open-telemetry/oteps/blob/main/text/logs/0150-logging-library-sdk.md)
+  and to have more symmetry to the Trace SDK. `LogSink` is now `LogEmitter`. `LogEmitter` instances
+  are obtained from `SdkLogEmitterProvider`. Other additions include `MultiLogProcessor` (accessed
+  via `LogProcessor#composite(...)`), `SimpleLogProcessor`, and `InMemoryLogExporter`.
+
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: Remove deprecated `otel.experimental.exporter.otlp.protocol`,
   `otel.experimental.exporter.otlp.{signal}.protocol` properties. Please use
   `otel.exporter.otlp.protocol`, `otel.exporter.otlp.{signal}.protocol` instead.
+
+---
+## Version 1.7.1 (2021-11-03):
+
+### Exporters:
+
+- [BUGFIX](https://github.com/open-telemetry/opentelemetry-java/issues/3813): In 1.7.0, the
+  okhttp-based exporters (`OtlpHttpSpanExporter`, `OtlpHttpMetricExporter`, `OtlpHttpLogExporter`)
+  did not properly close the okhttp response and hence would leak connections. This has been fixed in
+  1.7.1.
 
 ---
 ## Version 1.7.0 (2021-10-08):

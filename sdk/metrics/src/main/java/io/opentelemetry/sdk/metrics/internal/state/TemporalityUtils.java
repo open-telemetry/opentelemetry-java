@@ -17,16 +17,9 @@ final class TemporalityUtils {
    *
    * @param supported All aggregation temporalities supported by the exporter.
    * @param preferred The preferred temporality of the exporter.
-   * @param configured The aggregation temporality configured via the View interface.
    */
   static AggregationTemporality resolveTemporality(
-      EnumSet<AggregationTemporality> supported,
-      @Nullable AggregationTemporality preferred,
-      @Nullable AggregationTemporality configured) {
-    // Return the configured temporality, if it exists and is supported.
-    if (configured != null && supported.contains(configured)) {
-      return configured;
-    }
+      EnumSet<AggregationTemporality> supported, @Nullable AggregationTemporality preferred) {
     // Next assume preferred should always win.
     if (preferred != null) {
       return preferred;

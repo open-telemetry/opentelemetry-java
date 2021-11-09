@@ -7,11 +7,13 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
  * Instrument}.
  */
+@Immutable
 public interface MetricData {
 
   /**

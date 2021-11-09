@@ -23,7 +23,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -182,11 +181,9 @@ class SdkMeterProviderTest {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
         View.builder()
-            .setAggregation(
-                Aggregation.explicitBucketHistogram(
-                    AggregationTemporality.DELTA, Collections.emptyList()))
+            .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
             .build());
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -238,9 +235,8 @@ class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_DeltaHistogram() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder,
-        Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA, Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+        sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -508,7 +504,7 @@ class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test_2")
                     .setDescription("not_desc_2")
-                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum())
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -556,7 +552,7 @@ class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test_2")
                     .setDescription("not_desc_2")
-                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum())
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -595,7 +591,7 @@ class SdkMeterProviderTest {
             .registerView(
                 selector,
                 View.builder()
-                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum())
                     .appendAllBaggageAttributes()
                     .build())
             .build();
@@ -798,8 +794,8 @@ class SdkMeterProviderTest {
   void sdkMeterProvider_supportsMultipleCollectorsDelta() {
     // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
     // now.
-    InMemoryMetricReader collector1 = InMemoryMetricReader.create();
-    InMemoryMetricReader collector2 = InMemoryMetricReader.create();
+    InMemoryMetricReader collector1 = InMemoryMetricReader.createDelta();
+    InMemoryMetricReader collector2 = InMemoryMetricReader.createDelta();
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
             .registerMetricReader(collector1)
@@ -809,9 +805,7 @@ class SdkMeterProviderTest {
                     .setInstrumentType(InstrumentType.COUNTER)
                     .setInstrumentName("testSum")
                     .build(),
-                View.builder()
-                    .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
-                    .build())
+                View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
     final LongCounter counter = sdkMeter.counterBuilder("testSum").build();

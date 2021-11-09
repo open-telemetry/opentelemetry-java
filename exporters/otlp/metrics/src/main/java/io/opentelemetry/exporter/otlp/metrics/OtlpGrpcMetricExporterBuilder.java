@@ -19,9 +19,10 @@ import java.util.concurrent.TimeUnit;
 /** Builder utility for this exporter. */
 public final class OtlpGrpcMetricExporterBuilder {
 
+  private static final String GRPC_SERVICE_NAME =
+      "opentelemetry.proto.collector.metrics.v1.MetricsService";
   // Visible for testing
-  static final String GRPC_ENDPOINT_PATH =
-      "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
+  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -37,6 +38,7 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
+            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 

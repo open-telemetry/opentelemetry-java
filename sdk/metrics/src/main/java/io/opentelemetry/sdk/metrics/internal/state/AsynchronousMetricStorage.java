@@ -10,11 +10,11 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -38,7 +38,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   private final AsyncAccumulator<T> asyncAccumulator;
   private final TemporalMetricStorage<T> storage;
   private final Runnable metricUpdater;
-  @Nullable private final AggregationTemporality configuredTemporality;
 
   /** Constructs asynchronous metric storage which stores nothing. */
   public static MetricStorage empty() {
@@ -78,11 +77,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor,
-        aggregator,
-        measurementAccumulator,
-        () -> metricUpdater.accept(result),
-        view.getAggregation().getConfiguredTemporality());
+        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
   }
 
   /** Constructs storage for {@code long} valued instruments. */
@@ -114,24 +109,18 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor,
-        aggregator,
-        measurementAccumulator,
-        () -> metricUpdater.accept(result),
-        view.getAggregation().getConfiguredTemporality());
+        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
   }
 
   private AsynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       AsyncAccumulator<T> asyncAccumulator,
-      Runnable metricUpdater,
-      @Nullable AggregationTemporality configuredTemporality) {
+      Runnable metricUpdater) {
     this.metricDescriptor = metricDescriptor;
     this.asyncAccumulator = asyncAccumulator;
     this.metricUpdater = metricUpdater;
     this.storage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
-    this.configuredTemporality = configuredTemporality;
   }
 
   @Override
@@ -145,9 +134,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
         TemporalityUtils.resolveTemporality(
-            collectionInfo.getSupportedAggregation(),
-            collectionInfo.getPreferredAggregation(),
-            configuredTemporality);
+            collectionInfo.getSupportedAggregation(), collectionInfo.getPreferredAggregation());
     collectLock.lock();
     try {
       metricUpdater.run();

@@ -17,7 +17,10 @@ import java.util.concurrent.TimeUnit;
  * Builder class for the {@link ExecutorServiceSpanProcessor}.
  *
  * @see ExecutorServiceSpanProcessor#builder(SpanExporter, ScheduledExecutorService, boolean)
+ * @deprecated Use {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. This class will be
+ *     removed in 1.8.0.
  */
+@Deprecated
 public class ExecutorServiceSpanProcessorBuilder {
 
   // Visible for testing

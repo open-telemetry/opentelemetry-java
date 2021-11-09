@@ -17,10 +17,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 final class PropagatorConfiguration {
 
-  static ContextPropagators configurePropagators(ConfigProperties config) {
+  static ContextPropagators configurePropagators(
+      ConfigProperties config,
+      BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
+          propagatorCustomizer) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     List<String> requestedPropagators = config.getList("otel.propagators");
     if (requestedPropagators.isEmpty()) {
@@ -36,7 +40,8 @@ final class PropagatorConfiguration {
             config);
 
     for (String propagatorName : requestedPropagators) {
-      propagators.add(getPropagator(propagatorName, spiPropagators));
+      propagators.add(
+          propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagators), config));
     }
 
     return ContextPropagators.create(TextMapPropagator.composite(propagators));

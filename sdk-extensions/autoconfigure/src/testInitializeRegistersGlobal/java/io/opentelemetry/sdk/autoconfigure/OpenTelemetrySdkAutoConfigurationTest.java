@@ -24,7 +24,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
 
   @Test
   void initializeAndGet() {
-    OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
+    OpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
     assertThat(GlobalOpenTelemetry.get())
         // ObfuscatedOpenTelemetry
         .extracting("delegate")
@@ -33,7 +33,11 @@ class OpenTelemetrySdkAutoConfigurationTest {
 
   @Test
   void initializeAndGet_noGlobal() {
-    OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize(false);
+    OpenTelemetrySdk sdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .setResultAsGlobal(false)
+            .build()
+            .getOpenTelemetrySdk();
     // TODO: calling get() will call initialize() again and autoconfigure another instance of the
     // SDK; in that case the get() method will return OpenTelemetrySdk and not
     // ObfuscatedOpenTelemetry
@@ -45,7 +49,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // OTEL_METRICS_EXPORTER=none so the metrics SDK should be completely disabled.
     // This is a bit of an odd test, so we just ensure that we don't have the same impl class as if
     // we instantiated an SDK with a reader.
-    OpenTelemetrySdkAutoConfiguration.initialize();
+    AutoConfiguredOpenTelemetrySdk.initialize();
     assertThat(GlobalMeterProvider.get()).isInstanceOf(NoopMeterProvider.class);
   }
 }
