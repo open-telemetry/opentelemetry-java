@@ -46,8 +46,8 @@ class MetricStorageUtilsTest {
     Aggregator<String> agg = buildConcatAggregator();
     MetricStorageUtils.mergeInPlace(result, toMerge, agg);
 
-    assertThat(result).containsOnly(entry(a, "A"), entry(b, "BB'"), entry(c, "C"), entry(d, null));
-    assertThat(result.get(d)).isNull();
+    assertThat(result)
+        .containsOnly(entry(a, "A"), entry(b, "merge(B,B')"), entry(c, "C"), entry(d, null));
   }
 
   @Test
@@ -55,7 +55,8 @@ class MetricStorageUtilsTest {
     Aggregator<String> agg = buildConcatAggregator();
     MetricStorageUtils.diffInPlace(result, toMerge, agg);
 
-    assertThat(result).containsOnly(entry(a, "A"), entry(c, "C"), entry(d, null));
+    assertThat(result)
+        .containsOnly(entry(a, "A"), entry(b, "diff(B,B')"), entry(c, "C"), entry(d, null));
   }
 
   @SuppressWarnings("unchecked")
@@ -65,10 +66,18 @@ class MetricStorageUtilsTest {
             invocation -> {
               String previousCumulative = invocation.getArgument(0);
               String delta = invocation.getArgument(1);
-              return previousCumulative + delta;
+              return "merge(" + previousCumulative + "," + delta + ")";
             })
         .when(agg)
         .merge(anyString(), anyString());
+    doAnswer(
+            invocation -> {
+              String previousCumulative = invocation.getArgument(0);
+              String delta = invocation.getArgument(1);
+              return "diff(" + previousCumulative + "," + delta + ")";
+            })
+        .when(agg)
+        .diff(anyString(), anyString());
     return agg;
   }
 }
