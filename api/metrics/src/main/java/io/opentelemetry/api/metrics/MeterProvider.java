@@ -40,7 +40,9 @@ public interface MeterProvider {
    * @param instrumentationVersion The version of the instrumentation library.
    * @param schemaUrl Specifies the Schema URL that should be recorded in the emitted metrics.
    * @return a meter instance.
+   * @deprecated Use {@link #meterBuilder(String)}
    */
+  @Deprecated
   default Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
     return meterBuilder(instrumentationName)
         .setInstrumentationVersion(instrumentationVersion)

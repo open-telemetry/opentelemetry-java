@@ -261,6 +261,7 @@ class OtlpConfigUtilTest {
         (value1, value2) -> {},
         value -> {},
         value -> {},
+        value -> {},
         value -> {});
 
     return endpoint.get();

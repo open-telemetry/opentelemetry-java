@@ -11,15 +11,20 @@ import java.util.Map;
 
 /** Utilities to help deal w/ {@code Map<Attributes, Accumulation>} in metric storage. */
 final class MetricStorageUtils {
+  /** The max number of metric accumulations for a particular {@link MetricStorage}. */
+  static final int MAX_ACCUMULATIONS = 2000;
+
   private MetricStorageUtils() {}
 
   /**
-   * Merges accumulations from {@code toMerge} into {@code result}.
+   * Merges accumulations from {@code toMerge} into {@code result}. Keys from {@code result} which
+   * don't appear in {@code toMerge} are removed.
    *
    * <p>Note: This mutates the result map.
    */
   static <T> void mergeInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
+    result.entrySet().removeIf(entry -> !toMerge.containsKey(entry.getKey()));
     toMerge.forEach(
         (k, v) -> {
           result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.merge(v2, v) : v);
@@ -27,7 +32,8 @@ final class MetricStorageUtils {
   }
 
   /**
-   * Diffs accumulations from {@code toMerge} into {@code result}.
+   * Diffs accumulations from {@code toMerge} into {@code result}. Keys from {@code result} which
+   * don't appear in {@code toMerge} are removed.
    *
    * <p>If no prior value is found, then the value from {@code toDiff} is used.
    *
@@ -35,6 +41,7 @@ final class MetricStorageUtils {
    */
   static <T> void diffInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
+    result.entrySet().removeIf(entry -> !toDiff.containsKey(entry.getKey()));
     toDiff.forEach(
         (k, v) -> {
           result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.diff(v2, v) : v);

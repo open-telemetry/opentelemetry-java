@@ -19,6 +19,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
@@ -29,6 +30,7 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -149,6 +151,16 @@ class OtlpGrpcLogsExporterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+  }
+
+  @Test
+  void testBuilderDelegate() {
+    assertThatCode(
+            () ->
+                DefaultGrpcExporterBuilder.getDelegateBuilder(
+                        OtlpGrpcLogExporterBuilder.class, OtlpGrpcLogExporter.builder())
+                    .addRetryPolicy(RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -354,7 +366,7 @@ class OtlpGrpcLogsExporterTest {
   }
 
   private static LogData generateFakeLog() {
-    return LogData.builder(
+    return LogDataBuilder.create(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setEpoch(Instant.now())

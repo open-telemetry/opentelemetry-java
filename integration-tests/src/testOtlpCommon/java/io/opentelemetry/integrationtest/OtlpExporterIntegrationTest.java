@@ -53,6 +53,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -375,7 +376,7 @@ abstract class OtlpExporterIntegrationTest {
 
   private static void testLogExporter(LogExporter logExporter) {
     LogData logData =
-        LogData.builder(
+        LogDataBuilder.create(
                 RESOURCE,
                 InstrumentationLibraryInfo.create(
                     OtlpExporterIntegrationTest.class.getName(), null))

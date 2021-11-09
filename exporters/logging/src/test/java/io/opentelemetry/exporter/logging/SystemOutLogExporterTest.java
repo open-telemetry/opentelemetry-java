@@ -19,6 +19,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.LocalDateTime;
@@ -52,7 +53,8 @@ class SystemOutLogExporterTest {
   }
 
   private static LogData sampleLog(long timestamp) {
-    return LogData.builder(Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
+    return LogDataBuilder.create(
+            Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)

@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
@@ -24,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -33,6 +36,8 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class AsynchronousMetricStorage<T> implements MetricStorage {
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(DeltaMetricStorage.class.getName()));
   private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final AsyncAccumulator<T> asyncAccumulator;
@@ -56,7 +61,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
-    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
+    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     if (Aggregator.empty() == aggregator) {
       return empty();
     }
@@ -90,7 +95,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
-    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
+    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableLongMeasurement result =
@@ -159,9 +164,24 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
   /** Helper class to record async measurements on demand. */
   private static final class AsyncAccumulator<T> {
+    private final InstrumentDescriptor instrument;
     private Map<Attributes, T> currentAccumulation = new HashMap<>();
 
+    AsyncAccumulator(InstrumentDescriptor instrument) {
+      this.instrument = instrument;
+    }
+
     public void record(Attributes attributes, T accumulation) {
+      if (currentAccumulation.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
+        logger.log(
+            Level.WARNING,
+            "Instrument "
+                + instrument.getName()
+                + " has exceeded the maximum allowed accumulations ("
+                + MetricStorageUtils.MAX_ACCUMULATIONS
+                + ").");
+        return;
+      }
       // TODO: error on metric overwrites
       currentAccumulation.put(attributes, accumulation);
     }

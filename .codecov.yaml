@@ -11,15 +11,17 @@ coverage:
   status:
     project:
       default:
-        enabled: yes
         target: 90%
         paths:
-          - api
-          - sdk
+          - "!opencensus-shim/"
+          - "!opentracing-shim/"
+          - "!sdk-extensions/zpages/"
+      unmaintained:
+        target: 80%
+        paths:
+          - "opencensus-shim/"
+          - "opentracing-shim/"
+          - "sdk-extensions/zpages/"
     patch:
       default:
-        enabled: yes
         target: 90%
-        paths:
-          - api
-          - sdk

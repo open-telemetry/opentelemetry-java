@@ -20,12 +20,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface LogData {
 
-  /** Returns a new {@link LogDataBuilder}. */
-  static LogDataBuilder builder(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new LogDataBuilder(resource, instrumentationLibraryInfo);
-  }
-
   /** Returns the resource of this log. */
   Resource getResource();
 
