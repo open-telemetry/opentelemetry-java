@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.List;
-import javax.annotation.Nullable;
 
 /**
  * Configures how measurements are combined into metrics for {@link View}s.
@@ -25,9 +24,8 @@ public abstract class Aggregation {
    * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
    *     measurements.
    * @param exemplarFilter the filter on which measurements should turn into exemplars
-   * @return a new {@link Aggregator}, or {@code null} if no measurements should be recorded.
+   * @return a new {@link Aggregator}. {@link Aggregator#empty()} indicates no measurements should be recorded.
    */
-  @Nullable
   public abstract <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 

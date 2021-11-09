@@ -158,11 +158,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
       List<MetricData> result = new ArrayList<>(meters.size());
       for (SdkMeter meter : meters) {
-        result.addAll(
-            meter.collectAll(
-                collectionInfoMap.get(handle),
-                sharedState.getClock().now(),
-                disableSynchronousCollection));
+        CollectionInfo info = collectionInfoMap.get(handle);
+        if (info != null) {
+          result.addAll(
+              meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
+        }
       }
       return Collections.unmodifiableCollection(result);
     }

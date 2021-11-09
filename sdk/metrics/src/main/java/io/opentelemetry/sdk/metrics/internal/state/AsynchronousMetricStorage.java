@@ -45,7 +45,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   /** Constructs storage for {@code double} valued instruments. */
-  @Nullable
   public static <T> MetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,

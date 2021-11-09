@@ -46,13 +46,6 @@ testing {
 }
 
 tasks {
-  named<JavaCompile>("compileJava") {
-    with(options) {
-      errorprone.nullaway {
-        severity.set(OFF)
-      }
-    }
-  }
   named("check") {
     dependsOn(testing.suites)
   }
