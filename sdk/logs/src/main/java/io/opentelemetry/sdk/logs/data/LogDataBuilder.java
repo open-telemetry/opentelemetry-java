@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -27,11 +28,26 @@ public final class LogDataBuilder {
   @Nullable private String severityText;
   @Nullable private String name;
   private Body body = Body.stringBody("");
+  private final Clock clock;
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogDataBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+  private LogDataBuilder(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.clock = clock;
+  }
+
+  /** Returns a new {@link LogDataBuilder} with the default clock. */
+  public static LogDataBuilder create(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return create(resource, instrumentationLibraryInfo, Clock.getDefault());
+  }
+
+  /** Returns a new {@link LogDataBuilder}. */
+  public static LogDataBuilder create(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
+    return new LogDataBuilder(resource, instrumentationLibraryInfo, clock);
   }
 
   /** Set the epoch timestamp using the timestamp and unit. */
@@ -102,7 +118,7 @@ public final class LogDataBuilder {
   /** Build a {@link LogData} instance from the configured properties. */
   public LogData build() {
     if (epochNanos == 0) {
-      epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+      epochNanos = clock.now();
     }
     return LogDataImpl.create(
         resource,
