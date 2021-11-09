@@ -21,16 +21,16 @@ import org.junit.jupiter.api.Test;
 
 class MetricStorageUtilsTest {
 
-  static final Attributes a = Attributes.of(AttributeKey.stringKey("a"), "a");
-  static final Attributes b = Attributes.of(AttributeKey.stringKey("b"), "b");
-  static final Attributes c = Attributes.of(AttributeKey.stringKey("c"), "c");
-  static final Attributes d = Attributes.of(AttributeKey.stringKey("d"), "d");
-  static final Attributes e = Attributes.of(AttributeKey.stringKey("e"), "e");
-  Map<Attributes, String> result;
-  Map<Attributes, String> toMerge;
+  private static final Attributes a = Attributes.of(AttributeKey.stringKey("a"), "a");
+  private static final Attributes b = Attributes.of(AttributeKey.stringKey("b"), "b");
+  private static final Attributes c = Attributes.of(AttributeKey.stringKey("c"), "c");
+  private static final Attributes d = Attributes.of(AttributeKey.stringKey("d"), "d");
+  private static final Attributes e = Attributes.of(AttributeKey.stringKey("e"), "e");
+  private Map<Attributes, String> result;
+  private Map<Attributes, String> toMerge;
 
   @BeforeEach
-  void setup() {
+  private void setup() {
     result = new HashMap<>();
     result.put(a, "A");
     result.put(b, "B");
@@ -60,7 +60,7 @@ class MetricStorageUtilsTest {
   }
 
   @SuppressWarnings("unchecked")
-  private Aggregator<String> buildConcatAggregator() {
+  private static Aggregator<String> buildConcatAggregator() {
     Aggregator<String> agg = mock(Aggregator.class);
     doAnswer(
             invocation -> {
