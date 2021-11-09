@@ -18,8 +18,10 @@ import java.util.concurrent.TimeUnit;
 /** Builder utility for this exporter. */
 public final class JaegerGrpcSpanExporterBuilder {
 
+  private static final String GRPC_SERVICE_NAME = "jaeger.api_v2.CollectorService";
+
   // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/jaeger.api_v2.CollectorService/PostSpans";
+  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/PostSpans";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:14250";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -34,6 +36,7 @@ public final class JaegerGrpcSpanExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerCollectorServiceGrpc::newFutureStub,
+            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 
