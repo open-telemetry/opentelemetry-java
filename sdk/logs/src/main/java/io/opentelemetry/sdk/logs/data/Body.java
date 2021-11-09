@@ -28,7 +28,7 @@ public interface Body {
    * @param stringValue The new value.
    * @return a {@code Body} with a string value.
    */
-  static Body stringBody(String stringValue) {
+  static Body string(String stringValue) {
     return StringBody.create(stringValue);
   }
 
@@ -37,7 +37,7 @@ public interface Body {
    *
    * @return a {@code Body} without a value.
    */
-  static Body emptyBody() {
+  static Body empty() {
     return EmptyBody.INSTANCE;
   }
 

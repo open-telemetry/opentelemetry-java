@@ -5,11 +5,8 @@
 
 package io.opentelemetry.sdk.logs.data;
 
-class EmptyBody implements Body {
-
-  static final EmptyBody INSTANCE = new EmptyBody();
-
-  private EmptyBody() {}
+enum EmptyBody implements Body {
+  INSTANCE;
 
   @Override
   public String asString() {

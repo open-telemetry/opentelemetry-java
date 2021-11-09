@@ -26,7 +26,7 @@ public final class LogDataBuilder {
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private String name;
-  private Body body = Body.emptyBody();
+  private Body body = Body.empty();
   private Attributes attributes = Attributes.empty();
 
   LogDataBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
@@ -72,7 +72,7 @@ public final class LogDataBuilder {
 
   /** Set the body string. */
   public LogDataBuilder setBody(String body) {
-    this.body = Body.stringBody(body);
+    this.body = Body.string(body);
     return this;
   }
 

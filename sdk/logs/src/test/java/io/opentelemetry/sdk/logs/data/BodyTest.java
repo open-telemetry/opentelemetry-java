@@ -13,17 +13,17 @@ class BodyTest {
 
   @Test
   void stringValue() {
-    Body value = Body.stringBody("foobar");
+    Body value = Body.string("foobar");
     assertThat(value.asString()).isEqualTo("foobar");
     assertThat(value.getType()).isEqualTo(Body.Type.STRING);
-    assertThat(value).isEqualTo(Body.stringBody("foobar"));
+    assertThat(value).isEqualTo(Body.string("foobar"));
   }
 
   @Test
   void emptyValue() {
-    Body value = Body.emptyBody();
+    Body value = Body.empty();
     assertThat(value.asString()).isEqualTo("");
     assertThat(value.getType()).isEqualTo(Body.Type.EMPTY);
-    assertThat(value).isEqualTo(Body.emptyBody());
+    assertThat(value).isEqualTo(Body.empty());
   }
 }

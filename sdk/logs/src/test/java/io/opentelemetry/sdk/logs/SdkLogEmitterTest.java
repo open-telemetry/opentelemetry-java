@@ -67,7 +67,7 @@ class SdkLogEmitterTest {
             InstrumentationLibraryInfo.create(
                 INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION, SCHEMA_URL));
     assertThat(logData.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(epochMillis));
-    assertThat(logData.getBody()).isEqualTo(Body.stringBody(body));
+    assertThat(logData.getBody()).isEqualTo(Body.string(body));
   }
 
   @Test

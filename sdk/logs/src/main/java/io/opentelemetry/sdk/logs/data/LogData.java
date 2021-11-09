@@ -49,7 +49,7 @@ public interface LogData {
   @Nullable
   String getName();
 
-  /** Returns the body for this log, or {@link Body#emptyBody()} if unset. */
+  /** Returns the body for this log, or {@link Body#empty()} if unset. */
   Body getBody();
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
