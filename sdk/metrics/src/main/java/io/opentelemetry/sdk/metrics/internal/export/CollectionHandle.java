@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.export;
 
 import java.util.AbstractSet;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,7 +43,9 @@ public final class CollectionHandle {
    */
   static Set<CollectionHandle> of(CollectionHandle... handles) {
     Set<CollectionHandle> result = mutableSet();
-    result.addAll(Arrays.asList(handles));
+    for (CollectionHandle handle : handles) {
+      result.add(handle);
+    }
     return result;
   }
 
