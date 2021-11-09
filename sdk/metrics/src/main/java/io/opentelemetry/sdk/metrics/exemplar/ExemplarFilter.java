@@ -13,10 +13,10 @@ import io.opentelemetry.context.Context;
  * reservoir.
  */
 public interface ExemplarFilter {
-  /** Returns whether or not a resorvoir should attempt to filter a measurement. */
+  /** Returns whether or not a reservoir should attempt to filter a measurement. */
   boolean shouldSampleMeasurement(long value, Attributes attributes, Context context);
 
-  /** Returns whether or not a resorvoir should attempt to filter a measurement. */
+  /** Returns whether or not a reservoir should attempt to filter a measurement. */
   boolean shouldSampleMeasurement(double value, Attributes attributes, Context context);
 
   /**

@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Aggregation that selects the specified default based on insturment. */
+/** Aggregation that selects the specified default based on instrument. */
 class DefaultAggregation extends Aggregation {
 
   static final Aggregation INSTANCE = new DefaultAggregation();
