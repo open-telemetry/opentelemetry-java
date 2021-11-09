@@ -50,7 +50,8 @@ public interface Aggregator<T> {
    * instruments to create {@code Accumulation} that are passed to the processor.
    *
    * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no recordings.
+   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no
+   *     recordings.
    */
   @Nullable
   default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
@@ -64,7 +65,8 @@ public interface Aggregator<T> {
    * instruments to create {@code Accumulation} that are passed to the processor.
    *
    * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no recordings.
+   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no
+   *     recordings.
    */
   @Nullable
   default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {

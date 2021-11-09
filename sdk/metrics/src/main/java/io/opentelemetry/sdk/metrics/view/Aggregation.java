@@ -24,7 +24,8 @@ public abstract class Aggregation {
    * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
    *     measurements.
    * @param exemplarFilter the filter on which measurements should turn into exemplars
-   * @return a new {@link Aggregator}. {@link Aggregator#empty()} indicates no measurements should be recorded.
+   * @return a new {@link Aggregator}. {@link Aggregator#empty()} indicates no measurements should
+   *     be recorded.
    */
   public abstract <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
