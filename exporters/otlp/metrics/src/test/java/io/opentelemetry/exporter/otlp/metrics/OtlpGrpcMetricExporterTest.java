@@ -119,6 +119,20 @@ class OtlpGrpcMetricExporterTest {
                 OtlpGrpcMetricExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpGrpcMetricExporter.builder()
+                    .setPreferredTemporality(AggregationTemporality.DELTA))
+        .doesNotThrowAnyException();
+    assertThat(
+            OtlpGrpcMetricExporter.builder()
+                .setPreferredTemporality(AggregationTemporality.DELTA)
+                .build()
+                .getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(OtlpGrpcMetricExporter.builder().build().getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 
   @Test
@@ -155,6 +169,10 @@ class OtlpGrpcMetricExporterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setPreferredTemporality(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("preferredTemporality");
   }
 
   @Test

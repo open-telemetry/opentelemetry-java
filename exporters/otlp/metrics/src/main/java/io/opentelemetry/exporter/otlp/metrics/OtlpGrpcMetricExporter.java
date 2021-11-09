@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
@@ -20,6 +19,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final GrpcExporter<MetricsRequestMarshaler> delegate;
+  private final AggregationTemporality preferredTemporality;
 
   /**
    * Returns a new {@link OtlpGrpcMetricExporter} reading the configuration values from the
@@ -41,16 +41,15 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     return new OtlpGrpcMetricExporterBuilder();
   }
 
-  OtlpGrpcMetricExporter(GrpcExporter<MetricsRequestMarshaler> delegate) {
+  OtlpGrpcMetricExporter(
+      GrpcExporter<MetricsRequestMarshaler> delegate, AggregationTemporality preferredTemporality) {
     this.delegate = delegate;
+    this.preferredTemporality = preferredTemporality;
   }
 
-  @Nullable
   @Override
   public AggregationTemporality getPreferredTemporality() {
-    // TODO: Lookup based on specification, or constructor
-    // https://github.com/open-telemetry/opentelemetry-java/issues/3790
-    return null;
+    return preferredTemporality;
   }
 
   /**

@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model. */
@@ -20,9 +19,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private final OkHttpExporter<MetricsRequestMarshaler> delegate;
+  private final AggregationTemporality preferredTemporality;
 
-  OtlpHttpMetricExporter(OkHttpExporter<MetricsRequestMarshaler> delegate) {
+  OtlpHttpMetricExporter(
+      OkHttpExporter<MetricsRequestMarshaler> delegate,
+      AggregationTemporality preferredTemporality) {
     this.delegate = delegate;
+    this.preferredTemporality = preferredTemporality;
   }
 
   /**
@@ -43,12 +46,9 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
     return new OtlpHttpMetricExporterBuilder();
   }
 
-  @Nullable
   @Override
-  public final AggregationTemporality getPreferredTemporality() {
-    // TODO: Lookup based on specification, or constructor
-    // https://github.com/open-telemetry/opentelemetry-java/issues/3790
-    return null;
+  public AggregationTemporality getPreferredTemporality() {
+    return preferredTemporality;
   }
 
   /**
