@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
@@ -41,7 +42,8 @@ final class OtlpConfigUtil {
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
-      Consumer<byte[]> setTrustedCertificates) {
+      Consumer<byte[]> setTrustedCertificates,
+      Consumer<RetryPolicy> setRetryPolicy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -104,6 +106,11 @@ final class OtlpConfigUtil {
         throw new ConfigurationException("Error reading OTLP certificate.", e);
       }
       setTrustedCertificates.accept(certificateBytes);
+    }
+
+    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+    if (retryEnabled != null && retryEnabled) {
+      setRetryPolicy.accept(RetryPolicy.getDefault());
     }
   }
 

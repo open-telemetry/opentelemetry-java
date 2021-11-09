@@ -18,6 +18,7 @@ import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -134,7 +135,8 @@ final class SpanExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          unused -> {});
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -151,8 +153,11 @@ final class SpanExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
-
+          builder::setTrustedCertificates,
+          retryPolicy ->
+              DefaultGrpcExporterBuilder.getDelegateBuilder(
+                      OtlpGrpcSpanExporterBuilder.class, builder)
+                  .addRetryPolicy(retryPolicy));
       return builder.build();
     } else {
       throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);

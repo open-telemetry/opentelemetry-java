@@ -24,10 +24,9 @@ testSets {
 
 dependencies {
   api(project(":sdk:trace"))
+  api(project(":exporters:otlp:common"))
 
   implementation(project(":api:metrics"))
-
-  implementation(project(":exporters:otlp:common"))
 
   compileOnly("io.grpc:grpc-stub")
 
