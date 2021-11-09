@@ -7,14 +7,20 @@ package io.opentelemetry.sdk.logs;
 
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -178,5 +184,19 @@ class SdkLogEmitterProviderTest {
   void close() {
     sdkLogEmitterProvider.close();
     verify(logProcessor).shutdown();
+  }
+
+  @Test
+  void canSetClock() {
+    long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+    Clock clock = mock(Clock.class);
+    when(clock.now()).thenReturn(now);
+    List<LogData> seenLogs = new LinkedList<>();
+    logProcessor = seenLogs::add;
+    sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
+    sdkLogEmitterProvider.logEmitterBuilder(null).build().logBuilder().emit();
+    assertThat(seenLogs.size()).isEqualTo(1);
+    assertThat(seenLogs.get(0).getEpochNanos()).isEqualTo(now);
   }
 }

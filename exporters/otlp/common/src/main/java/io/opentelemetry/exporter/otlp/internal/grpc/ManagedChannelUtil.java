@@ -6,13 +6,21 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status.Code;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +36,16 @@ import javax.net.ssl.X509TrustManager;
 public final class ManagedChannelUtil {
 
   private static final Logger logger = Logger.getLogger(ManagedChannelUtil.class.getName());
+
+  private static final List<Code> RETRYABLE_STATUS_CODES =
+      Arrays.asList(
+          Code.CANCELLED,
+          Code.DEADLINE_EXCEEDED,
+          Code.RESOURCE_EXHAUSTED,
+          Code.ABORTED,
+          Code.OUT_OF_RANGE,
+          Code.UNAVAILABLE,
+          Code.DATA_LOSS);
 
   /**
    * Configure the channel builder to trust the certificates. The {@code byte[]} should contain an
@@ -68,6 +86,34 @@ public final class ManagedChannelUtil {
           "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "
               + managedChannelBuilder.getClass().getName());
     }
+  }
+
+  /**
+   * Convert the {@link RetryPolicy} into a gRPC service config for the {@code serviceName}. The
+   * resulting map can be passed to {@link ManagedChannelBuilder#defaultServiceConfig(Map)}.
+   */
+  public static Map<String, ?> toServiceConfig(String serviceName, RetryPolicy retryPolicy) {
+    List<Double> retryableStatusCodes =
+        RETRYABLE_STATUS_CODES.stream().map(Code::value).map(i -> (double) i).collect(toList());
+
+    Map<String, Object> retryConfig = new HashMap<>();
+    retryConfig.put("retryableStatusCodes", retryableStatusCodes);
+    retryConfig.put("maxAttempts", (double) retryPolicy.getMaxAttempts());
+    retryConfig.put("initialBackoff", retryPolicy.getInitialBackoff().toMillis() / 1000.0 + "s");
+    retryConfig.put("maxBackoff", retryPolicy.getMaxBackoff().toMillis() / 1000.0 + "s");
+    retryConfig.put("backoffMultiplier", retryPolicy.getBackoffMultiplier());
+
+    Map<String, Object> methodConfig = new HashMap<>();
+    methodConfig.put(
+        "name", Collections.singletonList(Collections.singletonMap("service", serviceName)));
+    methodConfig.put("retryPolicy", retryConfig);
+
+    return Collections.singletonMap("methodConfig", Collections.singletonList(methodConfig));
+  }
+
+  /** Return the list of gRPC status codes that are retryable in OTLP. */
+  public static List<Code> retryableStatusCodes() {
+    return RETRYABLE_STATUS_CODES;
   }
 
   /** Shutdown the gRPC channel. */

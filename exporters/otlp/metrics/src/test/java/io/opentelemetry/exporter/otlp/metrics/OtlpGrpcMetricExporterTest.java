@@ -20,6 +20,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
@@ -154,6 +155,16 @@ class OtlpGrpcMetricExporterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+  }
+
+  @Test
+  void testBuilderDelegate() {
+    assertThatCode(
+            () ->
+                DefaultGrpcExporterBuilder.getDelegateBuilder(
+                        OtlpGrpcMetricExporterBuilder.class, OtlpGrpcMetricExporter.builder())
+                    .addRetryPolicy(RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test

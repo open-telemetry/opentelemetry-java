@@ -48,6 +48,12 @@ public class ContainerResourceTest {
 
   private static final String EXPECTED_CGROUP_4 = "dc579f8a8319c8cf7d38e1adf263bc08d23";
 
+  // with two dashes in prefix
+  private static final String CGROUP_LINE_5 =
+      "11:perf_event:/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod4415fd05_2c0f_4533_909b_f2180dca8d7c.slice/cri-containerd-713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c.scope";
+  private static final String EXPECTED_CGROUP_5 =
+      "713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c";
+
   @Test
   public void testNegativeCases(@TempDir Path tempFolder) throws IOException {
     // invalid containerId (non-hex)
@@ -72,6 +78,9 @@ public class ContainerResourceTest {
 
     Path cgroup4 = createCGroup(tempFolder.resolve("cgroup4"), CGROUP_LINE_4);
     assertThat(getContainerId(buildResource(cgroup4))).isEqualTo(EXPECTED_CGROUP_4);
+
+    Path cgroup5 = createCGroup(tempFolder.resolve("cgroup5"), CGROUP_LINE_5);
+    assertThat(getContainerId(buildResource(cgroup5))).isEqualTo(EXPECTED_CGROUP_5);
   }
 
   private static String getContainerId(Resource resource) {

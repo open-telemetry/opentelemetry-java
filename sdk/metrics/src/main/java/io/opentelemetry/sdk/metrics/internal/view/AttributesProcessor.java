@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
@@ -70,19 +69,12 @@ public abstract class AttributesProcessor {
    *
    * @param nameFilter a filter for which attribute keys to preserve.
    */
-  @SuppressWarnings("unchecked")
   public static AttributesProcessor filterByKeyName(Predicate<String> nameFilter) {
     return simple(
-        incoming -> {
-          AttributesBuilder result = Attributes.builder();
-          incoming.forEach(
-              (k, v) -> {
-                if (nameFilter.test(k.getKey())) {
-                  result.put((AttributeKey<Object>) k, v);
-                }
-              });
-          return result.build();
-        });
+        incoming ->
+            incoming.toBuilder()
+                .removeIf(attributeKey -> !nameFilter.test(attributeKey.getKey()))
+                .build());
   }
 
   /**
