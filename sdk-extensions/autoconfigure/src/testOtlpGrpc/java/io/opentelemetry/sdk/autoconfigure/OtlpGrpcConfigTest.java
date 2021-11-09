@@ -228,7 +228,7 @@ class OtlpGrpcConfigTest {
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(
         "otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
-    System.setProperty("otel.imr.export.interval", "1s");
+    System.setProperty("otel.metric.export.interval", "1s");
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
 
