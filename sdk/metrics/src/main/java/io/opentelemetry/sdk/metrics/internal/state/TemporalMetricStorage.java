@@ -54,7 +54,7 @@ class TemporalMetricStorage<T> {
       Map<Attributes, T> currentAccumulation,
       long startEpochNanos,
       long epochNanos) {
-    // In case it's our first collection, default to start timestmap.
+    // In case it's our first collection, default to start timestamp.
     long lastCollectionEpoch = startEpochNanos;
     Map<Attributes, T> result = currentAccumulation;
     // Check our last report time.
@@ -70,18 +70,18 @@ class TemporalMetricStorage<T> {
       // 3. Cumulative Aggregation + Cumulative recording - do nothing
       // 4. Delta Aggregation + Delta recording - do nothing.
       if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
-        MetricStorageUtils.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
-        result = last.getAccumlation();
+        MetricStorageUtils.diffInPlace(last.getAccumulation(), currentAccumulation, aggregator);
+        result = last.getAccumulation();
       } else if (temporality == AggregationTemporality.CUMULATIVE && isSynchronous) {
         // We need to make sure the current delta recording gets merged into the previous cumulative
         // for the next cumulative measurement.
-        MetricStorageUtils.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
-        result = last.getAccumlation();
+        MetricStorageUtils.mergeInPlace(last.getAccumulation(), currentAccumulation, aggregator);
+        result = last.getAccumulation();
       }
     }
     // Update last reported (cumulative) accumulation.
     // For synchronous instruments, we need the merge result.
-    // For asynchronous isntruments, we need the recorded value.
+    // For asynchronous instruments, we need the recorded value.
     // This assumes aggregation remains consistent for the lifetime of a collector, and
     // could be optimised to not record results for cases 3+4 listed above.
     if (isSynchronous) {
@@ -91,7 +91,7 @@ class TemporalMetricStorage<T> {
       // Async instruments record the raw measurement.
       reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
     }
-    if (result.isEmpty()) {
+    if (result == null || result.isEmpty()) {
       return null;
     }
     return aggregator.toMetricData(
@@ -127,7 +127,7 @@ class TemporalMetricStorage<T> {
     }
 
     @Nullable
-    Map<Attributes, T> getAccumlation() {
+    Map<Attributes, T> getAccumulation() {
       return accumulation;
     }
   }
