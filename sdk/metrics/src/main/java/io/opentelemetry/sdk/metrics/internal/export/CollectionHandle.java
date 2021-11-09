@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.export;
 
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,15 +38,13 @@ public final class CollectionHandle {
   }
 
   /**
-   * Construct a new (mutable) set consistenting of the passed in collection handles.
+   * Construct a new (mutable) set consisting of the passed in collection handles.
    *
    * <p>Used by tests.
    */
   static Set<CollectionHandle> of(CollectionHandle... handles) {
     Set<CollectionHandle> result = mutableSet();
-    for (CollectionHandle handle : handles) {
-      result.add(handle);
-    }
+    result.addAll(Arrays.asList(handles));
     return result;
   }
 

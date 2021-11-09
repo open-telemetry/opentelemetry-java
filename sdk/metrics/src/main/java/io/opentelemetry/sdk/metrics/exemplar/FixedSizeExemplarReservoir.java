@@ -30,7 +30,7 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
    *
    * @param clock The clock to use when annotating measurements with time.
    * @param size The number of exemplars to preserve.
-   * @param randomSupplier The random number generater to use for sampling.
+   * @param randomSupplier The random number generator to use for sampling.
    */
   public FixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
     super(clock, size);
