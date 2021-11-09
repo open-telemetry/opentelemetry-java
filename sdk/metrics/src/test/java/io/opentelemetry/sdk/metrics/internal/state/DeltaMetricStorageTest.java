@@ -41,7 +41,8 @@ class DeltaMetricStorageTest {
     allCollectors.add(collector2);
     storage =
         new DeltaMetricStorage<>(
-            Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()));
+            Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()),
+            DESCRIPTOR);
   }
 
   @Test
