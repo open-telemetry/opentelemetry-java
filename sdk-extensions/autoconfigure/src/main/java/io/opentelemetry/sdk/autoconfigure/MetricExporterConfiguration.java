@@ -101,6 +101,7 @@ final class MetricExporterConfiguration {
           builder::setTimeout,
           builder::setTrustedCertificates,
           (unused) -> {});
+      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -129,6 +130,7 @@ final class MetricExporterConfiguration {
               DefaultGrpcExporterBuilder.getDelegateBuilder(
                       OtlpGrpcMetricExporterBuilder.class, builder)
                   .addRetryPolicy(retryPolicy));
+      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
     } else {
