@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /** Utilities to help deal w/ {@code Map<Attributes, Accumulation>} in metric storage. */
 final class MetricStorageUtils {
@@ -24,9 +23,7 @@ final class MetricStorageUtils {
    * <p>Note: This mutates the result map.
    */
   static <T> void mergeInPlace(
-      @Nullable Map<Attributes, T> result,
-      @Nullable Map<Attributes, T> toMerge,
-      Aggregator<T> aggregator) {
+      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
     if (result == null || toMerge == null) {
       return;
     }
@@ -46,9 +43,7 @@ final class MetricStorageUtils {
    * <p>Note: This mutates the result map.
    */
   static <T> void diffInPlace(
-      @Nullable Map<Attributes, T> result,
-      @Nullable Map<Attributes, T> toDiff,
-      Aggregator<T> aggregator) {
+      Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
     if (result == null || toDiff == null) {
       return;
     }
