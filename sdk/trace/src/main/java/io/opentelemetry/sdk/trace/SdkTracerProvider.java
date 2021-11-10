@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -22,13 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-/**
- * {@code Tracer} provider implementation for {@link TracerProvider}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
- * as needed.
- */
+/** SDK implementation for {@link TracerProvider}. */
 public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "";
@@ -92,7 +85,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   }
 
   /**
-   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * Attempts to stop all the activity for {@link Tracer}s created by this provider. Calls {@link
    * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
    *
    * <p>The returned {@link CompletableResultCode} will be completed when all the Spans are
@@ -100,9 +93,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
    *
    * <p>After this is called, newly created {@code Span}s will be no-ops.
    *
-   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
-   * result in undefined behavior. It should be considered a terminal operation for the SDK
-   * implementation.
+   * <p>After this is called, further attempts at re-using this instance will result in undefined
+   * behavior. It should be considered a terminal operation for the SDK.
    *
    * @return a {@link CompletableResultCode} which is completed when all the span processors have
    *     been shut down.
@@ -126,7 +118,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   }
 
   /**
-   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * Attempts to stop all the activity for {@link Tracer}s created by this provider. Calls {@link
    * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
    *
    * <p>This operation may block until all the Spans are processed. Must be called before turning
@@ -134,9 +126,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
    *
    * <p>After this is called, newly created {@code Span}s will be no-ops.
    *
-   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
-   * result in undefined behavior. It should be considered a terminal operation for the SDK
-   * implementation.
+   * <p>After this is called, further attempts at re-using this instance will result in undefined
+   * behavior. It should be considered a terminal operation for the SDK.
    */
   @Override
   public void close() {
