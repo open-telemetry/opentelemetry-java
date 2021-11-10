@@ -79,11 +79,7 @@ public abstract class MeterSharedState {
     for (View view : views) {
       SynchronousMetricStorage currentStorage =
           SynchronousMetricStorage.create(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              meterProviderSharedState.getExemplarFilter());
+              view, instrument, meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
       if (SynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
@@ -113,12 +109,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       MetricStorage currentStorage =
-          AsynchronousMetricStorage.longAsynchronousAccumulator(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              metricUpdater);
+          AsynchronousMetricStorage.longAsynchronousAccumulator(view, instrument, metricUpdater);
       // TODO - move this in a better location.
       if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
@@ -143,12 +134,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       MetricStorage currentStorage =
-          AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              metricUpdater);
+          AsynchronousMetricStorage.doubleAsynchronousAccumulator(view, instrument, metricUpdater);
       // TODO - move this in a better location.
       if (AsynchronousMetricStorage.empty() == currentStorage) {
         continue;

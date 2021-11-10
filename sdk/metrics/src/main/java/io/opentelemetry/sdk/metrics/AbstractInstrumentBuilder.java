@@ -83,7 +83,7 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
   }
 
   @FunctionalInterface
-  protected static interface SwapBuilder<T> {
+  protected interface SwapBuilder<T> {
     T newBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,

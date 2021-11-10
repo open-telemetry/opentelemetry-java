@@ -21,12 +21,12 @@ import java.util.function.Supplier;
 public interface ExemplarReservoir {
 
   /** An exemplar reservoir that stores no exemplars. */
-  public static ExemplarReservoir noSamples() {
+  static ExemplarReservoir noSamples() {
     return NoExemplarReservoir.INSTANCE;
   }
 
   /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
-  public static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
+  static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
     // Optimisation on memory usage.
     if (filter == ExemplarFilter.neverSample()) {
       return ExemplarReservoir.noSamples();
@@ -41,7 +41,7 @@ public interface ExemplarReservoir {
    * @param size The maximum number of exemplars to preserve.
    * @param randomSupplier The random number generater to use for sampling.
    */
-  public static ExemplarReservoir fixedSizeReservoir(
+  static ExemplarReservoir fixedSizeReservoir(
       Clock clock, int size, Supplier<Random> randomSupplier) {
     return new FixedSizeExemplarReservoir(clock, size, randomSupplier);
   }
@@ -53,7 +53,7 @@ public interface ExemplarReservoir {
    * @param boundaries A list of (inclusive) upper bounds for the histogram. Should be in order from
    *     lowest to highest.
    */
-  public static ExemplarReservoir histogramBucketReservoir(Clock clock, List<Double> boundaries) {
+  static ExemplarReservoir histogramBucketReservoir(Clock clock, List<Double> boundaries) {
     return HistogramBucketExemplarReservoir.create(clock, boundaries);
   }
 

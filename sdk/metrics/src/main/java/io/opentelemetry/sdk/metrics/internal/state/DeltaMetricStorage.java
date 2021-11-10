@@ -97,7 +97,7 @@ class DeltaMetricStorage<T> {
    * @param collectors All possible readers of metrics.
    * @param suppressCollection If true, don't actively pull synchronous instruments, measurements
    *     should be up to date.
-   * @return The delta accumulation of metrics since the last read of a the specified reader.
+   * @return The delta accumulation of metrics since the last read of the specified reader.
    */
   public synchronized Map<Attributes, T> collectFor(
       CollectionHandle collector, Set<CollectionHandle> collectors, boolean suppressCollection) {
