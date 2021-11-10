@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -27,8 +26,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   public static final int MAX_SCALE = 20;
 
   private static final int MAX_BUCKETS = MapCounter.MAX_SIZE;
-  private static final Logger logger =
-      Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
 
   private ExponentialCounter counts;
   private BucketMapper bucketMapper;
@@ -48,6 +45,9 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   public boolean record(double value) {
+    if (value == 0.0) {
+      throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
+    }
     int index = bucketMapper.valueToIndex(Math.abs(value));
     return this.counts.increment(index, 1);
   }
@@ -84,12 +84,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     if (by == 0) {
       return;
     } else if (by < 0) {
-      logger.warning(
-          "downScale() expects non-negative integer but was given"
-              + by
-              + ". "
-              + "Cannot upscale exponential histogram.");
-      return;
+      throw new IllegalStateException("Cannot downscale by negative amount. Was given " + by + ".");
     }
 
     if (!counts.isEmpty()) {
