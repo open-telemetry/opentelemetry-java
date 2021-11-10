@@ -30,7 +30,7 @@ class MetricStorageUtilsTest {
   private Map<Attributes, String> toMerge;
 
   @BeforeEach
-  private void setup() {
+  public void setup() {
     result = new HashMap<>();
     result.put(a, "A");
     result.put(b, "B");
