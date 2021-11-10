@@ -123,7 +123,7 @@ final class OtlpConfigUtil {
     }
     AggregationTemporality temporality;
     try {
-      temporality = AggregationTemporality.valueOf(temporalityStr);
+      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase());
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException(
           "Unrecognized aggregation temporality: " + temporalityStr, e);

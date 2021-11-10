@@ -283,7 +283,15 @@ class OtlpConfigUtilTest {
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             configureAggregationTemporality(
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "cumulative")))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(
+            configureAggregationTemporality(
                 ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "DELTA")))
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(
+            configureAggregationTemporality(
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "delta")))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
