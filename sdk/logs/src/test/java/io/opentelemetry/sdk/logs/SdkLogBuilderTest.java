@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -29,9 +29,6 @@ class SdkLogBuilderTest {
     Instant now = Instant.now();
     String name = "skippy";
     String bodyStr = "body";
-    String spanId = "abc123";
-    String traceId = "99321";
-    int flags = 21;
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
     Attributes attrs = Attributes.empty();
@@ -41,14 +38,12 @@ class SdkLogBuilderTest {
     LogEmitterSharedState state = mock(LogEmitterSharedState.class);
     LogDataBuilder delegate = mock(LogDataBuilder.class);
     LogData logData = mock(LogData.class);
-    Body body = mock(Body.class);
+    Context context = mock(Context.class);
 
     when(state.getLogProcessor()).thenReturn(logProcessor);
     when(delegate.build()).thenReturn(logData);
 
     SdkLogBuilder builder = new SdkLogBuilder(state, delegate);
-    builder.setBody(body);
-    verify(delegate).setBody(body);
     builder.setBody(bodyStr);
     verify(delegate).setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
@@ -57,18 +52,14 @@ class SdkLogBuilderTest {
     verify(delegate).setEpoch(now);
     builder.setAttributes(attrs);
     verify(delegate).setAttributes(attrs);
-    builder.setFlags(flags);
-    verify(delegate).setFlags(flags);
+    builder.setContext(context);
+    verify(delegate).setContext(context);
     builder.setName(name);
     verify(delegate).setName(name);
     builder.setSeverity(severity);
     verify(delegate).setSeverity(severity);
     builder.setSeverityText(sevText);
     verify(delegate).setSeverityText(sevText);
-    builder.setSpanId(spanId);
-    verify(delegate).setSpanId(spanId);
-    builder.setTraceId(traceId);
-    verify(delegate).setTraceId(traceId);
     builder.emit();
     assertThat(seenLog.get()).isSameAs(logData);
   }

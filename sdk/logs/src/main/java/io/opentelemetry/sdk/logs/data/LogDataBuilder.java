@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -21,15 +23,13 @@ public final class LogDataBuilder {
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   private long epochNanos;
-  @Nullable private String traceId;
-  @Nullable private String spanId;
-  private int flags;
+  private SpanContext spanContext = SpanContext.getInvalid();
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private String name;
-  private Body body = Body.stringBody("");
+  private Body body = Body.empty();
   private final Clock clock;
-  private final AttributesBuilder attributeBuilder = Attributes.builder();
+  private Attributes attributes = Attributes.empty();
 
   private LogDataBuilder(
       Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
@@ -62,21 +62,9 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /** Set the trace id. */
-  public LogDataBuilder setTraceId(String traceId) {
-    this.traceId = traceId;
-    return this;
-  }
-
-  /** Set the span id. */
-  public LogDataBuilder setSpanId(String spanId) {
-    this.spanId = spanId;
-    return this;
-  }
-
-  /** Set the flags. */
-  public LogDataBuilder setFlags(int flags) {
-    this.flags = flags;
+  /** Set the context. */
+  public LogDataBuilder setContext(Context context) {
+    this.spanContext = Span.fromContext(context).getSpanContext();
     return this;
   }
 
@@ -98,20 +86,15 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /** Set the body. */
-  public LogDataBuilder setBody(Body body) {
-    this.body = body;
-    return this;
-  }
-
   /** Set the body string. */
   public LogDataBuilder setBody(String body) {
-    return setBody(Body.stringBody(body));
+    this.body = Body.string(body);
+    return this;
   }
 
   /** Set the attributes. */
   public LogDataBuilder setAttributes(Attributes attributes) {
-    this.attributeBuilder.putAll(attributes);
+    this.attributes = attributes;
     return this;
   }
 
@@ -124,13 +107,11 @@ public final class LogDataBuilder {
         resource,
         instrumentationLibraryInfo,
         epochNanos,
-        traceId,
-        spanId,
-        flags,
+        spanContext,
         severity,
         severityText,
         name,
         body,
-        attributeBuilder.build());
+        attributes);
   }
 }

@@ -12,6 +12,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
@@ -35,26 +40,38 @@ class OtlpJsonLoggingLogExporterTest {
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
           .setName("testLog1")
           .setBody("body1")
-          .setFlags(0)
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setSpanId("8765432112345876")
-          .setTraceId("12345678876543211234567887654322")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setContext(
+              Context.root()
+                  .with(
+                      Span.wrap(
+                          SpanContext.create(
+                              "12345678876543211234567887654322",
+                              "8765432112345876",
+                              TraceFlags.getDefault(),
+                              TraceState.getDefault()))))
           .build();
 
   private static final LogData LOG2 =
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .setName("testLog2")
           .setBody("body2")
-          .setFlags(0)
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setSpanId("8765432112345875")
-          .setTraceId("12345678876543211234567887654322")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
+          .setContext(
+              Context.root()
+                  .with(
+                      Span.wrap(
+                          SpanContext.create(
+                              "12345678876543211234567887654322",
+                              "8765432112345875",
+                              TraceFlags.getDefault(),
+                              TraceState.getDefault()))))
           .build();
 
   @RegisterExtension
