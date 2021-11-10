@@ -115,11 +115,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    */
   static DoubleExponentialHistogramBuckets diff(
       DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
-
     DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
-    if (!b.counts.isEmpty()) {
-      copy.mergeWith(b, /* additive= */ false);
-    }
+    copy.mergeWith(b, /* additive= */ false);
     return copy;
   }
 
