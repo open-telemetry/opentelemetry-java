@@ -43,14 +43,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private Supplier<Map<String, String>> propertiesSupplier = Collections::emptyMap;
 
+  private ClassLoader serviceClassLoader =
+      AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader();
+
   private boolean setResultAsGlobal = true;
 
-  AutoConfiguredOpenTelemetrySdkBuilder() {
-    for (AutoConfigurationCustomizerProvider customizer :
-        ServiceLoader.load(AutoConfigurationCustomizerProvider.class)) {
-      customizer.customize(this);
-    }
-  }
+  private boolean customized;
+
+  AutoConfiguredOpenTelemetrySdkBuilder() {}
 
   /**
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
@@ -148,12 +148,28 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     return this;
   }
 
+  /** Sets the {@link ClassLoader} to be used to load SPI implementations. */
+  public AutoConfiguredOpenTelemetrySdkBuilder setServiceClassLoader(
+      ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
+    return this;
+  }
+
   /**
    * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
   public AutoConfiguredOpenTelemetrySdk build() {
+    if (!customized) {
+      customized = true;
+      for (AutoConfigurationCustomizerProvider customizer :
+          ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
+        customizer.customize(this);
+      }
+    }
+
     ConfigProperties config = getConfig();
     Resource resource =
         OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
@@ -161,6 +177,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         OpenTelemetrySdkAutoConfiguration.newOpenTelemetrySdk(
             config,
             resource,
+            serviceClassLoader,
             propagatorCustomizer,
             spanExporterCustomizer,
             samplerCustomizer,

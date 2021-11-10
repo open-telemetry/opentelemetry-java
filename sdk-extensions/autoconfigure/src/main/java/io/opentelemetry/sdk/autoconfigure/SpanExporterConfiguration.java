@@ -43,6 +43,7 @@ final class SpanExporterConfiguration {
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer) {
     List<String> exporterNamesList = config.getList("otel.traces.exporter");
@@ -81,7 +82,8 @@ final class SpanExporterConfiguration {
             exporterNamesList,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
-            config);
+            config,
+            serviceClassLoader);
 
     return exporterNames.stream()
         .collect(
