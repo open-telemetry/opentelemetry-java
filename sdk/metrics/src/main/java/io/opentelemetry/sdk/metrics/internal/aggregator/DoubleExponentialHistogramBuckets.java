@@ -44,7 +44,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.scale = buckets.scale;
   }
 
-  public boolean record(double value) {
+  boolean record(double value) {
     if (value == 0.0) {
       throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
     }
