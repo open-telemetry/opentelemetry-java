@@ -108,6 +108,21 @@ public class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
+  void testInvalidRecording() {
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    // Non finite recordings should be ignored
+    aggregatorHandle.recordDouble(Double.POSITIVE_INFINITY);
+    aggregatorHandle.recordDouble(Double.NEGATIVE_INFINITY);
+    aggregatorHandle.recordDouble(Double.NaN);
+
+    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    assertThat(Objects.requireNonNull(acc).getSum()).isEqualTo(0);
+    assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(0);
+    assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(0);
+    assertThat(acc.getZeroCount()).isEqualTo(0);
+  }
+
+  @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
         new DoubleExponentialHistogramAggregator(() -> reservoir);
@@ -221,6 +236,27 @@ public class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
+  void testMergeWithEmptyBuckets() {
+    assertThat(
+            aggregator.merge(
+                getTestAccumulation(Collections.emptyList()),
+                getTestAccumulation(Collections.emptyList(), 1)))
+        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
+
+    assertThat(
+            aggregator.merge(
+                getTestAccumulation(Collections.emptyList(), 1),
+                getTestAccumulation(Collections.emptyList())))
+        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
+
+    assertThat(
+            aggregator.merge(
+                getTestAccumulation(Collections.emptyList()),
+                getTestAccumulation(Collections.emptyList())))
+        .isEqualTo(getTestAccumulation(Collections.emptyList()));
+  }
+
+  @Test
   void testMergeOverlap() {
     ExponentialHistogramAccumulation previousAccumulation =
         getTestAccumulation(Collections.emptyList(), 0, 10, 100, 10000, 100000);
@@ -291,7 +327,7 @@ public class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(123.456);
     ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
 
-    MetricData metricData =
+    MetricData metricDataCumulative =
         cumulativeAggregator.toMetricData(
             RESOURCE,
             INSTRUMENTATION_LIBRARY_INFO,
@@ -304,7 +340,7 @@ public class DoubleExponentialHistogramAggregatorTest {
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
-      assertThat(metricData)
+      assertThat(metricDataCumulative)
           .hasExponentialHistogram()
           .isCumulative()
           .points()
@@ -328,6 +364,19 @@ public class DoubleExponentialHistogramAggregatorTest {
       aggregatorHandle.recordDouble(-1);
       aggregatorHandle.recordDouble(0);
     }
+
+    MetricData metricDataDelta =
+        cumulativeAggregator.toMetricData(
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
+            Collections.singletonMap(Attributes.empty(), acc),
+            AggregationTemporality.DELTA,
+            0,
+            10,
+            100);
+    assertThat(metricDataDelta.getExponentialHistogramData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
