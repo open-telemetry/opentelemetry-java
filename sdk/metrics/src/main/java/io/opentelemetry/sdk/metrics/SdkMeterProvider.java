@@ -45,11 +45,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final Map<CollectionHandle, CollectionInfo> collectionInfoMap;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
   private final AtomicLong lastCollectionTimestamp;
-
-  // Minimum amount of time we allow between synchronous collections.
-  // This meant to reduce overhead when multiple exporters attempt to read metrics quickly.
-  // TODO: This should be configurable at the SDK level.
-  private static final long MINIMUM_COLLECTION_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(100);
+  private final long minimumCollectionIntervalNanos;
 
   /**
    * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
@@ -65,14 +61,16 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
-      ExemplarFilter exemplarSampler) {
+      ExemplarFilter exemplarSampler,
+      long minimumCollectionIntervalNanos) {
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarSampler);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
     this.lastCollectionTimestamp =
-        new AtomicLong(clock.nanoTime() - MINIMUM_COLLECTION_INTERVAL_NANOS);
+        new AtomicLong(clock.nanoTime() - minimumCollectionIntervalNanos);
+    this.minimumCollectionIntervalNanos = minimumCollectionIntervalNanos;
 
     // Here we construct our own unique handle ids for this SDK.
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
@@ -148,7 +146,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       long pastNanoTime = lastCollectionTimestamp.get();
       // It hasn't been long enough since the last collection.
       boolean disableSynchronousCollection =
-          (currentNanoTime - pastNanoTime) < MINIMUM_COLLECTION_INTERVAL_NANOS;
+          (currentNanoTime - pastNanoTime) < minimumCollectionIntervalNanos;
       // If we're not disabling metrics, write the current collection time.
       // We don't care if this happens in more than one thread, suppression is optimistic, and the
       // interval is small enough some jitter isn't important.

@@ -107,17 +107,16 @@ class TemporalMetricStorage<T> {
 
   /** Remembers what was presented to a specific exporter. */
   private static class LastReportedAccumulation<T> {
-    @Nullable private final Map<Attributes, T> accumulation;
+    private final Map<Attributes, T> accumulation;
     private final long epochNanos;
 
     /**
      * Constructs a new reporting record.
      *
-     * @param accumulation The last accumulation of metric data or {@code null} if the accumulator
-     *     is not stateful.
+     * @param accumulation The last accumulation of metric data.
      * @param epochNanos The timestamp the data was reported.
      */
-    LastReportedAccumulation(@Nullable Map<Attributes, T> accumulation, long epochNanos) {
+    LastReportedAccumulation(Map<Attributes, T> accumulation, long epochNanos) {
       this.accumulation = accumulation;
       this.epochNanos = epochNanos;
     }
@@ -126,7 +125,6 @@ class TemporalMetricStorage<T> {
       return epochNanos;
     }
 
-    @Nullable
     Map<Attributes, T> getAccumulation() {
       return accumulation;
     }

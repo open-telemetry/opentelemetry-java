@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -36,20 +36,8 @@ final class SdkLogBuilder implements LogBuilder {
   }
 
   @Override
-  public LogBuilder setTraceId(String traceId) {
-    logDataBuilder.setTraceId(traceId);
-    return this;
-  }
-
-  @Override
-  public LogBuilder setSpanId(String spanId) {
-    logDataBuilder.setSpanId(spanId);
-    return this;
-  }
-
-  @Override
-  public LogBuilder setFlags(int flags) {
-    logDataBuilder.setFlags(flags);
+  public LogBuilder setContext(Context context) {
+    logDataBuilder.setContext(context);
     return this;
   }
 
@@ -68,12 +56,6 @@ final class SdkLogBuilder implements LogBuilder {
   @Override
   public LogBuilder setName(String name) {
     logDataBuilder.setName(name);
-    return this;
-  }
-
-  @Override
-  public LogBuilder setBody(Body body) {
-    logDataBuilder.setBody(body);
     return this;
   }
 

@@ -37,7 +37,8 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       AttributesProcessor attributesProcessor) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
-    this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);
+    this.deltaMetricStorage =
+        new DeltaMetricStorage<>(aggregator, metricDescriptor.getSourceInstrument());
     this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
   }
 

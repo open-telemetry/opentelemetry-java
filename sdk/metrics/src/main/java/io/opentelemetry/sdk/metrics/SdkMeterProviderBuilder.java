@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
@@ -15,9 +17,11 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Builder class for the {@link SdkMeterProvider}. Has fully functional default implementations of
@@ -31,6 +35,7 @@ public final class SdkMeterProviderBuilder {
   private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
   // Default the sampling strategy.
   private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
+  private long minimumCollectionIntervalNanos = TimeUnit.MILLISECONDS.toNanos(100);
 
   SdkMeterProviderBuilder() {}
 
@@ -124,6 +129,20 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
+   * Configure the minimum duration between synchronous collections. If collections occur more
+   * frequently than this, synchronous collection will be suppressed.
+   *
+   * @param duration The duration.
+   * @return this
+   */
+  public SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
+    Objects.requireNonNull(duration, "duration");
+    checkArgument(!duration.isNegative(), "duration must not be negative");
+    minimumCollectionIntervalNanos = duration.toNanos();
+    return this;
+  }
+
+  /**
    * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
    * SdkMeterProviderBuilder}. This provider is not registered as the global {@link
    * io.opentelemetry.api.metrics.MeterProvider}. It is recommended that you register one provider
@@ -135,6 +154,11 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(
-        metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
+        metricReaders,
+        clock,
+        resource,
+        viewRegistryBuilder.build(),
+        exemplarFilter,
+        minimumCollectionIntervalNanos);
   }
 }

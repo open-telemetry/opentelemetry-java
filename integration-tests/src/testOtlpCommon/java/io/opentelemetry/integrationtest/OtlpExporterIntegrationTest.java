@@ -25,6 +25,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -51,7 +52,6 @@ import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -381,14 +381,20 @@ abstract class OtlpExporterIntegrationTest {
                 InstrumentationLibraryInfo.create(
                     OtlpExporterIntegrationTest.class.getName(), null))
             .setName("log-name")
-            .setBody(Body.stringBody("log body"))
+            .setBody("log body")
             .setAttributes(Attributes.builder().put("key", "value").build())
             .setSeverity(Severity.DEBUG)
             .setSeverityText("DEBUG")
-            .setTraceId(IdGenerator.random().generateTraceId())
-            .setSpanId(IdGenerator.random().generateSpanId())
             .setEpoch(Instant.now())
-            .setFlags(0)
+            .setContext(
+                Context.root()
+                    .with(
+                        Span.wrap(
+                            SpanContext.create(
+                                IdGenerator.random().generateTraceId(),
+                                IdGenerator.random().generateSpanId(),
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()))))
             .build();
 
     logExporter.export(Collections.singletonList(logData));
@@ -428,10 +434,12 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(logData.getSeverity().getSeverityNumber());
     assertThat(protoLog.getSeverityText()).isEqualTo("DEBUG");
     assertThat(TraceId.fromBytes(protoLog.getTraceId().toByteArray()))
-        .isEqualTo(logData.getTraceId());
-    assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray())).isEqualTo(logData.getSpanId());
+        .isEqualTo(logData.getSpanContext().getTraceId());
+    assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
+        .isEqualTo(logData.getSpanContext().getSpanId());
+    assertThat(TraceFlags.fromByte((byte) protoLog.getFlags()))
+        .isEqualTo(logData.getSpanContext().getTraceFlags());
     assertThat(protoLog.getTimeUnixNano()).isEqualTo(logData.getEpochNanos());
-    assertThat(protoLog.getFlags()).isEqualTo(logData.getFlags());
   }
 
   private static class OtlpGrpcServer extends ServerExtension {

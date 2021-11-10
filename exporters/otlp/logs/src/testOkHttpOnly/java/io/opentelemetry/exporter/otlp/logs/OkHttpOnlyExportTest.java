@@ -13,9 +13,6 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -45,9 +42,6 @@ class OkHttpOnlyExportTest {
                   Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                   InstrumentationLibraryInfo.create("instrumentation", "1"))
               .setEpoch(Instant.now())
-              .setTraceId(TraceId.getInvalid())
-              .setSpanId(SpanId.getInvalid())
-              .setFlags(TraceFlags.getDefault().asByte())
               .setSeverity(Severity.ERROR)
               .setSeverityText("really severe")
               .setName("log1")

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.testing;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,11 @@ class InMemoryMetricReaderCumulativeTest {
   @BeforeEach
   void setup() {
     reader = InMemoryMetricReader.create();
-    provider = SdkMeterProvider.builder().registerMetricReader(reader).build();
+    provider =
+        SdkMeterProvider.builder()
+            .setMinimumCollectionInterval(Duration.ofSeconds(0))
+            .registerMetricReader(reader)
+            .build();
   }
 
   private void generateFakeMetric(int index) {
@@ -45,7 +50,7 @@ class InMemoryMetricReaderCumulativeTest {
 
     // Add more data, should join.
     generateFakeMetric(1);
-    assertThat(reader.collectAllMetrics()).hasSize(3);
+    assertThat(reader.collectAllMetrics()).hasSize(1);
   }
 
   @Test
@@ -55,7 +60,7 @@ class InMemoryMetricReaderCumulativeTest {
     generateFakeMetric(3);
     // TODO: Better assertions for CompletableResultCode.
     assertThat(reader.flush()).isNotNull();
-    assertThat(reader.collectAllMetrics()).hasSize(3);
+    assertThat(reader.collectAllMetrics()).hasSize(0);
   }
 
   @Test
