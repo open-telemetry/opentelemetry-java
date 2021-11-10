@@ -46,6 +46,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   boolean record(double value) {
     if (value == 0.0) {
+      // Guarded by caller. If passed 0 it would be a bug in the SDK.
       throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
     }
     int index = bucketMapper.valueToIndex(Math.abs(value));
@@ -84,6 +85,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     if (by == 0) {
       return;
     } else if (by < 0) {
+      // This should never happen without an SDK bug
       throw new IllegalStateException("Cannot downscale by negative amount. Was given " + by + ".");
     }
 
