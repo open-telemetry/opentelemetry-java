@@ -46,8 +46,7 @@ class MetricStorageUtilsTest {
     Aggregator<String> agg = buildConcatAggregator();
     MetricStorageUtils.mergeInPlace(result, toMerge, agg);
 
-    assertThat(result)
-        .containsOnly(entry(a, "A"), entry(b, "merge(B,B')"), entry(c, "C"), entry(d, null));
+    assertThat(result).containsOnly(entry(b, "merge(B,B')"), entry(c, "C"));
   }
 
   @Test
@@ -55,8 +54,7 @@ class MetricStorageUtilsTest {
     Aggregator<String> agg = buildConcatAggregator();
     MetricStorageUtils.diffInPlace(result, toMerge, agg);
 
-    assertThat(result)
-        .containsOnly(entry(a, "A"), entry(b, "diff(B,B')"), entry(c, "C"), entry(d, null));
+    assertThat(result).containsOnly(entry(b, "diff(B,B')"), entry(c, "C"));
   }
 
   @SuppressWarnings("unchecked")
