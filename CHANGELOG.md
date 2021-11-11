@@ -4,7 +4,7 @@
 
 ### General
 
-- IMPORTANT: Remove deprecated `io.opentelemetry:opentelemetry-proto` module. Java bindings for OTLP
+- IMPORTANT: The deprecated `io.opentelemetry:opentelemetry-proto` module was removed. Java bindings for OTLP
   protobufs are now published
   via [opentelemetry-proto-java](https://github.com/open-telemetry/opentelemetry-proto-java), and
   available at maven coordinates `io.opentelemetry.proto:opentelemetry-proto`.
@@ -33,8 +33,8 @@
 
 #### SDK Extensions
 
-- IMPORTANT: Remove deprecated `io.opentelemetry:opentelemetry-sdk-extension-async-processor`
-  module. This module is now published
+- IMPORTANT: The deprecated `io.opentelemetry:opentelemetry-sdk-extension-async-processor`
+  module was removed. This module is now published
   via [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib),
   and available at maven coordinates `io.opentelemetry.contrib:opentelemetry-disruptor-processor`.
 - The `ExecutorServiceSpanProcessor` from
