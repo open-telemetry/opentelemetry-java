@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
