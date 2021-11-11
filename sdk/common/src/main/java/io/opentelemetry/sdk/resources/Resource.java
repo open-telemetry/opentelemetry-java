@@ -200,7 +200,7 @@ public abstract class Resource {
    * @return whether the name is valid.
    */
   private static boolean isValid(String name) {
-    return name.length() <= MAX_LENGTH && StringUtils.isPrintableString(name);
+    return StringUtils.isPrintableString(name) && name.length() <= MAX_LENGTH;
   }
 
   /**

@@ -85,6 +85,9 @@ public final class StringUtils {
    * @return whether the {@code String} contains only printable characters.
    */
   public static boolean isPrintableString(String str) {
+    if (isNullOrEmpty(str)) {
+      return false;
+    }
     for (int i = 0; i < str.length(); i++) {
       if (!isPrintableChar(str.charAt(i))) {
         return false;
