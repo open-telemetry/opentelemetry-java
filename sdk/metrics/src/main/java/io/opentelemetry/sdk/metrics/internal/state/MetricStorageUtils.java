@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 /** Utilities to help deal w/ {@code Map<Attributes, Accumulation>} in metric storage. */
 final class MetricStorageUtils {
@@ -24,11 +25,7 @@ final class MetricStorageUtils {
    */
   static <T> void mergeInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
-    result.entrySet().removeIf(entry -> !toMerge.containsKey(entry.getKey()));
-    toMerge.forEach(
-        (k, v) -> {
-          result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.merge(v2, v) : v);
-        });
+    blend(result, toMerge, aggregator::merge);
   }
 
   /**
@@ -41,10 +38,13 @@ final class MetricStorageUtils {
    */
   static <T> void diffInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
-    result.entrySet().removeIf(entry -> !toDiff.containsKey(entry.getKey()));
-    toDiff.forEach(
-        (k, v) -> {
-          result.compute(k, (k2, v2) -> (v2 != null) ? aggregator.diff(v2, v) : v);
-        });
+    blend(result, toDiff, aggregator::diff);
+  }
+
+  private static <T> void blend(
+      Map<Attributes, T> result, Map<Attributes, T> toMerge, BiFunction<T, T, T> blendFunction) {
+    result.entrySet().removeIf(entry -> !toMerge.containsKey(entry.getKey()));
+    toMerge.forEach(
+        (k, v) -> result.compute(k, (k2, v2) -> (v2 != null) ? blendFunction.apply(v2, v) : v));
   }
 }
