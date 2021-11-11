@@ -18,13 +18,6 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
 
   SdkLongGaugeBuilder(
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      String name) {
-    this(meterProviderSharedState, meterSharedState, name, "", "1");
-  }
-
-  SdkLongGaugeBuilder(
-      MeterProviderSharedState meterProviderSharedState,
       MeterSharedState sharedState,
       String name,
       String description,

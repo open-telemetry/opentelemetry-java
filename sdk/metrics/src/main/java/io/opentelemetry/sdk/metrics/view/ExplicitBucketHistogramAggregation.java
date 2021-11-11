@@ -30,11 +30,6 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
     this.bucketBoundaryArray = ExplicitBucketHistogramUtils.createBoundaryArray(bucketBoundaries);
   }
 
-  /** Returns the configured bucket boundaries for the histogram aggregation. */
-  public List<Double> getBucketBoundaries() {
-    return bucketBoundaries;
-  }
-
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(

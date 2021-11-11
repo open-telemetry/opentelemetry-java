@@ -91,13 +91,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
 
     Builder(
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
-      this(meterProviderSharedState, meterSharedState, name, "", "1");
-    }
-
-    Builder(
-        MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,

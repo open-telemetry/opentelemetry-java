@@ -73,8 +73,8 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
     List<ExemplarData> results = new ArrayList<>();
-    for (int i = 0; i < this.storage.length; ++i) {
-      ExemplarData result = this.storage[i].getAndReset(pointAttributes);
+    for (ReservoirCell reservoirCell : this.storage) {
+      ExemplarData result = reservoirCell.getAndReset(pointAttributes);
       if (result != null) {
         results.add(result);
       }
