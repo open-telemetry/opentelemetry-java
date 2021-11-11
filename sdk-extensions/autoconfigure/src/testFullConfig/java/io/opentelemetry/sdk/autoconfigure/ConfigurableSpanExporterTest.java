@@ -17,6 +17,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -30,7 +32,8 @@ public class ConfigurableSpanExporterTest {
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
     Map<String, SpanExporter> exportersByName =
-        SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a);
+        SpanExporterConfiguration.configureSpanExporters(
+            config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a);
 
     assertThat(exportersByName)
         .hasSize(1)
@@ -42,13 +45,28 @@ public class ConfigurableSpanExporterTest {
   }
 
   @Test
+  void configureSpanExporters_emptyClassLoader() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureSpanExporters(
+                    config, new URLClassLoader(new URL[0], null), (a, unused) -> a))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("testExporter");
+  }
+
+  @Test
   void configureSpanExporters_duplicates() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("otel.traces.exporter", "otlp,otlp,logging"));
 
     assertThatThrownBy(
-            () -> SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a))
+            () ->
+                SpanExporterConfiguration.configureSpanExporters(
+                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
   }
@@ -59,7 +77,9 @@ public class ConfigurableSpanExporterTest {
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.traces.exporter", "otlp,none"));
 
     assertThatThrownBy(
-            () -> SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a))
+            () ->
+                SpanExporterConfiguration.configureSpanExporters(
+                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
   }

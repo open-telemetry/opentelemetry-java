@@ -30,7 +30,10 @@ import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
   static void configureExporter(
-      String name, ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
+      String name,
+      ConfigProperties config,
+      ClassLoader serviceClassLoader,
+      SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     switch (name) {
       case "otlp":
         configureOtlpMetrics(config, sdkMeterProviderBuilder);
@@ -46,7 +49,7 @@ final class MetricExporterConfiguration {
         configureLoggingMetrics(config, sdkMeterProviderBuilder);
         return;
       default:
-        MetricExporter spiExporter = configureSpiExporter(name, config);
+        MetricExporter spiExporter = configureSpiExporter(name, config, serviceClassLoader);
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
         }
@@ -57,14 +60,16 @@ final class MetricExporterConfiguration {
 
   // Visible for testing.
   @Nullable
-  static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
+  static MetricExporter configureSpiExporter(
+      String name, ConfigProperties config, ClassLoader serviceClassLoader) {
     Map<String, MetricExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableMetricExporterProvider.class,
             Collections.singletonList(name),
             ConfigurableMetricExporterProvider::getName,
             ConfigurableMetricExporterProvider::createExporter,
-            config);
+            config,
+            serviceClassLoader);
     return spiExporters.get(name);
   }
 

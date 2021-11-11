@@ -34,6 +34,7 @@ final class TracerProviderConfiguration {
   static SdkTracerProvider configureTracerProvider(
       Resource resource,
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
@@ -47,17 +48,18 @@ final class TracerProviderConfiguration {
       sampler = "parentbased_always_on";
     }
     tracerProviderBuilder.setSampler(
-        samplerCustomizer.apply(configureSampler(sampler, config), config));
+        samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
     // Run user configuration before setting exporters from environment to allow user span
     // processors to effect export.
     for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
+        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
       configurer.configure(tracerProviderBuilder, config);
     }
 
     Map<String, SpanExporter> exportersByName =
-        SpanExporterConfiguration.configureSpanExporters(config, spanExporterCustomizer);
+        SpanExporterConfiguration.configureSpanExporters(
+            config, serviceClassLoader, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName)
         .forEach(tracerProviderBuilder::addSpanProcessor);
@@ -142,14 +144,16 @@ final class TracerProviderConfiguration {
   }
 
   // Visible for testing
-  static Sampler configureSampler(String sampler, ConfigProperties config) {
+  static Sampler configureSampler(
+      String sampler, ConfigProperties config, ClassLoader serviceClassLoader) {
     Map<String, Sampler> spiSamplers =
         SpiUtil.loadConfigurable(
             ConfigurableSamplerProvider.class,
             Collections.singletonList(sampler),
             ConfigurableSamplerProvider::getName,
             ConfigurableSamplerProvider::createSampler,
-            config);
+            config,
+            serviceClassLoader);
 
     switch (sampler) {
       case "always_on":
