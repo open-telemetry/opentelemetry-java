@@ -447,7 +447,7 @@ class SdkSpanBuilderTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     span.end();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-    assertThat(span.toSpanData().getAttributes().get(stringKey("cat"))).isEqualTo("meow");
+    assertThat(span.toSpanData().getAttribute(stringKey("cat"))).isEqualTo("meow");
   }
 
   @Test
@@ -637,7 +637,7 @@ class SdkSpanBuilderTest {
                 .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
-      assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getAttribute(samplerAttributeKey)).isNotNull();
       assertThat(span.toSpanData().getSpanContext().getTraceState())
           .isEqualTo(TraceState.getDefault());
     } finally {
@@ -692,7 +692,7 @@ class SdkSpanBuilderTest {
                 .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
-      assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getAttribute(samplerAttributeKey)).isNotNull();
       assertThat(span.toSpanData().getSpanContext().getTraceState())
           .isEqualTo(TraceState.builder().put("newkey", "newValue").build());
     } finally {

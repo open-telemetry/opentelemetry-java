@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace.data;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -12,6 +13,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -92,6 +94,16 @@ public interface SpanData {
    * @return the attributes recorded for this {@code Span}.
    */
   Attributes getAttributes();
+
+  /**
+   * Returns the value for a given attribute key.
+   *
+   * @return the value of the attribute with the given key
+   */
+  @Nullable
+  default <T> T getAttribute(AttributeKey<T> key) {
+    return getAttributes().get(key);
+  }
 
   /**
    * Returns the timed events recorded for this {@code Span}.

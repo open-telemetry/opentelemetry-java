@@ -35,7 +35,7 @@ public final class TestUtils {
     return getByCondition(
         spans,
         span -> {
-          T attrValue = span.getAttributes().get(key);
+          T attrValue = span.getAttribute(key);
           if (attrValue == null) {
             return false;
           }

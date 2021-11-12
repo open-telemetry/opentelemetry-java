@@ -219,9 +219,9 @@ class InteroperabilityTest {
         .isEqualTo(parentLinkSpan.getContext().getSpanId().toLowerBase16());
     assertThat(spanData3.getKind()).isEqualTo(SpanKind.SERVER);
     assertThat(spanData3.getStatus()).isEqualTo(StatusData.ok());
-    assertThat(spanData3.getAttributes().get(AttributeKey.doubleKey("testKey"))).isEqualTo(2.5);
-    assertThat(spanData3.getAttributes().get(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);
-    assertThat(spanData3.getAttributes().get(AttributeKey.longKey("testKey3"))).isEqualTo(3);
+    assertThat(spanData3.getAttribute(AttributeKey.doubleKey("testKey"))).isEqualTo(2.5);
+    assertThat(spanData3.getAttribute(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);
+    assertThat(spanData3.getAttribute(AttributeKey.longKey("testKey3"))).isEqualTo(3);
     assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(3);
     assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("12345");
     assertThat(
@@ -246,10 +246,9 @@ class InteroperabilityTest {
                 .get(AttributeKey.stringKey("message.event.type")))
         .isEqualTo("SENT");
     assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 1");
-    assertThat(spanData3.getEvents().get(1).getAttributes().get(AttributeKey.doubleKey("testKey")))
+    assertThat(spanData3.getEvents().get(1).getAttribute(AttributeKey.doubleKey("testKey")))
         .isEqualTo(123);
-    assertThat(
-            spanData3.getEvents().get(1).getAttributes().get(AttributeKey.booleanKey("testKey2")))
+    assertThat(spanData3.getEvents().get(1).getAttribute(AttributeKey.booleanKey("testKey2")))
         .isEqualTo(true);
     assertThat(spanData3.getEvents().get(2).getName()).isEqualTo("OpenCensus: Event 2");
 
@@ -293,16 +292,15 @@ class InteroperabilityTest {
     assertThat(spanData1.getTotalRecordedEvents()).isEqualTo(4);
     assertThat(spanData1.getEvents().get(0).getName()).isEqualTo("OpenCensus span: Event 1");
     assertThat(spanData1.getEvents().get(1).getName()).isEqualTo("OpenCensus span: Event 2");
-    assertThat(spanData1.getEvents().get(1).getAttributes().get(AttributeKey.doubleKey("key2")))
+    assertThat(spanData1.getEvents().get(1).getAttribute(AttributeKey.doubleKey("key2")))
         .isEqualTo(3.5);
     assertThat(spanData1.getEvents().get(1).getEpochNanos()).isEqualTo(0);
     assertThat(spanData1.getEvents().get(2).getName()).isEqualTo("OpenCensus span: Event 3");
     assertThat(spanData1.getEvents().get(2).getEpochNanos()).isEqualTo((long) 5e6);
     assertThat(spanData1.getEvents().get(3).getName()).isEqualTo("OpenCensus span: Event 4");
-    assertThat(spanData1.getEvents().get(3).getAttributes().get(AttributeKey.longKey("key3")))
+    assertThat(spanData1.getEvents().get(3).getAttribute(AttributeKey.longKey("key3")))
         .isEqualTo(4L);
-    assertThat(spanData1.getAttributes().get(AttributeKey.stringKey("testKey")))
-        .isEqualTo("testValue");
+    assertThat(spanData1.getAttribute(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
   }
 
   @Test

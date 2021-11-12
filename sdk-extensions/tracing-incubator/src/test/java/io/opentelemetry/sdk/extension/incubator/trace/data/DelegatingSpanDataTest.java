@@ -38,7 +38,7 @@ class DelegatingSpanDataTest {
     private SpanDataWithClientType(SpanData delegate) {
       super(delegate);
       final String clientType;
-      String userAgent = delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT);
+      String userAgent = delegate.getAttribute(SemanticAttributes.HTTP_USER_AGENT);
       if (userAgent != null) {
         clientType = parseUserAgent(userAgent);
       } else {
@@ -81,7 +81,7 @@ class DelegatingSpanDataTest {
   void overrideDelegate() {
     SpanData spanData = createBasicSpanBuilder().build();
     SpanData spanDataWithClientType = new SpanDataWithClientType(spanData);
-    assertThat(spanDataWithClientType.getAttributes().get(CLIENT_TYPE_KEY)).isEqualTo("unknown");
+    assertThat(spanDataWithClientType.getAttribute(CLIENT_TYPE_KEY)).isEqualTo("unknown");
   }
 
   @Test
@@ -100,7 +100,7 @@ class DelegatingSpanDataTest {
         .addEqualityGroup(noopWrapper)
         .addEqualityGroup(spanDataWithClientType)
         .testEquals();
-    assertThat(spanDataWithClientType.getAttributes().get(CLIENT_TYPE_KEY)).isEqualTo("unknown");
+    assertThat(spanDataWithClientType.getAttribute(CLIENT_TYPE_KEY)).isEqualTo("unknown");
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {

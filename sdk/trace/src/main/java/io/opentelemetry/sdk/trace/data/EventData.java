@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.trace.data;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Data representation of a event. */
@@ -52,6 +54,16 @@ public interface EventData {
    * @return the attributes of the {@link EventData}.
    */
   Attributes getAttributes();
+
+  /**
+   * Returns the value for a given attribute key.
+   *
+   * @return the value of the attribute with the given key
+   */
+  @Nullable
+  default <T> T getAttribute(AttributeKey<T> key) {
+    return getAttributes().get(key);
+  }
 
   /**
    * Returns the epoch time in nanos of this event.

@@ -302,7 +302,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
 
     // Exceptions used in assertions always have a different stack trace, just confirm it was
     // recorded.
-    String stackTrace = exceptionEvent.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+    String stackTrace = exceptionEvent.getAttribute(SemanticAttributes.EXCEPTION_STACKTRACE);
     assertThat(stackTrace).as("exception.stacktrace").isNotNull();
 
     return this;

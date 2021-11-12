@@ -252,11 +252,9 @@ class SpanShimTest {
   }
 
   private static void verifyAttributes(EventData eventData) {
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("keyForString")))
-        .isEqualTo("value");
-    assertThat(eventData.getAttributes().get(AttributeKey.longKey("keyForInt"))).isEqualTo(1);
-    assertThat(eventData.getAttributes().get(AttributeKey.doubleKey("keyForDouble")))
-        .isEqualTo(1.0);
-    assertThat(eventData.getAttributes().get(AttributeKey.booleanKey("keyForBoolean"))).isTrue();
+    assertThat(eventData.getAttribute(AttributeKey.stringKey("keyForString"))).isEqualTo("value");
+    assertThat(eventData.getAttribute(AttributeKey.longKey("keyForInt"))).isEqualTo(1);
+    assertThat(eventData.getAttribute(AttributeKey.doubleKey("keyForDouble"))).isEqualTo(1.0);
+    assertThat(eventData.getAttribute(AttributeKey.booleanKey("keyForBoolean"))).isTrue();
   }
 }
