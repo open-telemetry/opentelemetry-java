@@ -12,6 +12,7 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +28,13 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final AggregationTemporality DEFAULT_TEMPORALITY =
+      AggregationTemporality.CUMULATIVE;
 
   // Visible for testing
   final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
+
+  private AggregationTemporality preferredTemporality = DEFAULT_TEMPORALITY;
 
   OtlpGrpcMetricExporterBuilder() {
     delegate =
@@ -122,11 +127,22 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Set the preferred aggregation temporality. If unset, defaults to {@link
+   * AggregationTemporality#CUMULATIVE}.
+   */
+  public OtlpGrpcMetricExporterBuilder setPreferredTemporality(
+      AggregationTemporality preferredTemporality) {
+    requireNonNull(preferredTemporality, "preferredTemporality");
+    this.preferredTemporality = preferredTemporality;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpGrpcMetricExporter build() {
-    return new OtlpGrpcMetricExporter(delegate.build());
+    return new OtlpGrpcMetricExporter(delegate.build(), preferredTemporality);
   }
 }
