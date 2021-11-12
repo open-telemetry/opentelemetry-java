@@ -36,4 +36,10 @@ public enum MetricDataType {
    * recorded.
    */
   HISTOGRAM,
+
+  /**
+   * An Exponential Histogram represents an approximate representation of the distribution of
+   * measurements recorded. The bucket boundaries follow a pre-determined exponential formula.
+   */
+  EXPONENTIAL_HISTOGRAM,
 }
