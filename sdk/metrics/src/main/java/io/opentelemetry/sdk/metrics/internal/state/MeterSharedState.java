@@ -76,9 +76,12 @@ public abstract class MeterSharedState {
     List<WriteableMetricStorage> storage =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo()).stream()
-            .map(view -> SynchronousMetricStorage
-                .create(view, instrument, meterProviderSharedState.getExemplarFilter()))
+            .findViews(instrument, getInstrumentationLibraryInfo())
+            .stream()
+            .map(
+                view ->
+                    SynchronousMetricStorage.create(
+                        view, instrument, meterProviderSharedState.getExemplarFilter()))
             .filter(m -> !m.isEmpty())
             .map(this::register)
             .filter(Objects::nonNull)
@@ -99,9 +102,12 @@ public abstract class MeterSharedState {
 
     meterProviderSharedState
         .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo()).stream()
-        .map(view -> AsynchronousMetricStorage
-            .longAsynchronousAccumulator(view, instrument, metricUpdater))
+        .findViews(instrument, getInstrumentationLibraryInfo())
+        .stream()
+        .map(
+            view ->
+                AsynchronousMetricStorage.longAsynchronousAccumulator(
+                    view, instrument, metricUpdater))
         .filter(m -> !m.isEmpty())
         .forEach(this::register);
   }
@@ -114,9 +120,12 @@ public abstract class MeterSharedState {
 
     meterProviderSharedState
         .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo()).stream()
-        .map(view -> AsynchronousMetricStorage
-            .doubleAsynchronousAccumulator(view, instrument, metricUpdater))
+        .findViews(instrument, getInstrumentationLibraryInfo())
+        .stream()
+        .map(
+            view ->
+                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+                    view, instrument, metricUpdater))
         .filter(m -> !m.isEmpty())
         .forEach(this::register);
   }
