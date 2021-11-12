@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.resources.Resource;
+
 import javax.annotation.Nullable;
 
 /**
@@ -22,6 +23,7 @@ public interface MetricStorage {
 
   /** Returns a description of the metric produced in this storage. */
   MetricDescriptor getMetricDescriptor();
+
   /**
    * Collects the metrics from this storage and resets for the next collection period.
    *
@@ -45,4 +47,15 @@ public interface MetricStorage {
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection);
+
+  /**
+   * Determines whether this storage is an empty metric storage.
+   *
+   * <p>Uses the reference comparison since {@link EmptyMetricStorage} is singleton.
+   *
+   * @return true if is empty.
+   */
+  default boolean isEmpty() {
+    return this == EmptyMetricStorage.INSTANCE;
+  }
 }
