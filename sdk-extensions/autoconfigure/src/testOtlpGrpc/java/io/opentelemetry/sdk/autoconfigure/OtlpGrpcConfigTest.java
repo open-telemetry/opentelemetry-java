@@ -184,6 +184,7 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
+    props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
@@ -191,6 +192,7 @@ class OtlpGrpcConfigTest {
     assertThat(metricExporter)
         .extracting("delegate.timeoutNanos")
         .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
     assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
     assertThat(server.metricRequests).hasSize(1);
     assertThat(server.requestHeaders)
