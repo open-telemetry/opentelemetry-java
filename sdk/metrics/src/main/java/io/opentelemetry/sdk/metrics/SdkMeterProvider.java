@@ -153,14 +153,15 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       if (!disableSynchronousCollection) {
         lastCollectionTimestamp.lazySet(currentNanoTime);
       }
+      CollectionInfo info = collectionInfoMap.get(handle);
+      if (info == null) {
+        return Collections.emptyList();
+      }
 
-      List<MetricData> result = new ArrayList<>(meters.size());
+      List<MetricData> result = new ArrayList<>();
       for (SdkMeter meter : meters) {
-        CollectionInfo info = collectionInfoMap.get(handle);
-        if (info != null) {
-          result.addAll(
-              meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
-        }
+        result.addAll(
+            meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
       }
       return Collections.unmodifiableCollection(result);
     }
