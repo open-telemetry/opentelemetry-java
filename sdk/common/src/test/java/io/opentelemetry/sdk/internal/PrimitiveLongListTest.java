@@ -16,15 +16,16 @@ class PrimitiveLongListTest {
 
   @Test
   void wrap() {
-    List<Long> wrapped = PrimitiveLongList.wrap(new long[] {1, 2});
+    long[] array = new long[] {1, 2};
+    List<Long> wrapped = PrimitiveLongList.wrap(array);
     // Standard List operations
     assertThat(wrapped).containsExactly(1L, 2L);
     assertThat(wrapped).hasSize(2);
     assertThatThrownBy(() -> wrapped.get(3))
         .isInstanceOf(IndexOutOfBoundsException.class)
-        .hasMessage("Index 3 out of bounds for length 2");
+        .hasMessageContaining("3");
 
-    assertThat(PrimitiveLongList.toArray(wrapped)).containsExactly(1L, 2L);
+    assertThat(PrimitiveLongList.toArray(wrapped)).isSameAs(array).containsExactly(1L, 2L);
   }
 
   @Test
@@ -35,7 +36,7 @@ class PrimitiveLongListTest {
     assertThat(list).hasSize(2);
     assertThatThrownBy(() -> list.get(3))
         .isInstanceOf(IndexOutOfBoundsException.class)
-        .hasMessage("Index 3 out of bounds for length 2");
+        .hasMessageContaining("3");
 
     assertThat(PrimitiveLongList.toArray(list)).containsExactly(1L, 2L);
   }

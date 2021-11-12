@@ -29,7 +29,7 @@ public final class PrimitiveLongList {
   }
 
   /**
-   * Returns a primitive array with the values of the list. The list should generally have been *
+   * Returns a primitive array with the values of the list. The list should generally have been
    * created with {@link PrimitiveLongList#wrap(long[])}.
    */
   public static long[] toArray(List<Long> list) {
