@@ -84,7 +84,8 @@ public final class StringUtils {
    * @param str the {@code String} to be validated.
    * @return whether the {@code String} contains only printable characters.
    */
-  public static boolean isPrintableString(String str) {
+  @Contract("null -> false")
+  public static boolean isPrintableString(@Nullable String str) {
     if (isNullOrEmpty(str)) {
       return false;
     }
