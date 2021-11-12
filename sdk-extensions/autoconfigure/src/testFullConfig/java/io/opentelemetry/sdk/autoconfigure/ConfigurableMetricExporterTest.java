@@ -13,6 +13,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -23,12 +25,26 @@ public class ConfigurableMetricExporterTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
     MetricExporter metricExporter =
-        MetricExporterConfiguration.configureSpiExporter("testExporter", config);
+        MetricExporterConfiguration.configureSpiExporter(
+            "testExporter", config, MetricExporterConfiguration.class.getClassLoader());
 
     assertThat(metricExporter)
         .isInstanceOf(TestConfigurableMetricExporterProvider.TestMetricExporter.class)
         .extracting("config")
         .isSameAs(config);
+  }
+
+  @Test
+  void emptyClassLoader() {
+    assertThatThrownBy(
+            () ->
+                MetricExporterConfiguration.configureExporter(
+                    "testExporter",
+                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                    new URLClassLoader(new URL[0], null),
+                    SdkMeterProvider.builder()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("testExporter");
   }
 
   @Test
@@ -38,6 +54,7 @@ public class ConfigurableMetricExporterTest {
                 MetricExporterConfiguration.configureExporter(
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                    MetricExporterConfiguration.class.getClassLoader(),
                     SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");

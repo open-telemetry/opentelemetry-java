@@ -149,6 +149,28 @@ public interface MetricData {
   }
 
   /**
+   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   */
+  static MetricData createExponentialHistogram(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      ExponentialHistogramData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.EXPONENTIAL_HISTOGRAM,
+        data);
+  }
+
+  /**
    * Returns the resource of this {@code MetricData}.
    *
    * @return the resource of this {@code MetricData}.
@@ -284,5 +306,19 @@ public interface MetricData {
       return (DoubleHistogramData) getData();
     }
     return DoubleHistogramData.EMPTY;
+  }
+
+  /**
+   * Returns the {@link ExponentialHistogramData} if type is {@link
+   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   *
+   * @return the {@link ExponentialHistogramData} if type is {@link
+   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   */
+  default ExponentialHistogramData getExponentialHistogramData() {
+    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      return (ExponentialHistogramData) getData();
+    }
+    return DoubleExponentialHistogramData.EMPTY;
   }
 }

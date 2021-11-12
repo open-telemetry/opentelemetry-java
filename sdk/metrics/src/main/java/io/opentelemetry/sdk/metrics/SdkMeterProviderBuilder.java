@@ -23,10 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Builder class for the {@link SdkMeterProvider}. Has fully functional default implementations of
- * all three required interfaces.
- */
+/** Builder class for the {@link SdkMeterProvider}. */
 public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();

@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +19,11 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/metrics";
 
+  private static final AggregationTemporality DEFAULT_TEMPORALITY =
+      AggregationTemporality.CUMULATIVE;
+
   private final OkHttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private AggregationTemporality preferredTemporality = DEFAULT_TEMPORALITY;
 
   OtlpHttpMetricExporterBuilder() {
     delegate = new OkHttpExporterBuilder<>("metric", DEFAULT_ENDPOINT);
@@ -84,11 +89,22 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
+   * Set the preferred aggregation temporality. If unset, defaults to {@link
+   * AggregationTemporality#CUMULATIVE}.
+   */
+  public OtlpHttpMetricExporterBuilder setPreferredTemporality(
+      AggregationTemporality preferredTemporality) {
+    requireNonNull(preferredTemporality, "preferredTemporality");
+    this.preferredTemporality = preferredTemporality;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpHttpMetricExporter build() {
-    return new OtlpHttpMetricExporter(delegate.build());
+    return new OtlpHttpMetricExporter(delegate.build(), preferredTemporality);
   }
 }

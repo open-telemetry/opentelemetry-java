@@ -84,7 +84,10 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "logging", EMPTY, SdkMeterProvider.builder()))
+                    "logging",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Logging Metrics Exporter enabled but opentelemetry-exporter-logging not found on "
@@ -96,7 +99,10 @@ class NotOnClasspathTest {
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "otlp", EMPTY, SdkMeterProvider.builder()))
+                    "otlp",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    SdkMeterProvider.builder()))
         .doesNotThrowAnyException();
   }
 
@@ -108,7 +114,10 @@ class NotOnClasspathTest {
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "otlp", config, SdkMeterProvider.builder()))
+                    "otlp",
+                    config,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    SdkMeterProvider.builder()))
         .doesNotThrowAnyException();
   }
 
@@ -117,7 +126,10 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "prometheus", EMPTY, SdkMeterProvider.builder()))
+                    "prometheus",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Prometheus Metrics Server enabled but opentelemetry-exporter-prometheus not found on "
@@ -131,6 +143,7 @@ class NotOnClasspathTest {
                 PropagatorConfiguration.configurePropagators(
                     DefaultConfigProperties.createForTest(
                         Collections.singletonMap("otel.propagators", "b3")),
+                    PropagatorConfiguration.class.getClassLoader(),
                     (a, config) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");

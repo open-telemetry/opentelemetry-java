@@ -24,9 +24,10 @@ final class SpiUtil {
       List<String> requestedNames,
       Function<U, String> getName,
       BiFunction<U, ConfigProperties, T> getConfigurable,
-      ConfigProperties config) {
+      ConfigProperties config,
+      ClassLoader serviceClassLoader) {
     Map<String, T> result = new HashMap<>();
-    for (U provider : ServiceLoader.load(spiClass)) {
+    for (U provider : ServiceLoader.load(spiClass, serviceClassLoader)) {
       String name = getName.apply(provider);
       final T configurable;
       try {

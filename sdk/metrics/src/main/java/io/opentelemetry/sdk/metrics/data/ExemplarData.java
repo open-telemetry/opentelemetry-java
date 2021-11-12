@@ -47,7 +47,7 @@ public interface ExemplarData {
   /**
    * Coerces this exemplar to a double value.
    *
-   * <p>Note: This could createa a loss of precision from {@code long} measurements.
+   * <p>Note: This could create a loss of precision from {@code long} measurements.
    */
   double getValueAsDouble();
 }

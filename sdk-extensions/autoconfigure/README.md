@@ -70,6 +70,7 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.protocol | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.metrics.protocol | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
+| otel.exporter.otlp.metrics.temporality | OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY | The preferred output aggregation temporality. Options include `DELTA` and `CUMULATIVE`. Default is `CUMULATIVE`. |
 | otel.experimental.exporter.otlp.retry.enabled | OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED | If `true`, enable [experimental retry support](#otlp-exporter-retry). Default is `false`. |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
