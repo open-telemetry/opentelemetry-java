@@ -1,24 +1,2 @@
 Comparing source compatibility of  against 
-+++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.data.DelegatingSpanData  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.sdk.trace.data.SpanData
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes getAttributes()
-	+++  NEW METHOD: PUBLIC(+) long getEndEpochNanos()
-	+++  NEW METHOD: PUBLIC(+) java.util.List getEvents()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanKind getKind()
-	+++  NEW METHOD: PUBLIC(+) java.util.List getLinks()
-	+++  NEW METHOD: PUBLIC(+) java.lang.String getName()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanContext getParentSpanContext()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource getResource()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanContext getSpanContext()
-	+++  NEW METHOD: PUBLIC(+) long getStartEpochNanos()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.data.StatusData getStatus()
-	+++  NEW METHOD: PUBLIC(+) int getTotalAttributeCount()
-	+++  NEW METHOD: PUBLIC(+) int getTotalRecordedEvents()
-	+++  NEW METHOD: PUBLIC(+) int getTotalRecordedLinks()
-	+++  NEW METHOD: PUBLIC(+) boolean hasEnded()
-	+++  NEW METHOD: PUBLIC(+) int hashCode()
-	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+No changes.
