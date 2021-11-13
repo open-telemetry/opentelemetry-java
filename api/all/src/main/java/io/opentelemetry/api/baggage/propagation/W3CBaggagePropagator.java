@@ -58,19 +58,20 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     }
   }
 
-  private StringBuilder baggageToString(Baggage baggage) {
+  private static StringBuilder baggageToString(Baggage baggage) {
     StringBuilder headerContent = new StringBuilder();
-    baggage.forEach((key, baggageEntry) -> {
-      if(baggageIsInvalid(key, baggageEntry)){
-        return;
-      }
-      headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
-      String metadataValue = baggageEntry.getMetadata().getValue();
-      if (metadataValue != null && !metadataValue.isEmpty()) {
-        headerContent.append(";").append(encodeValue(metadataValue));
-      }
-      headerContent.append(",");
-    });
+    baggage.forEach(
+        (key, baggageEntry) -> {
+          if (baggageIsInvalid(key, baggageEntry)) {
+            return;
+          }
+          headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
+          String metadataValue = baggageEntry.getMetadata().getValue();
+          if (metadataValue != null && !metadataValue.isEmpty()) {
+            headerContent.append(";").append(encodeValue(metadataValue));
+          }
+          headerContent.append(",");
+        });
     return headerContent;
   }
 
@@ -108,7 +109,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     new Parser(baggageHeader).parseInto(baggageBuilder);
   }
 
-  private boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
+  private static boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
     return !isValidBaggageKey(key) || !isValidBaggageValue(baggageEntry.getValue());
   }
 
