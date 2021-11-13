@@ -63,7 +63,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     @Override
     public BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata) {
-      if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
+      if ((key == null) || (value == null) || (entryMetadata == null)) {
         return this;
       }
       data.add(key);
@@ -86,25 +86,5 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
     public Baggage build() {
       return sortAndFilterToBaggage(data.toArray());
     }
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid entry key.
-   *
-   * @param name the entry key name to be validated.
-   * @return whether the name is valid.
-   */
-  private static boolean isKeyValid(String name) {
-    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid entry value.
-   *
-   * @param value the entry value to be validated.
-   * @return whether the value is valid.
-   */
-  private static boolean isValueValid(String value) {
-    return value != null;
   }
 }

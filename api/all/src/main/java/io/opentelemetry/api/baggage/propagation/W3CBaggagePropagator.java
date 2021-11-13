@@ -9,6 +9,8 @@ import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
+import io.opentelemetry.api.baggage.BaggageEntry;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -48,20 +50,28 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     if (baggage.isEmpty()) {
       return;
     }
-    StringBuilder headerContent = new StringBuilder();
-    baggage.forEach(
-        (key, baggageEntry) -> {
-          headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
-          String metadataValue = baggageEntry.getMetadata().getValue();
-          if (metadataValue != null && !metadataValue.isEmpty()) {
-            headerContent.append(";").append(encodeValue(metadataValue));
-          }
-          headerContent.append(",");
-        });
+    StringBuilder headerContent = baggageToString(baggage);
+
     if (headerContent.length() > 0) {
       headerContent.setLength(headerContent.length() - 1);
       setter.set(carrier, FIELD, headerContent.toString());
     }
+  }
+
+  private StringBuilder baggageToString(Baggage baggage) {
+    StringBuilder headerContent = new StringBuilder();
+    baggage.forEach((key, baggageEntry) -> {
+      if(baggageIsInvalid(key, baggageEntry)){
+        return;
+      }
+      headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
+      String metadataValue = baggageEntry.getMetadata().getValue();
+      if (metadataValue != null && !metadataValue.isEmpty()) {
+        headerContent.append(";").append(encodeValue(metadataValue));
+      }
+      headerContent.append(",");
+    });
+    return headerContent;
   }
 
   private static String encodeValue(String value) {
@@ -96,5 +106,29 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
 
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
     new Parser(baggageHeader).parseInto(baggageBuilder);
+  }
+
+  private boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
+    return !isValidBaggageKey(key) || !isValidBaggageValue(baggageEntry.getValue());
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry key.
+   *
+   * @param name the entry key name to be validated.
+   * @return whether the name is valid.
+   */
+  private static boolean isValidBaggageKey(String name) {
+    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry value.
+   *
+   * @param value the entry value to be validated.
+   * @return whether the value is valid.
+   */
+  private static boolean isValidBaggageValue(String value) {
+    return value != null;
   }
 }
