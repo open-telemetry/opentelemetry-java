@@ -15,8 +15,8 @@ public interface MeterBuilder {
   /**
    * Assigns an OpenTelemetry schema URL to the resulting Meter.
    *
-   * <p>Schemas are used to identify expected metrics (semantic conventions) and allow
-   * backends to "automatically migrate" to supported versions.</p>
+   * <p>Schemas are used to identify expected metrics (semantic conventions) and allow backends to
+   * "automatically migrate" to supported versions.
    *
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
