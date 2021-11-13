@@ -52,9 +52,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
    */
   @Override
   public TraceStateBuilder put(String key, String value) {
-    if (!isKeyValid(key)
-        || !isValueValid(value)
-        || entries.size() >= MAX_KEY_VALUE_PAIRS) {
+    if (!isKeyValid(key) || !isValueValid(value) || entries.size() >= MAX_KEY_VALUE_PAIRS) {
       return this;
     }
     removeEntry(key);
