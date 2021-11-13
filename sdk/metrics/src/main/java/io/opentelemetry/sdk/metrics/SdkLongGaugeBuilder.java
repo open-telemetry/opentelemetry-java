@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -28,11 +27,6 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
   @Override
   protected SdkLongGaugeBuilder getThis() {
     return this;
-  }
-
-  @Override
-  public DoubleGaugeBuilder ofDoubles() {
-    return swapBuilder(SdkDoubleGaugeBuilder::new);
   }
 
   @Override
