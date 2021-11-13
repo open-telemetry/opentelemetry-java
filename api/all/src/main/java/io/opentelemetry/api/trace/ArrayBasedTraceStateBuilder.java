@@ -8,7 +8,8 @@ package io.opentelemetry.api.trace;
 import io.opentelemetry.api.internal.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import javax.annotation.Nullable;
 
 final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
@@ -25,18 +26,18 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
 
-  private final List<String> entries;
+  private final LinkedList<String> entries;
 
   static TraceState empty() {
     return EMPTY;
   }
 
   ArrayBasedTraceStateBuilder() {
-    entries = new ArrayList<>();
+    entries = new LinkedList<>();
   }
 
   ArrayBasedTraceStateBuilder(ArrayBasedTraceState parent) {
-    entries = new ArrayList<>(parent.getEntries());
+    entries = new LinkedList<>(parent.getEntries());
   }
 
   /**
@@ -53,19 +54,19 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   public TraceStateBuilder put(String key, String value) {
     if (!isKeyValid(key)
         || !isValueValid(value)
-        || (entries != null && entries.size() >= MAX_KEY_VALUE_PAIRS)) {
+        || entries.size() >= MAX_KEY_VALUE_PAIRS) {
       return this;
     }
     removeEntry(key);
-    // Inserts the element at the front of this list. (note: probably pretty inefficient with an
-    // ArrayList as the underlying implementation!)
-    entries.add(0, key);
-    entries.add(1, value);
+    // Inserts the element at the front of this list.
+    entries.addFirst(value);
+    entries.addFirst(key);
     return this;
   }
 
   @Override
   public TraceStateBuilder remove(String key) {
+    // TODO: remove or make the parameter nullable
     if (key == null) {
       return this;
     }
@@ -74,21 +75,25 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   }
 
   private void removeEntry(String key) {
-    int currentSize = entries.size();
-    for (int i = 0; i < currentSize; i += 2) {
-      if (entries.get(i).equals(key)) {
-        // remove twice at i to get the key & the value (yes, this is pretty ugly).
-        entries.remove(i);
-        entries.remove(i);
+    ListIterator<String> iter = entries.listIterator();
+    while (iter.hasNext()) {
+      String nextKey = iter.next();
+      if (nextKey.equals(key)) {
+        // remove twice the key & the value.
+        iter.remove();
+        iter.next();
+        iter.remove();
         // Exit now because the entries list cannot contain duplicates.
         break;
       }
+      // the next value.
+      iter.next();
     }
   }
 
   @Override
   public TraceState build() {
-    return ArrayBasedTraceState.create(entries);
+    return ArrayBasedTraceState.create(new ArrayList<>(entries));
   }
 
   /**
