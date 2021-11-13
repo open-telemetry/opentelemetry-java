@@ -6,7 +6,6 @@
 package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import io.opentelemetry.api.internal.StringUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
