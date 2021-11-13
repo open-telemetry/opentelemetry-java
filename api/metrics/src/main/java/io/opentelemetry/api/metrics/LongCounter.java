@@ -9,7 +9,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A counter instrument that records {@code long} values. */
+/**
+ * A counter instrument that records {@code long} values.
+ *
+ * <p>Counters only allow adding positive values, and guarantee the resulting metrics will be
+ * always-increasing monotonic sums.
+ */
 @ThreadSafe
 public interface LongCounter {
 
@@ -46,6 +51,11 @@ public interface LongCounter {
   /**
    * Constructs a bound version of this instrument where all recorded values use the given
    * attributes.
+   *
+   * <p>Bound instruments pre-allocate storage slots for measurements and can help alleviate garbage
+   * collection pressure on high peformance systems. Bound instruments require all attributes to be
+   * known ahead of time, and do not work when configuring metric views which pull attributes from
+   * {@link Context}, e.g. baggage labels.
    */
   BoundLongCounter bind(Attributes attributes);
 }
