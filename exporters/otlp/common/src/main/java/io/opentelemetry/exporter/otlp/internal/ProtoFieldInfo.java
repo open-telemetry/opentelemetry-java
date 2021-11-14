@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Information about a field in a proto definition.
@@ -13,6 +14,7 @@ import com.google.auto.value.AutoValue;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@Immutable
 @AutoValue
 public abstract class ProtoFieldInfo {
 

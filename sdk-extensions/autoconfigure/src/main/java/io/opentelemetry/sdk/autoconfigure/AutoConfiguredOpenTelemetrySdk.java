@@ -9,12 +9,14 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * An auto-configured OpenTelemetry SDK. As an alternative to programmatically configuring the SDK
  * using {@link OpenTelemetrySdk#builder()}, this package can be used to automatically configure the
  * SDK using environment properties specified by OpenTelemetry.
  */
+@Immutable
 @AutoValue
 public abstract class AutoConfiguredOpenTelemetrySdk {
 

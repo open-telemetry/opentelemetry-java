@@ -9,7 +9,9 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
+@Immutable
 @AutoValue
 abstract class ExponentialHistogramAccumulation {
   ExponentialHistogramAccumulation() {}
@@ -20,7 +22,7 @@ abstract class ExponentialHistogramAccumulation {
    * @param scale the scale of the exponential histogram.
    * @param sum the sum of all the recordings of the histogram.
    * @param positiveBuckets the buckets counting positive recordings.
-   * @param negativeBuckets the buckets coutning negative recordings.
+   * @param negativeBuckets the buckets counting negative recordings.
    * @param zeroCount The amount of time zero was recorded.
    * @param exemplars The exemplars.
    * @return a new {@link ExponentialHistogramAccumulation} with the given values.
