@@ -177,11 +177,6 @@ public class NoopMeter implements Meter {
     }
 
     @Override
-    public LongCounterBuilder ofLongs() {
-      return new NoopLongCounterBuilder();
-    }
-
-    @Override
     public DoubleCounter build() {
       return new NoopDoubleCounter();
     }
@@ -281,11 +276,6 @@ public class NoopMeter implements Meter {
     }
 
     @Override
-    public LongUpDownCounterBuilder ofLongs() {
-      return new NoopLongUpDownCounterBuilder();
-    }
-
-    @Override
     public DoubleUpDownCounter build() {
       return new NoopDoubleUpDownCounter();
     }
@@ -382,11 +372,6 @@ public class NoopMeter implements Meter {
     }
 
     @Override
-    public DoubleHistogramBuilder ofDoubles() {
-      return new NoopDoubleHistogramBuilder();
-    }
-
-    @Override
     public LongHistogram build() {
       return new NoopLongHistogram();
     }
@@ -421,11 +406,6 @@ public class NoopMeter implements Meter {
     @Override
     public LongGaugeBuilder setUnit(String unit) {
       return this;
-    }
-
-    @Override
-    public DoubleGaugeBuilder ofDoubles() {
-      return new NoopDoubleObservableInstrumentBuilder();
     }
 
     @Override

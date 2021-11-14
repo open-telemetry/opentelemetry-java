@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongHistogram;
-import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
@@ -93,11 +92,6 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     public SdkLongHistogram build() {
       return buildSynchronousInstrument(
           InstrumentType.HISTOGRAM, InstrumentValueType.LONG, SdkLongHistogram::new);
-    }
-
-    @Override
-    public DoubleHistogramBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleHistogram.Builder::new);
     }
   }
 }
