@@ -92,6 +92,7 @@ class SdkLogEmitterProviderTest {
 
   @Test
   void logEmitterBuilder_SameName() {
+    assertThat(sdkLogEmitterProvider.get("test")).isSameAs(sdkLogEmitterProvider.get("test"));
     assertThat(sdkLogEmitterProvider.logEmitterBuilder("test").build())
         .isSameAs(sdkLogEmitterProvider.logEmitterBuilder("test").build())
         .isNotSameAs(

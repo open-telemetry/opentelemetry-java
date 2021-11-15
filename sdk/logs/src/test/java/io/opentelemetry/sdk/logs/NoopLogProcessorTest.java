@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.logs.util.TestUtil;
 import org.junit.jupiter.api.Test;
 

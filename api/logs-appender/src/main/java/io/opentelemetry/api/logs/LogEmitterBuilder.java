@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs;
+package io.opentelemetry.api.logs;
 
 /** Builder class for creating {@link LogEmitter} instances. */
 public interface LogEmitterBuilder {

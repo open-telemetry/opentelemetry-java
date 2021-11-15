@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs.data;
+package io.opentelemetry.api.logs;
 
 public enum Severity {
   UNDEFINED_SEVERITY_NUMBER(0),

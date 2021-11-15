@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static io.opentelemetry.sdk.logs.data.Severity.DEBUG;
+import static io.opentelemetry.api.logs.Severity.DEBUG;
 import static io.opentelemetry.sdk.logs.util.TestUtil.createLogData;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.logs.LogEmitter;
+import io.opentelemetry.api.logs.LogEmitter;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.Collections;

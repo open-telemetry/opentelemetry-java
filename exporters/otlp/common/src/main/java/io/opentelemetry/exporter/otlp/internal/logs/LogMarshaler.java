@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal.logs;
 
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -17,7 +18,6 @@ import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.exporter.otlp.internal.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
-import io.opentelemetry.sdk.logs.data.Severity;
 import java.io.IOException;
 import javax.annotation.Nullable;
 

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static io.opentelemetry.sdk.logs.data.Severity.DEBUG;
+import static io.opentelemetry.api.logs.Severity.DEBUG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;

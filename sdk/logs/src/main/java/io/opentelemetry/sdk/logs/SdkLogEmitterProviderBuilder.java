@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.logs.LogEmitter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
