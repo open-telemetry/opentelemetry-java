@@ -50,15 +50,16 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     if (baggage.isEmpty()) {
       return;
     }
-    StringBuilder headerContent = baggageToString(baggage);
+    String headerContent = baggageToString(baggage);
 
     if (headerContent.length() > 0) {
-      headerContent.setLength(headerContent.length() - 1);
-      setter.set(carrier, FIELD, headerContent.toString());
+      // Trim trailing comma
+      String shortened = headerContent.substring(0, headerContent.length() - 1);
+      setter.set(carrier, FIELD, shortened);
     }
   }
 
-  private static StringBuilder baggageToString(Baggage baggage) {
+  private static String baggageToString(Baggage baggage) {
     StringBuilder headerContent = new StringBuilder();
     baggage.forEach(
         (key, baggageEntry) -> {
@@ -72,7 +73,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
           }
           headerContent.append(",");
         });
-    return headerContent;
+    return headerContent.toString();
   }
 
   private static String encodeValue(String value) {
