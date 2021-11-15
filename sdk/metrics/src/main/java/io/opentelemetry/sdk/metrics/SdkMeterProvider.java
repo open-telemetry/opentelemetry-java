@@ -155,7 +155,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       }
       CollectionInfo info = collectionInfoMap.get(handle);
       if (info == null) {
-        return Collections.emptyList();
+        throw new IllegalStateException(
+            "No collection info for handle, this is a bug in the OpenTelemetry SDK.");
       }
 
       List<MetricData> result = new ArrayList<>();
