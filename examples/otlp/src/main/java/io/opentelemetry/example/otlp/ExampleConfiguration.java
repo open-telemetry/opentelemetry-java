@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.OpenTelemetryResourceAutoConfiguration;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -41,7 +41,7 @@ public final class ExampleConfiguration {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(spanProcessor)
-            .setResource(OpenTelemetryResourceAutoConfiguration.configureResource())
+            .setResource(AutoConfiguredOpenTelemetrySdk.initialize().getResource())
             .build();
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
@@ -61,7 +61,9 @@ public final class ExampleConfiguration {
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
 
     MetricReaderFactory periodicReaderFactory =
-        PeriodicMetricReader.create(metricExporter, Duration.ofMillis(1000));
+        PeriodicMetricReader.builder(metricExporter)
+            .setInterval(Duration.ofMillis(1000))
+            .newMetricReaderFactory();
 
     SdkMeterProvider sdkMeterProvider =
         SdkMeterProvider.builder()
