@@ -57,7 +57,7 @@ public final class ExampleConfiguration {
    * @return a ready-to-use {@link MeterProvider} instance
    */
   static MeterProvider initOpenTelemetryMetrics() {
-    // set up the metric exporter and wire it into the SDK and a timed reader.
+    // set up the metric exporter and wire it into the SDK and a timed periodic reader.
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
 
     MetricReaderFactory periodicReaderFactory =
