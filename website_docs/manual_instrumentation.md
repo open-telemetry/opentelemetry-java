@@ -444,7 +444,6 @@ See the supported configuration options in the module's [README](https://github.
 [Library Guidelines]: {{< relref "/docs/reference/specification/library-guidelines" >}}
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
 [OpenTelemetry Registry]: {{< relref "/registry/" >}}?component=exporter&language=java
-[OpenTelemetry Website]: https://opentelemetry.io/
 [Obtaining a Tracer]: {{< relref "/docs/reference/specification/trace/api#get-a-tracer" >}}
 [Semantic Conventions]: {{< relref "/docs/reference/specification/trace/semantic_conventions" >}}
 [Instrumentation Library]: {{< relref "/docs/reference/specification/glossary#instrumentation-library" >}}
