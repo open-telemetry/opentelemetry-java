@@ -25,9 +25,6 @@ public interface LongGaugeBuilder {
    */
   LongGaugeBuilder setUnit(String unit);
 
-  /** Sets the gauge for recording {@code double} values. */
-  DoubleGaugeBuilder ofDoubles();
-
   /**
    * Builds this asynchronous insturment with the given callback.
    *

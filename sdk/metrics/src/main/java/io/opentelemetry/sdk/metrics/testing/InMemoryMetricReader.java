@@ -56,16 +56,6 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
     return new InMemoryMetricReader(AggregationTemporality.DELTA);
   }
 
-  /**
-   * Constructs a new {@link InMemoryMetricReader}.
-   *
-   * @deprecated Use {@link #create()}.
-   */
-  @Deprecated
-  public InMemoryMetricReader() {
-    this(AggregationTemporality.CUMULATIVE);
-  }
-
   private InMemoryMetricReader(AggregationTemporality preferred) {
     this.preferred = preferred;
   }

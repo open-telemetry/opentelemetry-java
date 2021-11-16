@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
-import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -107,11 +106,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     public SdkDoubleCounter build() {
       return buildSynchronousInstrument(
           InstrumentType.COUNTER, InstrumentValueType.DOUBLE, SdkDoubleCounter::new);
-    }
-
-    @Override
-    public LongCounterBuilder ofLongs() {
-      return swapBuilder(SdkLongCounter.Builder::new);
     }
 
     @Override

@@ -4,6 +4,6 @@ plugins {
 
 description = "OpenTelemetry Bill of Materials"
 group = "io.opentelemetry"
-base.archivesBaseName = "opentelemetry-bom"
+base.archivesName.set("opentelemetry-bom")
 
 otelBom.projectFilter.set { !it.hasProperty("otel.release") }
