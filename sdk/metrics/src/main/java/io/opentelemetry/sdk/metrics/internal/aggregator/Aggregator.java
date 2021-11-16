@@ -31,12 +31,11 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface Aggregator<T> {
-  /**
-   * Returns the empty aggregator, an aggregator that never records measurements or reports values.
-   */
-  static Aggregator<Void> empty() {
-    return EmptyAggregator.INSTANCE;
+  /** Returns the drop aggregator, an aggregator that drops measurements. */
+  static Aggregator<Object> drop() {
+    return DropAggregator.INSTANCE;
   }
+
   /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
    * recorded measurements during the collection cycle.
@@ -108,7 +107,6 @@ public interface Aggregator<T> {
    * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricDataType} that this {@code Aggregation} will produce.
    */
-  @Nullable
   MetricData toMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,

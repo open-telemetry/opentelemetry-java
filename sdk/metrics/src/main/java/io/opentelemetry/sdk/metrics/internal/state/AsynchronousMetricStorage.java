@@ -27,7 +27,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -59,7 +58,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    if (Aggregator.empty() == aggregator) {
+    if (Aggregator.drop() == aggregator) {
       return empty();
     }
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -130,7 +129,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   @Override
-  @Nullable
   public MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,

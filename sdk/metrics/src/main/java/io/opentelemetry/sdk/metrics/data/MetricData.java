@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -168,6 +169,16 @@ public interface MetricData {
         unit,
         MetricDataType.EXPONENTIAL_HISTOGRAM,
         data);
+  }
+
+  /**
+   * Get an empty instance of metric data. Empty metric data should not be used except as an
+   * indication that recordings were dropped via {@link Aggregation#drop()}.
+   *
+   * @return an empty MetricData.
+   */
+  static MetricData empty() {
+    return EmptyMetricData.INSTANCE;
   }
 
   /**

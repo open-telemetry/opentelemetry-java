@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import javax.annotation.Nullable;
 
 /**
  * Stores collected {@link MetricData}.
@@ -35,9 +34,8 @@ public interface MetricStorage {
    * @param epochNanos The timestamp for this collection.
    * @param suppressSynchronousCollection Whether or not to suppress active (blocking) collection of
    *     metrics, meaning recently collected data is "fresh enough"
-   * @return The {@link MetricData} from this collection period, or {@code null}.
+   * @return The {@link MetricData} from this collection period.
    */
-  @Nullable
   MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,

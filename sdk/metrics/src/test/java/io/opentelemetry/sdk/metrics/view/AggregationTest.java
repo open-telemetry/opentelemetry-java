@@ -15,7 +15,7 @@ class AggregationTest {
 
   @Test
   void haveToString() {
-    assertThat(Aggregation.none()).asString().contains("NoAggregation");
+    assertThat(Aggregation.drop()).asString().contains("DropAggregation");
     assertThat(Aggregation.defaultAggregation()).asString().contains("Default");
     assertThat(Aggregation.lastValue()).asString().contains("LastValue");
     assertThat(Aggregation.sum()).asString().contains("Sum");

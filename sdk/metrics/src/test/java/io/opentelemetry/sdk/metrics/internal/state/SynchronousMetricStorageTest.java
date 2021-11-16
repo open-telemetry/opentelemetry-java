@@ -143,6 +143,6 @@ public class SynchronousMetricStorageTest {
                 0,
                 testClock.now(),
                 false))
-        .isNull();
+        .isEqualTo(MetricData.empty());
   }
 }
