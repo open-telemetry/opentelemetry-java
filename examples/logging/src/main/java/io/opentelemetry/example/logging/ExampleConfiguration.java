@@ -29,8 +29,9 @@ public final class ExampleConfiguration {
     // Create an instance of PeriodicMetricReaderFactory and configure it
     // to export via the logging exporter
     MetricReaderFactory periodicReaderFactory =
-        PeriodicMetricReader.create(
-            new LoggingMetricExporter(), Duration.ofMillis(METRIC_EXPORT_INTERVAL_MS));
+        PeriodicMetricReader.builder(new LoggingMetricExporter())
+            .setInterval(Duration.ofMillis(METRIC_EXPORT_INTERVAL_MS))
+            .newMetricReaderFactory();
 
     // This will be used to create instruments
     SdkMeterProvider meterProvider =

@@ -60,6 +60,7 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   @Override
+  @Nullable
   public AggregationTemporality getPreferredTemporality() {
     return exporter.getPreferredTemporality();
   }

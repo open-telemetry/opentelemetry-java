@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,7 +70,7 @@ public abstract class DoubleHistogramPointData implements PointData {
     }
 
     long totalCount = 0;
-    for (long c : counts) {
+    for (long c : PrimitiveLongList.toArray(counts)) {
       totalCount += c;
     }
     return new AutoValue_DoubleHistogramPointData(

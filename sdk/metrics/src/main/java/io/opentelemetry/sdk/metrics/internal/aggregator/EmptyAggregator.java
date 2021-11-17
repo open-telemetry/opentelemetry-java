@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * A "null object" Aggregator which denotes no aggregation should occur.
@@ -58,6 +59,7 @@ public final class EmptyAggregator implements Aggregator<Void> {
   }
 
   @Override
+  @Nullable
   public MetricData toMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,

@@ -179,6 +179,18 @@ public abstract class Serializer implements AutoCloseable {
     writeEndRepeatedPrimitive();
   }
 
+  /** Serializes a {@code repeated fixed64} field. */
+  public void serializeRepeatedFixed64(ProtoFieldInfo field, long[] values) throws IOException {
+    if (values.length == 0) {
+      return;
+    }
+    writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.length);
+    for (long value : values) {
+      writeFixed64Value(value);
+    }
+    writeEndRepeatedPrimitive();
+  }
+
   /** Serializes a {@code repeated double} field. */
   public void serializeRepeatedDouble(ProtoFieldInfo field, List<Double> values)
       throws IOException {

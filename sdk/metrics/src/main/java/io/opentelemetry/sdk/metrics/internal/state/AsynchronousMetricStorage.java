@@ -50,7 +50,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   /** Constructs storage for {@code double} valued instruments. */
-  @Nullable
   public static <T> MetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
@@ -69,9 +68,12 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         new ObservableDoubleMeasurement() {
           @Override
           public void observe(double value, Attributes attributes) {
-            measurementAccumulator.record(
-                attributesProcessor.process(attributes, Context.current()),
-                aggregator.accumulateDoubleMeasurement(value, attributes, Context.current()));
+            T accumulation =
+                aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
+            if (accumulation != null) {
+              measurementAccumulator.record(
+                  attributesProcessor.process(attributes, Context.current()), accumulation);
+            }
           }
 
           @Override
@@ -99,9 +101,12 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
           @Override
           public void observe(long value, Attributes attributes) {
-            measurementAccumulator.record(
-                attributesProcessor.process(attributes, Context.current()),
-                aggregator.accumulateLongMeasurement(value, attributes, Context.current()));
+            T accumulation =
+                aggregator.accumulateLongMeasurement(value, attributes, Context.current());
+            if (accumulation != null) {
+              measurementAccumulator.record(
+                  attributesProcessor.process(attributes, Context.current()), accumulation);
+            }
           }
 
           @Override
