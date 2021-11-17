@@ -28,10 +28,7 @@ class ViewRegistryTest {
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentNameRegex(".*")
-                    .build(),
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
                 view)
             .build();
     assertThat(
@@ -59,12 +56,7 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentNameRegex("overridden")
-                    .build(),
-                view)
+            .addView(InstrumentSelector.builder().setInstrumentName("overridden").build(), view)
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -93,17 +85,8 @@ class ViewRegistryTest {
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentNameRegex("overridden")
-                    .build(),
-                view2)
-            .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentNameRegex(".*")
-                    .build(),
-                view1)
+                InstrumentSelector.builder().setInstrumentNameRegex("overridden").build(), view2)
+            .addView(InstrumentSelector.builder().setInstrumentNameRegex(".*").build(), view1)
             .build();
 
     assertThat(
@@ -131,10 +114,7 @@ class ViewRegistryTest {
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentNameRegex("overrid(es|den)")
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .build(),
+                InstrumentSelector.builder().setInstrumentNameRegex("overrid(es|den)").build(),
                 view)
             .build();
 
@@ -149,7 +129,7 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
         .hasSize(1)
         .element(0)
@@ -163,6 +143,48 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
+  }
+
+  @Test
+  void selection_typeAndName() {
+    View view = View.builder().setAggregation(Aggregation.lastValue()).build();
+
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentName("overrides")
+                    .build(),
+                view)
+            .build();
+
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
+        .isEqualTo(view);
+    // this one hasn't been configured, so it gets the default still..
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
+        .isEqualTo(ViewRegistry.DEFAULT_VIEW);
+    // this one hasn't been configured, so it gets the default still..
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
+        .isEqualTo(ViewRegistry.DEFAULT_VIEW);
   }
 
   @Test
