@@ -52,10 +52,8 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     }
     String headerContent = baggageToString(baggage);
 
-    if (headerContent.length() > 0) {
-      // Trim trailing comma
-      String shortened = headerContent.substring(0, headerContent.length() - 1);
-      setter.set(carrier, FIELD, shortened);
+    if (!headerContent.isEmpty()) {
+      setter.set(carrier, FIELD, headerContent);
     }
   }
 
@@ -73,6 +71,13 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
           }
           headerContent.append(",");
         });
+
+    if (headerContent.length() == 0) {
+      return "";
+    }
+
+    // Trim trailing comma
+    headerContent.setLength(headerContent.length() - 1);
     return headerContent.toString();
   }
 
