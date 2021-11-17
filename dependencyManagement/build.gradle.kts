@@ -41,7 +41,8 @@ val DEPENDENCY_SETS = listOf(
       "opencensus-api",
       "opencensus-impl-core",
       "opencensus-impl",
-      "opencensus-exporter-metrics-util"
+      "opencensus-exporter-metrics-util",
+      "opencensus-contrib-exemplar-util"
     )
   ),
   DependencySet(

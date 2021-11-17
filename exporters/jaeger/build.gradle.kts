@@ -21,21 +21,20 @@ dependencies {
   implementation(project(":exporters:otlp:common"))
   implementation(project(":semconv"))
 
-  implementation("io.grpc:grpc-stub")
+  compileOnly("io.grpc:grpc-stub")
+
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
 
   testImplementation(project(":exporters:jaeger-proto"))
 
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("com.squareup.okhttp3:okhttp")
-  testImplementation("io.grpc:grpc-protobuf")
-  testImplementation("io.grpc:grpc-testing")
   testImplementation("org.testcontainers:junit-jupiter")
 
   testImplementation(project(":sdk:testing"))
-
-  testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
 
 wire {

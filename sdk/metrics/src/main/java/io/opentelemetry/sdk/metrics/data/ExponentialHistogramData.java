@@ -24,6 +24,16 @@ import javax.annotation.concurrent.Immutable;
 public interface ExponentialHistogramData extends Data<ExponentialHistogramPointData> {
 
   /**
+   * Create a DoubleExponentialHistogramData.
+   *
+   * @return a DoubleExponentialHistogramData
+   */
+  static ExponentialHistogramData create(
+      AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
+    return DoubleExponentialHistogramData.create(temporality, points);
+  }
+
+  /**
    * Returns the {@code AggregationTemporality} of this metric.
    *
    * <p>AggregationTemporality describes if the aggregator reports delta changes since last report

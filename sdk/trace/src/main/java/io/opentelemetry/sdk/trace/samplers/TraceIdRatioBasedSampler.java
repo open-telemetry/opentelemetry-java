@@ -56,7 +56,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
   }
 
   @Override
-  public final SamplingResult shouldSample(
+  public SamplingResult shouldSample(
       Context parentContext,
       String traceId,
       String name,
@@ -77,7 +77,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
   }
 
   @Override
-  public final String getDescription() {
+  public String getDescription() {
     return description;
   }
 
@@ -96,7 +96,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
   }
 
   @Override
-  public final String toString() {
+  public String toString() {
     return getDescription();
   }
 

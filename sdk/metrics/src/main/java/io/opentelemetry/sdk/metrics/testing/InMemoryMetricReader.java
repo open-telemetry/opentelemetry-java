@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import javax.annotation.Nullable;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
@@ -43,7 +44,7 @@ import java.util.EnumSet;
  */
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private final AggregationTemporality preferred;
-  private volatile MetricProducer metricProducer;
+  @Nullable private volatile MetricProducer metricProducer;
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
@@ -53,16 +54,6 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   /** Creates a new {@link InMemoryMetricReader} that prefers DELTA aggregation. */
   public static InMemoryMetricReader createDelta() {
     return new InMemoryMetricReader(AggregationTemporality.DELTA);
-  }
-
-  /**
-   * Constructs a new {@link InMemoryMetricReader}.
-   *
-   * @deprecated Use {@link #create()}.
-   */
-  @Deprecated
-  public InMemoryMetricReader() {
-    this(AggregationTemporality.CUMULATIVE);
   }
 
   private InMemoryMetricReader(AggregationTemporality preferred) {

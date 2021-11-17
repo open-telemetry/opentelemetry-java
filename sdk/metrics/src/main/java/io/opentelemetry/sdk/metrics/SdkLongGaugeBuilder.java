@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -15,13 +14,6 @@ import java.util.function.Consumer;
 
 final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBuilder>
     implements LongGaugeBuilder {
-
-  SdkLongGaugeBuilder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      String name) {
-    this(meterProviderSharedState, meterSharedState, name, "", "1");
-  }
 
   SdkLongGaugeBuilder(
       MeterProviderSharedState meterProviderSharedState,
@@ -35,11 +27,6 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
   @Override
   protected SdkLongGaugeBuilder getThis() {
     return this;
-  }
-
-  @Override
-  public DoubleGaugeBuilder ofDoubles() {
-    return swapBuilder(SdkDoubleGaugeBuilder::new);
   }
 
   @Override

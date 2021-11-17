@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
@@ -29,7 +30,10 @@ import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
   static void configureExporter(
-      String name, ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
+      String name,
+      ConfigProperties config,
+      ClassLoader serviceClassLoader,
+      SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     switch (name) {
       case "otlp":
         configureOtlpMetrics(config, sdkMeterProviderBuilder);
@@ -45,7 +49,7 @@ final class MetricExporterConfiguration {
         configureLoggingMetrics(config, sdkMeterProviderBuilder);
         return;
       default:
-        MetricExporter spiExporter = configureSpiExporter(name, config);
+        MetricExporter spiExporter = configureSpiExporter(name, config, serviceClassLoader);
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
         }
@@ -56,14 +60,16 @@ final class MetricExporterConfiguration {
 
   // Visible for testing.
   @Nullable
-  static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
+  static MetricExporter configureSpiExporter(
+      String name, ConfigProperties config, ClassLoader serviceClassLoader) {
     Map<String, MetricExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableMetricExporterProvider.class,
             Collections.singletonList(name),
             ConfigurableMetricExporterProvider::getName,
             ConfigurableMetricExporterProvider::createExporter,
-            config);
+            config,
+            serviceClassLoader);
     return spiExporters.get(name);
   }
 
@@ -98,7 +104,9 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          (unused) -> {});
+      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -122,7 +130,12 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          retryPolicy ->
+              DefaultGrpcExporterBuilder.getDelegateBuilder(
+                      OtlpGrpcMetricExporterBuilder.class, builder)
+                  .addRetryPolicy(retryPolicy));
+      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
     } else {
@@ -139,7 +152,10 @@ final class MetricExporterConfiguration {
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       MetricExporter exporter) {
 
-    Duration exportInterval = config.getDuration("otel.imr.export.interval");
+    Duration exportInterval = config.getDuration("otel.metric.export.interval");
+    if (exportInterval == null) {
+      exportInterval = config.getDuration("otel.imr.export.interval");
+    }
     if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }

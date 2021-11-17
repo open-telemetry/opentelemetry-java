@@ -7,13 +7,12 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongHistogram;
-import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -77,13 +76,6 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
 
     Builder(
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
-      this(meterProviderSharedState, meterSharedState, name, "", "1");
-    }
-
-    Builder(
-        MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
@@ -100,11 +92,6 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     public SdkLongHistogram build() {
       return buildSynchronousInstrument(
           InstrumentType.HISTOGRAM, InstrumentValueType.LONG, SdkLongHistogram::new);
-    }
-
-    @Override
-    public DoubleHistogramBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleHistogram.Builder::new);
     }
   }
 }

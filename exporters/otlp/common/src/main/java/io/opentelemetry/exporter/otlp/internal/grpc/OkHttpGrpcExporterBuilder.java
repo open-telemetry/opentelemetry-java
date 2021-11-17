@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -100,6 +101,11 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   public OkHttpGrpcExporterBuilder<T> addHeader(String key, String value) {
     headers.add(key, value);
     return this;
+  }
+
+  @Override
+  public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
+    throw new UnsupportedOperationException("Only available on DefaultGrpcExporter");
   }
 
   @Override

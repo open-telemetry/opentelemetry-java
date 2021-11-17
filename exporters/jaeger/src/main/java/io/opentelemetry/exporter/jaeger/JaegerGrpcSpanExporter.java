@@ -5,15 +5,9 @@
 
 package io.opentelemetry.exporter.jaeger;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.ConnectivityState;
-import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -22,11 +16,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -41,24 +30,15 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final AttributeKey<String> HOSTNAME_KEY = AttributeKey.stringKey("hostname");
   private static final AttributeKey<String> IP_KEY = AttributeKey.stringKey("ip");
   private static final String IP_DEFAULT = "0.0.0.0";
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(JaegerGrpcSpanExporter.class.getName()));
 
-  private final MarshalerCollectorServiceGrpc.CollectorServiceFutureStub stub;
+  private final GrpcExporter<PostSpansRequestMarshaler> delegate;
 
   // Jaeger-specific resource information
   private final Resource jaegerResource;
-  private final ManagedChannel managedChannel;
-  private final long timeoutNanos;
 
-  /**
-   * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
-   *
-   * @param channel the channel to use when communicating with the Jaeger Collector.
-   * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
-   *     0 or to a negative value, the exporter will wait indefinitely.
-   */
-  JaegerGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
+  JaegerGrpcSpanExporter(GrpcExporter<PostSpansRequestMarshaler> delegate) {
+    this.delegate = delegate;
+
     String hostname;
     String ipv4;
 
@@ -76,10 +56,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
             .put(IP_KEY, ipv4)
             .put(HOSTNAME_KEY, hostname)
             .build();
-
-    this.managedChannel = channel;
-    this.stub = MarshalerCollectorServiceGrpc.newFutureStub(channel);
-    this.timeoutNanos = timeoutNanos;
   }
 
   /**
@@ -90,54 +66,14 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    MarshalerCollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
-    if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
-    }
-
-    List<PostSpansRequestMarshaler> requests = new ArrayList<>();
+    List<CompletableResultCode> results = new ArrayList<>();
     spans.stream()
         .collect(Collectors.groupingBy(SpanData::getResource))
-        .forEach((resource, spanData) -> requests.add(buildRequest(resource, spanData)));
+        .forEach(
+            (resource, spanData) ->
+                results.add(delegate.export(buildRequest(resource, spanData), spanData.size())));
 
-    List<ListenableFuture<PostSpansResponse>> listenableFutures = new ArrayList<>(requests.size());
-    for (PostSpansRequestMarshaler request : requests) {
-      listenableFutures.add(stub.postSpans(request));
-    }
-
-    final CompletableResultCode result = new CompletableResultCode();
-    AtomicInteger pending = new AtomicInteger(listenableFutures.size());
-    AtomicReference<Throwable> error = new AtomicReference<>();
-    for (ListenableFuture<PostSpansResponse> future : listenableFutures) {
-      Futures.addCallback(
-          future,
-          new FutureCallback<PostSpansResponse>() {
-            @Override
-            public void onSuccess(PostSpansResponse result) {
-              fulfill();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-              error.set(t);
-              fulfill();
-            }
-
-            private void fulfill() {
-              if (pending.decrementAndGet() == 0) {
-                Throwable t = error.get();
-                if (t != null) {
-                  logger.log(Level.WARNING, "Failed to export spans", t);
-                  result.fail();
-                } else {
-                  result.succeed();
-                }
-              }
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-    return result;
+    return CompletableResultCode.ofAll(results);
   }
 
   private PostSpansRequestMarshaler buildRequest(Resource resource, List<SpanData> spans) {
@@ -170,22 +106,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
-    managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
-    if (managedChannel.isShutdown()) {
-      return result.succeed();
-    }
-    managedChannel.shutdown();
-    return result;
-  }
-
-  // Visible for testing
-  Resource getJaegerResource() {
-    return jaegerResource;
-  }
-
-  // Visible for testing
-  ManagedChannel getManagedChannel() {
-    return managedChannel;
+    return delegate.shutdown();
   }
 }

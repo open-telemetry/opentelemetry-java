@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,7 +43,8 @@ final class OtlpConfigUtil {
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
-      Consumer<byte[]> setTrustedCertificates) {
+      Consumer<byte[]> setTrustedCertificates,
+      Consumer<RetryPolicy> setRetryPolicy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -105,6 +108,27 @@ final class OtlpConfigUtil {
       }
       setTrustedCertificates.accept(certificateBytes);
     }
+
+    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+    if (retryEnabled != null && retryEnabled) {
+      setRetryPolicy.accept(RetryPolicy.getDefault());
+    }
+  }
+
+  static void configureOtlpAggregationTemporality(
+      ConfigProperties config, Consumer<AggregationTemporality> setAggregationTemporality) {
+    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality");
+    if (temporalityStr == null) {
+      return;
+    }
+    AggregationTemporality temporality;
+    try {
+      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException(
+          "Unrecognized aggregation temporality: " + temporalityStr, e);
+    }
+    setAggregationTemporality.accept(temporality);
   }
 
   private static URL createUrl(URL context, String spec) {

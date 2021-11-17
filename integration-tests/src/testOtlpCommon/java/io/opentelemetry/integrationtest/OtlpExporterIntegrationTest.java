@@ -25,6 +25,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -51,8 +52,8 @@ import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -72,7 +73,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -375,23 +375,29 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testLogExporter(LogExporter logExporter) {
-    LogRecord logRecord =
-        LogRecord.builder(
+    LogData logData =
+        LogDataBuilder.create(
                 RESOURCE,
                 InstrumentationLibraryInfo.create(
                     OtlpExporterIntegrationTest.class.getName(), null))
             .setName("log-name")
-            .setBody(Body.stringBody("log body"))
+            .setBody("log body")
             .setAttributes(Attributes.builder().put("key", "value").build())
             .setSeverity(Severity.DEBUG)
             .setSeverityText("DEBUG")
-            .setTraceId(IdGenerator.random().generateTraceId())
-            .setSpanId(IdGenerator.random().generateSpanId())
-            .setEpochNanos(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
-            .setFlags(0)
+            .setEpoch(Instant.now())
+            .setContext(
+                Context.root()
+                    .with(
+                        Span.wrap(
+                            SpanContext.create(
+                                IdGenerator.random().generateTraceId(),
+                                IdGenerator.random().generateSpanId(),
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()))))
             .build();
 
-    logExporter.export(Collections.singletonList(logRecord));
+    logExporter.export(Collections.singletonList(logData));
 
     await()
         .atMost(Duration.ofSeconds(30))
@@ -425,14 +431,15 @@ abstract class OtlpExporterIntegrationTest {
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
     assertThat(protoLog.getSeverityNumber().getNumber())
-        .isEqualTo(logRecord.getSeverity().getSeverityNumber());
+        .isEqualTo(logData.getSeverity().getSeverityNumber());
     assertThat(protoLog.getSeverityText()).isEqualTo("DEBUG");
     assertThat(TraceId.fromBytes(protoLog.getTraceId().toByteArray()))
-        .isEqualTo(logRecord.getTraceId());
+        .isEqualTo(logData.getSpanContext().getTraceId());
     assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
-        .isEqualTo(logRecord.getSpanId());
-    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logRecord.getEpochNanos());
-    assertThat(protoLog.getFlags()).isEqualTo(logRecord.getFlags());
+        .isEqualTo(logData.getSpanContext().getSpanId());
+    assertThat(TraceFlags.fromByte((byte) protoLog.getFlags()))
+        .isEqualTo(logData.getSpanContext().getTraceFlags());
+    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logData.getEpochNanos());
   }
 
   private static class OtlpGrpcServer extends ServerExtension {

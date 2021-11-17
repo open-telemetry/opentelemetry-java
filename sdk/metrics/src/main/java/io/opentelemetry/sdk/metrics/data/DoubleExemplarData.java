@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** An {@link ExemplarData} with {@code double} measurments. */
+/** An {@link ExemplarData} with {@code double} measurements. */
 @Immutable
 @AutoValue
 public abstract class DoubleExemplarData implements ExemplarData {

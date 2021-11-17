@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -83,8 +83,6 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
-            meterProviderSharedState.getResource(),
-            meterSharedState.getInstrumentationLibraryInfo(),
             value -> value.observe(1.0, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
@@ -108,8 +106,6 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            meterProviderSharedState.getResource(),
-            meterSharedState.getInstrumentationLibraryInfo(),
             value -> value.observe(1, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),

@@ -9,13 +9,14 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -135,6 +136,104 @@ class TemporalMetricStorageTest {
         .isNotEmpty()
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(35).hasValue(8));
+  }
+
+  @Test
+  void synchronousCumulative_dropsStale() {
+    TemporalMetricStorage<DoubleAccumulation> storage =
+        new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
+
+    // Send in new measurement at time 10 for collector 1, with attr1
+    Map<Attributes, DoubleAccumulation> measurement1 = new HashMap<>();
+    Attributes attr1 = Attributes.builder().put("key", "value1").build();
+    measurement1.put(attr1, DoubleAccumulation.create(3));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.CUMULATIVE,
+                measurement1,
+                0,
+                10))
+        .hasDoubleSum()
+        .isCumulative()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .contains(DoublePointData.create(0, 10, attr1, 3));
+
+    // Send in new measurement at time 20 for collector 1, with attr2
+    // Result should drop accumulation for attr1, only reporting accumulation for attr2
+    Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
+    Attributes attr2 = Attributes.builder().put("key", "value2").build();
+    measurement2.put(attr2, DoubleAccumulation.create(7));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.CUMULATIVE,
+                measurement2,
+                0,
+                20))
+        .hasDoubleSum()
+        .isCumulative()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .containsExactly(DoublePointData.create(0, 20, attr2, 7));
+  }
+
+  @Test
+  void synchronousDelta_dropsStale() {
+    TemporalMetricStorage<DoubleAccumulation> storage =
+        new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
+
+    // Send in new measurement at time 10 for collector 1, with attr1
+    Map<Attributes, DoubleAccumulation> measurement1 = new HashMap<>();
+    Attributes attr1 = Attributes.builder().put("key", "value1").build();
+    measurement1.put(attr1, DoubleAccumulation.create(3));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement1,
+                0,
+                10))
+        .hasDoubleSum()
+        .isDelta()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .contains(DoublePointData.create(0, 10, attr1, 3));
+
+    // Send in new measurement at time 20 for collector 1, with attr2
+    // Result should drop accumulation for attr1, only reporting accumulation for attr2
+    Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
+    Attributes attr2 = Attributes.builder().put("key", "value2").build();
+    measurement2.put(attr2, DoubleAccumulation.create(7));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement2,
+                0,
+                20))
+        .hasDoubleSum()
+        .isDelta()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .containsExactly(DoublePointData.create(10, 20, attr2, 7));
   }
 
   @Test
@@ -376,6 +475,104 @@ class TemporalMetricStorageTest {
         .isNotEmpty()
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(35).hasValue(2));
+  }
+
+  @Test
+  void asynchronousCumulative_dropsStale() {
+    TemporalMetricStorage<DoubleAccumulation> storage =
+        new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
+
+    // Send in new measurement at time 10 for collector 1, with attr1
+    Map<Attributes, DoubleAccumulation> measurement1 = new HashMap<>();
+    Attributes attr1 = Attributes.builder().put("key", "value1").build();
+    measurement1.put(attr1, DoubleAccumulation.create(3));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.CUMULATIVE,
+                measurement1,
+                0,
+                10))
+        .hasDoubleSum()
+        .isCumulative()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .contains(DoublePointData.create(0, 10, attr1, 3));
+
+    // Send in new measurement at time 20 for collector 1, with attr2
+    // Result should drop accumulation for attr1, only reporting accumulation for attr2
+    Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
+    Attributes attr2 = Attributes.builder().put("key", "value2").build();
+    measurement2.put(attr2, DoubleAccumulation.create(7));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.CUMULATIVE,
+                measurement2,
+                0,
+                20))
+        .hasDoubleSum()
+        .isCumulative()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .containsExactly(DoublePointData.create(0, 20, attr2, 7));
+  }
+
+  @Test
+  void asynchronousDelta_dropsStale() {
+    TemporalMetricStorage<DoubleAccumulation> storage =
+        new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
+
+    // Send in new measurement at time 10 for collector 1, with attr1
+    Map<Attributes, DoubleAccumulation> measurement1 = new HashMap<>();
+    Attributes attr1 = Attributes.builder().put("key", "value1").build();
+    measurement1.put(attr1, DoubleAccumulation.create(3));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement1,
+                0,
+                10))
+        .hasDoubleSum()
+        .isDelta()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .contains(DoublePointData.create(0, 10, attr1, 3));
+
+    // Send in new measurement at time 20 for collector 1, with attr2
+    // Result should drop accumulation for attr1, only reporting accumulation for attr2
+    Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
+    Attributes attr2 = Attributes.builder().put("key", "value2").build();
+    measurement2.put(attr2, DoubleAccumulation.create(7));
+    assertThat(
+            storage.buildMetricFor(
+                collector1,
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                METRIC_DESCRIPTOR,
+                AggregationTemporality.DELTA,
+                measurement2,
+                0,
+                20))
+        .hasDoubleSum()
+        .isDelta()
+        .points()
+        .hasSize(1)
+        .isNotEmpty()
+        .containsExactly(DoublePointData.create(10, 20, attr2, 7));
   }
 
   @Test

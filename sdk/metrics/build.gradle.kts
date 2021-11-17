@@ -1,6 +1,4 @@
 import net.ltgt.gradle.errorprone.CheckSeverity.*
-import net.ltgt.gradle.errorprone.errorprone
-import net.ltgt.gradle.nullaway.nullaway
 
 plugins {
   id("otel.java-conventions")
@@ -31,12 +29,22 @@ dependencies {
   jmh(project(":sdk:trace"))
 }
 
-tasks {
-  named<JavaCompile>("compileJava") {
-    with(options) {
-      errorprone.nullaway {
-        severity.set(OFF)
+testing {
+  suites {
+    val debugEnabledTest by registering(JvmTestSuite::class) {
+      targets {
+        all {
+          testTask.configure {
+            jvmArgs("-Dotel.experimental.sdk.metrics.debug=true")
+          }
+        }
       }
     }
+  }
+}
+
+tasks {
+  named("check") {
+    dependsOn(testing.suites)
   }
 }

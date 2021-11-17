@@ -6,7 +6,7 @@
 /**
  * The OpenTelemetry SDK implementation of logging.
  *
- * @see io.opentelemetry.sdk.logs.LogSinkSdkProvider
+ * @see io.opentelemetry.sdk.logs.SdkLogEmitterProvider
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.logs;

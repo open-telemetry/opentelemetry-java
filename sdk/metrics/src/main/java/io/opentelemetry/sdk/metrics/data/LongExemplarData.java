@@ -9,7 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
-/** An {@link ExemplarData} with {@code long} measurments. */
+/** An {@link ExemplarData} with {@code long} measurements. */
 @Immutable
 @AutoValue
 public abstract class LongExemplarData implements ExemplarData {

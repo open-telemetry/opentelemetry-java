@@ -5,6 +5,10 @@
 
 package io.opentelemetry.exporter.otlp.internal.logs;
 
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.KeyValueMarshaler;
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
@@ -18,6 +22,9 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
+  private static final String INVALID_TRACE_ID = TraceId.getInvalid();
+  private static final String INVALID_SPAN_ID = SpanId.getInvalid();
+
   private final long timeUnixNano;
   private final ProtoEnumInfo severityNumber;
   private final byte[] severityText;
@@ -25,7 +32,7 @@ final class LogMarshaler extends MarshalerWithSize {
   private final MarshalerWithSize anyValueMarshaler;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
-  private final int flags;
+  private final TraceFlags traceFlags;
   @Nullable private final String traceId;
   @Nullable private final String spanId;
 
@@ -37,6 +44,7 @@ final class LogMarshaler extends MarshalerWithSize {
     StringAnyValueMarshaler anyValueMarshaler =
         new StringAnyValueMarshaler(MarshalerUtil.toBytes(logData.getBody().asString()));
 
+    SpanContext spanContext = logData.getSpanContext();
     return new LogMarshaler(
         logData.getEpochNanos(),
         toProtoSeverityNumber(logData.getSeverity()),
@@ -46,9 +54,9 @@ final class LogMarshaler extends MarshalerWithSize {
         attributeMarshalers,
         // TODO (trask) implement droppedAttributesCount in LogRecord
         0,
-        logData.getFlags(),
-        logData.getTraceId(),
-        logData.getSpanId());
+        spanContext.getTraceFlags(),
+        spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
+        spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
   }
 
   private LogMarshaler(
@@ -59,7 +67,7 @@ final class LogMarshaler extends MarshalerWithSize {
       MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
-      int flags,
+      TraceFlags traceFlags,
       @Nullable String traceId,
       @Nullable String spanId) {
     super(
@@ -71,13 +79,13 @@ final class LogMarshaler extends MarshalerWithSize {
             anyValueMarshaler,
             attributeMarshalers,
             droppedAttributesCount,
-            flags,
+            traceFlags,
             traceId,
             spanId));
     this.timeUnixNano = timeUnixNano;
     this.traceId = traceId;
     this.spanId = spanId;
-    this.flags = flags;
+    this.traceFlags = traceFlags;
     this.severityNumber = severityNumber;
     this.severityText = severityText;
     this.nameUtf8 = nameUtf8;
@@ -101,7 +109,7 @@ final class LogMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    output.serializeFixed32(LogRecord.FLAGS, flags);
+    output.serializeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
     output.serializeTraceId(LogRecord.TRACE_ID, traceId);
     output.serializeSpanId(LogRecord.SPAN_ID, spanId);
   }
@@ -114,7 +122,7 @@ final class LogMarshaler extends MarshalerWithSize {
       MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
-      int flags,
+      TraceFlags traceFlags,
       @Nullable String traceId,
       @Nullable String spanId) {
     int size = 0;
@@ -131,7 +139,7 @@ final class LogMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, flags);
+    size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
     size += MarshalerUtil.sizeTraceId(LogRecord.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanId);
     return size;
@@ -193,5 +201,10 @@ final class LogMarshaler extends MarshalerWithSize {
     }
     // NB: Should not be possible with aligned versions.
     return SeverityNumber.SEVERITY_NUMBER_UNSPECIFIED;
+  }
+
+  /** Vendored {@link Byte#toUnsignedInt(byte)} to support Android. */
+  private static int toUnsignedInt(byte x) {
+    return ((int) x) & 0xff;
   }
 }

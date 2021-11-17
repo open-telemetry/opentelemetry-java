@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,11 +18,7 @@ class ExplicitBucketHistogramTest {
 
   @Test
   void goodConfig() {
-    assertThat(Aggregation.explicitBucketHistogram().getConfiguredTemporality()).isNull();
-    assertThat(
-            Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA)
-                .getConfiguredTemporality())
-        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(Aggregation.explicitBucketHistogram()).isNotNull();
   }
 
   @Test

@@ -9,8 +9,8 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
@@ -79,11 +79,7 @@ public abstract class MeterSharedState {
     for (View view : views) {
       SynchronousMetricStorage currentStorage =
           SynchronousMetricStorage.create(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              meterProviderSharedState.getExemplarFilter());
+              view, instrument, meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
       if (SynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
@@ -91,7 +87,7 @@ public abstract class MeterSharedState {
       try {
         storage.add(getMetricStorageRegistry().register(currentStorage));
       } catch (DuplicateMetricStorageException e) {
-        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
+        logger.log(Level.WARNING, e, () -> DebugUtils.duplicateMetricErrorMessage(e));
       }
     }
     if (storage.size() == 1) {
@@ -113,12 +109,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       MetricStorage currentStorage =
-          AsynchronousMetricStorage.longAsynchronousAccumulator(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              metricUpdater);
+          AsynchronousMetricStorage.longAsynchronousAccumulator(view, instrument, metricUpdater);
       // TODO - move this in a better location.
       if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
@@ -143,12 +134,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       MetricStorage currentStorage =
-          AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-              view,
-              instrument,
-              meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
-              metricUpdater);
+          AsynchronousMetricStorage.doubleAsynchronousAccumulator(view, instrument, metricUpdater);
       // TODO - move this in a better location.
       if (AsynchronousMetricStorage.empty() == currentStorage) {
         continue;

@@ -37,7 +37,7 @@ public final class CollectionHandle {
   }
 
   /**
-   * Construct a new (mutable) set consistenting of the passed in collection handles.
+   * Construct a new (mutable) set consisting of the passed in collection handles.
    *
    * <p>Used by tests.
    */

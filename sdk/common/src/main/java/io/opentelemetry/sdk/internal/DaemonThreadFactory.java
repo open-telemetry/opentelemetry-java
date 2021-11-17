@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;
   private final AtomicInteger counter = new AtomicInteger();
+  private final ThreadFactory delegate = Executors.defaultThreadFactory();
 
   public DaemonThreadFactory(String namePrefix) {
     this.namePrefix = namePrefix;
@@ -23,7 +24,7 @@ public final class DaemonThreadFactory implements ThreadFactory {
 
   @Override
   public Thread newThread(Runnable runnable) {
-    Thread t = Executors.defaultThreadFactory().newThread(runnable);
+    Thread t = delegate.newThread(runnable);
     try {
       t.setDaemon(true);
       t.setName(namePrefix + "-" + counter.incrementAndGet());

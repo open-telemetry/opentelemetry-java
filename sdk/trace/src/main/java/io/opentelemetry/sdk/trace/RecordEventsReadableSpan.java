@@ -203,7 +203,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
-          getSpanDataStatus(),
+          status,
           name,
           endEpochNanos,
           hasEnded);
@@ -464,13 +464,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public boolean isRecording() {
     synchronized (lock) {
       return !hasEnded;
-    }
-  }
-
-  @GuardedBy("lock")
-  private StatusData getSpanDataStatus() {
-    synchronized (lock) {
-      return status;
     }
   }
 

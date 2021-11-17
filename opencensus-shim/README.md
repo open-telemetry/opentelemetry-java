@@ -22,11 +22,14 @@ Applications only need to set up OpenTelemetry exporters, not OpenCensus.
 
 To allow the shim to work for metrics, add the shim as a dependency.
 
-Applications also need to pass the configured metric exporter to the shim:
+Applications also need to attach OpenCensus metrics to their metric readers on registration.
 
 ```
-OpenTelemetryMetricsExporter exporter =
-         OpenTelemetryMetricsExporter.createAndRegister(metricExporter);
+SdkMeterProvider.builder()
+            .registerMetricReader(
+                OpenCensusMetrics.attachTo(readerFactory)
+            )
+        .buildAndRegisterGlobal();
 ```
 
 For example, if a logging exporter were configured, the following would be
@@ -34,16 +37,14 @@ added:
 
 ```
 LoggingMetricExporter metricExporter = new LoggingMetricExporter();
-OpenTelemetryMetricsExporter exporter =
-         OpenTelemetryMetricsExporter.createAndRegister(metricExporter);
-```
-
-The export interval can also be set:
-
-```
-OpenTelemetryMetricsExporter exporter =
-         OpenTelemetryMetricsExporter.createAndRegister(metricExporter,
-                Duration.create(0, 500));
+SdkMeterProvider.builder()
+            .registerMetricReader(
+                OpenCensusMetrics.attachTo(
+                  PeriodicMetricReader.builder(metricExporter)
+                  .newMetricReaderFactory()
+                )
+            )
+        .buildAndRegisterGlobal();
 ```
 
 ## Known Problems

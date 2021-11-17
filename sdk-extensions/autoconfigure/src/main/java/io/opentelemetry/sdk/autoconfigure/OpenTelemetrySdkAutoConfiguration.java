@@ -87,6 +87,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
   static OpenTelemetrySdk newOpenTelemetrySdk(
       ConfigProperties config,
       Resource resource,
+      ClassLoader serviceClassLoader,
       BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
@@ -94,13 +95,14 @@ public final class OpenTelemetrySdkAutoConfiguration {
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer,
       boolean setResultAsGlobal) {
     ContextPropagators propagators =
-        PropagatorConfiguration.configurePropagators(config, propagatorCustomizer);
+        PropagatorConfiguration.configurePropagators(
+            config, serviceClassLoader, propagatorCustomizer);
 
-    configureMeterProvider(resource, config);
+    configureMeterProvider(resource, config, serviceClassLoader);
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource, config, spanExporterCustomizer, samplerCustomizer);
+            resource, config, serviceClassLoader, spanExporterCustomizer, samplerCustomizer);
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder()
@@ -113,7 +115,8 @@ public final class OpenTelemetrySdkAutoConfiguration {
     return openTelemetrySdk;
   }
 
-  private static void configureMeterProvider(Resource resource, ConfigProperties config) {
+  private static void configureMeterProvider(
+      Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
     // Configure default exemplar filters.
@@ -135,7 +138,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     }
 
     for (SdkMeterProviderConfigurer configurer :
-        ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
+        ServiceLoader.load(SdkMeterProviderConfigurer.class, serviceClassLoader)) {
       configurer.configure(meterProviderBuilder, config);
     }
 
@@ -145,7 +148,8 @@ public final class OpenTelemetrySdkAutoConfiguration {
       GlobalMeterProvider.set(MeterProvider.noop());
       return;
     }
-    MetricExporterConfiguration.configureExporter(exporterName, config, meterProviderBuilder);
+    MetricExporterConfiguration.configureExporter(
+        exporterName, config, serviceClassLoader, meterProviderBuilder);
 
     SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 

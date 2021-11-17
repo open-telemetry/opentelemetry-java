@@ -92,6 +92,8 @@ final class MetricAdapter {
         return Collector.Type.SUMMARY;
       case HISTOGRAM:
         return Collector.Type.HISTOGRAM;
+      case EXPONENTIAL_HISTOGRAM:
+        return Collector.Type.UNKNOWN; // todo exporter for exponential histogram
     }
     return Collector.Type.UNKNOWN;
   }
@@ -149,6 +151,8 @@ final class MetricAdapter {
           addHistogramSamples(
               (DoubleHistogramPointData) pointData, name, labelNames, labelValues, samples);
           break;
+        case EXPONENTIAL_HISTOGRAM:
+          break; // todo
       }
     }
     return samples;
@@ -294,6 +298,8 @@ final class MetricAdapter {
         return metricData.getDoubleSummaryData().getPoints();
       case HISTOGRAM:
         return metricData.getDoubleHistogramData().getPoints();
+      case EXPONENTIAL_HISTOGRAM:
+        return metricData.getExponentialHistogramData().getPoints();
     }
     return Collections.emptyList();
   }

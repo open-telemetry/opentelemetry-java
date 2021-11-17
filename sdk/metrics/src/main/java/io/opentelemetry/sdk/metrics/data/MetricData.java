@@ -7,11 +7,13 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
  * Instrument}.
  */
+@Immutable
 public interface MetricData {
 
   /**
@@ -143,6 +145,28 @@ public interface MetricData {
         description,
         unit,
         MetricDataType.HISTOGRAM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   */
+  static MetricData createExponentialHistogram(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      ExponentialHistogramData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.EXPONENTIAL_HISTOGRAM,
         data);
   }
 
@@ -282,5 +306,19 @@ public interface MetricData {
       return (DoubleHistogramData) getData();
     }
     return DoubleHistogramData.EMPTY;
+  }
+
+  /**
+   * Returns the {@link ExponentialHistogramData} if type is {@link
+   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   *
+   * @return the {@link ExponentialHistogramData} if type is {@link
+   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   */
+  default ExponentialHistogramData getExponentialHistogramData() {
+    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      return (ExponentialHistogramData) getData();
+    }
+    return DoubleExponentialHistogramData.EMPTY;
   }
 }

@@ -6,97 +6,46 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The interface for a log as defined in the <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md">OpenTelemetry
- * logging model</a>.
+ * Log definition as described in <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md">OpenTelemetry
+ * Log Data Model</a>.
  */
 @Immutable
 public interface LogData {
 
-  /**
-   * Returns the resource of this log.
-   *
-   * @return the resource.
-   */
+  /** Returns the resource of this log. */
   Resource getResource();
 
-  /**
-   * Returns the instrumentation library that generated this log.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo}.
-   */
+  /** Returns the instrumentation library that generated this log. */
   InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
-  /**
-   * Returns the epoch timestamp in nanos when the log was recorded.
-   *
-   * @return the epoch timestamp in nanos.
-   */
+  /** Returns the epoch timestamp in nanos when the log was recorded. */
   long getEpochNanos();
 
-  /**
-   * Returns the trace id for this log.
-   *
-   * @return the trace id.
-   */
-  @Nullable
-  String getTraceId();
+  /** Return the span context for this log, or {@link SpanContext#getInvalid()} if unset. */
+  SpanContext getSpanContext();
 
-  /**
-   * Returns the span id for this log.
-   *
-   * @return the span id.
-   */
-  @Nullable
-  String getSpanId();
-
-  /**
-   * Returns the flags for this log.
-   *
-   * @return the flags.
-   */
-  int getFlags();
-
-  /**
-   * Returns the severity for this log.
-   *
-   * @return the severity.
-   */
+  /** Returns the severity for this log, or {@link Severity#UNDEFINED_SEVERITY_NUMBER} if unset. */
   Severity getSeverity();
 
-  /**
-   * Returns the severity text for this log.
-   *
-   * @return the severity text.
-   */
+  /** Returns the severity text for this log, or null if unset. */
   @Nullable
   String getSeverityText();
 
-  /**
-   * Returns the name for this log.
-   *
-   * @return the name.
-   */
+  /** Returns the name for this log, or null if unset. */
   @Nullable
   String getName();
 
-  /**
-   * Returns the body for this log.
-   *
-   * @return the body.
-   */
+  /** Returns the body for this log, or {@link Body#empty()} if unset. */
   Body getBody();
 
-  /**
-   * Returns the attributes for this log.
-   *
-   * @return the attributes.
-   */
+  /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();
 }

@@ -281,6 +281,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
+    props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
@@ -289,6 +290,7 @@ class OtlpHttpConfigTest {
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
+    assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
@@ -363,7 +365,7 @@ class OtlpHttpConfigTest {
         "otel.exporter.otlp.endpoint",
         "https://" + canonicalHostName + ":" + server.httpsPort() + "/");
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
-    System.setProperty("otel.imr.export.interval", "1s");
+    System.setProperty("otel.metric.export.interval", "1s");
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
 

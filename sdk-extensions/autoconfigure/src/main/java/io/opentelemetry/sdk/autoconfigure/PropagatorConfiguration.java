@@ -23,6 +23,7 @@ final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
@@ -37,7 +38,8 @@ final class PropagatorConfiguration {
             requestedPropagators,
             ConfigurablePropagatorProvider::getName,
             ConfigurablePropagatorProvider::getPropagator,
-            config);
+            config,
+            serviceClassLoader);
 
     for (String propagatorName : requestedPropagators) {
       propagators.add(

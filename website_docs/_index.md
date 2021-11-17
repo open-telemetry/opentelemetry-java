@@ -48,8 +48,8 @@ OpenTelemetry Java consists of the following repositories:
 
 ### Releases
 
-Published releases are available on maven central. We strongly recommend using our BOM to keep the
-versions of the various components in sync.
+Published [releases][] are available on [maven central][]. We strongly recommend
+using our BOM to keep the versions of the various components in sync.
 
 #### Maven
 
@@ -60,7 +60,7 @@ versions of the various components in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -79,17 +79,15 @@ versions of the various components in sync.
 
 ```kotlin
 dependencies {
-  implementation(platform("io.opentelemetry:opentelemetry-bom:1.7.0"))
+  implementation(platform("io.opentelemetry:opentelemetry-bom:1.7.1"))
   implementation("io.opentelemetry:opentelemetry-api")
 }
 ```
 
-#### Other
-
-  - [releases](https://github.com/open-telemetry/opentelemetry-java/releases)
-  - [maven](https://mvnrepository.com/artifact/io.opentelemetry)
-
-### Additional Information
+### API reference and examples
 
 - [Javadoc](https://www.javadoc.io/doc/io.opentelemetry)
 - [Example code](https://github.com/open-telemetry/opentelemetry-java/tree/main/examples)
+
+[maven central]: https://mvnrepository.com/artifact/io.opentelemetry
+[releases]: https://github.com/open-telemetry/opentelemetry-java/releases

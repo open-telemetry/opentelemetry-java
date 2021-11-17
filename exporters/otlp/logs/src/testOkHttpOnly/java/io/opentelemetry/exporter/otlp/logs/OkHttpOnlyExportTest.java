@@ -13,19 +13,17 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -40,13 +38,10 @@ class OkHttpOnlyExportTest {
 
   private static final List<LogData> LOGS =
       Collections.singletonList(
-          LogRecord.builder(
+          LogDataBuilder.create(
                   Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                   InstrumentationLibraryInfo.create("instrumentation", "1"))
-              .setEpochMillis(System.currentTimeMillis())
-              .setTraceId(TraceId.getInvalid())
-              .setSpanId(SpanId.getInvalid())
-              .setFlags(TraceFlags.getDefault().asByte())
+              .setEpoch(Instant.now())
               .setSeverity(Severity.ERROR)
               .setSeverityText("really severe")
               .setName("log1")
