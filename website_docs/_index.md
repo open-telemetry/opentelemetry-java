@@ -48,8 +48,8 @@ OpenTelemetry Java consists of the following repositories:
 
 ### Releases
 
-Published releases are available on maven central. We strongly recommend using our BOM to keep the
-versions of the various components in sync.
+Published [releases][] are available on [maven central][]. We strongly recommend
+using our BOM to keep the versions of the various components in sync.
 
 #### Maven
 
@@ -84,12 +84,10 @@ dependencies {
 }
 ```
 
-#### Other
-
-  - [releases](https://github.com/open-telemetry/opentelemetry-java/releases)
-  - [maven](https://mvnrepository.com/artifact/io.opentelemetry)
-
-### Additional Information
+### API reference and examples
 
 - [Javadoc](https://www.javadoc.io/doc/io.opentelemetry)
 - [Example code](https://github.com/open-telemetry/opentelemetry-java/tree/main/examples)
+
+[maven central]: https://mvnrepository.com/artifact/io.opentelemetry
+[releases]: https://github.com/open-telemetry/opentelemetry-java/releases

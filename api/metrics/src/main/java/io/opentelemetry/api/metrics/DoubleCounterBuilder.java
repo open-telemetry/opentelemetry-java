@@ -25,9 +25,6 @@ public interface DoubleCounterBuilder {
    */
   DoubleCounterBuilder setUnit(String unit);
 
-  /** Sets the counter for recording {@code long} values. */
-  LongCounterBuilder ofLongs();
-
   /**
    * Builds and returns a {@code DoubleCounter} with the desired options.
    *

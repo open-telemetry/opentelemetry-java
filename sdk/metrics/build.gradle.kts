@@ -1,6 +1,4 @@
 import net.ltgt.gradle.errorprone.CheckSeverity.*
-import net.ltgt.gradle.errorprone.errorprone
-import net.ltgt.gradle.nullaway.nullaway
 
 plugins {
   id("otel.java-conventions")
@@ -46,13 +44,6 @@ testing {
 }
 
 tasks {
-  named<JavaCompile>("compileJava") {
-    with(options) {
-      errorprone.nullaway {
-        severity.set(OFF)
-      }
-    }
-  }
   named("check") {
     dependsOn(testing.suites)
   }

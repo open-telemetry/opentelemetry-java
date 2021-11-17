@@ -25,9 +25,6 @@ public interface DoubleUpDownCounterBuilder {
    */
   DoubleUpDownCounterBuilder setUnit(String unit);
 
-  /** Sets the counter for recording {@code long} values. */
-  LongUpDownCounterBuilder ofLongs();
-
   /**
    * Builds and returns a {@code DoubleUpDownCounter} with the desired options.
    *

@@ -23,9 +23,6 @@ public interface LongHistogramBuilder {
    */
   LongHistogramBuilder setUnit(String unit);
 
-  /** Sets the histogram for recording {@code double} values. */
-  DoubleHistogramBuilder ofDoubles();
-
   /**
    * Builds and returns a {@code LongHistogram} with the desired options.
    *
