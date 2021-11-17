@@ -1228,5 +1228,24 @@ public final class SemanticAttributes {
    */
   public static final String EXCEPTION_EVENT_NAME = "exception";
 
+  /**
+   * The name of the keyspace being accessed. To be used instead of the generic {@code db.name}
+   * attribute.
+   *
+   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> DB_CASSANDRA_KEYSPACE =
+      stringKey("db.cassandra.keyspace");
+
+  /**
+   * The <a href="https://hbase.apache.org/book.html#_namespace">HBase namespace</a> being accessed.
+   * To be used instead of the generic {@code db.name} attribute.
+   *
+   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
+
   private SemanticAttributes() {}
 }
