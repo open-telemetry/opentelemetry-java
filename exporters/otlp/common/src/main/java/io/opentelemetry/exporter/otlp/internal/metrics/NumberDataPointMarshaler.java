@@ -80,9 +80,9 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     output.serializeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == NumberDataPoint.AS_INT) {
-      output.serializeFixed64(valueField, ((LongPointData) value).getValue());
+      output.serializeFixed64(valueField, ((LongPointData) value).getValue(), /* force= */ true);
     } else {
-      output.serializeDouble(valueField, ((DoublePointData) value).getValue());
+      output.serializeDouble(valueField, ((DoublePointData) value).getValue(), /* force= */ true);
     }
     output.serializeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
     output.serializeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);

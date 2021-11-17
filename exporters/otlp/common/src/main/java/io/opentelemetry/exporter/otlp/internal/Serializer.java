@@ -95,7 +95,12 @@ public abstract class Serializer implements AutoCloseable {
 
   /** Serializes a protobuf {@code fixed64} field. */
   public void serializeFixed64(ProtoFieldInfo field, long value) throws IOException {
-    if (value == 0) {
+    serializeFixed64(field, value, /* force= */ false);
+  }
+
+  /** Serializes a protobuf {@code fixed64} field. */
+  public void serializeFixed64(ProtoFieldInfo field, long value, boolean force) throws IOException {
+    if (!force && value == 0) {
       return;
     }
     writeFixed64(field, value);
@@ -107,7 +112,12 @@ public abstract class Serializer implements AutoCloseable {
 
   /** Serializes a protobuf {@code fixed32} field. */
   public void serializeFixed32(ProtoFieldInfo field, int value) throws IOException {
-    if (value == 0) {
+    serializeFixed32(field, value, /* force= */ false);
+  }
+
+  /** Serializes a protobuf {@code fixed32} field. */
+  public void serializeFixed32(ProtoFieldInfo field, int value, boolean force) throws IOException {
+    if (!force && value == 0) {
       return;
     }
     writeFixed32(field, value);
@@ -117,7 +127,12 @@ public abstract class Serializer implements AutoCloseable {
 
   /** Serializes a proto buf {@code double} field. */
   public void serializeDouble(ProtoFieldInfo field, double value) throws IOException {
-    if (value == 0D) {
+    serializeDouble(field, value, /* force= */ false);
+  }
+  /** Serializes a proto buf {@code double} field. */
+  public void serializeDouble(ProtoFieldInfo field, double value, boolean force)
+      throws IOException {
+    if (!force && value == 0D) {
       return;
     }
     writeDouble(field, value);
