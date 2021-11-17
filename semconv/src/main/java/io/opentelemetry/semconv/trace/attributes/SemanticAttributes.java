@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.8.0";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -58,15 +58,16 @@ public final class SemanticAttributes {
       stringKey("db.jdbc.driver_classname");
 
   /**
-   * If no <a href="#call-level-attributes-for-specific-technologies">tech-specific attribute</a> is
-   * defined, this attribute is used to report the name of the database being accessed. For commands
-   * that switch the database, this should be set to the target database (even if the command
-   * fails).
+   * This attribute is used to report the name of the database being accessed. For commands that
+   * switch the database, this should be set to the target database (even if the command fails).
    *
    * <p>Notes:
    *
    * <ul>
-   *   <li>In some SQL databases, the database name to be used is called &quot;schema name&quot;.
+   *   <li>In some SQL databases, the database name to be used is called &quot;schema name&quot;. In
+   *       case there are multiple layers that could be considered for database name (e.g. Oracle
+   *       instance name and schema name), the database name to be used is the more specific layer
+   *       (e.g. Oracle schema name).
    * </ul>
    */
   public static final AttributeKey<String> DB_NAME = stringKey("db.name");
@@ -113,13 +114,6 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> DB_MSSQL_INSTANCE_NAME =
       stringKey("db.mssql.instance_name");
 
-  /**
-   * The name of the keyspace being accessed. To be used instead of the generic {@code db.name}
-   * attribute.
-   */
-  public static final AttributeKey<String> DB_CASSANDRA_KEYSPACE =
-      stringKey("db.cassandra.keyspace");
-
   /** The fetch size used for paging, i.e. how many rows will be returned at once. */
   public static final AttributeKey<Long> DB_CASSANDRA_PAGE_SIZE = longKey("db.cassandra.page_size");
 
@@ -131,8 +125,8 @@ public final class SemanticAttributes {
       stringKey("db.cassandra.consistency_level");
 
   /**
-   * The name of the primary table that the operation is acting upon, including the schema name (if
-   * applicable).
+   * The name of the primary table that the operation is acting upon, including the keyspace name
+   * (if applicable).
    *
    * <p>Notes:
    *
@@ -166,12 +160,6 @@ public final class SemanticAttributes {
       stringKey("db.cassandra.coordinator.dc");
 
   /**
-   * The <a href="https://hbase.apache.org/book.html#_namespace">HBase namespace</a> being accessed.
-   * To be used instead of the generic {@code db.name} attribute.
-   */
-  public static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
-
-  /**
    * The index of the database being accessed as used in the <a
    * href="https://redis.io/commands/select">{@code SELECT} command</a>, provided as an integer. To
    * be used instead of the generic {@code db.name} attribute.
@@ -184,8 +172,8 @@ public final class SemanticAttributes {
       stringKey("db.mongodb.collection");
 
   /**
-   * The name of the primary table that the operation is acting upon, including the schema name (if
-   * applicable).
+   * The name of the primary table that the operation is acting upon, including the database name
+   * (if applicable).
    *
    * <p>Notes:
    *
@@ -236,7 +224,20 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
 
-  /** Type of the trigger on which the function is executed. */
+  /**
+   * Type of the trigger which caused this function execution.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>For the server/consumer span on the incoming side, {@code faas.trigger} MUST be set.
+   *   <li>Clients invoking FaaS instances usually cannot set {@code faas.trigger}, since they would
+   *       typically need to look in the payload to determine the event type. If clients set it, it
+   *       should be the same as the trigger that corresponding incoming would have (i.e., this has
+   *       nothing to do with the underlying transport used to make the API call to invoke the
+   *       lambda, which is often HTTP).
+   * </ul>
+   */
   public static final AttributeKey<String> FAAS_TRIGGER = stringKey("faas.trigger");
 
   /** The execution ID of the current function execution. */
@@ -751,6 +752,37 @@ public final class SemanticAttributes {
   public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
       booleanKey("messaging.kafka.tombstone");
 
+  /** Namespace of RocketMQ resources, resources in different namespaces are individual. */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_NAMESPACE =
+      stringKey("messaging.rocketmq.namespace");
+
+  /**
+   * Name of the RocketMQ producer/consumer group that is handling the message. The client type is
+   * identified by the SpanKind.
+   */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_CLIENT_GROUP =
+      stringKey("messaging.rocketmq.client_group");
+
+  /** The unique identifier for each client. */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_CLIENT_ID =
+      stringKey("messaging.rocketmq.client_id");
+
+  /** Type of message. */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_TYPE =
+      stringKey("messaging.rocketmq.message_type");
+
+  /** The secondary classifier of message besides topic. */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_TAG =
+      stringKey("messaging.rocketmq.message_tag");
+
+  /** Key(s) of message, another way to mark message besides message id. */
+  public static final AttributeKey<List<String>> MESSAGING_ROCKETMQ_MESSAGE_KEYS =
+      stringArrayKey("messaging.rocketmq.message_keys");
+
+  /** Model of message consumption. This only applies to consumer spans. */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_CONSUMPTION_MODEL =
+      stringKey("messaging.rocketmq.consumption_model");
+
   /** A string identifying the remoting system. */
   public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
 
@@ -997,6 +1029,8 @@ public final class SemanticAttributes {
     public static final String AZURE = "azure";
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+    /** Tencent Cloud. */
+    public static final String TENCENT_CLOUD = "tencent_cloud";
 
     private FaasInvokedProviderValues() {}
   }
@@ -1113,6 +1147,28 @@ public final class SemanticAttributes {
     public static final String PROCESS = "process";
 
     private MessagingOperationValues() {}
+  }
+
+  public static final class MessagingRocketmqMessageTypeValues {
+    /** Normal message. */
+    public static final String NORMAL = "normal";
+    /** FIFO message. */
+    public static final String FIFO = "fifo";
+    /** Delay message. */
+    public static final String DELAY = "delay";
+    /** Transaction message. */
+    public static final String TRANSACTION = "transaction";
+
+    private MessagingRocketmqMessageTypeValues() {}
+  }
+
+  public static final class MessagingRocketmqConsumptionModelValues {
+    /** Clustering consumption model. */
+    public static final String CLUSTERING = "clustering";
+    /** Broadcasting consumption model. */
+    public static final String BROADCASTING = "broadcasting";
+
+    private MessagingRocketmqConsumptionModelValues() {}
   }
 
   public static final class RpcGrpcStatusCodeValues {
