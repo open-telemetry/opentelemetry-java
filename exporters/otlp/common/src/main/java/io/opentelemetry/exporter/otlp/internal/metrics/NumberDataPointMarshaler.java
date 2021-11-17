@@ -99,9 +99,13 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == NumberDataPoint.AS_INT) {
-      size += MarshalerUtil.sizeFixed64(valueField, ((LongPointData) value).getValue());
+      size +=
+          MarshalerUtil.sizeFixed64(
+              valueField, ((LongPointData) value).getValue(), /* force= */ true);
     } else {
-      size += MarshalerUtil.sizeDouble(valueField, ((DoublePointData) value).getValue());
+      size +=
+          MarshalerUtil.sizeDouble(
+              valueField, ((DoublePointData) value).getValue(), /* force= */ true);
     }
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);

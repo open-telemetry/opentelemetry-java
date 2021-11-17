@@ -177,18 +177,26 @@ public final class MarshalerUtil {
 
   /** Returns the size of a double field. */
   public static int sizeDouble(ProtoFieldInfo field, double value) {
-    if (value == 0D) {
+    return sizeDouble(field, value, /* force= */ false);
+  }
+  /** Returns the size of a double field. */
+  public static int sizeDouble(ProtoFieldInfo field, double value, boolean force) {
+    if (!force && value == 0D) {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
   }
 
   /** Returns the size of a fixed64 field. */
-  public static int sizeFixed64(ProtoFieldInfo field, long message) {
-    if (message == 0L) {
+  public static int sizeFixed64(ProtoFieldInfo field, long value) {
+    return sizeFixed64(field, value, /* force= */ false);
+  }
+  /** Returns the size of a fixed64 field. */
+  public static int sizeFixed64(ProtoFieldInfo field, long value, boolean force) {
+    if (!force && value == 0L) {
       return 0;
     }
-    return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(message);
+    return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(value);
   }
 
   /** Returns the size of a fixed32 field. */
