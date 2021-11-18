@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.server.ServerBuilder;
@@ -14,6 +15,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -126,6 +128,16 @@ class ExportTest {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Could not set trusted certificates");
+  }
+
+  @Test
+  void builderDelegate() {
+    assertThatCode(
+            () ->
+                DefaultGrpcExporterBuilder.getDelegateBuilder(
+                        OtlpGrpcSpanExporterBuilder.class, OtlpGrpcSpanExporter.builder())
+                    .addRetryPolicy(RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test
