@@ -83,7 +83,10 @@ public final class BeanstalkResource {
       return Resource.empty();
     }
 
-    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.AWS_ELASTIC_BEANSTALK);
 
     return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }

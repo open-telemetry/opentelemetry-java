@@ -79,7 +79,9 @@ public final class Ec2Resource {
     String hostname = fetchHostname(hostnameUrl, token);
 
     AttributesBuilder attrBuilders = Attributes.builder();
-    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_EC2);
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();

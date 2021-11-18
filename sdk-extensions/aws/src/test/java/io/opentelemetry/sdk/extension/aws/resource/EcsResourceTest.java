@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
@@ -39,14 +40,11 @@ class EcsResourceTest {
 
     assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.CLOUD_PROVIDER,
-                "aws",
-                ResourceAttributes.CONTAINER_NAME,
-                InetAddress.getLocalHost().getHostName(),
-                ResourceAttributes.CONTAINER_ID,
-                "0123456789A"));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_ecs"),
+            entry(ResourceAttributes.CONTAINER_NAME, InetAddress.getLocalHost().getHostName()),
+            entry(ResourceAttributes.CONTAINER_ID, "0123456789A"));
   }
 
   @Test
@@ -55,7 +53,7 @@ class EcsResourceTest {
     mockSysEnv.put(ECS_METADATA_KEY_V3, "");
     mockSysEnv.put(ECS_METADATA_KEY_V4, "");
     Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
+    assertThat(attributes).isEmpty();
   }
 
   @Test
@@ -65,12 +63,10 @@ class EcsResourceTest {
     mockSysEnv.put(ECS_METADATA_KEY_V4, "ecs_metadata_v4_uri");
     Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.CLOUD_PROVIDER,
-                "aws",
-                ResourceAttributes.CONTAINER_NAME,
-                InetAddress.getLocalHost().getHostName()));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_ecs"),
+            entry(ResourceAttributes.CONTAINER_NAME, InetAddress.getLocalHost().getHostName()));
   }
 
   @Test

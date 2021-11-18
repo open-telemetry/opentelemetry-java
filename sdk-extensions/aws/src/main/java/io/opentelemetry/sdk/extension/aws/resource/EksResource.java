@@ -66,6 +66,9 @@ public final class EksResource {
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_EKS);
 
     String clusterName = getClusterName(jdkHttpClient);
     if (clusterName != null && !clusterName.isEmpty()) {

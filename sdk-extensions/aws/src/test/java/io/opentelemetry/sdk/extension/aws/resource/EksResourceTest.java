@@ -8,7 +8,8 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import static io.opentelemetry.sdk.extension.aws.resource.EksResource.AUTH_CONFIGMAP_PATH;
 import static io.opentelemetry.sdk.extension.aws.resource.EksResource.CW_CONFIGMAP_PATH;
 import static io.opentelemetry.sdk.extension.aws.resource.EksResource.K8S_SVC_URL;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -63,17 +64,18 @@ public class EksResourceTest {
 
     assertThat(eksResource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.K8S_CLUSTER_NAME, "my-cluster",
-                ResourceAttributes.CONTAINER_ID, "0123456789A"));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_eks"),
+            entry(ResourceAttributes.K8S_CLUSTER_NAME, "my-cluster"),
+            entry(ResourceAttributes.CONTAINER_ID, "0123456789A"));
   }
 
   @Test
   void testNotEks() {
     Resource eksResource = EksResource.buildResource(jdkHttpClient, mockDockerHelper, "", "");
     Attributes attributes = eksResource.getAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
+    assertThat(attributes).isEmpty();
   }
 
   @Test
