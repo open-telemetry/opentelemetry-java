@@ -38,8 +38,7 @@ public class DoubleHistogramPointDataAssert
    */
   public DoubleHistogramPointDataAssert hasBucketBoundaries(double... boundaries) {
     isNotNull();
-    Double[] bigBoundaries =
-        Arrays.stream(boundaries).mapToObj(Double::valueOf).toArray(idx -> new Double[idx]);
+    Double[] bigBoundaries = Arrays.stream(boundaries).boxed().toArray(Double[]::new);
     Assertions.assertThat(actual.getBoundaries()).as("boundaries").containsExactly(bigBoundaries);
     return this;
   }
@@ -51,7 +50,7 @@ public class DoubleHistogramPointDataAssert
    */
   public DoubleHistogramPointDataAssert hasBucketCounts(long... counts) {
     isNotNull();
-    Long[] bigCounts = Arrays.stream(counts).mapToObj(Long::valueOf).toArray(idx -> new Long[idx]);
+    Long[] bigCounts = Arrays.stream(counts).boxed().toArray(Long[]::new);
     Assertions.assertThat(actual.getCounts()).as("bucketCounts").containsExactly(bigCounts);
     return this;
   }

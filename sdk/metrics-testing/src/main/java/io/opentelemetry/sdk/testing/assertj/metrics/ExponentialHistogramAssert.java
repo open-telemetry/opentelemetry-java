@@ -40,7 +40,7 @@ public class ExponentialHistogramAssert
       failWithActualExpectedAndMessage(
           actual,
           "aggregationTemporality: DELTA",
-          "Exepcted Histogram to have cumulative aggregation but found <%s>",
+          "Expected Histogram to have cumulative aggregation but found <%s>",
           AggregationTemporality.DELTA,
           actual.getAggregationTemporality());
     }
