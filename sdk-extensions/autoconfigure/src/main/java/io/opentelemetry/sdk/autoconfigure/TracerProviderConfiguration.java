@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
@@ -35,6 +36,7 @@ final class TracerProviderConfiguration {
       Resource resource,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
+      MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
@@ -59,7 +61,7 @@ final class TracerProviderConfiguration {
 
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, serviceClassLoader, spanExporterCustomizer);
+            config, serviceClassLoader, meterProvider, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName)
         .forEach(tracerProviderBuilder::addSpanProcessor);

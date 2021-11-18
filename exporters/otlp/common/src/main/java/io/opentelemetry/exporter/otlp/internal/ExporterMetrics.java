@@ -11,9 +11,9 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 
 /**
  * Helper for recording metrics from OTLP exporters.
@@ -61,14 +61,12 @@ public class ExporterMetrics {
   }
 
   /** Create an instance for recording OTLP gRPC exporter metrics. */
-  public static ExporterMetrics createGrpc(String type) {
-    return new ExporterMetrics(
-        GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc"), type);
+  public static ExporterMetrics createGrpc(String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-grpc"), type);
   }
 
   /** Create an instance for recording OTLP http/protobuf exporter metrics. */
-  public static ExporterMetrics createHttpProtobuf(String type) {
-    return new ExporterMetrics(
-        GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http"), type);
+  public static ExporterMetrics createHttpProtobuf(String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-http"), type);
   }
 }

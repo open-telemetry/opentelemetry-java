@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -90,7 +91,10 @@ class OtlpGrpcRetryTest {
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
+            "otlp",
+            DefaultConfigProperties.createForTest(props),
+            Collections.emptyMap(),
+            MeterProvider.noop());
 
     testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
     testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);

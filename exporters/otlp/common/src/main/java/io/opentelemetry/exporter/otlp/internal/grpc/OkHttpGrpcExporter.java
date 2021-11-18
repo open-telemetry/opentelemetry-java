@@ -25,9 +25,9 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -73,6 +73,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   OkHttpGrpcExporter(
       String type,
       OkHttpClient client,
+      MeterProvider meterProvider,
       String endpoint,
       Headers headers,
       boolean compressionEnabled) {
@@ -82,7 +83,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
 
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc-okhttp");
+    Meter meter = meterProvider.get("io.opentelemetry.exporters.otlp-grpc-okhttp");
     Attributes attributes = Attributes.builder().put("type", type).build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
