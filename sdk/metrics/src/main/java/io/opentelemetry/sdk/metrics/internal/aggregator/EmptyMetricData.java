@@ -3,16 +3,34 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.Data;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 
-final class EmptyMetricData implements MetricData {
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
+public final class EmptyMetricData implements MetricData {
 
-  static final EmptyMetricData INSTANCE = new EmptyMetricData();
+  private static final EmptyMetricData INSTANCE = new EmptyMetricData();
 
   private EmptyMetricData() {}
+
+  /**
+   * Get an empty instance of metric data. Empty metric data should not be used except as an
+   * indication that recordings were dropped via {@link Aggregation#drop()}.
+   *
+   * @return an empty MetricData.
+   */
+  public static MetricData getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public Resource getResource() {

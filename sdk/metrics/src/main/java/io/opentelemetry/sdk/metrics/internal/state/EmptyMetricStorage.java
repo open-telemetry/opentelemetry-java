@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -49,6 +50,6 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
-    return MetricData.empty();
+    return EmptyMetricData.getInstance();
   }
 }

@@ -15,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#metric-points
  */
 @Immutable
-interface Data<T extends PointData> {
+public interface Data<T extends PointData> {
   /**
    * Returns the data {@link PointData}s for this metric.
    *

@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.resources.Resource;
@@ -90,7 +91,7 @@ class TemporalMetricStorage<T> {
       reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
     }
     if (result.isEmpty()) {
-      return MetricData.empty();
+      return EmptyMetricData.getInstance();
     }
     return aggregator.toMetricData(
         resource,

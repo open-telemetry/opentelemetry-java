@@ -69,6 +69,6 @@ public final class DropAggregator implements Aggregator<Object> {
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.empty();
+    return EmptyMetricData.getInstance();
   }
 }
