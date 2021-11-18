@@ -12,6 +12,8 @@ base.archivesName.set("opentelemetry-api")
 
 dependencies {
   api(project(":context"))
+  // TODO(anuraaga): Merge code into this artifact
+  api(project(":api:metrics"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

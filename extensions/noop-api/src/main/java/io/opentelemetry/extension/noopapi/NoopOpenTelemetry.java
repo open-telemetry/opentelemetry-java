@@ -6,13 +6,14 @@
 package io.opentelemetry.extension.noopapi;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 
 /**
  * An implementation of {@link OpenTelemetry} that is completely no-op. Unlike {@link
- * OpenTelemetry#noop()}, this implementation does not support in-process context propagation at
+ * OpenTelemetry#noop()}, this implementation does not support in-process context propagation atjavajava
  * all. This means that no objects are allocated nor {@link ThreadLocal}s used in an application
  * using this implementation. This can be a good option for use in frameworks shared across a large
  * number of servers to introduce instrumentation without forcing overhead on any users of the
@@ -52,6 +53,12 @@ public class NoopOpenTelemetry implements OpenTelemetry {
   @Override
   public TracerProvider getTracerProvider() {
     return NoopTracerProvider.INSTANCE;
+  }
+
+  @Override
+  public MeterProvider getMeterProvider() {
+    // Default implementation is already truly no-op.
+    return MeterProvider.noop();
   }
 
   @Override

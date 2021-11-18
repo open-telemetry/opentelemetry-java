@@ -13,6 +13,7 @@ base.archivesName.set("opentelemetry-sdk")
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
+  api(project(":sdk:metrics"))
   api(project(":sdk:trace"))
 
   annotationProcessor("com.google.auto.value:auto-value")
