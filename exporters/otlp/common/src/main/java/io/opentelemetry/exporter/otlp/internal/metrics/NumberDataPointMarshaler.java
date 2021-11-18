@@ -80,9 +80,9 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     output.serializeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == NumberDataPoint.AS_INT) {
-      output.serializeFixed64(valueField, ((LongPointData) value).getValue(), /* force= */ true);
+      output.serializeFixed64Optional(valueField, ((LongPointData) value).getValue());
     } else {
-      output.serializeDouble(valueField, ((DoublePointData) value).getValue(), /* force= */ true);
+      output.serializeDoubleOptional(valueField, ((DoublePointData) value).getValue());
     }
     output.serializeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
     output.serializeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
@@ -99,13 +99,9 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == NumberDataPoint.AS_INT) {
-      size +=
-          MarshalerUtil.sizeFixed64(
-              valueField, ((LongPointData) value).getValue(), /* force= */ true);
+      size += MarshalerUtil.sizeFixed64Optional(valueField, ((LongPointData) value).getValue());
     } else {
-      size +=
-          MarshalerUtil.sizeDouble(
-              valueField, ((DoublePointData) value).getValue(), /* force= */ true);
+      size += MarshalerUtil.sizeDoubleOptional(valueField, ((DoublePointData) value).getValue());
     }
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
