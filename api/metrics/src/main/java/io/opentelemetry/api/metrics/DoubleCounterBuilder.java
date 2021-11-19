@@ -12,7 +12,7 @@ public interface DoubleCounterBuilder {
   /**
    * Sets the description for this instrument.
    *
-   * <p>Description stirngs should follw the instrument description rules:
+   * <p>Description strings should follow the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
   DoubleCounterBuilder setDescription(String description);
@@ -33,9 +33,17 @@ public interface DoubleCounterBuilder {
   DoubleCounter build();
 
   /**
-   * Builds this asynchronous insturment with the given callback.
+   * Builds this asynchronous instrument with the given callback.
    *
    * <p>The callback will only be called when the {@link Meter} is being observed.
+   *
+   * <p>Callbacks are expected to abide by the following restrictions:
+   *
+   * <ul>
+   *   <li>Run in a finite amount of time.
+   *   <li>Safe to call repeatedly, across multiple threads.
+   *   <li>Return positive, monotonically increasing values.
+   * </ul>
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */

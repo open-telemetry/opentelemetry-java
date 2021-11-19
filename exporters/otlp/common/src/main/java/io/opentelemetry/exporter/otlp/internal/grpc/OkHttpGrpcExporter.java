@@ -25,9 +25,9 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -56,6 +56,9 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private static final String GRPC_STATUS_UNIMPLEMENTED = "12";
+  private static final String GRPC_STATUS_UNAVAILABLE = "14";
+
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(OkHttpGrpcExporter.class.getName()));
 
@@ -73,6 +76,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   OkHttpGrpcExporter(
       String type,
       OkHttpClient client,
+      MeterProvider meterProvider,
       String endpoint,
       Headers headers,
       boolean compressionEnabled) {
@@ -82,7 +86,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
 
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc-okhttp");
+    Meter meter = meterProvider.get("io.opentelemetry.exporters.otlp-grpc-okhttp");
     Attributes attributes = Attributes.builder().put("type", type).build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
@@ -146,14 +150,36 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                         ? "gRPC status code " + status
                         : "HTTP status code " + response.code();
                 String errorMessage = grpcMessage(response);
-                logger.log(
-                    Level.WARNING,
-                    "Failed to export "
-                        + type
-                        + "s. Server responded with "
-                        + codeMessage
-                        + ". Error message: "
-                        + errorMessage);
+
+                if (GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
+                  logger.log(
+                      Level.SEVERE,
+                      "Failed to export "
+                          + type
+                          + "s. Server responded with UNIMPLEMENTED. "
+                          + "This usually means that your collector is not configured with an otlp "
+                          + "receiver in the \"pipelines\" section of the configuration. "
+                          + "Full error message: "
+                          + errorMessage);
+                } else if (GRPC_STATUS_UNAVAILABLE.equals(status)) {
+                  logger.log(
+                      Level.SEVERE,
+                      "Failed to export "
+                          + type
+                          + "s. Server is UNAVAILABLE. "
+                          + "Make sure your collector is running and reachable from this network. "
+                          + "Full error message:"
+                          + errorMessage);
+                } else {
+                  logger.log(
+                      Level.WARNING,
+                      "Failed to export "
+                          + type
+                          + "s. Server responded with "
+                          + codeMessage
+                          + ". Error message: "
+                          + errorMessage);
+                }
                 result.fail();
               }
             });

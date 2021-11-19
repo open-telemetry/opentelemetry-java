@@ -6,7 +6,7 @@
 package io.opentelemetry.api.metrics;
 
 /**
- * A mechanism for observing measurments.
+ * A mechanism for observing measurements.
  *
  * <p>see {@link ObservableDoubleMeasurement} or {@link ObservableLongMeasurement}.
  */

@@ -30,6 +30,13 @@ public interface LongGaugeBuilder {
    *
    * <p>The callback will only be called when the {@link Meter} is being observed.
    *
+   * <p>Callbacks are expected to abide by the following restrictions:
+   *
+   * <ul>
+   *   <li>Run in a finite amount of time.
+   *   <li>Safe to call repeatedly, across multiple threads.
+   * </ul>
+   *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
   void buildWithCallback(Consumer<ObservableLongMeasurement> callback);

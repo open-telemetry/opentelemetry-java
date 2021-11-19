@@ -98,11 +98,16 @@ public final class OpenTelemetrySdkAutoConfiguration {
         PropagatorConfiguration.configurePropagators(
             config, serviceClassLoader, propagatorCustomizer);
 
-    configureMeterProvider(resource, config, serviceClassLoader);
+    MeterProvider meterProvider = configureMeterProvider(resource, config, serviceClassLoader);
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource, config, serviceClassLoader, spanExporterCustomizer, samplerCustomizer);
+            resource,
+            config,
+            serviceClassLoader,
+            meterProvider,
+            spanExporterCustomizer,
+            samplerCustomizer);
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder()
@@ -115,7 +120,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     return openTelemetrySdk;
   }
 
-  private static void configureMeterProvider(
+  private static MeterProvider configureMeterProvider(
       Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
@@ -146,7 +151,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     if (exporterName == null || exporterName.equals("none")) {
       // In the event no exporters are configured set a noop exporter
       GlobalMeterProvider.set(MeterProvider.noop());
-      return;
+      return MeterProvider.noop();
     }
     MetricExporterConfiguration.configureExporter(
         exporterName, config, serviceClassLoader, meterProviderBuilder);
@@ -155,6 +160,8 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
     // Make sure metrics shut down when JVM shuts down.
     Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));
+
+    return meterProvider;
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}

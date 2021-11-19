@@ -128,7 +128,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   doublePoint.getValue(),
-                  lastExemplarOrNull(doublePoint.getExemplars()),
+                  // Prometheus doesn't support exemplars on SUM/GAUGE
+                  null,
                   doublePoint.getEpochNanos()));
           break;
         case LONG_SUM:
@@ -140,7 +141,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   longPoint.getValue(),
-                  lastExemplarOrNull(longPoint.getExemplars()),
+                  // Prometheus doesn't support exemplars on SUM/GAUGE
+                  null,
                   longPoint.getEpochNanos()));
           break;
         case SUMMARY:
@@ -252,15 +254,6 @@ final class MetricAdapter {
                   boundary),
               doubleHistogramPointData.getEpochNanos()));
     }
-  }
-
-  @Nullable
-  private static ExemplarData lastExemplarOrNull(Collection<ExemplarData> exemplars) {
-    ExemplarData result = null;
-    for (ExemplarData e : exemplars) {
-      result = e;
-    }
-    return result;
   }
 
   @Nullable

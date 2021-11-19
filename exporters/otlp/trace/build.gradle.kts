@@ -30,13 +30,8 @@ dependencies {
 
   compileOnly("io.grpc:grpc-stub")
 
+  testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation(project(":sdk:testing"))
-
-  testImplementation("com.google.protobuf:protobuf-java")
-  testImplementation("io.grpc:grpc-protobuf")
-  testImplementation("io.grpc:grpc-testing")
-  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  testImplementation("org.slf4j:slf4j-simple")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
@@ -58,9 +53,9 @@ dependencies {
   add("testOkhttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
   add("testOkhttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
-  add("testSpanPipeline", "io.grpc:grpc-protobuf")
-  add("testSpanPipeline", "io.grpc:grpc-testing")
-  add("testSpanPipeline", "io.opentelemetry.proto:opentelemetry-proto")
+  add("testSpanPipelineImplementation", "io.grpc:grpc-protobuf")
+  add("testSpanPipelineImplementation", "io.grpc:grpc-testing")
+  add("testSpanPipelineImplementation", "io.opentelemetry.proto:opentelemetry-proto")
 
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation("com.linecorp.armeria:armeria")
@@ -73,13 +68,5 @@ dependencies {
 tasks {
   check {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkhttpOnly")
-  }
-}
-
-configurations {
-  named("testOkhttpOnlyRuntimeClasspath") {
-    dependencies {
-      exclude("io.grpc")
-    }
   }
 }

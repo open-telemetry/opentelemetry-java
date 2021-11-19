@@ -33,7 +33,7 @@ public interface BoundDoubleCounter {
    * Unbinds the current bound instance from the {@link DoubleCounter}.
    *
    * <p>After this method returns the current instance is considered invalid (not being managed by
-   * the instrument).
+   * the instrument). This frees any reserved memory.
    */
   void unbind();
 }

@@ -16,7 +16,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.8.0";
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
@@ -25,12 +25,20 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> CLOUD_ACCOUNT_ID = stringKey("cloud.account.id");
 
   /**
-   * The geographical region the resource is running. Refer to your provider's docs to see the
-   * available regions, for example <a
-   * href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba Cloud regions</a>, <a
-   * href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS regions</a>, <a
-   * href="https://azure.microsoft.com/en-us/global-infrastructure/geographies/">Azure regions</a>,
-   * or <a href="https://cloud.google.com/about/locations">Google Cloud regions</a>.
+   * The geographical region the resource is running.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Refer to your provider's docs to see the available regions, for example <a
+   *       href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba Cloud regions</a>,
+   *       <a href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS
+   *       regions</a>, <a
+   *       href="https://azure.microsoft.com/en-us/global-infrastructure/geographies/">Azure
+   *       regions</a>, <a href="https://cloud.google.com/about/locations">Google Cloud regions</a>,
+   *       or <a href="https://intl.cloud.tencent.com/document/product/213/6091">Tencent Cloud
+   *       regions</a>.
+   * </ul>
    */
   public static final AttributeKey<String> CLOUD_REGION = stringKey("cloud.region");
 
@@ -143,7 +151,7 @@ public final class ResourceAttributes {
   public static final AttributeKey<List<String>> AWS_LOG_STREAM_ARNS =
       stringArrayKey("aws.log.stream.arns");
 
-  /** Container name. */
+  /** Container name used by container runtime. */
   public static final AttributeKey<String> CONTAINER_NAME = stringKey("container.name");
 
   /**
@@ -347,8 +355,18 @@ public final class ResourceAttributes {
   /** The name of the Pod. */
   public static final AttributeKey<String> K8S_POD_NAME = stringKey("k8s.pod.name");
 
-  /** The name of the Container in a Pod template. */
+  /**
+   * The name of the Container from Pod specification, must be unique within a Pod. Container
+   * runtime usually uses different globally unique name ({@code container.name}).
+   */
   public static final AttributeKey<String> K8S_CONTAINER_NAME = stringKey("k8s.container.name");
+
+  /**
+   * Number of times the container was restarted. This attribute can be used to identify a
+   * particular container (running or stopped) within a container spec.
+   */
+  public static final AttributeKey<Long> K8S_CONTAINER_RESTART_COUNT =
+      longKey("k8s.container.restart_count");
 
   /** The UID of the ReplicaSet. */
   public static final AttributeKey<String> K8S_REPLICASET_UID = stringKey("k8s.replicaset.uid");
@@ -557,6 +575,8 @@ public final class ResourceAttributes {
     public static final String AZURE = "azure";
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+    /** Tencent Cloud. */
+    public static final String TENCENT_CLOUD = "tencent_cloud";
 
     private CloudProviderValues() {}
   }
@@ -576,6 +596,8 @@ public final class ResourceAttributes {
     public static final String AWS_LAMBDA = "aws_lambda";
     /** AWS Elastic Beanstalk. */
     public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
+    /** AWS App Runner. */
+    public static final String AWS_APP_RUNNER = "aws_app_runner";
     /** Azure Virtual Machines. */
     public static final String AZURE_VM = "azure_vm";
     /** Azure Container Instances. */
@@ -596,6 +618,12 @@ public final class ResourceAttributes {
     public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APP_ENGINE = "gcp_app_engine";
+    /** Tencent Cloud Cloud Virtual Machine (CVM). */
+    public static final String TENCENT_CLOUD_CVM = "tencent_cloud_cvm";
+    /** Tencent Cloud Elastic Kubernetes Service (EKS). */
+    public static final String TENCENT_CLOUD_EKS = "tencent_cloud_eks";
+    /** Tencent Cloud Serverless Cloud Function (SCF). */
+    public static final String TENCENT_CLOUD_SCF = "tencent_cloud_scf";
 
     private CloudPlatformValues() {}
   }
@@ -622,6 +650,8 @@ public final class ResourceAttributes {
     public static final String PPC32 = "ppc32";
     /** 64-bit PowerPC. */
     public static final String PPC64 = "ppc64";
+    /** IBM z/Architecture. */
+    public static final String S390X = "s390x";
     /** 32-bit x86. */
     public static final String X86 = "x86";
 
@@ -676,6 +706,8 @@ public final class ResourceAttributes {
     public static final String RUBY = "ruby";
     /** webjs. */
     public static final String WEBJS = "webjs";
+    /** swift. */
+    public static final String SWIFT = "swift";
 
     private TelemetrySdkLanguageValues() {}
   }

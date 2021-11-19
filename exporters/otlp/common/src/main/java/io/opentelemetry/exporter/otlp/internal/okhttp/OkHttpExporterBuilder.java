@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal.okhttp;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import java.net.URI;
@@ -30,6 +31,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   public OkHttpExporterBuilder(String type, String defaultEndpoint) {
     this.type = type;
@@ -84,6 +86,11 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public OkHttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
   public OkHttpExporter<T> build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().callTimeout(Duration.ofNanos(timeoutNanos));
@@ -101,6 +108,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OkHttpExporter<>(type, clientBuilder.build(), endpoint, headers, compressionEnabled);
+    return new OkHttpExporter<>(
+        type, clientBuilder.build(), meterProvider, endpoint, headers, compressionEnabled);
   }
 }

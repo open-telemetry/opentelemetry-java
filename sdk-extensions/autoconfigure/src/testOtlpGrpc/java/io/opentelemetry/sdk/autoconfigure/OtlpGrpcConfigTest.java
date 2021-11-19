@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -104,7 +105,8 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter =
-        SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
+        SpanExporterConfiguration.configureExporter(
+            "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
@@ -153,7 +155,10 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
+            "otlp",
+            DefaultConfigProperties.createForTest(props),
+            Collections.emptyMap(),
+            MeterProvider.noop());
 
     assertThat(spanExporter)
         .extracting("delegate.timeoutNanos")
@@ -213,7 +218,7 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, Collections.emptyMap()))
+                    "otlp", properties, Collections.emptyMap(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 
