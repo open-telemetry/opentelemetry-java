@@ -82,9 +82,9 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     output.serializeFixed64(
         io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      output.serializeFixed64(valueField, ((LongExemplarData) value).getValue());
+      output.serializeFixed64Optional(valueField, ((LongExemplarData) value).getValue());
     } else {
-      output.serializeDouble(valueField, ((DoubleExemplarData) value).getValue());
+      output.serializeDoubleOptional(valueField, ((DoubleExemplarData) value).getValue());
     }
     output.serializeSpanId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
     output.serializeTraceId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
@@ -105,9 +105,9 @@ final class ExemplarMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeFixed64(
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      size += MarshalerUtil.sizeFixed64(valueField, ((LongExemplarData) value).getValue());
+      size += MarshalerUtil.sizeFixed64Optional(valueField, ((LongExemplarData) value).getValue());
     } else {
-      size += MarshalerUtil.sizeDouble(valueField, ((DoubleExemplarData) value).getValue());
+      size += MarshalerUtil.sizeDoubleOptional(valueField, ((DoubleExemplarData) value).getValue());
     }
     size +=
         MarshalerUtil.sizeSpanId(
