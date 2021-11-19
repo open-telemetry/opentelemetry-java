@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.time.Duration;
@@ -28,6 +29,8 @@ public interface GrpcExporterBuilder<T extends Marshaler> {
   GrpcExporterBuilder<T> addHeader(String key, String value);
 
   GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy);
+
+  GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider);
 
   GrpcExporter<T> build();
 }

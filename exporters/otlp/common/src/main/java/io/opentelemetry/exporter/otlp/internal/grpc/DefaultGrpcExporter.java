@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -44,10 +45,11 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       String type,
       ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,
+      MeterProvider meterProvider,
       long timeoutNanos,
       boolean compressionEnabled) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpc(type);
+    this.exporterMetrics = ExporterMetrics.createGrpc(type, meterProvider);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
