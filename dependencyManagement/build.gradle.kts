@@ -15,7 +15,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.13.0",
   "com.google.guava:guava-bom:31.0.1-jre",
   "com.google.protobuf:protobuf-bom:3.18.1",
-  "com.linecorp.armeria:armeria-bom:1.11.0",
+  "com.linecorp.armeria:armeria-bom:1.13.2",
   "io.grpc:grpc-bom:1.41.0",
   "io.zipkin.brave:brave-bom:5.13.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",

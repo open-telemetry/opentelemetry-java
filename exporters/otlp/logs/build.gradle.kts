@@ -23,13 +23,8 @@ dependencies {
 
   compileOnly("io.grpc:grpc-stub")
 
+  testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation(project(":sdk:testing"))
-
-  testImplementation("com.google.protobuf:protobuf-java")
-  testImplementation("io.grpc:grpc-protobuf")
-  testImplementation("io.grpc:grpc-testing")
-  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  testImplementation("org.slf4j:slf4j-simple")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
@@ -55,13 +50,5 @@ dependencies {
 tasks {
   named("check") {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkHttpOnly")
-  }
-}
-
-configurations {
-  named("testOkHttpOnlyRuntimeClasspath") {
-    dependencies {
-      exclude("io.grpc")
-    }
   }
 }
