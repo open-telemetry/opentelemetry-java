@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.logs.export;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.metrics.MeterProvider;
 import java.util.Objects;
 
 public final class BatchLogProcessorBuilder {
@@ -19,19 +22,10 @@ public final class BatchLogProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   BatchLogProcessorBuilder(LogExporter logExporter) {
     this.logExporter = Objects.requireNonNull(logExporter, "Exporter argument can not be null");
-  }
-
-  /**
-   * Build a BatchLogProcessor.
-   *
-   * @return configured processor
-   */
-  public BatchLogProcessor build() {
-    return new BatchLogProcessor(
-        maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeoutMillis, logExporter);
   }
 
   /**
@@ -109,7 +103,28 @@ public final class BatchLogProcessorBuilder {
     return this;
   }
 
-  public int getMaxExportBatchSize() {
-    return maxExportBatchSize;
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   */
+  public BatchLogProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
+   * Build a BatchLogProcessor.
+   *
+   * @return configured processor
+   */
+  public BatchLogProcessor build() {
+    return new BatchLogProcessor(
+        maxQueueSize,
+        scheduleDelayMillis,
+        maxExportBatchSize,
+        exporterTimeoutMillis,
+        logExporter,
+        meterProvider);
   }
 }
