@@ -145,13 +145,14 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     try {
       try {
         metricUpdater.run();
-      } catch (RuntimeException e) {
+      } catch (Throwable e) {
         logger.log(
             Level.WARNING,
             "An exception occurred invoking callback for instrument "
                 + getMetricDescriptor().getName()
                 + ".",
             e);
+        propagateIfFatal(e);
         return null;
       }
       return storage.buildMetricFor(
@@ -165,6 +166,17 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           epochNanos);
     } finally {
       collectLock.unlock();
+    }
+  }
+
+  // Taken from RxJava throwIfFatal, which was taken from scala
+  private static void propagateIfFatal(Throwable t) {
+    if (t instanceof VirtualMachineError) {
+      throw (VirtualMachineError) t;
+    } else if (t instanceof ThreadDeath) {
+      throw (ThreadDeath) t;
+    } else if (t instanceof LinkageError) {
+      throw (LinkageError) t;
     }
   }
 
