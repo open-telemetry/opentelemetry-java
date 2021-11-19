@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class OpenTelemetrySdkAutoConfigurationTest {
+class AutoConfiguredOpenTelemetrySdkTest {
 
   private static final ContextKey<String> CONTEXT_KEY = ContextKey.named("animal");
 

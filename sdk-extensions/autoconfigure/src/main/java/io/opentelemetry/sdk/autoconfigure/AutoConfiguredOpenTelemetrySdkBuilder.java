@@ -7,12 +7,16 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
@@ -160,7 +164,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
-  @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
   public AutoConfiguredOpenTelemetrySdk build() {
     if (!customized) {
       customized = true;
@@ -171,18 +174,35 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     ConfigProperties config = getConfig();
-    Resource resource =
-        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
-    OpenTelemetrySdk sdk =
-        OpenTelemetrySdkAutoConfiguration.newOpenTelemetrySdk(
-            config,
+    Resource resource = ResourceConfiguration.configureResource(config, resourceCustomizer);
+
+    MeterProvider meterProvider =
+        MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
+
+    SdkTracerProvider tracerProvider =
+        TracerProviderConfiguration.configureTracerProvider(
             resource,
+            config,
             serviceClassLoader,
-            propagatorCustomizer,
+            meterProvider,
             spanExporterCustomizer,
-            samplerCustomizer,
-            setResultAsGlobal);
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, config);
+            samplerCustomizer);
+
+    ContextPropagators propagators =
+        PropagatorConfiguration.configurePropagators(
+            config, serviceClassLoader, propagatorCustomizer);
+
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setPropagators(propagators)
+            .build();
+
+    if (setResultAsGlobal) {
+      GlobalOpenTelemetry.set(openTelemetrySdk);
+    }
+
+    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
   private ConfigProperties getConfig() {

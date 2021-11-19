@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class OpenTelemetrySdkAutoConfigurationTest {
+class AutoConfiguredOpenTelemetrySdkTest {
 
   @BeforeEach
   void setUp() {
