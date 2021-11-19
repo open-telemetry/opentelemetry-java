@@ -24,7 +24,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "resource: " + resource,
-          "Exepcted MetricData to have resource <%s> but found <%s>",
+          "Expected MetricData to have resource <%s> but found <%s>",
           resource,
           actual.getResource());
     }
@@ -42,7 +42,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "instrumentation library: " + instrumentationLibrary,
-          "Exepcted MetricData to have resource <%s> but found <%s>",
+          "Expected MetricData to have resource <%s> but found <%s>",
           instrumentationLibrary,
           actual.getInstrumentationLibraryInfo());
     }
@@ -56,7 +56,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "name: " + name,
-          "Exepcted MetricData to have name <%s> but found <%s>",
+          "Expected MetricData to have name <%s> but found <%s>",
           name,
           actual.getName());
     }
@@ -70,7 +70,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "description: " + description,
-          "Exepcted MetricData to have description <%s> but found <%s>",
+          "Expected MetricData to have description <%s> but found <%s>",
           description,
           actual.getDescription());
     }
@@ -84,7 +84,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "unit: " + unit,
-          "Exepcted MetricData to have unit <%s> but found <%s>",
+          "Expected MetricData to have unit <%s> but found <%s>",
           unit,
           actual.getUnit());
     }
@@ -102,7 +102,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: HISTOGRAM",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.HISTOGRAM,
           actual.getType());
     }
@@ -112,7 +112,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   /**
    * Ensures this {@link MetricData} is a {@code ExponentialHistogram}.
    *
-   * @return convenience API to assert agains the {@code ExponentialHistogram}.
+   * @return convenience API to assert against the {@code ExponentialHistogram}.
    */
   public ExponentialHistogramAssert hasExponentialHistogram() {
     isNotNull();
@@ -138,7 +138,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: DOUBLE_GAUGE",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.DOUBLE_GAUGE,
           actual.getType());
     }
@@ -156,7 +156,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: DOUBLE_SUM",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.DOUBLE_SUM,
           actual.getType());
     }
@@ -174,7 +174,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: LONG_GAUGE",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.LONG_GAUGE,
           actual.getType());
     }
@@ -192,7 +192,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: LONG_SUM",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.LONG_SUM,
           actual.getType());
     }
@@ -210,7 +210,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
       failWithActualExpectedAndMessage(
           actual,
           "type: SUMMARY",
-          "Exepcted MetricData to have type <%s> but found <%s>",
+          "Expected MetricData to have type <%s> but found <%s>",
           MetricDataType.SUMMARY,
           actual.getType());
     }

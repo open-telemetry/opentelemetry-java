@@ -27,7 +27,7 @@ public class DoubleHistogramAssert
       failWithActualExpectedAndMessage(
           actual,
           "aggregationTemporality: CUMULATIVE",
-          "Exepcted Histgram to have cumulative aggregation but found <%s>",
+          "Expected Histogram to have cumulative aggregation but found <%s>",
           AggregationTemporality.CUMULATIVE,
           actual.getAggregationTemporality());
     }
@@ -41,7 +41,7 @@ public class DoubleHistogramAssert
       failWithActualExpectedAndMessage(
           actual,
           "aggregationTemporality: DELTA",
-          "Exepcted Histgram to have cumulative aggregation but found <%s>",
+          "Expected Histgram to have cumulative aggregation but found <%s>",
           AggregationTemporality.DELTA,
           actual.getAggregationTemporality());
     }

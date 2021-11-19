@@ -22,7 +22,7 @@ public class AbstractSumDataAssert<
     isNotNull();
     if (!actual.isMonotonic()) {
       failWithActualExpectedAndMessage(
-          actual, "montonic: true", "Exepcted Sum to be monotonic", true, actual.isMonotonic());
+          actual, "monotonic: true", "Expected Sum to be monotonic", true, actual.isMonotonic());
     }
     return myself;
   }
@@ -33,7 +33,7 @@ public class AbstractSumDataAssert<
     if (actual.isMonotonic()) {
       failWithActualExpectedAndMessage(
           actual,
-          "montonic: fail",
+          "monotonic: fail",
           "Expected Sum to be non-monotonic, found: %s",
           actual.isMonotonic());
     }
