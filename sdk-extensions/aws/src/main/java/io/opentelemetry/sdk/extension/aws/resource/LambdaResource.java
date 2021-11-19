@@ -42,6 +42,8 @@ public final class LambdaResource {
     AttributesBuilder builder =
         Attributes.builder()
             .put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    builder.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_LAMBDA);
 
     if (!region.isEmpty()) {
       builder.put(ResourceAttributes.CLOUD_REGION, region);
