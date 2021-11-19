@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.api.metrics.internal.NoopMeterProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

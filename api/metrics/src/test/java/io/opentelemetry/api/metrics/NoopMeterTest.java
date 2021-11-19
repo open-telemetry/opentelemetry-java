@@ -3,24 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics.internal;
+package io.opentelemetry.api.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleCounter;
-import io.opentelemetry.api.metrics.BoundDoubleHistogram;
-import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.BoundLongHistogram;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
-import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.DoubleUpDownCounter;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 

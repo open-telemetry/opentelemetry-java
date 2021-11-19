@@ -5,11 +5,9 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.api.metrics.internal.NoopMeterProvider;
-
 /** This class is a temporary solution until metrics SDK is marked stable. */
 public class GlobalMeterProvider {
-  private static volatile MeterProvider globalMeterProvider = NoopMeterProvider.getInstance();
+  private static volatile MeterProvider globalMeterProvider = MeterProvider.noop();
 
   private GlobalMeterProvider() {}
 
@@ -25,6 +23,6 @@ public class GlobalMeterProvider {
    * your main class.
    */
   public static void set(MeterProvider provider) {
-    globalMeterProvider = (provider == null) ? NoopMeterProvider.getInstance() : provider;
+    globalMeterProvider = (provider == null) ? MeterProvider.noop() : provider;
   }
 }

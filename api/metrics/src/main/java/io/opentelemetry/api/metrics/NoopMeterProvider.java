@@ -3,14 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics.internal;
-
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.MeterBuilder;
-import io.opentelemetry.api.metrics.MeterProvider;
+package io.opentelemetry.api.metrics;
 
 /** A {@link MeterProvider} that does nothing. */
-public class NoopMeterProvider implements MeterProvider {
+class NoopMeterProvider implements MeterProvider {
   @Override
   public MeterBuilder meterBuilder(String instrumentationName) {
     return BUILDER_INSTANCE;
