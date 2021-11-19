@@ -12,7 +12,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.jaeger")
 
 dependencies {
   api(project(":sdk:all"))
-  api("io.grpc:grpc-api")
 
   protoSource(project(":exporters:jaeger-proto"))
 
