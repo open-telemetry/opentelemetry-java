@@ -6,10 +6,11 @@ description = "OpenTelemetry Exporter Testing (Internal)"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.testing.internal")
 
 dependencies {
+  api(project(":sdk:logs"))
+  api(project(":sdk:metrics"))
   api(project(":sdk:trace"))
   api(project(":exporters:otlp:common"))
 
-  implementation(project(":api:metrics"))
   implementation(project(":sdk:testing"))
 
   api("io.opentelemetry.proto:opentelemetry-proto")
