@@ -57,7 +57,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** Returns the {@link SdkMeterProvider} for this {@link OpenTelemetrySdk}. */
   public SdkMeterProvider getSdkMeterProvider() {
-    return meterProvider.unobfuscated();
+    return meterProvider.unobfuscate();
   }
 
   @Override
@@ -70,7 +70,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (TracerSdkProvider) OpenTelemetry.getGlobalTracerProvider()}.
+   * use patterns like {@code (SdkTracerProvider) OpenTelemetry.getGlobalTracerProvider()}.
    */
   @ThreadSafe
   // Visible for testing
@@ -107,7 +107,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider().
+   * use patterns like {@code (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider()}.
    */
   @ThreadSafe
   // Visible for testing
@@ -121,10 +121,10 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
     @Override
     public MeterBuilder meterBuilder(String instrumentationName) {
-      return null;
+      return delegate.meterBuilder(instrumentationName);
     }
 
-    public SdkMeterProvider unobfuscated() {
+    public SdkMeterProvider unobfuscate() {
       return delegate;
     }
   }
