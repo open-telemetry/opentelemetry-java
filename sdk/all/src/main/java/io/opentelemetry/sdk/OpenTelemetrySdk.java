@@ -23,7 +23,10 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedMeterProvider meterProvider;
   private final ContextPropagators propagators;
 
-  OpenTelemetrySdk(SdkTracerProvider tracerProvider, SdkMeterProvider meterProvider, ContextPropagators propagators) {
+  OpenTelemetrySdk(
+      SdkTracerProvider tracerProvider,
+      SdkMeterProvider meterProvider,
+      ContextPropagators propagators) {
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.propagators = propagators;
@@ -112,7 +115,9 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
     private final SdkMeterProvider delegate;
 
-    ObfuscatedMeterProvider(SdkMeterProvider delegate) {this.delegate = delegate;}
+    ObfuscatedMeterProvider(SdkMeterProvider delegate) {
+      this.delegate = delegate;
+    }
 
     @Override
     public MeterBuilder meterBuilder(String instrumentationName) {
