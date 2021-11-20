@@ -130,10 +130,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message, V>
     this.resourceTelemetryInstance = resourceTelemetryInstance;
   }
 
-  protected void setGrpcError(int code, @Nullable String message) {
-    grpcError = new ArmeriaStatusException(code, message);
-  }
-
   @BeforeAll
   void setUp() {
     exporter = createExporter(server.httpUri().toString());
@@ -316,5 +312,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message, V>
               }
             })
         .collect(Collectors.toList());
+  }
+
+  private static void setGrpcError(int code, @Nullable String message) {
+    grpcError = new ArmeriaStatusException(code, message);
   }
 }
