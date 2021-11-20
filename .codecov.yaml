@@ -24,4 +24,4 @@ coverage:
           - "sdk-extensions/zpages/"
     patch:
       default:
-        target: 90%
+        target: 80%
