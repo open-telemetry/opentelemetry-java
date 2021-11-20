@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.logs.export;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogProcessor;
@@ -33,10 +33,12 @@ public final class BatchLogProcessor implements LogProcessor {
       long scheduleDelayMillis,
       int maxExportBatchSize,
       long exporterTimeoutMillis,
-      LogExporter logExporter) {
+      LogExporter logExporter,
+      MeterProvider meterProvider) {
     this.worker =
         new Worker(
             logExporter,
+            meterProvider,
             scheduleDelayMillis,
             maxExportBatchSize,
             exporterTimeoutMillis,
@@ -67,8 +69,39 @@ public final class BatchLogProcessor implements LogProcessor {
 
   private static class Worker implements Runnable {
     static {
+    }
+
+    private final BoundLongCounter exporterFailureCounter;
+    private final BoundLongCounter queueFullRecordCounter;
+    private final BoundLongCounter successCounter;
+
+    private final long scheduleDelayNanos;
+    private final int maxExportBatchSize;
+    private final LogExporter logExporter;
+    private final long exporterTimeoutMillis;
+    private final ArrayList<LogData> batch;
+    private final BlockingQueue<LogData> queue;
+
+    private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private volatile boolean continueWork = true;
+    private long nextExportTime;
+
+    private Worker(
+        LogExporter logExporter,
+        MeterProvider meterProvider,
+        long scheduleDelayMillis,
+        int maxExportBatchSize,
+        long exporterTimeoutMillis,
+        BlockingQueue<LogData> queue) {
+      this.logExporter = logExporter;
+      this.maxExportBatchSize = maxExportBatchSize;
+      this.exporterTimeoutMillis = exporterTimeoutMillis;
+      this.scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(scheduleDelayMillis);
+      this.queue = queue;
+      this.batch = new ArrayList<>(this.maxExportBatchSize);
+
       // TODO: As of Specification 1.4, this should have a telemetry schema version.
-      Meter meter = GlobalMeterProvider.get().meterBuilder("io.opentelemetry.sdk.logs").build();
+      Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.logs").build();
       LongCounter logRecordsProcessed =
           meter
               .counterBuilder("logRecordsProcessed")
@@ -84,35 +117,6 @@ public final class BatchLogProcessor implements LogProcessor {
       queueFullRecordCounter =
           logRecordsProcessed.bind(
               Attributes.of(resultKey, "dropped record", causeKey, "queue full"));
-    }
-
-    private static final BoundLongCounter exporterFailureCounter;
-    private static final BoundLongCounter queueFullRecordCounter;
-    private static final BoundLongCounter successCounter;
-
-    private final long scheduleDelayNanos;
-    private final int maxExportBatchSize;
-    private final LogExporter logExporter;
-    private final long exporterTimeoutMillis;
-    private final ArrayList<LogData> batch;
-    private final BlockingQueue<LogData> queue;
-
-    private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
-    private volatile boolean continueWork = true;
-    private long nextExportTime;
-
-    private Worker(
-        LogExporter logExporter,
-        long scheduleDelayMillis,
-        int maxExportBatchSize,
-        long exporterTimeoutMillis,
-        BlockingQueue<LogData> queue) {
-      this.logExporter = logExporter;
-      this.maxExportBatchSize = maxExportBatchSize;
-      this.exporterTimeoutMillis = exporterTimeoutMillis;
-      this.scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(scheduleDelayMillis);
-      this.queue = queue;
-      this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     @Override
