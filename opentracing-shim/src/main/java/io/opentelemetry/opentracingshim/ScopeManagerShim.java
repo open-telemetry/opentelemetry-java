@@ -46,6 +46,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
     }
 
     // Span was activated from outside the Shim layer unfortunately.
+    // This SHOULDNT HAPPEN.
     return new SpanShim(telemetryInfo(), span);
   }
 

@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -44,10 +45,19 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       ContextKey.named("opentracing-shim-key");
 
   private final io.opentelemetry.api.trace.Span span;
+  private final Object spanContextShimLock;
+  private SpanContextShim spanContextShim;
 
   public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span) {
+    this(telemetryInfo, span, Baggage.empty());
+  }
+
+  public SpanShim(
+      TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span, Baggage baggage) {
     super(telemetryInfo);
     this.span = span;
+    this.spanContextShimLock = new Object();
+    this.spanContextShim = new SpanContextShim(telemetryInfo, span.getSpanContext(), baggage);
   }
 
   io.opentelemetry.api.trace.Span getSpan() {
@@ -61,29 +71,16 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
 
   @Override
   public Context storeInContext(Context context) {
-    context = context.with(SPAN_SHIM_KEY, this).with(span);
-
-    SpanContextShim spanContextShim = spanContextTable().get(this);
-    if (spanContextShim != null) {
-      context = context.with(spanContextShim.getBaggage());
-    }
+    context = context.with(SPAN_SHIM_KEY, this).with(span).with(spanContextShim.getBaggage());
 
     return context;
   }
 
   @Override
   public SpanContext context() {
-    /* Read the value using the read lock first. */
-    SpanContextShim contextShim = spanContextTable().get(this);
-
-    /* Switch to the write lock *only* for the relatively exceptional case
-     * of no context being created.
-     * (as we cannot upgrade read->write lock sadly).*/
-    if (contextShim == null) {
-      contextShim = spanContextTable().create(this);
+    synchronized (spanContextShimLock) {
+      return spanContextShim;
     }
-
-    return contextShim;
   }
 
   @Override
@@ -173,7 +170,9 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       return this;
     }
 
-    spanContextTable().setBaggageItem(this, key, value);
+    synchronized (spanContextShimLock) {
+      spanContextShim = spanContextShim.newWithKeyValue(key, value);
+    }
 
     return this;
   }
@@ -185,7 +184,12 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       return null;
     }
 
-    return spanContextTable().getBaggageItem(this, key);
+    String baggageItem = null;
+    synchronized (spanContextShimLock) {
+      baggageItem = spanContextShim.getBaggageItem(key);
+    }
+
+    return baggageItem;
   }
 
   @Override

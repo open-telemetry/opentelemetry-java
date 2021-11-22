@@ -143,7 +143,7 @@ class TracerShimTest {
     assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
-  /* If the Span has no baggage, allow any previously active Baggage go through */
+  /* A new Span inherits its parent's Baggage - otherwise, it's ALWAYS empty */
   @Test
   public void activateSpan_withExistingBaggage() {
     Span otSpan = tracerShim.buildSpan("one").start();
@@ -169,7 +169,7 @@ class TracerShimTest {
             .isSameAs(actualSpan);
 
         assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
-        assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(otherBaggage);
+        assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
       }
     }
 
