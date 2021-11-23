@@ -6,13 +6,16 @@
 package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -23,33 +26,66 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 class OtlpGrpcMetricExporterTest
-    extends AbstractGrpcTelemetryExporterTest<MetricData, ResourceMetrics, OtlpGrpcMetricExporter> {
+    extends AbstractGrpcTelemetryExporterTest<MetricData, ResourceMetrics> {
 
   OtlpGrpcMetricExporterTest() {
     super("metric", ResourceMetrics.getDefaultInstance());
   }
 
-  @Override
-  protected OtlpGrpcMetricExporter createExporter(String endpoint) {
-    return OtlpGrpcMetricExporter.builder().setEndpoint(endpoint).build();
+  @Test
+  void usingOkHttp() {
+    assertThat(OtlpGrpcMetricExporter.builder().delegate)
+        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
   }
 
   @Override
-  protected OtlpGrpcMetricExporter createExporterWithTimeout(String endpoint, Duration timeout) {
-    return OtlpGrpcMetricExporter.builder().setEndpoint(endpoint).setTimeout(timeout).build();
-  }
+  protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
+    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
+    return new TelemetryExporterBuilder<MetricData>() {
+      @Override
+      public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
+        builder.setEndpoint(endpoint);
+        return this;
+      }
 
-  @Override
-  protected CompletableResultCode shutdownExporter(OtlpGrpcMetricExporter exporter) {
-    return exporter.shutdown();
-  }
+      @Override
+      public TelemetryExporterBuilder<MetricData> setTimeout(long timeout, TimeUnit unit) {
+        builder.setTimeout(timeout, unit);
+        return this;
+      }
 
-  @Override
-  protected CompletableResultCode doExport(
-      OtlpGrpcMetricExporter exporter, List<MetricData> telemetry) {
-    return exporter.export(telemetry);
+      @Override
+      public TelemetryExporterBuilder<MetricData> setTimeout(Duration timeout) {
+        builder.setTimeout(timeout);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
+        builder.setCompression(compression);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
+        builder.addHeader(key, value);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
+        builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporter<MetricData> build() {
+        return TelemetryExporter.wrap(builder.build());
+      }
+    };
   }
 
   @Override

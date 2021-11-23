@@ -5,15 +5,19 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -22,9 +26,9 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
-class OtlpGrpcSpanExporterTest
-    extends AbstractGrpcTelemetryExporterTest<SpanData, ResourceSpans, OtlpGrpcSpanExporter> {
+class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanData, ResourceSpans> {
 
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
@@ -33,25 +37,57 @@ class OtlpGrpcSpanExporterTest
     super("span", ResourceSpans.getDefaultInstance());
   }
 
-  @Override
-  protected OtlpGrpcSpanExporter createExporter(String endpoint) {
-    return OtlpGrpcSpanExporter.builder().setEndpoint(endpoint).build();
+  @Test
+  void usingOkHttp() {
+    assertThat(OtlpGrpcSpanExporter.builder().delegate)
+        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
   }
 
   @Override
-  protected OtlpGrpcSpanExporter createExporterWithTimeout(String endpoint, Duration timeout) {
-    return OtlpGrpcSpanExporter.builder().setEndpoint(endpoint).setTimeout(timeout).build();
-  }
+  protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
+    OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
+    return new TelemetryExporterBuilder<SpanData>() {
+      @Override
+      public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
+        builder.setEndpoint(endpoint);
+        return this;
+      }
 
-  @Override
-  protected CompletableResultCode shutdownExporter(OtlpGrpcSpanExporter exporter) {
-    return exporter.shutdown();
-  }
+      @Override
+      public TelemetryExporterBuilder<SpanData> setTimeout(long timeout, TimeUnit unit) {
+        builder.setTimeout(timeout, unit);
+        return this;
+      }
 
-  @Override
-  protected CompletableResultCode doExport(
-      OtlpGrpcSpanExporter exporter, List<SpanData> telemetry) {
-    return exporter.export(telemetry);
+      @Override
+      public TelemetryExporterBuilder<SpanData> setTimeout(Duration timeout) {
+        builder.setTimeout(timeout);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
+        builder.setCompression(compression);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> addHeader(String key, String value) {
+        builder.addHeader(key, value);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
+        builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporter<SpanData> build() {
+        return TelemetryExporter.wrap(builder.build());
+      }
+    };
   }
 
   @Override
