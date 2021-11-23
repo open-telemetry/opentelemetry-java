@@ -15,6 +15,24 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>A Meter is generally associated with an instrumentation library, e.g. "I monitor apache
  * httpclient".
+ *
+ * <p>Choosing an instrument can be hard, but here's a rule of thumb for selecting the right
+ * instrument:
+ *
+ * <ul>
+ *   <li>I want to <b>count</b> something.
+ *       <ul>
+ *         <li>The value is always increasing / I want to track its <b>rate</b>.<br>
+ *             Use {@link #counterBuilder(String)}
+ *         <li>The value is not always increasing.<br>
+ *             Use {@link #upDownCounterBuilder(String)}
+ *       </ul>
+ *   <li>I want to <b>time</b> something, or record measurements where the statistics are important
+ *       (e.g. latency).<br>
+ *       <b>Use {@link #histogramBuilder(String)}</b>
+ *   <li>I want to measure something by sampling a value stored elsewhere. <br>
+ *       Use {@link #gaugeBuilder(String)}
+ * </ul>
  */
 @ThreadSafe
 public interface Meter {

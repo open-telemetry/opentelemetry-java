@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal.okhttp;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
@@ -46,6 +47,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   OkHttpExporter(
       String type,
       OkHttpClient client,
+      MeterProvider meterProvider,
       String endpoint,
       @Nullable Headers headers,
       boolean compressionEnabled) {
@@ -55,7 +57,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
 
-    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type);
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -125,6 +127,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
+    client.connectionPool().evictAll();
     exporterMetrics.unbind();
     return result;
   }

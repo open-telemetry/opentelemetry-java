@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -66,6 +66,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   BatchSpanProcessor(
       SpanExporter spanExporter,
+      MeterProvider meterProvider,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -73,6 +74,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     this.worker =
         new Worker(
             spanExporter,
+            meterProvider,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
@@ -150,6 +152,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private Worker(
         SpanExporter spanExporter,
+        MeterProvider meterProvider,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
@@ -160,7 +163,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
-      Meter meter = GlobalMeterProvider.get().meterBuilder("io.opentelemetry.sdk.trace").build();
+      Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.trace").build();
       meter
           .gaugeBuilder("queueSize")
           .ofLongs()

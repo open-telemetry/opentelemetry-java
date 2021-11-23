@@ -141,7 +141,17 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
             collectionInfo.getSupportedAggregation(), collectionInfo.getPreferredAggregation());
     collectLock.lock();
     try {
-      metricUpdater.run();
+      try {
+        metricUpdater.run();
+      } catch (RuntimeException e) {
+        logger.log(
+            Level.WARNING,
+            "An exception occurred invoking callback for instrument "
+                + getMetricDescriptor().getName()
+                + ".",
+            e);
+        return null;
+      }
       return storage.buildMetricFor(
           collectionInfo.getCollector(),
           resource,

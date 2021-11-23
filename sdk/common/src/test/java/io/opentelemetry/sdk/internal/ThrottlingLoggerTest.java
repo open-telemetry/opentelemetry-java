@@ -20,13 +20,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class ThrottlingLoggerTest {
+
+  private static final Logger realLogger = Logger.getLogger(ThrottlingLoggerTest.class.getName());
+
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(ThrottlingLoggerTest.class);
 
   @Test
   void delegation() {
-    ThrottlingLogger logger =
-        new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()));
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger);
 
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.INFO, "oh yes!");
@@ -58,8 +60,7 @@ class ThrottlingLoggerTest {
   @Test
   void fiveInAMinuteTriggersLimiting() {
     Clock clock = TestClock.create();
-    ThrottlingLogger logger =
-        new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()), clock);
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock);
 
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no!");
@@ -80,8 +81,7 @@ class ThrottlingLoggerTest {
   @Test
   void allowsTrickleOfMessages() {
     TestClock clock = TestClock.create();
-    ThrottlingLogger logger =
-        new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()), clock);
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock);
     logger.log(Level.WARNING, "oh no!");
     assertThat(logs.size()).isEqualTo(1);
     logger.log(Level.WARNING, "oh no!");
@@ -113,8 +113,7 @@ class ThrottlingLoggerTest {
   @Test
   void afterAMinuteLetOneThrough() {
     TestClock clock = TestClock.create();
-    ThrottlingLogger logger =
-        new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()), clock);
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock);
 
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no!");

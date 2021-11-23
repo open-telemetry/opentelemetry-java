@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
@@ -22,7 +23,7 @@ class LambdaResourceTest {
   @Test
   void shouldNotCreateResourceForNotLambda() {
     Attributes attributes = LambdaResource.buildResource(emptyMap()).getAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
+    assertThat(attributes).isEmpty();
   }
 
   @Test
@@ -33,12 +34,10 @@ class LambdaResourceTest {
 
     assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.CLOUD_PROVIDER,
-                "aws",
-                ResourceAttributes.FAAS_NAME,
-                "my-function"));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_lambda"),
+            entry(ResourceAttributes.FAAS_NAME, "my-function"));
   }
 
   @Test
@@ -53,16 +52,12 @@ class LambdaResourceTest {
 
     assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.CLOUD_PROVIDER,
-                "aws",
-                ResourceAttributes.CLOUD_REGION,
-                "us-east-1",
-                ResourceAttributes.FAAS_NAME,
-                "my-function",
-                ResourceAttributes.FAAS_VERSION,
-                "1.2.3"));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_lambda"),
+            entry(ResourceAttributes.CLOUD_REGION, "us-east-1"),
+            entry(ResourceAttributes.FAAS_NAME, "my-function"),
+            entry(ResourceAttributes.FAAS_VERSION, "1.2.3"));
   }
 
   @Test

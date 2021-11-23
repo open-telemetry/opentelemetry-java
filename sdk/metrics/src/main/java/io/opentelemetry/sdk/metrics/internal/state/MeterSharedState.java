@@ -12,13 +12,15 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -73,25 +75,21 @@ public abstract class MeterSharedState {
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
-    List<View> views =
+
+    List<WriteableMetricStorage> storage =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo());
-    List<WriteableMetricStorage> storage = new ArrayList<>(views.size());
-    for (View view : views) {
-      SynchronousMetricStorage currentStorage =
-          SynchronousMetricStorage.create(
-              view, instrument, meterProviderSharedState.getExemplarFilter());
-      // TODO - move this in a better location.
-      if (SynchronousMetricStorage.empty().equals(currentStorage)) {
-        continue;
-      }
-      try {
-        storage.add(getMetricStorageRegistry().register(currentStorage));
-      } catch (DuplicateMetricStorageException e) {
-        logger.log(Level.WARNING, e, () -> DebugUtils.duplicateMetricErrorMessage(e));
-      }
-    }
+            .findViews(instrument, getInstrumentationLibraryInfo())
+            .stream()
+            .map(
+                view ->
+                    SynchronousMetricStorage.create(
+                        view, instrument, meterProviderSharedState.getExemplarFilter()))
+            .filter(m -> !m.isEmpty())
+            .map(this::register)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
     if (storage.size() == 1) {
       return storage.get(0);
     }
@@ -104,24 +102,17 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableLongMeasurement> metricUpdater) {
-    // TODO - we should avoid registering independent storage that calls observables over and over.
-    List<View> views =
-        meterProviderSharedState
-            .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo());
-    for (View view : views) {
-      MetricStorage currentStorage =
-          AsynchronousMetricStorage.longAsynchronousAccumulator(view, instrument, metricUpdater);
-      // TODO - move this in a better location.
-      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
-        continue;
-      }
-      try {
-        getMetricStorageRegistry().register(currentStorage);
-      } catch (DuplicateMetricStorageException e) {
-        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
-      }
-    }
+
+    meterProviderSharedState
+        .getViewRegistry()
+        .findViews(instrument, getInstrumentationLibraryInfo())
+        .stream()
+        .map(
+            view ->
+                AsynchronousMetricStorage.longAsynchronousAccumulator(
+                    view, instrument, metricUpdater))
+        .filter(m -> !m.isEmpty())
+        .forEach(this::register);
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
@@ -129,23 +120,26 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    // TODO - we should avoid registering independent storage that calls observables over and over.
-    List<View> views =
-        meterProviderSharedState
-            .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo());
-    for (View view : views) {
-      MetricStorage currentStorage =
-          AsynchronousMetricStorage.doubleAsynchronousAccumulator(view, instrument, metricUpdater);
-      // TODO - move this in a better location.
-      if (AsynchronousMetricStorage.empty() == currentStorage) {
-        continue;
-      }
-      try {
-        getMetricStorageRegistry().register(currentStorage);
-      } catch (DuplicateMetricStorageException e) {
-        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
-      }
+
+    meterProviderSharedState
+        .getViewRegistry()
+        .findViews(instrument, getInstrumentationLibraryInfo())
+        .stream()
+        .map(
+            view ->
+                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+                    view, instrument, metricUpdater))
+        .filter(m -> !m.isEmpty())
+        .forEach(this::register);
+  }
+
+  @Nullable
+  private <S extends MetricStorage> S register(S storage) {
+    try {
+      return getMetricStorageRegistry().register(storage);
+    } catch (DuplicateMetricStorageException e) {
+      logger.log(Level.WARNING, e, () -> DebugUtils.duplicateMetricErrorMessage(e));
     }
+    return null;
   }
 }

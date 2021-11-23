@@ -135,9 +135,9 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Create a new TraceSdkProvider instance.
+   * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
-   * @return An initialized TraceSdkProvider.
+   * @return The instance.
    */
   public SdkTracerProvider build() {
     return new SdkTracerProvider(

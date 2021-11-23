@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -115,5 +117,33 @@ public class AsynchronousMetricStorageTest {
             testClock.nanoTime(),
             false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
+  }
+
+  @Test
+  void collectAndReset_CatchesRuntimeException() {
+    Mockito.when(reader.getSupportedTemporality())
+        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
+
+    MetricStorage metricStorage =
+        AsynchronousMetricStorage.longAsynchronousAccumulator(
+            view,
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            value -> {
+              throw new IllegalStateException("Error!");
+            });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .isEqualTo(null);
   }
 }

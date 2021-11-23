@@ -101,6 +101,11 @@ public abstract class Serializer implements AutoCloseable {
     writeFixed64(field, value);
   }
 
+  /** Serializes a protobuf {@code fixed64} field. */
+  public void serializeFixed64Optional(ProtoFieldInfo field, long value) throws IOException {
+    writeFixed64(field, value);
+  }
+
   protected abstract void writeFixed64(ProtoFieldInfo field, long value) throws IOException;
 
   protected abstract void writeFixed64Value(long value) throws IOException;
@@ -120,6 +125,10 @@ public abstract class Serializer implements AutoCloseable {
     if (value == 0D) {
       return;
     }
+    writeDouble(field, value);
+  }
+  /** Serializes a proto buf {@code double} field. */
+  public void serializeDoubleOptional(ProtoFieldInfo field, double value) throws IOException {
     writeDouble(field, value);
   }
 

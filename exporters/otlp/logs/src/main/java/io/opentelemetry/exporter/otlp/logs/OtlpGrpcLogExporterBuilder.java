@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
@@ -118,6 +119,16 @@ public final class OtlpGrpcLogExporterBuilder {
    */
   public OtlpGrpcLogExporterBuilder addHeader(String key, String value) {
     delegate.addHeader(key, value);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   */
+  public OtlpGrpcLogExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 
