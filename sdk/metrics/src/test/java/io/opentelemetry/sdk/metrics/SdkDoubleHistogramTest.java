@@ -7,15 +7,14 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -48,7 +47,9 @@ class SdkDoubleHistogramTest {
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().bind(null))
+    assertThatThrownBy(
+            () ->
+                ((SdkDoubleHistogram) sdkMeter.histogramBuilder("testRecorder").build()).bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -57,7 +58,8 @@ class SdkDoubleHistogramTest {
   void collectMetrics_NoRecords() {
     DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
     BoundDoubleHistogram bound =
-        doubleRecorder.bind(Attributes.builder().put("key", "value").build());
+        ((SdkDoubleHistogram) doubleRecorder)
+            .bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -103,11 +105,11 @@ class SdkDoubleHistogramTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
-    BoundDoubleHistogram bound = doubleRecorder.bind(Attributes.builder().put("K", "V").build());
+    BoundDoubleHistogram bound =
+        ((SdkDoubleHistogram) doubleRecorder).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleRecorder.record(12.1d, Attributes.empty());
@@ -201,7 +203,8 @@ class SdkDoubleHistogramTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  doubleRecorder.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkDoubleHistogram) doubleRecorder)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -248,7 +251,8 @@ class SdkDoubleHistogramTest {
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  doubleRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkDoubleHistogram) doubleRecorder)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();

@@ -6,12 +6,6 @@
 package io.opentelemetry.api.metrics.internal;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleCounter;
-import io.opentelemetry.api.metrics.BoundDoubleHistogram;
-import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.BoundLongHistogram;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
@@ -38,12 +32,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>This implementation should induce as close to zero overhead as possible.
  *
- * <p>A few notes from the specificaiton on allowed behaviors leading to this deasign [<a
+ * <p>A few notes from the specification on allowed behaviors leading to this design [<a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument">Instrument
  * Spec</a>]:
  *
  * <ul>
- *   <li>Multiple Insturments with the same name under the same Meter MUST return an error
+ *   <li>Multiple Instruments with the same name under the same Meter MUST return an error
  *   <li>Different Meters MUST be treated as separate namespaces
  *   <li>Implementations MUST NOT require users to repeatedly obtain a Meter again with the same
  *       name+version+schema_url to pick up configuration changes. This can be achieved either by
@@ -95,22 +89,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void add(long value) {}
-
-    @Override
-    public BoundLongCounter bind(Attributes attributes) {
-      return new NoopBoundLongCounter();
-    }
-  }
-
-  private static class NoopBoundLongCounter implements BoundLongCounter {
-    @Override
-    public void add(long value) {}
-
-    @Override
-    public void add(long value, Context context) {}
-
-    @Override
-    public void unbind() {}
   }
 
   private static class NoopDoubleCounter implements DoubleCounter {
@@ -122,22 +100,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
-    @Override
-    public BoundDoubleCounter bind(Attributes attributes) {
-      return new NoopBoundDoubleCounter();
-    }
-  }
-
-  private static class NoopBoundDoubleCounter implements BoundDoubleCounter {
-    @Override
-    public void add(double value) {}
-
-    @Override
-    public void add(double value, Context context) {}
-
-    @Override
-    public void unbind() {}
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
@@ -194,22 +156,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void add(long value) {}
-
-    @Override
-    public BoundLongUpDownCounter bind(Attributes attributes) {
-      return new NoopBoundLongUpDownCounter();
-    }
-  }
-
-  private static class NoopBoundLongUpDownCounter implements BoundLongUpDownCounter {
-    @Override
-    public void add(long value, Context context) {}
-
-    @Override
-    public void add(long value) {}
-
-    @Override
-    public void unbind() {}
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
@@ -221,22 +167,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
-    @Override
-    public BoundDoubleUpDownCounter bind(Attributes attributes) {
-      return new NoopBoundDoubleUpDownCounter();
-    }
-  }
-
-  private static class NoopBoundDoubleUpDownCounter implements BoundDoubleUpDownCounter {
-    @Override
-    public void add(double value, Context context) {}
-
-    @Override
-    public void add(double value) {}
-
-    @Override
-    public void unbind() {}
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
@@ -293,22 +223,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void record(double value) {}
-
-    @Override
-    public BoundDoubleHistogram bind(Attributes attributes) {
-      return new NoopBoundDoubleHistogram();
-    }
-  }
-
-  public static class NoopBoundDoubleHistogram implements BoundDoubleHistogram {
-    @Override
-    public void record(double value, Context context) {}
-
-    @Override
-    public void record(double value) {}
-
-    @Override
-    public void unbind() {}
   }
 
   public static class NoopLongHistogram implements LongHistogram {
@@ -320,22 +234,6 @@ public class NoopMeter implements Meter {
 
     @Override
     public void record(long value) {}
-
-    @Override
-    public BoundLongHistogram bind(Attributes attributes) {
-      return new NoopBoundLongHistogram();
-    }
-  }
-
-  public static class NoopBoundLongHistogram implements BoundLongHistogram {
-    @Override
-    public void record(long value, Context context) {}
-
-    @Override
-    public void record(long value) {}
-
-    @Override
-    public void unbind() {}
   }
 
   public static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {

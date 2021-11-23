@@ -7,15 +7,15 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -49,7 +49,10 @@ class SdkLongHistogramTest {
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().bind(null))
+    assertThatThrownBy(
+            () ->
+                ((SdkLongHistogram) sdkMeter.histogramBuilder("testRecorder").ofLongs().build())
+                    .bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -57,7 +60,8 @@ class SdkLongHistogramTest {
   @Test
   void collectMetrics_NoRecords() {
     LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
-    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("key", "value").build());
+    BoundLongHistogram bound =
+        ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -104,11 +108,11 @@ class SdkLongHistogramTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
-    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("K", "V").build());
+    BoundLongHistogram bound =
+        ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       longRecorder.record(12, Attributes.empty());
@@ -202,7 +206,8 @@ class SdkLongHistogramTest {
               2_000,
               1,
               new SdkLongHistogramTest.OperationUpdaterWithBinding(
-                  longRecorder.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkLongHistogram) longRecorder)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -249,7 +254,8 @@ class SdkLongHistogramTest {
               1_000,
               2,
               new SdkLongHistogramTest.OperationUpdaterWithBinding(
-                  longRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkLongHistogram) longRecorder)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -270,7 +276,7 @@ class SdkLongHistogramTest {
                                 .hasCount(2_000)
                                 .hasSum(20_000)
                                 .hasBucketCounts(0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

@@ -24,7 +24,6 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -68,9 +67,12 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private final Headers headers;
   private final boolean compressionEnabled;
 
-  private final BoundLongCounter seen;
-  private final BoundLongCounter success;
-  private final BoundLongCounter failed;
+  private final LongCounter seen;
+  private final LongCounter exported;
+
+  private final Attributes seenAttrs;
+  private final Attributes successAttrs;
+  private final Attributes failedAttrs;
 
   /** Creates a new {@link OkHttpGrpcExporter}. */
   OkHttpGrpcExporter(
@@ -87,16 +89,17 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     this.compressionEnabled = compressionEnabled;
 
     Meter meter = meterProvider.get("io.opentelemetry.exporters.otlp-grpc-okhttp");
-    Attributes attributes = Attributes.builder().put("type", type).build();
-    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
-    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put("success", true).build());
-    failed = exported.bind(attributes.toBuilder().put("success", false).build());
+    seenAttrs = Attributes.builder().put("type", type).build();
+    seen = meter.counterBuilder("otlp.exporter.seen").build();
+
+    exported = meter.counterBuilder("otlp.exported.exported").build();
+    successAttrs = seenAttrs.toBuilder().put("success", true).build();
+    failedAttrs = seenAttrs.toBuilder().put("success", false).build();
   }
 
   @Override
   public CompletableResultCode export(T exportRequest, int numItems) {
-    seen.add(numItems);
+    seen.add(numItems, seenAttrs);
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
 
@@ -111,7 +114,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                failed.add(numItems);
+                exported.add(numItems, failedAttrs);
                 logger.log(
                     Level.SEVERE,
                     "Failed to export "
@@ -131,19 +134,19 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                       Level.WARNING,
                       "Failed to export " + type + "s, could not consume server response.",
                       e);
-                  failed.add(numItems);
+                  exported.add(numItems, failedAttrs);
                   result.fail();
                   return;
                 }
 
                 String status = grpcStatus(response);
                 if ("0".equals(status)) {
-                  success.add(numItems);
+                  exported.add(numItems, successAttrs);
                   result.succeed();
                   return;
                 }
 
-                failed.add(numItems);
+                exported.add(numItems, failedAttrs);
 
                 String codeMessage =
                     status != null
@@ -223,9 +226,6 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
-    this.seen.unbind();
-    this.success.unbind();
-    this.failed.unbind();
     return CompletableResultCode.ofSuccess();
   }
 

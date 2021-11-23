@@ -3,12 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics;
+package io.opentelemetry.sdk.metrics.internal.instrument;
 
+import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A counter instrument that records {@code double} values with pre-associated attributes. */
+/**
+ * A counter instrument that records {@code double} values with pre-associated attributes.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @ThreadSafe
 public interface BoundDoubleCounter {
   /**

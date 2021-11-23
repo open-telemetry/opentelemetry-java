@@ -128,7 +128,6 @@ public final class OkHttpExporter<T extends Marshaler> {
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
-    exporterMetrics.unbind();
     return result;
   }
 
