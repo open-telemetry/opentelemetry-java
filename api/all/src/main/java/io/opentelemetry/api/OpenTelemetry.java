@@ -41,7 +41,9 @@ public interface OpenTelemetry {
   TracerProvider getTracerProvider();
 
   /** Returns the {@link MeterProvider} for this {@link OpenTelemetry}. */
-  MeterProvider getMeterProvider();
+  default MeterProvider getMeterProvider() {
+    return MeterProvider.noop();
+  }
 
   /**
    * Gets or creates a named tracer instance from the {@link TracerProvider} for this {@link

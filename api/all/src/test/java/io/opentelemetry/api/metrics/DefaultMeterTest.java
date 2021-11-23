@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
-public class NoopMeterTest {
-  private static final Meter meter = NoopMeter.getInstance();
+public class DefaultMeterTest {
+  private static final Meter meter = DefaultMeter.getInstance();
 
   @Test
   void noopLongCounter_doesNotThrow() {

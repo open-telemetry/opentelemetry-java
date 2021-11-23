@@ -43,6 +43,6 @@ public interface MeterProvider {
 
   /** Returns a no-op {@link MeterProvider} which provides meters which do not record or emit. */
   static MeterProvider noop() {
-    return NoopMeterProvider.getInstance();
+    return DefaultMeterProvider.getInstance();
   }
 }

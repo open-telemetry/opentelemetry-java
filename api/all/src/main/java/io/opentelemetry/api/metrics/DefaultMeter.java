@@ -33,9 +33,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * </ul>
  */
 @ThreadSafe
-class NoopMeter implements Meter {
+class DefaultMeter implements Meter {
 
-  private static final NoopMeter INSTANCE = new NoopMeter();
+  private static final DefaultMeter INSTANCE = new DefaultMeter();
 
   public static Meter getInstance() {
     return INSTANCE;
@@ -61,7 +61,7 @@ class NoopMeter implements Meter {
     return new NoopDoubleObservableInstrumentBuilder();
   }
 
-  private NoopMeter() {}
+  private DefaultMeter() {}
 
   private static class NoopLongCounter implements LongCounter {
     @Override

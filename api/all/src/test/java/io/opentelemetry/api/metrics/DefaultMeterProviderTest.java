@@ -7,7 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import org.junit.jupiter.api.Test;
 
-public class NoopMeterProviderTest {
+public class DefaultMeterProviderTest {
   @Test
   void noopMeterProvider_getDoesNotThrow() {
     MeterProvider provider = MeterProvider.noop();

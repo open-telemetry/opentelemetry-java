@@ -6,20 +6,20 @@
 package io.opentelemetry.api.metrics;
 
 /** A {@link MeterProvider} that does nothing. */
-class NoopMeterProvider implements MeterProvider {
+class DefaultMeterProvider implements MeterProvider {
   @Override
   public MeterBuilder meterBuilder(String instrumentationName) {
     return BUILDER_INSTANCE;
   }
 
-  private static final NoopMeterProvider INSTANCE = new NoopMeterProvider();
+  private static final DefaultMeterProvider INSTANCE = new DefaultMeterProvider();
   private static final MeterBuilder BUILDER_INSTANCE = new NoopMeterBuilder();
 
   public static MeterProvider getInstance() {
     return INSTANCE;
   }
 
-  private NoopMeterProvider() {}
+  private DefaultMeterProvider() {}
 
   private static class NoopMeterBuilder implements MeterBuilder {
 
@@ -35,7 +35,7 @@ class NoopMeterProvider implements MeterProvider {
 
     @Override
     public Meter build() {
-      return NoopMeter.getInstance();
+      return DefaultMeter.getInstance();
     }
   }
 }
