@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.internal.NoopMeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +49,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // This is a bit of an odd test, so we just ensure that we don't have the same impl class as if
     // we instantiated an SDK with a reader.
     AutoConfiguredOpenTelemetrySdk.initialize();
-    assertThat(GlobalMeterProvider.get()).isInstanceOf(NoopMeterProvider.class);
+    assertThat(GlobalMeterProvider.get().getClass().getSimpleName())
+        .isEqualTo("DefaultMeterProvider");
   }
 }

@@ -16,8 +16,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
+  @Mock private SdkMeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -51,6 +52,8 @@ class OpenTelemetrySdkTest {
     assertThat(sdk.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
+    assertThat(sdk.getMeterProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getMeterProvider().get(""));
 
     assertThat(GlobalOpenTelemetry.getPropagators())
         .isSameAs(GlobalOpenTelemetry.get().getPropagators())
@@ -94,10 +97,16 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider())
         .isInstanceOfSatisfying(
-            ObfuscatedTracerProvider.class,
+            OpenTelemetrySdk.ObfuscatedTracerProvider.class,
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(SdkTracerProvider.class));
+    assertThat(openTelemetry.getMeterProvider())
+        .isInstanceOfSatisfying(
+            OpenTelemetrySdk.ObfuscatedMeterProvider.class,
+            obfuscatedMeterProvider ->
+                assertThat(obfuscatedMeterProvider.unobfuscate())
+                    .isInstanceOf(SdkMeterProvider.class));
   }
 
   @Test
@@ -105,11 +114,19 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
             .setPropagators(propagators)
             .build();
-    assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
+    assertThat(
+            ((OpenTelemetrySdk.ObfuscatedTracerProvider) openTelemetry.getTracerProvider())
+                .unobfuscate())
         .isEqualTo(tracerProvider);
     assertThat(openTelemetry.getSdkTracerProvider()).isEqualTo(tracerProvider);
+    assertThat(
+            ((OpenTelemetrySdk.ObfuscatedMeterProvider) openTelemetry.getMeterProvider())
+                .unobfuscate())
+        .isEqualTo(meterProvider);
+    assertThat(openTelemetry.getSdkMeterProvider()).isEqualTo(meterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
   }
 
@@ -129,7 +146,8 @@ class OpenTelemetrySdkTest {
                     .build())
             .build();
     TracerProvider unobfuscatedTracerProvider =
-        ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
+        ((OpenTelemetrySdk.ObfuscatedTracerProvider) openTelemetry.getTracerProvider())
+            .unobfuscate();
 
     assertThat(unobfuscatedTracerProvider)
         .isInstanceOfSatisfying(
@@ -164,10 +182,23 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
     assertThat(openTelemetry.getTracerProvider())
-        .asInstanceOf(type(ObfuscatedTracerProvider.class))
+        .asInstanceOf(type(OpenTelemetrySdk.ObfuscatedTracerProvider.class))
         .isNotNull()
-        .matches(obfuscated -> obfuscated.unobfuscate() == tracerProvider);
+        .extracting(OpenTelemetrySdk.ObfuscatedTracerProvider::unobfuscate)
+        .isSameAs(tracerProvider);
     assertThat(openTelemetry.getSdkTracerProvider()).isNotNull();
+  }
+
+  @Test
+  void testMeterProviderAccess() {
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+    assertThat(openTelemetry.getMeterProvider())
+        .asInstanceOf(type(OpenTelemetrySdk.ObfuscatedMeterProvider.class))
+        .isNotNull()
+        .extracting(OpenTelemetrySdk.ObfuscatedMeterProvider::unobfuscate)
+        .isSameAs(meterProvider);
+    assertThat(openTelemetry.getSdkMeterProvider()).isNotNull();
   }
 
   // This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
