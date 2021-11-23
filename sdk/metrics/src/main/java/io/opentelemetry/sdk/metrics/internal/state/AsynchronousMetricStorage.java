@@ -146,13 +146,13 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       try {
         metricUpdater.run();
       } catch (Throwable e) {
+        propagateIfFatal(e);
         logger.log(
             Level.WARNING,
             "An exception occurred invoking callback for instrument "
                 + getMetricDescriptor().getName()
                 + ".",
             e);
-        propagateIfFatal(e);
         return null;
       }
       return storage.buildMetricFor(
