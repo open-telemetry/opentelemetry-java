@@ -14,7 +14,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 /**
  * An implementation of {@link OpenTelemetry} that is completely no-op. Unlike {@link
  * OpenTelemetry#noop()}, this implementation does not support in-process context propagation
- * atjavajava all. This means that no objects are allocated nor {@link ThreadLocal}s used in an
+ * at all. This means that no objects are allocated nor {@link ThreadLocal}s used in an
  * application using this implementation. This can be a good option for use in frameworks shared
  * across a large number of servers to introduce instrumentation without forcing overhead on any
  * users of the framework. If such overhead is not a concern, always use either {@link
