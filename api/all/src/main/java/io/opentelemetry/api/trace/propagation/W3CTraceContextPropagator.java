@@ -190,7 +190,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
     }
   }
 
-  private static SpanContext extractContextFromTraceParent(String traceparent) {
+  public static SpanContext extractContextFromTraceParent(String traceparent) {
     // TODO(bdrutu): Do we need to verify that version is hex and that
     // for the version the length is the expected one?
     boolean isValid =
