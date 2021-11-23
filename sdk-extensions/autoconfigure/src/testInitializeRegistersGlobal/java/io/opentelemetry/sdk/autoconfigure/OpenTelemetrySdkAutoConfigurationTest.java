@@ -49,6 +49,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // This is a bit of an odd test, so we just ensure that we don't have the same impl class as if
     // we instantiated an SDK with a reader.
     AutoConfiguredOpenTelemetrySdk.initialize();
-    assertThat(GlobalMeterProvider.get().getClass().getSimpleName()).isEqualTo("NoopMeterProvider");
+    assertThat(GlobalMeterProvider.get().getClass().getSimpleName())
+        .isEqualTo("DefaultMeterProvider");
   }
 }
