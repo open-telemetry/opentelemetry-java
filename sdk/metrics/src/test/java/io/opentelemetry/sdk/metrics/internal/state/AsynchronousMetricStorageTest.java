@@ -138,23 +138,9 @@ public class AsynchronousMetricStorageTest {
             () ->
                 collectAndReset(
                     unused -> {
-                      throw new VirtualMachineError("Error!") {};
-                    }))
-        .isInstanceOf(VirtualMachineError.class);
-    assertThatCode(
-            () ->
-                collectAndReset(
-                    unused -> {
                       throw new ThreadDeath();
                     }))
         .isInstanceOf(ThreadDeath.class);
-    assertThatCode(
-            () ->
-                collectAndReset(
-                    unused -> {
-                      throw new LinkageError();
-                    }))
-        .isInstanceOf(LinkageError.class);
   }
 
   private MetricData collectAndReset(Consumer<ObservableLongMeasurement> metricUpdater) {

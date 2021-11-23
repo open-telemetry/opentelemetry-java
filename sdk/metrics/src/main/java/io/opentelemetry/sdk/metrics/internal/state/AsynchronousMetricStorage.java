@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -166,17 +168,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           epochNanos);
     } finally {
       collectLock.unlock();
-    }
-  }
-
-  // Taken from RxJava throwIfFatal, which was taken from scala
-  private static void propagateIfFatal(Throwable t) {
-    if (t instanceof VirtualMachineError) {
-      throw (VirtualMachineError) t;
-    } else if (t instanceof ThreadDeath) {
-      throw (ThreadDeath) t;
-    } else if (t instanceof LinkageError) {
-      throw (LinkageError) t;
     }
   }
 
