@@ -84,12 +84,15 @@ public final class SdkMeterProviderBuilder {
    *   .setInstrumentType(InstrumentType.COUNTER)
    *   .build();
    *
-   * // create a specification of how you want the metrics aggregated:
-   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
-   *
    * // register the view with the SdkMeterProviderBuilder
-   * meterProviderBuilder.registerView(instrumentSelector, View.builder()
-   *   .setAggregatorFactory(aggregatorFactory).build());
+   * meterProviderBuilder.registerView(
+   *   instrumentSelector,
+   *   View.builder()
+   *       .setAggregation(
+   *           Aggregation.explicitBucketHistogram(Arrays.asList(10d, 20d, 30d, 40d, 50d)))
+   *       .setName("my-view-name")
+   *       .setDescription("my-view-description")
+   *       .build());
    * }</pre>
    *
    * @since 1.1.0
