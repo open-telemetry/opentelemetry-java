@@ -222,6 +222,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
+    client.connectionPool().evictAll();
     this.seen.unbind();
     this.success.unbind();
     this.failed.unbind();
