@@ -271,7 +271,7 @@ final class MetricAdapter {
 
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
     if (type == MetricDataType.SUMMARY) {
-      // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
+      // count + sum + estimated 2 percentiles
       return numPoints * 4;
     }
     return numPoints;
