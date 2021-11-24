@@ -173,10 +173,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
-            .setTimeout(Duration.ofMillis(100))
+            .setTimeout(Duration.ofMillis(1500))
             .build();
     try {
-      TimeUnit.MILLISECONDS.sleep(300);
+      TimeUnit.MILLISECONDS.sleep(2000);
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
