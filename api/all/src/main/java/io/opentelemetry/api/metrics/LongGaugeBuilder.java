@@ -15,7 +15,7 @@ public interface LongGaugeBuilder {
    * <p>Description strings should follow the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
-  public LongGaugeBuilder setDescription(String description);
+  LongGaugeBuilder setDescription(String description);
 
   /**
    * Sets the unit of measure for this instrument.

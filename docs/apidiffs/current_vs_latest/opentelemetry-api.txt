@@ -1,47 +1,60 @@
 Comparing source compatibility of  against 
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleCounter  (not serializable)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopDoubleHistogram  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleHistogram
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleHistogram  (not serializable)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopDoubleHistogram()
+	+++  NEW METHOD: PUBLIC(+) void record(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) void record(double, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) void record(double)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopDoubleHistogramBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleHistogramBuilder
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleUpDownCounter  (not serializable)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopDoubleHistogramBuilder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogram build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder ofLongs()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogramBuilder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogramBuilder setUnit(java.lang.String)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopDoubleObservableInstrumentBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleGaugeBuilder
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongCounter  (not serializable)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopDoubleObservableInstrumentBuilder()
+	+++  NEW METHOD: PUBLIC(+) void buildWithCallback(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder ofLongs()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleGaugeBuilder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleGaugeBuilder setUnit(java.lang.String)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopLongHistogram  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongHistogram
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongHistogram  (not serializable)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopLongHistogram()
+	+++  NEW METHOD: PUBLIC(+) void record(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) void record(long, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) void record(long)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopLongHistogramBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongHistogramBuilder
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongUpDownCounter  (not serializable)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopLongHistogramBuilder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogram build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setUnit(java.lang.String)
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.DefaultMeter$NoopLongObservableInstrumentBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongGaugeBuilder
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void unbind()
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultMeter$NoopLongObservableInstrumentBuilder()
+	+++  NEW METHOD: PUBLIC(+) void buildWithCallback(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder setUnit(java.lang.String)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleCounter bind(io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleCounterBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
@@ -59,7 +72,6 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleHistogram  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleHistogram bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
@@ -76,7 +88,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundDoubleUpDownCounter bind(io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
@@ -90,7 +101,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongCounter bind(io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongCounterBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
@@ -108,7 +118,6 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongHistogram  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongHistogram bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
@@ -124,7 +133,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BoundLongUpDownCounter bind(io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongUpDownCounterBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
@@ -152,74 +160,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.Meter get(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.MeterBuilder meterBuilder(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterProvider noop()
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopBoundDoubleHistogram  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.BoundDoubleHistogram
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopBoundDoubleHistogram()
-	+++  NEW METHOD: PUBLIC(+) void record(double, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) void record(double)
-	+++  NEW METHOD: PUBLIC(+) void unbind()
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopBoundLongHistogram  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.BoundLongHistogram
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopBoundLongHistogram()
-	+++  NEW METHOD: PUBLIC(+) void record(long, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) void record(long)
-	+++  NEW METHOD: PUBLIC(+) void unbind()
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopDoubleHistogram  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleHistogram
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopDoubleHistogram()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.BoundDoubleHistogram bind(io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) void record(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) void record(double, io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) void record(double)
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopDoubleHistogramBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleHistogramBuilder
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopDoubleHistogramBuilder()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogram build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder ofLongs()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogramBuilder setDescription(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogramBuilder setUnit(java.lang.String)
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopDoubleObservableInstrumentBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleGaugeBuilder
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopDoubleObservableInstrumentBuilder()
-	+++  NEW METHOD: PUBLIC(+) void buildWithCallback(java.util.function.Consumer)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder ofLongs()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleGaugeBuilder setDescription(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleGaugeBuilder setUnit(java.lang.String)
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopLongHistogram  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongHistogram
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopLongHistogram()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.BoundLongHistogram bind(io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) void record(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) void record(long, io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) void record(long)
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopLongHistogramBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongHistogramBuilder
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopLongHistogramBuilder()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogram build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setDescription(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setUnit(java.lang.String)
-+++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.NoopMeter$NoopLongObservableInstrumentBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongGaugeBuilder
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) NoopMeter$NoopLongObservableInstrumentBuilder()
-	+++  NEW METHOD: PUBLIC(+) void buildWithCallback(java.util.function.Consumer)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder setDescription(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGaugeBuilder setUnit(java.lang.String)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableDoubleMeasurement  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
@@ -235,6 +175,6 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableMeasurement  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()

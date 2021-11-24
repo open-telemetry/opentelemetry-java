@@ -602,11 +602,9 @@ class SdkMeterProviderTest {
 
     // Make sure whether or not we explicitly pass baggage, all values have it appended.
     counter.add(1, Attributes.empty(), context);
-    counter.bind(Attributes.empty()).add(1, context);
     // Also check implicit context
     try (Scope scope = context.makeCurrent()) {
       counter.add(1, Attributes.empty());
-      counter.bind(Attributes.empty()).add(1);
     }
     // Now make sure all metrics have baggage appended.
     // Implicitly we should have ONLY ONE metric data point that has baggage appended.

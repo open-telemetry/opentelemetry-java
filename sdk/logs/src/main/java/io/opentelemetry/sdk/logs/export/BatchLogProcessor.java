@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -68,12 +67,11 @@ public final class BatchLogProcessor implements LogProcessor {
   }
 
   private static class Worker implements Runnable {
-    static {
-    }
 
-    private final BoundLongCounter exporterFailureCounter;
-    private final BoundLongCounter queueFullRecordCounter;
-    private final BoundLongCounter successCounter;
+    private final LongCounter processedLogsCounter;
+    private final Attributes failureAttrs;
+    private final Attributes queueFullAttrs;
+    private final Attributes successAttrs;
 
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
@@ -102,7 +100,7 @@ public final class BatchLogProcessor implements LogProcessor {
 
       // TODO: As of Specification 1.4, this should have a telemetry schema version.
       Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.logs").build();
-      LongCounter logRecordsProcessed =
+      processedLogsCounter =
           meter
               .counterBuilder("logRecordsProcessed")
               .setUnit("1")
@@ -110,13 +108,9 @@ public final class BatchLogProcessor implements LogProcessor {
               .build();
       AttributeKey<String> resultKey = AttributeKey.stringKey("result");
       AttributeKey<String> causeKey = AttributeKey.stringKey("cause");
-      successCounter = logRecordsProcessed.bind(Attributes.of(resultKey, "success"));
-      exporterFailureCounter =
-          logRecordsProcessed.bind(
-              Attributes.of(resultKey, "dropped record", causeKey, "exporter failure"));
-      queueFullRecordCounter =
-          logRecordsProcessed.bind(
-              Attributes.of(resultKey, "dropped record", causeKey, "queue full"));
+      successAttrs = Attributes.of(resultKey, "success");
+      failureAttrs = Attributes.of(resultKey, "dropped record", causeKey, "exporter failure");
+      queueFullAttrs = Attributes.of(resultKey, "dropped record", causeKey, "queue full");
     }
 
     @Override
@@ -175,12 +169,12 @@ public final class BatchLogProcessor implements LogProcessor {
         final CompletableResultCode result = logExporter.export(batch);
         result.join(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
         if (result.isSuccess()) {
-          successCounter.add(batch.size());
+          processedLogsCounter.add(batch.size(), successAttrs);
         } else {
-          exporterFailureCounter.add(1);
+          processedLogsCounter.add(1, failureAttrs);
         }
       } catch (RuntimeException t) {
-        exporterFailureCounter.add(batch.size());
+        processedLogsCounter.add(batch.size(), failureAttrs);
       } finally {
         batch.clear();
       }
@@ -226,7 +220,7 @@ public final class BatchLogProcessor implements LogProcessor {
 
     public void addLog(LogData logData) {
       if (!queue.offer(logData)) {
-        queueFullRecordCounter.add(1);
+        processedLogsCounter.add(1, queueFullAttrs);
       }
     }
   }

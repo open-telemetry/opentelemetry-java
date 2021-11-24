@@ -41,15 +41,4 @@ public interface DoubleUpDownCounter {
    * @param context The explicit context to associate with this measurement.
    */
   void add(double value, Attributes attributes, Context context);
-
-  /**
-   * Constructs a bound version of this instrument where all recorded values use the given
-   * attributes.
-   *
-   * <p>Bound instruments pre-allocate storage slots for measurements and can help alleviate garbage
-   * collection pressure on high peformance systems. Bound instruments require all attributes to be
-   * known ahead of time, and do not work when configuring metric views which pull attributes from
-   * {@link Context}, e.g. baggage labels.
-   */
-  BoundDoubleUpDownCounter bind(Attributes attributes);
 }

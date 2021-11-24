@@ -3,12 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics;
+package io.opentelemetry.sdk.metrics.internal.instrument;
 
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** An up-down-counter instrument with pre-bound attributes. */
+/**
+ * An up-down-counter instrument with pre-bound attributes.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @ThreadSafe
 public interface BoundDoubleUpDownCounter {
   /**

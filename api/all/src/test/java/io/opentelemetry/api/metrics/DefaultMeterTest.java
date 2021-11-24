@@ -24,19 +24,6 @@ public class DefaultMeterTest {
   }
 
   @Test
-  void noopBoundLongCounter_doesNotThrow() {
-    BoundLongCounter counter =
-        meter
-            .counterBuilder("size")
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    counter.add(1);
-    counter.add(1, Context.current());
-  }
-
-  @Test
   void noopDoubleCounter_doesNotThrow() {
     DoubleCounter counter =
         meter
@@ -51,20 +38,6 @@ public class DefaultMeterTest {
   }
 
   @Test
-  void noopBoundDoubleCounter_doesNotThrow() {
-    BoundDoubleCounter counter =
-        meter
-            .counterBuilder("size")
-            .ofDoubles()
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    counter.add(1.2);
-    counter.add(2.5, Context.current());
-  }
-
-  @Test
   void noopLongUpDownCounter_doesNotThrow() {
     LongUpDownCounter counter =
         meter
@@ -75,19 +48,6 @@ public class DefaultMeterTest {
     counter.add(-1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
-  }
-
-  @Test
-  void noopBoundLongUpDownCounter_doesNotThrow() {
-    BoundLongUpDownCounter counter =
-        meter
-            .upDownCounterBuilder("size")
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    counter.add(-1);
-    counter.add(1, Context.current());
   }
 
   @Test
@@ -105,20 +65,6 @@ public class DefaultMeterTest {
   }
 
   @Test
-  void noopBoundDoubleUpDownCounter_doesNotThrow() {
-    BoundDoubleUpDownCounter counter =
-        meter
-            .upDownCounterBuilder("size")
-            .ofDoubles()
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    counter.add(-2e4);
-    counter.add(1.0e-1, Context.current());
-  }
-
-  @Test
   void noopLongHistogram_doesNotThrow() {
     LongHistogram histogram =
         meter
@@ -133,20 +79,6 @@ public class DefaultMeterTest {
   }
 
   @Test
-  void noopBoundLongHistogram_doesNotThrow() {
-    BoundLongHistogram histogram =
-        meter
-            .histogramBuilder("size")
-            .ofLongs()
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    histogram.record(-1);
-    histogram.record(1, Context.current());
-  }
-
-  @Test
   void noopDoubleHistogram_doesNotThrow() {
     DoubleHistogram histogram =
         meter
@@ -157,19 +89,6 @@ public class DefaultMeterTest {
     histogram.record(-2e4);
     histogram.record(1.0e-1, Attributes.of(stringKey("thing"), "car"));
     histogram.record(1.0e-1, Attributes.of(stringKey("thing"), "car"), Context.current());
-  }
-
-  @Test
-  void noopBoundDoubleHistogram_doesNotThrow() {
-    BoundDoubleHistogram histogram =
-        meter
-            .histogramBuilder("size")
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build()
-            .bind(Attributes.of(stringKey("thing"), "car"));
-    histogram.record(-2e4);
-    histogram.record(1.0e-1, Context.current());
   }
 
   @Test

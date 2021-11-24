@@ -123,7 +123,6 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
     if (managedChannel.isTerminated()) {
       return CompletableResultCode.ofSuccess();
     }
-    exporterMetrics.unbind();
     return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 }
