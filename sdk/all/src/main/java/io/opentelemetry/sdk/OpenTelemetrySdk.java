@@ -6,10 +6,13 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -17,10 +20,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
+  private final ObfuscatedMeterProvider meterProvider;
   private final ContextPropagators propagators;
 
-  OpenTelemetrySdk(ObfuscatedTracerProvider tracerProvider, ContextPropagators propagators) {
-    this.tracerProvider = tracerProvider;
+  OpenTelemetrySdk(
+      SdkTracerProvider tracerProvider,
+      SdkMeterProvider meterProvider,
+      ContextPropagators propagators) {
+    this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
+    this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.propagators = propagators;
   }
 
@@ -43,6 +51,16 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   }
 
   @Override
+  public MeterProvider getMeterProvider() {
+    return meterProvider;
+  }
+
+  /** Returns the {@link SdkMeterProvider} for this {@link OpenTelemetrySdk}. */
+  public SdkMeterProvider getSdkMeterProvider() {
+    return meterProvider.unobfuscate();
+  }
+
+  @Override
   public ContextPropagators getPropagators() {
     return propagators;
   }
@@ -52,7 +70,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (TracerSdkProvider) OpenTelemetry.getGlobalTracerProvider()}.
+   * use patterns like {@code (SdkTracerProvider) OpenTelemetry.getGlobalTracerProvider()}.
    */
   @ThreadSafe
   // Visible for testing
@@ -80,6 +98,33 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     }
 
     public SdkTracerProvider unobfuscate() {
+      return delegate;
+    }
+  }
+
+  /**
+   * This class allows the SDK to unobfuscate an obfuscated static global provider.
+   *
+   * <p>Static global providers are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK specific implementation. For example, we do not want users to
+   * use patterns like {@code (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider()}.
+   */
+  @ThreadSafe
+  // Visible for testing
+  static class ObfuscatedMeterProvider implements MeterProvider {
+
+    private final SdkMeterProvider delegate;
+
+    ObfuscatedMeterProvider(SdkMeterProvider delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public MeterBuilder meterBuilder(String instrumentationName) {
+      return delegate.meterBuilder(instrumentationName);
+    }
+
+    public SdkMeterProvider unobfuscate() {
       return delegate;
     }
   }

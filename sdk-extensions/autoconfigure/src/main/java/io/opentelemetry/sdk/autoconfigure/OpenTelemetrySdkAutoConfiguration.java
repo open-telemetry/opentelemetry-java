@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -109,11 +110,14 @@ public final class OpenTelemetrySdkAutoConfiguration {
             spanExporterCustomizer,
             samplerCustomizer);
 
-    OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(tracerProvider)
-            .setPropagators(propagators)
-            .build();
+    OpenTelemetrySdkBuilder sdkBuilder =
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).setPropagators(propagators);
+
+    if (meterProvider instanceof SdkMeterProvider) {
+      sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);
+    }
+
+    OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
     }

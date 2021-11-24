@@ -3,26 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics.internal;
+package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.api.metrics.DoubleCounterBuilder;
-import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
-import io.opentelemetry.api.metrics.DoubleUpDownCounter;
-import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounterBuilder;
-import io.opentelemetry.api.metrics.LongGaugeBuilder;
-import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.api.metrics.LongHistogramBuilder;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
@@ -50,9 +33,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * </ul>
  */
 @ThreadSafe
-public class NoopMeter implements Meter {
+class DefaultMeter implements Meter {
 
-  private static final NoopMeter INSTANCE = new NoopMeter();
+  private static final DefaultMeter INSTANCE = new DefaultMeter();
 
   public static Meter getInstance() {
     return INSTANCE;
@@ -78,7 +61,7 @@ public class NoopMeter implements Meter {
     return new NoopDoubleObservableInstrumentBuilder();
   }
 
-  private NoopMeter() {}
+  private DefaultMeter() {}
 
   private static class NoopLongCounter implements LongCounter {
     @Override

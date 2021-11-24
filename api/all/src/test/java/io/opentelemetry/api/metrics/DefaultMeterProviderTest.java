@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics.internal;
+package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import org.junit.jupiter.api.Test;
 
-public class NoopMeterProviderTest {
+public class DefaultMeterProviderTest {
   @Test
   void noopMeterProvider_getDoesNotThrow() {
     MeterProvider provider = MeterProvider.noop();
