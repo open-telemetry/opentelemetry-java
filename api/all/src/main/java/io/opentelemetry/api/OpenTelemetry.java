@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -38,6 +39,11 @@ public interface OpenTelemetry {
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */
   TracerProvider getTracerProvider();
+
+  /** Returns the {@link MeterProvider} for this {@link OpenTelemetry}. */
+  default MeterProvider getMeterProvider() {
+    return MeterProvider.noop();
+  }
 
   /**
    * Gets or creates a named tracer instance from the {@link TracerProvider} for this {@link
