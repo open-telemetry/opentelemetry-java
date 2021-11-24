@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -145,7 +147,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     try {
       try {
         metricUpdater.run();
-      } catch (RuntimeException e) {
+      } catch (Throwable e) {
+        propagateIfFatal(e);
         logger.log(
             Level.WARNING,
             "An exception occurred invoking callback for instrument "

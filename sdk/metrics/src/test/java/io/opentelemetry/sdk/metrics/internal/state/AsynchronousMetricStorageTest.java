@@ -120,7 +120,7 @@ public class AsynchronousMetricStorageTest {
   }
 
   @Test
-  void collectAndReset_CatchesRuntimeException() {
+  void collectAndReset_CallbackException() {
     Mockito.when(reader.getSupportedTemporality())
         .thenReturn(EnumSet.allOf(AggregationTemporality.class));
 
@@ -133,8 +133,8 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            value -> {
-              throw new IllegalStateException("Error!");
+            unused -> {
+              throw new RuntimeException("Error!");
             });
     assertThat(
             metricStorage.collectAndReset(
