@@ -3,6 +3,15 @@
 ## Version 1.10.0 (unreleased):
 
 ---
+## Version 1.9.1 2021-11-23:
+
+### Bugfixes
+
+- In Prometheus exporter, only populate exemplars for Prometheus types that support them
+- Fix proto encoding of oneof values in metrics
+- Correctly cleanup OkHttp client resources when shutting down exporters
+
+---
 ## Version 1.9.0 2021-11-11:
 
 ### General
