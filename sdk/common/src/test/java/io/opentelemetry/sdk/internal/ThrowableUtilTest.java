@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +18,9 @@ class ThrowableUtilTest {
     assertThatCode(() -> propagateIfFatal(new RuntimeException("Error!")))
         .doesNotThrowAnyException();
     assertThatCode(() -> propagateIfFatal(new Exception("Error!"))).doesNotThrowAnyException();
-    assertThatCode(() -> propagateIfFatal(new VirtualMachineError("Error!") {}))
+    assertThatThrownBy(() -> propagateIfFatal(new VirtualMachineError("Error!") {}))
         .isInstanceOf(VirtualMachineError.class);
-    assertThatCode(() -> propagateIfFatal(new ThreadDeath())).isInstanceOf(ThreadDeath.class);
-    assertThatCode(() -> propagateIfFatal(new LinkageError())).isInstanceOf(LinkageError.class);
+    assertThatThrownBy(() -> propagateIfFatal(new ThreadDeath())).isInstanceOf(ThreadDeath.class);
+    assertThatThrownBy(() -> propagateIfFatal(new LinkageError())).isInstanceOf(LinkageError.class);
   }
 }

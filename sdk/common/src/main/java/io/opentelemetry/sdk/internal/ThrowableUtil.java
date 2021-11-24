@@ -9,9 +9,7 @@ package io.opentelemetry.sdk.internal;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class ThrowableUtil {
-
-  private ThrowableUtil() {}
+public final class ThrowableUtil {
 
   /**
    * Throw the {@link Throwable} if fatal.
@@ -27,4 +25,6 @@ public class ThrowableUtil {
       throw (LinkageError) t;
     }
   }
+
+  private ThrowableUtil() {}
 }

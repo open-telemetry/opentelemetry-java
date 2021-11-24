@@ -6,16 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -30,7 +27,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -124,26 +120,7 @@ public class AsynchronousMetricStorageTest {
   }
 
   @Test
-  void collectAndReset_CallbackExceptions() {
-    // Should catch runtime exceptions
-    assertThat(
-            collectAndReset(
-                unused -> {
-                  throw new RuntimeException("Error!");
-                }))
-        .isEqualTo(null);
-
-    // Should propagate fatal exceptions
-    assertThatCode(
-            () ->
-                collectAndReset(
-                    unused -> {
-                      throw new ThreadDeath();
-                    }))
-        .isInstanceOf(ThreadDeath.class);
-  }
-
-  private MetricData collectAndReset(Consumer<ObservableLongMeasurement> metricUpdater) {
+  void collectAndReset_CallbackException() {
     Mockito.when(reader.getSupportedTemporality())
         .thenReturn(EnumSet.allOf(AggregationTemporality.class));
 
@@ -156,13 +133,17 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            metricUpdater);
-    return metricStorage.collectAndReset(
-        CollectionInfo.create(handle, all, reader),
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        0,
-        testClock.nanoTime(),
-        false);
+            unused -> {
+              throw new RuntimeException("Error!");
+            });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .isEqualTo(null);
   }
 }
