@@ -6,6 +6,7 @@
 package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -203,6 +204,11 @@ public final class GlobalOpenTelemetry {
     @Override
     public TracerProvider getTracerProvider() {
       return delegate.getTracerProvider();
+    }
+
+    @Override
+    public MeterProvider getMeterProvider() {
+      return delegate.getMeterProvider();
     }
 
     @Override

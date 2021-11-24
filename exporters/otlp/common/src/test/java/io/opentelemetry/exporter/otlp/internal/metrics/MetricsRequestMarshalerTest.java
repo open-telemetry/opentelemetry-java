@@ -74,7 +74,7 @@ class MetricsRequestMarshalerTest {
   }
 
   @Test
-  void longDataPoint_withDefaultValues() {
+  void dataPoint_withDefaultValues() {
     assertThat(
             toNumberDataPoints(
                 singletonList(
@@ -89,7 +89,7 @@ class MetricsRequestMarshalerTest {
                                 2,
                                 /*spanId=*/ "0000000000000002",
                                 /*traceId=*/ "00000000000000000000000000000001",
-                                1))))))
+                                0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -110,11 +110,25 @@ class MetricsRequestMarshalerTest {
                         .setTraceId(
                             ByteString.copyFrom(
                                 new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
-                        .setAsInt(1)
+                        .setAsInt(0)
                         .build())
                 .build());
 
-    assertThat(toNumberDataPoints(singletonList(DoublePointData.create(123, 456, KV_ATTR, 0))))
+    assertThat(
+            toNumberDataPoints(
+                singletonList(
+                    DoublePointData.create(
+                        123,
+                        456,
+                        KV_ATTR,
+                        0,
+                        singletonList(
+                            DoubleExemplarData.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -123,6 +137,20 @@ class MetricsRequestMarshalerTest {
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
                 .setAsDouble(0)
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsDouble(0)
+                        .build())
                 .build());
   }
 

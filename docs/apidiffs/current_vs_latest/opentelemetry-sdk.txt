@@ -1,2 +1,8 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.OpenTelemetrySdk  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProvider getSdkMeterProvider()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.OpenTelemetrySdkBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.OpenTelemetrySdkBuilder setMeterProvider(io.opentelemetry.sdk.metrics.SdkMeterProvider)
