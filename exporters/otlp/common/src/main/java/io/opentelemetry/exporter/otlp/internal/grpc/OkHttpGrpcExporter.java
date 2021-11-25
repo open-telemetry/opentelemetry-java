@@ -33,6 +33,8 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -55,8 +57,26 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private static final String GRPC_STATUS_CANCELLED = "1";
+  private static final String GRPC_STATUS_DEADLINE_EXCEEDED = "4";
+  private static final String GRPC_STATUS_RESOURCE_EXHAUSTED = "8";
+  private static final String GRPC_STATUS_ABORTED = "10";
+  private static final String GRPC_STATUS_OUT_OF_RANGE = "11";
   private static final String GRPC_STATUS_UNIMPLEMENTED = "12";
   private static final String GRPC_STATUS_UNAVAILABLE = "14";
+  private static final String GRPC_STATUS_DATA_LOSS = "15";
+
+  private static final Set<String> RETRIABLE_GRPC_CODES = new HashSet<>();
+
+  static {
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_CANCELLED);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_DEADLINE_EXCEEDED);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_RESOURCE_EXHAUSTED);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_ABORTED);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_OUT_OF_RANGE);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_UNAVAILABLE);
+    RETRIABLE_GRPC_CODES.add(GRPC_STATUS_DATA_LOSS);
+  }
 
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(OkHttpGrpcExporter.class.getName()));
@@ -227,6 +247,18 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
+  }
+
+  static boolean isRetriable(Response response) {
+    // Only retry on gRPC codes which will always come with an HTTP success
+    if (!response.isSuccessful()) {
+      return false;
+    }
+
+    // We don't check trailers for retry since retryable error codes always come with response
+    // headers, not trailers, in practice.
+    String grpcStatus = response.header(GRPC_STATUS);
+    return RETRIABLE_GRPC_CODES.contains(grpcStatus);
   }
 
   // From grpc-java

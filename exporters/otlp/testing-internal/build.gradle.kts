@@ -15,6 +15,7 @@ dependencies {
 
   api("io.opentelemetry.proto:opentelemetry-proto")
   api("org.junit.jupiter:junit-jupiter-api")
+  implementation("org.junit.jupiter:junit-jupiter-params")
 
   implementation("com.linecorp.armeria:armeria-grpc-protocol")
   implementation("com.linecorp.armeria:armeria-junit5")
