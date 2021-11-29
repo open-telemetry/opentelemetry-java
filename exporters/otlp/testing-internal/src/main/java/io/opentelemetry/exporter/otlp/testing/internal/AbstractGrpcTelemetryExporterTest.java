@@ -16,10 +16,12 @@ import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.server.logging.LoggingService;
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -32,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +52,7 @@ import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -69,6 +73,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   private static final AtomicInteger attempts = new AtomicInteger();
 
   @RegisterExtension
+  @Order(1)
+  static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  @Order(2)
   static final ServerExtension server =
       new ServerExtension() {
         @Override
@@ -92,6 +101,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   ExportLogsServiceRequest::getResourceLogsList,
                   ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
 
+          sb.http(0);
+          sb.https(0);
+          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
           sb.decorator(LoggingService.newDecorator());
         }
       };
@@ -129,7 +141,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcExporter.class);
+  LogCapturer logs =
+      LogCapturer.create()
+          .captureForType(usingOkHttp() ? OkHttpGrpcExporter.class : DefaultGrpcExporter.class);
 
   private final String type;
   private final U resourceTelemetryInstance;
@@ -175,6 +189,59 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     List<U> expectedResourceTelemetry = toProto(telemetry);
     assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+  }
+
+  @Test
+  void authorityWithAuth() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint("http://foo:bar@localhost:" + server.httpPort()).build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void tls() throws Exception {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void tls_untrusted() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpsUri().toString()).build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void tls_badCert() {
+    assertThatThrownBy(
+            () ->
+                exporterBuilder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
+                    .build())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Could not set trusted certificates");
   }
 
   @Test
@@ -480,5 +547,14 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
+  }
+
+  private static boolean usingOkHttp() {
+    try {
+      Class.forName("io.grpc.stub.AbstractStub");
+      return false;
+    } catch (ClassNotFoundException e) {
+      return true;
+    }
   }
 }

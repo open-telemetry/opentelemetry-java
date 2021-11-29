@@ -89,7 +89,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
                         + "This usually means that your collector is not configured with an otlp "
                         + "receiver in the \"pipelines\" section of the configuration. "
                         + "Full error message: "
-                        + t.getMessage());
+                        + status.getDescription());
                 break;
               case UNAVAILABLE:
                 logger.log(
@@ -99,12 +99,17 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
                         + "s. Server is UNAVAILABLE. "
                         + "Make sure your collector is running and reachable from this network. "
                         + "Full error message:"
-                        + t.getMessage());
+                        + status.getDescription());
                 break;
               default:
                 logger.log(
                     Level.WARNING,
-                    "Failed to export " + type + "s. Error message: " + t.getMessage());
+                    "Failed to export "
+                        + type
+                        + "s. Server responded with gRPC status code "
+                        + status.getCode().value()
+                        + ". Error message: "
+                        + status.getDescription());
                 break;
             }
             if (logger.isLoggable(Level.FINEST)) {
