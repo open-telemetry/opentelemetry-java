@@ -538,8 +538,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 .setMaxAttempts(2)
                 // We don't validate backoff time itself in these tests, just that retries
                 // occur. Keep the tests fast by using minimal backoff.
-                .setInitialBackoff(Duration.ofNanos(1))
-                .setMaxBackoff(Duration.ofNanos(1))
+                .setInitialBackoff(Duration.ofMillis(1))
+                .setMaxBackoff(Duration.ofMillis(1))
                 .setBackoffMultiplier(1)
                 .build())
         .build();
