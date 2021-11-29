@@ -31,19 +31,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class OkHttpRetrierTest {
+class RetryInterceptorTest {
 
   @RegisterExtension static final MockWebServerExtension server = new MockWebServerExtension();
 
-  @Mock private OkHttpRetrier.Sleeper sleeper;
-  @Mock private OkHttpRetrier.BoundedLongGenerator random;
+  @Mock private RetryInterceptor.Sleeper sleeper;
+  @Mock private RetryInterceptor.BoundedLongGenerator random;
 
   private OkHttpClient client;
 
   @BeforeEach
   void setUp() {
-    OkHttpRetrier retrier =
-        new OkHttpRetrier(
+    RetryInterceptor retrier =
+        new RetryInterceptor(
             RetryPolicy.builder()
                 .setBackoffMultiplier(1.6)
                 .setInitialBackoff(Duration.ofSeconds(1))

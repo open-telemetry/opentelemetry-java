@@ -14,7 +14,7 @@ import okhttp3.Interceptor;
 import okhttp3.Response;
 
 /** Retrier of OkHttp requests. */
-public final class OkHttpRetrier implements Interceptor {
+public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetriableError;
@@ -22,7 +22,7 @@ public final class OkHttpRetrier implements Interceptor {
   private final BoundedLongGenerator randomLong;
 
   /** Constructs a new retrier. */
-  public OkHttpRetrier(RetryPolicy retryPolicy, Function<Response, Boolean> isRetriableError) {
+  public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetriableError) {
     this(
         retryPolicy,
         isRetriableError,
@@ -31,7 +31,7 @@ public final class OkHttpRetrier implements Interceptor {
   }
 
   // Visible for testing
-  OkHttpRetrier(
+  RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetriableError,
       Sleeper sleeper,
