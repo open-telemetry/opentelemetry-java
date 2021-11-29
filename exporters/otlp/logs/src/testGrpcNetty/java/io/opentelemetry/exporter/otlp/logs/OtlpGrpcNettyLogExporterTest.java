@@ -92,6 +92,12 @@ class OtlpGrpcNettyLogExporterTest
       }
 
       @Override
+      public TelemetryExporterBuilder<LogData> addRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.addRetryPolicy(retryPolicy);
+        return this;
+      }
+
+      @Override
       public TelemetryExporter<LogData> build() {
         return TelemetryExporter.wrap(builder.build());
       }

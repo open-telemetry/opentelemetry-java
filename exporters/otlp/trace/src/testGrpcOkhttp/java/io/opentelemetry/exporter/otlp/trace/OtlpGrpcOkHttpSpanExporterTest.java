@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
@@ -81,6 +82,12 @@ class OtlpGrpcOkHttpSpanExporterTest
       @Override
       public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> addRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.addRetryPolicy(retryPolicy);
         return this;
       }
 

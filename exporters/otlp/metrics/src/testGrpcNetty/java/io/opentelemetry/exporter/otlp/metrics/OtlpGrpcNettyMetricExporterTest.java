@@ -94,6 +94,12 @@ class OtlpGrpcNettyMetricExporterTest
       }
 
       @Override
+      public TelemetryExporterBuilder<MetricData> addRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.addRetryPolicy(retryPolicy);
+        return this;
+      }
+
+      @Override
       public TelemetryExporter<MetricData> build() {
         return TelemetryExporter.wrap(builder.build());
       }
