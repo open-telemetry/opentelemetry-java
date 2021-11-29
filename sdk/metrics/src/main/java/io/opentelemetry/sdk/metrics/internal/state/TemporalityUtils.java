@@ -17,11 +17,7 @@ final class TemporalityUtils {
    * @param preferred The preferred temporality of the exporter.
    */
   static AggregationTemporality resolveTemporality(@Nullable AggregationTemporality preferred) {
-    // If preferred temporality is provided respect it
-    if (preferred != null) {
-      return preferred;
-    }
-    // Else, default to cumulative temporality
-    return AggregationTemporality.CUMULATIVE;
+    // If preferred temporality is provided use it, else default to cumulative
+    return preferred == null ? AggregationTemporality.CUMULATIVE : preferred;
   }
 }
