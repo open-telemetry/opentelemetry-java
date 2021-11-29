@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import javax.annotation.Nullable;
 
 /**
@@ -67,11 +66,6 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
       return metricProducer.collectAllMetrics();
     }
     return Collections.emptyList();
-  }
-
-  @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.of(AggregationTemporality.CUMULATIVE, AggregationTemporality.DELTA);
   }
 
   @Override
