@@ -28,7 +28,8 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
   /**
    * Constructs metric storage for a given synchronous instrument and view.
    *
-   * @return The storage, or {@code null} if the instrument should not be recorded.
+   * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
+   *     recorded.
    */
   static <T> SynchronousMetricStorage create(
       View view, InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {

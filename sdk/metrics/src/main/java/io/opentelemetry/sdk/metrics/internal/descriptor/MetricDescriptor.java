@@ -65,10 +65,25 @@ public abstract class MetricDescriptor {
   @Override
   public abstract int hashCode();
 
-  /** Returns true if another metric descriptor is compatible with this one. */
+  /**
+   * Returns true if another metric descriptor is compatible with this one.
+   *
+   * <p>A metric descriptor is compatible with another if the following are true:
+   *
+   * <ul>
+   *   <li>{@link #getName()} is equal
+   *   <li>{@link #getDescription()} is equal
+   *   <li>{@link #getUnit()} is equal
+   *   <li>{@link InstrumentDescriptor#getType()} is equal
+   *   <li>{@link InstrumentDescriptor#getValueType()} is equal
+   * </ul>
+   */
   public boolean isCompatibleWith(MetricDescriptor other) {
     return Objects.equals(getName(), other.getName())
         && Objects.equals(getDescription(), other.getDescription())
-        && Objects.equals(getUnit(), other.getUnit());
+        && Objects.equals(getUnit(), other.getUnit())
+        && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
+        && Objects.equals(
+            getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
   }
 }
