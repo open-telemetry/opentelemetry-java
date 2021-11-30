@@ -63,15 +63,9 @@ class LogsRequestMarshalerTest {
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
-                    .setContext(
-                        Context.root()
-                            .with(
-                                Span.wrap(
-                                    SpanContext.create(
-                                        TRACE_ID,
-                                        SPAN_ID,
-                                        TraceFlags.getDefault(),
-                                        TraceState.getDefault()))))
+                    .setSpanContext(
+                        SpanContext.create(
+                            TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
@@ -103,7 +97,7 @@ class LogsRequestMarshalerTest {
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
-                    .setContext(
+                    .setSpanContextFromContext(
                         Context.root()
                             .with(
                                 Span.wrap(

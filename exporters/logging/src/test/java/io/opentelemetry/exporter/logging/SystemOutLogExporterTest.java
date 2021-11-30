@@ -59,7 +59,7 @@ class SystemOutLogExporterTest {
         .setBody("message")
         .setSeverity(Severity.ERROR3)
         .setEpoch(timestamp, TimeUnit.MILLISECONDS)
-        .setContext(
+        .setSpanContextFromContext(
             Context.root()
                 .with(
                     Span.wrap(

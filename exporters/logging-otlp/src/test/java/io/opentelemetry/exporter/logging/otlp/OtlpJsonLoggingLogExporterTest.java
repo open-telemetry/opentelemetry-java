@@ -44,15 +44,12 @@ class OtlpJsonLoggingLogExporterTest {
           .setSeverityText("INFO")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
-          .setContext(
-              Context.root()
-                  .with(
-                      Span.wrap(
-                          SpanContext.create(
-                              "12345678876543211234567887654322",
-                              "8765432112345876",
-                              TraceFlags.getDefault(),
-                              TraceState.getDefault()))))
+          .setSpanContext(
+              SpanContext.create(
+                  "12345678876543211234567887654322",
+                  "8765432112345876",
+                  TraceFlags.getDefault(),
+                  TraceState.getDefault()))
           .build();
 
   private static final LogData LOG2 =
@@ -63,7 +60,7 @@ class OtlpJsonLoggingLogExporterTest {
           .setSeverityText("INFO")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
-          .setContext(
+          .setSpanContextFromContext(
               Context.root()
                   .with(
                       Span.wrap(

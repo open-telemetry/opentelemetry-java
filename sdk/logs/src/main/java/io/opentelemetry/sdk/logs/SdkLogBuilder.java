@@ -37,7 +37,7 @@ final class SdkLogBuilder implements LogBuilder {
 
   @Override
   public LogBuilder setContext(Context context) {
-    logDataBuilder.setContext(context);
+    logDataBuilder.setSpanContextFromContext(context);
     return this;
   }
 
