@@ -151,7 +151,7 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
-          new RetryInterceptor(retryPolicy, OkHttpGrpcExporter::isRetriable));
+          new RetryInterceptor(retryPolicy, OkHttpGrpcExporter::isRetryable));
     }
 
     return new OkHttpGrpcExporter<>(

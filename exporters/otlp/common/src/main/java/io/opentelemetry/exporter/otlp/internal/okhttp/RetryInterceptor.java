@@ -17,15 +17,15 @@ import okhttp3.Response;
 public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
-  private final Function<Response, Boolean> isRetriableError;
+  private final Function<Response, Boolean> isRetryable;
   private final Sleeper sleeper;
   private final BoundedLongGenerator randomLong;
 
   /** Constructs a new retrier. */
-  public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetriableError) {
+  public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetryable) {
     this(
         retryPolicy,
-        isRetriableError,
+        isRetryable,
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -33,11 +33,11 @@ public final class RetryInterceptor implements Interceptor {
   // Visible for testing
   RetryInterceptor(
       RetryPolicy retryPolicy,
-      Function<Response, Boolean> isRetriableError,
+      Function<Response, Boolean> isRetryable,
       Sleeper sleeper,
       BoundedLongGenerator randomLong) {
     this.retryPolicy = retryPolicy;
-    this.isRetriableError = isRetriableError;
+    this.isRetryable = isRetryable;
     this.sleeper = sleeper;
     this.randomLong = randomLong;
   }
@@ -45,7 +45,7 @@ public final class RetryInterceptor implements Interceptor {
   @Override
   public Response intercept(Chain chain) throws IOException {
     Response response = chain.proceed(chain.request());
-    if (!Boolean.TRUE.equals(isRetriableError.apply(response))) {
+    if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
       return response;
     }
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
@@ -66,7 +66,7 @@ public final class RetryInterceptor implements Interceptor {
       // Close response from previous attempt and try again.
       response.close();
       response = chain.proceed(chain.request());
-      if (!Boolean.TRUE.equals(isRetriableError.apply(response))) {
+      if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
         return response;
       }
       nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
