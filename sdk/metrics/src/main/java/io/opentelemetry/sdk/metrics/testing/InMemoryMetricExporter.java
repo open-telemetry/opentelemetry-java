@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -85,11 +84,6 @@ public final class InMemoryMetricExporter implements MetricExporter {
    */
   public void reset() {
     finishedMetricItems.clear();
-  }
-
-  @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.of(AggregationTemporality.CUMULATIVE, AggregationTemporality.DELTA);
   }
 
   @Override

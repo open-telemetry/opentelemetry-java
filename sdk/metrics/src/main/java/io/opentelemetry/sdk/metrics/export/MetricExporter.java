@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
-import java.util.EnumSet;
 import javax.annotation.Nullable;
 
 /**
@@ -19,11 +18,6 @@ import javax.annotation.Nullable;
  * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
  */
 public interface MetricExporter {
-
-  /** Returns the set of all supported temporalities for this exporter. */
-  default EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.allOf(AggregationTemporality.class);
-  }
 
   /** Returns the preferred temporality for metrics. */
   @Nullable
