@@ -97,6 +97,12 @@ class OtlpGrpcNettySpanExporterTest
       }
 
       @Override
+      public TelemetryExporterBuilder<SpanData> addRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.addRetryPolicy(retryPolicy);
+        return this;
+      }
+
+      @Override
       public TelemetryExporter<SpanData> build() {
         return TelemetryExporter.wrap(builder.build());
       }

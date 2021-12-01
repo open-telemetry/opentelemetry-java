@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +21,8 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> addHeader(String key, String value);
 
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
+
+  TelemetryExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy);
 
   TelemetryExporter<T> build();
 }

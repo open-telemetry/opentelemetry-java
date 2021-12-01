@@ -55,9 +55,6 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
-  private static final String GRPC_STATUS_UNIMPLEMENTED = "12";
-  private static final String GRPC_STATUS_UNAVAILABLE = "14";
-
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(OkHttpGrpcExporter.class.getName()));
 
@@ -154,7 +151,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                         : "HTTP status code " + response.code();
                 String errorMessage = grpcMessage(response);
 
-                if (GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
+                if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
                   logger.log(
                       Level.SEVERE,
                       "Failed to export "
@@ -164,7 +161,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                           + "receiver in the \"pipelines\" section of the configuration. "
                           + "Full error message: "
                           + errorMessage);
-                } else if (GRPC_STATUS_UNAVAILABLE.equals(status)) {
+                } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
                   logger.log(
                       Level.SEVERE,
                       "Failed to export "
@@ -227,6 +224,18 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
+  }
+
+  static boolean isRetryable(Response response) {
+    // Only retry on gRPC codes which will always come with an HTTP success
+    if (!response.isSuccessful()) {
+      return false;
+    }
+
+    // We don't check trailers for retry since retryable error codes always come with response
+    // headers, not trailers, in practice.
+    String grpcStatus = response.header(GRPC_STATUS);
+    return GrpcStatusUtil.retryableStatusCodes().contains(grpcStatus);
   }
 
   // From grpc-java

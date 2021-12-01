@@ -41,6 +41,7 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.skyscreamer:jsonassert")
 
