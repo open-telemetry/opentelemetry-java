@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /**
  * A "null object" Aggregator which denotes no aggregation should occur.
@@ -23,12 +22,14 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class EmptyAggregator implements Aggregator<Void> {
+public final class DropAggregator implements Aggregator<Object> {
 
-  public static final Aggregator<Void> INSTANCE = new EmptyAggregator();
+  private static final Object ACCUMULATION = new Object();
 
-  private static final AggregatorHandle<Void> HANDLE =
-      new AggregatorHandle<Void>(ExemplarReservoir.noSamples()) {
+  public static final Aggregator<Object> INSTANCE = new DropAggregator();
+
+  private static final AggregatorHandle<Object> HANDLE =
+      new AggregatorHandle<Object>(ExemplarReservoir.noSamples()) {
         @Override
         protected void doRecordLong(long value) {}
 
@@ -36,39 +37,38 @@ public final class EmptyAggregator implements Aggregator<Void> {
         protected void doRecordDouble(double value) {}
 
         @Override
-        protected Void doAccumulateThenReset(List<ExemplarData> exemplars) {
-          return null;
+        protected Object doAccumulateThenReset(List<ExemplarData> exemplars) {
+          return ACCUMULATION;
         }
       };
 
-  private EmptyAggregator() {}
+  private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<Void> createHandle() {
+  public AggregatorHandle<Object> createHandle() {
     return HANDLE;
   }
 
   @Override
-  public Void merge(Void previousAccumulation, Void accumulation) {
-    return null;
+  public Object merge(Object previousAccumulation, Object accumulation) {
+    return ACCUMULATION;
   }
 
   @Override
-  public Void diff(Void previousAccumulation, Void accumulation) {
-    return null;
+  public Object diff(Object previousAccumulation, Object accumulation) {
+    return ACCUMULATION;
   }
 
   @Override
-  @Nullable
   public MetricData toMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor descriptor,
-      Map<Attributes, Void> accumulationByLabels,
+      Map<Attributes, Object> accumulationByLabels,
       AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return null;
+    return EmptyMetricData.getInstance();
   }
 }

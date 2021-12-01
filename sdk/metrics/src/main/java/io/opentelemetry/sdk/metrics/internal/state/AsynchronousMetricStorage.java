@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -29,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -61,7 +61,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    if (Aggregator.empty() == aggregator) {
+    if (Aggregator.drop() == aggregator) {
       return empty();
     }
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -132,7 +132,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   @Override
-  @Nullable
   public MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,
@@ -154,7 +153,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
                 + getMetricDescriptor().getName()
                 + ".",
             e);
-        return null;
+        return EmptyMetricData.getInstance();
       }
       return storage.buildMetricFor(
           collectionInfo.getCollector(),

@@ -10,21 +10,21 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 /** Configuration representing no aggregation. */
-class NoAggregation extends Aggregation {
+class DropAggregation extends Aggregation {
 
-  static final Aggregation INSTANCE = new NoAggregation();
+  static final Aggregation INSTANCE = new DropAggregation();
 
-  private NoAggregation() {}
+  private DropAggregation() {}
 
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return (Aggregator<T>) Aggregator.empty();
+    return (Aggregator<T>) Aggregator.drop();
   }
 
   @Override
   public String toString() {
-    return "NoAggregation";
+    return "DropAggregation";
   }
 }

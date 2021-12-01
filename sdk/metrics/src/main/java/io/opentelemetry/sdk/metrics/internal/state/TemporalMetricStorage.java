@@ -10,12 +10,12 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Stores last reported time and (optional) accumulation for metrics. */
@@ -41,9 +41,8 @@ class TemporalMetricStorage<T> {
    *     be delta (for synchronous) or cumulative (for asynchronous).
    * @param startEpochNanos The timestamp when the metrics SDK started.
    * @param epochNanos The current collection timestamp.
-   * @return The {@link MetricData} points or {@code null}.
+   * @return The {@link MetricData} points.
    */
-  @Nullable
   synchronized MetricData buildMetricFor(
       CollectionHandle collector,
       Resource resource,
@@ -91,8 +90,8 @@ class TemporalMetricStorage<T> {
       // Async instruments record the raw measurement.
       reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
     }
-    if (result == null || result.isEmpty()) {
-      return null;
+    if (result.isEmpty()) {
+      return EmptyMetricData.getInstance();
     }
     return aggregator.toMetricData(
         resource,

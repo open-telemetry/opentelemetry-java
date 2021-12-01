@@ -35,7 +35,7 @@ class DefaultAggregation extends Aggregation {
         return LastValueAggregation.INSTANCE;
     }
     logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + instrument);
-    return NoAggregation.INSTANCE;
+    return DropAggregation.INSTANCE;
   }
 
   @Override

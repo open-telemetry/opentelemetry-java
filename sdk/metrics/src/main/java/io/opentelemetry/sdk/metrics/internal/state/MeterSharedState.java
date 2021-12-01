@@ -63,7 +63,9 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               epochNanos,
               suppressSynchronousCollection);
-      if (current != null) {
+      // Ignore if the metric data doesn't have any data points, for example when aggregation is
+      // Aggregation#drop()
+      if (!current.isEmpty()) {
         result.add(current);
       }
     }

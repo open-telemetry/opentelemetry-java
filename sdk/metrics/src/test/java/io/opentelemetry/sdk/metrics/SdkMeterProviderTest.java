@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -865,6 +866,25 @@ class SdkMeterProviderTest {
                                 .hasStartEpochNanos(collectorOneTimeOne)
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(1)));
+  }
+
+  @Test
+  void collectAll_DropAggregator() {
+    InMemoryMetricReader collector = InMemoryMetricReader.create();
+    Meter meter =
+        sdkMeterProviderBuilder
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder().setAggregation(Aggregation.drop()).build())
+            .registerMetricReader(collector)
+            .build()
+            .get("my-meter");
+    meter.counterBuilder("sync-counter").build().add(1);
+    meter.counterBuilder("async-counter").buildWithCallback(measurement -> measurement.observe(1));
+    assertThat(collector.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasResource(RESOURCE).hasName("async-counter"));
   }
 
   @Test
