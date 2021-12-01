@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.Random;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  */
 final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
   private final Supplier<Random> randomSupplier;
-  private final LongAdder numMeasurements = new LongAdder();
+  private final AtomicLong numMeasurements = new AtomicLong();
 
   /**
    * Instantiates an exemplar reservoir of fixed size.
@@ -41,7 +41,7 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
   protected int reservoirIndexFor(double value, Attributes attributes, Context context) {
     int count = numMeasurements.intValue() + 1;
     int index = this.randomSupplier.get().nextInt(count > 0 ? count : 1);
-    numMeasurements.increment();
+    numMeasurements.incrementAndGet();
     if (index < maxSize()) {
       return index;
     }
@@ -51,6 +51,6 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
   @Override
   protected void reset() {
     // Reset the count so exemplars are likely to be filled.
-    numMeasurements.reset();
+    numMeasurements.set(0);
   }
 }

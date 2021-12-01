@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.DoubleAdder;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -96,7 +96,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   }
 
   static final class Handle extends AggregatorHandle<DoubleAccumulation> {
-    private final DoubleAdder current = new DoubleAdder();
+    private final AtomicLong current = new AtomicLong();
 
     Handle(ExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
@@ -104,12 +104,55 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
 
     @Override
     protected DoubleAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
-      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+      return DoubleAccumulation.create(getAndSet(current, 0), exemplars);
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      current.add(value);
+      addAndGet(current, value);
+    }
+
+    /**
+     * Helper to replicate {@code double getAndSet(double)} functionality on an {@link AtomicLong}
+     * being used to store a double.
+     *
+     * <p>Heavily influenced by {@code com.google.common.util.concurrent.AtomicDouble}.
+     *
+     * @param atomicLong an atomic long being used to store a double via {@link
+     *     Double#doubleToLongBits(double)}
+     * @param newValue the new value
+     * @return the previous value
+     */
+    private static double getAndSet(AtomicLong atomicLong, double newValue) {
+      long nextLongBits = Double.doubleToLongBits(newValue);
+      long prev;
+      do {
+        prev = atomicLong.get();
+      } while (!atomicLong.compareAndSet(prev, nextLongBits));
+      return Double.longBitsToDouble(prev);
+    }
+
+    /**
+     * Helper to replicate {@code double addAndGet(double)} functionality on an {@link AtomicLong}
+     * being used to store a double.
+     *
+     * <p>Heavily influenced by {@code com.google.common.util.concurrent.AtomicDouble}.
+     *
+     * @param atomicLong an atomic long being used to store a double via {@link
+     *     Double#doubleToLongBits(double)}
+     * @param delta the value to add
+     * @return the updated value
+     */
+    private static double addAndGet(AtomicLong atomicLong, double delta) {
+      while (true) {
+        long currentLongBits = atomicLong.get();
+        double currentDouble = Double.longBitsToDouble(currentLongBits);
+        double nextDouble = currentDouble + delta;
+        long nextLongBits = Double.doubleToLongBits(nextDouble);
+        if (atomicLong.compareAndSet(currentLongBits, nextLongBits)) {
+          return nextDouble;
+        }
+      }
     }
   }
 }
