@@ -14,13 +14,11 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -97,15 +95,9 @@ class LogsRequestMarshalerTest {
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
-                    .setSpanContextFromContext(
-                        Context.root()
-                            .with(
-                                Span.wrap(
-                                    SpanContext.create(
-                                        TRACE_ID,
-                                        SPAN_ID,
-                                        TraceFlags.getDefault(),
-                                        TraceState.getDefault()))))
+                    .setSpanContext(
+                        SpanContext.create(
+                            TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));

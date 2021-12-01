@@ -64,7 +64,7 @@ class LogDataBuilderTest {
 
     LogDataBuilder builder = LogDataBuilder.create(resource, libraryInfo);
 
-    LogData result = builder.setSpanContextFromContext(context).build();
+    LogData result = builder.setContext(context).build();
     assertSame(spanContext, result.getSpanContext());
   }
 }

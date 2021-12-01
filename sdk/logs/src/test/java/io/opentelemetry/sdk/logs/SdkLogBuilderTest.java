@@ -53,7 +53,7 @@ class SdkLogBuilderTest {
     builder.setAttributes(attrs);
     verify(delegate).setAttributes(attrs);
     builder.setContext(context);
-    verify(delegate).setSpanContextFromContext(context);
+    verify(delegate).setContext(context);
     builder.setName(name);
     verify(delegate).setName(name);
     builder.setSeverity(severity);
