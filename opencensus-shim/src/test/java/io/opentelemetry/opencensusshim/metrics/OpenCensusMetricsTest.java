@@ -26,9 +26,7 @@ class OpenCensusMetricsTest {
   void capturesOpenCensusAndOtelMetrics() throws InterruptedException {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider otelMetrics =
-        SdkMeterProvider.builder()
-            .registerMetricReader(OpenCensusMetrics.attachTo(reader))
-            .buildAndRegisterGlobal();
+        SdkMeterProvider.builder().registerMetricReader(OpenCensusMetrics.attachTo(reader)).build();
     // Record an otel metric.
     otelMetrics.meterBuilder("otel").build().counterBuilder("otel.sum").build().add(1);
     // Record an OpenCensus metric.

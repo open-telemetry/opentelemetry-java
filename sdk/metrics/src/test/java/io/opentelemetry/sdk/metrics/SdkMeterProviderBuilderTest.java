@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
@@ -15,12 +14,13 @@ import org.junit.jupiter.api.Test;
 class SdkMeterProviderBuilderTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Testing deprecated methods
   void buildAndRegisterGlobal() {
     SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
     try {
-      assertThat(GlobalMeterProvider.get()).isSameAs(meterProvider);
+      assertThat(io.opentelemetry.api.metrics.GlobalMeterProvider.get()).isSameAs(meterProvider);
     } finally {
-      GlobalMeterProvider.set(null);
+      io.opentelemetry.api.metrics.GlobalMeterProvider.set(null);
     }
   }
 

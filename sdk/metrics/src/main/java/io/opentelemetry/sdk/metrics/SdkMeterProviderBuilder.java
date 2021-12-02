@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -109,11 +108,13 @@ public final class SdkMeterProviderBuilder {
    * SdkMeterProviderBuilder} and registers it as the global {@link
    * io.opentelemetry.api.metrics.MeterProvider}.
    *
-   * @see GlobalMeterProvider
+   * @deprecated Use {@code OpenTelemetrySdkBuilder.buildAndRegisterGlobal} and {@link
+   *     io.opentelemetry.api.GlobalOpenTelemetry}.
    */
+  @Deprecated
   public SdkMeterProvider buildAndRegisterGlobal() {
     SdkMeterProvider meterProvider = build();
-    GlobalMeterProvider.set(meterProvider);
+    io.opentelemetry.api.metrics.GlobalMeterProvider.set(meterProvider);
     return meterProvider;
   }
 
@@ -149,8 +150,6 @@ public final class SdkMeterProviderBuilder {
    * using {@link SdkMeterProviderBuilder#buildAndRegisterGlobal()} for use by instrumentation when
    * that requires access to a global instance of {@link
    * io.opentelemetry.api.metrics.MeterProvider}.
-   *
-   * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(
