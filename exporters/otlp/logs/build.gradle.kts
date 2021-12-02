@@ -7,7 +7,7 @@ plugins {
   id("org.unbroken-dome.test-sets")
 }
 
-description = "OpenTelemetry Protocol Trace Exporter"
+description = "OpenTelemetry Protocol Logs Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.logs")
 
 testSets {
