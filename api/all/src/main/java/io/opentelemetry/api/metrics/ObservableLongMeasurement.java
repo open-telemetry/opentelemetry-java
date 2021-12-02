@@ -12,15 +12,34 @@ public interface ObservableLongMeasurement extends ObservableMeasurement {
   /**
    * Records a measurement.
    *
-   * @param value The measurement amount. MUST be non-negative.
+   * @param value The measurement amount.
    */
-  void observe(long value);
+  default void observe(long value) {
+    record(value);
+  }
 
   /**
    * Records a measurement with a set of attributes.
    *
-   * @param value The measurement amount. MUST be non-negative.
+   * @param value The measurement amount.
    * @param attributes A set of attributes to associate with the count.
    */
-  void observe(long value, Attributes attributes);
+  default void observe(long value, Attributes attributes) {
+    record(value, attributes);
+  }
+
+  /**
+   * Records a measurement.
+   *
+   * @param value The measurement amount.
+   */
+  void record(long value);
+
+  /**
+   * Records a measurement with a set of attributes.
+   *
+   * @param value The measurement amount.
+   * @param attributes A set of attributes to associate with the count.
+   */
+  void record(long value, Attributes attributes);
 }
