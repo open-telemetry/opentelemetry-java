@@ -17,7 +17,9 @@ import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
 import java.io.InputStream;
 
-// Adapted from the protoc generated code for LogsServiceGrpc.
+/**
+ * Adapted from the protoc generated code for LogsServiceGrpc.
+ */
 final class MarshalerLogsServiceGrpc {
 
   private static final String SERVICE_NAME = "opentelemetry.proto.collector.logs.v1.LogsService";
