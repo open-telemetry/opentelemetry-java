@@ -254,11 +254,12 @@ public class OtlpPipelineStressTest {
                 PeriodicMetricReader.builder(metricExporter)
                     .setInterval(Duration.ofSeconds(1))
                     .newMetricReaderFactory())
-            .buildAndRegisterGlobal();
+            .build();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
+            .setMeterProvider(meterProvider)
             .setEndpoint(
                 "http://"
                     + toxiproxyContainer.getHost()
@@ -268,6 +269,7 @@ public class OtlpPipelineStressTest {
             .build();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.builder(spanExporter)
+            .setMeterProvider(meterProvider)
             //            .setMaxQueueSize(1000)
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
