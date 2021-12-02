@@ -100,8 +100,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1);
-              m.observe(2, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1);
+              m.record(2, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 
@@ -113,8 +113,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1.0e1);
-              m.observe(-27.4, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1.0e1);
+              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 
@@ -126,8 +126,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1);
-              m.observe(2, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1);
+              m.record(2, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 
@@ -140,8 +140,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1.0e1);
-              m.observe(-27.4, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1.0e1);
+              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 
@@ -153,8 +153,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1);
-              m.observe(2, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1);
+              m.record(2, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 
@@ -167,8 +167,8 @@ public class DefaultMeterTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.observe(1.0e1);
-              m.observe(-27.4, Attributes.of(stringKey("thing"), "engine"));
+              m.record(1.0e1);
+              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
             });
   }
 }

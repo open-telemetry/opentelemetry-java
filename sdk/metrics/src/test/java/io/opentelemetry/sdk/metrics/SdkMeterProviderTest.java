@@ -333,26 +333,26 @@ class SdkMeterProviderTest {
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(-10, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testLongValueObserver")
         .ofLongs()
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
 
     sdkMeter
         .counterBuilder("testDoubleSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testDoubleUpDownSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(-10.1, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testDoubleValueObserver")
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
@@ -469,7 +469,7 @@ class SdkMeterProviderTest {
         .gaugeBuilder("test")
         .setDescription("desc")
         .setUnit("unit")
-        .buildWithCallback(o -> o.observe(1));
+        .buildWithCallback(o -> o.record(1));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -561,7 +561,7 @@ class SdkMeterProviderTest {
         .gaugeBuilder("test")
         .setDescription("desc")
         .setUnit("unit")
-        .buildWithCallback(obs -> obs.observe(1.0));
+        .buildWithCallback(obs -> obs.record(1.0));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             metric ->
@@ -635,26 +635,26 @@ class SdkMeterProviderTest {
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(-10, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testLongValueObserver")
         .ofLongs()
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
 
     sdkMeter
         .counterBuilder("testDoubleSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testDoubleUpDownSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(-10.1, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testDoubleValueObserver")
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
 
     testClock.advance(Duration.ofNanos(50));
 
@@ -880,7 +880,7 @@ class SdkMeterProviderTest {
             .build()
             .get("my-meter");
     meter.counterBuilder("sync-counter").build().add(1);
-    meter.counterBuilder("async-counter").buildWithCallback(measurement -> measurement.observe(1));
+    meter.counterBuilder("async-counter").buildWithCallback(measurement -> measurement.record(1));
     assertThat(collector.collectAllMetrics())
         .hasSize(1)
         .satisfiesExactly(

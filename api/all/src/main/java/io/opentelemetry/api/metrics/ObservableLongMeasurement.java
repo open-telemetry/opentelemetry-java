@@ -13,7 +13,9 @@ public interface ObservableLongMeasurement extends ObservableMeasurement {
    * Records a measurement.
    *
    * @param value The measurement amount.
+   * @deprecated Use {@link #record(long)}.
    */
+  @Deprecated
   default void observe(long value) {
     record(value);
   }
@@ -23,7 +25,9 @@ public interface ObservableLongMeasurement extends ObservableMeasurement {
    *
    * @param value The measurement amount.
    * @param attributes A set of attributes to associate with the count.
+   * @deprecated Use {@link #record(long, Attributes)}.
    */
+  @Deprecated
   default void observe(long value, Attributes attributes) {
     record(value, attributes);
   }

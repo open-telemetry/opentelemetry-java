@@ -165,7 +165,9 @@ Comparing source compatibility of  against
 	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) void observe(double)
+		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) void observe(double, io.opentelemetry.api.common.Attributes)
+		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double, io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableLongMeasurement  (not serializable)
@@ -173,7 +175,9 @@ Comparing source compatibility of  against
 	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) void observe(long)
+		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) void observe(long, io.opentelemetry.api.common.Attributes)
+		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long, io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableMeasurement  (not serializable)

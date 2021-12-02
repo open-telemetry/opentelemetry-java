@@ -171,7 +171,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
           .setUnit("1")
           .buildWithCallback(
               result ->
-                  result.observe(
+                  result.record(
                       queue.size(),
                       Attributes.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
       processedSpansCounter =

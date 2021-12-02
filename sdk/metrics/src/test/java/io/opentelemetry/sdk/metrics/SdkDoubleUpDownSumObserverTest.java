@@ -57,7 +57,7 @@ class SdkDoubleUpDownSumObserverTest {
         .upDownCounterBuilder("testObserver")
         .ofDoubles()
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -120,7 +120,7 @@ class SdkDoubleUpDownSumObserverTest {
         .upDownCounterBuilder("testObserver")
         .ofDoubles()
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

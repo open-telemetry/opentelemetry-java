@@ -80,7 +80,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
           @Override
           public void record(double value) {
-            observe(value, Attributes.empty());
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(
@@ -113,7 +113,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
           @Override
           public void record(long value) {
-            observe(value, Attributes.empty());
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(
