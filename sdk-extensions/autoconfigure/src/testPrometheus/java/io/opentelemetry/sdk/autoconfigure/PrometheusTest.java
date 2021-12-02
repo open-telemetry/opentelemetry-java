@@ -39,7 +39,7 @@ class PrometheusTest {
         .get("test")
         .gaugeBuilder("test")
         .ofLongs()
-        .buildWithCallback(result -> result.observe(2, Attributes.empty()));
+        .buildWithCallback(result -> result.record(2, Attributes.empty()));
 
     WebClient client = WebClient.of("http://127.0.0.1:" + port);
     AggregatedHttpResponse response = client.get("/metrics").aggregate().join();

@@ -69,7 +69,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
           @Override
-          public void observe(double value, Attributes attributes) {
+          public void record(double value, Attributes attributes) {
             T accumulation =
                 aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
             if (accumulation != null) {
@@ -79,8 +79,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
 
           @Override
-          public void observe(double value) {
-            observe(value, Attributes.empty());
+          public void record(double value) {
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(
@@ -102,7 +102,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         new ObservableLongMeasurement() {
 
           @Override
-          public void observe(long value, Attributes attributes) {
+          public void record(long value, Attributes attributes) {
             T accumulation =
                 aggregator.accumulateLongMeasurement(value, attributes, Context.current());
             if (accumulation != null) {
@@ -112,8 +112,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
 
           @Override
-          public void observe(long value) {
-            observe(value, Attributes.empty());
+          public void record(long value) {
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(

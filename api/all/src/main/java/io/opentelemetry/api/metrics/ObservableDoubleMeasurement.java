@@ -12,15 +12,38 @@ public interface ObservableDoubleMeasurement extends ObservableMeasurement {
   /**
    * Records a measurement.
    *
-   * @param value The measurement amount. MUST be non-negative.
+   * @param value The measurement amount.
+   * @deprecated Use {@link #record(double)}.
    */
-  void observe(double value);
+  @Deprecated
+  default void observe(double value) {
+    record(value);
+  }
 
   /**
    * Records a measurement with a set of attributes.
    *
-   * @param value The measurement amount. MUST be non-negative.
+   * @param value The measurement amount.
+   * @param attributes A set of attributes to associate with the count.
+   * @deprecated Use {@link #record(double, Attributes)}.
+   */
+  @Deprecated
+  default void observe(double value, Attributes attributes) {
+    record(value, attributes);
+  }
+
+  /**
+   * Records a measurement.
+   *
+   * @param value The measurement amount.
+   */
+  void record(double value);
+
+  /**
+   * Records a measurement with a set of attributes.
+   *
+   * @param value The measurement amount.
    * @param attributes A set of attributes to associate with the count.
    */
-  void observe(double value, Attributes attributes);
+  void record(double value, Attributes attributes);
 }

@@ -90,7 +90,7 @@ class CardinalityTest {
         .counterBuilder("async-counter")
         .buildWithCallback(
             measurement ->
-                measurement.observe(
+                measurement.record(
                     1, Attributes.builder().put("key", "num_" + count.incrementAndGet()).build()));
 
     for (int i = 1; i <= 5; i++) {
@@ -181,7 +181,7 @@ class CardinalityTest {
     Consumer<ObservableLongMeasurement> callback =
         measurement -> {
           for (int i = 0; i < MAX_ACCUMULATIONS + 1; i++) {
-            measurement.observe(1, Attributes.builder().put("key", "value" + i).build());
+            measurement.record(1, Attributes.builder().put("key", "value" + i).build());
           }
         };
     meter.counterBuilder("async-counter1").buildWithCallback(callback);
