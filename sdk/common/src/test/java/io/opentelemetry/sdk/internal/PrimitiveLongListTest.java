@@ -19,12 +19,16 @@ class PrimitiveLongListTest {
   void wrap() {
     long[] array = new long[] {1, 2};
     List<Long> wrapped = PrimitiveLongList.wrap(array);
+    List<Long> reference = Arrays.asList(1L, 2L);
     // Standard List operations
     assertThat(wrapped).containsExactly(1L, 2L);
     assertThat(wrapped).hasSize(2);
+    assertThat(wrapped.equals(reference)).isTrue();
+    assertThat(wrapped.hashCode()).isEqualTo(reference.hashCode());
+
     // Message can change between Java versions, so instead check it's the same as a normal List's
     // exception.
-    Throwable referenceException = catchThrowable(() -> Arrays.asList(1, 2).get(3));
+    Throwable referenceException = catchThrowable(() -> reference.get(3));
     assertThatThrownBy(() -> wrapped.get(3))
         .isInstanceOf(IndexOutOfBoundsException.class)
         .hasMessage(referenceException.getMessage());
