@@ -39,6 +39,11 @@ public class SystemOutLogExporter implements LogExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
   // VisibleForTesting
   static void formatLog(StringBuilder stringBuilder, LogData log) {
     InstrumentationLibraryInfo instrumentationLibraryInfo = log.getInstrumentationLibraryInfo();

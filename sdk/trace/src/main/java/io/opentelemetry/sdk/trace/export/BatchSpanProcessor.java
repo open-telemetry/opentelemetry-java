@@ -55,8 +55,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
   /**
    * Returns a new Builder for {@link BatchSpanProcessor}.
    *
-   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link BatchSpanProcessor}.
+   * @param spanExporter the {@link SpanExporter} to which the Spans are pushed.
+   * @return a new {@link BatchSpanProcessorBuilder}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public static BatchSpanProcessorBuilder builder(SpanExporter spanExporter) {
@@ -125,11 +125,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
+    private static final Logger logger = Logger.getLogger(Worker.class.getName());
+
     private final LongCounter processedSpansCounter;
     private final Attributes droppedAttrs;
     private final Attributes exportedAttrs;
 
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;

@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.export;
+package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,33 +14,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@link SpanExporter} that forwards all received spans to a list of {@link SpanExporter}.
+ * {@link LogExporter} that forwards all received logs to a list of {@link LogExporter}.
  *
- * <p>Can be used to export to multiple backends using the same {@link SpanProcessor} like a {@link
- * SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
+ * <p>Can be used to export to multiple backends using the same {@link LogExporter} like a {@link
+ * SimpleLogProcessor} or a {@link BatchLogProcessor}.
  */
-final class MultiSpanExporter implements SpanExporter {
-  private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
+final class MultiLogExporter implements LogExporter {
+  private static final Logger logger = Logger.getLogger(MultiLogExporter.class.getName());
 
-  private final SpanExporter[] spanExporters;
+  private final LogExporter[] logExporters;
 
   /**
    * Constructs and returns an instance of this class.
    *
-   * @param spanExporters the exporters spans should be sent to
-   * @return the aggregate span exporter
+   * @param logExporters the exporters logs should be sent to
+   * @return the aggregate log exporter
    */
-  static SpanExporter create(List<SpanExporter> spanExporters) {
-    return new MultiSpanExporter(spanExporters.toArray(new SpanExporter[0]));
+  static LogExporter create(List<LogExporter> logExporters) {
+    return new MultiLogExporter(logExporters.toArray(new LogExporter[0]));
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
-    for (SpanExporter spanExporter : spanExporters) {
+  public CompletableResultCode export(Collection<LogData> logs) {
+    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
+    for (LogExporter logExporter : logExporters) {
       final CompletableResultCode exportResult;
       try {
-        exportResult = spanExporter.export(spans);
+        exportResult = logExporter.export(logs);
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the export.", e);
@@ -54,17 +53,17 @@ final class MultiSpanExporter implements SpanExporter {
   }
 
   /**
-   * Flushes the data of all registered {@link SpanExporter}s.
+   * Flushes the data of all registered {@link LogExporter}s.
    *
    * @return the result of the operation
    */
   @Override
   public CompletableResultCode flush() {
-    List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
-    for (SpanExporter spanExporter : spanExporters) {
+    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
+    for (LogExporter logExporter : logExporters) {
       final CompletableResultCode flushResult;
       try {
-        flushResult = spanExporter.flush();
+        flushResult = logExporter.flush();
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the flush.", e);
@@ -78,11 +77,11 @@ final class MultiSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
-    for (SpanExporter spanExporter : spanExporters) {
+    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
+    for (LogExporter logExporter : logExporters) {
       final CompletableResultCode shutdownResult;
       try {
-        shutdownResult = spanExporter.shutdown();
+        shutdownResult = logExporter.shutdown();
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the shutdown.", e);
@@ -94,7 +93,7 @@ final class MultiSpanExporter implements SpanExporter {
     return CompletableResultCode.ofAll(results);
   }
 
-  private MultiSpanExporter(SpanExporter[] spanExporters) {
-    this.spanExporters = spanExporters;
+  private MultiLogExporter(LogExporter[] logExporters) {
+    this.logExporters = logExporters;
   }
 }
