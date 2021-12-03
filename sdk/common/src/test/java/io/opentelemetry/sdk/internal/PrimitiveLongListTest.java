@@ -25,6 +25,7 @@ class PrimitiveLongListTest {
     assertThat(wrapped).hasSize(2);
     assertThat(wrapped.equals(reference)).isTrue();
     assertThat(wrapped.hashCode()).isEqualTo(reference.hashCode());
+    assertThat(wrapped.equals(PrimitiveLongList.wrap(array))).isTrue();
 
     // Message can change between Java versions, so instead check it's the same as a normal List's
     // exception.
