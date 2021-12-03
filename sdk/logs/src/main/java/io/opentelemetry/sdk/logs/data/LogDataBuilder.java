@@ -67,7 +67,7 @@ public final class LogDataBuilder {
     return setSpanContext(Span.fromContext(context).getSpanContext());
   }
 
-  /** Set the span context. */
+  /** Sets the span context. */
   public LogDataBuilder setSpanContext(SpanContext spanContext) {
     this.spanContext = spanContext == null ? SpanContext.getInvalid() : spanContext;
     return this;
