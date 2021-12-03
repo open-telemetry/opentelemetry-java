@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -121,7 +122,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public GrpcExporter<T> build() {
-    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+    OkHttpClient.Builder clientBuilder =
+        new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
     Headers.Builder headers = this.headers != null ? this.headers : new Headers.Builder();
 
