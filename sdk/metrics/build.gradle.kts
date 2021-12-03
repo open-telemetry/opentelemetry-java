@@ -46,3 +46,7 @@ tasks {
     dependsOn(testing.suites)
   }
 }
+
+animalsniffer {
+  ignore("java.util.concurrent.atomic.DoubleAdder", "java.util.concurrent.atomic.LongAdder")
+}

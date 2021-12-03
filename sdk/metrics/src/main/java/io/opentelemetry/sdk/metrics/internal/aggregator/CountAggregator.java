@@ -12,11 +12,12 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
+import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -76,7 +77,7 @@ final class CountAggregator implements Aggregator<LongAccumulation> {
   }
 
   static final class Handle extends AggregatorHandle<LongAccumulation> {
-    private final AtomicLong current = new AtomicLong();
+    private final LongAdder current = AdderUtil.createLongAdder();
 
     private Handle(ExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
@@ -84,17 +85,17 @@ final class CountAggregator implements Aggregator<LongAccumulation> {
 
     @Override
     protected void doRecordLong(long value) {
-      current.incrementAndGet();
+      current.add(1);
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      current.incrementAndGet();
+      current.add(1);
     }
 
     @Override
     protected LongAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
-      return LongAccumulation.create(current.getAndSet(0), exemplars);
+      return LongAccumulation.create(current.sumThenReset(), exemplars);
     }
   }
 }
