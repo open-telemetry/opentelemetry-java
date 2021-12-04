@@ -12,11 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
@@ -44,15 +42,12 @@ class OtlpJsonLoggingLogExporterTest {
           .setSeverityText("INFO")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
-          .setContext(
-              Context.root()
-                  .with(
-                      Span.wrap(
-                          SpanContext.create(
-                              "12345678876543211234567887654322",
-                              "8765432112345876",
-                              TraceFlags.getDefault(),
-                              TraceState.getDefault()))))
+          .setSpanContext(
+              SpanContext.create(
+                  "12345678876543211234567887654322",
+                  "8765432112345876",
+                  TraceFlags.getDefault(),
+                  TraceState.getDefault()))
           .build();
 
   private static final LogData LOG2 =
@@ -63,15 +58,12 @@ class OtlpJsonLoggingLogExporterTest {
           .setSeverityText("INFO")
           .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
-          .setContext(
-              Context.root()
-                  .with(
-                      Span.wrap(
-                          SpanContext.create(
-                              "12345678876543211234567887654322",
-                              "8765432112345875",
-                              TraceFlags.getDefault(),
-                              TraceState.getDefault()))))
+          .setSpanContext(
+              SpanContext.create(
+                  "12345678876543211234567887654322",
+                  "8765432112345875",
+                  TraceFlags.getDefault(),
+                  TraceState.getDefault()))
           .build();
 
   @RegisterExtension
