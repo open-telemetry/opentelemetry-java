@@ -34,7 +34,7 @@ final class MetricStorageUtils {
    *
    * <p>Note: This mutates the result map.
    */
-  static <T> void mergeAndPerserveInPlace(
+  static <T> void mergeAndPreserveInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
     blend(result, toMerge, /* preserve= */ true, aggregator::merge);
   }
