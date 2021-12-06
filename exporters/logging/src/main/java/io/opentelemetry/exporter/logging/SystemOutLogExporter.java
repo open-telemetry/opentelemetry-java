@@ -27,6 +27,9 @@ import java.util.Collection;
 public class SystemOutLogExporter implements LogExporter {
   private static final DateTimeFormatter ISO_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
 
+  /** Class constructor. */
+  public SystemOutLogExporter() {}
+
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
     StringBuilder stringBuilder = new StringBuilder(60);

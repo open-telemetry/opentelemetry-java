@@ -48,6 +48,14 @@ class LoggingMetricExporterTest {
   }
 
   @Test
+  void preferredTemporality() {
+    assertThat(new LoggingMetricExporter().getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(new LoggingMetricExporter(AggregationTemporality.DELTA).getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
   void testExport() {
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));

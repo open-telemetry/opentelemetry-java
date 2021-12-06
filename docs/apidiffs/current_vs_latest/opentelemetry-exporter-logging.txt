@@ -1,2 +1,5 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.LoggingMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW CONSTRUCTOR: PUBLIC(+) LoggingMetricExporter(io.opentelemetry.sdk.metrics.data.AggregationTemporality)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getPreferredTemporality()
