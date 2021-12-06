@@ -43,7 +43,16 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void test_getFinishedMetricItems() {
+  void preferredTemporality() {
+    assertThat(InMemoryMetricExporter.create().getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(
+            InMemoryMetricExporter.create(AggregationTemporality.DELTA).getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
+  void getFinishedMetricItems() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -56,7 +65,7 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void test_reset() {
+  void reset() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -73,7 +82,7 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void test_shutdown() {
+  void shutdown() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -87,7 +96,7 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void testShutdown_export() {
+  void shutdown_ThenExport() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -99,7 +108,7 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void test_flush() {
+  void flush() {
     assertThat(exporter.flush().isSuccess()).isTrue();
   }
 }
