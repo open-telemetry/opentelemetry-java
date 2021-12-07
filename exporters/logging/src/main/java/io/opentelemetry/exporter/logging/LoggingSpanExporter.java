@@ -18,7 +18,17 @@ import java.util.logging.Logger;
 public final class LoggingSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
 
-  /** Class constructor. */
+  /** Returns a new {@link LoggingSpanExporter}. */
+  public static LoggingSpanExporter create() {
+    return new LoggingSpanExporter();
+  }
+
+  /**
+   * Class constructor.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
   public LoggingSpanExporter() {}
 
   @Override

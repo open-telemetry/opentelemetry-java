@@ -20,14 +20,29 @@ public final class LoggingMetricExporter implements MetricExporter {
   private final AggregationTemporality preferredTemporality;
 
   /**
-   * Class constructor with a preferred temporality of {@link AggregationTemporality#CUMULATIVE}.
+   * Returns a new {@link LoggingMetricExporter} with a preferred temporality of {@link
+   * AggregationTemporality#CUMULATIVE}.
    */
+  public static LoggingMetricExporter create() {
+    return create(AggregationTemporality.CUMULATIVE);
+  }
+
+  /** Returns a new {@link LoggingMetricExporter} with the given {@code preferredTemporality}. */
+  public static LoggingMetricExporter create(AggregationTemporality preferredTemporality) {
+    return new LoggingMetricExporter(preferredTemporality);
+  }
+
+  /**
+   * Class constructor with a preferred temporality of {@link AggregationTemporality#CUMULATIVE}.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
   public LoggingMetricExporter() {
     this(AggregationTemporality.CUMULATIVE);
   }
 
-  /** Class constructor with the given {@code preferredTemporality}. */
-  public LoggingMetricExporter(AggregationTemporality preferredTemporality) {
+  private LoggingMetricExporter(AggregationTemporality preferredTemporality) {
     this.preferredTemporality = preferredTemporality;
   }
 
