@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.concurrent;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
+@IgnoreJRERequirement
 final class JreLongAdder implements LongAdder {
 
   private final java.util.concurrent.atomic.LongAdder delegate =

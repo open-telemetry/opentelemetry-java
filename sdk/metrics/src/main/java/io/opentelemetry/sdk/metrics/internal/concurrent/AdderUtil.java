@@ -6,11 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.concurrent;
 
 import java.util.concurrent.atomic.AtomicLong;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
+@IgnoreJRERequirement
 public final class AdderUtil {
 
   private static final boolean hasJreAdder;

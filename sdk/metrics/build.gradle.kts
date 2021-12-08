@@ -1,4 +1,4 @@
-import net.ltgt.gradle.errorprone.CheckSeverity.*
+import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
   id("otel.java-conventions")
@@ -15,6 +15,8 @@ otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 dependencies {
   api(project(":api:metrics"))
   api(project(":sdk:common"))
+
+  compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -42,11 +44,13 @@ testing {
 }
 
 tasks {
-  named("check") {
+  named<AnimalSniffer>("animalsnifferMain") {
+    // We cannot use IgnoreJreRequirement since it does not work correctly for fields.
+    // https://github.com/mojohaus/animal-sniffer/issues/131
+    exclude("**/concurrent/Jre*Adder*")
+  }
+
+  check {
     dependsOn(testing.suites)
   }
-}
-
-animalsniffer {
-  ignore("java.util.concurrent.atomic.DoubleAdder", "java.util.concurrent.atomic.LongAdder")
 }
