@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
 import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -65,11 +65,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       return Collections.emptyList();
     }
     int length = counts.getIndexEnd() - counts.getIndexStart() + 1;
-    Long[] countsArr = new Long[length];
+    long[] countsArr = new long[length];
     for (int i = 0; i < length; i++) {
       countsArr[i] = counts.get(i + counts.getIndexStart());
     }
-    return Arrays.asList(countsArr);
+    return PrimitiveLongList.wrap(countsArr);
   }
 
   @Override

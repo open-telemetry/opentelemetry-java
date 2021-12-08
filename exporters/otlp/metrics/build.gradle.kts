@@ -2,18 +2,11 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
-  id("org.unbroken-dome.test-sets")
   id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol Metrics Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
-
-testSets {
-  create("testGrpcNetty")
-  create("testGrpcNettyShaded")
-  create("testGrpcOkhttp")
-}
 
 dependencies {
   api(project(":sdk:metrics"))
@@ -22,20 +15,39 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
-  testImplementation(project(":sdk:testing"))
+}
 
-  add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
-  add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-stub")
+testing {
+  suites {
+    val testGrpcNetty by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
 
-  add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-netty-shaded")
-  add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-stub")
+        implementation("io.grpc:grpc-netty")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
 
-  add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
-  add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-stub")
+        implementation("io.grpc:grpc-netty-shaded")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
+
+        implementation("io.grpc:grpc-okhttp")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+  }
 }
 
 tasks {
   check {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+    dependsOn(testing.suites)
   }
 }

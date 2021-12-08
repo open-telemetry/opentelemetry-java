@@ -2,3 +2,7 @@ Comparing source compatibility of  against
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogExporter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.MetricExporter create(io.opentelemetry.sdk.metrics.data.AggregationTemporality)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getPreferredTemporality()

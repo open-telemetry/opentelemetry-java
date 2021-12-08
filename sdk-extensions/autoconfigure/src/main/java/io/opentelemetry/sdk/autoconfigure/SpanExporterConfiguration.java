@@ -115,7 +115,7 @@ final class SpanExporterConfiguration {
             "io.opentelemetry.exporter.logging.LoggingSpanExporter",
             "Logging Trace Exporter",
             "opentelemetry-exporter-logging");
-        return new LoggingSpanExporter();
+        return LoggingSpanExporter.create();
       default:
         SpanExporter spiExporter = spiExporters.get(name);
         if (spiExporter == null) {

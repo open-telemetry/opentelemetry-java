@@ -42,6 +42,16 @@ public final class SdkLogEmitterProvider implements Closeable {
   }
 
   /**
+   * Gets or creates a named log emitter instance.
+   *
+   * @param instrumentationName the name of the instrumentation library
+   * @return a log emitter instance
+   */
+  public LogEmitter get(String instrumentationName) {
+    return logEmitterBuilder(instrumentationName).build();
+  }
+
+  /**
    * Creates a {@link LogEmitterBuilder} instance.
    *
    * @param instrumentationName the name of the instrumentation library

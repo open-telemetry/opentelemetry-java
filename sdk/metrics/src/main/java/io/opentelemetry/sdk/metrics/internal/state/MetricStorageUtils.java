@@ -25,7 +25,18 @@ final class MetricStorageUtils {
    */
   static <T> void mergeInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
-    blend(result, toMerge, aggregator::merge);
+    blend(result, toMerge, /* preserve= */ false, aggregator::merge);
+  }
+
+  /**
+   * Merges accumulations from {@code toMerge} into {@code result}. Keys from {@code result} which
+   * don't appear in {@code toMerge} are preserved as-is.
+   *
+   * <p>Note: This mutates the result map.
+   */
+  static <T> void mergeAndPreserveInPlace(
+      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
+    blend(result, toMerge, /* preserve= */ true, aggregator::merge);
   }
 
   /**
@@ -38,13 +49,27 @@ final class MetricStorageUtils {
    */
   static <T> void diffInPlace(
       Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
-    blend(result, toDiff, aggregator::diff);
+    blend(result, toDiff, /* preserve= */ false, aggregator::diff);
   }
 
   private static <T> void blend(
-      Map<Attributes, T> result, Map<Attributes, T> toMerge, BiFunction<T, T, T> blendFunction) {
-    result.entrySet().removeIf(entry -> !toMerge.containsKey(entry.getKey()));
+      Map<Attributes, T> result,
+      Map<Attributes, T> toMerge,
+      boolean preserve,
+      BiFunction<T, T, T> blendFunction) {
+    if (!preserve) {
+      removeUnseen(result, toMerge);
+    }
     toMerge.forEach(
         (k, v) -> result.compute(k, (k2, v2) -> (v2 != null) ? blendFunction.apply(v2, v) : v));
+  }
+
+  /**
+   * Removes all keys in {@code result} that do not exist in {@code latest}.
+   *
+   * <p>Note: This mutates the result map.
+   */
+  public static <T> void removeUnseen(Map<Attributes, T> result, Map<Attributes, T> latest) {
+    result.entrySet().removeIf(entry -> !latest.containsKey(entry.getKey()));
   }
 }

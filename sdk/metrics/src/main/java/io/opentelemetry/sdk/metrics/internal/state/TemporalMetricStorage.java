@@ -74,7 +74,13 @@ class TemporalMetricStorage<T> {
       } else if (temporality == AggregationTemporality.CUMULATIVE && isSynchronous) {
         // We need to make sure the current delta recording gets merged into the previous cumulative
         // for the next cumulative measurement.
-        MetricStorageUtils.mergeInPlace(last.getAccumulation(), currentAccumulation, aggregator);
+        MetricStorageUtils.mergeAndPreserveInPlace(
+            last.getAccumulation(), currentAccumulation, aggregator);
+        // Note: We allow going over our hard limit on attribute streams when first merging, but
+        // preserve after this point.
+        if (last.getAccumulation().size() > MetricStorageUtils.MAX_ACCUMULATIONS) {
+          MetricStorageUtils.removeUnseen(last.getAccumulation(), currentAccumulation);
+        }
         result = last.getAccumulation();
       }
     }

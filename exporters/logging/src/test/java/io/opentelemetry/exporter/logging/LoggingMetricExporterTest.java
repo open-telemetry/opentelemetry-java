@@ -39,12 +39,20 @@ class LoggingMetricExporterTest {
 
   @BeforeEach
   void setUp() {
-    exporter = new LoggingMetricExporter();
+    exporter = LoggingMetricExporter.create();
   }
 
   @AfterEach
   void tearDown() {
     exporter.shutdown();
+  }
+
+  @Test
+  void preferredTemporality() {
+    assertThat(LoggingMetricExporter.create().getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(LoggingMetricExporter.create(AggregationTemporality.DELTA).getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
