@@ -75,7 +75,7 @@ final class MetricExporterConfiguration {
 
   private static void configureLoggingMetrics(
       ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
-    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, new LoggingMetricExporter());
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, LoggingMetricExporter.create());
   }
 
   // Visible for testing

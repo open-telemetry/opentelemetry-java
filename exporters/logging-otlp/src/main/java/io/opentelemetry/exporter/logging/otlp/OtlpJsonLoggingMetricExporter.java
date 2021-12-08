@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
@@ -27,12 +28,32 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());
 
-  /** Returns a new {@link OtlpJsonLoggingMetricExporter}. */
+  private final AggregationTemporality preferredTemporality;
+
+  /**
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a preferred temporality of {@link
+   * AggregationTemporality#CUMULATIVE}.
+   */
   public static MetricExporter create() {
-    return new OtlpJsonLoggingMetricExporter();
+    return new OtlpJsonLoggingMetricExporter(AggregationTemporality.CUMULATIVE);
   }
 
-  private OtlpJsonLoggingMetricExporter() {}
+  /**
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with the given {@code
+   * preferredTemporality}.
+   */
+  public static MetricExporter create(AggregationTemporality preferredTemporality) {
+    return new OtlpJsonLoggingMetricExporter(preferredTemporality);
+  }
+
+  private OtlpJsonLoggingMetricExporter(AggregationTemporality preferredTemporality) {
+    this.preferredTemporality = preferredTemporality;
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return preferredTemporality;
+  }
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
