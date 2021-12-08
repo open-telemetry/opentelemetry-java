@@ -1,2 +1,18 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.LoggingMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED CONSTRUCTOR: PUBLIC LoggingMetricExporter()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.logging.LoggingMetricExporter create()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.logging.LoggingMetricExporter create(io.opentelemetry.sdk.metrics.data.AggregationTemporality)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getPreferredTemporality()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.LoggingSpanExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED CONSTRUCTOR: PUBLIC LoggingSpanExporter()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.logging.LoggingSpanExporter create()
+***  MODIFIED CLASS: PUBLIC io.opentelemetry.exporter.logging.SystemOutLogExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED CONSTRUCTOR: PUBLIC SystemOutLogExporter()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.logging.SystemOutLogExporter create()

@@ -82,7 +82,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
-            value -> value.observe(1.0, Attributes.empty()))
+            value -> value.record(1.0, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),
@@ -103,7 +103,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            value -> value.observe(1, Attributes.empty()))
+            value -> value.record(1, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),

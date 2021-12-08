@@ -50,8 +50,7 @@ class SdkLongGaugeBuilderTest {
     sdkMeter
         .gaugeBuilder("testObserver")
         .ofLongs()
-        .buildWithCallback(
-            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
+        .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

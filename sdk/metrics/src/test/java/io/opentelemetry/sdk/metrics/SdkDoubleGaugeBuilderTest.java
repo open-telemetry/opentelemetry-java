@@ -51,7 +51,7 @@ class SdkDoubleGaugeBuilderTest {
         .setDescription("My own DoubleValueObserver")
         .setUnit("ms")
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

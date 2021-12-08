@@ -73,7 +73,7 @@ public class MetricsRequestMarshalerBenchmark {
         .ofLongs()
         .buildWithCallback(
             measurement ->
-                measurement.observe(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
+                measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
     LongCounter longCounter =
         meter1
             .counterBuilder("counter")
@@ -98,7 +98,7 @@ public class MetricsRequestMarshalerBenchmark {
         .gaugeBuilder("doublegauge")
         .setDescription("doublegauge")
         .setUnit("unit")
-        .buildWithCallback(measurement -> measurement.observe(5.0));
+        .buildWithCallback(measurement -> measurement.record(5.0));
     DoubleCounter doubleCounter = meter2.counterBuilder("doublecounter").ofDoubles().build();
     doubleCounter.add(1.0);
     doubleCounter.add(2.0);

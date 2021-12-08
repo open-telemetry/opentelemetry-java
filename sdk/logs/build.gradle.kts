@@ -13,7 +13,6 @@ dependencies {
 
   implementation(project(":api:metrics"))
 
-  implementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("org.awaitility:awaitility")
 
   annotationProcessor("com.google.auto.value:auto-value")

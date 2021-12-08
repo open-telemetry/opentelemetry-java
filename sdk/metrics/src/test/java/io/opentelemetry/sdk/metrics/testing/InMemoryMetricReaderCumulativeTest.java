@@ -50,7 +50,7 @@ class InMemoryMetricReaderCumulativeTest {
 
     // Add more data, should join.
     generateFakeMetric(1);
-    assertThat(reader.collectAllMetrics()).hasSize(1);
+    assertThat(reader.collectAllMetrics()).hasSize(3);
   }
 
   @Test
@@ -60,7 +60,7 @@ class InMemoryMetricReaderCumulativeTest {
     generateFakeMetric(3);
     // TODO: Better assertions for CompletableResultCode.
     assertThat(reader.flush()).isNotNull();
-    assertThat(reader.collectAllMetrics()).hasSize(0);
+    assertThat(reader.collectAllMetrics()).hasSize(3);
   }
 
   @Test

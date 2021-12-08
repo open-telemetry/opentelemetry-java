@@ -11,11 +11,9 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -32,7 +30,7 @@ class SystemOutLogExporterTest {
 
   @Test
   void returnCodes() {
-    SystemOutLogExporter exporter = new SystemOutLogExporter();
+    SystemOutLogExporter exporter = SystemOutLogExporter.create();
     CompletableResultCode resultCode =
         exporter.export(singletonList(sampleLog(System.currentTimeMillis())));
     assertThat(resultCode).isSameAs(CompletableResultCode.ofSuccess());
@@ -59,15 +57,12 @@ class SystemOutLogExporterTest {
         .setBody("message")
         .setSeverity(Severity.ERROR3)
         .setEpoch(timestamp, TimeUnit.MILLISECONDS)
-        .setContext(
-            Context.root()
-                .with(
-                    Span.wrap(
-                        SpanContext.create(
-                            "00000000000000010000000000000002",
-                            "0000000000000003",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()))))
+        .setSpanContext(
+            SpanContext.create(
+                "00000000000000010000000000000002",
+                "0000000000000003",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()))
         .build();
   }
 }

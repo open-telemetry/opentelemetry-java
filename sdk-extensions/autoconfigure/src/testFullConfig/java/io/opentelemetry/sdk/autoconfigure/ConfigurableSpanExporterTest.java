@@ -114,7 +114,7 @@ public class ConfigurableSpanExporterTest {
   void configureSpanProcessors_simpleSpanProcessor() {
     String exporterName = "logging";
     Map<String, String> propMap = Collections.singletonMap("otel.traces.exporter", exporterName);
-    SpanExporter exporter = new LoggingSpanExporter();
+    SpanExporter exporter = LoggingSpanExporter.create();
     ConfigProperties properties = DefaultConfigProperties.createForTest(propMap);
 
     assertThat(
@@ -177,7 +177,7 @@ public class ConfigurableSpanExporterTest {
 
   @Test
   void configureSpanProcessors_multipleExportersWithLogging() {
-    SpanExporter loggingExporter = new LoggingSpanExporter();
+    SpanExporter loggingExporter = LoggingSpanExporter.create();
     SpanExporter zipkinExporter = ZipkinSpanExporter.builder().build();
     ConfigProperties properties =
         DefaultConfigProperties.createForTest(
