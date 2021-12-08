@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -22,7 +23,7 @@ public class MapCounter implements ExponentialCounter {
 
   private static final int NULL_INDEX = Integer.MIN_VALUE;
 
-  private final ConcurrentHashMap<Integer, AtomicLong> backing;
+  private final Map<Integer, AtomicLong> backing;
   private int indexStart;
   private int indexEnd;
 
@@ -116,27 +117,10 @@ public class MapCounter implements ExponentialCounter {
         indexEnd = NULL_INDEX;
       } else {
         // find largest and smallest index to remap window
-        // Note: Collections.min(backing.keySet()) can't be used because
-        indexStart = min(backing.keys());
-        indexEnd = max(backing.keys());
+        indexStart = Collections.min(backing.keySet());
+        indexEnd = Collections.max(backing.keySet());
       }
     }
-  }
-
-  private static int min(Enumeration<Integer> e) {
-    int min = e.nextElement();
-    while (e.hasMoreElements()) {
-      min = Math.min(min, e.nextElement());
-    }
-    return min;
-  }
-
-  private static int max(Enumeration<Integer> e) {
-    int max = e.nextElement();
-    while (e.hasMoreElements()) {
-      max = Math.max(max, e.nextElement());
-    }
-    return max;
   }
 
   @Override
