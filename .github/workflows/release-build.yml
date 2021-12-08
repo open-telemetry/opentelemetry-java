@@ -17,13 +17,20 @@ jobs:
         with:
           distribution: adopt
           java-version: 17
-      - uses: burrunan/gradle-cache-action@v1.10
+      - uses: gradle/gradle-build-action@v2
         with:
-          job-id: jdk17
-          remote-build-cache-proxy-enabled: false
-          arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-      - name: Publish artifacts
-        run: ./gradlew final closeAndReleaseSonatypeStagingRepository --stacktrace -Prelease.version=${{ github.event.inputs.version }}
+          arguments: |
+            build
+            --stacktrace
+            -Prelease.version=${{ github.event.inputs.version }}
+      - uses: gradle/gradle-build-action@v2
+        name: Publish artifacts
+        with:
+          arguments: |
+            final
+            closeAndReleaseSonatypeStagingRepository
+            --stacktrace
+            -Prelease.version=${{ github.event.inputs.version }}
         env:
           GRGIT_USER: ${{ github.actor }}
           GRGIT_PASS: ${{ secrets.GITHUB_TOKEN }}
