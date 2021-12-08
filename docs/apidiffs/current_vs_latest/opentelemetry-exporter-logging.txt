@@ -16,3 +16,4 @@ Comparing source compatibility of  against
 	===  UNCHANGED CONSTRUCTOR: PUBLIC SystemOutLogExporter()
 		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.logging.SystemOutLogExporter create()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
