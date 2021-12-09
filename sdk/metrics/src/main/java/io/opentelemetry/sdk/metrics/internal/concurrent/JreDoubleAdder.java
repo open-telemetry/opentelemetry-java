@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.concurrent;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
+@IgnoreJRERequirement
 final class JreDoubleAdder implements DoubleAdder {
 
   private final java.util.concurrent.atomic.DoubleAdder delegate;
