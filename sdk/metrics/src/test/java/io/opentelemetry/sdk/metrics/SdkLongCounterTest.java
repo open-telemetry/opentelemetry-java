@@ -165,19 +165,22 @@ class SdkLongCounterTest {
   }
 
   @Test
-  void longCounterAdd_MonotonicityCheck() {
+  void longCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> longCounter.add(-45, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    longCounter.add(-45);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
 
   @Test
-  void boundLongCounterAdd_MonotonicityCheck() {
+  void boundLongCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> ((SdkLongCounter) longCounter).bind(Attributes.empty()).add(-9))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundLongCounter bound = ((SdkLongCounter) longCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test

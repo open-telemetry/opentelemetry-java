@@ -177,17 +177,20 @@ class SdkDoubleCounterTest {
   @Test
   void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    doubleCounter.add(-45.77d);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty()).add(-9.3))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundDoubleCounter bound = ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9.3);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test

@@ -75,6 +75,15 @@ public interface Aggregator<T> {
   }
 
   /**
+   * Validate that the asynchronous {@code currentAccumulation} is compatible with the {@code
+   * previousAccumulation}.
+   *
+   * @throws Exception if the {@code currentAccumulation} is invalid
+   */
+  default void validateAsyncAccumulation(T previousAccumulation, T currentAccumulation)
+      throws Exception {}
+
+  /**
    * Returns the result of the merge of the given accumulations.
    *
    * <p>This should always assume that the accumulations do not overlap and merge together for a new

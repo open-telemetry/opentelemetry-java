@@ -115,13 +115,13 @@ class SdkLongHistogramTest {
         ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longRecorder.record(12, Attributes.empty());
+      longRecorder.record(9, Attributes.empty());
       bound.record(123);
-      longRecorder.record(-14, Attributes.empty());
+      longRecorder.record(14, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
-      longRecorder.record(-121, Attributes.builder().put("K", "V").build());
+      longRecorder.record(1, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -140,14 +140,14 @@ class SdkLongHistogramTest {
                           point ->
                               assertThat(point)
                                   .hasCount(3)
-                                  .hasSum(323)
+                                  .hasSum(445)
                                   .hasBucketCounts(1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(2)
-                                  .hasSum(-2)
-                                  .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(23)
+                                  .hasBucketCounts(0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
 
       // Histograms are cumulative by default.
@@ -172,15 +172,34 @@ class SdkLongHistogramTest {
                           point ->
                               assertThat(point)
                                   .hasCount(4)
-                                  .hasSum(545)
+                                  .hasSum(667)
                                   .hasBucketCounts(1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(3)
-                                  .hasSum(15)
-                                  .hasBucketCounts(1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(40)
+                                  .hasBucketCounts(0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
+    } finally {
+      bound.unbind();
+    }
+  }
+
+  @Test
+  void longHistogramRecord_NonNegativeCheck() {
+    LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
+    histogram.record(-45);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  void boundLongHistogramRecord_MonotonicityCheck() {
+    LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
+    BoundLongHistogram bound = ((SdkLongHistogram) histogram).bind(Attributes.empty());
+    try {
+      bound.record(-9);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     } finally {
       bound.unbind();
     }

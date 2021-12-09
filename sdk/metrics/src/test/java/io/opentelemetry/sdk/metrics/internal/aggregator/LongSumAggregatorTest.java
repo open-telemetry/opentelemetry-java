@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -52,6 +54,55 @@ class LongSumAggregatorTest {
   @Test
   void createHandle() {
     assertThat(aggregator.createHandle()).isInstanceOf(LongSumAggregator.Handle.class);
+  }
+
+  @Test
+  void validateAsyncAccumulation_Monotonic() {
+    LongSumAggregator aggregator =
+        new LongSumAggregator(
+            InstrumentDescriptor.create(
+                "instrument_name",
+                "instrument_description",
+                "instrument_unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG),
+            ExemplarReservoir::noSamples);
+
+    assertThatThrownBy(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    LongAccumulation.create(5), LongAccumulation.create(4)))
+        .isInstanceOf(Exception.class)
+        .hasMessage("Values must be monotonically increasing.");
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    LongAccumulation.create(5), LongAccumulation.create(6)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validateAsyncAccumulation_NonMonotonic() {
+    LongSumAggregator aggregator =
+        new LongSumAggregator(
+            InstrumentDescriptor.create(
+                "instrument_name",
+                "instrument_description",
+                "instrument_unit",
+                InstrumentType.UP_DOWN_COUNTER,
+                InstrumentValueType.LONG),
+            ExemplarReservoir::noSamples);
+
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    LongAccumulation.create(5), LongAccumulation.create(4)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    LongAccumulation.create(5), LongAccumulation.create(6)))
+        .doesNotThrowAnyException();
   }
 
   @Test

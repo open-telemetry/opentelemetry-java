@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,6 +113,85 @@ public class AsynchronousMetricStorageTest {
             testClock.nanoTime(),
             false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
+  }
+
+  @Test
+  void collectAndReset_IgnoresDuplicates() {
+    MetricStorage metricStorage =
+        AsynchronousMetricStorage.longAsynchronousAccumulator(
+            view,
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            measurement -> {
+              measurement.record(1, Attributes.builder().put("key", "a").build());
+              measurement.record(2, Attributes.builder().put("key", "a").build());
+              measurement.record(3, Attributes.builder().put("key", "b").build());
+            });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .satisfies(
+            metricData -> {
+              assertThat(metricData.getLongGaugeData().getPoints())
+                  .satisfiesExactlyInAnyOrder(
+                      dataPoint -> {
+                        assertThat(dataPoint.getValue()).isEqualTo(1);
+                        assertThat(dataPoint.getAttributes())
+                            .isEqualTo(Attributes.builder().put("key", "a").build());
+                      },
+                      dataPoint -> {
+                        assertThat(dataPoint.getValue()).isEqualTo(3);
+                        assertThat(dataPoint.getAttributes())
+                            .isEqualTo(Attributes.builder().put("key", "b").build());
+                      });
+            });
+  }
+
+  @Test
+  void collectAndReset_IgnoresInvalidAccumulations() {
+    AtomicLong counter = new AtomicLong(5);
+    MetricStorage metricStorage =
+        AsynchronousMetricStorage.longAsynchronousAccumulator(
+            View.builder().build(),
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_SUM,
+                InstrumentValueType.LONG),
+            measurement -> measurement.record(counter.getAndDecrement()));
+
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongSumData().getPoints())
+                    .satisfiesExactly(dataPoint -> assertThat(dataPoint.getValue()).isEqualTo(5)));
+
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .satisfies(metricData -> assertThat(metricData.isEmpty()).isTrue());
   }
 
   @Test

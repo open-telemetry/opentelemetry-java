@@ -55,6 +55,15 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   }
 
   @Override
+  public void validateAsyncAccumulation(
+      DoubleAccumulation previousAccumulation, DoubleAccumulation currentAccumulation)
+      throws Exception {
+    if (isMonotonic() && currentAccumulation.getValue() < previousAccumulation.getValue()) {
+      throw new Exception("Values must be monotonically increasing.");
+    }
+  }
+
+  @Override
   public DoubleAccumulation merge(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(

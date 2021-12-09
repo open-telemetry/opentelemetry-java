@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -20,8 +21,12 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 final class SdkLongCounter extends AbstractInstrument implements LongCounter {
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(SdkLongCounter.class.getName()));
   private final WriteableMetricStorage storage;
 
   private SdkLongCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -32,7 +37,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment, Attributes attributes, Context context) {
     if (increment < 0) {
-      throw new IllegalArgumentException("Counters can only increase");
+      logger.log(
+          Level.WARNING,
+          "Counters can only increase. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return;
     }
     storage.recordLong(increment, attributes, context);
   }
@@ -48,14 +58,17 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   }
 
   BoundLongCounter bind(Attributes attributes) {
-    return new BoundInstrument(storage.bind(attributes), attributes);
+    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongCounter {
+    private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle handle;
     private final Attributes attributes;
 
-    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+    BoundInstrument(
+        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
+      this.descriptor = descriptor;
       this.handle = handle;
       this.attributes = attributes;
     }
@@ -63,7 +76,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     @Override
     public void add(long increment, Context context) {
       if (increment < 0) {
-        throw new IllegalArgumentException("Counters can only increase");
+        logger.log(
+            Level.WARNING,
+            "Counters can only increase. Instrument "
+                + descriptor.getName()
+                + " has recorded a negative value.");
+        return;
       }
       handle.recordLong(increment, attributes, context);
     }

@@ -42,6 +42,15 @@ public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulat
   }
 
   @Override
+  public void validateAsyncAccumulation(
+      LongAccumulation previousAccumulation, LongAccumulation currentAccumulation)
+      throws Exception {
+    if (isMonotonic() && currentAccumulation.getValue() < previousAccumulation.getValue()) {
+      throw new Exception("Values must be monotonically increasing.");
+    }
+  }
+
+  @Override
   public LongAccumulation merge(
       LongAccumulation previousAccumulation, LongAccumulation accumulation) {
     return LongAccumulation.create(

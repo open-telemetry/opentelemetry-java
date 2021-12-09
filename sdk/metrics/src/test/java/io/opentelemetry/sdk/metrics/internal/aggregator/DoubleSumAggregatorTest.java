@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -52,6 +54,55 @@ class DoubleSumAggregatorTest {
   @Test
   void createHandle() {
     assertThat(aggregator.createHandle()).isInstanceOf(DoubleSumAggregator.Handle.class);
+  }
+
+  @Test
+  void validateAsyncAccumulation_Monotonic() {
+    DoubleSumAggregator aggregator =
+        new DoubleSumAggregator(
+            InstrumentDescriptor.create(
+                "instrument_name",
+                "instrument_description",
+                "instrument_unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.DOUBLE),
+            ExemplarReservoir::noSamples);
+
+    assertThatThrownBy(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    DoubleAccumulation.create(5.0), DoubleAccumulation.create(4.0)))
+        .isInstanceOf(Exception.class)
+        .hasMessage("Values must be monotonically increasing.");
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    DoubleAccumulation.create(5.0), DoubleAccumulation.create(6.0)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validateAsyncAccumulation_NonMonotonic() {
+    DoubleSumAggregator aggregator =
+        new DoubleSumAggregator(
+            InstrumentDescriptor.create(
+                "instrument_name",
+                "instrument_description",
+                "instrument_unit",
+                InstrumentType.UP_DOWN_COUNTER,
+                InstrumentValueType.DOUBLE),
+            ExemplarReservoir::noSamples);
+
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    DoubleAccumulation.create(5.0), DoubleAccumulation.create(4.0)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                aggregator.validateAsyncAccumulation(
+                    DoubleAccumulation.create(5.0), DoubleAccumulation.create(6.0)))
+        .doesNotThrowAnyException();
   }
 
   @Test

@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
@@ -112,13 +113,13 @@ class SdkDoubleHistogramTest {
         ((SdkDoubleHistogram) doubleRecorder).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleRecorder.record(12.1d, Attributes.empty());
+      doubleRecorder.record(9.1d, Attributes.empty());
       bound.record(123.3d);
-      doubleRecorder.record(-13.1d, Attributes.empty());
+      doubleRecorder.record(13.1d, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
-      doubleRecorder.record(-121.5d, Attributes.builder().put("K", "V").build());
+      doubleRecorder.record(121.5d, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -137,14 +138,14 @@ class SdkDoubleHistogramTest {
                           point ->
                               assertThat(point)
                                   .hasCount(3)
-                                  .hasSum(323.3d)
-                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(566.3d)
+                                  .hasBucketCounts(0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(2)
-                                  .hasSum(-1.0d)
-                                  .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(22.2d)
+                                  .hasBucketCounts(0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
 
       // Histograms are cumulative by default.
@@ -169,15 +170,34 @@ class SdkDoubleHistogramTest {
                           point ->
                               assertThat(point)
                                   .hasCount(4)
-                                  .hasSum(545.3)
-                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(788.3)
+                                  .hasBucketCounts(0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(3)
-                                  .hasSum(16)
-                                  .hasBucketCounts(1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasSum(39.2)
+                                  .hasBucketCounts(0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
+    } finally {
+      bound.unbind();
+    }
+  }
+
+  @Test
+  void doubleHistogramRecord_NonNegativeCheck() {
+    DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
+    histogram.record(-45);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  void boundDoubleHistogramRecord_MonotonicityCheck() {
+    DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
+    BoundDoubleHistogram bound = ((SdkDoubleHistogram) histogram).bind(Attributes.empty());
+    try {
+      bound.record(-9);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     } finally {
       bound.unbind();
     }
@@ -273,7 +293,7 @@ class SdkDoubleHistogramTest {
                                 .hasCount(4_000)
                                 .hasSum(40_000)
                                 .hasBucketCounts(0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

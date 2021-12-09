@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public final class AsynchronousMetricStorage<T> implements MetricStorage {
   private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(DeltaMetricStorage.class.getName()));
+      new ThrottlingLogger(Logger.getLogger(AsynchronousMetricStorage.class.getName()));
   private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final AsyncAccumulator<T> asyncAccumulator;
@@ -56,15 +56,15 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       View view,
       InstrumentDescriptor instrument,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
-    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
+    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument, aggregator);
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
-    final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
+    AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
@@ -92,13 +92,16 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       View view,
       InstrumentDescriptor instrument,
       Consumer<ObservableLongMeasurement> metricUpdater) {
-    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
-    final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
+    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument, aggregator);
+    if (Aggregator.drop() == aggregator) {
+      return empty();
+    }
+    AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
-    final ObservableLongMeasurement result =
+    ObservableLongMeasurement result =
         new ObservableLongMeasurement() {
 
           @Override
@@ -175,15 +178,20 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   /** Helper class to record async measurements on demand. */
-  private static final class AsyncAccumulator<T> {
+  // Visible for testing
+  static final class AsyncAccumulator<T> {
     private final InstrumentDescriptor instrument;
+    private final Aggregator<T> aggregator;
+    private Map<Attributes, T> previousAccumulation = new HashMap<>();
     private Map<Attributes, T> currentAccumulation = new HashMap<>();
 
-    AsyncAccumulator(InstrumentDescriptor instrument) {
+    AsyncAccumulator(InstrumentDescriptor instrument, Aggregator<T> aggregator) {
       this.instrument = instrument;
+      this.aggregator = aggregator;
     }
 
     public void record(Attributes attributes, T accumulation) {
+      // Check we're under the max allowed accumulations
       if (currentAccumulation.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
         logger.log(
             Level.WARNING,
@@ -194,14 +202,41 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
                 + ").");
         return;
       }
-      // TODO: error on metric overwrites
+
+      // Check there is not already a recording for the attributes
+      if (currentAccumulation.containsKey(attributes)) {
+        logger.log(
+            Level.WARNING,
+            "Instrument "
+                + instrument.getName()
+                + " has recorded multiple values for the same attributes.");
+        return;
+      }
+
+      // Check that the accumulation is compatible with the previously recorded accumulation
+      // e.g. ensure that monotonic sum values are monotonically increasing
+      T previous = previousAccumulation.get(attributes);
+      if (previous != null) {
+        try {
+          aggregator.validateAsyncAccumulation(previous, accumulation);
+        } catch (Exception e) {
+          // TODO: consider resetting the metric stream instead of logging here
+          logger.log(
+              Level.WARNING,
+              "Instrument "
+                  + instrument.getName()
+                  + " has recorded an invalid value: "
+                  + e.getMessage());
+          return;
+        }
+      }
       currentAccumulation.put(attributes, accumulation);
     }
 
     public Map<Attributes, T> collectAndReset() {
-      Map<Attributes, T> result = currentAccumulation;
+      previousAccumulation = currentAccumulation;
       currentAccumulation = new HashMap<>();
-      return result;
+      return new HashMap<>(previousAccumulation);
     }
   }
 }
