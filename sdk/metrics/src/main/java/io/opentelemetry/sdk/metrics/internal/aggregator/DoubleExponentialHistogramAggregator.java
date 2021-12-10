@@ -81,7 +81,6 @@ final class DoubleExponentialHistogramAggregator
       ExponentialHistogramAccumulation previousCumulative,
       ExponentialHistogramAccumulation currentCumulative) {
 
-    // or maybe just do something similar to merge instead minus rather than increment?
     double sum = currentCumulative.getSum() - previousCumulative.getSum();
     long zeroCount = currentCumulative.getZeroCount() - previousCumulative.getZeroCount();
 

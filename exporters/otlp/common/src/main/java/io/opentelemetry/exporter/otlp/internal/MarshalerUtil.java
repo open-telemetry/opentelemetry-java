@@ -107,6 +107,15 @@ public final class MarshalerUtil {
     return size;
   }
 
+  /** Returns the size of a repeated uint64 field. */
+  public static int sizeRepeatedUInt64(ProtoFieldInfo field, Collection<Long> values) {
+    int size = field.getTagSize();
+    for (long v : values) {
+      size += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+    return size;
+  }
+
   /** Returns the size of a repeated double field. */
   public static int sizeRepeatedDouble(ProtoFieldInfo field, List<Double> values) {
     // Same as fixed64.
@@ -165,6 +174,13 @@ public final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(message);
+  }
+
+  public static int sizeSInt32(ProtoFieldInfo field, int message) {
+    if (message == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeSInt32SizeNoTag(message);
   }
 
   /** Returns the size of a int32 field. */
