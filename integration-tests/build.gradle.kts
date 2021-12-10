@@ -8,8 +8,6 @@ description = "OpenTelemetry Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.integration.tests")
 
 testSets {
-  create("testJaeger")
-
   libraries {
     create("testOtlpCommon")
   }
@@ -53,14 +51,10 @@ dependencies {
 
   add("testOtlpRuntimeOnly", "io.grpc:grpc-netty-shaded")
   add("testOtlpRuntimeOnly", "io.grpc:grpc-stub")
-
-  add("testJaegerImplementation", project(":exporters:jaeger"))
-  add("testJaegerImplementation", project(":semconv"))
-  add("testJaegerRuntimeOnly", "io.grpc:grpc-netty-shaded")
 }
 
 tasks {
   check {
-    dependsOn("testJaeger", "testOtlp", "testOtlpNoGrpcJava")
+    dependsOn("testOtlp", "testOtlpNoGrpcJava")
   }
 }
