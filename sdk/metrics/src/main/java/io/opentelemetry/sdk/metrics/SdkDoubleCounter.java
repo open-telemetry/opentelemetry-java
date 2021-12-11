@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -14,6 +13,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -52,8 +52,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public BoundDoubleCounter bind(Attributes attributes) {
+  BoundDoubleCounter bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }
 

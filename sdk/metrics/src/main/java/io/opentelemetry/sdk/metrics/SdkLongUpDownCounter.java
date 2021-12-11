@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
@@ -15,6 +14,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -44,8 +44,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public BoundLongUpDownCounter bind(Attributes attributes) {
+  BoundLongUpDownCounter bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }
 

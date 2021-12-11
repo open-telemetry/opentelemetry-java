@@ -93,7 +93,9 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
   public OkHttpExporter<T> build() {
     OkHttpClient.Builder clientBuilder =
-        new OkHttpClient.Builder().callTimeout(Duration.ofNanos(timeoutNanos));
+        new OkHttpClient.Builder()
+            .dispatcher(OkHttpUtil.newDispatcher())
+            .callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (trustedCertificatesPem != null) {
       try {

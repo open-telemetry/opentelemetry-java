@@ -1,25 +1,10 @@
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
-
-  id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry SDK Auto-configuration"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
-
-testSets {
-  create("testConfigError")
-  create("testFullConfig")
-  create("testInitializeRegistersGlobal")
-  create("testJaeger")
-  create("testOtlpGrpc")
-  create("testOtlpHttp")
-  create("testPrometheus")
-  create("testResourceDisabledByProperty")
-  create("testResourceDisabledByEnv")
-  create("testZipkin")
-}
 
 dependencies {
   api(project(":sdk:all"))
@@ -47,115 +32,200 @@ dependencies {
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testRuntimeOnly("org.slf4j:slf4j-simple")
+}
 
-  add("testFullConfigImplementation", project(":extensions:aws"))
-  add("testFullConfigImplementation", project(":extensions:trace-propagators"))
-  add("testFullConfigImplementation", project(":exporters:jaeger"))
-  add("testFullConfigImplementation", project(":exporters:logging"))
-  add("testFullConfigImplementation", project(":exporters:otlp:all"))
-  add("testFullConfigImplementation", project(":exporters:otlp:metrics"))
-  add("testFullConfigImplementation", project(":exporters:prometheus"))
-  add("testFullConfigImplementation", project(":exporters:zipkin"))
-  add("testFullConfigImplementation", project(":sdk-extensions:resources"))
+testing {
+  suites {
+    val testConfigError by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":extensions:trace-propagators"))
+        implementation(project(":exporters:jaeger"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":exporters:otlp:all"))
+        implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:prometheus"))
+        implementation(project(":exporters:zipkin"))
 
-  add("testOtlpGrpcImplementation", project(":exporters:otlp:all"))
-  add("testOtlpGrpcImplementation", project(":exporters:otlp:metrics"))
-  add("testOtlpGrpcImplementation", "org.bouncycastle:bcpkix-jdk15on")
-  add("testOtlpHttpImplementation", project(":exporters:otlp-http:trace"))
-  add("testOtlpHttpImplementation", project(":exporters:otlp-http:metrics"))
-  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp")
-  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp-tls")
-  add("testOtlpHttpImplementation", "org.bouncycastle:bcpkix-jdk15on")
+        implementation("org.junit-pioneer:junit-pioneer")
+      }
+    }
+    val testFullConfig by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":extensions:aws"))
+        implementation(project(":extensions:trace-propagators"))
+        implementation(project(":exporters:jaeger"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":exporters:otlp:all"))
+        implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:prometheus"))
+        implementation(project(":exporters:zipkin"))
+        implementation(project(":sdk-extensions:resources"))
+        implementation(project(":sdk:testing"))
+        implementation(project(":semconv"))
 
-  add("testJaegerImplementation", project(":exporters:jaeger"))
-  add("testJaegerImplementation", project(":exporters:jaeger-proto"))
+        implementation("com.google.guava:guava")
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc")
+        runtimeOnly("io.grpc:grpc-netty-shaded")
+      }
 
-  add("testZipkinImplementation", project(":exporters:zipkin"))
+      targets {
+        all {
+          testTask {
+            environment("OTEL_METRICS_EXPORTER", "otlp")
+            environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
+            environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
+            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
+            environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
+            environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
+            environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
+            environment("OTEL_TEST_CONFIGURED", "true")
+            environment("OTEL_TEST_WRAPPED", "1")
+          }
+        }
+      }
+    }
+    val testInitializeRegistersGlobal by registering(JvmTestSuite::class) {
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "none")
+          }
+        }
+      }
+    }
+    val testJaeger by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:jaeger"))
+        implementation(project(":exporters:jaeger-proto"))
 
-  add("testConfigErrorImplementation", project(":extensions:trace-propagators"))
-  add("testConfigErrorImplementation", project(":exporters:jaeger"))
-  add("testConfigErrorImplementation", project(":exporters:logging"))
-  add("testConfigErrorImplementation", project(":exporters:otlp:all"))
-  add("testConfigErrorImplementation", project(":exporters:otlp:metrics"))
-  add("testConfigErrorImplementation", project(":exporters:prometheus"))
-  add("testConfigErrorImplementation", project(":exporters:zipkin"))
-  add("testConfigErrorImplementation", "org.junit-pioneer:junit-pioneer")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc")
+        runtimeOnly("io.grpc:grpc-netty-shaded")
+      }
 
-  add("testPrometheusImplementation", project(":exporters:prometheus"))
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "jaeger")
+            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+          }
+        }
+      }
+    }
+    val testOtlpGrpc by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:all"))
+        implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":sdk:testing"))
 
-  add("testResourceDisabledByPropertyImplementation", project(":sdk-extensions:resources"))
-  add("testResourceDisabledByEnvImplementation", project(":sdk-extensions:resources"))
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc")
+        runtimeOnly("io.grpc:grpc-netty-shaded")
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_METRICS_EXPORTER", "otlp")
+          }
+        }
+      }
+    }
+    val testOtlpHttp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp-http:trace"))
+        implementation(project(":exporters:otlp-http:metrics"))
+        implementation(project(":sdk:testing"))
+
+        implementation("com.google.guava:guava")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.squareup.okhttp3:okhttp")
+        implementation("com.squareup.okhttp3:okhttp-tls")
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_METRICS_EXPORTER", "otlp")
+          }
+        }
+      }
+    }
+    val testPrometheus by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:prometheus"))
+
+        implementation("com.linecorp.armeria:armeria-junit5")
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "prometheus")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
+          }
+        }
+      }
+    }
+    val testResourceDisabledByProperty by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":sdk-extensions:resources"))
+      }
+
+      targets {
+        all {
+          testTask {
+            jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+            // Properties win, this is ignored.
+            environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
+          }
+        }
+      }
+    }
+    val testResourceDisabledByEnv by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":sdk-extensions:resources"))
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
+          }
+        }
+      }
+    }
+    val testZipkin by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:zipkin"))
+
+        implementation("com.linecorp.armeria:armeria-junit5")
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "zipkin")
+            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+          }
+        }
+      }
+    }
+  }
 }
 
 tasks {
-  val testConfigError by existing(Test::class)
-
-  val testFullConfig by existing(Test::class) {
-    environment("OTEL_METRICS_EXPORTER", "otlp")
-    environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-    environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
-    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-    environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
-    environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
-    environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
-    environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
-    environment("OTEL_TEST_CONFIGURED", "true")
-    environment("OTEL_TEST_WRAPPED", "1")
-  }
-
-  val testInitializeRegistersGlobal by existing(Test::class) {
-    environment("OTEL_TRACES_EXPORTER", "none")
-  }
-
-  val testJaeger by existing(Test::class) {
-    environment("OTEL_TRACES_EXPORTER", "jaeger")
-    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-  }
-
-  val testOtlpGrpc by existing(Test::class) {
-    environment("OTEL_METRICS_EXPORTER", "otlp")
-  }
-
-  val testOtlpHttp by existing(Test::class) {
-    environment("OTEL_METRICS_EXPORTER", "otlp")
-  }
-
-  val testZipkin by existing(Test::class) {
-    environment("OTEL_TRACES_EXPORTER", "zipkin")
-    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-  }
-
-  val testPrometheus by existing(Test::class) {
-    environment("OTEL_TRACES_EXPORTER", "none")
-    environment("OTEL_METRICS_EXPORTER", "prometheus")
-  }
-
-  val testResourceDisabledByProperty by existing(Test::class) {
-    jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
-    // Properties win, this is ignored.
-    environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
-    environment("OTEL_TRACES_EXPORTER", "none")
-    environment("OTEL_METRICS_EXPORTER", "none")
-  }
-
-  val testResourceDisabledByEnv by existing(Test::class) {
-    environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
-    environment("OTEL_TRACES_EXPORTER", "none")
-    environment("OTEL_METRICS_EXPORTER", "none")
-  }
-
   check {
-    dependsOn(
-      testConfigError,
-      testFullConfig,
-      testInitializeRegistersGlobal,
-      testJaeger,
-      testOtlpGrpc,
-      testOtlpHttp,
-      testPrometheus,
-      testZipkin,
-      testResourceDisabledByProperty,
-      testResourceDisabledByEnv
-    )
+    dependsOn(testing.suites)
   }
 }

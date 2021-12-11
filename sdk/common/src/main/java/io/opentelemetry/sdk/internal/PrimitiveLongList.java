@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.internal;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * A list of longs backed by, and exposing, an array of primitives. Values will be boxed on demand
@@ -56,6 +58,19 @@ public final class PrimitiveLongList {
     public Long get(int index) {
       // If out of bounds, the array access will produce a perfectly fine IndexOutOfBoundsException.
       return values[index];
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof LongListImpl)) {
+        return super.equals(o);
+      }
+      return Arrays.equals(values, ((LongListImpl) o).values);
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(values);
     }
 
     @Override

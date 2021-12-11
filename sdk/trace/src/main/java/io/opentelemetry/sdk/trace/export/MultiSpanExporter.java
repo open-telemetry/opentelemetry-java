@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,11 +15,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of the {@code SpanExporter} that simply forwards all received spans to a list of
- * {@code SpanExporter}.
+ * {@link SpanExporter} that forwards all received spans to a list of {@link SpanExporter}.
  *
- * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a {@code
- * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
+ * <p>Can be used to export to multiple backends using the same {@link SpanProcessor} like a {@link
+ * SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
  */
 final class MultiSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());

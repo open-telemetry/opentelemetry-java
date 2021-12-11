@@ -59,7 +59,7 @@ public class MetricsBenchmarks {
     }
 
     @TearDown
-    public void tearDown(ThreadParams threadParms) {
+    public void tearDown(ThreadParams threadParams) {
       contextScope.close();
       span.end();
     }
@@ -72,12 +72,6 @@ public class MetricsBenchmarks {
   }
 
   @Benchmark
-  @Threads(1)
-  public void oneThreadBound(ThreadState threadState) {
-    threadState.op.performBound();
-  }
-
-  @Benchmark
   @Threads(8)
   public void eightThreadsCommonLabelSet(ThreadState threadState) {
     threadState.op.perform(threadState.sharedLabelSet);
@@ -87,11 +81,5 @@ public class MetricsBenchmarks {
   @Threads(8)
   public void eightThreadsSeparateLabelSets(ThreadState threadState) {
     threadState.op.perform(threadState.threadUniqueLabelSet);
-  }
-
-  @Benchmark
-  @Threads(8)
-  public void eightThreadsBound(ThreadState threadState) {
-    threadState.op.performBound();
   }
 }

@@ -59,7 +59,7 @@ class SdkDoubleSumObserverTest {
         .setDescription("My own DoubleSumObserver")
         .setUnit("ms")
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -126,7 +126,7 @@ class SdkDoubleSumObserverTest {
         .setDescription("My own DoubleSumObserver")
         .setUnit("ms")
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

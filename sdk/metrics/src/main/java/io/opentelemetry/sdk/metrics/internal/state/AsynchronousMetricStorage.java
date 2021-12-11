@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -15,6 +17,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -27,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -59,7 +61,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    if (Aggregator.empty() == aggregator) {
+    if (Aggregator.drop() == aggregator) {
       return empty();
     }
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -67,7 +69,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
           @Override
-          public void observe(double value, Attributes attributes) {
+          public void record(double value, Attributes attributes) {
             T accumulation =
                 aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
             if (accumulation != null) {
@@ -77,8 +79,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
 
           @Override
-          public void observe(double value) {
-            observe(value, Attributes.empty());
+          public void record(double value) {
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(
@@ -100,7 +102,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         new ObservableLongMeasurement() {
 
           @Override
-          public void observe(long value, Attributes attributes) {
+          public void record(long value, Attributes attributes) {
             T accumulation =
                 aggregator.accumulateLongMeasurement(value, attributes, Context.current());
             if (accumulation != null) {
@@ -110,8 +112,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
 
           @Override
-          public void observe(long value) {
-            observe(value, Attributes.empty());
+          public void record(long value) {
+            record(value, Attributes.empty());
           }
         };
     return new AsynchronousMetricStorage<>(
@@ -130,7 +132,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   @Override
-  @Nullable
   public MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,
@@ -139,20 +140,20 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(
-            collectionInfo.getSupportedAggregation(), collectionInfo.getPreferredAggregation());
+        TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
     collectLock.lock();
     try {
       try {
         metricUpdater.run();
-      } catch (RuntimeException e) {
+      } catch (Throwable e) {
+        propagateIfFatal(e);
         logger.log(
             Level.WARNING,
             "An exception occurred invoking callback for instrument "
                 + getMetricDescriptor().getName()
                 + ".",
             e);
-        return null;
+        return EmptyMetricData.getInstance();
       }
       return storage.buildMetricFor(
           collectionInfo.getCollector(),

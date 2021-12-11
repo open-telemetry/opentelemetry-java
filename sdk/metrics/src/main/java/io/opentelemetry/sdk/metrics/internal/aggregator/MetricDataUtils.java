@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -56,17 +55,6 @@ final class MetricDataUtils {
                     labels,
                     accumulation.getValue(),
                     accumulation.getExemplars())));
-    return points;
-  }
-
-  static List<DoubleSummaryPointData> toDoubleSummaryPointList(
-      Map<Attributes, MinMaxSumCountAccumulation> accumulationMap,
-      long startEpochNanos,
-      long epochNanos) {
-    List<DoubleSummaryPointData> points = new ArrayList<>(accumulationMap.size());
-    accumulationMap.forEach(
-        (labels, aggregator) ->
-            points.add(aggregator.toPoint(startEpochNanos, epochNanos, labels)));
     return points;
   }
 

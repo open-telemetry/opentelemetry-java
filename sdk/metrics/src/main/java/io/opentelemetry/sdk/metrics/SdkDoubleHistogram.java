@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
@@ -14,6 +13,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -42,8 +42,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     record(value, Attributes.empty());
   }
 
-  @Override
-  public BoundDoubleHistogram bind(Attributes attributes) {
+  BoundDoubleHistogram bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }
 

@@ -54,8 +54,7 @@ class SdkLongUpDownSumObserverTest {
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
-        .buildWithCallback(
-            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
+        .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -116,8 +115,7 @@ class SdkLongUpDownSumObserverTest {
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
-        .buildWithCallback(
-            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
+        .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

@@ -13,11 +13,11 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.EnumSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,8 +80,6 @@ public class SynchronousMetricStorageTest {
         new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     MetricData md =
         accumulator.collectAndReset(
             CollectionInfo.create(collector, allCollectors, reader),
@@ -112,8 +109,6 @@ public class SynchronousMetricStorageTest {
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
-      Mockito.when(reader.getSupportedTemporality())
-          .thenReturn(EnumSet.allOf(AggregationTemporality.class));
       accumulator.collectAndReset(
           CollectionInfo.create(collector, allCollectors, reader),
           RESOURCE,
@@ -143,6 +138,6 @@ public class SynchronousMetricStorageTest {
                 0,
                 testClock.now(),
                 false))
-        .isNull();
+        .isEqualTo(EmptyMetricData.getInstance());
   }
 }

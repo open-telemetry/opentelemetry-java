@@ -3,18 +3,12 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
-  id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry SDK Common"
 otelJava.moduleName.set("io.opentelemetry.sdk.common")
 
 val mrJarVersions = listOf(9)
-
-testSets {
-  create("testResourceDisabledByProperty")
-  create("testResourceDisabledByEnv")
-}
 
 dependencies {
   api(project(":api:all"))
@@ -28,6 +22,13 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:resources"))
   testImplementation("com.google.guava:guava-testlib")
+}
+
+testing {
+  suites {
+    val testResourceDisabledByProperty by registering(JvmTestSuite::class)
+    val testResourceDisabledByEnv by registering(JvmTestSuite::class)
+  }
 }
 
 for (version in mrJarVersions) {
@@ -74,5 +75,9 @@ tasks {
   test {
     // For checking version number included in Resource.
     systemProperty("otel.test.project-version", project.version.toString())
+  }
+
+  check {
+    dependsOn(testing.suites)
   }
 }

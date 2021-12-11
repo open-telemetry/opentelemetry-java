@@ -66,6 +66,16 @@ class OtlpJsonLoggingMetricExporterTest {
   }
 
   @Test
+  void preferredTemporality() {
+    assertThat(OtlpJsonLoggingMetricExporter.create().getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(
+            OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA)
+                .getPreferredTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
   void log() throws Exception {
     exporter.export(Arrays.asList(METRIC1, METRIC2));
 

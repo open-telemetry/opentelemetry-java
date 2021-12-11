@@ -3,19 +3,10 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
-
-  id("org.unbroken-dome.test-sets")
 }
 
-description = "OpenTelemetry Protocol Trace Exporter"
-otelJava.moduleName.set("io.opentelemetry.exporter.otlp.trace")
-
-testSets {
-  create("testGrpcNetty")
-  create("testGrpcNettyShaded")
-  create("testGrpcOkhttp")
-  create("testOkHttpOnly")
-}
+description = "OpenTelemetry Protocol Logs Exporter"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.logs")
 
 dependencies {
   api(project(":sdk:logs"))
@@ -24,31 +15,39 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
-  testImplementation(project(":sdk:testing"))
+}
 
-  add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
-  add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
-  add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+testing {
+  suites {
+    val testGrpcNetty by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
 
-  add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-grpc")
-  add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-netty-shaded")
-  add("testGrpcNettyShadedRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+        implementation("io.grpc:grpc-netty")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
 
-  add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-grpc")
-  add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
-  add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+        implementation("io.grpc:grpc-netty-shaded")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:otlp:testing-internal"))
 
-  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
-  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
-  add("testOkHttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+        implementation("io.grpc:grpc-okhttp")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+  }
 }
 
 tasks {
   named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkHttpOnly")
+    dependsOn(testing.suites)
   }
 }

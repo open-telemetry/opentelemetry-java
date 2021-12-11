@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
@@ -17,6 +16,7 @@ import java.util.ServiceLoader;
 
 final class MeterProviderConfiguration {
 
+  @SuppressWarnings("deprecation") // Allow call to deprecated GlobalMeterProvider until removed
   static MeterProvider configureMeterProvider(
       Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
@@ -47,7 +47,6 @@ final class MeterProviderConfiguration {
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName == null || exporterName.equals("none")) {
       // In the event no exporters are configured set a noop exporter
-      GlobalMeterProvider.set(MeterProvider.noop());
       return MeterProvider.noop();
     }
     MetricExporterConfiguration.configureExporter(

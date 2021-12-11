@@ -16,7 +16,6 @@ dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":api:all"))
-  api(project(":api:metrics"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
@@ -41,6 +40,7 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.skyscreamer:jsonassert")
 

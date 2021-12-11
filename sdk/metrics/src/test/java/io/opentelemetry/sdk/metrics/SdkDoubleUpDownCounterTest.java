@@ -10,11 +10,12 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleUpDownCounter;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -54,7 +55,10 @@ class SdkDoubleUpDownCounterTest {
   @Test
   void bound_PreventNullAttributes() {
     assertThatThrownBy(
-            () -> sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build().bind(null))
+            () ->
+                ((SdkDoubleUpDownCounter)
+                        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build())
+                    .bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -64,7 +68,8 @@ class SdkDoubleUpDownCounterTest {
     DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
     BoundDoubleUpDownCounter bound =
-        doubleUpDownCounter.bind(Attributes.builder().put("foo", "bar").build());
+        ((SdkDoubleUpDownCounter) doubleUpDownCounter)
+            .bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -73,7 +78,6 @@ class SdkDoubleUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
     DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter
@@ -108,13 +112,13 @@ class SdkDoubleUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
     BoundDoubleUpDownCounter bound =
-        doubleUpDownCounter.bind(Attributes.builder().put("K", "V").build());
+        ((SdkDoubleUpDownCounter) doubleUpDownCounter)
+            .bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleUpDownCounter.add(12.1d, Attributes.empty());
@@ -181,7 +185,6 @@ class SdkDoubleUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest() {
     final DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
@@ -200,7 +203,8 @@ class SdkDoubleUpDownCounterTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  doubleUpDownCounter.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkDoubleUpDownCounter) doubleUpDownCounter)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -227,7 +231,6 @@ class SdkDoubleUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
@@ -249,7 +252,8 @@ class SdkDoubleUpDownCounterTest {
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  doubleUpDownCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkDoubleUpDownCounter) doubleUpDownCounter)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -270,7 +274,7 @@ class SdkDoubleUpDownCounterTest {
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(40_000))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

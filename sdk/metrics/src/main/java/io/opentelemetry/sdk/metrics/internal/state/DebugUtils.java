@@ -74,13 +74,35 @@ public final class DebugUtils {
           .append(existing.getUnit())
           .append("]\n");
     }
+    if (!existing
+        .getSourceInstrument()
+        .getType()
+        .equals(conflict.getSourceInstrument().getType())) {
+      result
+          .append("- InstrumentType [")
+          .append(conflict.getSourceInstrument().getType())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getType())
+          .append("]\n");
+    }
+    if (!existing
+        .getSourceInstrument()
+        .getValueType()
+        .equals(conflict.getSourceInstrument().getValueType())) {
+      result
+          .append("- InstrumentValueType [")
+          .append(conflict.getSourceInstrument().getValueType())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getValueType())
+          .append("]\n");
+    }
 
-    // Next we write out where the existing metric deescriptor came from, either a raw instrument
+    // Next we write out where the existing metric descriptor came from, either a raw instrument
     // or a view on a raw instrument.
     if (existing.getName().equals(existing.getSourceInstrument().getName())) {
       result
           .append(
-              "Original instrument registered with same name but different description or unit.\n")
+              "Original instrument registered with same name but different description, unit, instrument type, or instrument value type.\n")
           .append(existing.getSourceInstrument().getSourceInfo().multiLineDebugString())
           .append("\n");
     } else {

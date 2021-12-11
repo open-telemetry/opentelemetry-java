@@ -70,7 +70,7 @@ testing {
 }
 
 tasks {
-  named("check") {
+  check {
     dependsOn(testing.suites)
   }
 }
