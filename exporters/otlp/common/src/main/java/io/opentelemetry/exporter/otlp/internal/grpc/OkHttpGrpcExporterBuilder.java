@@ -8,10 +8,10 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
-import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -109,7 +109,7 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
+  public GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }

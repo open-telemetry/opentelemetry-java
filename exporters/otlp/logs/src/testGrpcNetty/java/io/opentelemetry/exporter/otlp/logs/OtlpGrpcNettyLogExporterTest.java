@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -41,7 +41,7 @@ class OtlpGrpcNettyLogExporterTest
             () ->
                 DefaultGrpcExporterBuilder.getDelegateBuilder(
                         OtlpGrpcLogExporterBuilder.class, OtlpGrpcLogExporter.builder())
-                    .addRetryPolicy(RetryPolicy.getDefault()))
+                    .setRetryPolicy(RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 
@@ -92,8 +92,8 @@ class OtlpGrpcNettyLogExporterTest
       }
 
       @Override
-      public TelemetryExporterBuilder<LogData> addRetryPolicy(RetryPolicy retryPolicy) {
-        builder.delegate.addRetryPolicy(retryPolicy);
+      public TelemetryExporterBuilder<LogData> setRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.setRetryPolicy(retryPolicy);
         return this;
       }
 

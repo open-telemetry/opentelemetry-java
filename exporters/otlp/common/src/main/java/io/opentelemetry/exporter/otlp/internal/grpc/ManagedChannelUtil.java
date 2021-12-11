@@ -12,8 +12,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public final class ManagedChannelUtil {
    */
   public static Map<String, ?> toServiceConfig(String serviceName, RetryPolicy retryPolicy) {
     List<Double> retryableStatusCodes =
-        GrpcStatusUtil.retryableStatusCodes().stream().map(Double::parseDouble).collect(toList());
+        RetryUtil.retryableGrpcStatusCodes().stream().map(Double::parseDouble).collect(toList());
 
     Map<String, Object> retryConfig = new HashMap<>();
     retryConfig.put("retryableStatusCodes", retryableStatusCodes);

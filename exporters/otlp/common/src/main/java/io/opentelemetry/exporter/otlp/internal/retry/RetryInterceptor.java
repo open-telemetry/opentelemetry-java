@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.okhttp;
+package io.opentelemetry.exporter.otlp.internal.retry;
 
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;

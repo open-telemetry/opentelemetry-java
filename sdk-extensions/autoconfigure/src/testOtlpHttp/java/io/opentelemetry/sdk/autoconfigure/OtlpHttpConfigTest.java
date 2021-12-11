@@ -13,19 +13,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
-import com.google.protobuf.Message;
-import com.linecorp.armeria.common.HttpResponse;
-import com.linecorp.armeria.common.HttpStatus;
-import com.linecorp.armeria.common.RequestHeaders;
-import com.linecorp.armeria.server.HttpService;
-import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -40,126 +31,26 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
-import okhttp3.tls.HeldCertificate;
-import okio.Buffer;
-import okio.GzipSource;
-import okio.Okio;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OtlpHttpConfigTest {
 
-  private static final BlockingQueue<ExportTraceServiceRequest> traceRequests =
-      new LinkedBlockingDeque<>();
-  private static final BlockingQueue<ExportMetricsServiceRequest> metricRequests =
-      new LinkedBlockingDeque<>();
-  private static final BlockingQueue<RequestHeaders> requestHeaders = new LinkedBlockingDeque<>();
-  private static final String canonicalHostName;
-
-  static {
-    try {
-      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      throw new IllegalStateException("Error resolving canonical host name.", e);
-    }
-  }
-
   @RegisterExtension
-  @Order(1)
-  public static final CertificateExtension certificateExtension = new CertificateExtension();
-
-  private static class CertificateExtension implements BeforeAllCallback {
-    private HeldCertificate heldCertificate;
-    private String filePath;
-
-    @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
-      heldCertificate =
-          new HeldCertificate.Builder()
-              .commonName("localhost")
-              .addSubjectAlternativeName(canonicalHostName)
-              .build();
-      Path file = Files.createTempFile("test-cert", ".pem");
-      Files.write(file, heldCertificate.certificatePem().getBytes(StandardCharsets.UTF_8));
-      filePath = file.toAbsolutePath().toString();
-    }
-  }
-
-  @RegisterExtension
-  @Order(2)
-  public static final ServerExtension server =
-      new ServerExtension() {
-        @Override
-        protected void configure(ServerBuilder sb) {
-          sb.service(
-                  "/v1/traces",
-                  httpService(traceRequests, ExportTraceServiceRequest.getDefaultInstance()))
-              .service(
-                  "/v1/metrics",
-                  httpService(metricRequests, ExportMetricsServiceRequest.getDefaultInstance()));
-          sb.tls(
-              certificateExtension.heldCertificate.keyPair().getPrivate(),
-              certificateExtension.heldCertificate.certificate());
-        }
-      };
-
-  @SuppressWarnings("unchecked")
-  private static <T extends Message> HttpService httpService(
-      BlockingQueue<T> queue, T defaultMessage) {
-    return (ctx, req) ->
-        HttpResponse.from(
-            req.aggregate()
-                .thenApply(
-                    aggReq -> {
-                      requestHeaders.add(aggReq.headers());
-                      try {
-                        byte[] requestBody =
-                            maybeGzipInflate(aggReq.headers(), aggReq.content().array());
-                        queue.add((T) defaultMessage.getParserForType().parseFrom(requestBody));
-                      } catch (IOException e) {
-                        return HttpResponse.of(HttpStatus.BAD_REQUEST);
-                      }
-                      return HttpResponse.of(HttpStatus.OK);
-                    }));
-  }
-
-  private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
-      throws IOException {
-    if (!requestHeaders.contains("content-encoding", "gzip")) {
-      return content;
-    }
-    Buffer buffer = new Buffer();
-    GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
-    gzipSource.read(buffer, Integer.MAX_VALUE);
-    return buffer.readByteArray();
-  }
+  public static final OtlpHttpServerExtension server = new OtlpHttpServerExtension();
 
   @BeforeEach
   void setUp() {
-    traceRequests.clear();
-    metricRequests.clear();
-    requestHeaders.clear();
+    server.reset();
     GlobalOpenTelemetry.resetForTest();
   }
 
@@ -172,9 +63,8 @@ class OtlpHttpConfigTest {
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
-    props.put(
-        "otel.exporter.otlp.endpoint", "https://" + canonicalHostName + ":" + server.httpsPort());
-    props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
+    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
+    props.put("otel.exporter.otlp.certificate", server.certFilePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "15s");
@@ -195,8 +85,8 @@ class OtlpHttpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(traceRequests).hasSize(1);
-    assertThat(requestHeaders)
+    assertThat(server.traceRequests).hasSize(1);
+    assertThat(server.requestHeaders)
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/traces")
@@ -213,8 +103,8 @@ class OtlpHttpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(metricRequests).hasSize(1);
-    assertThat(requestHeaders)
+    assertThat(server.metricRequests).hasSize(1);
+    assertThat(server.requestHeaders)
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/metrics")
@@ -236,8 +126,8 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.traces.endpoint",
-        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/traces");
-    props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
+        "https://localhost:" + server.httpsPort() + "/v1/traces");
+    props.put("otel.exporter.otlp.traces.certificate", server.certFilePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
@@ -258,8 +148,8 @@ class OtlpHttpConfigTest {
                 .join(10, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(traceRequests).hasSize(1);
-    assertThat(requestHeaders)
+    assertThat(server.traceRequests).hasSize(1);
+    assertThat(server.requestHeaders)
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/traces")
@@ -281,8 +171,8 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.metrics.endpoint",
-        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/metrics");
-    props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
+        "https://localhost:" + server.httpsPort() + "/v1/metrics");
+    props.put("otel.exporter.otlp.metrics.certificate", server.certFilePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
@@ -302,8 +192,8 @@ class OtlpHttpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(metricRequests).hasSize(1);
-    assertThat(requestHeaders)
+    assertThat(server.metricRequests).hasSize(1);
+    assertThat(server.requestHeaders)
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/metrics")
@@ -367,9 +257,8 @@ class OtlpHttpConfigTest {
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty(
-        "otel.exporter.otlp.endpoint",
-        "https://" + canonicalHostName + ":" + server.httpsPort() + "/");
-    System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
+        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
+    System.setProperty("otel.exporter.otlp.certificate", server.certFilePath);
     System.setProperty("otel.metric.export.interval", "1s");
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
@@ -377,12 +266,12 @@ class OtlpHttpConfigTest {
     await()
         .untilAsserted(
             () -> {
-              assertThat(traceRequests).hasSize(1);
+              assertThat(server.traceRequests).hasSize(1);
 
               // Not well defined how many metric exports would have happened by now, check that
               // any did. Metrics are recorded by OtlpHttpSpanExporter, BatchSpanProcessor, and
               // potentially others.
-              assertThat(metricRequests).isNotEmpty();
+              assertThat(server.metricRequests).isNotEmpty();
             });
   }
 }

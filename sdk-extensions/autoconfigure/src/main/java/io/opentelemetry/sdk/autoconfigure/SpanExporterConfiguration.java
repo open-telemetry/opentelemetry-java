@@ -20,6 +20,7 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -144,7 +145,9 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          unused -> {});
+          retryPolicy ->
+              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpSpanExporterBuilder.class, builder)
+                  .setRetryPolicy(retryPolicy));
 
       builder.setMeterProvider(meterProvider);
 
@@ -167,8 +170,7 @@ final class SpanExporterConfiguration {
           retryPolicy ->
               DefaultGrpcExporterBuilder.getDelegateBuilder(
                       OtlpGrpcSpanExporterBuilder.class, builder)
-                  .addRetryPolicy(retryPolicy));
-
+                  .setRetryPolicy(retryPolicy));
       builder.setMeterProvider(meterProvider);
 
       return builder.build();

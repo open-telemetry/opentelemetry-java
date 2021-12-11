@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -129,6 +130,10 @@ public final class OkHttpExporter<T extends Marshaler> {
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
     return result;
+  }
+
+  static boolean isRetryable(Response response) {
+    return RetryUtil.retryableHttpResponseCodes().contains(response.code());
   }
 
   private static RequestBody gzipRequestBody(RequestBody requestBody) {
