@@ -44,7 +44,12 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
 
   @Override
   @SuppressWarnings("MustBeClosedChecker")
-  public Scope activate(Span span) {
+  public Scope activate(@Nullable Span span) {
+    if (span == null) {
+      SpanShim spanShim = new SpanShim(telemetryInfo(),
+          io.opentelemetry.api.trace.Span.getInvalid());
+      return new ScopeShim(Context.current().with(spanShim).makeCurrent());
+    }
     if (!(span instanceof SpanShim)) {
       throw new IllegalArgumentException("span is not a valid SpanShim object");
     }
