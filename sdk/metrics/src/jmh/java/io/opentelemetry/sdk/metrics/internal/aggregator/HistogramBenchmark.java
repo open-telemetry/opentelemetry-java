@@ -45,22 +45,19 @@ public class HistogramBenchmark {
 
   @Benchmark
   @Threads(value = 10)
-  public void aggregate_10Threads(
-      ThreadState threadState) {
+  public void aggregate_10Threads(ThreadState threadState) {
     threadState.record();
   }
 
   @Benchmark
   @Threads(value = 5)
-  public void aggregate_5Threads(
-      ThreadState threadState) {
+  public void aggregate_5Threads(ThreadState threadState) {
     threadState.record();
   }
 
   @Benchmark
   @Threads(value = 1)
-  public void aggregate_1Threads(
-      ThreadState threadState) {
+  public void aggregate_1Threads(ThreadState threadState) {
     threadState.record();
   }
 }
