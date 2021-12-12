@@ -215,7 +215,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // Attributes passed to the OT SpanBuilder MUST
-    // me set before the OTel Span is created,
+    // be set before the OTel Span is created,
     // so those attributes are available to the Sampling API.
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
       AttributeKey key = this.spanBuilderAttributeKeys.get(i);
