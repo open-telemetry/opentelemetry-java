@@ -16,8 +16,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   private static final SpanShim NOOP_SPANSHIM =
       new SpanShim(
           new TelemetryInfo(
-              OpenTelemetry.noop().getTracer("noop"),
-              OpenTracingPropagators.builder().build()),
+              OpenTelemetry.noop().getTracer("noop"), OpenTracingPropagators.builder().build()),
           io.opentelemetry.api.trace.Span.getInvalid());
 
   public ScopeManagerShim(TelemetryInfo telemetryInfo) {
