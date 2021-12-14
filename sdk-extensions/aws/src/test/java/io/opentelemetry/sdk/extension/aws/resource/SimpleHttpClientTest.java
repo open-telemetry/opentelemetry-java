@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.aws.internal;
+package io.opentelemetry.sdk.extension.aws.resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 
-class JdkHttpClientTest {
+class SimpleHttpClientTest {
 
   @RegisterExtension public static MockWebServerExtension server = new MockWebServerExtension();
 
@@ -34,8 +34,8 @@ class JdkHttpClientTest {
 
     Map<String, String> requestPropertyMap = ImmutableMap.of("key1", "value1", "key2", "value2");
     String urlStr = String.format("http://localhost:%s%s", server.httpPort(), "/path");
-    JdkHttpClient jdkHttpClient = new JdkHttpClient();
-    String result = jdkHttpClient.fetchString("GET", urlStr, requestPropertyMap, null);
+    SimpleHttpClient httpClient = new SimpleHttpClient();
+    String result = httpClient.fetchString("GET", urlStr, requestPropertyMap, null);
 
     assertThat(result).isEqualTo("expected result");
 
@@ -49,26 +49,9 @@ class JdkHttpClientTest {
   void testFailedFetchString() {
     Map<String, String> requestPropertyMap = ImmutableMap.of("key1", "value1", "key2", "value2");
     String urlStr = String.format("http://localhost:%s%s", server.httpPort(), "/path");
-    JdkHttpClient jdkHttpClient = new JdkHttpClient();
-    String result = jdkHttpClient.fetchString("GET", urlStr, requestPropertyMap, null);
+    SimpleHttpClient httpClient = new SimpleHttpClient();
+    String result = httpClient.fetchString("GET", urlStr, requestPropertyMap, null);
     assertThat(result).isEmpty();
-  }
-
-  @Test
-  void requestBody() {
-    server.enqueue(HttpResponse.of("expected result"));
-
-    String urlStr = String.format("http://localhost:%s%s", server.httpPort(), "/path");
-    JdkHttpClient jdkHttpClient = new JdkHttpClient();
-    String result =
-        jdkHttpClient.fetchString(
-            "POST", urlStr, Collections.emptyMap(), null, "body".getBytes(StandardCharsets.UTF_8));
-
-    assertThat(result).isEqualTo("expected result");
-
-    AggregatedHttpRequest request1 = server.takeRequest().request();
-    assertThat(request1.path()).isEqualTo("/path");
-    assertThat(request1.contentUtf8()).isEqualTo("body");
   }
 
   static class HttpsServerTest {
@@ -90,9 +73,9 @@ class JdkHttpClientTest {
 
     @Test
     void goodCert() {
-      JdkHttpClient jdkHttpClient = new JdkHttpClient();
+      SimpleHttpClient httpClient = new SimpleHttpClient();
       String result =
-          jdkHttpClient.fetchString(
+          httpClient.fetchString(
               "GET",
               "https://localhost:" + server.httpsPort() + "/",
               Collections.emptyMap(),
@@ -102,9 +85,9 @@ class JdkHttpClientTest {
 
     @Test
     void missingCert() {
-      JdkHttpClient jdkHttpClient = new JdkHttpClient();
+      SimpleHttpClient httpClient = new SimpleHttpClient();
       String result =
-          jdkHttpClient.fetchString(
+          httpClient.fetchString(
               "GET",
               "https://localhost:" + server.httpsPort() + "/",
               Collections.emptyMap(),
@@ -116,9 +99,9 @@ class JdkHttpClientTest {
     void badCert(@TempDir Path tempDir) throws Exception {
       Path certFile = tempDir.resolve("test.crt");
       Files.write(certFile, "bad cert".getBytes(StandardCharsets.UTF_8));
-      JdkHttpClient jdkHttpClient = new JdkHttpClient();
+      SimpleHttpClient httpClient = new SimpleHttpClient();
       String result =
-          jdkHttpClient.fetchString(
+          httpClient.fetchString(
               "GET",
               "https://localhost:" + server.httpsPort() + "/",
               Collections.emptyMap(),

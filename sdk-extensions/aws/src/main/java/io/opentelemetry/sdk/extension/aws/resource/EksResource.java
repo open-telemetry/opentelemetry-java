@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
@@ -52,16 +51,16 @@ public final class EksResource {
   }
 
   private static Resource buildResource() {
-    return buildResource(new JdkHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_CERT_PATH);
+    return buildResource(new SimpleHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_CERT_PATH);
   }
 
   // Visible for testing
   static Resource buildResource(
-      JdkHttpClient jdkHttpClient,
+      SimpleHttpClient httpClient,
       DockerHelper dockerHelper,
       String k8sTokenPath,
       String k8sKeystorePath) {
-    if (!isEks(k8sTokenPath, k8sKeystorePath, jdkHttpClient)) {
+    if (!isEks(k8sTokenPath, k8sKeystorePath, httpClient)) {
       return Resource.empty();
     }
 
@@ -70,7 +69,7 @@ public final class EksResource {
     attrBuilders.put(
         ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_EKS);
 
-    String clusterName = getClusterName(jdkHttpClient);
+    String clusterName = getClusterName(httpClient);
     if (clusterName != null && !clusterName.isEmpty()) {
       attrBuilders.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName);
     }
@@ -84,7 +83,7 @@ public final class EksResource {
   }
 
   private static boolean isEks(
-      String k8sTokenPath, String k8sKeystorePath, JdkHttpClient jdkHttpClient) {
+      String k8sTokenPath, String k8sKeystorePath, SimpleHttpClient httpClient) {
     if (!isK8s(k8sTokenPath, k8sKeystorePath)) {
       logger.log(Level.FINE, "Not running on k8s.");
       return false;
@@ -93,7 +92,7 @@ public final class EksResource {
     Map<String, String> requestProperties = new HashMap<>();
     requestProperties.put("Authorization", getK8sCredHeader());
     String awsAuth =
-        jdkHttpClient.fetchString(
+        httpClient.fetchString(
             "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
     return awsAuth != null && !awsAuth.isEmpty();
@@ -105,11 +104,11 @@ public final class EksResource {
     return k8sTokeyFile.exists() && k8sKeystoreFile.exists();
   }
 
-  private static String getClusterName(JdkHttpClient jdkHttpClient) {
+  private static String getClusterName(SimpleHttpClient httpClient) {
     Map<String, String> requestProperties = new HashMap<>();
     requestProperties.put("Authorization", getK8sCredHeader());
     String json =
-        jdkHttpClient.fetchString(
+        httpClient.fetchString(
             "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
     try (JsonParser parser = JSON_FACTORY.createParser(json)) {
