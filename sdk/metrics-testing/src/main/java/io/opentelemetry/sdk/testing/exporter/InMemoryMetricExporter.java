@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.testing;
+package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -52,10 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *   }
  * }
  * </code></pre>
- *
- * @deprecated Moved to {@code io.opentelemetry:opentelemetry-sdk-metrics-testing} module.
  */
-@Deprecated
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
   private final AggregationTemporality preferredTemporality;
