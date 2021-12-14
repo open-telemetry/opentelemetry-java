@@ -14,15 +14,19 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link SdkDoubleCounter}. */
+/** Unit tests for SDK {@link InstrumentValueType#DOUBLE} {@link InstrumentType#COUNTER}. */
 class SdkDoubleCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -30,11 +34,11 @@ class SdkDoubleCounterTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkDoubleCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
-          .registerMetricReader(sdkMeterReader)
+          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
           .setResource(RESOURCE)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
@@ -63,7 +67,8 @@ class SdkDoubleCounterTest {
     BoundDoubleCounter bound =
         ((SdkDoubleCounter) doubleCounter).bind(Attributes.builder().put("foo", "bar").build());
     try {
-      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -81,7 +86,8 @@ class SdkDoubleCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleCounter.add(12d, Attributes.empty());
     doubleCounter.add(12d);
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -118,7 +124,8 @@ class SdkDoubleCounterTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321.5d);
       doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -145,12 +152,14 @@ class SdkDoubleCounterTest {
                                   .attributes()
                                   .hasSize(1)
                                   .containsEntry("K", "V")));
+      exporter.reset();
 
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222d);
       doubleCounter.add(11d, Attributes.empty());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -213,7 +222,8 @@ class SdkDoubleCounterTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -261,7 +271,8 @@ class SdkDoubleCounterTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

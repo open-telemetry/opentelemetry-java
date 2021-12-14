@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -24,16 +23,23 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -58,11 +64,12 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments() {
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
 
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
@@ -81,7 +88,8 @@ class SdkMeterProviderTest {
     DoubleHistogram doubleValueRecorder = sdkMeter.histogramBuilder("testDoubleHistogram").build();
     doubleValueRecorder.record(10.1, Attributes.empty());
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -177,23 +185,25 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
         View.builder()
             .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
             .build());
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create(AggregationTemporality.DELTA);
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -210,11 +220,13 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)));
+    exporter.reset();
 
     longCounter.add(10, Attributes.empty());
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -233,13 +245,14 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_DeltaHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create(AggregationTemporality.DELTA);
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
@@ -260,7 +273,8 @@ class SdkMeterProviderTest {
 
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -278,7 +292,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter",
             "testDoubleCounter",
@@ -286,6 +300,7 @@ class SdkMeterProviderTest {
             "testDoubleUpDownCounter",
             "testLongValueRecorder",
             "testDoubleValueRecorder");
+    exporter.reset();
 
     testClock.advance(Duration.ofSeconds(1));
 
@@ -296,7 +311,8 @@ class SdkMeterProviderTest {
     doubleUpDownCounter.add(10, Attributes.empty());
     doubleValueRecorder.record(10, Attributes.empty());
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -314,7 +330,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter",
             "testDoubleCounter",
@@ -325,11 +341,12 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments() {
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
@@ -354,7 +371,8 @@ class SdkMeterProviderTest {
         .gaugeBuilder("testDoubleValueObserver")
         .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -446,12 +464,11 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void viewSdk_AllowRenames() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .registerMetricReader(reader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
             .registerView(
                 InstrumentSelector.builder()
                     // TODO: Make instrument type optional.
@@ -470,7 +487,8 @@ class SdkMeterProviderTest {
         .setDescription("desc")
         .setUnit("unit")
         .buildWithCallback(o -> o.record(1));
-    assertThat(reader.collectAllMetrics())
+    provider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -481,18 +499,17 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void viewSdk_AllowMulitpleViewsPerSynchronousInstrument() {
+  void viewSdk_AllowMultipleViewsPerSynchronousInstrument() {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
             .setInstrumentType(InstrumentType.HISTOGRAM)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .registerMetricReader(reader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
             .registerView(
                 selector,
                 View.builder()
@@ -512,7 +529,8 @@ class SdkMeterProviderTest {
     DoubleHistogram histogram =
         meter.histogramBuilder("test").setDescription("desc").setUnit("unit").build();
     histogram.record(1.0);
-    assertThat(reader.collectAllMetrics())
+    provider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
@@ -529,18 +547,17 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void viewSdk_AllowMulitpleViewsPerAsynchronousInstrument() {
+  void viewSdk_AllowMultipleViewsPerAsynchronousInstrument() {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
             .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .registerMetricReader(reader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
             .registerView(
                 selector,
                 View.builder()
@@ -562,7 +579,8 @@ class SdkMeterProviderTest {
         .setDescription("desc")
         .setUnit("unit")
         .buildWithCallback(obs -> obs.record(1.0));
-    assertThat(reader.collectAllMetrics())
+    provider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
@@ -585,10 +603,10 @@ class SdkMeterProviderTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .registerMetricReader(reader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
             .registerView(
                 selector,
                 View.builder()
@@ -609,7 +627,8 @@ class SdkMeterProviderTest {
     }
     // Now make sure all metrics have baggage appended.
     // Implicitly we should have ONLY ONE metric data point that has baggage appended.
-    assertThat(reader.collectAllMetrics())
+    provider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -625,13 +644,14 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
@@ -658,7 +678,8 @@ class SdkMeterProviderTest {
 
     testClock.advance(Duration.ofNanos(50));
 
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -676,7 +697,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongSumObserver",
             "testDoubleSumObserver",
@@ -684,12 +705,14 @@ class SdkMeterProviderTest {
             "testDoubleUpDownSumObserver",
             "testLongValueObserver",
             "testDoubleValueObserver");
+    exporter.reset();
 
     testClock.advance(Duration.ofNanos(50));
     // When collecting the next set of async measurements, we still only have 1 count per bucket
     // because we assume ALL measurements are cumulative and come in the async callback.
     // Note: We do not support "gauge histogram".
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -707,7 +730,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongSumObserver",
             "testDoubleSumObserver",
@@ -718,15 +741,11 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void sdkMeterProvider_supportsMultipleCollectorsCumulative() {
-    InMemoryMetricReader collector1 = InMemoryMetricReader.create();
-    InMemoryMetricReader collector2 = InMemoryMetricReader.create();
+  void sdkMeterProvider_supportsMultipleReadersCumulative() {
+    InMemoryMetricReader reader1 = new InMemoryMetricReader(AggregationTemporality.CUMULATIVE);
+    InMemoryMetricReader reader2 = new InMemoryMetricReader(AggregationTemporality.CUMULATIVE);
     SdkMeterProvider meterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(collector1)
-            .registerMetricReader(collector2)
-            .build();
+        sdkMeterProviderBuilder.registerMetricReader(reader1).registerMetricReader(reader2).build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
     final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     final long startTime = testClock.now();
@@ -734,7 +753,7 @@ class SdkMeterProviderTest {
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(collector1.collectAllMetrics())
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -753,8 +772,8 @@ class SdkMeterProviderTest {
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    // Make sure collector 2 sees the value collector 1 saw
-    assertThat(collector2.collectAllMetrics())
+    // Make sure reader2 sees the value reader1 saw
+    assertThat(reader2.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -770,8 +789,8 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(2)));
 
-    // Make sure Collector 1 sees the same point as 2
-    assertThat(collector1.collectAllMetrics())
+    // Make sure reader1 sees the same point as reader22
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -789,16 +808,15 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void sdkMeterProvider_supportsMultipleCollectorsDelta() {
+  void sdkMeterProvider_supportsMultipleReadersDelta() {
     // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
     // now.
-    InMemoryMetricReader collector1 = InMemoryMetricReader.createDelta();
-    InMemoryMetricReader collector2 = InMemoryMetricReader.createDelta();
+    InMemoryMetricReader reader1 = new InMemoryMetricReader(AggregationTemporality.DELTA);
+    InMemoryMetricReader reader2 = new InMemoryMetricReader(AggregationTemporality.DELTA);
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
-            .registerMetricReader(collector1)
-            .registerMetricReader(collector2)
+            .registerMetricReader(reader1)
+            .registerMetricReader(reader2)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.COUNTER)
@@ -813,7 +831,7 @@ class SdkMeterProviderTest {
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(collector1.collectAllMetrics())
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -833,8 +851,8 @@ class SdkMeterProviderTest {
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    // Make sure collector 2 sees the value collector 1 saw
-    assertThat(collector2.collectAllMetrics())
+    // Make sure reader2 sees the value reader1 saw
+    assertThat(reader2.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -850,8 +868,8 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(2)));
 
-    // Make sure Collector 1 sees the same point as 2, when it collects.
-    assertThat(collector1.collectAllMetrics())
+    // Make sure reader1 sees the same point as reader2, when it collects.
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -870,18 +888,19 @@ class SdkMeterProviderTest {
 
   @Test
   void collectAll_DropAggregator() {
-    InMemoryMetricReader collector = InMemoryMetricReader.create();
-    Meter meter =
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+    SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
             .registerView(
                 InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
                 View.builder().setAggregation(Aggregation.drop()).build())
-            .registerMetricReader(collector)
-            .build()
-            .get("my-meter");
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .build();
+    Meter meter = sdkMeterProvider.get("my-meter");
     meter.counterBuilder("sync-counter").build().add(1);
     meter.counterBuilder("async-counter").buildWithCallback(measurement -> measurement.record(1));
-    assertThat(collector.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .hasSize(1)
         .satisfiesExactly(
             metric -> assertThat(metric).hasResource(RESOURCE).hasName("async-counter"));
@@ -907,6 +926,49 @@ class SdkMeterProviderTest {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
           View.builder().setAggregation(aggregation).build());
+    }
+  }
+
+  private static class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
+    private final AggregationTemporality preferred;
+    @Nullable private volatile MetricProducer metricProducer;
+
+    private InMemoryMetricReader(AggregationTemporality preferred) {
+      this.preferred = preferred;
+    }
+
+    /** Returns all metrics accumulated since the last call. */
+    public Collection<MetricData> collectAllMetrics() {
+      MetricProducer metricProducer = this.metricProducer;
+      if (metricProducer != null) {
+        return metricProducer.collectAllMetrics();
+      }
+      return Collections.emptyList();
+    }
+
+    @Override
+    public AggregationTemporality getPreferredTemporality() {
+      return preferred;
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      MetricProducer metricProducer = this.metricProducer;
+      if (metricProducer != null) {
+        metricProducer.collectAllMetrics();
+      }
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public MetricReader apply(MetricProducer producer) {
+      this.metricProducer = producer;
+      return this;
     }
   }
 }

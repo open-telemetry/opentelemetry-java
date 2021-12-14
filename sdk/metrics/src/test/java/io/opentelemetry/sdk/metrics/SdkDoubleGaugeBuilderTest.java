@@ -11,25 +11,31 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleValueObserverSdk}. */
+/**
+ * Unit tests for SDK {@link InstrumentValueType#DOUBLE} {@link InstrumentType#OBSERVABLE_GAUGE}.
+ */
 class SdkDoubleGaugeBuilderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkDoubleGaugeBuilderTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .registerMetricReader(sdkMeterReader)
+          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
@@ -40,7 +46,8 @@ class SdkDoubleGaugeBuilderTest {
         .setDescription("My own DoubleValueObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems()).isEmpty();
   }
 
   @Test
@@ -53,7 +60,8 @@ class SdkDoubleGaugeBuilderTest {
         .buildWithCallback(
             result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -71,8 +79,10 @@ class SdkDoubleGaugeBuilderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
                                 .hasValue(12.1d)));
+    exporter.reset();
     testClock.advance(Duration.ofSeconds(1));
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

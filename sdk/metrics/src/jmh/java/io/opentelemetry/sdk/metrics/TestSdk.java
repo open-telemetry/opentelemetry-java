@@ -10,7 +10,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -31,8 +32,8 @@ public enum TestSdk {
           return SdkMeterProvider.builder()
               .setClock(Clock.getDefault())
               .setResource(Resource.empty())
-              // Must register reader for real SDK.
-              .registerMetricReader(InMemoryMetricReader.create())
+              .registerMetricReader(
+                  PeriodicMetricReader.newMetricReaderFactory(InMemoryMetricExporter.create()))
               .setExemplarFilter(ExemplarFilter.neverSample())
               .build()
               .get("io.opentelemetry.sdk.metrics");
@@ -45,8 +46,8 @@ public enum TestSdk {
           return SdkMeterProvider.builder()
               .setClock(Clock.getDefault())
               .setResource(Resource.empty())
-              // Must register reader for real SDK.
-              .registerMetricReader(InMemoryMetricReader.create())
+              .registerMetricReader(
+                  PeriodicMetricReader.newMetricReaderFactory(InMemoryMetricExporter.create()))
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }

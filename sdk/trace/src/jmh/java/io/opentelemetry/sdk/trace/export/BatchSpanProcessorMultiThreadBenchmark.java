@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +33,8 @@ public class BatchSpanProcessorMultiThreadBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private InMemoryMetricReader collector;
+    private SdkMeterProvider meterProvider;
+    private InMemoryMetricExporter metricExporter;
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private int numThreads = 1;
@@ -46,9 +47,11 @@ public class BatchSpanProcessorMultiThreadBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      collector = InMemoryMetricReader.create();
-      MeterProvider meterProvider =
-          SdkMeterProvider.builder().registerMetricReader(collector).build();
+      metricExporter = InMemoryMetricExporter.create();
+      meterProvider =
+          SdkMeterProvider.builder()
+              .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(metricExporter))
+              .build();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       processor = BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build();
       tracer =
@@ -57,8 +60,10 @@ public class BatchSpanProcessorMultiThreadBenchmark {
 
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
+      meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
       BatchSpanProcessorMetrics metrics =
-          new BatchSpanProcessorMetrics(collector.collectAllMetrics(), numThreads);
+          new BatchSpanProcessorMetrics(metricExporter.getFinishedMetricItems(), numThreads);
+      metricExporter.reset();
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
       processor.shutdown().join(10, TimeUnit.SECONDS);

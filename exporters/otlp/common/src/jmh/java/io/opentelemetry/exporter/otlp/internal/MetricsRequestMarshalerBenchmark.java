@@ -16,7 +16,8 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,10 +42,10 @@ public class MetricsRequestMarshalerBenchmark {
   private static final Collection<MetricData> METRICS;
 
   static {
-    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
-            .registerMetricReader(metricReader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
             .setResource(
                 Resource.create(
                     Attributes.builder()
@@ -113,7 +114,8 @@ public class MetricsRequestMarshalerBenchmark {
     histogram.record(4.0);
     histogram.record(5.0);
 
-    METRICS = metricReader.collectAllMetrics();
+    meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    METRICS = exporter.getFinishedMetricItems();
   }
 
   @Benchmark

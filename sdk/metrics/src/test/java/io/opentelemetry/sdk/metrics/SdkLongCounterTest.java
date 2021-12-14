@@ -14,15 +14,19 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link SdkLongCounter}. */
+/** Unit tests for SDK {@link InstrumentValueType#LONG} {@link InstrumentType#COUNTER}. */
 class SdkLongCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -30,12 +34,12 @@ class SdkLongCounterTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkLongCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .registerMetricReader(sdkMeterReader)
+          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
@@ -60,7 +64,8 @@ class SdkLongCounterTest {
     BoundLongCounter bound =
         ((SdkLongCounter) longCounter).bind(Attributes.builder().put("foo", "bar").build());
     try {
-      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -73,7 +78,8 @@ class SdkLongCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longCounter.add(12, Attributes.empty());
     longCounter.add(12);
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -110,7 +116,8 @@ class SdkLongCounterTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
       longCounter.add(111, Attributes.builder().put("K", "V").build());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -132,12 +139,14 @@ class SdkLongCounterTest {
                               assertThat(point)
                                   .hasAttributes(Attributes.of(stringKey("K"), "V"))
                                   .hasValue(555)));
+      exporter.reset();
 
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
       longCounter.add(11, Attributes.empty());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -203,7 +212,8 @@ class SdkLongCounterTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -251,7 +261,8 @@ class SdkLongCounterTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

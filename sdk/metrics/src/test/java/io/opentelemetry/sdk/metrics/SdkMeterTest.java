@@ -16,15 +16,19 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class SdkMeterTest {
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
-      SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
+      SdkMeterProvider.builder()
+          .registerMetricReader(
+              PeriodicMetricReader.newMetricReaderFactory(InMemoryMetricExporter.create()))
+          .build();
   private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);

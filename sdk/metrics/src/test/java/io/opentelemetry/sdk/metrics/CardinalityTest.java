@@ -11,8 +11,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,21 +26,22 @@ class CardinalityTest {
   /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
   private static final int MAX_ACCUMULATIONS = 2000;
 
-  private InMemoryMetricReader deltaReader;
-  private InMemoryMetricReader cumulativeReader;
+  private InMemoryMetricExporter deltaExporter;
+  private InMemoryMetricExporter cumulativeExporter;
+  private SdkMeterProvider meterProvider;
   private Meter meter;
 
   @BeforeEach
   void setup() {
-    deltaReader = InMemoryMetricReader.createDelta();
-    cumulativeReader = InMemoryMetricReader.create();
-    SdkMeterProvider sdkMeterProvider =
+    deltaExporter = InMemoryMetricExporter.create(AggregationTemporality.DELTA);
+    cumulativeExporter = InMemoryMetricExporter.create(AggregationTemporality.CUMULATIVE);
+    meterProvider =
         SdkMeterProvider.builder()
-            .registerMetricReader(deltaReader)
-            .registerMetricReader(cumulativeReader)
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(deltaExporter))
+            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(cumulativeExporter))
             .setMinimumCollectionInterval(Duration.ofSeconds(0))
             .build();
-    meter = sdkMeterProvider.get(CardinalityTest.class.getName());
+    meter = meterProvider.get(CardinalityTest.class.getName());
   }
 
   /**
@@ -55,8 +59,10 @@ class CardinalityTest {
     for (int i = 1; i <= 2000; i++) {
       syncCounter.add(1, Attributes.builder().put("key", "num_" + i).build());
 
+      meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
       // DELTA reader only has latest
-      assertThat(deltaReader.collectAllMetrics())
+      assertThat(deltaExporter.getFinishedMetricItems())
           .as("Delta collection " + i)
           .hasSize(1)
           .satisfiesExactly(
@@ -67,10 +73,11 @@ class CardinalityTest {
                       .isDelta()
                       .points()
                       .hasSize(1));
+      deltaExporter.reset();
 
       // Make sure we preserve previous cumulatives
       final int currentSize = i;
-      assertThat(cumulativeReader.collectAllMetrics())
+      assertThat(cumulativeExporter.getFinishedMetricItems())
           .as("Cumulative collection " + i)
           .hasSize(1)
           .satisfiesExactly(
@@ -81,12 +88,15 @@ class CardinalityTest {
                       .isCumulative()
                       .points()
                       .hasSize(currentSize));
+      cumulativeExporter.reset();
     }
     // Now punch the limit and ONLY metrics we just recorded stay, due to simplistic GC.
     for (int i = 2001; i <= 2010; i++) {
       syncCounter.add(1, Attributes.builder().put("key", "num_" + i).build());
     }
-    assertThat(deltaReader.collectAllMetrics())
+    meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    assertThat(deltaExporter.getFinishedMetricItems())
         .as("Delta collection - post limit @ 10")
         .hasSize(1)
         .satisfiesExactly(
@@ -98,7 +108,7 @@ class CardinalityTest {
                     .points()
                     .hasSize(10));
 
-    assertThat(cumulativeReader.collectAllMetrics())
+    assertThat(cumulativeExporter.getFinishedMetricItems())
         .as("Cumulative collection - post limit @ 10")
         .hasSize(1)
         .satisfiesExactly(
@@ -128,7 +138,9 @@ class CardinalityTest {
                     1, Attributes.builder().put("key", "num_" + count.incrementAndGet()).build()));
 
     for (int i = 1; i <= 5; i++) {
-      assertThat(deltaReader.collectAllMetrics())
+      meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+      assertThat(deltaExporter.getFinishedMetricItems())
           .as("Delta collection " + i)
           .hasSize(1)
           .satisfiesExactlyInAnyOrder(
@@ -139,8 +151,9 @@ class CardinalityTest {
                       .isDelta()
                       .points()
                       .hasSize(1));
+      deltaExporter.reset();
 
-      assertThat(cumulativeReader.collectAllMetrics())
+      assertThat(cumulativeExporter.getFinishedMetricItems())
           .as("Cumulative collection " + i)
           .hasSize(1)
           .satisfiesExactlyInAnyOrder(
@@ -151,6 +164,7 @@ class CardinalityTest {
                       .isCumulative()
                       .points()
                       .hasSize(1));
+      cumulativeExporter.reset();
     }
   }
 
@@ -167,7 +181,9 @@ class CardinalityTest {
       syncCounter2.add(1, Attributes.builder().put("key", "value" + i).build());
     }
 
-    assertThat(deltaReader.collectAllMetrics())
+    meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    assertThat(deltaExporter.getFinishedMetricItems())
         .as("Delta collection")
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
@@ -186,7 +202,7 @@ class CardinalityTest {
                     .points()
                     .hasSize(MAX_ACCUMULATIONS));
 
-    assertThat(cumulativeReader.collectAllMetrics())
+    assertThat(cumulativeExporter.getFinishedMetricItems())
         .as("Cumulative collection")
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
@@ -221,7 +237,9 @@ class CardinalityTest {
     meter.counterBuilder("async-counter1").buildWithCallback(callback);
     meter.counterBuilder("async-counter2").buildWithCallback(callback);
 
-    assertThat(deltaReader.collectAllMetrics())
+    meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    assertThat(deltaExporter.getFinishedMetricItems())
         .as("Delta collection")
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
@@ -240,7 +258,7 @@ class CardinalityTest {
                     .points()
                     .hasSize(MAX_ACCUMULATIONS));
 
-    assertThat(cumulativeReader.collectAllMetrics())
+    assertThat(cumulativeExporter.getFinishedMetricItems())
         .as("Cumulative collection")
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(

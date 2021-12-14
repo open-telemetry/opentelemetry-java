@@ -14,14 +14,18 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link SdkDoubleHistogram}. */
+/** Unit tests for SDK {@link InstrumentValueType#DOUBLE} {@link InstrumentType#HISTOGRAM}. */
 class SdkDoubleHistogramTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -29,12 +33,12 @@ class SdkDoubleHistogramTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkDoubleHistogramTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .registerMetricReader(sdkMeterReader)
+          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
@@ -61,7 +65,8 @@ class SdkDoubleHistogramTest {
         ((SdkDoubleHistogram) doubleRecorder)
             .bind(Attributes.builder().put("key", "value").build());
     try {
-      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -78,7 +83,8 @@ class SdkDoubleHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleRecorder.record(12d, Attributes.empty());
     doubleRecorder.record(12d);
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -119,7 +125,8 @@ class SdkDoubleHistogramTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Attributes.builder().put("K", "V").build());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -146,12 +153,14 @@ class SdkDoubleHistogramTest {
                                   .hasSum(-1.0d)
                                   .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
+      exporter.reset();
 
       // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Attributes.empty());
-      assertThat(sdkMeterReader.collectAllMetrics())
+      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      assertThat(exporter.getFinishedMetricItems())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -208,7 +217,8 @@ class SdkDoubleHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -256,7 +266,8 @@ class SdkDoubleHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
+    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+    assertThat(exporter.getFinishedMetricItems())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
