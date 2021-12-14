@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
@@ -21,14 +22,17 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
+  private final SdkLogEmitterProvider logEmitterProvider;
   private final ContextPropagators propagators;
 
   OpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
+      SdkLogEmitterProvider logEmitterProvider,
       ContextPropagators propagators) {
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
+    this.logEmitterProvider = logEmitterProvider;
     this.propagators = propagators;
   }
 
@@ -58,6 +62,11 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   /** Returns the {@link SdkMeterProvider} for this {@link OpenTelemetrySdk}. */
   public SdkMeterProvider getSdkMeterProvider() {
     return meterProvider.unobfuscate();
+  }
+
+  /** Returns the {@link SdkLogEmitterProvider} for this {@link OpenTelemetrySdk}. */
+  public SdkLogEmitterProvider getSdkLogEmitterProvider() {
+    return logEmitterProvider;
   }
 
   @Override

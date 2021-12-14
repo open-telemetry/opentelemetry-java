@@ -7,6 +7,7 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -18,6 +19,7 @@ public final class OpenTelemetrySdkBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
   @Nullable private SdkTracerProvider tracerProvider;
   @Nullable private SdkMeterProvider meterProvider;
+  @Nullable private SdkLogEmitterProvider logEmitterProvider;
 
   /**
    * Package protected to disallow direct initialization.
@@ -46,6 +48,18 @@ public final class OpenTelemetrySdkBuilder {
    */
   public OpenTelemetrySdkBuilder setMeterProvider(SdkMeterProvider meterProvider) {
     this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkLogEmitterProvider} to use. This can be used to configure log settings by
+   * returning the instance created by a {@link
+   * io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder}.
+   *
+   * @see SdkLogEmitterProvider#builder()
+   */
+  public OpenTelemetrySdkBuilder setLogEmitterProvider(SdkLogEmitterProvider logEmitterProvider) {
+    this.logEmitterProvider = logEmitterProvider;
     return this;
   }
 
@@ -91,6 +105,11 @@ public final class OpenTelemetrySdkBuilder {
       meterProvider = SdkMeterProvider.builder().build();
     }
 
-    return new OpenTelemetrySdk(tracerProvider, meterProvider, propagators);
+    SdkLogEmitterProvider logEmitterProvider = this.logEmitterProvider;
+    if (logEmitterProvider == null) {
+      logEmitterProvider = SdkLogEmitterProvider.builder().build();
+    }
+
+    return new OpenTelemetrySdk(tracerProvider, meterProvider, logEmitterProvider, propagators);
   }
 }
