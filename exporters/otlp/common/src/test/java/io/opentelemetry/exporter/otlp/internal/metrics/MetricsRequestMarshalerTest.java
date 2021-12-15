@@ -24,6 +24,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Exemplar;
+import io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
@@ -44,6 +45,8 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -377,6 +380,64 @@ class MetricsRequestMarshalerTest {
   }
 
   @Test
+  void exponentialHistogramDataPoints() {
+    assertThat(
+        toExponentialHistogramDataPoints(
+            ImmutableList.of(
+                ExponentialHistogramPointData.create(
+                   0, 123.4, 1,
+                    new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
+                    new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
+                    123, 456,
+                    Attributes.of(stringKey("key"), "value"),
+                    ImmutableList.of(
+                        DoubleExemplarData.create(
+                            Attributes.of(stringKey("test"), "value"),
+                            2,
+                            /*spanId=*/ "0000000000000002",
+                            /*traceId=*/ "00000000000000000000000000000001",
+                            1.5))))))
+        .containsExactly(
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(7) // 3 pos + 3 neg + 1 zero counts expected
+                .addAllAttributes(
+                    singletonList(KeyValue.newBuilder()
+                        .setKey("key")
+                        .setValue(stringValue("value"))
+                        .build()))
+                .setScale(0)
+                .setSum(123.4)
+                .setZeroCount(1)
+                .setPositive(ExponentialHistogramDataPoint.Buckets.newBuilder()
+                    .setOffset(1)
+                    .addBucketCounts(1)
+                    .addBucketCounts(0)
+                    .addBucketCounts(2))
+                .setNegative(ExponentialHistogramDataPoint.Buckets.newBuilder()
+                    .setOffset(1)
+                    .addBucketCounts(1)
+                    .addBucketCounts(0)
+                    .addBucketCounts(2))
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsDouble(1.5)
+                        .build())
+                .build());
+  }
+
+  @Test
   void toProtoMetric_monotonic() {
     assertThat(
             toProtoMetric(
@@ -692,6 +753,11 @@ class MetricsRequestMarshalerTest {
   }
 
   @Test
+  void toProtoMetric_exponentialHistogram() {
+    //todo
+  }
+
+  @Test
   void protoResourceMetrics() {
     Resource resource =
         Resource.create(Attributes.of(stringKey("ka"), "va"), "http://resource.url");
@@ -837,6 +903,17 @@ class MetricsRequestMarshalerTest {
         .collect(Collectors.toList());
   }
 
+  private static List<ExponentialHistogramDataPoint> toExponentialHistogramDataPoints(
+      Collection<ExponentialHistogramPointData> points) {
+    return points.stream()
+        .map(
+            point ->
+                parse(
+                    ExponentialHistogramDataPoint.getDefaultInstance(),
+                    ExponentialHistogramDataPointMarshaler.create(point)))
+        .collect(Collectors.toList());
+  }
+
   private static Metric toProtoMetric(MetricData metricData) {
     return parse(Metric.getDefaultInstance(), MetricMarshaler.create(metricData));
   }
@@ -893,6 +970,13 @@ class MetricsRequestMarshalerTest {
         exemplar.setSpanId(toHex(exemplar.getSpanId()));
       }
     }
+    if (result instanceof ExponentialHistogramDataPoint) {
+      ExponentialHistogramDataPoint.Builder fixed = (ExponentialHistogramDataPoint.Builder) builder;
+      for (Exemplar.Builder exemplar : fixed.getExemplarsBuilderList()) {
+        exemplar.setTraceId(toHex(exemplar.getTraceId()));
+        exemplar.setSpanId(toHex(exemplar.getSpanId()));
+      }
+    }
 
     assertThat(builder.build()).isEqualTo(result);
 
@@ -924,5 +1008,36 @@ class MetricsRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return new String(bos.toByteArray(), StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Helper class for creating Exponential Histogram bucket data directly without needing to record.
+   * Essentially, mocking out the bucket operations and downscaling.
+   */
+  private static class TestExponentialHistogramBuckets implements ExponentialHistogramBuckets {
+
+    private final int offset;
+    private final List<Long> bucketCounts;
+
+    TestExponentialHistogramBuckets(int offset, List<Long> bucketCounts) {
+      this.offset = offset;
+      this.bucketCounts = bucketCounts;
+    }
+
+    @Override
+    public int getOffset() {
+      return offset;
+    }
+
+    @Override
+    public List<Long> getBucketCounts() {
+      return bucketCounts;
+    }
+
+
+    @Override
+    public long getTotalCount() {
+      return getBucketCounts().stream().reduce(0L, Long::sum);
+    }
   }
 }
