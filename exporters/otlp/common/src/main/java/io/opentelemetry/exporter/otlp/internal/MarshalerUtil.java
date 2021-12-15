@@ -107,13 +107,20 @@ public final class MarshalerUtil {
     return size;
   }
 
-  /** Returns the size of a repeated uint64 field. */
+  /** Returns the size of a repeated uint64 field.
+   *
+   * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
+   * and an actual payload of repeated varints.
+   * */
   public static int sizeRepeatedUInt64(ProtoFieldInfo field, Collection<Long> values) {
-    int size = field.getTagSize();
+
+    int payloadSize = 0;
     for (long v : values) {
-      size += CodedOutputStream.computeUInt64SizeNoTag(v);
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
     }
-    return size;
+
+    // tag size + payload indicator size + actual payload size
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(payloadSize) + payloadSize;
   }
 
   /** Returns the size of a repeated double field. */

@@ -188,6 +188,11 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeEndRepeatedPrimitive() throws IOException;
 
+  protected abstract void writeStartRepeatedVarint(
+      ProtoFieldInfo field, int payloadSize) throws IOException;
+
+  protected abstract void writeEndRepeatedVarint() throws IOException;
+
   /** Serializes a {@code repeated fixed64} field. */
   public void serializeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) throws IOException {
     if (values.isEmpty()) {
@@ -217,11 +222,17 @@ public abstract class Serializer implements AutoCloseable {
     if (values.isEmpty()) {
       return;
     }
-    writeStartRepeatedPrimitive(field, WireFormat.WIRETYPE_VARINT, values.size());
+
+    int payloadSize = 0;
+    for (long v : values) {
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
     for (long value : values) {
       writeUInt64Value(value);
     }
-    writeEndRepeatedPrimitive();
+    writeEndRepeatedVarint();
   }
 
   /** Serializes a {@code repeated double} field. */

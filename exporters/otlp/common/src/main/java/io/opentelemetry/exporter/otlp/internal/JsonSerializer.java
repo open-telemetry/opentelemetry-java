@@ -135,6 +135,16 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  protected void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+  }
+
+  @Override
+  protected void writeEndRepeatedVarint() throws IOException {
+    generator.writeEndArray();
+  }
+
+  @Override
   public void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
       throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());

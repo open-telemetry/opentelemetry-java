@@ -152,6 +152,17 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  protected void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize) throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    output.writeUInt32NoTag(payloadSize);
+  }
+
+  @Override
+  protected void writeEndRepeatedVarint() {
+    // Do nothing
+  }
+
+  @Override
   public void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
       throws IOException {
     for (Marshaler message : repeatedMessage) {
