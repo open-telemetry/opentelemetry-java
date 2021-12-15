@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.ExponentialHistogramDataPoint;
+import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +31,8 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
   @Override
   protected void writeTo(Serializer output) throws IOException {
     output.serializeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
-    output.serializeRepeatedUInt64(ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, counts);
+    output.serializeRepeatedUInt64(
+        ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
   }
 
   private static int calculateSize(int offset, List<Long> counts) {

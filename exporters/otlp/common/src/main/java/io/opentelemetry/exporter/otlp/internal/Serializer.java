@@ -218,8 +218,8 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /** Serializes a {@code repeated uint64} field. */
-  public void serializeRepeatedUInt64(ProtoFieldInfo field, List<Long> values) throws IOException {
-    if (values.isEmpty()) {
+  public void serializeRepeatedUInt64(ProtoFieldInfo field, long[] values) throws IOException {
+    if (values.length == 0) {
       return;
     }
 

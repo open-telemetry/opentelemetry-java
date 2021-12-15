@@ -113,7 +113,7 @@ public final class MarshalerUtil {
    * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
    * and an actual payload of repeated varints.
    */
-  public static int sizeRepeatedUInt64(ProtoFieldInfo field, Collection<Long> values) {
+  public static int sizeRepeatedUInt64(ProtoFieldInfo field, List<Long> values) {
     if (values.isEmpty()) {
       return 0;
     }

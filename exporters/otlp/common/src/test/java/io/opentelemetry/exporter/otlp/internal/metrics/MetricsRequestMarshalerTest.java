@@ -420,8 +420,7 @@ class MetricsRequestMarshalerTest {
                         .addBucketCounts(0)
                         .addBucketCounts(2))
                 .setNegative(
-                    ExponentialHistogramDataPoint.Buckets.newBuilder()
-                        .setOffset(0)) // no buckets
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
                 .addExemplars(
                     Exemplar.newBuilder()
                         .setTimeUnixNano(2)
