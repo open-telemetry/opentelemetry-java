@@ -184,6 +184,7 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(message);
   }
 
+  /** Returns the size of a sint32 field. */
   public static int sizeSInt32(ProtoFieldInfo field, int message) {
     if (message == 0) {
       return 0;

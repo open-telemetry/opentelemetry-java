@@ -24,6 +24,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Exemplar;
+import io.opentelemetry.proto.metrics.v1.ExponentialHistogram;
 import io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
@@ -46,6 +47,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
@@ -404,7 +406,7 @@ class MetricsRequestMarshalerTest {
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setCount(7) // 3 pos + 3 neg + 1 zero counts expected
+                .setCount(7) // Counts in positive, negative, and zero count.
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
@@ -757,7 +759,66 @@ class MetricsRequestMarshalerTest {
 
   @Test
   void toProtoMetric_exponentialHistogram() {
-    // todo
+    assertThat(
+            toProtoMetric(
+                MetricData.createExponentialHistogram(
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
+                    "name",
+                    "description",
+                    "1",
+                    ExponentialHistogramData.create(
+                        AggregationTemporality.CUMULATIVE,
+                        singletonList(
+                            ExponentialHistogramPointData.create(
+                                20,
+                                123.4,
+                                257,
+                                new TestExponentialHistogramBuckets(
+                                    -1, ImmutableList.of(0L, 128L, 1L << 32)),
+                                new TestExponentialHistogramBuckets(
+                                    1, ImmutableList.of(0L, 128L, 1L << 32)),
+                                123,
+                                456,
+                                KV_ATTR,
+                                ImmutableList.of()))))))
+        .isEqualTo(
+            Metric.newBuilder()
+                .setName("name")
+                .setDescription("description")
+                .setUnit("1")
+                .setExponentialHistogram(
+                    ExponentialHistogram.newBuilder()
+                        .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
+                        .addDataPoints(
+                            ExponentialHistogramDataPoint.newBuilder()
+                                .setStartTimeUnixNano(123)
+                                .setTimeUnixNano(456)
+                                .setCount(
+                                    2 * (128L + (1L << 32))
+                                        + 257L) // positive counts + negative counts + zero counts
+                                .addAllAttributes(
+                                    singletonList(
+                                        KeyValue.newBuilder()
+                                            .setKey("k")
+                                            .setValue(stringValue("v"))
+                                            .build()))
+                                .setScale(20)
+                                .setSum(123.4)
+                                .setZeroCount(257)
+                                .setPositive(
+                                    ExponentialHistogramDataPoint.Buckets.newBuilder()
+                                        .setOffset(-1)
+                                        .addBucketCounts(0)
+                                        .addBucketCounts(128)
+                                        .addBucketCounts(1L << 32))
+                                .setNegative(
+                                    ExponentialHistogramDataPoint.Buckets.newBuilder()
+                                        .setOffset(1)
+                                        .addBucketCounts(0)
+                                        .addBucketCounts(128)
+                                        .addBucketCounts(1L << 32))))
+                .build());
   }
 
   @Test
