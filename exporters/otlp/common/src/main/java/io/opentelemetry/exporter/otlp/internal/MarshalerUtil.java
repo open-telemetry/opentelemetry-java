@@ -114,6 +114,9 @@ public final class MarshalerUtil {
    * and an actual payload of repeated varints.
    */
   public static int sizeRepeatedUInt64(ProtoFieldInfo field, Collection<Long> values) {
+    if (values.isEmpty()) {
+      return 0;
+    }
 
     int payloadSize = 0;
     for (long v : values) {

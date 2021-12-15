@@ -391,7 +391,7 @@ class MetricsRequestMarshalerTest {
                         123.4,
                         1,
                         new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
-                        new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
+                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.of(stringKey("key"), "value"),
@@ -406,7 +406,7 @@ class MetricsRequestMarshalerTest {
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setCount(7) // Counts in positive, negative, and zero count.
+                .setCount(4) // Counts in positive, negative, and zero count.
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
@@ -421,10 +421,7 @@ class MetricsRequestMarshalerTest {
                         .addBucketCounts(2))
                 .setNegative(
                     ExponentialHistogramDataPoint.Buckets.newBuilder()
-                        .setOffset(1)
-                        .addBucketCounts(1)
-                        .addBucketCounts(0)
-                        .addBucketCounts(2))
+                        .setOffset(0)) // no buckets
                 .addExemplars(
                     Exemplar.newBuilder()
                         .setTimeUnixNano(2)
