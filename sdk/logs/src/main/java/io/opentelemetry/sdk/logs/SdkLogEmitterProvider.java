@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** SDK registry for creating {@link LogEmitter}s. */
-public final class SdkLogEmitterProvider implements Closeable {
+public final class SdkLogEmitterProvider implements LogEmitterProvider, Closeable {
 
   static final String DEFAULT_EMITTER_NAME = "unknown";
   private static final Logger LOGGER = Logger.getLogger(SdkLogEmitterProvider.class.getName());
@@ -47,6 +47,7 @@ public final class SdkLogEmitterProvider implements Closeable {
    * @param instrumentationName the name of the instrumentation library
    * @return a log emitter instance
    */
+  @Override
   public LogEmitter get(String instrumentationName) {
     return logEmitterBuilder(instrumentationName).build();
   }
@@ -57,6 +58,7 @@ public final class SdkLogEmitterProvider implements Closeable {
    * @param instrumentationName the name of the instrumentation library
    * @return a log emitter builder instance
    */
+  @Override
   public LogEmitterBuilder logEmitterBuilder(String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("LogEmitter requested without instrumentation name.");
