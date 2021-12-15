@@ -188,8 +188,8 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeEndRepeatedPrimitive() throws IOException;
 
-  protected abstract void writeStartRepeatedVarint(
-      ProtoFieldInfo field, int payloadSize) throws IOException;
+  protected abstract void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize)
+      throws IOException;
 
   protected abstract void writeEndRepeatedVarint() throws IOException;
 

@@ -382,44 +382,47 @@ class MetricsRequestMarshalerTest {
   @Test
   void exponentialHistogramDataPoints() {
     assertThat(
-        toExponentialHistogramDataPoints(
-            ImmutableList.of(
-                ExponentialHistogramPointData.create(
-                   0, 123.4, 1,
-                    new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
-                    new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
-                    123, 456,
-                    Attributes.of(stringKey("key"), "value"),
-                    ImmutableList.of(
-                        DoubleExemplarData.create(
-                            Attributes.of(stringKey("test"), "value"),
-                            2,
-                            /*spanId=*/ "0000000000000002",
-                            /*traceId=*/ "00000000000000000000000000000001",
-                            1.5))))))
+            toExponentialHistogramDataPoints(
+                ImmutableList.of(
+                    ExponentialHistogramPointData.create(
+                        0,
+                        123.4,
+                        1,
+                        new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
+                        new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
+                        123,
+                        456,
+                        Attributes.of(stringKey("key"), "value"),
+                        ImmutableList.of(
+                            DoubleExemplarData.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                1.5))))))
         .containsExactly(
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7) // 3 pos + 3 neg + 1 zero counts expected
                 .addAllAttributes(
-                    singletonList(KeyValue.newBuilder()
-                        .setKey("key")
-                        .setValue(stringValue("value"))
-                        .build()))
+                    singletonList(
+                        KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
                 .setScale(0)
                 .setSum(123.4)
                 .setZeroCount(1)
-                .setPositive(ExponentialHistogramDataPoint.Buckets.newBuilder()
-                    .setOffset(1)
-                    .addBucketCounts(1)
-                    .addBucketCounts(0)
-                    .addBucketCounts(2))
-                .setNegative(ExponentialHistogramDataPoint.Buckets.newBuilder()
-                    .setOffset(1)
-                    .addBucketCounts(1)
-                    .addBucketCounts(0)
-                    .addBucketCounts(2))
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder()
+                        .setOffset(1)
+                        .addBucketCounts(1)
+                        .addBucketCounts(0)
+                        .addBucketCounts(2))
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder()
+                        .setOffset(1)
+                        .addBucketCounts(1)
+                        .addBucketCounts(0)
+                        .addBucketCounts(2))
                 .addExemplars(
                     Exemplar.newBuilder()
                         .setTimeUnixNano(2)
@@ -754,7 +757,7 @@ class MetricsRequestMarshalerTest {
 
   @Test
   void toProtoMetric_exponentialHistogram() {
-    //todo
+    // todo
   }
 
   @Test
@@ -1033,7 +1036,6 @@ class MetricsRequestMarshalerTest {
     public List<Long> getBucketCounts() {
       return bucketCounts;
     }
-
 
     @Override
     public long getTotalCount() {

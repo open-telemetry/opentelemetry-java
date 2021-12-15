@@ -107,11 +107,12 @@ public final class MarshalerUtil {
     return size;
   }
 
-  /** Returns the size of a repeated uint64 field.
+  /**
+   * Returns the size of a repeated uint64 field.
    *
    * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
    * and an actual payload of repeated varints.
-   * */
+   */
   public static int sizeRepeatedUInt64(ProtoFieldInfo field, Collection<Long> values) {
 
     int payloadSize = 0;
