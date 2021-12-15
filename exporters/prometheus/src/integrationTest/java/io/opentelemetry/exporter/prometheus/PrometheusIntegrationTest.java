@@ -85,7 +85,7 @@ class PrometheusIntegrationTest {
     meter
         .gaugeBuilder("lives")
         .buildWithCallback(
-            result -> result.observe(9, Attributes.builder().put("animal", "cat").build()));
+            result -> result.record(9, Attributes.builder().put("animal", "cat").build()));
 
     WebClient promClient = WebClient.of("http://localhost:" + prometheus.getMappedPort(9090));
     JSON json = JSON.builder().treeCodec(new JacksonJrsTreeCodec()).build();

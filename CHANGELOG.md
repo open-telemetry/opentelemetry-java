@@ -2,6 +2,39 @@
 
 ## Version 1.10.0 (unreleased):
 
+## Version 1.10.0 RC1 2021-12-10:
+
+### API
+* The Metrics API has been merged into the `opentelemetry-api` artifact. `OpenTelemetry.getMeterProvider()` is the new entrypoint
+* BREAKING CHANGE: Bound metrics instruments have been removed for now to allow more time to bake while still providing a stable metrics API
+* `Double/LongMeasurement.observe` has been renamed to `record`.`observe` is deprecated in this release
+* `GlobalMeterProvider` has been deprecated. `GlobalOpenTelemetry.getMeterProvider` should be used instead
+
+### SDK
+
+* The semantic conventions have been updated to 1.8.0
+
+#### Exporter
+* The OkHttp gRPC exporters now support experimental retry
+* OkHttp dispatcher threads are now spawned as daemon threads
+* The JPMS module name for the logs exporter has been fixed
+* Metrics exporters can have temporality configured
+
+#### Metrics (Alpha)
+* Some user callbacks have been wrapped to catch exceptions instead of throwing
+* MinMaxSumCount/Count aggregation has been removed
+* Empty aggregator is renamed to `drop`
+* Cumulative aggregations will not be aggressively dropped every collection cycle
+
+#### Logs (Alpha)
+* LogDataBuilder can now take a SpanContext directly
+* SdkLogEmitterProvider.get convenience method added
+
+#### SDK Extensions
+* BREAKING CHANGE: Deprecated trace incubator types (DelegatingSpanData, SpanDataBuidler) have been removed
+* BREAKING CHANGE: Deprecated `ExecutorServiceSpanProcessor` has been removed
+* `cloud.platform` is now populated in AWS `Resource`
+
 ---
 ## Version 1.9.1 2021-11-23:
 

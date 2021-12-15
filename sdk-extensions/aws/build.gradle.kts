@@ -19,6 +19,7 @@ dependencies {
   implementation(project(":semconv"))
 
   implementation("com.fasterxml.jackson.core:jackson-core")
+  implementation("com.squareup.okhttp3:okhttp")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
@@ -78,6 +79,12 @@ class OtlpGrpcMetricExporterTest
       @Override
       public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> addRetryPolicy(RetryPolicy retryPolicy) {
+        builder.delegate.addRetryPolicy(retryPolicy);
         return this;
       }
 

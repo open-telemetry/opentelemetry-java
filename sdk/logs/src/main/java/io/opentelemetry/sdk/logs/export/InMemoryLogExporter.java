@@ -62,6 +62,11 @@ public final class InMemoryLogExporter implements LogExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
   /**
    * Clears the internal {@code List} of finished {@code Log}s.
    *

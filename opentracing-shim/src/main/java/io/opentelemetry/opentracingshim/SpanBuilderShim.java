@@ -214,13 +214,16 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.setStartTimestamp(startTimestampMicros, TimeUnit.MICROSECONDS);
     }
 
-    io.opentelemetry.api.trace.Span span = builder.startSpan();
-
+    // Attributes passed to the OT SpanBuilder MUST
+    // be set before the OTel Span is created,
+    // so those attributes are available to the Sampling API.
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
       AttributeKey key = this.spanBuilderAttributeKeys.get(i);
       Object value = this.spanBuilderAttributeValues.get(i);
-      span.setAttribute(key, value);
+      builder.setAttribute(key, value);
     }
+
+    io.opentelemetry.api.trace.Span span = builder.startSpan();
     if (error) {
       span.setStatus(StatusCode.ERROR);
     }

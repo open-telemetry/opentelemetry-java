@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -154,13 +153,12 @@ public final class OpenTelemetrySdkAutoConfiguration {
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName == null || exporterName.equals("none")) {
       // In the event no exporters are configured set a noop exporter
-      GlobalMeterProvider.set(MeterProvider.noop());
       return MeterProvider.noop();
     }
     MetricExporterConfiguration.configureExporter(
         exporterName, config, serviceClassLoader, meterProviderBuilder);
 
-    SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
     // Make sure metrics shut down when JVM shuts down.
     Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));

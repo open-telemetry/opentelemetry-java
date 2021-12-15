@@ -10,6 +10,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
+import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -40,6 +42,7 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
@@ -107,7 +110,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
-    throw new UnsupportedOperationException("Only available on DefaultGrpcExporter");
+    this.retryPolicy = retryPolicy;
+    return this;
   }
 
   @Override
@@ -118,7 +122,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public GrpcExporter<T> build() {
-    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+    OkHttpClient.Builder clientBuilder =
+        new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
     Headers.Builder headers = this.headers != null ? this.headers : new Headers.Builder();
 
@@ -144,6 +149,11 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     headers.add("te", "trailers");
     if (compressionEnabled) {
       headers.add("grpc-encoding", "gzip");
+    }
+
+    if (retryPolicy != null) {
+      clientBuilder.addInterceptor(
+          new RetryInterceptor(retryPolicy, OkHttpGrpcExporter::isRetryable));
     }
 
     return new OkHttpGrpcExporter<>(

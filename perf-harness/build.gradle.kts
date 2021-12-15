@@ -9,6 +9,7 @@ dependencies {
   implementation(project(":api:all"))
   implementation(project(":sdk:all"))
   implementation(project(":sdk:testing"))
+  implementation(project(":sdk:metrics-testing"))
   implementation(project(":exporters:otlp:trace"))
   implementation(project(":exporters:logging"))
   implementation(project(":semconv"))

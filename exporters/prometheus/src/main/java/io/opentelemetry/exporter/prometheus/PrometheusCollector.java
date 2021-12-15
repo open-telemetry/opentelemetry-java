@@ -16,7 +16,6 @@ import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -47,11 +46,6 @@ public final class PrometheusCollector extends Collector implements MetricReader
    */
   public static MetricReaderFactory create() {
     return new Factory();
-  }
-
-  @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.of(AggregationTemporality.CUMULATIVE);
   }
 
   @Override

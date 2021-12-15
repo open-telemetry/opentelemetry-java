@@ -63,7 +63,9 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               epochNanos,
               suppressSynchronousCollection);
-      if (current != null) {
+      // Ignore if the metric data doesn't have any data points, for example when aggregation is
+      // Aggregation#drop()
+      if (!current.isEmpty()) {
         result.add(current);
       }
     }
@@ -136,7 +138,9 @@ public abstract class MeterSharedState {
     try {
       return getMetricStorageRegistry().register(storage);
     } catch (DuplicateMetricStorageException e) {
-      logger.log(Level.WARNING, e, () -> DebugUtils.duplicateMetricErrorMessage(e));
+      if (logger.isLoggable(Level.WARNING)) {
+        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(e), e);
+      }
     }
     return null;
   }

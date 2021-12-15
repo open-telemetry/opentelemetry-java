@@ -12,9 +12,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.EnumSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,8 +74,6 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void doubleAsynchronousAccumulator_AttributesProcessor_used() {
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.doubleAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -85,7 +82,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
-            value -> value.observe(1.0, Attributes.empty()))
+            value -> value.record(1.0, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),
@@ -98,8 +95,6 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void longAsynchronousAccumulator_AttributesProcessor_used() {
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.longAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -108,7 +103,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            value -> value.observe(1, Attributes.empty()))
+            value -> value.record(1, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),
@@ -121,9 +116,6 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void collectAndReset_CallbackException() {
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
-
     MetricStorage metricStorage =
         AsynchronousMetricStorage.longAsynchronousAccumulator(
             view,
@@ -144,6 +136,6 @@ public class AsynchronousMetricStorageTest {
                 0,
                 testClock.nanoTime(),
                 false))
-        .isEqualTo(null);
+        .isEqualTo(EmptyMetricData.getInstance());
   }
 }

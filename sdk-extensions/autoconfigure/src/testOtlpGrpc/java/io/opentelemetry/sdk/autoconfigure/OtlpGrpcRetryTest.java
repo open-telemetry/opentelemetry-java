@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.retryableStatusCodes;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,6 +16,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -128,7 +128,8 @@ class OtlpGrpcRetryTest {
 
       CompletableResultCode resultCode =
           exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
-      boolean retryable = retryableStatusCodes().contains(code);
+      boolean retryable =
+          GrpcStatusUtil.retryableStatusCodes().contains(String.valueOf(code.value()));
       boolean expectedResult = retryable || code == Status.Code.OK;
       assertThat(resultCode.isSuccess())
           .as(
@@ -150,9 +151,10 @@ class OtlpGrpcRetryTest {
 
     // Set the server to fail with a retryable status code for the max attempts
     int maxAttempts = RetryPolicy.getDefault().getMaxAttempts();
-    Status.Code retryableCode = retryableStatusCodes().get(0);
+    int retryableCode =
+        GrpcStatusUtil.retryableStatusCodes().stream().map(Integer::parseInt).findFirst().get();
     for (int i = 0; i < maxAttempts; i++) {
-      server.responseStatuses.add(Status.fromCode(retryableCode));
+      server.responseStatuses.add(Status.fromCodeValue(retryableCode));
     }
 
     // Result should be failure, sever should have received maxAttempts requests
