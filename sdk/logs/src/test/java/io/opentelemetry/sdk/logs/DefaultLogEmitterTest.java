@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
@@ -13,11 +18,16 @@ class DefaultLogEmitterTest {
 
   @Test
   void noopLogEmitter_doesNotThrow() {
-    logEmitter.logBuilder()
-        .setName("1").setBody("2").setSeverity(Severity.INFO)
+    logEmitter
+        .logBuilder()
+        .setName("test")
+        .setBody("1")
+        .setSeverity(Severity.INFO)
         .setEpoch(1L, TimeUnit.NANOSECONDS)
         .setAttributes(Attributes.empty())
         .setContext(Context.current())
-        .setEpoch(Instant.now()).setSeverityText("INFO").emit();
+        .setEpoch(Instant.now())
+        .setSeverityText("INFO")
+        .emit();
   }
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.logs;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -10,9 +15,11 @@ class DefaultLogEmitterProviderTest {
 
   @Test
   void builder_doesNotThrow() {
-    DefaultLogEmitterProvider.getInstance().logEmitterBuilder("test")
-        .setSchemaUrl("http")
-        .setInstrumentationVersion("").build();
+    DefaultLogEmitterProvider.getInstance()
+        .logEmitterBuilder("test")
+        .setSchemaUrl("http://url")
+        .setInstrumentationVersion("version")
+        .build();
   }
 
   @Test
