@@ -35,8 +35,6 @@ public final class BatchSpanProcessorBuilder {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 
-  // TODO: Consider to add support for constant Attributes and/or Resource.
-
   /**
    * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
    * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
@@ -91,9 +89,6 @@ public final class BatchSpanProcessorBuilder {
    * Sets the maximum number of Spans that are kept in the queue before start dropping. More memory
    * than this value may be allocated to optimize queue access.
    *
-   * <p>See the BatchSampledSpansProcessor class description for a high-level design description of
-   * this class.
-   *
    * <p>Default value is {@code 2048}.
    *
    * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
@@ -113,7 +108,7 @@ public final class BatchSpanProcessorBuilder {
 
   /**
    * Sets the maximum batch size for every export. This must be smaller or equal to {@code
-   * maxQueuedSpans}.
+   * maxQueueSize}.
    *
    * <p>Default value is {@code 512}.
    *
@@ -147,7 +142,6 @@ public final class BatchSpanProcessorBuilder {
    * forwards them to the given {@code spanExporter}.
    *
    * @return a new {@link BatchSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public BatchSpanProcessor build() {
     return new BatchSpanProcessor(

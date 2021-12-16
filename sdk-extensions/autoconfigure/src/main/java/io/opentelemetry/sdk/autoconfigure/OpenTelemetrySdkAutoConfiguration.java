@@ -158,7 +158,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     MetricExporterConfiguration.configureExporter(
         exporterName, config, serviceClassLoader, meterProviderBuilder);
 
-    SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
     // Make sure metrics shut down when JVM shuts down.
     Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));

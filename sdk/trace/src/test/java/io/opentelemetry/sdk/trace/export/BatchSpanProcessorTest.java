@@ -78,23 +78,23 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void configTest_EmptyOptions() {
-    BatchSpanProcessorBuilder config =
+  void builderDefaults() {
+    BatchSpanProcessorBuilder builder =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()));
-    assertThat(config.getScheduleDelayNanos())
+    assertThat(builder.getScheduleDelayNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));
-    assertThat(config.getMaxQueueSize())
+    assertThat(builder.getMaxQueueSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
-    assertThat(config.getMaxExportBatchSize())
+    assertThat(builder.getMaxExportBatchSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
-    assertThat(config.getExporterTimeoutNanos())
+    assertThat(builder.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
   }
 
   @Test
-  void invalidConfig() {
+  void builderInvalidConfig() {
     assertThatThrownBy(
             () ->
                 BatchSpanProcessor.builder(mockSpanExporter)
@@ -220,7 +220,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void exportSpansToMultipleServices() {
+  void exportSpansToMultipleExporters() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
     WaitingSpanExporter waitingSpanExporter2 =
@@ -261,7 +261,7 @@ class BatchSpanProcessorTest {
             .build();
 
     List<SpanData> spansToExport = new ArrayList<>(maxQueuedSpans + 1);
-    // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
+    // Wait to block the worker thread in the BatchSpanProcessor. This ensures that no items
     // can be removed from the queue. Need to add a span to trigger the export otherwise the
     // pipeline is never called.
     spansToExport.add(createEndedSpan("blocking_span").toSpanData());
@@ -272,15 +272,10 @@ class BatchSpanProcessorTest {
       spansToExport.add(createEndedSpan("span_1_" + i).toSpanData());
     }
 
-    // TODO: assertThat(spanExporter.getReferencedSpans()).isEqualTo(maxQueuedSpans);
-
     // Now we should start dropping.
     for (int i = 0; i < 7; i++) {
       createEndedSpan("span_2_" + i);
-      // TODO: assertThat(getDroppedSpans()).isEqualTo(i + 1);
     }
-
-    // TODO: assertThat(getReferencedSpans()).isEqualTo(maxQueuedSpans);
 
     // Release the blocking exporter
     blockingSpanExporter.unblock();
@@ -289,19 +284,13 @@ class BatchSpanProcessorTest {
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).containsExactlyElementsOf(spansToExport);
+
+    // Clear, reset, add another batch of spans, and confirm they are exported
     exported.clear();
     spansToExport.clear();
-
     waitingSpanExporter.reset();
-    // We cannot compare with maxReferencedSpans here because the worker thread may get
-    // unscheduled immediately after exporting, but before updating the pushed spans, if that is
-    // the case at most bufferSize spans will miss.
-    // TODO: assertThat(getPushedSpans()).isAtLeast((long) maxQueuedSpans - maxBatchSize);
-
     for (int i = 0; i < maxQueuedSpans; i++) {
       spansToExport.add(createEndedSpan("span_3_" + i).toSpanData());
-      // No more dropped spans.
-      // TODO: assertThat(getDroppedSpans()).isEqualTo(7);
     }
 
     exported = waitingSpanExporter.waitForExport();

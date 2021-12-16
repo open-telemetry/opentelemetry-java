@@ -91,7 +91,7 @@ class LoggingSpanExporterTest {
 
   @BeforeEach
   void setUp() {
-    exporter = new LoggingSpanExporter();
+    exporter = LoggingSpanExporter.create();
   }
 
   @AfterEach

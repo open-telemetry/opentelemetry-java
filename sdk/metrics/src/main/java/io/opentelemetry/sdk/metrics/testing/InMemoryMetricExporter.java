@@ -52,20 +52,30 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *   }
  * }
  * </code></pre>
+ *
+ * @deprecated Moved to {@code io.opentelemetry:opentelemetry-sdk-metrics-testing} module.
  */
+@Deprecated
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
+  private final AggregationTemporality preferredTemporality;
   private boolean isStopped = false;
 
-  private InMemoryMetricExporter() {}
+  private InMemoryMetricExporter(AggregationTemporality preferredTemporality) {
+    this.preferredTemporality = preferredTemporality;
+  }
 
   /**
-   * Returns a new instance of the {@code InMemoryMetricExporter}.
-   *
-   * @return a new instance of the {@code InMemoryMetricExporter}.
+   * Returns a new {@link InMemoryMetricExporter} with a preferred temporality of {@link
+   * AggregationTemporality#CUMULATIVE}.
    */
   public static InMemoryMetricExporter create() {
-    return new InMemoryMetricExporter();
+    return create(AggregationTemporality.CUMULATIVE);
+  }
+
+  /** Returns a new {@link InMemoryMetricExporter} with the given {@code preferredTemporality}. */
+  public static InMemoryMetricExporter create(AggregationTemporality preferredTemporality) {
+    return new InMemoryMetricExporter(preferredTemporality);
   }
 
   /**
@@ -88,7 +98,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getPreferredTemporality() {
-    return AggregationTemporality.CUMULATIVE;
+    return preferredTemporality;
   }
 
   /**

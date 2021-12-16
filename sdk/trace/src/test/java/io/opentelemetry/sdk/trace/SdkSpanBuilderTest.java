@@ -1001,7 +1001,7 @@ class SdkSpanBuilderTest {
                 + "resource=Resource\\{schemaUrl=null, "
                 + "attributes=\\{service.name=\"unknown_service:java\", "
                 + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-SNAPSHOT)?\"}}, "
+                + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-rc.\\d+)?(-SNAPSHOT)?\"}}, "
                 + "instrumentationLibraryInfo=InstrumentationLibraryInfo\\{"
                 + "name=SpanBuilderSdkTest, version=null, schemaUrl=null}, "
                 + "name=span_name, "

@@ -9,9 +9,7 @@ description = "OpenTelemetry Contrib Logging Support"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.logging")
 
 dependencies {
-  api(project(":sdk:all"))
-
-  implementation(project(":api:metrics"))
+  api(project(":sdk:common"))
 
   testImplementation("org.awaitility:awaitility")
 

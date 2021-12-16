@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
@@ -139,7 +138,7 @@ public final class Ec2Resource {
 
   // Generic HTTP fetch function for IMDS.
   private static String fetchString(String httpMethod, URL url, String token, boolean includeTtl) {
-    JdkHttpClient client = new JdkHttpClient();
+    SimpleHttpClient client = new SimpleHttpClient();
     Map<String, String> headers = new HashMap<>();
 
     if (includeTtl) {

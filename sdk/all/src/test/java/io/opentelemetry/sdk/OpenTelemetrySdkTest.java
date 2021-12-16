@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -36,6 +37,7 @@ class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
   @Mock private SdkMeterProvider meterProvider;
+  @Mock private SdkLogEmitterProvider logEmitterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -115,6 +117,7 @@ class OpenTelemetrySdkTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
+            .setLogEmitterProvider(logEmitterProvider)
             .setPropagators(propagators)
             .build();
     assertThat(
@@ -126,7 +129,7 @@ class OpenTelemetrySdkTest {
             ((OpenTelemetrySdk.ObfuscatedMeterProvider) openTelemetry.getMeterProvider())
                 .unobfuscate())
         .isEqualTo(meterProvider);
-    assertThat(openTelemetry.getSdkMeterProvider()).isEqualTo(meterProvider);
+    assertThat(openTelemetry.getSdkLogEmitterProvider()).isEqualTo(logEmitterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
   }
 

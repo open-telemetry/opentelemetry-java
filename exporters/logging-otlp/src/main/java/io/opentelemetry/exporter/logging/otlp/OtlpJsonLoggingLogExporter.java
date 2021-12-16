@@ -50,6 +50,11 @@ public final class OtlpJsonLoggingLogExporter implements LogExporter {
   }
 
   @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
   public CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
   }

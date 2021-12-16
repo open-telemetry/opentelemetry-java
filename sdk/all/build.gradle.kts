@@ -18,6 +18,9 @@ dependencies {
   // implementation dependency to require users to add the artifact directly to their build to use
   // SdkMeterProviderBuilder.
   implementation(project(":sdk:metrics"))
+  // implementation dependency to require users to add the artifact directly to their build to use
+  // SdkLogEmitterProvider.
+  implementation(project(":sdk:logs"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

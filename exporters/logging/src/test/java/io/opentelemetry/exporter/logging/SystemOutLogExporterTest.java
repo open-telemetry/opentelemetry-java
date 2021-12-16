@@ -30,7 +30,7 @@ class SystemOutLogExporterTest {
 
   @Test
   void returnCodes() {
-    SystemOutLogExporter exporter = new SystemOutLogExporter();
+    SystemOutLogExporter exporter = SystemOutLogExporter.create();
     CompletableResultCode resultCode =
         exporter.export(singletonList(sampleLog(System.currentTimeMillis())));
     assertThat(resultCode).isSameAs(CompletableResultCode.ofSuccess());
