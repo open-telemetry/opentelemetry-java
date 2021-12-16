@@ -25,8 +25,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class SdkLongCounter extends AbstractInstrument implements LongCounter {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(SdkLongCounter.class.getName()));
+  private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final WriteableMetricStorage storage;
 
   private SdkLongCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -37,7 +38,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment, Attributes attributes, Context context) {
     if (increment < 0) {
-      logger.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Counters can only increase. Instrument "
               + getDescriptor().getName()
@@ -62,6 +63,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   }
 
   static final class BoundInstrument implements BoundLongCounter {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
     private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle handle;
     private final Attributes attributes;
@@ -76,7 +78,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     @Override
     public void add(long increment, Context context) {
       if (increment < 0) {
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Counters can only increase. Instrument "
                 + descriptor.getName()

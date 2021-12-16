@@ -38,8 +38,9 @@ import java.util.logging.Logger;
  * at any time.
  */
 public final class AsynchronousMetricStorage<T> implements MetricStorage {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(AsynchronousMetricStorage.class.getName()));
+  private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final AsyncAccumulator<T> asyncAccumulator;
@@ -150,7 +151,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         metricUpdater.run();
       } catch (Throwable e) {
         propagateIfFatal(e);
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "An exception occurred invoking callback for instrument "
                 + getMetricDescriptor().getName()
@@ -180,6 +181,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   /** Helper class to record async measurements on demand. */
   // Visible for testing
   static final class AsyncAccumulator<T> {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
     private final InstrumentDescriptor instrument;
     private final Aggregator<T> aggregator;
     private Map<Attributes, T> previousAccumulation = new HashMap<>();
@@ -193,7 +195,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     public void record(Attributes attributes, T accumulation) {
       // Check we're under the max allowed accumulations
       if (currentAccumulation.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Instrument "
                 + instrument.getName()
@@ -205,7 +207,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
       // Check there is not already a recording for the attributes
       if (currentAccumulation.containsKey(attributes)) {
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Instrument "
                 + instrument.getName()
@@ -221,7 +223,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           aggregator.validateAsyncAccumulation(previous, accumulation);
         } catch (Exception e) {
           // TODO: consider resetting the metric stream instead of logging here
-          logger.log(
+          throttlingLogger.log(
               Level.WARNING,
               "Instrument "
                   + instrument.getName()

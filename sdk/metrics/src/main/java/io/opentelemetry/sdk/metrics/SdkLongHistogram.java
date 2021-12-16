@@ -22,8 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(SdkLongHistogram.class.getName()));
+  private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final WriteableMetricStorage storage;
 
   private SdkLongHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -34,7 +35,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
   @Override
   public void record(long value, Attributes attributes, Context context) {
     if (value < 0) {
-      logger.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Histograms can only record non-negative values. Instrument "
               + getDescriptor().getName()
@@ -59,6 +60,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
   }
 
   static final class BoundInstrument implements BoundLongHistogram {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
     private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle handle;
     private final Attributes attributes;
@@ -73,7 +75,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     @Override
     public void record(long value, Context context) {
       if (value < 0) {
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Histograms can only record non-negative values. Instrument "
                 + descriptor.getName()

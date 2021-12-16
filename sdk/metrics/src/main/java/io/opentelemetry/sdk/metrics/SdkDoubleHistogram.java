@@ -23,8 +23,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(SdkDoubleHistogram.class.getName()));
+  private static final Logger logger = Logger.getLogger(SdkDoubleHistogram.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final WriteableMetricStorage storage;
 
   private SdkDoubleHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -35,7 +36,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
   @Override
   public void record(double value, Attributes attributes, Context context) {
     if (value < 0) {
-      logger.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Histograms can only record non-negative values. Instrument "
               + getDescriptor().getName()
@@ -60,6 +61,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
   }
 
   static final class BoundInstrument implements BoundDoubleHistogram {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
     private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle aggregatorHandle;
     private final Attributes attributes;
@@ -74,7 +76,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     @Override
     public void record(double value, Context context) {
       if (value < 0) {
-        logger.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Histograms can only record non-negative values. Instrument "
                 + descriptor.getName()

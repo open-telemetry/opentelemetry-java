@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -21,6 +22,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkLongCounter}. */
 class SdkLongCounterTest {
@@ -38,6 +40,8 @@ class SdkLongCounterTest {
           .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(SdkLongCounter.class);
 
   @Test
   void add_PreventNullAttributes() {
@@ -169,6 +173,8 @@ class SdkLongCounterTest {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
     longCounter.add(-45);
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Counters can only increase. Instrument testCounter has recorded a negative value.");
   }
 
   @Test
@@ -178,6 +184,8 @@ class SdkLongCounterTest {
     try {
       bound.add(-9);
       assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Counters can only increase. Instrument testCounter has recorded a negative value.");
     } finally {
       bound.unbind();
     }

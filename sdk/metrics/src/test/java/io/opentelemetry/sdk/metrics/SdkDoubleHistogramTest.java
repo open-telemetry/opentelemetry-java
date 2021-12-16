@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
@@ -21,6 +22,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkDoubleHistogram}. */
 class SdkDoubleHistogramTest {
@@ -38,6 +40,9 @@ class SdkDoubleHistogramTest {
           .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(SdkDoubleHistogram.class);
 
   @Test
   void record_PreventNullAttributes() {
@@ -189,6 +194,8 @@ class SdkDoubleHistogramTest {
     DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
     histogram.record(-45);
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Histograms can only record non-negative values. Instrument testHistogram has recorded a negative value.");
   }
 
   @Test
@@ -198,6 +205,8 @@ class SdkDoubleHistogramTest {
     try {
       bound.record(-9);
       assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Histograms can only record non-negative values. Instrument testHistogram has recorded a negative value.");
     } finally {
       bound.unbind();
     }
