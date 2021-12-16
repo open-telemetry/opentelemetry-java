@@ -10,7 +10,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.http.logs")
 
 dependencies {
   api(project(":sdk:logs"))
-  api(project(":exporters:otlp:common"))
+
+  implementation(project(":exporters:otlp:common"))
 
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okio:okio")

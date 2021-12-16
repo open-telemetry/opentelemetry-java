@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.retry;
 
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,18 +17,20 @@ import java.util.Set;
  */
 public class RetryUtil {
 
-  private static final Set<String> RETRYABLE_GRPC_STATUS_CODES = new HashSet<>();
+  private static final Set<String> RETRYABLE_GRPC_STATUS_CODES;
   private static final Set<Integer> RETRYABLE_HTTP_STATUS_CODES =
-      new HashSet<>(Arrays.asList(429, 502, 503, 504));
+      Collections.unmodifiableSet(new HashSet<>(Arrays.asList(429, 502, 503, 504)));
 
   static {
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_CANCELLED);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_DEADLINE_EXCEEDED);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_RESOURCE_EXHAUSTED);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_ABORTED);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_OUT_OF_RANGE);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE);
-    RETRYABLE_GRPC_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_DATA_LOSS);
+    Set<String> retryableGrpcStatusCodes = new HashSet<>();
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_CANCELLED);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_DEADLINE_EXCEEDED);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_RESOURCE_EXHAUSTED);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_ABORTED);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_OUT_OF_RANGE);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE);
+    retryableGrpcStatusCodes.add(GrpcStatusUtil.GRPC_STATUS_DATA_LOSS);
+    RETRYABLE_GRPC_STATUS_CODES = Collections.unmodifiableSet(retryableGrpcStatusCodes);
   }
 
   private RetryUtil() {}

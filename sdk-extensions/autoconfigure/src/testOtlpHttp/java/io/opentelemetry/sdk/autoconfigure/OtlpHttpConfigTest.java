@@ -64,7 +64,8 @@ class OtlpHttpConfigTest {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
-    props.put("otel.exporter.otlp.certificate", server.certFilePath);
+    props.put(
+        "otel.exporter.otlp.certificate", server.selfSignedCertificate.certificate().getPath());
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "15s");
@@ -127,7 +128,9 @@ class OtlpHttpConfigTest {
     props.put(
         "otel.exporter.otlp.traces.endpoint",
         "https://localhost:" + server.httpsPort() + "/v1/traces");
-    props.put("otel.exporter.otlp.traces.certificate", server.certFilePath);
+    props.put(
+        "otel.exporter.otlp.traces.certificate",
+        server.selfSignedCertificate.certificate().getPath());
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
@@ -172,7 +175,9 @@ class OtlpHttpConfigTest {
     props.put(
         "otel.exporter.otlp.metrics.endpoint",
         "https://localhost:" + server.httpsPort() + "/v1/metrics");
-    props.put("otel.exporter.otlp.metrics.certificate", server.certFilePath);
+    props.put(
+        "otel.exporter.otlp.metrics.certificate",
+        server.selfSignedCertificate.certificate().getPath());
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
@@ -258,7 +263,8 @@ class OtlpHttpConfigTest {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty(
         "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
-    System.setProperty("otel.exporter.otlp.certificate", server.certFilePath);
+    System.setProperty(
+        "otel.exporter.otlp.certificate", server.selfSignedCertificate.certificate().getPath());
     System.setProperty("otel.metric.export.interval", "1s");
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();

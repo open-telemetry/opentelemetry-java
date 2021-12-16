@@ -83,7 +83,9 @@ class OtlpHttpRetryTest {
     props.put(
         "otel.exporter.otlp.traces.endpoint",
         "https://localhost:" + server.httpsPort() + "/v1/traces");
-    props.put("otel.exporter.otlp.traces.certificate", server.certFilePath);
+    props.put(
+        "otel.exporter.otlp.traces.certificate",
+        server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
@@ -103,7 +105,9 @@ class OtlpHttpRetryTest {
     props.put(
         "otel.exporter.otlp.metrics.endpoint",
         "https://localhost:" + server.httpsPort() + "/v1/metrics");
-    props.put("otel.exporter.otlp.metrics.certificate", server.certFilePath);
+    props.put(
+        "otel.exporter.otlp.metrics.certificate",
+        server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(

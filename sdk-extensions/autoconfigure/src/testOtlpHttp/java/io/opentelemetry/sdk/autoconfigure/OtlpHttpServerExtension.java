@@ -9,6 +9,7 @@ import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
+import com.linecorp.armeria.internal.common.util.SelfSignedCertificate;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
@@ -16,32 +17,16 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.security.cert.CertificateException;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import okhttp3.tls.HeldCertificate;
 import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 
 class OtlpHttpServerExtension extends ServerExtension {
 
-  private static final String canonicalHostName;
-
-  static {
-    try {
-      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      throw new IllegalStateException("Error resolving canonical host name.", e);
-    }
-  }
-
-  private final HeldCertificate heldCertificate;
-  final String certFilePath;
+  final SelfSignedCertificate selfSignedCertificate;
 
   final Queue<ExportTraceServiceRequest> traceRequests = new ArrayDeque<>();
   final Queue<ExportMetricsServiceRequest> metricRequests = new ArrayDeque<>();
@@ -49,16 +34,9 @@ class OtlpHttpServerExtension extends ServerExtension {
   final Queue<RequestHeaders> requestHeaders = new ArrayDeque<>();
 
   OtlpHttpServerExtension() {
-    heldCertificate =
-        new HeldCertificate.Builder()
-            .commonName("localhost")
-            .addSubjectAlternativeName(canonicalHostName)
-            .build();
     try {
-      Path file = Files.createTempFile("test-cert", ".pem");
-      Files.write(file, heldCertificate.certificatePem().getBytes(StandardCharsets.UTF_8));
-      certFilePath = file.toAbsolutePath().toString();
-    } catch (IOException e) {
+      selfSignedCertificate = new SelfSignedCertificate();
+    } catch (CertificateException e) {
       throw new IllegalStateException("Unable to setup certificate.", e);
     }
   }
@@ -71,7 +49,7 @@ class OtlpHttpServerExtension extends ServerExtension {
         .service(
             "/v1/metrics",
             httpService(metricRequests, ExportMetricsServiceRequest.getDefaultInstance()));
-    sb.tls(heldCertificate.keyPair().getPrivate(), heldCertificate.certificate());
+    sb.tls(selfSignedCertificate.certificate(), selfSignedCertificate.privateKey());
   }
 
   @SuppressWarnings("unchecked")

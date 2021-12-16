@@ -10,7 +10,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 dependencies {
   api(project(":sdk:metrics"))
-  api(project(":exporters:otlp:common"))
+
+  implementation(project(":exporters:otlp:common"))
 
   compileOnly("io.grpc:grpc-stub")
 
