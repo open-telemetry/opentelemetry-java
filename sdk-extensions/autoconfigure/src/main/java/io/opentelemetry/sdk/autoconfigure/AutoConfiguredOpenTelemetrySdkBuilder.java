@@ -63,7 +63,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
    * {@link #addPropertiesSupplier(Supplier)} will have no effect if this method is used.
    */
-  AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
+  public AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
