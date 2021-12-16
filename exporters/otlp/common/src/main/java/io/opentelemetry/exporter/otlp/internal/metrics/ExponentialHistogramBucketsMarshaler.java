@@ -40,7 +40,7 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
     size +=
         MarshalerUtil.sizeRepeatedUInt64(
-            ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, counts);
+            ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
     return size;
   }
 }
