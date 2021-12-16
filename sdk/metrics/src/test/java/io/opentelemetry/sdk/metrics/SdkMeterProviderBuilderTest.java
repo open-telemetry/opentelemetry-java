@@ -14,17 +14,6 @@ import org.junit.jupiter.api.Test;
 class SdkMeterProviderBuilderTest {
 
   @Test
-  @SuppressWarnings("deprecation") // Testing deprecated methods
-  void buildAndRegisterGlobal() {
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-    try {
-      assertThat(io.opentelemetry.api.metrics.GlobalMeterProvider.get()).isSameAs(meterProvider);
-    } finally {
-      io.opentelemetry.api.metrics.GlobalMeterProvider.set(null);
-    }
-  }
-
-  @Test
   void defaultResource() {
     // We need a reader to have a resource.
     SdkMeterProvider meterProvider =

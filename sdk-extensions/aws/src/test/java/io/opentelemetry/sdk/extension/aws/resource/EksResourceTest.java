@@ -17,7 +17,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
-import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
@@ -35,7 +34,7 @@ public class EksResourceTest {
 
   @Mock private DockerHelper mockDockerHelper;
 
-  @Mock private JdkHttpClient jdkHttpClient;
+  @Mock private SimpleHttpClient httpClient;
 
   @Test
   void testEks(@TempDir File tempFolder) throws IOException {
@@ -46,17 +45,15 @@ public class EksResourceTest {
     String truststore = "truststore123";
     Files.write(truststore.getBytes(Charsets.UTF_8), mockK8sKeystoreFile);
 
-    when(jdkHttpClient.fetchString(
-            any(), Mockito.eq(K8S_SVC_URL + AUTH_CONFIGMAP_PATH), any(), any()))
+    when(httpClient.fetchString(any(), Mockito.eq(K8S_SVC_URL + AUTH_CONFIGMAP_PATH), any(), any()))
         .thenReturn("not empty");
-    when(jdkHttpClient.fetchString(
-            any(), Mockito.eq(K8S_SVC_URL + CW_CONFIGMAP_PATH), any(), any()))
+    when(httpClient.fetchString(any(), Mockito.eq(K8S_SVC_URL + CW_CONFIGMAP_PATH), any(), any()))
         .thenReturn("{\"data\":{\"cluster.name\":\"my-cluster\"}}");
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
 
     Resource eksResource =
         EksResource.buildResource(
-            jdkHttpClient,
+            httpClient,
             mockDockerHelper,
             mockK8sTokenFile.getPath(),
             mockK8sKeystoreFile.getPath());
@@ -73,7 +70,7 @@ public class EksResourceTest {
 
   @Test
   void testNotEks() {
-    Resource eksResource = EksResource.buildResource(jdkHttpClient, mockDockerHelper, "", "");
+    Resource eksResource = EksResource.buildResource(httpClient, mockDockerHelper, "", "");
     Attributes attributes = eksResource.getAttributes();
     assertThat(attributes).isEmpty();
   }
