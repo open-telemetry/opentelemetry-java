@@ -7,8 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +17,7 @@ class SdkMeterProviderBuilderTest {
   void defaultResource() {
     // We need a reader to have a resource.
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(
-                PeriodicMetricReader.newMetricReaderFactory(InMemoryMetricExporter.create()))
-            .build();
+        SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
 
     assertThat(meterProvider)
         .extracting("sharedState")

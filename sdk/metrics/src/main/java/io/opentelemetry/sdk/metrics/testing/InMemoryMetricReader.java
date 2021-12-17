@@ -40,11 +40,7 @@ import javax.annotation.Nullable;
  *   }
  * }
  * </code></pre>
- *
- * @deprecated Use {@link io.opentelemetry.sdk.metrics.export.PeriodicMetricReader} with {@link
- *     InMemoryMetricExporter}.
  */
-@Deprecated
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private final AggregationTemporality preferred;
   @Nullable private volatile MetricProducer metricProducer;

@@ -12,7 +12,6 @@ import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("deprecation") // Testing class which will be removed
 class InMemoryMetricReaderCumulativeTest {
 
   private SdkMeterProvider provider;

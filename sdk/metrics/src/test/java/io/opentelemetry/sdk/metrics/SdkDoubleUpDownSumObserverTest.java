@@ -11,23 +11,16 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for SDK {@link InstrumentValueType#DOUBLE} {@link
- * InstrumentType#OBSERVABLE_UP_DOWN_SUM}.
- */
+/** Unit tests for {@link DoubleUpDownSumObserverSdk}. */
 class SdkDoubleUpDownSumObserverTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -40,11 +33,9 @@ class SdkDoubleUpDownSumObserverTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
-            .build();
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -52,17 +43,15 @@ class SdkDoubleUpDownSumObserverTest {
         .setDescription("My own DoubleUpDownSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems()).isEmpty();
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
-    InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
-            .build();
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -70,8 +59,7 @@ class SdkDoubleUpDownSumObserverTest {
         .buildWithCallback(
             result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -91,10 +79,8 @@ class SdkDoubleUpDownSumObserverTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-    exporter.reset();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -117,11 +103,12 @@ class SdkDoubleUpDownSumObserverTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
-    InMemoryMetricExporter exporter = InMemoryMetricExporter.create(AggregationTemporality.DELTA);
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
-            .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+            .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
@@ -135,8 +122,7 @@ class SdkDoubleUpDownSumObserverTest {
         .buildWithCallback(
             result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -156,11 +142,8 @@ class SdkDoubleUpDownSumObserverTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-    exporter.reset();
-
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

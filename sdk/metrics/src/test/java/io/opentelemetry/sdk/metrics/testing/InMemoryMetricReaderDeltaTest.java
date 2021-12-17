@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemoryMetricExporter}. */
-@SuppressWarnings("deprecation") // Testing class which will be removed
 class InMemoryMetricReaderDeltaTest {
 
   private SdkMeterProvider provider;

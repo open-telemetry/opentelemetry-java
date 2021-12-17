@@ -14,19 +14,15 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for SDK {@link InstrumentValueType#LONG} {@link InstrumentType#HISTOGRAM}. */
+/** Unit tests for {@link SdkLongHistogram}. */
 class SdkLongHistogramTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -34,12 +30,12 @@ class SdkLongHistogramTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkLongHistogramTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+          .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
@@ -67,8 +63,7 @@ class SdkLongHistogramTest {
     BoundLongHistogram bound =
         ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("key", "value").build());
     try {
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems()).isEmpty();
+      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -86,8 +81,7 @@ class SdkLongHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longRecorder.record(12, Attributes.empty());
     longRecorder.record(12);
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -128,8 +122,7 @@ class SdkLongHistogramTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
       longRecorder.record(-121, Attributes.builder().put("K", "V").build());
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -156,14 +149,12 @@ class SdkLongHistogramTest {
                                   .hasSum(-2)
                                   .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
-      exporter.reset();
 
       // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
       longRecorder.record(17, Attributes.empty());
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -220,8 +211,7 @@ class SdkLongHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -269,8 +259,7 @@ class SdkLongHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

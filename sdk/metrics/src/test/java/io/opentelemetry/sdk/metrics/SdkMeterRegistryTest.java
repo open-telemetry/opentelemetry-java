@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -14,23 +15,20 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkMeterProvider}. */
 class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider meterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(Resource.empty())
-          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+          .registerMetricReader(sdkMeterReader)
           .build();
 
   @Test
@@ -105,6 +103,7 @@ class SdkMeterRegistryTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void metricProducer_GetAllMetrics() {
     Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounter longCounter1 = sdkMeter1.counterBuilder("testLongCounter").build();
@@ -113,8 +112,7 @@ class SdkMeterRegistryTest {
     LongCounter longCounter2 = sdkMeter2.counterBuilder("testLongCounter").build();
     longCounter2.add(10, Attributes.empty());
 
-    meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -129,7 +127,7 @@ class SdkMeterRegistryTest {
                                 .hasValue(10)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())))
-        .extracting(MetricData::getInstrumentationLibraryInfo)
+        .extracting(metric -> metric.getInstrumentationLibraryInfo())
         .containsExactlyInAnyOrder(
             ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
             ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo());

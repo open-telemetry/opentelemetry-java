@@ -14,19 +14,15 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleUpDownCounter;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for SDK {@link InstrumentValueType#DOUBLE} {@link InstrumentType#UP_DOWN_COUNTER}. */
+/** Unit tests for {@link SdkDoubleUpDownCounter}. */
 class SdkDoubleUpDownCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -34,12 +30,12 @@ class SdkDoubleUpDownCounterTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkDoubleUpDownCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .registerMetricReader(PeriodicMetricReader.newMetricReaderFactory(exporter))
+          .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
@@ -75,8 +71,7 @@ class SdkDoubleUpDownCounterTest {
         ((SdkDoubleUpDownCounter) doubleUpDownCounter)
             .bind(Attributes.builder().put("foo", "bar").build());
     try {
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems()).isEmpty();
+      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -94,8 +89,7 @@ class SdkDoubleUpDownCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleUpDownCounter.add(12d, Attributes.empty());
     doubleUpDownCounter.add(12d);
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -134,8 +128,7 @@ class SdkDoubleUpDownCounterTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321.5d);
       doubleUpDownCounter.add(111.1d, Attributes.builder().put("K", "V").build());
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -158,14 +151,12 @@ class SdkDoubleUpDownCounterTest {
                               assertThat(point)
                                   .hasValue(555.9)
                                   .hasAttributes(Attributes.of(stringKey("K"), "V"))));
-      exporter.reset();
 
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222d);
       doubleUpDownCounter.add(11d, Attributes.empty());
-      sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-      assertThat(exporter.getFinishedMetricItems())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -217,8 +208,7 @@ class SdkDoubleUpDownCounterTest {
     }
 
     stressTestBuilder.build().run();
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -267,8 +257,7 @@ class SdkDoubleUpDownCounterTest {
     }
 
     stressTestBuilder.build().run();
-    sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
-    assertThat(exporter.getFinishedMetricItems())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
