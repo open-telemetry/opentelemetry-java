@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
@@ -44,6 +45,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @Nullable private ConfigProperties config;
 
+  private BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+      tracerProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
@@ -71,6 +74,22 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkTracerProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addTracerProviderCustomizer(
+      BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+          tracerProviderCustomizer) {
+    requireNonNull(tracerProviderCustomizer, "tracerProviderCustomizer");
+    this.tracerProviderCustomizer =
+        mergeCustomizer(this.tracerProviderCustomizer, tracerProviderCustomizer);
     return this;
   }
 
@@ -181,16 +200,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
     }
 
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     ConfigProperties config = getConfig();
+    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
+    tracerProviderBuilder.setResource(resource);
 
     MeterProvider meterProvider =
         MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource,
+            tracerProviderBuilder,
             config,
             serviceClassLoader,
             meterProvider,

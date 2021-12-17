@@ -63,7 +63,7 @@ class TracerProviderConfigurationTest {
     // are verified in other test sets like testFullConfig.
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource,
+            SdkTracerProvider.builder().setResource(resource),
             DefaultConfigProperties.createForTest(properties),
             TracerProviderConfiguration.class.getClassLoader(),
             MeterProvider.noop(),
