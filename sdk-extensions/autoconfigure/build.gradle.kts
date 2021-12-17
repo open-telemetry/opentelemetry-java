@@ -77,7 +77,7 @@ testing {
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-            environment("OTEL_IMR_EXPORT_INTERVAL", "10")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
             environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
@@ -168,7 +168,7 @@ testing {
           testTask {
             environment("OTEL_TRACES_EXPORTER", "none")
             environment("OTEL_METRICS_EXPORTER", "prometheus")
-            environment("OTEL_IMR_EXPORT_INTERVAL", "10")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
           }
         }
       }

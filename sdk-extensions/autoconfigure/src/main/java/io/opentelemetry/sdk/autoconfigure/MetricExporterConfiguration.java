@@ -154,9 +154,6 @@ final class MetricExporterConfiguration {
 
     Duration exportInterval = config.getDuration("otel.metric.export.interval");
     if (exportInterval == null) {
-      exportInterval = config.getDuration("otel.imr.export.interval");
-    }
-    if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }
     // Register the reader (which will start when SDK is built).

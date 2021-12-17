@@ -5,48 +5,24 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-/**
- * Auto-configuration for the OpenTelemetry {@link Resource}.
- *
- * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#getResource()}.
- */
-@Deprecated
-public final class OpenTelemetryResourceAutoConfiguration {
+/** Auto-configuration for the OpenTelemetry {@link Resource}. */
+final class ResourceConfiguration {
 
-  /**
-   * Returns the automatically configured {@link Resource}.
-   *
-   * <p>This method will auto-configure the returned {@link Resource} using system properties and
-   * environment variables.
-   *
-   * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#getResource()}.
-   */
-  @Deprecated
-  public static Resource configureResource() {
-    return configureResource(DefaultConfigProperties.get(Collections.emptyMap()));
-  }
+  // Visible for testing
+  static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  static final String SERVICE_NAME_PROPERTY = "otel.service.name";
 
-  /**
-   * Returns a {@link Resource} automatically initialized through recognized system properties and
-   * environment variables.
-   *
-   * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#getResource()}.
-   */
-  @Deprecated
-  public static Resource configureResource(ConfigProperties config) {
-    return configureResource(config, (a, unused) -> a);
-  }
-
-  @SuppressWarnings("deprecation") // Uses class which will be made package private
   static Resource configureResource(
       ConfigProperties config,
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
@@ -64,10 +40,25 @@ public final class OpenTelemetryResourceAutoConfiguration {
       result = result.merge(resourceProvider.createResource(config));
     }
 
-    result = result.merge(EnvironmentResource.create(config));
+    result = result.merge(createEnvironmentResource(config));
 
     return resourceCustomizer.apply(result, config);
   }
 
-  private OpenTelemetryResourceAutoConfiguration() {}
+  private static Resource createEnvironmentResource(ConfigProperties config) {
+    return Resource.create(getAttributes(config), ResourceAttributes.SCHEMA_URL);
+  }
+
+  // visible for testing
+  static Attributes getAttributes(ConfigProperties configProperties) {
+    AttributesBuilder resourceAttributes = Attributes.builder();
+    configProperties.getMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
+    String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
+    if (serviceName != null) {
+      resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);
+    }
+    return resourceAttributes.build();
+  }
+
+  private ResourceConfiguration() {}
 }
