@@ -104,21 +104,6 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
-   * SdkMeterProviderBuilder} and registers it as the global {@link
-   * io.opentelemetry.api.metrics.MeterProvider}.
-   *
-   * @deprecated Use {@code OpenTelemetrySdkBuilder.buildAndRegisterGlobal} and {@link
-   *     io.opentelemetry.api.GlobalOpenTelemetry}.
-   */
-  @Deprecated
-  public SdkMeterProvider buildAndRegisterGlobal() {
-    SdkMeterProvider meterProvider = build();
-    io.opentelemetry.api.metrics.GlobalMeterProvider.set(meterProvider);
-    return meterProvider;
-  }
-
-  /**
    * Registers a {@link MetricReader} for this SDK.
    *
    * @param reader The factory for a reader of metrics.
@@ -145,11 +130,7 @@ public final class SdkMeterProviderBuilder {
 
   /**
    * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
-   * SdkMeterProviderBuilder}. This provider is not registered as the global {@link
-   * io.opentelemetry.api.metrics.MeterProvider}. It is recommended that you register one provider
-   * using {@link SdkMeterProviderBuilder#buildAndRegisterGlobal()} for use by instrumentation when
-   * that requires access to a global instance of {@link
-   * io.opentelemetry.api.metrics.MeterProvider}.
+   * SdkMeterProviderBuilder}.
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(

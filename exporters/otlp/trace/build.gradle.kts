@@ -13,7 +13,6 @@ dependencies {
   api(project(":sdk:trace"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":api:metrics"))
 
   compileOnly("io.grpc:grpc-stub")
 
