@@ -11,21 +11,38 @@ import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SuppressWarnings("deprecation") // Tests class which will be made package private
-class EnvironmentResourceTest {
+@ExtendWith(MockitoExtension.class)
+class ResourceConfigurationTest {
 
   @Test
-  void get() {
-    assertThat(EnvironmentResource.get().getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
+  void customConfigResource() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put("otel.resource.attributes", "food=cheesecake");
+
+    assertThat(
+            ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(props), (r, c) -> r))
+        .isEqualTo(
+            Resource.getDefault().toBuilder()
+                .put(ResourceAttributes.SERVICE_NAME, "test-service")
+                .put("food", "cheesecake")
+                .setSchemaUrl(ResourceAttributes.SCHEMA_URL)
+                .build());
   }
 
   @Test
   void resourceFromConfig_empty() {
     Attributes attributes =
-        EnvironmentResource.getAttributes(DefaultConfigProperties.createForTest(emptyMap()));
+        ResourceConfiguration.getAttributes(DefaultConfigProperties.createForTest(emptyMap()));
 
     assertThat(attributes).isEmpty();
   }
@@ -33,10 +50,10 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig() {
     Attributes attributes =
-        EnvironmentResource.getAttributes(
+        ResourceConfiguration.getAttributes(
             DefaultConfigProperties.createForTest(
                 singletonMap(
-                    EnvironmentResource.ATTRIBUTE_PROPERTY,
+                    ResourceConfiguration.ATTRIBUTE_PROPERTY,
                     "service.name=myService,appName=MyApp")));
 
     assertThat(attributes)
@@ -48,9 +65,9 @@ class EnvironmentResourceTest {
   @Test
   void serviceName() {
     Attributes attributes =
-        EnvironmentResource.getAttributes(
+        ResourceConfiguration.getAttributes(
             DefaultConfigProperties.createForTest(
-                singletonMap(EnvironmentResource.SERVICE_NAME_PROPERTY, "myService")));
+                singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")));
 
     assertThat(attributes).hasSize(1).containsEntry(ResourceAttributes.SERVICE_NAME, "myService");
   }
@@ -58,12 +75,12 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig_overrideServiceName() {
     Attributes attributes =
-        EnvironmentResource.getAttributes(
+        ResourceConfiguration.getAttributes(
             DefaultConfigProperties.createForTest(
                 ImmutableMap.of(
-                    EnvironmentResource.ATTRIBUTE_PROPERTY,
+                    ResourceConfiguration.ATTRIBUTE_PROPERTY,
                     "service.name=myService,appName=MyApp",
-                    EnvironmentResource.SERVICE_NAME_PROPERTY,
+                    ResourceConfiguration.SERVICE_NAME_PROPERTY,
                     "ReallyMyService")));
 
     assertThat(attributes)
@@ -75,9 +92,9 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig_emptyEnvVar() {
     Attributes attributes =
-        EnvironmentResource.getAttributes(
+        ResourceConfiguration.getAttributes(
             DefaultConfigProperties.createForTest(
-                singletonMap(EnvironmentResource.ATTRIBUTE_PROPERTY, "")));
+                singletonMap(ResourceConfiguration.ATTRIBUTE_PROPERTY, "")));
 
     assertThat(attributes).isEmpty();
   }

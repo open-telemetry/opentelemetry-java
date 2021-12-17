@@ -239,7 +239,6 @@ These properties can be used to control the maximum size of recordings per span.
 | System property          | Environment variable     | Description                                                                       |
 |--------------------------|--------------------------|-----------------------------------------------------------------------------------|
 | otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`.|
-| otel.imr.export.interval | OTEL_IMR_EXPORT_INTERVAL | **DEPRECATED for removal in 1.10.0.** The interval, in milliseconds, between the start of two export attempts. Default is `60000`.|
 
 ## Customizing the OpenTelemetry SDK
 

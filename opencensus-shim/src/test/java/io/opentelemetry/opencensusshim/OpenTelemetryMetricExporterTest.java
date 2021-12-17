@@ -23,7 +23,7 @@ import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;

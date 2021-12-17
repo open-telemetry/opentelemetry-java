@@ -7,8 +7,6 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Utilities for working with gRPC status without requiring dependencies on gRPC.
@@ -26,23 +24,6 @@ public final class GrpcStatusUtil {
   public static final String GRPC_STATUS_UNIMPLEMENTED = "12";
   public static final String GRPC_STATUS_UNAVAILABLE = "14";
   public static final String GRPC_STATUS_DATA_LOSS = "15";
-
-  private static final Set<String> RETRYABLE_STATUS_CODES = new HashSet<>();
-
-  static {
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_CANCELLED);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_DEADLINE_EXCEEDED);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_RESOURCE_EXHAUSTED);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_ABORTED);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_OUT_OF_RANGE);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE);
-    RETRYABLE_STATUS_CODES.add(GrpcStatusUtil.GRPC_STATUS_DATA_LOSS);
-  }
-
-  /** Returns the retryable gRPC status codes. */
-  public static Set<String> retryableStatusCodes() {
-    return RETRYABLE_STATUS_CODES;
-  }
 
   /** Parses the message out of a serialized gRPC Status. */
   public static String getStatusMessage(byte[] serializedStatus) throws IOException {
