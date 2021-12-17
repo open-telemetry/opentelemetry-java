@@ -17,6 +17,7 @@ dependencies {
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:metrics"))
+  compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:otlp-http:trace"))
   compileOnly(project(":exporters:otlp-http:metrics"))
   compileOnly(project(":exporters:prometheus"))
@@ -57,6 +58,7 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk-extensions:resources"))
@@ -119,6 +121,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
         implementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -139,6 +142,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp-http:trace"))
         implementation(project(":exporters:otlp-http:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
         implementation("com.google.guava:guava")

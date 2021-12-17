@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
@@ -105,7 +106,9 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          (unused) -> {});
+          retryPolicy ->
+              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpMetricExporterBuilder.class, builder)
+                  .setRetryPolicy(retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
@@ -134,7 +137,7 @@ final class MetricExporterConfiguration {
           retryPolicy ->
               DefaultGrpcExporterBuilder.getDelegateBuilder(
                       OtlpGrpcMetricExporterBuilder.class, builder)
-                  .addRetryPolicy(retryPolicy));
+                  .setRetryPolicy(retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
