@@ -13,7 +13,7 @@ import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
 import io.opencensus.stats.View;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
 import java.util.Collections;
 import org.awaitility.Awaitility;

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.testing;
+package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -11,10 +11,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
-
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import javax.annotation.Nullable;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
@@ -41,10 +40,7 @@ import java.util.Collections;
  *   }
  * }
  * </code></pre>
- *
- * @deprecated Moved to {@code io.opentelemetry:opentelemetry-sdk-metrics-testing} module.
  */
-@Deprecated
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private final AggregationTemporality preferred;
   @Nullable private volatile MetricProducer metricProducer;
