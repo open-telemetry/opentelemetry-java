@@ -21,6 +21,7 @@ import javax.annotation.concurrent.ThreadSafe;
 class DefaultLogEmitter implements LogEmitter {
 
   private static final DefaultLogEmitter INSTANCE = new DefaultLogEmitter();
+  private static final LogBuilder BUILDER_INSTANCE = new NoopLogBuilder();
 
   static LogEmitter getInstance() {
     return INSTANCE;
@@ -28,11 +29,11 @@ class DefaultLogEmitter implements LogEmitter {
 
   @Override
   public LogBuilder logBuilder() {
-    return new NoopSpanBuilder();
+    return BUILDER_INSTANCE;
   }
 
-  // Noop implementation of LogEmitter.Builder.
-  private static final class NoopSpanBuilder implements LogBuilder {
+  // Noop implementation of LogBuilder.
+  private static final class NoopLogBuilder implements LogBuilder {
 
     @Override
     public LogBuilder setEpoch(long timestamp, TimeUnit unit) {

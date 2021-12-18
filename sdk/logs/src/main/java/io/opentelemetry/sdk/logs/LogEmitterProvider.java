@@ -31,7 +31,7 @@ public interface LogEmitterProvider {
   }
 
   /**
-   * Creates a LogBuilder for a named log instance.
+   * Creates a LogEmitterBuilder for a named log instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.

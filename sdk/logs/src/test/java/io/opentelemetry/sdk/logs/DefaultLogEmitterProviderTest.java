@@ -15,7 +15,7 @@ class DefaultLogEmitterProviderTest {
 
   @Test
   void builder_doesNotThrow() {
-    DefaultLogEmitterProvider.getInstance()
+    LogEmitterProvider.noop()
         .logEmitterBuilder("test")
         .setSchemaUrl("http://url")
         .setInstrumentationVersion("version")
