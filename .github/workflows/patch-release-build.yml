@@ -51,7 +51,7 @@ jobs:
           ref: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
       - uses: actions/setup-java@v2
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 17
       - name: Setup git name
         run: |
