@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.DoubleSupplier;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -32,14 +33,19 @@ public class HistogramBenchmark {
     @Param HistogramValueGenerator valueGen;
     @Param HistogramAggregationParam aggregation;
     private AggregatorHandle<?> aggregatorHandle;
+    private DoubleSupplier valueSupplier;
 
     @Setup(Level.Trial)
     public final void setup() {
       aggregatorHandle = aggregation.getAggregator().createHandle();
+      valueSupplier = valueGen.supplier();
     }
 
     public void record() {
-      this.aggregatorHandle.recordDouble(valueGen.generateValue());
+      // Record a number of samples.
+      for (int i = 0; i < 2000; i++) {
+        this.aggregatorHandle.recordDouble(valueSupplier.getAsDouble());
+      }
     }
   }
 

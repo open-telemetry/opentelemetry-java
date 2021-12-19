@@ -54,3 +54,7 @@ tasks {
     dependsOn(testing.suites)
   }
 }
+
+jmh {
+  includes.add("io.opentelemetry.sdk.metrics.internal.aggregator.HistogramBenchmark")
+}

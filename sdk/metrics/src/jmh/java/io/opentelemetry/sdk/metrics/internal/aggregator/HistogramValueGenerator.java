@@ -5,22 +5,83 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.DoubleSupplier;
 
 /** Methods of generating values for histogram benchmarks. */
 @SuppressWarnings("ImmutableEnumChecker")
 public enum HistogramValueGenerator {
-  SAME_VALUE(() -> 100.0056),
-  RANDOM_WITHIN_2K(() -> ThreadLocalRandom.current().nextDouble(2000));
+  // Test scenario where we rotate around histogram buckets.
+  // This is a degenerate test case where we see every next measurement in a different
+  // bucket, mean to be the "optimal" explicit bucket histogram scenario.
+  FIXED_BUCKET_BOUNDARIES(explicitDefaultBucketPool()),
+  // Test scenario where we randomly get values between 0 and 2000.
+  // Note: for millisecond latency, this would mean we expect our calls to be randomly
+  // distributed between 0 and 2 seconds (not very likely).
+  // This is meant to test more "worst case scenarios" where Exponential histograms must
+  // expand scale factor due to highly distributed data.
+  UNIFORM_RANDOM_WITHIN_2K(randomPool(20000, 2000)),
+  // Test scenario where we're measuring latency with mean of 1 seconds, std deviation of a quarter
+  // second.  This is our "optimised" use case.
+  // Note: In practice we likely want to add several gaussian pools, as in real microsevices we
+  // tend to notice some optional processing show up as additive gaussian noise with higher
+  // mean/stddev.  However, this best represents a simple microservice.
+  GAUSSIAN_LATENCY(randomGaussianPool(20000, 1000, 250));
 
-  private final DoubleSupplier generator;
+  private final double[] pool;
 
-  private HistogramValueGenerator(DoubleSupplier generator) {
-    this.generator = generator;
+  private HistogramValueGenerator(double[] pool) {
+    this.pool = pool;
   }
 
-  public final double generateValue() {
-    return this.generator.getAsDouble();
+  /** Returns a supplier of doubles values. */
+  public final DoubleSupplier supplier() {
+    return new PoolSupplier(this.pool);
+  }
+
+  // Return values from the pool, rotating around as necessary back to the beginning.
+  private static class PoolSupplier implements DoubleSupplier {
+    private final double[] pool;
+    private final AtomicInteger idx = new AtomicInteger(0);
+
+    public PoolSupplier(double[] pool) {
+      this.pool = pool;
+    }
+
+    @Override
+    public double getAsDouble() {
+      return pool[idx.incrementAndGet() % pool.length];
+    }
+  }
+  /** Constructs a pool using explicit bucket histogram boundaries. */
+  private static double[] explicitDefaultBucketPool() {
+    List<Double> fixedBoundaries = new ArrayList<Double>();
+    // Add minimal recording value.
+    fixedBoundaries.add(0.0);
+    // Add the bucket LE bucket boundaries (starts at 5).
+    fixedBoundaries.addAll(ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+    // Add Double max value as our other extreme.
+    fixedBoundaries.add(Double.MAX_VALUE);
+    return ExplicitBucketHistogramUtils.createBoundaryArray(fixedBoundaries);
+  }
+
+  /** Create a pool of random numbers within bound, and of size. */
+  private static double[] randomPool(int size, double bound) {
+    double[] pool = new double[size];
+    for (int i = 0; i < size; i++) {
+      pool[i] = ThreadLocalRandom.current().nextDouble(bound);
+    }
+    return pool;
+  }
+
+  private static double[] randomGaussianPool(int size, double mean, double deviation) {
+    double[] pool = new double[size];
+    for (int i = 0; i < size; i++) {
+      pool[i] = ThreadLocalRandom.current().nextGaussian() * deviation + mean;
+    }
+    return pool;
   }
 }
