@@ -14,11 +14,11 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -81,20 +81,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public DefaultGrpcExporterBuilder<T> setEndpoint(String endpoint) {
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = uri;
+    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 

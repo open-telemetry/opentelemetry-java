@@ -8,32 +8,33 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
-import io.grpc.ManagedChannel;
-import io.grpc.Server;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.stub.StreamObserver;
+import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.ServerExtension;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 class JaegerRemoteSamplerTest {
 
@@ -41,48 +42,55 @@ class JaegerRemoteSamplerTest {
   private static final int RATE = 999;
 
   private static final AtomicInteger numPolls = new AtomicInteger();
+  private static final ConcurrentLinkedQueue<ArmeriaStatusException> grpcErrors =
+      new ConcurrentLinkedQueue<>();
 
-  private final String serverName = InProcessServerBuilder.generateName();
-  private final ManagedChannel inProcessChannel =
-      InProcessChannelBuilder.forName(serverName).directExecutor().build();
-
-  private final SamplingManagerGrpc.SamplingManagerImplBase service =
-      mock(
-          SamplingManagerGrpc.SamplingManagerImplBase.class,
-          delegatesTo(new MockSamplingManagerService()));
-
-  static class MockSamplingManagerService extends SamplingManagerGrpc.SamplingManagerImplBase {
-
-    @Override
-    public void getSamplingStrategy(
-        Sampling.SamplingStrategyParameters request,
-        StreamObserver<Sampling.SamplingStrategyResponse> responseObserver) {
-      numPolls.incrementAndGet();
-      Sampling.SamplingStrategyResponse response =
-          Sampling.SamplingStrategyResponse.newBuilder()
-              .setStrategyType(SamplingStrategyType.RATE_LIMITING)
-              .setRateLimitingSampling(
-                  RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(RATE).build())
-              .build();
-
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    }
+  private static void addGrpcError(int code, @Nullable String message) {
+    grpcErrors.add(new ArmeriaStatusException(code, message));
   }
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcService.class, Level.TRACE);
+
+  @RegisterExtension
+  static final ServerExtension server =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          sb.service(
+              JaegerRemoteSamplerBuilder.GRPC_ENDPOINT_PATH,
+              new AbstractUnaryGrpcService() {
+                @Override
+                protected CompletionStage<byte[]> handleMessage(
+                    ServiceRequestContext ctx, byte[] message) {
+
+                  numPolls.incrementAndGet();
+                  ArmeriaStatusException grpcError = grpcErrors.poll();
+                  if (grpcError != null) {
+                    throw grpcError;
+                  }
+
+                  Sampling.SamplingStrategyResponse response =
+                      Sampling.SamplingStrategyResponse.newBuilder()
+                          .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+                          .setRateLimitingSampling(
+                              RateLimitingSamplingStrategy.newBuilder()
+                                  .setMaxTracesPerSecond(RATE)
+                                  .build())
+                          .build();
+                  return CompletableFuture.completedFuture(response.toByteArray());
+                }
+              });
+          sb.http(0);
+        }
+      };
 
   private final Closer closer = Closer.create();
 
   @BeforeEach
-  public void before() throws IOException {
+  public void before() {
     numPolls.set(0);
-    Server server =
-        InProcessServerBuilder.forName(serverName)
-            .directExecutor()
-            .addService(service)
-            .build()
-            .start();
-    closer.register(server::shutdownNow);
-    closer.register(inProcessChannel::shutdownNow);
+    grpcErrors.clear();
   }
 
   @AfterEach
@@ -91,13 +99,11 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  void connectionWorks() throws Exception {
-    ArgumentCaptor<Sampling.SamplingStrategyParameters> requestCaptor =
-        ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
-
+  void connectionWorks() {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(inProcessChannel)
+            .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build();
     closer.register(sampler);
@@ -107,19 +113,16 @@ class JaegerRemoteSamplerTest {
         .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
-    verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
-    assertThat(requestCaptor.getValue().getServiceName()).isEqualTo(SERVICE_NAME);
     assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
-
-    // Default poll interval is 60s, inconceivable to have polled multiple times by now.
-    assertThat(numPolls).hasValue(1);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
   void description() {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(inProcessChannel)
+            .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build();
     closer.register(sampler);
@@ -131,15 +134,14 @@ class JaegerRemoteSamplerTest {
         .atMost(Duration.ofSeconds(10))
         .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
-    // Default poll interval is 60s, inconceivable to have polled multiple times by now.
-    assertThat(numPolls).hasValue(1);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
   void initialSampler() {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint("example.com")
+            .setEndpoint("http://example.com")
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build();
@@ -151,7 +153,7 @@ class JaegerRemoteSamplerTest {
   void pollingInterval() throws Exception {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(inProcessChannel)
+            .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build();
@@ -171,7 +173,7 @@ class JaegerRemoteSamplerTest {
   void pollingInterval_duration() throws Exception {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(inProcessChannel)
+            .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build();
@@ -188,6 +190,56 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  void internal_error_server_response() {
+    addGrpcError(13, "internal error");
+
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .build();
+    closer.register(sampler);
+
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+
+    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+    // wait until correct response is returned
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+
+    LoggingEvent log = logs.assertContains(" Server responded with gRPC status code 13");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
+  }
+
+  @Test
+  void unavailable_error_server_response() {
+    addGrpcError(14, "クマ🐻 resource exhausted");
+
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .build();
+    closer.register(sampler);
+
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+
+    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+    // wait until correct response is returned
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+
+    LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+  }
+
+  @Test
   void invalidArguments() {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setServiceName(null))
         .isInstanceOf(NullPointerException.class)
@@ -195,9 +247,6 @@ class JaegerRemoteSamplerTest {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setChannel(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("channel");
     assertThatThrownBy(
             () -> JaegerRemoteSampler.builder().setPollingInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)

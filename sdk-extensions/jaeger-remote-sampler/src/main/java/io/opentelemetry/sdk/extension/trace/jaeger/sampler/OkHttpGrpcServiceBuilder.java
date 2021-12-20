@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.grpc.ManagedChannel;
-import io.opentelemetry.api.metrics.MeterProvider;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
@@ -25,14 +27,8 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 
-/**
- * A builder for {@link OkHttpGrpcExporter}.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- */
-public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
-    implements GrpcExporterBuilder<T> {
+class OkHttpGrpcServiceBuilder<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+    implements GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> {
 
   private final String type;
   private final String grpcEndpointPath;
@@ -43,11 +39,10 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   // Visible for testing
-  public OkHttpGrpcExporterBuilder(
+  public OkHttpGrpcServiceBuilder(
       String type, String grpcEndpointPath, long defaultTimeoutSecs, URI defaultEndpoint) {
     this.type = type;
     this.grpcEndpointPath = grpcEndpointPath;
@@ -56,59 +51,66 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> setChannel(ManagedChannel channel) {
-    throw new UnsupportedOperationException("Only available on DefaultGrpcExporter");
-  }
-
-  @Override
-  public OkHttpGrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTimeout(
+      long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> setTimeout(Duration timeout) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    checkArgument(!timeout.isNegative(), "timeout must be non-negative");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> setEndpoint(String endpoint) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setEndpoint(String endpoint) {
+    requireNonNull(endpoint, "endpoint");
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> setCompression(String compressionMethod) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setCompression(
+      String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTrustedCertificates(
+      byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
 
   @Override
-  public OkHttpGrpcExporterBuilder<T> addHeader(String key, String value) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addHeader(
+      String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "val");
     headers.add(key, value);
     return this;
   }
 
   @Override
-  public GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addRetryPolicy(
+      RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
     this.retryPolicy = retryPolicy;
     return this;
   }
 
   @Override
-  public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
-    return this;
-  }
-
-  @Override
-  public GrpcExporter<T> build() {
+  public GrpcService<ReqMarshalerT, ResUnMarshalerT> build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
@@ -138,10 +140,10 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
-          new RetryInterceptor(retryPolicy, OkHttpGrpcExporter::isRetryable));
+          new RetryInterceptor(retryPolicy, OkHttpGrpcService::isRetryable));
     }
 
-    return new OkHttpGrpcExporter<>(
-        type, clientBuilder.build(), meterProvider, endpoint, headers.build(), compressionEnabled);
+    return new OkHttpGrpcService<>(
+        type, clientBuilder.build(), endpoint, headers.build(), compressionEnabled);
   }
 }
