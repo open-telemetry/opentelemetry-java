@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.DoubleSupplier;
 
@@ -31,6 +31,8 @@ public enum HistogramValueGenerator {
   // mean/stddev.  However, this best represents a simple microservice.
   GAUSSIAN_LATENCY(randomGaussianPool(20000, 1000, 250));
 
+  // A random seed we use to ensure tests are repeatable.
+  private static final int INITIAL_SEED = 513423236;
   private final double[] pool;
 
   private HistogramValueGenerator(double[] pool) {
@@ -71,8 +73,9 @@ public enum HistogramValueGenerator {
   /** Create a pool of random numbers within bound, and of size. */
   private static double[] randomPool(int size, double bound) {
     double[] pool = new double[size];
+    Random random = new Random(INITIAL_SEED);
     for (int i = 0; i < size; i++) {
-      pool[i] = ThreadLocalRandom.current().nextDouble(bound);
+      pool[i] = random.nextDouble() * bound;
     }
     return pool;
   }
@@ -80,8 +83,9 @@ public enum HistogramValueGenerator {
   /** Create a pool approximating a gaussian distribution w/ given mean and standard deviation. */
   private static double[] randomGaussianPool(int size, double mean, double deviation) {
     double[] pool = new double[size];
+    Random random = new Random(INITIAL_SEED);
     for (int i = 0; i < size; i++) {
-      pool[i] = ThreadLocalRandom.current().nextGaussian() * deviation + mean;
+      pool[i] = random.nextGaussian() * deviation + mean;
     }
     return pool;
   }

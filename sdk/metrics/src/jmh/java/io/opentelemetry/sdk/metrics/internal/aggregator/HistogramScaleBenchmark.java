@@ -24,9 +24,9 @@ import org.openjdk.jmh.annotations.Warmup;
 /**
  * Attempts to measure the cost of re-scaling/building buckets.
  *
- * <p>This benchmark must be interpreted carefully. We're looking for startup costs of
- * histograms and need to tease out the portion of recorded time from scaling buckets vs.
- * general algorithmic performance.</p>
+ * <p>This benchmark must be interpreted carefully. We're looking for startup costs of histograms
+ * and need to tease out the portion of recorded time from scaling buckets vs. general algorithmic
+ * performance.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
