@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -160,45 +159,6 @@ public class AsynchronousMetricStorageTest {
                         }));
     logs.assertContains(
         "Instrument my-instrument has recorded multiple values for the same attributes.");
-  }
-
-  @Test
-  void collectAndReset_IgnoresInvalidAccumulations() {
-    AtomicLong counter = new AtomicLong(5);
-    MetricStorage metricStorage =
-        AsynchronousMetricStorage.longAsynchronousAccumulator(
-            View.builder().build(),
-            InstrumentDescriptor.create(
-                "my-instrument",
-                "description",
-                "unit",
-                InstrumentType.OBSERVABLE_SUM,
-                InstrumentValueType.LONG),
-            measurement -> measurement.record(counter.getAndDecrement()));
-
-    assertThat(
-            metricStorage.collectAndReset(
-                CollectionInfo.create(handle, all, reader),
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                0,
-                testClock.nanoTime(),
-                false))
-        .satisfies(
-            metricData ->
-                assertThat(metricData.getLongSumData().getPoints())
-                    .satisfiesExactly(dataPoint -> assertThat(dataPoint.getValue()).isEqualTo(5)));
-
-    assertThat(
-            metricStorage.collectAndReset(
-                CollectionInfo.create(handle, all, reader),
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                0,
-                testClock.nanoTime(),
-                false))
-        .satisfies(metricData -> assertThat(metricData.isEmpty()).isTrue());
-    logs.assertContains("Instrument my-instrument has recorded an invalid value:");
   }
 
   @Test

@@ -61,7 +61,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
-    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument, aggregator);
+    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
@@ -96,7 +96,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
-    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument, aggregator);
+    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
@@ -183,13 +183,10 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   static final class AsyncAccumulator<T> {
     private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
     private final InstrumentDescriptor instrument;
-    private final Aggregator<T> aggregator;
-    private Map<Attributes, T> previousAccumulation = new HashMap<>();
     private Map<Attributes, T> currentAccumulation = new HashMap<>();
 
-    AsyncAccumulator(InstrumentDescriptor instrument, Aggregator<T> aggregator) {
+    AsyncAccumulator(InstrumentDescriptor instrument) {
       this.instrument = instrument;
-      this.aggregator = aggregator;
     }
 
     public void record(Attributes attributes, T accumulation) {
@@ -215,30 +212,13 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
         return;
       }
 
-      // Check that the accumulation is compatible with the previously recorded accumulation
-      // e.g. ensure that monotonic sum values are monotonically increasing
-      T previous = previousAccumulation.get(attributes);
-      if (previous != null) {
-        try {
-          aggregator.validateAsyncAccumulation(previous, accumulation);
-        } catch (Exception e) {
-          // TODO: consider resetting the metric stream instead of logging here
-          throttlingLogger.log(
-              Level.WARNING,
-              "Instrument "
-                  + instrument.getName()
-                  + " has recorded an invalid value: "
-                  + e.getMessage());
-          return;
-        }
-      }
       currentAccumulation.put(attributes, accumulation);
     }
 
     public Map<Attributes, T> collectAndReset() {
-      previousAccumulation = currentAccumulation;
+      Map<Attributes, T> result = currentAccumulation;
       currentAccumulation = new HashMap<>();
-      return new HashMap<>(previousAccumulation);
+      return result;
     }
   }
 }
