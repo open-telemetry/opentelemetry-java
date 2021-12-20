@@ -5,15 +5,13 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc.SamplingManagerBlockingStub;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -36,8 +34,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
 
   private final String serviceName;
-  private final ManagedChannel channel;
-  private final SamplingManagerBlockingStub stub;
   private final boolean closeChannel;
 
   private final ScheduledExecutorService pollExecutor;
@@ -45,16 +41,17 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private volatile Sampler sampler;
 
+  private final GrpcExporter<SamplingStrategyParametersMarshaller> delegate;
+
   JaegerRemoteSampler(
+      GrpcExporter<SamplingStrategyParametersMarshaller> delegate,
       @Nullable String serviceName,
-      ManagedChannel channel,
       int pollingIntervalMs,
       Sampler initialSampler,
       boolean closeChannel) {
-    this.channel = channel;
     this.closeChannel = closeChannel;
     this.serviceName = serviceName != null ? serviceName : "";
-    this.stub = SamplingManagerGrpc.newBlockingStub(channel);
+    this.delegate = delegate;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
@@ -77,8 +74,11 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     try {
       SamplingStrategyParameters params =
           SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
-      SamplingStrategyResponse response = stub.getSamplingStrategy(params);
-      this.sampler = updateSampler(response);
+
+      delegate.export(SamplingStrategyParametersMarshaller.create(params), 1);
+      // TODO parse result
+      this.sampler = updateSampler(SamplingStrategyResponse.getDefaultInstance());
+      // this.sampler = updateSampler(response);
     } catch (RuntimeException e) { // keep the timer thread alive
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }
@@ -130,7 +130,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     pollFuture.cancel(true);
     pollExecutor.shutdown();
     if (closeChannel) {
-      channel.shutdown();
+      delegate.shutdown();
     }
   }
 }
