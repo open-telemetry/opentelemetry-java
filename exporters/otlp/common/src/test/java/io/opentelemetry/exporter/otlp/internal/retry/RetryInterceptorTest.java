@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.okhttp;
+package io.opentelemetry.exporter.otlp.internal.retry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

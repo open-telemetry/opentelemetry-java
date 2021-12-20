@@ -20,9 +20,9 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -533,7 +533,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   private TelemetryExporter<T> retryingExporter() {
     return exporterBuilder()
         .setEndpoint(server.httpUri().toString())
-        .addRetryPolicy(
+        .setRetryPolicy(
             RetryPolicy.builder()
                 .setMaxAttempts(2)
                 // We don't validate backoff time itself in these tests, just that retries

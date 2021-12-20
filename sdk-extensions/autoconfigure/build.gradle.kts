@@ -17,6 +17,7 @@ dependencies {
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:metrics"))
+  compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:otlp-http:trace"))
   compileOnly(project(":exporters:otlp-http:metrics"))
   compileOnly(project(":exporters:prometheus"))
@@ -57,6 +58,7 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk-extensions:resources"))
@@ -77,7 +79,7 @@ testing {
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-            environment("OTEL_IMR_EXPORT_INTERVAL", "10")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
             environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
@@ -119,6 +121,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
         implementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -139,6 +142,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp-http:trace"))
         implementation(project(":exporters:otlp-http:metrics"))
+        implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
         implementation("com.google.guava:guava")
@@ -168,7 +172,7 @@ testing {
           testTask {
             environment("OTEL_TRACES_EXPORTER", "none")
             environment("OTEL_METRICS_EXPORTER", "prometheus")
-            environment("OTEL_IMR_EXPORT_INTERVAL", "10")
+            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
           }
         }
       }

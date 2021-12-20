@@ -9,15 +9,17 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("deprecation") // Testing class which will be made package-private
-class ResourceTest {
+class ResourceConfigurationTest {
 
   @Test
   void resource() {
     Attributes attributes =
-        OpenTelemetryResourceAutoConfiguration.configureResource().getAttributes();
+        ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(Collections.emptyMap()), (r, c) -> r)
+            .getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();
