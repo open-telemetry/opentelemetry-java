@@ -21,14 +21,19 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-/** Measures runtime cost of histogram aggregations. */
+/**
+ * Attempts to measure the cost of re-scaling/building buckets.
+ *
+ * <p>This benchmark must be interpreted carefully. We're looking for startup costs of
+ * histograms and need to tease out the portion of recorded time from scaling buckets vs.
+ * general algorithmic performance.</p>
+ */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Measurement(iterations = 10, time = 1)
 @Warmup(iterations = 5, time = 1)
 @Fork(1)
-public class HistogramBenchmark {
-
+public class HistogramScaleBenchmark {
   @State(Scope.Thread)
   public static class ThreadState {
     @Param HistogramValueGenerator valueGen;
@@ -36,7 +41,7 @@ public class HistogramBenchmark {
     private AggregatorHandle<?> aggregatorHandle;
     private DoubleSupplier valueSupplier;
 
-    @Setup(Level.Trial)
+    @Setup(Level.Invocation)
     public final void setup() {
       aggregatorHandle = aggregation.getAggregator().createHandle();
       valueSupplier = valueGen.supplier();
@@ -44,27 +49,15 @@ public class HistogramBenchmark {
 
     public void record() {
       // Record a number of samples.
-      for (int i = 0; i < 2000; i++) {
+      for (int i = 0; i < 20000; i++) {
         this.aggregatorHandle.recordDouble(valueSupplier.getAsDouble());
       }
     }
   }
 
   @Benchmark
-  @Threads(value = 10)
-  public void aggregate_10Threads(ThreadState threadState) {
-    threadState.record();
-  }
-
-  @Benchmark
-  @Threads(value = 5)
-  public void aggregate_5Threads(ThreadState threadState) {
-    threadState.record();
-  }
-
-  @Benchmark
   @Threads(value = 1)
-  public void aggregate_1Threads(ThreadState threadState) {
+  public void scaleUp(HistogramBenchmark.ThreadState threadState) {
     threadState.record();
   }
 }

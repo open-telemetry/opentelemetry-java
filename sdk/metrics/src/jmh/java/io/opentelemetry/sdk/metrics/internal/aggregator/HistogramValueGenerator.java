@@ -77,6 +77,7 @@ public enum HistogramValueGenerator {
     return pool;
   }
 
+  /** Create a pool approximating a gaussian distribution w/ given mean and standard deviation. */
   private static double[] randomGaussianPool(int size, double mean, double deviation) {
     double[] pool = new double[size];
     for (int i = 0; i < size; i++) {
