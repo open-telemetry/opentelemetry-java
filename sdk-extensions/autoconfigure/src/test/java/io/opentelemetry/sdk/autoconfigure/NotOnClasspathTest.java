@@ -151,4 +151,25 @@ class NotOnClasspathTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");
   }
+
+  @Test
+  void otlpGrpcLogs() {
+    assertThatCode(
+            () ->
+                LogEmitterProviderConfiguration.configureExporter(
+                    "otlp", EMPTY, MeterProvider.noop()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void otlpHttpLogs() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
+    assertThatCode(
+            () ->
+                LogEmitterProviderConfiguration.configureExporter(
+                    "otlp", config, MeterProvider.noop()))
+        .doesNotThrowAnyException();
+  }
 }

@@ -8,9 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -31,8 +28,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -49,19 +44,7 @@ final class SpanExporterConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer) {
-    List<String> exporterNamesList = config.getList("otel.traces.exporter");
-    Set<String> exporterNames = new HashSet<>(exporterNamesList);
-    if (exporterNamesList.size() != exporterNames.size()) {
-      String duplicates =
-          exporterNamesList.stream()
-              .collect(groupingBy(Function.identity(), counting()))
-              .entrySet()
-              .stream()
-              .filter(entry -> entry.getValue() > 1)
-              .map(Map.Entry::getKey)
-              .collect(joining(",", "[", "]"));
-      throw new ConfigurationException("otel.traces.exporter contains duplicates: " + duplicates);
-    }
+    Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.traces.exporter");
     if (exporterNames.contains(EXPORTER_NONE)) {
       if (exporterNames.size() > 1) {
         throw new ConfigurationException(
@@ -72,7 +55,7 @@ final class SpanExporterConfiguration {
       if (customized == noop) {
         return Collections.emptyMap();
       }
-      return Collections.singletonMap("none", customized);
+      return Collections.singletonMap(EXPORTER_NONE, customized);
     }
 
     if (exporterNames.isEmpty()) {
@@ -82,7 +65,7 @@ final class SpanExporterConfiguration {
     Map<String, SpanExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
-            exporterNamesList,
+            exporterNames,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
             config,

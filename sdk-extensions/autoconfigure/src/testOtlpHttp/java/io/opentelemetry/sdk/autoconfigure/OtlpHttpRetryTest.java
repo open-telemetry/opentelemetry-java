@@ -5,30 +5,24 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeLog;
+import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeMetric;
+import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,35 +37,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OtlpHttpRetryTest {
 
-  private static final List<SpanData> SPAN_DATA =
-      Lists.newArrayList(
-          TestSpanData.builder()
-              .setHasEnded(true)
-              .setName("name")
-              .setStartEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
-              .setEndEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
-              .setKind(SpanKind.SERVER)
-              .setStatus(StatusData.error())
-              .setTotalRecordedEvents(0)
-              .setTotalRecordedLinks(0)
-              .build());
-  private static final List<MetricData> METRIC_DATA =
-      Lists.newArrayList(
-          MetricData.createLongSum(
-              Resource.empty(),
-              InstrumentationLibraryInfo.empty(),
-              "metric_name",
-              "metric_description",
-              "ms",
-              LongSumData.create(
-                  false,
-                  AggregationTemporality.CUMULATIVE,
-                  Collections.singletonList(
-                      LongPointData.create(
-                          MILLISECONDS.toNanos(System.currentTimeMillis()),
-                          MILLISECONDS.toNanos(System.currentTimeMillis()),
-                          Attributes.of(stringKey("key"), "value"),
-                          10)))));
+  private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
+  private static final List<MetricData> METRIC_DATA = Lists.newArrayList(generateFakeMetric());
+  private static final List<LogData> LOG_DATA = Lists.newArrayList(generateFakeLog());
 
   @RegisterExtension
   public static final OtlpHttpServerExtension server = new OtlpHttpServerExtension();
@@ -116,6 +84,24 @@ class OtlpHttpRetryTest {
     testRetryableStatusCodes(
         () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
     testDefaultRetryPolicy(() -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+  }
+
+  @Test
+  void configureLogExporterRetryPolicy() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.logs.protocol", "http/protobuf");
+    props.put(
+        "otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort() + "/v1/logs");
+    props.put(
+        "otel.exporter.otlp.logs.certificate",
+        server.selfSignedCertificate.certificate().getPath());
+    props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
+    LogExporter logExporter =
+        LogEmitterProviderConfiguration.configureOtlpLogs(
+            DefaultConfigProperties.createForTest(props), MeterProvider.noop());
+
+    testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+    testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
   }
 
   private static <T> void testRetryableStatusCodes(
