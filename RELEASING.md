@@ -47,7 +47,7 @@ Next, update the
 
 Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
-Finally, update the the [website docs][] to refer to the newly released version.
+Finally, update the [website docs][] to refer to the newly released version.
 
 [website docs]: https://github.com/open-telemetry/opentelemetry-java-docs/tree/main/website_docs
 
