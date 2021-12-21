@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
@@ -19,6 +19,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,8 +122,8 @@ class BatchLogProcessorTest {
     List<LogData> exported = waitingLogExporter.waitForExport();
     assertThat(exported)
         .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_1),
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
@@ -153,9 +154,7 @@ class BatchLogProcessorTest {
             () ->
                 assertThat(logExporter.getExported())
                     .hasSize(6)
-                    .allSatisfy(
-                        logData ->
-                            assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_1)));
+                    .allSatisfy(logData -> assertThat(logData).hasBody(LOG_MESSAGE_1)));
   }
 
   @Test
@@ -216,13 +215,13 @@ class BatchLogProcessorTest {
     assertThat(exported1)
         .hasSize(2)
         .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_1),
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
     assertThat(exported2)
         .hasSize(2)
         .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_1),
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
+            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
@@ -311,16 +310,12 @@ class BatchLogProcessorTest {
 
     emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
     List<LogData> exported = waitingLogExporter.waitForExport();
-    assertThat(exported)
-        .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_1));
+    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_1));
     waitingLogExporter.reset();
     // Continue to export after the exception was received.
     emitLog(sdkLogEmitterProvider, LOG_MESSAGE_2);
     exported = waitingLogExporter.waitForExport();
-    assertThat(exported)
-        .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
@@ -342,8 +337,7 @@ class BatchLogProcessorTest {
             argThat(
                 logs -> {
                   assertThat(logs)
-                      .anySatisfy(
-                          log -> assertThat(log.getBody().asString()).isEqualTo(LOG_MESSAGE_1));
+                      .anySatisfy(log -> LogAssertions.assertThat(log).hasBody(LOG_MESSAGE_1));
                   exported.countDown();
                   return true;
                 })))
@@ -361,8 +355,7 @@ class BatchLogProcessorTest {
             argThat(
                 logs -> {
                   assertThat(logs)
-                      .anySatisfy(
-                          log -> assertThat(log.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+                      .anySatisfy(log -> LogAssertions.assertThat(log).hasBody(LOG_MESSAGE_2));
                   exportedAgain.countDown();
                   return true;
                 })))
@@ -393,9 +386,8 @@ class BatchLogProcessorTest {
     sdkLogEmitterProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<LogData> exported = waitingLogExporter.getExported();
-    assertThat(exported)
-        .satisfiesExactly(
-            logData -> assertThat(logData.getBody().asString()).isEqualTo(LOG_MESSAGE_2));
+    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
+    ;
     assertThat(waitingLogExporter.shutDownCalled.get()).isTrue();
   }
 
