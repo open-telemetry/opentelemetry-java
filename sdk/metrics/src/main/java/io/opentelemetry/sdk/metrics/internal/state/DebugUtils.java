@@ -96,13 +96,18 @@ public final class DebugUtils {
           .append(existing.getSourceInstrument().getValueType())
           .append("]\n");
     }
+    if (existing.isAsync()) {
+      result
+          .append("- InstrumentType [")
+          .append(existing.getSourceInstrument().getType())
+          .append("] is async and already registered\n");
+    }
 
     // Next we write out where the existing metric descriptor came from, either a raw instrument
     // or a view on a raw instrument.
     if (existing.getName().equals(existing.getSourceInstrument().getName())) {
       result
-          .append(
-              "Original instrument registered with same name but different description, unit, instrument type, or instrument value type.\n")
+          .append("Original instrument registered with same name but is incompatible.\n")
           .append(existing.getSourceInstrument().getSourceInfo().multiLineDebugString())
           .append("\n");
     } else {

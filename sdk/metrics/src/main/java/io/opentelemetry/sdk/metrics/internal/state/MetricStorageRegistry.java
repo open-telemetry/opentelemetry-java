@@ -58,6 +58,10 @@ public class MetricStorageRegistry {
     MetricDescriptor descriptor = storage.getMetricDescriptor();
     MetricStorage oldOrNewStorage =
         registry.computeIfAbsent(descriptor.getName().toLowerCase(), key -> storage);
+    // Metric didn't already exist in registry, return.
+    if (storage == oldOrNewStorage) {
+      return (I) oldOrNewStorage;
+    }
     // Make sure the storage is compatible.
     if (!oldOrNewStorage.getMetricDescriptor().isCompatibleWith(descriptor)) {
       throw new DuplicateMetricStorageException(
@@ -65,14 +69,14 @@ public class MetricStorageRegistry {
           descriptor,
           "Metric with same name and different descriptor already created.");
     }
-    // Make sure we aren't mixing sync + async.
-    if (!storage.getClass().equals(oldOrNewStorage.getClass())) {
+    // Descriptors are compatible, but can't register async instruments multiple times.
+    if (descriptor.isAsync()) {
       throw new DuplicateMetricStorageException(
           oldOrNewStorage.getMetricDescriptor(),
           descriptor,
-          "Metric with same name and different instrument already created.");
+          "Async metric with same name has already been created.");
     }
-
+    // Metric already existed, and is compatible with new storage.
     return (I) oldOrNewStorage;
   }
 }

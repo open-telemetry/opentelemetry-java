@@ -38,7 +38,7 @@ class TestSourceInfo {
                 "name",
                 "description",
                 "unit",
-                InstrumentType.HISTOGRAM,
+                InstrumentType.OBSERVABLE_SUM,
                 InstrumentValueType.DOUBLE));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
@@ -49,11 +49,11 @@ class TestSourceInfo {
         .contains("Found duplicate metric definition: name")
         .contains("- Unit [unit2] does not match [unit]")
         .contains("- Description [description2] does not match [description]")
-        .contains("- InstrumentType [COUNTER] does not match [HISTOGRAM]")
+        .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_SUM]")
         .contains("- InstrumentValueType [LONG] does not match [DOUBLE]")
+        .contains("- InstrumentType [OBSERVABLE_SUM] is async and already registered")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
-        .contains(
-            "Original instrument registered with same name but different description, unit, instrument type, or instrument value type.")
+        .contains("Original instrument registered with same name but is incompatible.")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
   }
@@ -118,8 +118,7 @@ class TestSourceInfo {
         .contains("FROM instrument name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- Unit [unit] does not match [unit2]")
-        .contains(
-            "Original instrument registered with same name but different description, unit, instrument type, or instrument value type.")
+        .contains("Original instrument registered with same name but is incompatible.")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
   }
