@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
 import java.time.Duration;
@@ -36,7 +35,7 @@ public final class JaegerRemoteSamplerBuilder {
   private boolean closeChannel = true;
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private final GrpcExporterBuilder<SamplingStrategyParametersMarshaller> delegate;
+  private final MarshallerRemoteSamplerServiceGrpc.SamplingManagerFutureStub delegate;
 
   /**
    * Sets the service name to be used by this exporter. Required.
@@ -110,10 +109,24 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSampler build() {
     return new JaegerRemoteSampler(
-        delegate.build(), serviceName, pollingIntervalMillis, initialSampler, closeChannel);
+        delegate, serviceName, pollingIntervalMillis, initialSampler, closeChannel);
   }
 
   JaegerRemoteSamplerBuilder() {
+    delegate = MarshallerRemoteSamplerServiceGrpc.newFutureStub();
+
+    //    GrpcExporterBuilder<SamplingStrategyParametersMarshaller> exporterBuilder =
+    // GrpcExporterUtil.exporterBuilder(
+    //        "saasa", DEFAULT_TIMEOUT_SECS, DEFAULT_ENDPOINT,
+    //        () -> MarshallerRemoteSamplerServiceGrpc::newFutureStub,
+    //        GRPC_SERVICE_NAME, GRPC_ENDPOINT_PATH);
+
+    // TODO, it does not work, we don't have access to the result
+    //    GrpcExporter<SamplingStrategyParametersMarshaller> build = exporterBuilder.build();
+    //    CompletableResultCode export =
+    // build.export(SamplingStrategyParametersMarshaller.create(null),
+    //        2);
+
     delegate =
         GrpcExporter.builder(
             "remoteSampling",

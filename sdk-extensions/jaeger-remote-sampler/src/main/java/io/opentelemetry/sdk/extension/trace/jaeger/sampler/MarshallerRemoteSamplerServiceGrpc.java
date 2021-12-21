@@ -67,6 +67,7 @@ public class MarshallerRemoteSamplerServiceGrpc {
           SamplingStrategyParametersMarshaller,
           SamplingStrategyResponse,
           SamplingManagerFutureStub> {
+
     private SamplingManagerFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }

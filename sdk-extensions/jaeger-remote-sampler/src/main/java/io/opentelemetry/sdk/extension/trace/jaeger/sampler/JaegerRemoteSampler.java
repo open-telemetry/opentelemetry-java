@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
@@ -41,10 +41,10 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private volatile Sampler sampler;
 
-  private final GrpcExporter<SamplingStrategyParametersMarshaller> delegate;
+  private final MarshallerRemoteSamplerServiceGrpc.SamplingManagerFutureStub delegate;
 
   JaegerRemoteSampler(
-      GrpcExporter<SamplingStrategyParametersMarshaller> delegate,
+      MarshallerRemoteSamplerServiceGrpc.SamplingManagerFutureStub delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler,
@@ -75,7 +75,8 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       SamplingStrategyParameters params =
           SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
 
-      delegate.export(SamplingStrategyParametersMarshaller.create(params), 1);
+      ListenableFuture<io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse>
+          export = delegate.export(SamplingStrategyParametersMarshaller.create(params));
       // TODO parse result
       this.sampler = updateSampler(SamplingStrategyResponse.getDefaultInstance());
       // this.sampler = updateSampler(response);
