@@ -84,6 +84,7 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public CompletableResultCode shutdown() {
+    metricProducer = null;
     return CompletableResultCode.ofSuccess();
   }
 
