@@ -9,28 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 
 /** An interface for observing measurements with {@code double} values. */
 public interface ObservableDoubleMeasurement extends ObservableMeasurement {
-  /**
-   * Records a measurement.
-   *
-   * @param value The measurement amount.
-   * @deprecated Use {@link #record(double)}.
-   */
-  @Deprecated
-  default void observe(double value) {
-    record(value);
-  }
-
-  /**
-   * Records a measurement with a set of attributes.
-   *
-   * @param value The measurement amount.
-   * @param attributes A set of attributes to associate with the count.
-   * @deprecated Use {@link #record(double, Attributes)}.
-   */
-  @Deprecated
-  default void observe(double value, Attributes attributes) {
-    record(value, attributes);
-  }
 
   /**
    * Records a measurement.
