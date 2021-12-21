@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcService;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
@@ -41,10 +41,13 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private volatile Sampler sampler;
 
-  private final MarshallerRemoteSamplerServiceGrpc.SamplingManagerFutureStub delegate;
+  private final GrpcService<
+          SamplingStrategyParametersMarshaller, SamplingStrategyResponseMarshaller>
+      delegate;
 
   JaegerRemoteSampler(
-      MarshallerRemoteSamplerServiceGrpc.SamplingManagerFutureStub delegate,
+      GrpcService<SamplingStrategyParametersMarshaller, SamplingStrategyResponseMarshaller>
+          delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler,
@@ -75,8 +78,9 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       SamplingStrategyParameters params =
           SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
 
-      ListenableFuture<io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse>
-          export = delegate.export(SamplingStrategyParametersMarshaller.create(params));
+      SamplingStrategyResponseMarshaller responseParameters =
+          delegate.export(SamplingStrategyParametersMarshaller.create(params));
+      System.out.println(responseParameters);
       // TODO parse result
       this.sampler = updateSampler(SamplingStrategyResponse.getDefaultInstance());
       // this.sampler = updateSampler(response);

@@ -34,7 +34,7 @@ public class MarshallerRemoteSamplerServiceGrpc {
             }
           };
 
-  private static final MethodDescriptor.Marshaller<SamplingStrategyResponse> RESPONSE_MARSHALER =
+  private static final MethodDescriptor.Marshaller<SamplingStrategyResponse> RESPONSE_MARSHALLER =
       new MethodDescriptor.Marshaller<SamplingStrategyResponse>() {
         @Override
         public InputStream stream(SamplingStrategyResponse value) {
@@ -55,7 +55,7 @@ public class MarshallerRemoteSamplerServiceGrpc {
               .setType(MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetSamplingStrategy"))
               .setRequestMarshaller(REQUEST_MARSHALLER)
-              .setResponseMarshaller(RESPONSE_MARSHALER)
+              .setResponseMarshaller(RESPONSE_MARSHALLER)
               .build();
 
   static SamplingManagerFutureStub newFutureStub(Channel channel) {
