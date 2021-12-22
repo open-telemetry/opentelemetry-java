@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -21,6 +22,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkDoubleCounter}. */
 class SdkDoubleCounterTest {
@@ -38,6 +40,8 @@ class SdkDoubleCounterTest {
           .setResource(RESOURCE)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(SdkDoubleCounter.class);
 
   @Test
   void add_PreventNullAttributes() {
@@ -177,17 +181,24 @@ class SdkDoubleCounterTest {
   @Test
   void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    doubleCounter.add(-45.77d);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Counters can only increase. Instrument testCounter has recorded a negative value.");
   }
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty()).add(-9.3))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundDoubleCounter bound = ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9.3);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Counters can only increase. Instrument testCounter has recorded a negative value.");
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test
