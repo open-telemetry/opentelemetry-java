@@ -57,7 +57,7 @@ public final class GlobalOpenTelemetry {
         openTelemetry = globalOpenTelemetry;
         if (openTelemetry == null) {
 
-          OpenTelemetry autoConfigured = maybeAutoConfigure();
+          OpenTelemetry autoConfigured = maybeAutoConfigureAndSetGlobal();
           if (autoConfigured != null) {
             return autoConfigured;
           }
@@ -160,7 +160,7 @@ public final class GlobalOpenTelemetry {
   }
 
   @Nullable
-  private static OpenTelemetry maybeAutoConfigure() {
+  private static OpenTelemetry maybeAutoConfigureAndSetGlobal() {
     final Class<?> openTelemetrySdkAutoConfiguration;
     try {
       openTelemetrySdkAutoConfiguration =
