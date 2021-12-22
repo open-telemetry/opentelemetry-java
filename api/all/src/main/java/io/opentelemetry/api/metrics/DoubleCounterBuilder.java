@@ -47,5 +47,5 @@ public interface DoubleCounterBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
+  ObservableDoubleCounter buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
 }

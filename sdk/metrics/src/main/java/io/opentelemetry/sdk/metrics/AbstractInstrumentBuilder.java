@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.Observable;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -19,8 +18,6 @@ import java.util.function.Consumer;
 
 /** Helper to make implementing builders easier. */
 public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
-
-  protected static final Observable NOOP = new Observable() {};
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;

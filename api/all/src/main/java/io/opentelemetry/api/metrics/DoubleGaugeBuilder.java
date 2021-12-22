@@ -42,5 +42,5 @@ public interface DoubleGaugeBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
+  ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
 }
