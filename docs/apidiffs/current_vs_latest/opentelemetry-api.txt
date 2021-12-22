@@ -162,19 +162,14 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterProvider noop()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableDoubleMeasurement  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double, io.opentelemetry.api.common.Attributes)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableLongMeasurement  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long, io.opentelemetry.api.common.Attributes)
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableMeasurement  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
 ***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
