@@ -11,7 +11,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** An up-down-counter instrument that records {@code long} values. */
 @ThreadSafe
-public interface LongUpDownCounter {
+public interface LongUpDownCounter extends LongInstrument {
   /**
    * Records a value.
    *

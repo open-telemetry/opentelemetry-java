@@ -61,7 +61,28 @@ class DefaultMeter implements Meter {
     return new NoopDoubleObservableInstrumentBuilder();
   }
 
+  @Override
+  public BatchRecorder batch() {
+    return new NoopBatchRecord();
+  }
+
   private DefaultMeter() {}
+
+  private static class NoopBatchRecord implements BatchRecorder {
+
+    @Override
+    public BatchRecorder addMeasurements(long value, LongInstrument... instruments) {
+      return this;
+    }
+
+    @Override
+    public BatchRecorder addMeasurements(double value, DoubleInstrument... instruments) {
+      return this;
+    }
+
+    @Override
+    public void record(Attributes attributes, Context context) {}
+  }
 
   private static class NoopLongCounter implements LongCounter {
     @Override

@@ -75,4 +75,9 @@ public interface Meter {
    * @return a builder used for configuring how to report gauge measurements on demand.
    */
   DoubleGaugeBuilder gaugeBuilder(String name);
+
+  /** Returns a batch recorder. */
+  default BatchRecorder batch() {
+    return DefaultMeter.getInstance().batch();
+  }
 }

@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * always-increasing monotonic sums.
  */
 @ThreadSafe
-public interface LongCounter {
+public interface LongCounter extends LongInstrument {
 
   /**
    * Records a value.

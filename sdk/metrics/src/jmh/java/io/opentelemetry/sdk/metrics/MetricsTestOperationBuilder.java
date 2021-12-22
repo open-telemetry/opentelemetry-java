@@ -8,8 +8,10 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -65,6 +67,63 @@ public enum MetricsTestOperationBuilder {
           @Override
           public void perform(Attributes labels) {
             metric.record(ThreadLocalRandom.current().nextLong(0, 20_000L), labels);
+          }
+        };
+      }),
+  MultiRecordNoBatch(
+      meter -> {
+        return new Operation() {
+          final LongHistogram longHistogram =
+              meter.histogramBuilder("long_histogram").ofLongs().build();
+          final DoubleHistogram doubleHistogram =
+              meter.histogramBuilder("double_histogram").build();
+          final LongCounter longCounter = meter.counterBuilder("long_counter").build();
+          final DoubleCounter doubleCounter =
+              meter.counterBuilder("double_counter").ofDoubles().build();
+          final LongUpDownCounter longUpDownCounter =
+              meter.upDownCounterBuilder("long_up_down_counter").build();
+          final DoubleUpDownCounter doubleUpDownCounter =
+              meter.upDownCounterBuilder("double_up_down_counter").ofDoubles().build();
+
+          @Override
+          public void perform(Attributes labels) {
+            double doubleValue = ThreadLocalRandom.current().nextDouble(1000);
+            long longValue = ThreadLocalRandom.current().nextLong(1000);
+
+            longHistogram.record(longValue, labels);
+            doubleHistogram.record(doubleValue, labels);
+            longCounter.add(longValue, labels);
+            doubleCounter.add(doubleValue, labels);
+            longUpDownCounter.add(longValue, labels);
+            doubleUpDownCounter.add(doubleValue, labels);
+          }
+        };
+      }),
+  MultiRecordWithBatch(
+      meter -> {
+        return new Operation() {
+          final LongHistogram longHistogram =
+              meter.histogramBuilder("long_histogram").ofLongs().build();
+          final DoubleHistogram doubleHistogram =
+              meter.histogramBuilder("double_histogram").build();
+          final LongCounter longCounter = meter.counterBuilder("long_counter").build();
+          final DoubleCounter doubleCounter =
+              meter.counterBuilder("double_counter").ofDoubles().build();
+          final LongUpDownCounter longUpDownCounter =
+              meter.upDownCounterBuilder("long_up_down_counter").build();
+          final DoubleUpDownCounter doubleUpDownCounter =
+              meter.upDownCounterBuilder("double_up_down_counter").ofDoubles().build();
+
+          @Override
+          public void perform(Attributes labels) {
+            double doubleValue = ThreadLocalRandom.current().nextDouble(1000);
+            long longValue = ThreadLocalRandom.current().nextLong(1000);
+
+            meter
+                .batch()
+                .addMeasurements(doubleValue, doubleHistogram, doubleCounter, doubleUpDownCounter)
+                .addMeasurements(longValue, longHistogram, longCounter, longUpDownCounter)
+                .record(labels);
           }
         };
       });
