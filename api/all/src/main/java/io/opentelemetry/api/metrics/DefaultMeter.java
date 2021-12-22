@@ -37,6 +37,8 @@ class DefaultMeter implements Meter {
 
   private static final DefaultMeter INSTANCE = new DefaultMeter();
 
+  private static final Observable NOOP = new Observable() {};
+
   public static Meter getInstance() {
     return INSTANCE;
   }
@@ -107,7 +109,9 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopDoubleCounterBuilder implements DoubleCounterBuilder {
@@ -127,7 +131,9 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopLongUpDownCounter implements LongUpDownCounter {
@@ -174,7 +180,9 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
@@ -194,7 +202,9 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   public static class NoopDoubleHistogram implements DoubleHistogram {
@@ -275,7 +285,9 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   public static class NoopLongObservableInstrumentBuilder implements LongGaugeBuilder {
@@ -290,6 +302,8 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 }

@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.Observable;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -115,8 +116,9 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+    public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
+      return NOOP;
     }
   }
 }

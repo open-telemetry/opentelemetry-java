@@ -39,5 +39,5 @@ public interface LongGaugeBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  void buildWithCallback(Consumer<ObservableLongMeasurement> callback);
+  Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback);
 }

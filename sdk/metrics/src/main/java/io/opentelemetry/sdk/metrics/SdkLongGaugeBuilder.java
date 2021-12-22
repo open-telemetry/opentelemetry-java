@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
+import io.opentelemetry.api.metrics.Observable;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -30,7 +31,8 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
   }
 
   @Override
-  public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+  public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
     registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+    return NOOP;
   }
 }

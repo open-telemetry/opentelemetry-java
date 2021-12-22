@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
+import io.opentelemetry.api.metrics.Observable;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -96,8 +97,9 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+    public Observable buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
       registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
+      return NOOP;
     }
   }
 }

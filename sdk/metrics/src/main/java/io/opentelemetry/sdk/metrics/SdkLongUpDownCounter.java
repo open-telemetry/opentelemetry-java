@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
+import io.opentelemetry.api.metrics.Observable;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -109,8 +110,9 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+    public Observable buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
+      return NOOP;
     }
   }
 }
