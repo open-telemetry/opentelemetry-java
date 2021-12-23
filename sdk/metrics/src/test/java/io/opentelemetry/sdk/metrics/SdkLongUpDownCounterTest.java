@@ -186,10 +186,10 @@ class SdkLongUpDownCounterTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
+              200, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
+              200,
               1,
               new OperationUpdaterWithBinding(
                   ((SdkLongUpDownCounter) longUpDownCounter)
@@ -213,7 +213,7 @@ class SdkLongUpDownCounterTest {
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(160_000)
+                                .hasValue(16000)
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("K", "V")));
@@ -234,11 +234,11 @@ class SdkLongUpDownCounterTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(longUpDownCounter, keys[i], values[i])));
+              200, 2, new OperationUpdaterDirectCall(longUpDownCounter, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
+              200,
               2,
               new OperationUpdaterWithBinding(
                   ((SdkLongUpDownCounter) longUpDownCounter)
@@ -262,7 +262,7 @@ class SdkLongUpDownCounterTest {
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(20_000))
+                                .hasValue(4000))
                     .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
