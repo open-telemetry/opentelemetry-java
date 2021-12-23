@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
+import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -101,6 +102,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   static final class Builder extends AbstractInstrumentBuilder<SdkDoubleCounter.Builder>
       implements DoubleCounterBuilder {
 
+    private static final ObservableDoubleCounter NOOP = new ObservableDoubleCounter() {};
+
     Builder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
@@ -122,8 +125,10 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+    public ObservableDoubleCounter buildWithCallback(
+        Consumer<ObservableDoubleMeasurement> callback) {
       registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
+      return NOOP;
     }
   }
 }

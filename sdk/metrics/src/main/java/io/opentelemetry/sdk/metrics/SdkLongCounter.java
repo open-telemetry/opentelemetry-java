@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -25,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class SdkLongCounter extends AbstractInstrument implements LongCounter {
+  private static final ObservableLongCounter NOOP = new ObservableLongCounter() {};
+
   private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
@@ -135,8 +138,9 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+    public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
+      return NOOP;
     }
   }
 }
