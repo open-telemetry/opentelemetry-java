@@ -67,3 +67,9 @@ wire {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
 }
+
+tasks {
+  compileJava {
+    source("$buildDir/generated/source/wire")
+  }
+}
