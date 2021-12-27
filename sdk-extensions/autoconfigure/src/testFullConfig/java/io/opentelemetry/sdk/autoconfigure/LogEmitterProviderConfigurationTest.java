@@ -7,10 +7,15 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.logging.SystemOutLogExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.Map;
@@ -57,5 +62,18 @@ class LogEmitterProviderConfigurationTest {
     } finally {
       logEmitterProvider.shutdown();
     }
+  }
+
+  @Test
+  void configureSpanProcessors_multipleExportersWithLogging() {
+    LogExporter loggingExporter = SystemOutLogExporter.create();
+    LogExporter otlpExporter = OtlpGrpcLogExporter.builder().build();
+
+    assertThat(
+            LogEmitterProviderConfiguration.configureLogProcessors(
+                ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter)))
+        .hasSize(2)
+        .hasAtLeastOneElementOfType(SimpleLogProcessor.class)
+        .hasAtLeastOneElementOfType(BatchLogProcessor.class);
   }
 }

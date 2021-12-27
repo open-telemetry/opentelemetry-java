@@ -92,7 +92,7 @@ class OtlpGrpcRetryTest {
         "otel.exporter.otlp.logs.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     LogExporter logExporter =
-        LogEmitterProviderConfiguration.configureOtlpLogs(
+        LogExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop());
 
     testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);

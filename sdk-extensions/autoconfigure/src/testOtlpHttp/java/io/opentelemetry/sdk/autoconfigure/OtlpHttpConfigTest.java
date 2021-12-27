@@ -68,7 +68,7 @@ class OtlpHttpConfigTest {
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
     LogExporter logExporter =
-        LogEmitterProviderConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
+        LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
 
     assertThat(spanExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -238,7 +238,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.logs.compression", "gzip");
     props.put("otel.exporter.otlp.logs.timeout", "15s");
     LogExporter logExporter =
-        LogEmitterProviderConfiguration.configureOtlpLogs(
+        LogExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop());
 
     assertThat(logExporter)
@@ -281,8 +281,7 @@ class OtlpHttpConfigTest {
         .hasMessageContaining("Invalid OTLP certificate path:");
 
     assertThatThrownBy(
-            () ->
-                LogEmitterProviderConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
   }

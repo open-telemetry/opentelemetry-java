@@ -6,13 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.resources.Resource;
@@ -45,41 +41,5 @@ class LogEmitterProviderConfigurationTest {
     } finally {
       logEmitterProvider.shutdown();
     }
-  }
-
-  @Test
-  void configureLogExporters_duplicates() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,otlp"));
-
-    assertThatThrownBy(
-            () ->
-                LogEmitterProviderConfiguration.configureLogExporters(config, MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
-  }
-
-  @Test
-  void configureLogExporters_multipleWithNone() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,none"));
-
-    assertThatThrownBy(
-            () ->
-                LogEmitterProviderConfiguration.configureLogExporters(config, MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
-  }
-
-  @Test
-  void configureOtlpLogs_unsupportedProtocol() {
-    assertThatThrownBy(
-            () ->
-                LogEmitterProviderConfiguration.configureOtlpLogs(
-                    DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                    MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Unsupported OTLP logs protocol: foo");
   }
 }
