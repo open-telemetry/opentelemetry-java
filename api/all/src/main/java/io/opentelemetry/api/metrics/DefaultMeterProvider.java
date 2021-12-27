@@ -15,7 +15,7 @@ class DefaultMeterProvider implements MeterProvider {
   private static final DefaultMeterProvider INSTANCE = new DefaultMeterProvider();
   private static final MeterBuilder BUILDER_INSTANCE = new NoopMeterBuilder();
 
-  public static MeterProvider getInstance() {
+  static MeterProvider getInstance() {
     return INSTANCE;
   }
 
