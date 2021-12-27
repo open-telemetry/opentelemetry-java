@@ -46,5 +46,5 @@ public interface DoubleUpDownCounterBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
+  ObservableDoubleUpDownCounter buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
 }

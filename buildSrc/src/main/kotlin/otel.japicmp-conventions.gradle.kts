@@ -21,6 +21,10 @@ plugins {
  * The latest *released* version of the project. Evaluated lazily so the work is only done if necessary.
  */
 val latestReleasedVersion: String by lazy {
+  // TODO(anuraaga): Restore code after 1.10.0 is released
+  val moduleVersion = "1.9.1"
+  moduleVersion
+  /*
   // hack to find the current released version of the project
   val temp: Configuration = configurations.create("tempConfig")
   // pick the api, since it's always there.
@@ -29,6 +33,7 @@ val latestReleasedVersion: String by lazy {
   configurations.remove(temp)
   logger.debug("Discovered latest release version: " + moduleVersion)
   moduleVersion
+  */
 }
 
 

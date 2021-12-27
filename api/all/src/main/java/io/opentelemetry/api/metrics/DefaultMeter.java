@@ -86,6 +86,9 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
+
+    private static final ObservableLongCounter NOOP = new ObservableLongCounter() {};
+
     @Override
     public LongCounterBuilder setDescription(String description) {
       return this;
@@ -107,10 +110,14 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopDoubleCounterBuilder implements DoubleCounterBuilder {
+    private static final ObservableDoubleCounter NOOP = new ObservableDoubleCounter() {};
+
     @Override
     public DoubleCounterBuilder setDescription(String description) {
       return this;
@@ -127,7 +134,10 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public ObservableDoubleCounter buildWithCallback(
+        Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopLongUpDownCounter implements LongUpDownCounter {
@@ -153,6 +163,8 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
+    private static final ObservableLongUpDownCounter NOOP = new ObservableLongUpDownCounter() {};
+
     @Override
     public LongUpDownCounterBuilder setDescription(String description) {
       return this;
@@ -174,10 +186,16 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public ObservableLongUpDownCounter buildWithCallback(
+        Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   private static class NoopDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
+    private static final ObservableDoubleUpDownCounter NOOP =
+        new ObservableDoubleUpDownCounter() {};
+
     @Override
     public DoubleUpDownCounterBuilder setDescription(String description) {
       return this;
@@ -194,7 +212,10 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public ObservableDoubleUpDownCounter buildWithCallback(
+        Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   public static class NoopDoubleHistogram implements DoubleHistogram {
@@ -259,6 +280,8 @@ class DefaultMeter implements Meter {
   }
 
   public static class NoopDoubleObservableInstrumentBuilder implements DoubleGaugeBuilder {
+    private static final ObservableDoubleGauge NOOP = new ObservableDoubleGauge() {};
+
     @Override
     public DoubleGaugeBuilder setDescription(String description) {
       return this;
@@ -275,10 +298,14 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {}
+    public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      return NOOP;
+    }
   }
 
   public static class NoopLongObservableInstrumentBuilder implements LongGaugeBuilder {
+    private static final ObservableLongGauge NOOP = new ObservableLongGauge() {};
+
     @Override
     public LongGaugeBuilder setDescription(String description) {
       return this;
@@ -290,6 +317,8 @@ class DefaultMeter implements Meter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {}
+    public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      return NOOP;
+    }
   }
 }

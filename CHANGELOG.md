@@ -2,6 +2,39 @@
 
 ## Version 1.10.0 (unreleased):
 
+## Version 1.10.0 RC2 2021-12-23:
+
+### API
+
+- Performance of `GlobalOpenTelemetry.get` improved
+- `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces are empty but will allow adding functionality in the future
+- BREAKING CHANGE: `Double/LongMeasurement.observe` have been removed
+- BREAKING CHANGE: `GlobalMeterProvider` has been removed
+- BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not previously deprecated but is expected to have no use in apps due to the lack of functionality
+
+### SDK
+
+- HTTP exporters now support experimental retry
+- Deprecated methods have been removed from the `opentelemetry-sdk-autoconfigure` artifact.
+
+#### Metrics
+
+- `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The current class has been deprecated in this release
+- Metric instrument usage violations consistently report issues as debug logs
+
+#### Logs
+
+- A `opentelemetry-sdk-logs-testing` module has been added
+- `SdkLogEmitterProvider` is now available through `OpenTelemetrySdk`
+#### AWS
+
+- HTTP requests now use OkHttp instead of the JDK
+
+### OpenCensus Shim
+
+- Shim span attributes are set before the span is created instead of after
+- Exceptions are not thrown when activating a null span
+
 ## Version 1.10.0 RC1 2021-12-10:
 
 ### API

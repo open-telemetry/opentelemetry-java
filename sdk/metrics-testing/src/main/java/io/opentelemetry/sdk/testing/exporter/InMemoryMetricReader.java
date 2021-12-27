@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.testing;
+package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -40,10 +40,7 @@ import javax.annotation.Nullable;
  *   }
  * }
  * </code></pre>
- *
- * @deprecated Moved to {@code io.opentelemetry:opentelemetry-sdk-metrics-testing} module.
  */
-@Deprecated
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private final AggregationTemporality preferred;
   @Nullable private volatile MetricProducer metricProducer;
@@ -87,6 +84,7 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public CompletableResultCode shutdown() {
+    metricProducer = null;
     return CompletableResultCode.ofSuccess();
   }
 

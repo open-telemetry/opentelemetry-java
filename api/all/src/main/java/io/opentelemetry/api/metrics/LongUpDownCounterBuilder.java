@@ -49,5 +49,5 @@ public interface LongUpDownCounterBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  void buildWithCallback(Consumer<ObservableLongMeasurement> callback);
+  ObservableLongUpDownCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback);
 }
