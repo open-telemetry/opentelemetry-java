@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.LinkedList;
 import java.util.List;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
 class SdkLogEmitterProviderBuilderTest {
@@ -35,7 +36,7 @@ class SdkLogEmitterProviderBuilderTest {
 
     SdkLogEmitterProvider provider = builder.build();
     provider.logEmitterBuilder("inst").build().logBuilder().emit();
-    assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).getEpochNanos()).isEqualTo(13L);
+    AssertionsForClassTypes.assertThat(seenLogs.size()).isEqualTo(1);
+    assertThat(seenLogs.get(0)).hasEpochNanos(13L);
   }
 }

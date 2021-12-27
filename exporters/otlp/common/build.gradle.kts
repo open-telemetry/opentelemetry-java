@@ -49,6 +49,7 @@ dependencies {
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
   jmhImplementation(project(":sdk:testing"))
+  jmhImplementation(project(":sdk:metrics-testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -64,5 +65,11 @@ wire {
 
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+  }
+}
+
+tasks {
+  compileJava {
+    source("$buildDir/generated/source/wire")
   }
 }

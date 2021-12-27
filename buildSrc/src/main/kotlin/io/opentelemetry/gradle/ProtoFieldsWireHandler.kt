@@ -20,9 +20,9 @@ import com.squareup.wire.schema.Service
 import com.squareup.wire.schema.Target
 import com.squareup.wire.schema.Type
 import okio.IOException
-import java.nio.file.FileSystem
-import java.nio.file.Files
-import java.nio.file.Path
+import okio.FileSystem
+import okio.Path
+import okio.Path.Companion.toPath
 import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.Modifier.STATIC
@@ -41,12 +41,12 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
     logger: WireLogger,
     profileLoader: ProfileLoader
   ): Target.SchemaHandler {
-    val modulePath = fs.getPath(outDirectory)
-    Files.createDirectories(modulePath)
+    val modulePath = outDirectory.toPath()
+    fs.createDirectories(modulePath)
     val javaGenerator = JavaGenerator.get(schema)
 
     return object : Target.SchemaHandler {
-      override fun handle(extend: Extend, field: Field) = null
+      override fun handle(extend: Extend, field: Field): Path? = null
       override fun handle(service: Service): List<Path> = emptyList()
       override fun handle(type: Type): Path? {
         val typeSpec = javaGenerator.generateType(type, false)
@@ -60,12 +60,18 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
           .addFileComment("\$L", WireCompiler.CODE_GENERATED_BY_WIRE)
           .addFileComment("\nSource: \$L in \$L", type.type, type.location.withPathOnly())
           .build()
-        val generatedFilePath = modulePath.resolve(javaFile.packageName)
-          .resolve("${javaFile.typeSpec.name}.java")
+        val generatedFilePath = modulePath / javaFile.packageName / "${javaFile.typeSpec.name}.java"
+
+        val filePath = modulePath /
+          javaFile.packageName.replace(".", "/") /
+          "${javaTypeName.simpleName()}.java"
 
         logger.artifact(modulePath, javaFile)
         try {
-          javaFile.writeTo(modulePath)
+          fs.createDirectories(filePath.parent!!)
+          fs.write(filePath) {
+            writeUtf8(javaFile.toString())
+          }
         } catch (e: IOException) {
           throw IOException("Error emitting ${javaFile.packageName}.${javaFile.typeSpec.name} " +
             "to $outDirectory", e)

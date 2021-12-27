@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -16,11 +17,12 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkLongCounter}. */
 class SdkLongCounterTest {
@@ -38,6 +40,8 @@ class SdkLongCounterTest {
           .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(SdkLongCounter.class);
 
   @Test
   void add_PreventNullAttributes() {
@@ -165,19 +169,26 @@ class SdkLongCounterTest {
   }
 
   @Test
-  void longCounterAdd_MonotonicityCheck() {
+  void longCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> longCounter.add(-45, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    longCounter.add(-45);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Counters can only increase. Instrument testCounter has recorded a negative value.");
   }
 
   @Test
-  void boundLongCounterAdd_MonotonicityCheck() {
+  void boundLongCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> ((SdkLongCounter) longCounter).bind(Attributes.empty()).add(-9))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundLongCounter bound = ((SdkLongCounter) longCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Counters can only increase. Instrument testCounter has recorded a negative value.");
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test

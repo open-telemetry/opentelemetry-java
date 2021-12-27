@@ -11,6 +11,8 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.logging")
 dependencies {
   api(project(":sdk:common"))
 
+  testImplementation(project(":sdk:logs-testing"))
+
   testImplementation("org.awaitility:awaitility")
 
   annotationProcessor("com.google.auto.value:auto-value")

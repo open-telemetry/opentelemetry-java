@@ -27,6 +27,7 @@ dependencies {
   testImplementation("com.google.guava:guava")
 
   jmh(project(":sdk:trace"))
+  jmh(project(":sdk:metrics-testing"))
 }
 
 testing {
