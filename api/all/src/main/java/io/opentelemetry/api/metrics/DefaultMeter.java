@@ -35,30 +35,37 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class DefaultMeter implements Meter {
 
-  private static final DefaultMeter INSTANCE = new DefaultMeter();
+  private static final Meter INSTANCE = new DefaultMeter();
 
-  public static Meter getInstance() {
+  private static final LongCounterBuilder NOOP_LONG_COUNTER_BUILDER = new NoopLongCounterBuilder();
+  private static final LongUpDownCounterBuilder NOOP_LONG_UP_DOWN_COUNTER_BUILDER =
+      new NoopLongUpDownCounterBuilder();
+  private static final DoubleHistogramBuilder NOOP_DOUBLE_HISTOGRAM_BUILDER =
+      new NoopDoubleHistogramBuilder();
+  private static final DoubleGaugeBuilder NOOP_DOUBLE_GAUGE_BUILDER = new NoopDoubleGaugeBuilder();
+
+  static Meter getInstance() {
     return INSTANCE;
   }
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return new NoopLongCounterBuilder();
+    return NOOP_LONG_COUNTER_BUILDER;
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return new NoopLongUpDownCounterBuilder();
+    return NOOP_LONG_UP_DOWN_COUNTER_BUILDER;
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return new NoopDoubleHistogramBuilder();
+    return NOOP_DOUBLE_HISTOGRAM_BUILDER;
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return new NoopDoubleObservableInstrumentBuilder();
+    return NOOP_DOUBLE_GAUGE_BUILDER;
   }
 
   private DefaultMeter() {}
@@ -86,8 +93,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
-
-    private static final ObservableLongCounter NOOP = new ObservableLongCounter() {};
+    private static final LongCounter NOOP_COUNTER = new NoopLongCounter();
+    private static final ObservableLongCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableLongCounter() {};
+    private static final DoubleCounterBuilder NOOP_DOUBLE_COUNTER_BUILDER =
+        new NoopDoubleCounterBuilder();
 
     @Override
     public LongCounterBuilder setDescription(String description) {
@@ -101,22 +111,24 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleCounterBuilder ofDoubles() {
-      return new NoopDoubleCounterBuilder();
+      return NOOP_DOUBLE_COUNTER_BUILDER;
     }
 
     @Override
     public LongCounter build() {
-      return new NoopLongCounter();
+      return NOOP_COUNTER;
     }
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      return NOOP;
+      return NOOP_OBSERVABLE_COUNTER;
     }
   }
 
   private static class NoopDoubleCounterBuilder implements DoubleCounterBuilder {
-    private static final ObservableDoubleCounter NOOP = new ObservableDoubleCounter() {};
+    private static final DoubleCounter NOOP_COUNTER = new NoopDoubleCounter();
+    private static final ObservableDoubleCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableDoubleCounter() {};
 
     @Override
     public DoubleCounterBuilder setDescription(String description) {
@@ -130,13 +142,13 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleCounter build() {
-      return new NoopDoubleCounter();
+      return NOOP_COUNTER;
     }
 
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return NOOP;
+      return NOOP_OBSERVABLE_COUNTER;
     }
   }
 
@@ -163,7 +175,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
-    private static final ObservableLongUpDownCounter NOOP = new ObservableLongUpDownCounter() {};
+    private static final LongUpDownCounter NOOP_UP_DOWN_COUNTER = new NoopLongUpDownCounter() {};
+    private static final ObservableLongUpDownCounter NOOP_OBSERVABLE_UP_DOWN_COUNTER =
+        new ObservableLongUpDownCounter() {};
+    private static final DoubleUpDownCounterBuilder NOOP_DOUBLE_UP_DOWN_COUNTER_BUILDER =
+        new NoopDoubleUpDownCounterBuilder();
 
     @Override
     public LongUpDownCounterBuilder setDescription(String description) {
@@ -177,23 +193,25 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleUpDownCounterBuilder ofDoubles() {
-      return new NoopDoubleUpDownCounterBuilder();
+      return NOOP_DOUBLE_UP_DOWN_COUNTER_BUILDER;
     }
 
     @Override
     public LongUpDownCounter build() {
-      return new NoopLongUpDownCounter();
+      return NOOP_UP_DOWN_COUNTER;
     }
 
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      return NOOP;
+      return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
   }
 
   private static class NoopDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
-    private static final ObservableDoubleUpDownCounter NOOP =
+    private static final DoubleUpDownCounter NOOP_UP_DOWN_COUNTER =
+        new NoopDoubleUpDownCounter() {};
+    private static final ObservableDoubleUpDownCounter NOOP_OBSERVABLE_UP_DOWN_COUNTER =
         new ObservableDoubleUpDownCounter() {};
 
     @Override
@@ -208,17 +226,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleUpDownCounter build() {
-      return new NoopDoubleUpDownCounter();
+      return NOOP_UP_DOWN_COUNTER;
     }
 
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return NOOP;
+      return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
   }
 
-  public static class NoopDoubleHistogram implements DoubleHistogram {
+  private static class NoopDoubleHistogram implements DoubleHistogram {
     @Override
     public void record(double value, Attributes attributes, Context context) {}
 
@@ -229,7 +247,7 @@ class DefaultMeter implements Meter {
     public void record(double value) {}
   }
 
-  public static class NoopLongHistogram implements LongHistogram {
+  private static class NoopLongHistogram implements LongHistogram {
     @Override
     public void record(long value, Attributes attributes, Context context) {}
 
@@ -240,7 +258,11 @@ class DefaultMeter implements Meter {
     public void record(long value) {}
   }
 
-  public static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {
+  private static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {
+    private static final DoubleHistogram NOOP = new NoopDoubleHistogram();
+    private static final LongHistogramBuilder NOOP_LONG_HISTOGRAM_BUILDER =
+        new NoopLongHistogramBuilder();
+
     @Override
     public DoubleHistogramBuilder setDescription(String description) {
       return this;
@@ -253,16 +275,18 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongHistogramBuilder ofLongs() {
-      return new NoopLongHistogramBuilder();
+      return NOOP_LONG_HISTOGRAM_BUILDER;
     }
 
     @Override
     public DoubleHistogram build() {
-      return new NoopDoubleHistogram();
+      return NOOP;
     }
   }
 
-  public static class NoopLongHistogramBuilder implements LongHistogramBuilder {
+  private static class NoopLongHistogramBuilder implements LongHistogramBuilder {
+    private static final LongHistogram NOOP = new NoopLongHistogram();
+
     @Override
     public LongHistogramBuilder setDescription(String description) {
       return this;
@@ -275,12 +299,13 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongHistogram build() {
-      return new NoopLongHistogram();
+      return NOOP;
     }
   }
 
-  public static class NoopDoubleObservableInstrumentBuilder implements DoubleGaugeBuilder {
+  private static class NoopDoubleGaugeBuilder implements DoubleGaugeBuilder {
     private static final ObservableDoubleGauge NOOP = new ObservableDoubleGauge() {};
+    private static final LongGaugeBuilder NOOP_LONG_GAUGE_BUILDER = new NoopLongGaugeBuilder();
 
     @Override
     public DoubleGaugeBuilder setDescription(String description) {
@@ -294,7 +319,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongGaugeBuilder ofLongs() {
-      return new NoopLongObservableInstrumentBuilder();
+      return NOOP_LONG_GAUGE_BUILDER;
     }
 
     @Override
@@ -303,7 +328,7 @@ class DefaultMeter implements Meter {
     }
   }
 
-  public static class NoopLongObservableInstrumentBuilder implements LongGaugeBuilder {
+  private static class NoopLongGaugeBuilder implements LongGaugeBuilder {
     private static final ObservableLongGauge NOOP = new ObservableLongGauge() {};
 
     @Override
