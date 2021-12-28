@@ -55,7 +55,8 @@ class OpenTelemetrySdkTest {
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
     assertThat(sdk.getMeterProvider().get(""))
-        .isSameAs(GlobalOpenTelemetry.get().getMeterProvider().get(""));
+        .isSameAs(GlobalOpenTelemetry.get().getMeterProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getMeter(""));
 
     assertThat(GlobalOpenTelemetry.getPropagators())
         .isSameAs(GlobalOpenTelemetry.get().getPropagators())
@@ -89,6 +90,20 @@ class OpenTelemetrySdkTest {
         .isSameAs(
             GlobalOpenTelemetry.getTracerProvider()
                 .tracerBuilder("testTracer2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build());
+
+    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
+        .isSameAs(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
+    assertThat(
+            GlobalOpenTelemetry.meterBuilder("testMeter2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build())
+        .isSameAs(
+            GlobalOpenTelemetry.getMeterProvider()
+                .meterBuilder("testMeter2")
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
                 .build());

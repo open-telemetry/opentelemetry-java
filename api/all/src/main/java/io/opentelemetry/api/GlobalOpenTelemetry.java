@@ -6,6 +6,8 @@
 package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
@@ -142,6 +144,43 @@ public final class GlobalOpenTelemetry {
    */
   public static TracerBuilder tracerBuilder(String instrumentationName) {
     return get().tracerBuilder(instrumentationName);
+  }
+
+  /**
+   * Returns the globally registered {@link MeterProvider}.
+   *
+   * @since 1.10.0
+   */
+  public static MeterProvider getMeterProvider() {
+    return get().getMeterProvider();
+  }
+
+  /**
+   * Gets or creates a named meter instance from the globally registered {@link MeterProvider}.
+   *
+   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @return a Meter instance.
+   * @since 1.10.0
+   */
+  public static Meter getMeter(String instrumentationName) {
+    return get().getMeter(instrumentationName);
+  }
+
+  /**
+   * Creates a MeterBuilder for a named {@link Meter} instance.
+   *
+   * <p>This is a shortcut method for {@code get().meterBuilder(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a MeterBuilder instance.
+   * @since 1.10.0
+   */
+  public static MeterBuilder meterBuilder(String instrumentationName) {
+    return get().meterBuilder(instrumentationName);
   }
 
   /**
