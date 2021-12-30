@@ -4,6 +4,6 @@
  */
 
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.testing.assertj.metrics;
+package io.opentelemetry.sdk.testing.assertj;
 
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
