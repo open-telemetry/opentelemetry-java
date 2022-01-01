@@ -246,5 +246,5 @@ Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/open
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry- sdk-extension-autoconfigure.svg
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure
