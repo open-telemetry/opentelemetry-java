@@ -125,7 +125,7 @@ public final class CodedInputStream {
     return pos == limit;
   }
 
-  private int readRawVarint32() throws IOException {
+  public int readRawVarint32() throws IOException {
     // See implementation notes for readRawVarint64
     fastpath:
     {
@@ -192,6 +192,29 @@ public final class CodedInputStream {
     } else {
       skipRawVarintSlowPath();
     }
+  }
+
+  public double readDouble() throws IOException {
+    return Double.longBitsToDouble(readRawLittleEndian64());
+  }
+
+  public long readRawLittleEndian64() throws IOException {
+    int tempPos = pos;
+
+    if (limit - tempPos < FIXED64_SIZE) {
+      throw newTrucatedException();
+    }
+
+    final byte[] buffer = this.buffer;
+    pos = tempPos + FIXED64_SIZE;
+    return ((buffer[tempPos] & 0xffL)
+        | ((buffer[tempPos + 1] & 0xffL) << 8)
+        | ((buffer[tempPos + 2] & 0xffL) << 16)
+        | ((buffer[tempPos + 3] & 0xffL) << 24)
+        | ((buffer[tempPos + 4] & 0xffL) << 32)
+        | ((buffer[tempPos + 5] & 0xffL) << 40)
+        | ((buffer[tempPos + 6] & 0xffL) << 48)
+        | ((buffer[tempPos + 7] & 0xffL) << 56));
   }
 
   private void skipRawVarintFastPath() throws IOException {

@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -15,16 +16,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public final class OkHttpGrpcService<REQ extends Marshaler, RES extends Marshaler>
-    implements GrpcService<REQ, RES> {
+public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
+    implements GrpcService<ReqT, ResT> {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -53,92 +52,78 @@ public final class OkHttpGrpcService<REQ extends Marshaler, RES extends Marshale
     this.compressionEnabled = compressionEnabled;
   }
 
+  @SuppressWarnings({"SystemOut","DefaultCharset"})
   @Override
-  public RES export(REQ exportRequest) {
+  public ResT execute(ReqT exportRequest, ResT responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
     requestBuilder.post(requestBody);
 
-    CompletableResultCode result = new CompletableResultCode();
+    try {
+      Response response = client
+          .newCall(requestBuilder.build()).execute();
 
-    client
-        .newCall(requestBuilder.build())
-        .enqueue(
-            new Callback() {
-              @Override
-              public void onFailure(Call call, IOException e) {
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export "
-                        + type
-                        + "s. The request could not be executed. Full error message: "
-                        + e.getMessage());
-                result.fail();
-              }
+      try {
+        responseUnmarshaller.read(response.body().byteStream());
+      } catch (IOException e) {
+        logger.log(
+            Level.WARNING,
+            "Failed to export " + type + "s, could not consume server response.",
+            e);
+        return responseUnmarshaller;
+      }
 
-              @Override
-              public void onResponse(Call call, Response response) {
-                // Response body is empty but must be consumed to access trailers.
-                try {
-                  response.body().bytes();
+      String status = grpcStatus(response);
+      if ("0".equals(status)) {
+        return responseUnmarshaller;
+      }
 
-                } catch (IOException e) {
-                  logger.log(
-                      Level.WARNING,
-                      "Failed to export " + type + "s, could not consume server response.",
-                      e);
-                  result.fail();
-                  return;
-                }
+      String codeMessage =
+          status != null
+              ? "gRPC status code " + status
+              : "HTTP status code " + response.code();
+      String errorMessage = grpcMessage(response);
 
-                String status = grpcStatus(response);
-                if ("0".equals(status)) {
-                  result.succeed();
-                  return;
-                }
+      if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
+        logger.log(
+            Level.SEVERE,
+            "Failed to export "
+                + type
+                + "s. Server responded with UNIMPLEMENTED. "
+                + "This usually means that your collector is not configured with an otlp "
+                + "receiver in the \"pipelines\" section of the configuration. "
+                + "Full error message: "
+                + errorMessage);
+      } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
+        logger.log(
+            Level.SEVERE,
+            "Failed to export "
+                + type
+                + "s. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network. "
+                + "Full error message:"
+                + errorMessage);
+      } else {
+        logger.log(
+            Level.WARNING,
+            "Failed to export "
+                + type
+                + "s. Server responded with "
+                + codeMessage
+                + ". Error message: "
+                + errorMessage);
+      }
+    } catch (IOException e) {
+      logger.log(
+          Level.SEVERE,
+          "Failed to export "
+              + type
+              + "s. The request could not be executed. Full error message: "
+              + e.getMessage());
+    }
 
-                String codeMessage =
-                    status != null
-                        ? "gRPC status code " + status
-                        : "HTTP status code " + response.code();
-                String errorMessage = grpcMessage(response);
-
-                if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
-                  logger.log(
-                      Level.SEVERE,
-                      "Failed to export "
-                          + type
-                          + "s. Server responded with UNIMPLEMENTED. "
-                          + "This usually means that your collector is not configured with an otlp "
-                          + "receiver in the \"pipelines\" section of the configuration. "
-                          + "Full error message: "
-                          + errorMessage);
-                } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
-                  logger.log(
-                      Level.SEVERE,
-                      "Failed to export "
-                          + type
-                          + "s. Server is UNAVAILABLE. "
-                          + "Make sure your collector is running and reachable from this network. "
-                          + "Full error message:"
-                          + errorMessage);
-                } else {
-                  logger.log(
-                      Level.WARNING,
-                      "Failed to export "
-                          + type
-                          + "s. Server responded with "
-                          + codeMessage
-                          + ". Error message: "
-                          + errorMessage);
-                }
-                result.fail();
-              }
-            });
-
-    // TODO
-    return null;
+    return responseUnmarshaller;
   }
 
   @Nullable

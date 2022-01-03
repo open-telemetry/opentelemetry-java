@@ -38,11 +38,10 @@ class JaegerRemoteSamplerIntegrationTest {
   void remoteSampling_perOperation() {
     try (JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
+            .setEndpoint("http://127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME)
             .build()) {
       await()
-          .atMost(Duration.ofSeconds(10))
           .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
       assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
     }
@@ -52,7 +51,7 @@ class JaegerRemoteSamplerIntegrationTest {
   void remoteSampling_rateLimiting() {
     try (JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
+            .setEndpoint("http://127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
             .build()) {
       await()

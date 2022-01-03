@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,20 +28,20 @@ public class GrpcServiceUtil {
     USE_OKHTTP = useOkhttp;
   }
 
-  static <REQ extends Marshaler, RES extends Marshaler> GrpcServiceBuilder<REQ, RES> serviceBuilder(
+  @SuppressWarnings("SystemOut")
+  static <ReqT extends Marshaler, ResT extends UnMarshaller> GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<REQ, ?, ?>>> stubFactory,
+      Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ?, ?>>> stubFactory,
       String grpcServiceName,
       String grpcEndpointPath) {
     if (USE_OKHTTP) {
       System.out.println("Using OKHTTP");
-      return new OkHttpGrpcServiceBuilder<>(
-          type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
     }
-    System.out.println("---> returning null");
-    return null;
+    // TODO return default builder
+    return new OkHttpGrpcServiceBuilder<>(
+        type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
   }
 
   private GrpcServiceUtil() {}

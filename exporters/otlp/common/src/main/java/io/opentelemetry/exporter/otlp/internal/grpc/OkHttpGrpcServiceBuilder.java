@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
 import java.net.URI;
@@ -25,8 +26,8 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 
-public class OkHttpGrpcServiceBuilder<REQ extends Marshaler, RES extends Marshaler>
-    implements GrpcServiceBuilder<REQ, RES> {
+public class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
+    implements GrpcServiceBuilder<ReqT, ResT> {
 
   private final String type;
   private final String grpcEndpointPath;
@@ -50,23 +51,23 @@ public class OkHttpGrpcServiceBuilder<REQ extends Marshaler, RES extends Marshal
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setChannel(ManagedChannel channel) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
     throw new UnsupportedOperationException("Only available on DefaultGrpcExporter");
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setTimeout(long timeout, TimeUnit unit) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit) {
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setTimeout(Duration timeout) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTimeout(Duration timeout) {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setEndpoint(String endpoint) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setEndpoint(String endpoint) {
     URI uri;
     try {
       uri = new URI(endpoint);
@@ -85,37 +86,37 @@ public class OkHttpGrpcServiceBuilder<REQ extends Marshaler, RES extends Marshal
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setCompression(String compressionMethod) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setCompression(String compressionMethod) {
     this.compressionEnabled = true;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(byte[] trustedCertificatesPem) {
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> addHeader(String key, String value) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value) {
     headers.add(key, value);
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> addRetryPolicy(RetryPolicy retryPolicy) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<REQ, RES> setMeterProvider(MeterProvider meterProvider) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
     return this;
   }
 
   @Override
-  public GrpcService<REQ, RES> build() {
+  public GrpcService<ReqT, ResT> build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 

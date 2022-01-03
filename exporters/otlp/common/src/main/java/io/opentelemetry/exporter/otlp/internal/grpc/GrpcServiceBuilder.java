@@ -9,27 +9,28 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public interface GrpcServiceBuilder<REQ extends Marshaler, RES extends Marshaler> {
-  GrpcServiceBuilder<REQ, RES> setChannel(ManagedChannel channel);
+public interface GrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller> {
+  GrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel);
 
-  GrpcServiceBuilder<REQ, RES> setTimeout(long timeout, TimeUnit unit);
+  GrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit);
 
-  GrpcServiceBuilder<REQ, RES> setTimeout(Duration timeout);
+  GrpcServiceBuilder<ReqT, ResT> setTimeout(Duration timeout);
 
-  GrpcServiceBuilder<REQ, RES> setEndpoint(String endpoint);
+  GrpcServiceBuilder<ReqT, ResT> setEndpoint(String endpoint);
 
-  GrpcServiceBuilder<REQ, RES> setCompression(String compressionMethod);
+  GrpcServiceBuilder<ReqT, ResT> setCompression(String compressionMethod);
 
-  GrpcServiceBuilder<REQ, RES> setTrustedCertificates(byte[] trustedCertificatesPem);
+  GrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(byte[] trustedCertificatesPem);
 
-  GrpcServiceBuilder<REQ, RES> addHeader(String key, String value);
+  GrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value);
 
-  GrpcServiceBuilder<REQ, RES> addRetryPolicy(RetryPolicy retryPolicy);
+  GrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy);
 
-  GrpcServiceBuilder<REQ, RES> setMeterProvider(MeterProvider meterProvider);
+  GrpcServiceBuilder<ReqT, ResT> setMeterProvider(MeterProvider meterProvider);
 
-  GrpcService<REQ, RES> build();
+  GrpcService<ReqT, ResT> build();
 }

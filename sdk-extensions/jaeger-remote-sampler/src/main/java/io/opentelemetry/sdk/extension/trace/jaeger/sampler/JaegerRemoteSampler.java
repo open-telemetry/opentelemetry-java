@@ -42,11 +42,11 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private volatile Sampler sampler;
 
   private final GrpcService<
-          SamplingStrategyParametersMarshaller, SamplingStrategyResponseMarshaller>
+          SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
       delegate;
 
   JaegerRemoteSampler(
-      GrpcService<SamplingStrategyParametersMarshaller, SamplingStrategyResponseMarshaller>
+      GrpcService<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
           delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
@@ -78,12 +78,13 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       SamplingStrategyParameters params =
           SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
 
-      SamplingStrategyResponseMarshaller responseParameters =
-          delegate.export(SamplingStrategyParametersMarshaller.create(params));
-      System.out.println(responseParameters);
-      // TODO parse result
-      this.sampler = updateSampler(SamplingStrategyResponse.getDefaultInstance());
-      // this.sampler = updateSampler(response);
+      SamplingStrategyResponseUnMarshaller responseParameters =
+          delegate.execute(SamplingStrategyParametersMarshaller.create(params), new SamplingStrategyResponseUnMarshaller());
+      @Nullable
+      SamplingStrategyResponse samplingStrategyResponse = responseParameters.get();
+      if (samplingStrategyResponse != null) {
+        this.sampler = updateSampler(samplingStrategyResponse);
+      }
     } catch (RuntimeException e) { // keep the timer thread alive
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }

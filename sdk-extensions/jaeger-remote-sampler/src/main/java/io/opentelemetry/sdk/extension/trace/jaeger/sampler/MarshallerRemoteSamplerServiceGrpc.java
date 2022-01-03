@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import java.io.InputStream;
 
+@SuppressWarnings({"SystemOut","DefaultCharset"})
 public class MarshallerRemoteSamplerServiceGrpc {
 
   private static final String SERVICE_NAME = "jaeger.api_v2.SamplingManager";
@@ -43,6 +44,7 @@ public class MarshallerRemoteSamplerServiceGrpc {
 
         @Override
         public SamplingStrategyResponse parse(InputStream stream) {
+          System.out.println("Parsing response");
           return SamplingStrategyResponse.INSTANCE;
         }
       };
