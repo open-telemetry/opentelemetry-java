@@ -42,6 +42,7 @@ class JaegerRemoteSamplerIntegrationTest {
             .setServiceName(SERVICE_NAME)
             .build()) {
       await()
+          .atMost(Duration.ofSeconds(10))
           .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
       assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
     }

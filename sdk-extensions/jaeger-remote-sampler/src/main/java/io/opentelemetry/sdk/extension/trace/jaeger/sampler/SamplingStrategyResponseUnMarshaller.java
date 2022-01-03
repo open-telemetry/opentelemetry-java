@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import javax.annotation.Nullable;
 
 @SuppressWarnings({"SystemOut","DefaultCharset"})
@@ -28,16 +27,12 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
   @Override
   public void read(InputStream inputStream) throws IOException {
     byte[] bytes = readAllBytes(inputStream);
-    // remove compressed flag 1 byte and 4 bytes size
-    byte[] bytesNoCompressionAndLength = Arrays.copyOfRange(bytes, 5, bytes.length);
-
     Sampling.SamplingStrategyResponse.Builder responseBuilder = Sampling.SamplingStrategyResponse.newBuilder();
     try {
-      CodedInputStream codedInputStream = CodedInputStream.newInstance(bytesNoCompressionAndLength);
+      CodedInputStream codedInputStream = CodedInputStream.newInstance(bytes);
       parseResponse(responseBuilder, codedInputStream);
     } catch (IOException ex) {
-      System.out.println("exception");
-      System.out.println(ex.getMessage());
+      // use empty/default message
     }
     samplingStrategyResponse = responseBuilder.build();
   }

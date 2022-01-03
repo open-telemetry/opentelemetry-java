@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -21,6 +22,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.Buffer;
+import okio.GzipSource;
+import okio.Okio;
 
 public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     implements GrpcService<ReqT, ResT> {
@@ -65,11 +69,25 @@ public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMars
           .newCall(requestBuilder.build()).execute();
 
       try {
-        responseUnmarshaller.read(response.body().byteStream());
+        InputStream inputStream = response.body().byteStream();
+        byte []arrCompressionAndLength = new byte[5];
+        int bytesRead = inputStream.read(arrCompressionAndLength, 0, 5);
+        if (bytesRead < 5) {
+          // TODO or throw an exception?
+          return responseUnmarshaller;
+        }
+
+        if (arrCompressionAndLength[0] == '1') {
+          Buffer buffer = new Buffer();
+          buffer.readFrom(inputStream);
+          GzipSource gzipSource = new GzipSource(buffer);
+          inputStream = Okio.buffer(gzipSource).inputStream();
+        } // else do nothing data are not compressed
+        responseUnmarshaller.read(inputStream);
       } catch (IOException e) {
         logger.log(
             Level.WARNING,
-            "Failed to export " + type + "s, could not consume server response.",
+            "Failed to execute " + type + "s, could not consume server response.",
             e);
         return responseUnmarshaller;
       }
@@ -88,26 +106,24 @@ public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMars
       if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
         logger.log(
             Level.SEVERE,
-            "Failed to export "
+            "Failed to execute "
                 + type
                 + "s. Server responded with UNIMPLEMENTED. "
-                + "This usually means that your collector is not configured with an otlp "
-                + "receiver in the \"pipelines\" section of the configuration. "
                 + "Full error message: "
                 + errorMessage);
       } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
         logger.log(
             Level.SEVERE,
-            "Failed to export "
+            "Failed to execute "
                 + type
                 + "s. Server is UNAVAILABLE. "
-                + "Make sure your collector is running and reachable from this network. "
+                + "Make sure your service is running and reachable from this network. "
                 + "Full error message:"
                 + errorMessage);
       } else {
         logger.log(
             Level.WARNING,
-            "Failed to export "
+            "Failed to execute "
                 + type
                 + "s. Server responded with "
                 + codeMessage
@@ -117,7 +133,7 @@ public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMars
     } catch (IOException e) {
       logger.log(
           Level.SEVERE,
-          "Failed to export "
+          "Failed to execute "
               + type
               + "s. The request could not be executed. Full error message: "
               + e.getMessage());
