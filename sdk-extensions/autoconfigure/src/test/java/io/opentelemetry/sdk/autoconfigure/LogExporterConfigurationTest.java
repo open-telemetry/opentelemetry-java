@@ -27,6 +27,17 @@ class LogExporterConfigurationTest {
   }
 
   @Test
+  void configureLogExporters_unrecognized() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "foo"));
+
+    assertThatThrownBy(
+            () -> LogExporterConfiguration.configureLogExporters(config, MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
+  }
+
+  @Test
   void configureLogExporters_multipleWithNone() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,none"));
