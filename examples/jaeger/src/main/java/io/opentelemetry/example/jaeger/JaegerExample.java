@@ -32,16 +32,14 @@ public final class JaegerExample {
 
   public static void main(String[] args) {
     // Parsing the input
-    if (args.length < 2) {
-      System.out.println("Missing [hostname] [port]");
+    if (args.length < 1) {
+      System.out.println("Missing [endpoint]");
       System.exit(1);
     }
-    String jaegerHostName = args[0];
-    int jaegerPort = Integer.parseInt(args[1]);
+    String jaegerEndpoint = args[0];
 
     // it is important to initialize your SDK as early as possible in your application's lifecycle
-    OpenTelemetry openTelemetry =
-        ExampleConfiguration.initOpenTelemetry(jaegerHostName, jaegerPort);
+    OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry(jaegerEndpoint);
 
     // Start the example
     JaegerExample example = new JaegerExample(openTelemetry);
