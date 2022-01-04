@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcRequestBody;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -26,7 +28,7 @@ import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 
-public final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
+final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     implements GrpcService<ReqT, ResT> {
 
   private static final String GRPC_STATUS = "grpc-status";

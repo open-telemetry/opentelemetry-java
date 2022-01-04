@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

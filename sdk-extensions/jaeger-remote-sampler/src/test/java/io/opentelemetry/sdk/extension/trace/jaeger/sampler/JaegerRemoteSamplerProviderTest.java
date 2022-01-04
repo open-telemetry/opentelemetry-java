@@ -32,7 +32,7 @@ public class JaegerRemoteSamplerProviderTest {
     when(mockConfig.getString(JaegerRemoteSamplerProvider.SERVICE_NAME_PROPERTY))
         .thenReturn("test_service");
     HashMap<String, String> samplerArgs = new HashMap<>();
-    samplerArgs.put("endpoint", "localhost:9999");
+    samplerArgs.put("endpoint", "http://localhost:9999");
     samplerArgs.put("pollingInterval", "99");
     double samplingRate = 0.33;
     samplerArgs.put("initialSamplingRate", String.valueOf(samplingRate));
@@ -56,10 +56,9 @@ public class JaegerRemoteSamplerProviderTest {
         .satisfies(
             provider ->
                 assertThat(provider.createSampler(mockConfig))
-                    .extracting("channel")
                     .extracting("delegate")
-                    .extracting("target")
-                    .isEqualTo("localhost:9999"));
+                    .extracting("endpoint")
+                    .isEqualTo("http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
   }
 
   @Test

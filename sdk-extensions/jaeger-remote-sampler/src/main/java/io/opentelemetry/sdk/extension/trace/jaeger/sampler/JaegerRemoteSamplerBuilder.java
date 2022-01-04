@@ -7,10 +7,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static java.util.Objects.requireNonNull;
 
-import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcService;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcServiceBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
 import java.time.Duration;
@@ -33,7 +30,6 @@ public final class JaegerRemoteSamplerBuilder {
   @Nullable private String serviceName;
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
-  private boolean closeChannel = true;
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   private final GrpcServiceBuilder<
@@ -58,20 +54,6 @@ public final class JaegerRemoteSamplerBuilder {
   public JaegerRemoteSamplerBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
     delegate.setEndpoint(endpoint);
-    return this;
-  }
-
-  /**
-   * Sets the managed channel to use when communicating with the backend. Takes precedence over
-   * {@link #setEndpoint(String)} if both are called.
-   *
-   * <p>Note: if you use this option, the provided channel will *not* be closed when {@code close()}
-   * is called on the resulting {@link JaegerRemoteSampler}.
-   */
-  public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
-    requireNonNull(channel, "channel");
-    delegate.setChannel(channel);
-    closeChannel = false;
     return this;
   }
 
@@ -112,7 +94,7 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSampler build() {
     return new JaegerRemoteSampler(
-        delegate.build(), serviceName, pollingIntervalMillis, initialSampler, closeChannel);
+        delegate.build(), serviceName, pollingIntervalMillis, initialSampler);
   }
 
   JaegerRemoteSamplerBuilder() {

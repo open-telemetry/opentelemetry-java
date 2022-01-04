@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface GrpcService<ReqT extends Marshaler, ResT extends UnMarshaller> {
+interface GrpcService<ReqT extends Marshaler, ResT extends UnMarshaller> {
 
   /** Returns a new {@link GrpcExporterBuilder}. */
   static <ReqT extends Marshaler, ResT extends UnMarshaller> GrpcServiceBuilder<ReqT, ResT> builder(

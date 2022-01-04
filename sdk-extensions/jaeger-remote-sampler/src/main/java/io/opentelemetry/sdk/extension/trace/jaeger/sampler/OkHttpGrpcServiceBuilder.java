@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
 import java.net.URI;
@@ -26,7 +27,7 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 
-public class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
+class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
     implements GrpcServiceBuilder<ReqT, ResT> {
 
   private final String type;

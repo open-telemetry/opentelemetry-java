@@ -3,30 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class GrpcServiceUtil {
+class GrpcServiceUtil {
 
-  private static final boolean USE_OKHTTP;
-
-  static {
-    boolean useOkhttp = true;
-    // Use the OkHttp exporter unless grpc-stub is on the classpath.
-    try {
-      Class.forName("io.grpc.stub.AbstractStub");
-      useOkhttp = false;
-    } catch (ClassNotFoundException e) {
-      // Fall through
-    }
-    USE_OKHTTP = useOkhttp;
-  }
 
   @SuppressWarnings("SystemOut")
   static <ReqT extends Marshaler, ResT extends UnMarshaller> GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
@@ -36,10 +23,7 @@ public class GrpcServiceUtil {
       Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ?, ?>>> stubFactory,
       String grpcServiceName,
       String grpcEndpointPath) {
-    if (USE_OKHTTP) {
-      System.out.println("Using OKHTTP");
-    }
-    // TODO return default builder
+
     return new OkHttpGrpcServiceBuilder<>(
         type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
   }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcService;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
@@ -34,7 +33,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
 
   private final String serviceName;
-  private final boolean closeChannel;
 
   private final ScheduledExecutorService pollExecutor;
   private final ScheduledFuture<?> pollFuture;
@@ -50,9 +48,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
           delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
-      Sampler initialSampler,
-      boolean closeChannel) {
-    this.closeChannel = closeChannel;
+      Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
     this.delegate = delegate;
     this.sampler = initialSampler;
@@ -135,8 +131,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   public void close() {
     pollFuture.cancel(true);
     pollExecutor.shutdown();
-    if (closeChannel) {
-      delegate.shutdown();
-    }
+    delegate.shutdown();
   }
 }

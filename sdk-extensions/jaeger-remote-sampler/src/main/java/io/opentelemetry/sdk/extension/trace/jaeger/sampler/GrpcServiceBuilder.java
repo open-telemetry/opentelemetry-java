@@ -3,17 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.UnMarshaller;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public interface GrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller> {
+interface GrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller> {
   GrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel);
 
   GrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit);
