@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.testing.assertj.metrics;
+package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
