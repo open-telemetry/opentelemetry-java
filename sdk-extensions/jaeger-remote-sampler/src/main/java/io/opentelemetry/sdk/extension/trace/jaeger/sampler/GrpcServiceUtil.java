@@ -14,16 +14,17 @@ import java.util.function.Supplier;
 
 class GrpcServiceUtil {
 
-
   @SuppressWarnings("SystemOut")
-  static <ReqT extends Marshaler, ResT extends UnMarshaller> GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
-      String type,
-      long defaultTimeoutSecs,
-      URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ?, ?>>> stubFactory,
-      String grpcServiceName,
-      String grpcEndpointPath) {
+  static <ReqT extends Marshaler, ResT extends UnMarshaller>
+      GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
+          String type,
+          long defaultTimeoutSecs,
+          URI defaultEndpoint,
+          Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ?, ?>>> stubFactory,
+          String grpcServiceName,
+          String grpcEndpointPath) {
 
+    System.out.println("Creating okhttp service");
     return new OkHttpGrpcServiceBuilder<>(
         type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
   }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.OperationSamplingStrategy;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -23,14 +22,15 @@ class PerOperationSampler implements Sampler {
   private final Map<String, Sampler> perOperationSampler;
 
   PerOperationSampler(
-      Sampler defaultSampler, List<OperationSamplingStrategy> perOperationSampling) {
+      Sampler defaultSampler,
+      List<SamplingStrategyResponse.OperationSamplingStrategy> perOperationSampling) {
     this.defaultSampler = defaultSampler;
     this.perOperationSampler = new LinkedHashMap<>(perOperationSampling.size());
-    for (OperationSamplingStrategy opSamplingStrategy : perOperationSampling) {
+    for (SamplingStrategyResponse.OperationSamplingStrategy opSamplingStrategy :
+        perOperationSampling) {
       this.perOperationSampler.put(
-          opSamplingStrategy.getOperation(),
-          Sampler.traceIdRatioBased(
-              opSamplingStrategy.getProbabilisticSampling().getSamplingRate()));
+          opSamplingStrategy.operation,
+          Sampler.traceIdRatioBased(opSamplingStrategy.probabilisticSamplingStrategy.samplingRate));
     }
   }
 

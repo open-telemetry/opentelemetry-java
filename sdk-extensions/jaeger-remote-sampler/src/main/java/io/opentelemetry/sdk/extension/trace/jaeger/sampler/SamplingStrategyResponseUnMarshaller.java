@@ -6,27 +6,24 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.annotation.Nullable;
 
-@SuppressWarnings({"SystemOut","DefaultCharset"})
+@SuppressWarnings({"SystemOut", "DefaultCharset"})
 class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
 
-  @Nullable
-  private Sampling.SamplingStrategyResponse samplingStrategyResponse;
+  private SamplingStrategyResponse samplingStrategyResponse =
+      new SamplingStrategyResponse.Builder().build();
 
-  @Nullable
-  public Sampling.SamplingStrategyResponse get() {
+  public SamplingStrategyResponse get() {
     return samplingStrategyResponse;
   }
 
   @Override
   public void read(InputStream inputStream) throws IOException {
     byte[] bytes = readAllBytes(inputStream);
-    Sampling.SamplingStrategyResponse.Builder responseBuilder = Sampling.SamplingStrategyResponse.newBuilder();
+    SamplingStrategyResponse.Builder responseBuilder = new SamplingStrategyResponse.Builder();
     try {
       CodedInputStream codedInputStream = CodedInputStream.newInstance(bytes);
       parseResponse(responseBuilder, codedInputStream);
@@ -36,8 +33,8 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
     samplingStrategyResponse = responseBuilder.build();
   }
 
-  private static void parseResponse(Sampling.SamplingStrategyResponse.Builder responseBuilder, CodedInputStream input)
-      throws IOException {
+  private static void parseResponse(
+      SamplingStrategyResponse.Builder responseBuilder, CodedInputStream input) throws IOException {
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -49,16 +46,17 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
           parseSamplingStrategyType(responseBuilder, input);
           break;
         case 18:
-          input.readRawVarint32();  // skip length
-          parseProbabilistic(responseBuilder.getProbabilisticSamplingBuilder(), input);
+          input.readRawVarint32(); // skip length
+          responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
           break;
         case 26:
-          input.readRawVarint32();  // skip length
-          parseRateLimiting(responseBuilder.getRateLimitingSamplingBuilder(), input);
+          input.readRawVarint32(); // skip length
+          responseBuilder.setRateLimitingSamplingStrategy(parseRateLimiting(input));
+          parseRateLimiting(input);
           break;
         case 34:
-          input.readRawVarint32();  // skip length
-          parsePerOperationStrategy(responseBuilder.getOperationSamplingBuilder(), input);
+          input.readRawVarint32(); // skip length
+          responseBuilder.setPerOperationSamplingStrategies(parsePerOperationStrategy(input));
           break;
         default:
           input.skipField(tag);
@@ -66,23 +64,29 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
     }
   }
 
-  private static void parseSamplingStrategyType(Sampling.SamplingStrategyResponse.Builder responseBuilder, CodedInputStream input)
-      throws IOException {
+  private static void parseSamplingStrategyType(
+      SamplingStrategyResponse.Builder responseBuilder, CodedInputStream input) throws IOException {
     int tagValue = input.readRawVarint32();
     switch (tagValue) {
       case 0:
-        responseBuilder.setStrategyType(Sampling.SamplingStrategyType.PROBABILISTIC);
+        responseBuilder.setSamplingStrategyType(
+            SamplingStrategyResponse.SamplingStrategyType.PROBABILISTIC);
         break;
       case 1:
-        responseBuilder.setStrategyType(Sampling.SamplingStrategyType.RATE_LIMITING);
+        responseBuilder.setSamplingStrategyType(
+            SamplingStrategyResponse.SamplingStrategyType.RATE_LIMITING);
         break;
       default:
+        responseBuilder.setSamplingStrategyType(
+            SamplingStrategyResponse.SamplingStrategyType.UNRECOGNIZED);
         break;
     }
   }
 
-  private static void parseProbabilistic(Sampling.ProbabilisticSamplingStrategy.Builder probabilisticBuilder, CodedInputStream input)
-      throws IOException {
+  private static SamplingStrategyResponse.ProbabilisticSamplingStrategy parseProbabilistic(
+      CodedInputStream input) throws IOException {
+    SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder builder =
+        new SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder();
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -92,17 +96,19 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
           break;
         case 9:
           double samplingRate = input.readDouble();
-          probabilisticBuilder.setSamplingRate(samplingRate);
-          return;
+          return builder.setSamplingRate(samplingRate).build();
         default:
           input.skipField(tag);
           break;
       }
     }
+    return builder.build();
   }
 
-  private static void parseRateLimiting(Sampling.RateLimitingSamplingStrategy.Builder ratelimitingBuilder, CodedInputStream input)
-      throws IOException {
+  private static SamplingStrategyResponse.RateLimitingSamplingStrategy parseRateLimiting(
+      CodedInputStream input) throws IOException {
+    SamplingStrategyResponse.RateLimitingSamplingStrategy.Builder builder =
+        new SamplingStrategyResponse.RateLimitingSamplingStrategy.Builder();
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -112,17 +118,19 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
           break;
         case 8:
           int rate = input.readRawVarint32();
-          ratelimitingBuilder.setMaxTracesPerSecond(rate);
-          return;
+          return builder.setMaxTracesPerSecond(rate).build();
         default:
           input.skipField(tag);
           break;
       }
     }
+    return builder.build();
   }
 
-  private static void parsePerOperationStrategy(Sampling.PerOperationSamplingStrategies.Builder perOperationBuilder, CodedInputStream input)
-      throws IOException {
+  private static SamplingStrategyResponse.PerOperationSamplingStrategies parsePerOperationStrategy(
+      CodedInputStream input) throws IOException {
+    SamplingStrategyResponse.PerOperationSamplingStrategies.Builder builder =
+        new SamplingStrategyResponse.PerOperationSamplingStrategies.Builder();
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -132,53 +140,67 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
           break;
         case 9:
           double defaultProbability = input.readDouble();
-          perOperationBuilder.setDefaultSamplingProbability(defaultProbability);
+          builder.setDefaultSamplingProbability(defaultProbability);
           break;
         case 17:
           double lowerBoundPerSecond = input.readDouble();
-          perOperationBuilder.setDefaultLowerBoundTracesPerSecond(lowerBoundPerSecond);
+          builder.setDefaultLowerBoundTracesPerSecond(lowerBoundPerSecond);
           break;
         case 26:
           input.readRawVarint32(); // skip length
-          parseOperationStrategy(perOperationBuilder.addPerOperationStrategiesBuilder(), input);
+          SamplingStrategyResponse.OperationSamplingStrategy strategy =
+              parseOperationStrategy(input);
+          if (strategy != null) {
+            builder.addOperationStrategy(strategy);
+          }
           break;
         case 33:
           double upperBoundPerSecond = input.readDouble();
-          perOperationBuilder.setDefaultUpperBoundTracesPerSecond(upperBoundPerSecond);
+          builder.setDefaultUpperBoundTracesPerSecond(upperBoundPerSecond);
           break;
         default:
           input.skipField(tag);
           break;
       }
     }
+    return builder.build();
   }
 
-  private static void parseOperationStrategy(Sampling.OperationSamplingStrategy.Builder operationBuilder, CodedInputStream input)
-      throws IOException {
-    boolean done = false;
-    while (!done) {
-      if (!operationBuilder.getOperation().isEmpty() && operationBuilder.hasProbabilisticSampling()) {
-        return;
-      }
+  private static SamplingStrategyResponse.OperationSamplingStrategy parseOperationStrategy(
+      CodedInputStream input) throws IOException {
 
+    SamplingStrategyResponse.OperationSamplingStrategy.Builder builder =
+        new SamplingStrategyResponse.OperationSamplingStrategy.Builder();
+
+    boolean done = false;
+    boolean operationParsed = false;
+    boolean probabilisticSamplingParsed = false;
+    while (!done) {
       int tag = input.readTag();
       switch (tag) {
         case 0:
           done = true;
           break;
         case 10:
-          String string = input.readStringRequireUtf8();
-          operationBuilder.setOperation(string);
+          operationParsed = true;
+          String operation = input.readStringRequireUtf8();
+          builder.setOperation(operation);
           break;
         case 18:
+          probabilisticSamplingParsed = true;
           input.readRawVarint32(); // skip length
-          parseProbabilistic(operationBuilder.getProbabilisticSamplingBuilder(), input);
+          builder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
           break;
         default:
           input.skipField(tag);
           break;
       }
+
+      if (!operationParsed && probabilisticSamplingParsed) {
+        break;
+      }
     }
+    return builder.build();
   }
 
   private static byte[] readAllBytes(InputStream inputStream) throws IOException {
@@ -200,8 +222,7 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
     } finally {
       if (exception == null) {
         inputStream.close();
-      }
-      else {
+      } else {
         try {
           inputStream.close();
         } catch (IOException e) {

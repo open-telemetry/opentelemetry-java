@@ -8,25 +8,16 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Mockito.mock;
 
 import com.google.common.io.Closer;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.grpc.ManagedChannel;
-import io.grpc.Server;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +52,9 @@ class JaegerRemoteSamplerTest {
                       Sampling.SamplingStrategyResponse.newBuilder()
                           .setStrategyType(SamplingStrategyType.RATE_LIMITING)
                           .setRateLimitingSampling(
-                              RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(RATE).build())
+                              RateLimitingSamplingStrategy.newBuilder()
+                                  .setMaxTracesPerSecond(RATE)
+                                  .build())
                           .build();
                   numPolls.incrementAndGet();
                   return CompletableFuture.completedFuture(response.toByteArray());

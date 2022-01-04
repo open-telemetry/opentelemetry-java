@@ -58,7 +58,8 @@ public class JaegerRemoteSamplerProviderTest {
                 assertThat(provider.createSampler(mockConfig))
                     .extracting("delegate")
                     .extracting("endpoint")
-                    .isEqualTo("http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
+                    .isEqualTo(
+                        "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
   }
 
   @Test

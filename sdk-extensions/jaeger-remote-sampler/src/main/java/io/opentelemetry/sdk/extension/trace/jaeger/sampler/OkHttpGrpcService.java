@@ -28,6 +28,7 @@ import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 
+@SuppressWarnings({"SystemOut", "DefaultCharset"})
 final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     implements GrpcService<ReqT, ResT> {
 
@@ -43,7 +44,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   private final Headers headers;
   private final boolean compressionEnabled;
 
-  /** Creates a new {@link OkHttpGrpcExporter}. */
+  /** Creates a new {@link OkHttpGrpcService}. */
   OkHttpGrpcService(
       String type,
       OkHttpClient client,
@@ -51,6 +52,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
       String endpoint,
       Headers headers,
       boolean compressionEnabled) {
+    System.out.println("created okhttpGrpcService");
     this.type = type;
     this.client = client;
     this.endpoint = endpoint;
@@ -58,21 +60,22 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     this.compressionEnabled = compressionEnabled;
   }
 
-  @SuppressWarnings({"SystemOut","DefaultCharset"})
+  @SuppressWarnings({"SystemOut", "DefaultCharset"})
   @Override
   public ResT execute(ReqT exportRequest, ResT responseUnmarshaller) {
+    System.out.println("execute");
     Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
     requestBuilder.post(requestBody);
 
     try {
-      Response response = client
-          .newCall(requestBuilder.build()).execute();
+      Response response = client.newCall(requestBuilder.build()).execute();
 
+      System.out.println("received response");
       try {
         InputStream inputStream = response.body().byteStream();
-        byte []arrCompressionAndLength = new byte[5];
+        byte[] arrCompressionAndLength = new byte[5];
         int bytesRead = inputStream.read(arrCompressionAndLength, 0, 5);
         if (bytesRead < 5) {
           // TODO or throw an exception?
@@ -100,9 +103,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
       }
 
       String codeMessage =
-          status != null
-              ? "gRPC status code " + status
-              : "HTTP status code " + response.code();
+          status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);
 
       if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {

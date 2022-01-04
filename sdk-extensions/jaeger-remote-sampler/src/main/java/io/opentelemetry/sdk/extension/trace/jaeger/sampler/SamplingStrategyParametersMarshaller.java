@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.internal.SamplingStrategyParameters;
 import java.io.IOException;
 
@@ -16,8 +15,8 @@ final class SamplingStrategyParametersMarshaller extends MarshalerWithSize {
 
   private final byte[] serviceNameUtf8;
 
-  static SamplingStrategyParametersMarshaller create(Sampling.SamplingStrategyParameters params) {
-    return new SamplingStrategyParametersMarshaller(MarshalerUtil.toBytes(params.getServiceName()));
+  static SamplingStrategyParametersMarshaller create(String serviceName) {
+    return new SamplingStrategyParametersMarshaller(MarshalerUtil.toBytes(serviceName));
   }
 
   private SamplingStrategyParametersMarshaller(byte[] serviceName) {

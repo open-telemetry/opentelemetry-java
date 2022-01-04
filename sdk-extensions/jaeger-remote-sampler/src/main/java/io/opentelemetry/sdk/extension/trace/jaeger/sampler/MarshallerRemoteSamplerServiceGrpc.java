@@ -14,9 +14,9 @@ import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
+import java.io.IOException;
 import java.io.InputStream;
 
-@SuppressWarnings({"SystemOut","DefaultCharset"})
 public class MarshallerRemoteSamplerServiceGrpc {
 
   private static final String SERVICE_NAME = "jaeger.api_v2.SamplingManager";
@@ -44,8 +44,15 @@ public class MarshallerRemoteSamplerServiceGrpc {
 
         @Override
         public SamplingStrategyResponse parse(InputStream stream) {
-          System.out.println("Parsing response");
-          return SamplingStrategyResponse.INSTANCE;
+          SamplingStrategyResponseUnMarshaller unmarshaller =
+              new SamplingStrategyResponseUnMarshaller();
+          try {
+            unmarshaller.read(stream);
+          } catch (IOException e) {
+            // could not parse response
+            throw new IllegalStateException("could not parse jaeger remote sampling response", e);
+          }
+          return unmarshaller.get();
         }
       };
 

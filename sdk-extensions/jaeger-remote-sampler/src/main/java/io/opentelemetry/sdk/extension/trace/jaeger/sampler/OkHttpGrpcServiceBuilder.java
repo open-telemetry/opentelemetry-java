@@ -93,7 +93,8 @@ class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(
+      byte[] trustedCertificatesPem) {
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }

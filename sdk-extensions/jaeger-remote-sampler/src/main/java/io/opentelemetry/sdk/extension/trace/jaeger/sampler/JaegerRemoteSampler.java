@@ -8,9 +8,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -26,6 +23,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
+@SuppressWarnings({"SystemOut", "DefaultCharset"})
 public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
@@ -70,38 +68,41 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   private void getAndUpdateSampler() {
+    System.out.println("updating sampler");
     try {
-      SamplingStrategyParameters params =
-          SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
-
+      System.out.println("creating params");
       SamplingStrategyResponseUnMarshaller responseParameters =
-          delegate.execute(SamplingStrategyParametersMarshaller.create(params), new SamplingStrategyResponseUnMarshaller());
-      @Nullable
-      SamplingStrategyResponse samplingStrategyResponse = responseParameters.get();
-      if (samplingStrategyResponse != null) {
-        this.sampler = updateSampler(samplingStrategyResponse);
+          delegate.execute(
+              SamplingStrategyParametersMarshaller.create(this.serviceName),
+              new SamplingStrategyResponseUnMarshaller());
+      @Nullable SamplingStrategyResponse response = responseParameters.get();
+      if (response != null) {
+        System.out.println(response);
+        this.sampler = updateSampler(response);
       }
-    } catch (RuntimeException e) { // keep the timer thread alive
+    } catch (Throwable e) { // keep the timer thread alive
+      System.out.println("updating sapler failed");
+      System.out.println(e);
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }
   }
 
   private static Sampler updateSampler(SamplingStrategyResponse response) {
-    PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
-    if (operationSampling.getPerOperationStrategiesList().size() > 0) {
+    SamplingStrategyResponse.PerOperationSamplingStrategies operationSampling =
+        response.perOperationSamplingStrategies;
+    if (operationSampling.strategies.size() > 0) {
       Sampler defaultSampler =
-          Sampler.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
+          Sampler.traceIdRatioBased(operationSampling.defaultSamplingProbability);
       return Sampler.parentBased(
-          new PerOperationSampler(
-              defaultSampler, operationSampling.getPerOperationStrategiesList()));
+          new PerOperationSampler(defaultSampler, operationSampling.strategies));
     }
-    switch (response.getStrategyType()) {
+    switch (response.strategyType) {
       case PROBABILISTIC:
         return Sampler.parentBased(
-            Sampler.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate()));
+            Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate));
       case RATE_LIMITING:
         return Sampler.parentBased(
-            new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond()));
+            new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond));
       case UNRECOGNIZED:
         throw new AssertionError("unrecognized sampler type");
     }
