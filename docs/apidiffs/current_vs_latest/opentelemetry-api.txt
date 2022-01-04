@@ -1,4 +1,9 @@
 Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.GlobalOpenTelemetry  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.Meter getMeter(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterBuilder meterBuilder(java.lang.String)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
@@ -140,4 +145,6 @@ Comparing source compatibility of  against
 	+++  NEW SUPERCLASS: java.lang.Object
 ***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.Meter getMeter(java.lang.String)
 	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterBuilder meterBuilder(java.lang.String)
