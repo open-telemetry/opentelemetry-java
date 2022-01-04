@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-@SuppressWarnings({"SystemOut", "DefaultCharset"})
 public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
@@ -68,21 +67,16 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   private void getAndUpdateSampler() {
-    System.out.println("updating sampler");
     try {
-      System.out.println("creating params");
       SamplingStrategyResponseUnMarshaller responseParameters =
           delegate.execute(
               SamplingStrategyParametersMarshaller.create(this.serviceName),
               new SamplingStrategyResponseUnMarshaller());
-      @Nullable SamplingStrategyResponse response = responseParameters.get();
+      SamplingStrategyResponse response = responseParameters.get();
       if (response != null) {
-        System.out.println(response);
         this.sampler = updateSampler(response);
       }
     } catch (Throwable e) { // keep the timer thread alive
-      System.out.println("updating sapler failed");
-      System.out.println(e);
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }
   }

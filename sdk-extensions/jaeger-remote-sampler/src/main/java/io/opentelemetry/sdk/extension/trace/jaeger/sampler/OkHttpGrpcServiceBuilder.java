@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
@@ -49,11 +48,6 @@ class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
-  }
-
-  @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
-    throw new UnsupportedOperationException("Only available on DefaultGrpcExporter");
   }
 
   @Override

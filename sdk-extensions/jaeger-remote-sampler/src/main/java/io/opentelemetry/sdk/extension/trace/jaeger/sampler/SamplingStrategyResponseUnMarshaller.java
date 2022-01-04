@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@SuppressWarnings({"SystemOut", "DefaultCharset"})
 class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
 
   private SamplingStrategyResponse samplingStrategyResponse =

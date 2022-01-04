@@ -24,7 +24,6 @@ class GrpcServiceUtil {
           String grpcServiceName,
           String grpcEndpointPath) {
 
-    System.out.println("Creating okhttp service");
     return new OkHttpGrpcServiceBuilder<>(
         type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
   }
