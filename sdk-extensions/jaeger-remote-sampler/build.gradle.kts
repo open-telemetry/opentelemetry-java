@@ -29,14 +29,11 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
 
-//  TODO copied from jaeger exporter
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
-  testImplementation("com.squareup.okhttp3:okhttp")
   testImplementation("org.testcontainers:junit-jupiter")
-
   testImplementation("io.grpc:grpc-testing")
 }
 
