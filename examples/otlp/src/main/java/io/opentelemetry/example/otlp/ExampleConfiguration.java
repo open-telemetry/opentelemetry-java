@@ -41,7 +41,11 @@ public final class ExampleConfiguration {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(spanProcessor)
-            .setResource(AutoConfiguredOpenTelemetrySdk.initialize().getResource())
+            .setResource(
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .setResultAsGlobal(false)
+                    .build()
+                    .getResource())
             .build();
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
@@ -66,9 +70,7 @@ public final class ExampleConfiguration {
             .newMetricReaderFactory();
 
     SdkMeterProvider sdkMeterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(periodicReaderFactory)
-            .buildAndRegisterGlobal();
+        SdkMeterProvider.builder().registerMetricReader(periodicReaderFactory).build();
 
     Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::shutdown));
     return sdkMeterProvider;

@@ -56,5 +56,7 @@ public final class OtlpExporterExample {
 
     // sleep for a bit to let everything settle
     Thread.sleep(2000);
+
+    System.out.println("Bye");
   }
 }
