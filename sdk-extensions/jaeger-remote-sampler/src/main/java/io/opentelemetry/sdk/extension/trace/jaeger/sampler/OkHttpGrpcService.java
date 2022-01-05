@@ -11,7 +11,6 @@ import io.opentelemetry.exporter.otlp.internal.grpc.GrpcRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -34,8 +33,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OkHttpGrpcService.class.getName()));
+  private static final Logger logger = Logger.getLogger(OkHttpGrpcService.class.getName());
 
   private final String type;
   private final OkHttpClient client;
