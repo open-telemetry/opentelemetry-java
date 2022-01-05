@@ -14,7 +14,6 @@ import java.util.function.Supplier;
 
 class GrpcServiceUtil {
 
-  @SuppressWarnings("SystemOut")
   static <ReqT extends Marshaler, ResT extends UnMarshaller>
       GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
           String type,
