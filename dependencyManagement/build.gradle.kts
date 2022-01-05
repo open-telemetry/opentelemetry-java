@@ -77,7 +77,8 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:0.22.0",
   "com.uber.nullaway:nullaway:0.9.2",
-  "edu.berkeley.cs.jqf:jqf-fuzz:1.8",
+  // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
+  "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.5",
   "io.github.netmikey.logunit:logunit-jul:1.1.2",
   "io.jaegertracing:jaeger-client:1.7.0",
