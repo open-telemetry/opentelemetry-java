@@ -73,6 +73,16 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeUint32(ProtoFieldInfo field, int value) throws IOException;
 
+  /** Serializes a protobuf {@code sint32} field. */
+  public void serializeSInt32(ProtoFieldInfo field, int value) throws IOException {
+    if (value == 0) {
+      return;
+    }
+    writeSInt32(field, value);
+  }
+
+  protected abstract void writeSInt32(ProtoFieldInfo info, int value) throws IOException;
+
   /** Serializes a protobuf {@code uint32} field. */
   public void serializeInt32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {
@@ -109,6 +119,8 @@ public abstract class Serializer implements AutoCloseable {
   protected abstract void writeFixed64(ProtoFieldInfo field, long value) throws IOException;
 
   protected abstract void writeFixed64Value(long value) throws IOException;
+
+  protected abstract void writeUInt64Value(long value) throws IOException;
 
   /** Serializes a protobuf {@code fixed32} field. */
   public void serializeFixed32(ProtoFieldInfo field, int value) throws IOException {
@@ -176,6 +188,11 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeEndRepeatedPrimitive() throws IOException;
 
+  protected abstract void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize)
+      throws IOException;
+
+  protected abstract void writeEndRepeatedVarint() throws IOException;
+
   /** Serializes a {@code repeated fixed64} field. */
   public void serializeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) throws IOException {
     if (values.isEmpty()) {
@@ -198,6 +215,24 @@ public abstract class Serializer implements AutoCloseable {
       writeFixed64Value(value);
     }
     writeEndRepeatedPrimitive();
+  }
+
+  /** Serializes a {@code repeated uint64} field. */
+  public void serializeRepeatedUInt64(ProtoFieldInfo field, long[] values) throws IOException {
+    if (values.length == 0) {
+      return;
+    }
+
+    int payloadSize = 0;
+    for (long v : values) {
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
+    for (long value : values) {
+      writeUInt64Value(value);
+    }
+    writeEndRepeatedVarint();
   }
 
   /** Serializes a {@code repeated double} field. */
