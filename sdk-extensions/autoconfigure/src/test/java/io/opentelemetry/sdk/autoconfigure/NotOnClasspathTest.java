@@ -71,7 +71,7 @@ class NotOnClasspathTest {
   }
 
   @Test
-  void logging() {
+  void loggingSpans() {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
@@ -83,7 +83,7 @@ class NotOnClasspathTest {
   }
 
   @Test
-  void logging_metrics() {
+  void loggingMetrics() {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
@@ -94,6 +94,17 @@ class NotOnClasspathTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Logging Metrics Exporter enabled but opentelemetry-exporter-logging not found on "
+                + "classpath");
+  }
+
+  @Test
+  void loggingLogs() {
+    assertThatThrownBy(
+            () ->
+                LogExporterConfiguration.configureExporter("logging", EMPTY, MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "Logging Log Exporter enabled but opentelemetry-exporter-logging not found on "
                 + "classpath");
   }
 
@@ -150,5 +161,22 @@ class NotOnClasspathTest {
                     (a, config) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");
+  }
+
+  @Test
+  void otlpGrpcLogs() {
+    assertThatCode(
+            () -> LogExporterConfiguration.configureExporter("otlp", EMPTY, MeterProvider.noop()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void otlpHttpLogs() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
+    assertThatCode(
+            () -> LogExporterConfiguration.configureExporter("otlp", config, MeterProvider.noop()))
+        .doesNotThrowAnyException();
   }
 }

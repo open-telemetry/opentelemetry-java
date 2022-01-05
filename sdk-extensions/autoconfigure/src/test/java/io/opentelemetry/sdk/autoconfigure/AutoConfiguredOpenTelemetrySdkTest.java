@@ -105,6 +105,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
                 () -> Collections.singletonMap("otel.propagators", "tracecontext"))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
             .addPropertiesSupplier(
                 () -> Collections.singletonMap("otel.service.name", "test-service"))
             .setResultAsGlobal(false);

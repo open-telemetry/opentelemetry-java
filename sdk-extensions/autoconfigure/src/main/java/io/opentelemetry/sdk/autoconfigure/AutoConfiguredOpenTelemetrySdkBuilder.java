@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -190,12 +191,19 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spanExporterCustomizer,
             samplerCustomizer);
 
+    SdkLogEmitterProvider logEmitterProvider =
+        LogEmitterProviderConfiguration.configureLogEmitterProvider(
+            resource, config, meterProvider);
+
     ContextPropagators propagators =
         PropagatorConfiguration.configurePropagators(
             config, serviceClassLoader, propagatorCustomizer);
 
     OpenTelemetrySdkBuilder sdkBuilder =
-        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).setPropagators(propagators);
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setLogEmitterProvider(logEmitterProvider)
+            .setPropagators(propagators);
 
     if (meterProvider instanceof SdkMeterProvider) {
       sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);

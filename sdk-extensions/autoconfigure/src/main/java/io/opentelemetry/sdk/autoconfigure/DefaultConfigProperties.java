@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
+
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
@@ -12,11 +15,14 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -154,6 +160,29 @@ final class DefaultConfigProperties implements ConfigProperties {
       return Collections.emptyList();
     }
     return filterBlanksAndNulls(value.split(","));
+  }
+
+  /**
+   * Returns {@link ConfigProperties#getList(String)} as a {@link Set} after validating there are no
+   * duplicate entries.
+   *
+   * @throws ConfigurationException if {@code name} contains duplicate entries
+   */
+  static Set<String> getSet(ConfigProperties config, String name) {
+    List<String> list = config.getList(name);
+    Set<String> set = new HashSet<>(list);
+    if (set.size() != list.size()) {
+      String duplicates =
+          list.stream()
+              .collect(groupingBy(Function.identity(), Collectors.counting()))
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getValue() > 1)
+              .map(Map.Entry::getKey)
+              .collect(joining(",", "[", "]"));
+      throw new ConfigurationException(name + " contains duplicates: " + duplicates);
+    }
+    return set;
   }
 
   @Override

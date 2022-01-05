@@ -39,39 +39,47 @@ for more details.
 
 The following configuration properties are common to all exporters:
 
-| System property | Environment variable | Purpose                                                                                                                                                 |
-|-----------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.metrics.exporter   | OTEL_METRICS_EXPORTER        | The exporter to be used for metrics. Default is `none`.
+| System property       | Environment variable  | Purpose                                                                                                                    |
+|-----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter  | OTEL_TRACES_EXPORTER  | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
+| otel.metrics.exporter | OTEL_METRICS_EXPORTER | The exporter to be used for metrics. Default is `none`.                                                                    |
+| otel.logs.exporter    | OTEL_LOGS_EXPORTER    | The exporter to be used for logs. Default is `none`.                                                                       |
 
-### OTLP exporter (both span and metric exporters)
+### OTLP exporter (span, metric, and log exporters)
 
-The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md) span and metric exporters
+The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md) span, metric, and log exporters
 
-| System property              | Environment variable        | Description                                                               |
-|------------------------------|-----------------------------|---------------------------------------------------------------------------|
-| otel.traces.exporter=otlp (default) | OTEL_TRACES_EXPORTER=otlp          | Select the OpenTelemetry exporter for tracing (default)                                   |
-| otel.metrics.exporter=otlp | OTEL_METRICS_EXPORTER=otlp          | Select the OpenTelemetry exporter for metrics                                 |
-| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP traces and metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. `v1/traces` or `v1/metrics`). Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/{signal}` when protocol is `http/protobuf`.            |
-| otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/traces` when protocol is `http/protobuf`.            |
-| otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/metrics` when protocol is `http/protobuf`.             |
-| otel.exporter.otlp.certificate  | OTEL_EXPORTER_OTLP_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace or metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
-| otel.exporter.otlp.traces.certificate  | OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
-| otel.exporter.otlp.metrics.certificate  | OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
-| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace and metrics requests.        |
-| otel.exporter.otlp.traces.headers   | OTEL_EXPORTER_OTLP_TRACES_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.        |
-| otel.exporter.otlp.metrics.headers   | OTEL_EXPORTER_OTLP_METRICS_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP metrics requests.        |
-| otel.exporter.otlp.compression   | OTEL_EXPORTER_OTLP_COMPRESSION | The compression type to use on OTLP trace and metric requests. Options include `gzip`. By default no compression will be used. |
-| otel.exporter.otlp.traces.compression   | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used. |
-| otel.exporter.otlp.metrics.compression   | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION | The compression type to use on OTLP metric requests. Options include `gzip`. By default no compression will be used. |
-| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace and metric batch. Default is `10000`.  |
-| otel.exporter.otlp.traces.timeout   | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.  |
-| otel.exporter.otlp.metrics.timeout   | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.  |
-| otel.exporter.otlp.protocol | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.exporter.otlp.metrics.protocol | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.exporter.otlp.metrics.temporality | OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY | The preferred output aggregation temporality. Options include `DELTA` and `CUMULATIVE`. Default is `CUMULATIVE`. |
-| otel.experimental.exporter.otlp.retry.enabled | OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED | If `true`, enable [experimental retry support](#otlp-exporter-retry). Default is `false`. |
+| System property                               | Environment variable                          | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+|-----------------------------------------------|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter=otlp (default)           | OTEL_TRACES_EXPORTER=otlp                     | Select the OpenTelemetry exporter for tracing (default)                                                                                                                                                                                                                                                                                                                                                              |
+| otel.metrics.exporter=otlp                    | OTEL_METRICS_EXPORTER=otlp                    | Select the OpenTelemetry exporter for metrics                                                                                                                                                                                                                                                                                                                                                                        |
+| otel.logs.exporter=otlp                       | OTEL_LOGS_EXPORTER=otlp                       | Select the OpenTelemetry exporter for logs                                                                                                                                                                                                                                                                                                                                                                           |
+| otel.exporter.otlp.endpoint                   | OTEL_EXPORTER_OTLP_ENDPOINT                   | The OTLP traces, metrics, and logs endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. `v1/traces`, `v1/metrics`, or `v1/logs`). Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/{signal}` when protocol is `http/protobuf`. |
+| otel.exporter.otlp.traces.endpoint            | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT            | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/traces` when protocol is `http/protobuf`.                                                                                                                                                         |
+| otel.exporter.otlp.metrics.endpoint           | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT           | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/metrics` when protocol is `http/protobuf`.                                                                                                                                                       |
+| otel.exporter.otlp.logs.endpoint              | OTEL_EXPORTER_OTLP_LOGS_ENDPOINT              | The OTLP logs endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/logs` when protocol is `http/protobuf`.                                                                                                                                                             |
+| otel.exporter.otlp.certificate                | OTEL_EXPORTER_OTLP_CERTIFICATE                | The path to the file containing trusted certificates to use when verifying an OTLP trace, metric, or log server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used.                                                                                                                                          |
+| otel.exporter.otlp.traces.certificate         | OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE         | The path to the file containing trusted certificates to use when verifying an OTLP trace server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used.                                                                                                                                                          |
+| otel.exporter.otlp.metrics.certificate        | OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE        | The path to the file containing trusted certificates to use when verifying an OTLP metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used.                                                                                                                                                         |
+| otel.exporter.otlp.logs.certificate           | OTEL_EXPORTER_OTLP_LOGS_CERTIFICATE           | The path to the file containing trusted certificates to use when verifying an OTLP log server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used.                                                                                                                                                            |
+| otel.exporter.otlp.headers                    | OTEL_EXPORTER_OTLP_HEADERS                    | Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.                                                                                                                                                                                                                                                                                                              |
+| otel.exporter.otlp.traces.headers             | OTEL_EXPORTER_OTLP_TRACES_HEADERS             | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                                                                                                                                                                                                                                                                                                                               |
+| otel.exporter.otlp.metrics.headers            | OTEL_EXPORTER_OTLP_METRICS_HEADERS            | Key-value pairs separated by commas to pass as request headers on OTLP metrics requests.                                                                                                                                                                                                                                                                                                                             |
+| otel.exporter.otlp.logs.headers               | OTEL_EXPORTER_OTLP_LOGS_HEADERS               | Key-value pairs separated by commas to pass as request headers on OTLP logs requests.                                                                                                                                                                                                                                                                                                                                |
+| otel.exporter.otlp.compression                | OTEL_EXPORTER_OTLP_COMPRESSION                | The compression type to use on OTLP trace, metric, and log requests. Options include `gzip`. By default no compression will be used.                                                                                                                                                                                                                                                                                 |
+| otel.exporter.otlp.traces.compression         | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION         | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used.                                                                                                                                                                                                                                                                                                  |
+| otel.exporter.otlp.metrics.compression        | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION        | The compression type to use on OTLP metric requests. Options include `gzip`. By default no compression will be used.                                                                                                                                                                                                                                                                                                 |
+| otel.exporter.otlp.logs.compression           | OTEL_EXPORTER_OTLP_LOGS_COMPRESSION           | The compression type to use on OTLP log requests. Options include `gzip`. By default no compression will be used.                                                                                                                                                                                                                                                                                                    |
+| otel.exporter.otlp.timeout                    | OTEL_EXPORTER_OTLP_TIMEOUT                    | The maximum waiting time, in milliseconds, allowed to send each OTLP trace, metric, and log batch. Default is `10000`.                                                                                                                                                                                                                                                                                               |
+| otel.exporter.otlp.traces.timeout             | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT             | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.                                                                                                                                                                                                                                                                                                                |
+| otel.exporter.otlp.metrics.timeout            | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT            | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.                                                                                                                                                                                                                                                                                                               |
+| otel.exporter.otlp.logs.timeout               | OTEL_EXPORTER_OTLP_LOGS_TIMEOUT               | The maximum waiting time, in milliseconds, allowed to send each OTLP log batch. Default is `10000`.                                                                                                                                                                                                                                                                                                                  |
+| otel.exporter.otlp.protocol                   | OTEL_EXPORTER_OTLP_PROTOCOL                   | The transport protocol to use on OTLP trace, metric, and log requests. Options include `grpc` and `http/protobuf`. Default is `grpc`.                                                                                                                                                                                                                                                                                |
+| otel.exporter.otlp.traces.protocol            | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL            | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`.                                                                                                                                                                                                                                                                                                 |
+| otel.exporter.otlp.metrics.protocol           | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL           | The transport protocol to use on OTLP metric requests. Options include `grpc` and `http/protobuf`. Default is `grpc`.                                                                                                                                                                                                                                                                                                |
+| otel.exporter.otlp.logs.protocol              | OTEL_EXPORTER_OTLP_LOGS_PROTOCOL              | The transport protocol to use on OTLP log requests. Options include `grpc` and `http/protobuf`. Default is `grpc`.                                                                                                                                                                                                                                                                                                   |
+| otel.exporter.otlp.metrics.temporality        | OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY        | The preferred output aggregation temporality. Options include `DELTA` and `CUMULATIVE`. Default is `CUMULATIVE`.                                                                                                                                                                                                                                                                                                     |
+| otel.experimental.exporter.otlp.retry.enabled | OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED | If `true`, enable [experimental retry support](#otlp-exporter-retry). Default is `false`.                                                                                                                                                                                                                                                                                                                            |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
@@ -101,20 +109,20 @@ The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stab
 
 The [Zipkin](https://zipkin.io/zipkin-api/) exporter. It sends JSON in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to a specified HTTP URL.
 
-| System property                   | Environment variable              | Description                                                                                                               |
-|-----------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=zipkin              | OTEL_TRACES_EXPORTER=zipkin              | Select the Zipkin exporter                                                                                             |
-| otel.exporter.zipkin.endpoint     | OTEL_EXPORTER_ZIPKIN_ENDPOINT     | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported. |
+| System property               | Environment variable          | Description                                                                                                           |
+|-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter=zipkin   | OTEL_TRACES_EXPORTER=zipkin   | Select the Zipkin exporter                                                                                            |
+| otel.exporter.zipkin.endpoint | OTEL_EXPORTER_ZIPKIN_ENDPOINT | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported. |
 
 ### Prometheus exporter
 
 The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md) exporter.
 
-| System property               | Environment variable          | Description                                                                        |
-|-------------------------------|-------------------------------|------------------------------------------------------------------------------------|
-| otel.metrics.exporter=prometheus      | OTEL_METRICS_EXPORTER=prometheus      | Select the Prometheus exporter                                                     |
-| otel.exporter.prometheus.port | OTEL_EXPORTER_PROMETHEUS_PORT | The local port used to bind the prometheus metric server. Default is `9464`.       |
-| otel.exporter.prometheus.host | OTEL_EXPORTER_PROMETHEUS_HOST | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
+| System property                  | Environment variable             | Description                                                                        |
+|----------------------------------|----------------------------------|------------------------------------------------------------------------------------|
+| otel.metrics.exporter=prometheus | OTEL_METRICS_EXPORTER=prometheus | Select the Prometheus exporter                                                     |
+| otel.exporter.prometheus.port    | OTEL_EXPORTER_PROMETHEUS_PORT    | The local port used to bind the prometheus metric server. Default is `9464`.       |
+| otel.exporter.prometheus.host    | OTEL_EXPORTER_PROMETHEUS_HOST    | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
 
 Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
 a Prometheus server scrapes from.
@@ -123,18 +131,19 @@ a Prometheus server scrapes from.
 
 The logging exporter prints the name of the span along with its attributes to stdout. It's mainly used for testing and debugging.
 
-| System property              | Environment variable         | Description                                                                  |
-|------------------------------|------------------------------|------------------------------------------------------------------------------|
-| otel.traces.exporter=logging        | OTEL_TRACES_EXPORTER=logging        | Select the logging exporter for tracing                                               |
-| otel.metrics.exporter=logging        | OTEL_METRICS_EXPORTER=logging        | Select the logging exporter for metrics                                               |
-| otel.exporter.logging.prefix | OTEL_EXPORTER_LOGGING_PREFIX | An optional string printed in front of the span name and attributes.         |
+| System property               | Environment variable          | Description                                                          |
+|-------------------------------|-------------------------------|----------------------------------------------------------------------|
+| otel.traces.exporter=logging  | OTEL_TRACES_EXPORTER=logging  | Select the logging exporter for tracing                              |
+| otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
+| otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
+| otel.exporter.logging.prefix  | OTEL_EXPORTER_LOGGING_PREFIX  | An optional string printed in front of the span name and attributes. |
 
 ## Propagator
 
 The propagators determine which distributed tracing header formats are used, and which baggage propagation header formats are used.
 
-| System property  | Environment variable | Description                                                                                                     |
-|------------------|----------------------|-----------------------------------------------------------------------------------------------------------------|
+| System property  | Environment variable | Description                                                                                                               |
+|------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|
 | otel.propagators | OTEL_PROPAGATORS     | The propagators to be used. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
 
 Supported values are
@@ -152,9 +161,9 @@ Supported values are
 The [OpenTelemetry Resource](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/sdk.md)
 is a representation of the entity producing telemetry.
 
-| System property          | Environment variable     | Description                                                                        |
-|--------------------------|--------------------------|------------------------------------------------------------------------------------|
-| otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3 |
+| System property          | Environment variable     | Description                                                                                                |
+|--------------------------|--------------------------|------------------------------------------------------------------------------------------------------------|
+| otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
 | otel.service.name        | OTEL_SERVICE_NAME        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
 
 You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
@@ -178,8 +187,8 @@ or you can create your own.
 If you are using the `ResourceProvider` SPI (many instrumentation agent distributions include this automatically),
 you can disable one or more of them by using the following configuration item:
 
-| System property                       | Environment variable                  | Description                                                                        |
-|---------------------------------------|---------------------------------------|------------------------------------------------------------------------------------|
+| System property                       | Environment variable                  | Description                                   |
+|---------------------------------------|---------------------------------------|-----------------------------------------------|
 | otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types |
 
 The value must be a comma separated list of fully qualified `ResourceProvider` classnames.
@@ -192,21 +201,21 @@ can pass the following JVM argument:
 
 ## Batch span processor
 
-| System property           | Environment variable      | Description                                                                        |
-|---------------------------|---------------------------|------------------------------------------------------------------------------------|
-| otel.bsp.schedule.delay   | OTEL_BSP_SCHEDULE_DELAY   | The interval, in milliseconds, between two consecutive exports. Default is `5000`. |
-| otel.bsp.max.queue.size   | OTEL_BSP_MAX_QUEUE_SIZE   | The maximum queue size. Default is `2048`.                                             |
-| otel.bsp.max.export.batch.size | OTEL_BSP_MAX_EXPORT_BATCH_SIZE | The maximum batch size. Default is `512`.                                              |
-| otel.bsp.export.timeout   | OTEL_BSP_EXPORT_TIMEOUT   | The maximum allowed time, in milliseconds, to export data. Default is `30000`.         |
+| System property                | Environment variable           | Description                                                                        |
+|--------------------------------|--------------------------------|------------------------------------------------------------------------------------|
+| otel.bsp.schedule.delay        | OTEL_BSP_SCHEDULE_DELAY        | The interval, in milliseconds, between two consecutive exports. Default is `5000`. |
+| otel.bsp.max.queue.size        | OTEL_BSP_MAX_QUEUE_SIZE        | The maximum queue size. Default is `2048`.                                         |
+| otel.bsp.max.export.batch.size | OTEL_BSP_MAX_EXPORT_BATCH_SIZE | The maximum batch size. Default is `512`.                                          |
+| otel.bsp.export.timeout        | OTEL_BSP_EXPORT_TIMEOUT        | The maximum allowed time, in milliseconds, to export data. Default is `30000`.     |
 
 ## Sampler
 
 The sampler configures whether spans will be recorded for any call to `SpanBuilder.startSpan`.
 
-| System property                 | Environment variable            | Description                                                  |
-|---------------------------------|---------------------------------|--------------------------------------------------------------|
-| otel.traces.sampler              | OTEL_TRACES_SAMPLER              | The sampler to use for tracing. Defaults to `parentbased_always_on` |
-| otel.traces.sampler.arg          | OTEL_TRACES_SAMPLER_ARG          | An argument to the configured tracer if supported, for example a ratio. |
+| System property         | Environment variable    | Description                                                             |
+|-------------------------|-------------------------|-------------------------------------------------------------------------|
+| otel.traces.sampler     | OTEL_TRACES_SAMPLER     | The sampler to use for tracing. Defaults to `parentbased_always_on`     |
+| otel.traces.sampler.arg | OTEL_TRACES_SAMPLER_ARG | An argument to the configured tracer if supported, for example a ratio. |
 
 Supported values for `otel.traces.sampler` are
 
@@ -230,15 +239,15 @@ These properties can be used to control the maximum size of recordings per span.
 
 ## Exemplars
 
-| System property          | Environment variable     | Description                                                                       |
-|--------------------------|--------------------------|-----------------------------------------------------------------------------------|
-| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`.|
+| System property              | Environment variable         | Description                                                                                                       |
+|------------------------------|------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`. |
 
 ## Periodic Metric Reader
 
-| System property          | Environment variable     | Description                                                                       |
-|--------------------------|--------------------------|-----------------------------------------------------------------------------------|
-| otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`.|
+| System property             | Environment variable        | Description                                                                                  |
+|-----------------------------|-----------------------------|----------------------------------------------------------------------------------------------|
+| otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`. |
 
 ## Customizing the OpenTelemetry SDK
 
