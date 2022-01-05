@@ -68,8 +68,8 @@ wire {
   }
 }
 
-tasks {
-  compileJava {
-    source("$buildDir/generated/source/wire")
+sourceSets {
+  main {
+    java.srcDir("$buildDir/generated/source/wire")
   }
 }

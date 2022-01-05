@@ -27,7 +27,7 @@ docker run --rm -it --name jaeger\
 
 ## 3 - Start the Application
 ```shell script
-java -cp build/libs/opentelemetry-examples-jaeger-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.jaeger.JaegerExample localhost 14250
+java -cp build/libs/opentelemetry-examples-jaeger-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.jaeger.JaegerExample http://localhost:14250
 ```
 ## 4 - Open the Jaeger UI
 
