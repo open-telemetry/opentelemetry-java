@@ -125,8 +125,6 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
-    Headers.Builder headers = this.headers != null ? this.headers : new Headers.Builder();
-
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (trustedCertificatesPem != null) {

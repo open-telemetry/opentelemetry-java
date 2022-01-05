@@ -59,7 +59,7 @@ public final class ErrorReportingTest {
   /* Error handling in a callback capturing/activating the Span */
   @Test
   void testCallbackError() {
-    final Span span = tracer.buildSpan("one").start();
+    Span span = tracer.buildSpan("one").start();
     executor.submit(
         () -> {
           try (Scope scope = tracer.activateSpan(span)) {
@@ -82,7 +82,7 @@ public final class ErrorReportingTest {
    * We log the Exception at each retry. */
   @Test
   void testErrorRecovery() {
-    final int maxRetries = 1;
+    int maxRetries = 1;
     int retries = 0;
 
     Span span = tracer.buildSpan("one").start();

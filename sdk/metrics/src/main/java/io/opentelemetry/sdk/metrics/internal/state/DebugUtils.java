@@ -36,7 +36,7 @@ public final class DebugUtils {
    */
   public static String duplicateMetricErrorMessage(
       MetricDescriptor existing, MetricDescriptor conflict) {
-    final StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
+    StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
     result.append(existing.getName()).append("\n");
     // Now we write out where the existing metric descriptor is coming from, either a raw instrument
     // or a view on a raw instrument.

@@ -33,8 +33,8 @@ final class Actor implements AutoCloseable {
     executor.shutdown();
   }
 
-  Future<?> tell(final String message) {
-    final Context parent = Context.current();
+  Future<?> tell(String message) {
+    Context parent = Context.current();
     phaser.register();
     return executor.submit(
         () -> {
@@ -57,8 +57,8 @@ final class Actor implements AutoCloseable {
         });
   }
 
-  Future<String> ask(final String message) {
-    final Context parent = Context.current();
+  Future<String> ask(String message) {
+    Context parent = Context.current();
     phaser.register();
     return executor.submit(
         () -> {

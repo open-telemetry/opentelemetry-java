@@ -106,7 +106,7 @@ class JaegerPropagatorTest {
 
   @Test
   void inject_SampledContext_nullCarrierUsage() {
-    final Map<String, String> carrier = new LinkedHashMap<>();
+    Map<String, String> carrier = new LinkedHashMap<>();
 
     jaegerPropagator.inject(
         withSpanContext(

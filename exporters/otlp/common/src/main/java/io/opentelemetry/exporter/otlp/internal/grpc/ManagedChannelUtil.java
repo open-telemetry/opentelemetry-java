@@ -102,7 +102,7 @@ public final class ManagedChannelUtil {
 
   /** Shutdown the gRPC channel. */
   public static CompletableResultCode shutdownChannel(ManagedChannel managedChannel) {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     managedChannel.shutdown();
     // Remove thread creation if gRPC adds an asynchronous shutdown API.
     // https://github.com/grpc/grpc-java/issues/8432

@@ -79,7 +79,7 @@ final class ZPageHttpHandler implements HttpHandler {
             parseQueryString(httpExchange.getRequestURI().getRawQuery()),
             httpExchange.getResponseBody());
       } else {
-        final String queryString;
+        String queryString;
         try (BufferedReader reader =
             new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"))) {
           // Query strings can only have one line

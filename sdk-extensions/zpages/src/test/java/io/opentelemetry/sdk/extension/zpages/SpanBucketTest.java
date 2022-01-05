@@ -69,8 +69,8 @@ class SpanBucketTest {
     int numberOfThreads = 4;
     int numberOfSpans = 4;
     SpanBucket spanBucket = new SpanBucket(/* isLatencyBucket= */ true);
-    final CountDownLatch startSignal = new CountDownLatch(1);
-    final CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
+    CountDownLatch startSignal = new CountDownLatch(1);
+    CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
     for (int i = 0; i < numberOfThreads; i++) {
       new Thread(
               () -> {

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.exemplar;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -84,7 +83,7 @@ class FixedSizeExemplarReservoirTest {
   public void oneMeasurement_includesTraceAndSpanIds() {
     Attributes all =
         Attributes.builder().put("one", 1).put("two", "two").put("three", true).build();
-    final Context context =
+    Context context =
         Context.root()
             .with(
                 Span.wrap(

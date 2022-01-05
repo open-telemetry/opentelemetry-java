@@ -175,7 +175,7 @@ class SdkLongUpDownCounterTest {
 
   @Test
   void stressTest() {
-    final LongUpDownCounter longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -221,9 +221,9 @@ class SdkLongUpDownCounterTest {
 
   @Test
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongUpDownCounter longUpDownCounter =
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =

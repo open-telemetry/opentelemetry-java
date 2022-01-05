@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -72,7 +71,7 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void attributesProcessor_applied() {
-    final Attributes labels = Attributes.builder().put("K", "V").build();
+    Attributes labels = Attributes.builder().put("K", "V").build();
     AttributesProcessor attributesProcessor =
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);

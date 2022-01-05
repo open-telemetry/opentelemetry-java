@@ -125,7 +125,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   }
 
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = CompletableResultCode.ofSuccess();
+    CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();

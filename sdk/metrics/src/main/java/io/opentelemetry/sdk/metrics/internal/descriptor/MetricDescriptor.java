@@ -43,8 +43,8 @@ public abstract class MetricDescriptor {
 
   /** Constructs a metric descriptor for a given View + instrument. */
   public static MetricDescriptor create(View view, InstrumentDescriptor instrument) {
-    final String name = (view.getName() == null) ? instrument.getName() : view.getName();
-    final String description =
+    String name = (view.getName() == null) ? instrument.getName() : view.getName();
+    String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
     return new AutoValue_MetricDescriptor(
         name, description, instrument.getUnit(), Optional.of(view), instrument);

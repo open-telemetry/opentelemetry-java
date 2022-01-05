@@ -21,7 +21,7 @@ final class Client {
   }
 
   /** Async execution. */
-  private Future<Object> execute(final Object message, final ResponseListener responseListener) {
+  private Future<Object> execute(Object message, ResponseListener responseListener) {
     return executor.submit(
         () -> {
           // send via wire and get response
@@ -31,7 +31,7 @@ final class Client {
         });
   }
 
-  public Future<Object> send(final Object message) {
+  public Future<Object> send(Object message) {
     Span span = tracer.spanBuilder("send").setSpanKind(SpanKind.CLIENT).startSpan();
     return execute(message, new ResponseListener(span));
   }

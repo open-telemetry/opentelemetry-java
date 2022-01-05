@@ -214,7 +214,7 @@ class SdkDoubleHistogramTest {
 
   @Test
   void stressTest() {
-    final DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
+    DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -258,9 +258,9 @@ class SdkDoubleHistogramTest {
 
   @Test
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()

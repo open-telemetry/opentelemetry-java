@@ -64,7 +64,7 @@ class ActiveSpanReplacementTest {
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
-  private void submitAnotherTask(final Span initialSpan) {
+  private void submitAnotherTask(Span initialSpan) {
 
     executor.submit(
         () -> {

@@ -29,8 +29,8 @@ class Client {
     this.parentDoneLatch = parentDoneLatch;
   }
 
-  public Future<Object> send(final Object message) {
-    final SpanContext parentSpanContext = tracer.activeSpan().context();
+  public Future<Object> send(Object message) {
+    SpanContext parentSpanContext = tracer.activeSpan().context();
 
     return executor.submit(
         () -> {

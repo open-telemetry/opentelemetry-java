@@ -55,7 +55,7 @@ public final class NestedCallbacksTest {
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
-  private void submitCallbacks(final Span span) {
+  private void submitCallbacks(Span span) {
 
     executor.submit(
         () -> {

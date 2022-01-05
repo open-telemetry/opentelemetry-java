@@ -34,7 +34,7 @@ class DelegatingSpanDataTest {
 
     private SpanDataWithClientType(SpanData delegate) {
       super(delegate);
-      final String clientType;
+      String clientType;
       String userAgent = delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT);
       if (userAgent != null) {
         clientType = parseUserAgent(userAgent);

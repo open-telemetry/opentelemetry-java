@@ -148,8 +148,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       List<LinkData> links,
       int totalRecordedLinks,
       long userStartEpochNanos) {
-    final boolean createdAnchoredClock;
-    final AnchoredClock clock;
+    boolean createdAnchoredClock;
+    AnchoredClock clock;
     if (parentSpan instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parentSpan;
       clock = parentRecordEventsSpan.clock;
@@ -159,7 +159,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       createdAnchoredClock = true;
     }
 
-    final long startEpochNanos;
+    long startEpochNanos;
     if (userStartEpochNanos != 0) {
       startEpochNanos = userStartEpochNanos;
     } else if (createdAnchoredClock) {

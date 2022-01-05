@@ -105,7 +105,7 @@ class SdkTracerTest {
 
     // Needs to correlate with the BatchSpanProcessor.Builder's default, which is the only thing
     // this test can guarantee
-    final int defaultMaxQueueSize = 2048;
+    int defaultMaxQueueSize = 2048;
 
     stressTestBuilder.build().run();
     assertThat(countingSpanExporter.numberOfSpansExported.get())

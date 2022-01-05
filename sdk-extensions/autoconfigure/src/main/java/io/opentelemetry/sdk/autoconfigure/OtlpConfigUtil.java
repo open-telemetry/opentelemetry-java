@@ -100,7 +100,7 @@ final class OtlpConfigUtil {
       if (!Files.exists(path)) {
         throw new ConfigurationException("Invalid OTLP certificate path: " + path);
       }
-      final byte[] certificateBytes;
+      byte[] certificateBytes;
       try {
         certificateBytes = Files.readAllBytes(path);
       } catch (IOException e) {
