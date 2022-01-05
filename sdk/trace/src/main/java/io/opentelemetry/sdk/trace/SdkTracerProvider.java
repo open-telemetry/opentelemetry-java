@@ -133,4 +133,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   public void close() {
     shutdown().join(10, TimeUnit.SECONDS);
   }
+
+  @Override
+  public String toString() {
+    return "SdkTracerProvider{" + "sharedState=" + sharedState + '}';
+  }
 }

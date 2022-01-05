@@ -37,4 +37,9 @@ enum RandomIdGenerator implements IdGenerator {
     } while (idLo == INVALID_ID);
     return TraceId.fromLongs(idHi, idLo);
   }
+
+  @Override
+  public String toString() {
+    return "RandomIdGenerator{}";
+  }
 }

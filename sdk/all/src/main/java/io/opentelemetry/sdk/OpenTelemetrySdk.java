@@ -74,6 +74,12 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return propagators;
   }
 
+  @Override
+  public String toString() {
+    // TODO(anuraaga): Add metrics / logs / propagators
+    return "OpenTelemetrySdk{" + "tracerProvider=" + tracerProvider.unobfuscate() + '}';
+  }
+
   /**
    * This class allows the SDK to unobfuscate an obfuscated static global provider.
    *

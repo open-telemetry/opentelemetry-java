@@ -31,4 +31,9 @@ final class NoopSpanProcessor implements SpanProcessor {
   }
 
   private NoopSpanProcessor() {}
+
+  @Override
+  public String toString() {
+    return "NoopSpanProcessor{}";
+  }
 }

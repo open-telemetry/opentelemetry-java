@@ -104,4 +104,22 @@ final class TracerSharedState {
       return shutdownResult;
     }
   }
+
+  @Override
+  public String toString() {
+    return "TracerSharedState{"
+        + "clock="
+        + clock
+        + ", idGenerator="
+        + idGenerator
+        + ", resource="
+        + resource
+        + ", spanLimitsSupplier="
+        + spanLimitsSupplier.get()
+        + ", sampler="
+        + sampler
+        + ", activeSpanProcessor="
+        + activeSpanProcessor
+        + '}';
+  }
 }

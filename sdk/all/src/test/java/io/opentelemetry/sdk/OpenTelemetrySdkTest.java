@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -277,5 +278,31 @@ class OpenTelemetrySdkTest {
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
+  }
+
+  @Test
+  void stringRepresentation() {
+    SpanExporter exporter = mock(SpanExporter.class);
+    when(exporter.toString()).thenReturn("MockSpanExporter{}");
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(
+                        SimpleSpanProcessor.create(SpanExporter.composite(exporter, exporter)))
+                    .build())
+            .build();
+
+    assertThat(sdk.toString())
+        .isEqualTo(
+            "OpenTelemetrySdk{"
+                + "tracerProvider=SdkTracerProvider{"
+                + "sharedState=TracerSharedState{"
+                + "clock=SystemClock{}, "
+                + "idGenerator=RandomIdGenerator{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.10.0-SNAPSHOT\"}}, "
+                + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
+                + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
+                + "activeSpanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}}");
   }
 }
