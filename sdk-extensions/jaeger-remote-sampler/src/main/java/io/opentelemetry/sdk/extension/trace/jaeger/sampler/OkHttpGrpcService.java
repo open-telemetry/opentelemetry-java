@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -186,7 +187,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     // We don't check trailers for retry since retryable error codes always come with response
     // headers, not trailers, in practice.
     String grpcStatus = response.header(GRPC_STATUS);
-    return GrpcStatusUtil.retryableStatusCodes().contains(grpcStatus);
+    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
   }
 
   // From grpc-java

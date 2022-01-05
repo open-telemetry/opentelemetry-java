@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
-import io.opentelemetry.exporter.otlp.internal.okhttp.RetryInterceptor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;

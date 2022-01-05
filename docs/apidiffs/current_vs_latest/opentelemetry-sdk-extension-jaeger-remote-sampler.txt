@@ -1,2 +1,17 @@
 Comparing source compatibility of  against 
-No changes.
+***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder setChannel(io.grpc.ManagedChannel)
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.MarshallerRemoteSamplerServiceGrpc  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
++++  NEW ENUM: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType PROBABILISTIC
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType RATE_LIMITING
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType UNRECOGNIZED
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.SamplingStrategyResponse$SamplingStrategyType[] values()
