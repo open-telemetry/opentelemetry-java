@@ -80,6 +80,7 @@ class JaegerRemoteSamplerTest {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build();
     closer.register(sampler);
@@ -90,8 +91,7 @@ class JaegerRemoteSamplerTest {
 
     // verify
     assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
-    // Default poll interval is 60s, inconceivable to have polled multiple times by now.
-    assertThat(numPolls).hasValue(1);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
@@ -99,6 +99,7 @@ class JaegerRemoteSamplerTest {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build();
     closer.register(sampler);
@@ -110,8 +111,7 @@ class JaegerRemoteSamplerTest {
         .atMost(Duration.ofSeconds(10))
         .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
-    // Default poll interval is 60s, inconceivable to have polled multiple times by now.
-    assertThat(numPolls).hasValue(1);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
