@@ -17,7 +17,7 @@ import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MarshallerRemoteSamplerServiceGrpc {
+class MarshallerRemoteSamplerServiceGrpc {
 
   private static final String SERVICE_NAME = "jaeger.api_v2.SamplingManager";
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 class SamplingStrategyResponse {
 
-  public enum SamplingStrategyType {
+  enum SamplingStrategyType {
     PROBABILISTIC,
     RATE_LIMITING,
     UNRECOGNIZED,

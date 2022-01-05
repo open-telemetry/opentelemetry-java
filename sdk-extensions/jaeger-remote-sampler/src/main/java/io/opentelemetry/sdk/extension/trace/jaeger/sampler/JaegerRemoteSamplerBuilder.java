@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static java.util.Objects.requireNonNull;
 
+import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
@@ -84,6 +85,18 @@ public final class JaegerRemoteSamplerBuilder {
   public JaegerRemoteSamplerBuilder setInitialSampler(Sampler initialSampler) {
     requireNonNull(initialSampler, "initialSampler");
     this.initialSampler = initialSampler;
+    return this;
+  }
+
+  /**
+   * This method is noop and deprecated. The remote sampler implementation uses a custom
+   * implementation backed by Okhttp client.
+   *
+   * @see #setEndpoint(String)
+   */
+  @Deprecated
+  public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     return this;
   }
 
