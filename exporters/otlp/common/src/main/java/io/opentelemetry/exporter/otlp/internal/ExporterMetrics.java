@@ -60,6 +60,12 @@ public class ExporterMetrics {
     return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-grpc"), type);
   }
 
+  /** Create an instance for recording OTLP gRPC OkHttp exporter metrics. */
+  public static ExporterMetrics createGrpcOkHttp(String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(
+        meterProvider.get("io.opentelemetry.exporters.otlp-grpc-okhttp"), type);
+  }
+
   /** Create an instance for recording OTLP http/protobuf exporter metrics. */
   public static ExporterMetrics createHttpProtobuf(String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-http"), type);
