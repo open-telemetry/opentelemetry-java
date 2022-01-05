@@ -212,6 +212,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     return CompletableResultCode.ofSuccess();
   }
 
+  /** Whether response is retriable or not. */
   public static boolean isRetryable(Response response) {
     // Only retry on gRPC codes which will always come with an HTTP success
     if (!response.isSuccessful()) {

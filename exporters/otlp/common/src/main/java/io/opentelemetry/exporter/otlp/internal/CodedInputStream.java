@@ -125,6 +125,7 @@ public final class CodedInputStream {
     return pos == limit;
   }
 
+  /** Read varint32. */
   public int readRawVarint32() throws IOException {
     // See implementation notes for readRawVarint64
     fastpath:
@@ -198,7 +199,7 @@ public final class CodedInputStream {
     return Double.longBitsToDouble(readRawLittleEndian64());
   }
 
-  public long readRawLittleEndian64() throws IOException {
+  private long readRawLittleEndian64() throws IOException {
     int tempPos = pos;
 
     if (limit - tempPos < FIXED64_SIZE) {
