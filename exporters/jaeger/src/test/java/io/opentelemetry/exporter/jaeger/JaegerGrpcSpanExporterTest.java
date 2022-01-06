@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.jaeger;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode; // kjt - added
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -34,7 +34,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets; // kjt -added
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -288,7 +288,7 @@ class JaegerGrpcSpanExporterTest {
     return tags.stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
   }
 
-  @Test // kjt - added
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
     assertThatCode(
