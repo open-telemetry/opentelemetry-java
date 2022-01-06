@@ -121,8 +121,6 @@ final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMars
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
-    Headers.Builder headers = this.headers != null ? this.headers : new Headers.Builder();
-
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (trustedCertificatesPem != null) {

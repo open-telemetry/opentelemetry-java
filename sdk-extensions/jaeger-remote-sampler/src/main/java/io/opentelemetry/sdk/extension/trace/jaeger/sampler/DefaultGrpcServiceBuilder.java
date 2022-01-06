@@ -130,7 +130,7 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   public GrpcService<ReqT, ResT> build() {
     ManagedChannel channel = this.channel;
     if (channel == null) {
-      final ManagedChannelBuilder<?> managedChannelBuilder =
+      ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
       if (endpoint.getScheme().equals("https")) {

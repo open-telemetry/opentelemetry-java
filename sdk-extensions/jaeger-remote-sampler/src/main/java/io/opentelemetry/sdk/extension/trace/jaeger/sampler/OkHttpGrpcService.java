@@ -193,7 +193,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   /** Unescape the provided ascii to a unicode {@link String}. */
   private static String unescape(String value) {
     for (int i = 0; i < value.length(); i++) {
-      final char c = value.charAt(i);
+      char c = value.charAt(i);
       if (c < ' ' || c >= '~' || (c == '%' && i + 2 < value.length())) {
         return doUnescape(value.getBytes(StandardCharsets.US_ASCII));
       }
@@ -202,7 +202,7 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   }
 
   private static String doUnescape(byte[] value) {
-    final ByteBuffer buf = ByteBuffer.allocate(value.length);
+    ByteBuffer buf = ByteBuffer.allocate(value.length);
     for (int i = 0; i < value.length; ) {
       if (value[i] == '%' && i + 2 < value.length) {
         try {
