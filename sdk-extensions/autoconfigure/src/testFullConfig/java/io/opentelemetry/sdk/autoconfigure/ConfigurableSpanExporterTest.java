@@ -104,7 +104,7 @@ public class ConfigurableSpanExporterTest {
                 SpanExporterConfiguration.configureExporter(
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    Collections.emptyMap(),
+                    NamedSpiManager.emptyManager(),
                     MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");

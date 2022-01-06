@@ -25,7 +25,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", EMPTY, Collections.emptyMap(), MeterProvider.noop()))
+                    "otlp", EMPTY, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "OTLP gRPC Trace Exporter enabled but opentelemetry-exporter-otlp not found on "
@@ -40,7 +40,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", config, Collections.emptyMap(), MeterProvider.noop()))
+                    "otlp", config, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "OTLP HTTP Trace Exporter enabled but opentelemetry-exporter-otlp-http-trace not found on "
@@ -52,7 +52,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "jaeger", EMPTY, Collections.emptyMap(), MeterProvider.noop()))
+                    "jaeger", EMPTY, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Jaeger gRPC Exporter enabled but opentelemetry-exporter-jaeger not found on "
@@ -64,7 +64,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "zipkin", EMPTY, Collections.emptyMap(), MeterProvider.noop()))
+                    "zipkin", EMPTY, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Zipkin Exporter enabled but opentelemetry-exporter-zipkin not found on classpath");
@@ -75,7 +75,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "logging", EMPTY, Collections.emptyMap(), MeterProvider.noop()))
+                    "logging", EMPTY, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Logging Trace Exporter enabled but opentelemetry-exporter-logging not found on "

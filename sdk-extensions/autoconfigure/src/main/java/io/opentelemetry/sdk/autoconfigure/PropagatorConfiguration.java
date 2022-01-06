@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -32,7 +31,7 @@ final class PropagatorConfiguration {
       requestedPropagators = Arrays.asList("tracecontext", "baggage");
     }
 
-    Map<String, TextMapPropagator> spiPropagators =
+    NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
         SpiUtil.loadConfigurable(
             ConfigurablePropagatorProvider.class,
             requestedPropagators,
@@ -43,14 +42,14 @@ final class PropagatorConfiguration {
 
     for (String propagatorName : requestedPropagators) {
       propagators.add(
-          propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagators), config));
+          propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagatorsManager), config));
     }
 
     return ContextPropagators.create(TextMapPropagator.composite(propagators));
   }
 
   private static TextMapPropagator getPropagator(
-      String name, Map<String, TextMapPropagator> spiPropagators) {
+      String name, NamedSpiManager<TextMapPropagator> spiPropagatorsManager) {
     if (name.equals("tracecontext")) {
       return W3CTraceContextPropagator.getInstance();
     }
@@ -58,7 +57,7 @@ final class PropagatorConfiguration {
       return W3CBaggagePropagator.getInstance();
     }
 
-    TextMapPropagator spiPropagator = spiPropagators.get(name);
+    TextMapPropagator spiPropagator = spiPropagatorsManager.getByName(name);
     if (spiPropagator != null) {
       return spiPropagator;
     }

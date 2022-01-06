@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +63,7 @@ class OtlpHttpConfigTest {
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
+            "otlp", properties, NamedSpiManager.emptyManager(), MeterProvider.noop());
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
     LogExporter logExporter =
@@ -150,7 +149,7 @@ class OtlpHttpConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
-            Collections.emptyMap(),
+            NamedSpiManager.emptyManager(),
             MeterProvider.noop());
 
     assertThat(spanExporter)
@@ -269,7 +268,7 @@ class OtlpHttpConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, Collections.emptyMap(), MeterProvider.noop()))
+                    "otlp", properties, NamedSpiManager.emptyManager(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

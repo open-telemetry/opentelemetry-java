@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -63,7 +62,7 @@ final class MetricExporterConfiguration {
   @Nullable
   static MetricExporter configureSpiExporter(
       String name, ConfigProperties config, ClassLoader serviceClassLoader) {
-    Map<String, MetricExporter> spiExporters =
+    NamedSpiManager<MetricExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
             ConfigurableMetricExporterProvider.class,
             Collections.singletonList(name),
@@ -71,7 +70,7 @@ final class MetricExporterConfiguration {
             ConfigurableMetricExporterProvider::createExporter,
             config,
             serviceClassLoader);
-    return spiExporters.get(name);
+    return spiExportersManager.getByName(name);
   }
 
   private static void configureLoggingMetrics(

@@ -62,7 +62,7 @@ final class SpanExporterConfiguration {
       exporterNames = Collections.singleton("otlp");
     }
 
-    Map<String, SpanExporter> spiExporters =
+    NamedSpiManager<SpanExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
             exporterNames,
@@ -77,7 +77,7 @@ final class SpanExporterConfiguration {
                 Function.identity(),
                 exporterName ->
                     spanExporterCustomizer.apply(
-                        configureExporter(exporterName, config, spiExporters, meterProvider),
+                        configureExporter(exporterName, config, spiExportersManager, meterProvider),
                         config)));
   }
 
@@ -85,7 +85,7 @@ final class SpanExporterConfiguration {
   static SpanExporter configureExporter(
       String name,
       ConfigProperties config,
-      Map<String, SpanExporter> spiExporters,
+      NamedSpiManager<SpanExporter> spiExportersManager,
       MeterProvider meterProvider) {
     switch (name) {
       case "otlp":
@@ -101,7 +101,7 @@ final class SpanExporterConfiguration {
             "opentelemetry-exporter-logging");
         return LoggingSpanExporter.create();
       default:
-        SpanExporter spiExporter = spiExporters.get(name);
+        SpanExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.traces.exporter: " + name);
         }
