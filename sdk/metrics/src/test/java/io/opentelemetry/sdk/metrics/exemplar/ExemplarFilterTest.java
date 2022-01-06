@@ -45,7 +45,7 @@ class ExemplarFilterTest {
 
   @Test
   void withSampledTrace_sampleWithTrace() {
-    final Context context =
+    Context context =
         Context.root()
             .with(
                 Span.wrap(
@@ -59,7 +59,7 @@ class ExemplarFilterTest {
 
   @Test
   void withSampledTrace_notSampleUnsampledTrace() {
-    final Context context =
+    Context context =
         Context.root()
             .with(
                 Span.wrap(

@@ -33,8 +33,8 @@ final class Actor implements AutoCloseable {
     executor.shutdown();
   }
 
-  public Future<?> tell(final String message) {
-    final Span parent = tracer.scopeManager().activeSpan();
+  public Future<?> tell(String message) {
+    Span parent = tracer.scopeManager().activeSpan();
     phaser.register();
     return executor.submit(
         () -> {
@@ -57,8 +57,8 @@ final class Actor implements AutoCloseable {
         });
   }
 
-  public Future<String> ask(final String message) {
-    final Span parent = tracer.scopeManager().activeSpan();
+  public Future<String> ask(String message) {
+    Span parent = tracer.scopeManager().activeSpan();
     phaser.register();
     Future<String> future =
         executor.submit(

@@ -16,7 +16,6 @@ import java.util.ServiceLoader;
 
 final class MeterProviderConfiguration {
 
-  @SuppressWarnings("deprecation") // Allow call to deprecated GlobalMeterProvider until removed
   static MeterProvider configureMeterProvider(
       Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);

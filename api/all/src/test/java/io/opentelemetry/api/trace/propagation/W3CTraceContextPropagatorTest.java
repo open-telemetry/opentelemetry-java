@@ -76,7 +76,7 @@ class W3CTraceContextPropagatorTest {
 
   @Test
   void inject_NullCarrierUsage() {
-    final Map<String, String> carrier = new LinkedHashMap<>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
             SpanContext.create(

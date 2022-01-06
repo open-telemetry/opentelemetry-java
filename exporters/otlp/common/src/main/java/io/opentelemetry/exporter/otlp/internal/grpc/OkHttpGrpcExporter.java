@@ -230,7 +230,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   /** Unescape the provided ascii to a unicode {@link String}. */
   private static String unescape(String value) {
     for (int i = 0; i < value.length(); i++) {
-      final char c = value.charAt(i);
+      char c = value.charAt(i);
       if (c < ' ' || c >= '~' || (c == '%' && i + 2 < value.length())) {
         return doUnescape(value.getBytes(StandardCharsets.US_ASCII));
       }
@@ -239,7 +239,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   }
 
   private static String doUnescape(byte[] value) {
-    final ByteBuffer buf = ByteBuffer.allocate(value.length);
+    ByteBuffer buf = ByteBuffer.allocate(value.length);
     for (int i = 0; i < value.length; ) {
       if (value[i] == '%' && i + 2 < value.length) {
         try {

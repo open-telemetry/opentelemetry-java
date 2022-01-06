@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_LOGS;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
@@ -27,6 +28,7 @@ class OtlpConfigUtilTest {
   private static final String GENERIC_ENDPOINT_KEY = "otel.exporter.otlp.endpoint";
   private static final String TRACES_ENDPOINT_KEY = "otel.exporter.otlp.traces.endpoint";
   private static final String METRICS_ENDPOINT_KEY = "otel.exporter.otlp.metrics.endpoint";
+  private static final String LOGS_ENDPOINT_KEY = "otel.exporter.otlp.logs.endpoint";
 
   @Test
   void getOtlpProtocolDefault() {
@@ -168,6 +170,30 @@ class OtlpConfigUtilTest {
             configureEndpointForHttp(
                 DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
         .isEqualTo("http://localhost:4318/v1/traces/v1/metrics");
+
+    assertThat(
+            configureEndpointForHttp(DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo"))
+        .isEqualTo("http://localhost:4318/foo/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo/"))
+        .isEqualTo("http://localhost:4318/foo/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/logs"))
+        .isEqualTo("http://localhost:4318/v1/logs/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
+        .isEqualTo("http://localhost:4318/v1/traces/v1/logs");
   }
 
   @Test
@@ -236,6 +262,36 @@ class OtlpConfigUtilTest {
                     GENERIC_ENDPOINT_KEY,
                     "http://localhost:4318/foo/bar",
                     METRICS_ENDPOINT_KEY,
+                    "http://localhost:4318/baz/qux")))
+        .isEqualTo("http://localhost:4318/baz/qux");
+  }
+
+  @Test
+  void configureOtlpExporterBuilder_HttpLogsEndpointKey() {
+    assertThat(configureEndpointForHttp(DATA_TYPE_LOGS, LOGS_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
+    assertThat(configureEndpointForHttp(DATA_TYPE_LOGS, LOGS_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
+    assertThat(
+            configureEndpointForHttp(DATA_TYPE_LOGS, LOGS_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, LOGS_ENDPOINT_KEY, "http://localhost:4318/v1/logs"))
+        .isEqualTo("http://localhost:4318/v1/logs");
+    assertThat(
+            configureEndpointForHttp(
+                DATA_TYPE_LOGS, LOGS_ENDPOINT_KEY, "http://localhost:4318/foo/bar"))
+        .isEqualTo("http://localhost:4318/foo/bar");
+    assertThat(
+            configureEndpoint(
+                DATA_TYPE_LOGS,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    PROTOCOL_HTTP_PROTOBUF,
+                    GENERIC_ENDPOINT_KEY,
+                    "http://localhost:4318/foo/bar",
+                    LOGS_ENDPOINT_KEY,
                     "http://localhost:4318/baz/qux")))
         .isEqualTo("http://localhost:4318/baz/qux");
   }

@@ -24,8 +24,8 @@ final class Client {
     this.requestHandler = requestHandler;
   }
 
-  public Future<String> send(final Object message) {
-    final Context context = new Context();
+  public Future<String> send(Object message) {
+    Context context = new Context();
     return executor.submit(
         () -> {
           logger.info("send {}", message);

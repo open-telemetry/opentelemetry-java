@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -728,8 +727,8 @@ class SdkMeterProviderTest {
             .registerMetricReader(collector2)
             .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
-    final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
-    final long startTime = testClock.now();
+    LongCounter counter = sdkMeter.counterBuilder("testSum").build();
+    long startTime = testClock.now();
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
@@ -807,8 +806,8 @@ class SdkMeterProviderTest {
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
-    final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
-    final long startTime = testClock.now();
+    LongCounter counter = sdkMeter.counterBuilder("testSum").build();
+    long startTime = testClock.now();
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));

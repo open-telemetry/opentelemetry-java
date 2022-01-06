@@ -144,7 +144,7 @@ class TraceIdRatioBasedSamplerTest {
 
   @Test
   void sampleBasedOnTraceId() {
-    final Sampler defaultProbability = Sampler.traceIdRatioBased(0.0001);
+    Sampler defaultProbability = Sampler.traceIdRatioBased(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
     String notSampledTraceId = "00000000000000008fffffffffffffff";

@@ -42,7 +42,7 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(point.getAttributes());
 
-    final ProtoFieldInfo valueField;
+    ProtoFieldInfo valueField;
     if (point instanceof LongPointData) {
       valueField = NumberDataPoint.AS_INT;
     } else {

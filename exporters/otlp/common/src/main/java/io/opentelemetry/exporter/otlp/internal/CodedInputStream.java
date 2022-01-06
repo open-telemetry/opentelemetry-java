@@ -49,6 +49,7 @@ import java.nio.charset.StandardCharsets;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@SuppressWarnings("UnnecessaryFinal")
 public final class CodedInputStream {
 
   private final byte[] buffer;

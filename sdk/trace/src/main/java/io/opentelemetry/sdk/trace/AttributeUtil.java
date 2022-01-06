@@ -25,8 +25,7 @@ final class AttributeUtil {
    * lengthLimit} limits the length of attribute string and string list values.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes applyAttributesLimit(
-      final Attributes attributes, final int countLimit, int lengthLimit) {
+  static Attributes applyAttributesLimit(Attributes attributes, int countLimit, int lengthLimit) {
     if (attributes.isEmpty() || attributes.size() <= countLimit) {
       if (lengthLimit == Integer.MAX_VALUE) {
         return attributes;

@@ -27,7 +27,7 @@ public final class BaggageHandlingTest {
 
   @Test
   void test_multithreaded() throws Exception {
-    final Span span = tracer.buildSpan("one").start();
+    Span span = tracer.buildSpan("one").start();
     span.setBaggageItem("key1", "value1");
 
     Future<?> f =

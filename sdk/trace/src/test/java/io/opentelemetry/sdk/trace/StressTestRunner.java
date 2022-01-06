@@ -27,9 +27,9 @@ abstract class StressTestRunner {
   final void run() {
     List<Operation> operations = getOperations();
     int numThreads = operations.size();
-    final CountDownLatch countDownLatch = new CountDownLatch(numThreads);
+    CountDownLatch countDownLatch = new CountDownLatch(numThreads);
     List<Thread> operationThreads = new ArrayList<>(numThreads);
-    for (final Operation operation : operations) {
+    for (Operation operation : operations) {
       operationThreads.add(
           new Thread(
               () -> {
@@ -67,7 +67,7 @@ abstract class StressTestRunner {
 
     abstract Builder setSpanProcessor(SpanProcessor spanProcessor);
 
-    Builder addOperation(final Operation operation) {
+    Builder addOperation(Operation operation) {
       operationsBuilder().add(operation);
       return this;
     }

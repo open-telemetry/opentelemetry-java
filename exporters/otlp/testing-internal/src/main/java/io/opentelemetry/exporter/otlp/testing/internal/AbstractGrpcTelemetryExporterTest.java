@@ -125,7 +125,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     @Override
     protected CompletionStage<byte[]> handleMessage(ServiceRequestContext ctx, byte[] message) {
       attempts.incrementAndGet();
-      final T request;
+      T request;
       try {
         request = parse.extractThrows(message);
       } catch (InvalidProtocolBufferException e) {

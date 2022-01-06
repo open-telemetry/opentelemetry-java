@@ -87,7 +87,7 @@ class OtTracePropagatorTest {
 
   @Test
   void inject_SampledContext_nullCarrierUsage() {
-    final Map<String, String> carrier = new LinkedHashMap<>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()),

@@ -135,7 +135,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   public GrpcExporter<T> build() {
     ManagedChannel channel = this.channel;
     if (channel == null) {
-      final ManagedChannelBuilder<?> managedChannelBuilder =
+      ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
       if (endpoint.getScheme().equals("https")) {

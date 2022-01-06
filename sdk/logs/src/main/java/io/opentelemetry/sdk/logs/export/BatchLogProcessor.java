@@ -247,13 +247,13 @@ public final class BatchLogProcessor implements LogProcessor {
     }
 
     private CompletableResultCode shutdown() {
-      final CompletableResultCode result = new CompletableResultCode();
+      CompletableResultCode result = new CompletableResultCode();
 
-      final CompletableResultCode flushResult = forceFlush();
+      CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(
           () -> {
             continueWork = false;
-            final CompletableResultCode shutdownResult = logExporter.shutdown();
+            CompletableResultCode shutdownResult = logExporter.shutdown();
             shutdownResult.whenComplete(
                 () -> {
                   if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
@@ -286,8 +286,7 @@ public final class BatchLogProcessor implements LogProcessor {
       }
 
       try {
-        final CompletableResultCode result =
-            logExporter.export(Collections.unmodifiableList(batch));
+        CompletableResultCode result = logExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           processedLogsCounter.add(batch.size(), exportedAttrs);

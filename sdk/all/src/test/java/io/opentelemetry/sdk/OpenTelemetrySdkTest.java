@@ -183,14 +183,14 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testTracerBuilder() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
   void testTracerBuilderViaProvider() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }

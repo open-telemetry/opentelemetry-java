@@ -19,8 +19,8 @@ final class Client {
     this.requestHandler = requestHandler;
   }
 
-  public Future<String> send(final Object message) {
-    final RequestHandlerContext requestHandlerContext = new RequestHandlerContext();
+  public Future<String> send(Object message) {
+    RequestHandlerContext requestHandlerContext = new RequestHandlerContext();
     return executor.submit(
         () -> {
           TestUtils.sleep();

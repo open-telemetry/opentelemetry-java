@@ -197,7 +197,7 @@ class JaegerRemoteSamplerTest {
   }
 
   static ThrowingRunnable samplerIsType(
-      final JaegerRemoteSampler sampler, final Class<? extends Sampler> expected) {
+      JaegerRemoteSampler sampler, Class<? extends Sampler> expected) {
     return () -> {
       assertThat(sampler.getSampler().getClass().getName())
           .isEqualTo("io.opentelemetry.sdk.trace.samplers.ParentBasedSampler");

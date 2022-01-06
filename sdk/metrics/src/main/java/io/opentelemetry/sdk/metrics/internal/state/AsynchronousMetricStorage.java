@@ -67,7 +67,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     }
     AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
-    final ObservableDoubleMeasurement result =
+    ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
           @Override
           public void record(double value, Attributes attributes) {

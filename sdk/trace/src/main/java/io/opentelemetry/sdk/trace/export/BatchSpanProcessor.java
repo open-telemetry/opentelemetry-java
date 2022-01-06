@@ -264,13 +264,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private CompletableResultCode shutdown() {
-      final CompletableResultCode result = new CompletableResultCode();
+      CompletableResultCode result = new CompletableResultCode();
 
-      final CompletableResultCode flushResult = forceFlush();
+      CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(
           () -> {
             continueWork = false;
-            final CompletableResultCode shutdownResult = spanExporter.shutdown();
+            CompletableResultCode shutdownResult = spanExporter.shutdown();
             shutdownResult.whenComplete(
                 () -> {
                   if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
@@ -303,8 +303,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       }
 
       try {
-        final CompletableResultCode result =
-            spanExporter.export(Collections.unmodifiableList(batch));
+        CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           processedSpansCounter.add(batch.size(), exportedAttrs);

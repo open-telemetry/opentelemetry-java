@@ -245,7 +245,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportMoreSpansThanTheMaximumLimit() {
-    final int maxQueuedSpans = 8;
+    int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(maxQueuedSpans, CompletableResultCode.ofSuccess());
     sdkTracerProvider =

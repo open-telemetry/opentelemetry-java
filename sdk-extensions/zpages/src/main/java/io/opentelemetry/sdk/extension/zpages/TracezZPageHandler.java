@@ -383,7 +383,7 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   private static String renderAttributes(Attributes attributes) {
-    final StringBuilder stringBuilder = new StringBuilder();
+    StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
         new BiConsumer<AttributeKey<?>, Object>() {

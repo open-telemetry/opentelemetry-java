@@ -58,7 +58,7 @@ public final class LateSpanFinishTest {
    * Fire away a few subtasks, passing a parent Span whose lifetime
    * is not tied at-all to the children
    */
-  private void submitTasks(final Span parentSpan) {
+  private void submitTasks(Span parentSpan) {
 
     executor.submit(
         () -> {

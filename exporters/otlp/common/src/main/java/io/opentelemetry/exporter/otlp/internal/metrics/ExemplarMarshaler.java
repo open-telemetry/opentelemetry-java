@@ -42,7 +42,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(exemplar.getFilteredAttributes());
 
-    final ProtoFieldInfo valueField;
+    ProtoFieldInfo valueField;
     if (exemplar instanceof LongExemplarData) {
       valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
     } else {

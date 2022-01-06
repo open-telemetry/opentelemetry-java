@@ -110,7 +110,7 @@ class SdkSpanBuilderTest {
 
   @Test
   void truncateLink() {
-    final int maxNumberOfLinks = 8;
+    int maxNumberOfLinks = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfLinks(maxNumberOfLinks).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
@@ -398,7 +398,7 @@ class SdkSpanBuilderTest {
 
   @Test
   void droppingAttributes() {
-    final int maxNumberOfAttrs = 8;
+    int maxNumberOfAttrs = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
@@ -596,7 +596,7 @@ class SdkSpanBuilderTest {
 
   @Test
   void sampler_decisionAttributes() {
-    final String samplerAttributeName = "sampler-attribute";
+    String samplerAttributeName = "sampler-attribute";
     AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
@@ -647,7 +647,7 @@ class SdkSpanBuilderTest {
 
   @Test
   void sampler_updatedTraceState() {
-    final String samplerAttributeName = "sampler-attribute";
+    String samplerAttributeName = "sampler-attribute";
     AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
@@ -754,9 +754,9 @@ class SdkSpanBuilderTest {
 
   @Test
   void noParent_override() {
-    final Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try {
-      final Context parentContext = Context.current().with(parent);
+      Context parentContext = Context.current().with(parent);
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
               sdkTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
@@ -768,7 +768,7 @@ class SdkSpanBuilderTest {
         assertThat(span.toSpanData().getParentSpanId())
             .isEqualTo(parent.getSpanContext().getSpanId());
 
-        final Context parentContext2 = Context.current().with(parent);
+        Context parentContext2 = Context.current().with(parent);
         RecordEventsReadableSpan span2 =
             (RecordEventsReadableSpan)
                 sdkTracer
@@ -797,7 +797,7 @@ class SdkSpanBuilderTest {
     Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try {
 
-      final Context parentContext = Context.current().with(parent);
+      Context parentContext = Context.current().with(parent);
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
               sdkTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
@@ -818,10 +818,10 @@ class SdkSpanBuilderTest {
 
   @Test
   void parent_fromContext() {
-    final Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
-    final Context context = Context.current().with(parent);
+    Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+    Context context = Context.current().with(parent);
     try {
-      final RecordEventsReadableSpan span =
+      RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
               sdkTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
       try {
@@ -870,7 +870,7 @@ class SdkSpanBuilderTest {
   void parentCurrentSpan() {
     Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try (Scope ignored = parent.makeCurrent()) {
-      final Context implicitParent = Context.current();
+      Context implicitParent = Context.current();
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) sdkTracer.spanBuilder(SPAN_NAME).startSpan();
       try {
@@ -892,7 +892,7 @@ class SdkSpanBuilderTest {
   void parent_invalidContext() {
     Span parent = Span.getInvalid();
 
-    final Context parentContext = Context.current().with(parent);
+    Context parentContext = Context.current().with(parent);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             sdkTracer.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();

@@ -141,7 +141,7 @@ class SpanShimTest {
   @Test
   public void log_error_with_exception() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
-    final Map<String, Object> fields = createExceptionFields();
+    Map<String, Object> fields = createExceptionFields();
     fields.putAll(createErrorFields());
 
     long micros = 123447307984L;

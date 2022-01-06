@@ -101,7 +101,7 @@ class JaegerThriftIntegrationTest {
               .header("Accept", "application/json")
               .build();
 
-      final TreeNode json;
+      TreeNode json;
       try (Response response = client.newCall(request).execute()) {
         json =
             JSON.builder()

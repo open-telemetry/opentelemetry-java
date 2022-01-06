@@ -117,7 +117,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     Thread thread =
         THREAD_FACTORY.newThread(
             () -> {
@@ -180,7 +180,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
       } else {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-        final OutputStreamWriter writer;
+        OutputStreamWriter writer;
         if (compress) {
           writer =
               new OutputStreamWriter(

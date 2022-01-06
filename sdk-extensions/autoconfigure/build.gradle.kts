@@ -9,6 +9,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 dependencies {
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
+  api(project(":sdk:logs"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":semconv"))
@@ -17,9 +18,11 @@ dependencies {
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:metrics"))
+  compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:otlp-http:trace"))
   compileOnly(project(":exporters:otlp-http:metrics"))
+  compileOnly(project(":exporters:otlp-http:logs"))
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
 
@@ -44,6 +47,7 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
 
@@ -58,6 +62,7 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
@@ -76,6 +81,7 @@ testing {
         all {
           testTask {
             environment("OTEL_METRICS_EXPORTER", "otlp")
+            environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
@@ -121,6 +127,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:metrics"))
+        implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
@@ -142,6 +149,7 @@ testing {
       dependencies {
         implementation(project(":exporters:otlp-http:trace"))
         implementation(project(":exporters:otlp-http:metrics"))
+        implementation(project(":exporters:otlp-http:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
 
