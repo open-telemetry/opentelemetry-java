@@ -92,7 +92,7 @@ public final class JaegerGrpcSpanExporterBuilder {
     delegate.setTrustedCertificates(trustedCertificatesPem);
     return this;
   }
-  
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
