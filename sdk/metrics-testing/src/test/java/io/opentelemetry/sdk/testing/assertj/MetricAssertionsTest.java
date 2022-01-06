@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -27,6 +28,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -192,6 +194,10 @@ public class MetricAssertionsTest {
   private static final DoubleSummaryPointData DOUBLE_SUMMARY_POINT_DATA =
       DoubleSummaryPointData.create(
           1, 2, Attributes.empty(), 1, 2, Collections.singletonList(PERCENTILE_VALUE));
+
+  private static final DoubleHistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =
+      DoubleHistogramPointData.create(
+          1, 2, Attributes.empty(), 15, Collections.singletonList(10.0), Arrays.asList(1L, 2L));
 
   @Test
   void metric_passing() {
@@ -437,6 +443,37 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_SUMMARY_POINT_DATA)
                     .hasPercentileValues(ValueAtPercentile.create(1, 1)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void doubleHistogramPointData_passing() {
+    assertThat(DOUBLE_HISTOGRAM_POINT_DATA)
+        .hasCount(3)
+        .hasSum(15)
+        .hasSumGreaterThan(10)
+        .hasEpochNanos(2)
+        .hasStartEpochNanos(1)
+        .hasAttributes(Attributes.empty())
+        .hasBucketBoundaries(10)
+        .hasBucketCounts(1, 2);
+  }
+
+  @Test
+  void doubleHistogramPointData_failing() {
+    assertThatThrownBy(() -> assertThat(DOUBLE_HISTOGRAM_POINT_DATA).hasCount(2))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(() -> assertThat(DOUBLE_HISTOGRAM_POINT_DATA).hasSum(1))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(() -> assertThat(DOUBLE_HISTOGRAM_POINT_DATA).hasSumGreaterThan(20))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(() -> assertThat(DOUBLE_HISTOGRAM_POINT_DATA).hasBucketBoundaries(1, 2, 3))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(() -> assertThat(DOUBLE_HISTOGRAM_POINT_DATA).hasBucketCounts(1, 2, 3))
         .isInstanceOf(AssertionError.class);
   }
 }
