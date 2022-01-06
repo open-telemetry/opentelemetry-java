@@ -35,6 +35,15 @@ and not something we can control. If you require logging during shutdown hooks, 
 that might shut itself down in a shutdown hook, thus suppressing your log messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253)
 for more details.
 
+It is possible to skip the automatic registration of the shutdown hook by using the following configuration item:
+
+| System property                  | Environment variable             | Description                                                          |
+|----------------------------------|----------------------------------|----------------------------------------------------------------------|
+| otel.java.register.shutdown.hook | OTEL_JAVA_REGISTER_SHUTDOWN_HOOK | If `false` skips the shutdown hook registration. Default is `true`. |
+
+Skipping the registration of the shutdown hook may cause unexpected behaviour. This configuration is intended for SDK consumers that
+require control over the SDK lifecycle. In this case, alternatives must be provided by the SDK consumer to properly shut down the SDK.
+
 ## Exporters
 
 The following configuration properties are common to all exporters:

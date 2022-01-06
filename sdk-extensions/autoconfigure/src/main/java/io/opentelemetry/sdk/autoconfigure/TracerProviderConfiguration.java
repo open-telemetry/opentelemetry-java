@@ -67,7 +67,10 @@ final class TracerProviderConfiguration {
         .forEach(tracerProviderBuilder::addSpanProcessor);
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
+    Boolean shutdownHook = config.getBoolean("otel.java.register.shutdown.hook");
+    if (shutdownHook == null || shutdownHook) {
+      Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
+    }
     return tracerProvider;
   }
 
