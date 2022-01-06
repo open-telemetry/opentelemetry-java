@@ -21,7 +21,7 @@ interface GrpcService<ReqT extends Marshaler, ResT extends UnMarshaller> {
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ?, ?>>> stubFactory,
+      Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ResT, ?>>> stubFactory,
       String grpcServiceName,
       String grpcEndpointPath) {
     return GrpcServiceUtil.serviceBuilder(

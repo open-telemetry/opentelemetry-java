@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class JaegerRemoteSamplerTest {
+class JaegerRemoteSamplerGrpcNettyTest {
 
   private static final String SERVICE_NAME = "my-service";
   private static final int RATE = 999;
@@ -191,9 +191,9 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  void usingOkHttp() {
+  void usingGrpc() {
     assertThat(JaegerRemoteSampler.builder().getDelegate())
-        .isInstanceOf(OkHttpGrpcServiceBuilder.class);
+        .isInstanceOf(DefaultGrpcServiceBuilder.class);
   }
 
   static ThrowingRunnable samplerIsType(

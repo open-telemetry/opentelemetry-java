@@ -35,32 +35,35 @@ class MarshallerRemoteSamplerServiceGrpc {
             }
           };
 
-  private static final MethodDescriptor.Marshaller<SamplingStrategyResponse> RESPONSE_MARSHALLER =
-      new MethodDescriptor.Marshaller<SamplingStrategyResponse>() {
-        @Override
-        public InputStream stream(SamplingStrategyResponse value) {
-          throw new UnsupportedOperationException("Only for parsing");
-        }
+  private static final MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaller>
+      RESPONSE_MARSHALLER =
+          new MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaller>() {
+            @Override
+            public InputStream stream(SamplingStrategyResponseUnMarshaller value) {
+              throw new UnsupportedOperationException("Only for parsing");
+            }
 
-        @Override
-        public SamplingStrategyResponse parse(InputStream stream) {
-          SamplingStrategyResponseUnMarshaller unmarshaller =
-              new SamplingStrategyResponseUnMarshaller();
-          try {
-            unmarshaller.read(stream);
-          } catch (IOException e) {
-            // could not parse response
-            throw new IllegalStateException("could not parse jaeger remote sampling response", e);
-          }
-          return unmarshaller.get();
-        }
-      };
+            @Override
+            public SamplingStrategyResponseUnMarshaller parse(InputStream stream) {
+              SamplingStrategyResponseUnMarshaller unmarshaller =
+                  new SamplingStrategyResponseUnMarshaller();
+              try {
+                unmarshaller.read(stream);
+              } catch (IOException e) {
+                // could not parse response
+                throw new IllegalStateException(
+                    "could not parse jaeger remote sampling response", e);
+              }
+              return unmarshaller;
+            }
+          };
 
   private static final MethodDescriptor<
-          SamplingStrategyParametersMarshaller, SamplingStrategyResponse>
+          SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
       getPostSpansMethod =
           MethodDescriptor
-              .<SamplingStrategyParametersMarshaller, SamplingStrategyResponse>newBuilder()
+              .<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+                  newBuilder()
               .setType(MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetSamplingStrategy"))
               .setRequestMarshaller(REQUEST_MARSHALLER)
@@ -74,7 +77,7 @@ class MarshallerRemoteSamplerServiceGrpc {
   static final class SamplingManagerFutureStub
       extends MarshalerServiceStub<
           SamplingStrategyParametersMarshaller,
-          SamplingStrategyResponse,
+          SamplingStrategyResponseUnMarshaller,
           SamplingManagerFutureStub> {
 
     private SamplingManagerFutureStub(Channel channel, CallOptions callOptions) {
@@ -87,7 +90,7 @@ class MarshallerRemoteSamplerServiceGrpc {
     }
 
     @Override
-    public ListenableFuture<SamplingStrategyResponse> export(
+    public ListenableFuture<SamplingStrategyResponseUnMarshaller> export(
         SamplingStrategyParametersMarshaller request) {
       return ClientCalls.futureUnaryCall(
           getChannel().newCall(getPostSpansMethod, getCallOptions()), request);

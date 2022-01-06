@@ -34,7 +34,29 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("org.testcontainers:junit-jupiter")
-  testImplementation("io.grpc:grpc-testing")
+}
+
+testing {
+  suites {
+    val testGrpcNetty by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":sdk:testing"))
+        implementation("com.fasterxml.jackson.jr:jackson-jr-stree")
+        implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc-protocol")
+        implementation("org.testcontainers:junit-jupiter")
+        implementation("io.grpc:grpc-netty")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
 }
 
 wire {

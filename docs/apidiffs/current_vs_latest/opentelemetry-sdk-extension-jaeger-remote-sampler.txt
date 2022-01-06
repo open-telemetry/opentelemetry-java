@@ -1,5 +1,2 @@
 Comparing source compatibility of  against 
-===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder setChannel(io.grpc.ManagedChannel)
-		+++  NEW ANNOTATION: java.lang.Deprecated
+No changes.

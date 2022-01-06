@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
+import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
@@ -26,7 +27,7 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 
-class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
+final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
     implements GrpcServiceBuilder<ReqT, ResT> {
 
   private final String type;
@@ -41,13 +42,17 @@ class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller
   private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
-  // Visible for testing
-  public OkHttpGrpcServiceBuilder(
+  OkHttpGrpcServiceBuilder(
       String type, String grpcEndpointPath, long defaultTimeoutSecs, URI defaultEndpoint) {
     this.type = type;
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
+  }
+
+  @Override
+  public GrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
+    throw new UnsupportedOperationException("Only available on DefaultGrpcService");
   }
 
   @Override

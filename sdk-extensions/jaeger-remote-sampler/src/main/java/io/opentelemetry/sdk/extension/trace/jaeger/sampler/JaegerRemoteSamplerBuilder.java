@@ -89,14 +89,12 @@ public final class JaegerRemoteSamplerBuilder {
   }
 
   /**
-   * This method is noop and deprecated. The remote sampler implementation uses a custom
-   * implementation backed by Okhttp client.
-   *
-   * @see #setEndpoint(String)
+   * Sets the managed channel to use when communicating with the backend. Takes precedence over
+   * {@link #setEndpoint(String)} if both are called.
    */
-  @Deprecated
   public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
     requireNonNull(channel, "channel");
+    delegate.setChannel(channel);
     return this;
   }
 
@@ -119,5 +117,11 @@ public final class JaegerRemoteSamplerBuilder {
             () -> MarshallerRemoteSamplerServiceGrpc::newFutureStub,
             GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
+  }
+
+  // Visible for testing
+  GrpcServiceBuilder<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+      getDelegate() {
+    return delegate;
   }
 }
