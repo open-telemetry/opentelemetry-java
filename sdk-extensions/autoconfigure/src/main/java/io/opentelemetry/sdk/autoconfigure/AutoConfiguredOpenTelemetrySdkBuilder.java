@@ -210,7 +210,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
-      logger.log(Level.FINE, "Global OpenTelemetrySdk set to {0}", openTelemetrySdk);
+      logger.log(
+          Level.FINE, "Global OpenTelemetrySdk set to {0} by autoconfiguration", openTelemetrySdk);
     }
 
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
