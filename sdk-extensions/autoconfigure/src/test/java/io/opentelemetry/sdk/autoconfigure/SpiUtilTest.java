@@ -90,8 +90,7 @@ public class SpiUtilTest {
     String exceptionMessage = "failure to initialize should throw";
     SpiExampleProvider mockProvider = mock(SpiExampleProvider.class);
     when(mockProvider.getName()).thenReturn("init-failure-example");
-    when(mockProvider.createSpiExample(any()))
-        .thenThrow(new RuntimeException());
+    when(mockProvider.createSpiExample(any())).thenThrow(new RuntimeException());
 
     SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
     when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
@@ -105,7 +104,9 @@ public class SpiUtilTest {
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertThrows(RuntimeException.class, () -> spiProvider.getByName("init-failure-example"),
+    assertThrows(
+        RuntimeException.class,
+        () -> spiProvider.getByName("init-failure-example"),
         exceptionMessage);
   }
 

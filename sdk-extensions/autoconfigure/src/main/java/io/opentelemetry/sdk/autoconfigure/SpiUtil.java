@@ -31,12 +31,7 @@ final class SpiUtil {
       ConfigProperties config,
       ClassLoader serviceClassLoader) {
     return loadConfigurable(
-        spiClass,
-        getName,
-        getConfigurable,
-        config,
-        serviceClassLoader,
-        ServiceLoader::load);
+        spiClass, getName, getConfigurable, config, serviceClassLoader, ServiceLoader::load);
   }
 
   // VisibleForTesting
@@ -50,9 +45,7 @@ final class SpiUtil {
     Map<String, Supplier<T>> nameToProvider = new HashMap<>();
     for (U provider : serviceLoaderFinder.load(spiClass, serviceClassLoader)) {
       String name = getName.apply(provider);
-      nameToProvider.put(
-          name,
-          () -> getConfigurable.apply(provider, config));
+      nameToProvider.put(name, () -> getConfigurable.apply(provider, config));
     }
     return new LazyLoadingNamedSpiManager<>(nameToProvider);
   }
