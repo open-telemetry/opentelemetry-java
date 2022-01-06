@@ -60,7 +60,7 @@ public final class SimpleLogProcessor implements LogProcessor {
   public void emit(LogData logData) {
     try {
       List<LogData> logs = Collections.singletonList(logData);
-      final CompletableResultCode result = logExporter.export(logs);
+      CompletableResultCode result = logExporter.export(logs);
       pendingExports.add(result);
       result.whenComplete(
           () -> {
@@ -79,12 +79,12 @@ public final class SimpleLogProcessor implements LogProcessor {
     if (isShutdown.getAndSet(true)) {
       return CompletableResultCode.ofSuccess();
     }
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
 
-    final CompletableResultCode flushResult = forceFlush();
+    CompletableResultCode flushResult = forceFlush();
     flushResult.whenComplete(
         () -> {
-          final CompletableResultCode shutdownResult = logExporter.shutdown();
+          CompletableResultCode shutdownResult = logExporter.shutdown();
           shutdownResult.whenComplete(
               () -> {
                 if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {

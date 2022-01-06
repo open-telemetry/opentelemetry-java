@@ -37,8 +37,8 @@ final class Promise<T> {
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
-  void success(final T result) {
-    for (final SuccessCallback<T> callback : successCallbacks) {
+  void success(T result) {
+    for (SuccessCallback<T> callback : successCallbacks) {
       context.submit(
           () -> {
             Span childSpan = tracer.spanBuilder("success").setParent(parent).startSpan();
@@ -54,8 +54,8 @@ final class Promise<T> {
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
-  void error(final Throwable error) {
-    for (final ErrorCallback callback : errorCallbacks) {
+  void error(Throwable error) {
+    for (ErrorCallback callback : errorCallbacks) {
       context.submit(
           () -> {
             Span childSpan = tracer.spanBuilder("error").setParent(parent).startSpan();

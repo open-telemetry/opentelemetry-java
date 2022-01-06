@@ -49,14 +49,13 @@ class SamplingResultTest {
 
   @Test
   void hasAttributes() {
-    final Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
-    final SamplingResult sampledSamplingResult =
+    Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
+    SamplingResult sampledSamplingResult =
         SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attrs);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
     assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
-    final SamplingResult notSampledSamplingResult =
-        SamplingResult.create(SamplingDecision.DROP, attrs);
+    SamplingResult notSampledSamplingResult = SamplingResult.create(SamplingDecision.DROP, attrs);
     assertThat(notSampledSamplingResult.getDecision()).isEqualTo(SamplingDecision.DROP);
     assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }

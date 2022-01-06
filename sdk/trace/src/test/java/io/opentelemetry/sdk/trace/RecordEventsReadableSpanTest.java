@@ -767,7 +767,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void droppingAttributes() {
-    final int maxNumberOfAttributes = 8;
+    int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
         SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
@@ -802,7 +802,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void droppingAndAddingAttributes() {
-    final int maxNumberOfAttributes = 8;
+    int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
         SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
@@ -837,7 +837,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void droppingEvents() {
-    final int maxNumberOfEvents = 8;
+    int maxNumberOfEvents = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
     try {
@@ -1073,7 +1073,7 @@ class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      final Attributes attributes,
+      Attributes attributes,
       List<EventData> eventData,
       List<LinkData> links,
       String spanName,
@@ -1113,7 +1113,7 @@ class RecordEventsReadableSpanTest {
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
-    final AttributesMap attributesWithCapacity = new AttributesMap(32, Integer.MAX_VALUE);
+    AttributesMap attributesWithCapacity = new AttributesMap(32, Integer.MAX_VALUE);
     attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
@@ -1177,7 +1177,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void testConcurrentModification() throws ExecutionException, InterruptedException {
-    final RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
         es.submit(

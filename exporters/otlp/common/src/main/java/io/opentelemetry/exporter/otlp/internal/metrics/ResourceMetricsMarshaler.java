@@ -41,7 +41,7 @@ public final class ResourceMetricsMarshaler extends MarshalerWithSize {
     int posResource = 0;
     for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> entry :
         resourceAndLibraryMap.entrySet()) {
-      final InstrumentationLibraryMetricsMarshaler[] instrumentationLibrarySpansMarshalers =
+      InstrumentationLibraryMetricsMarshaler[] instrumentationLibrarySpansMarshalers =
           new InstrumentationLibraryMetricsMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
       for (Map.Entry<InstrumentationLibraryInfo, List<Marshaler>> entryIs :

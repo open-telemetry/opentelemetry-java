@@ -93,7 +93,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
 
-    final Span.Builder spanBuilder =
+    Span.Builder spanBuilder =
         Span.newBuilder()
             .traceId(spanData.getTraceId())
             .id(spanData.getSpanId())
@@ -220,13 +220,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   @Override
-  public CompletableResultCode export(final Collection<SpanData> spanDataList) {
+  public CompletableResultCode export(Collection<SpanData> spanDataList) {
     List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData)));
     }
 
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     sender
         .sendSpans(encodedSpans)
         .enqueue(

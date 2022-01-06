@@ -24,8 +24,8 @@ class Client {
     this.parentDoneLatch = parentDoneLatch;
   }
 
-  public Future<Object> send(final Object message) {
-    final Context parent = Context.current();
+  public Future<Object> send(Object message) {
+    Context parent = Context.current();
 
     return executor.submit(
         () -> {

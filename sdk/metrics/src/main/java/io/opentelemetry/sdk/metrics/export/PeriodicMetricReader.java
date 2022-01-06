@@ -66,7 +66,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     ScheduledFuture<?> scheduledFuture = this.scheduledFuture;
     if (scheduledFuture != null) {
       scheduledFuture.cancel(false);
@@ -74,7 +74,7 @@ public final class PeriodicMetricReader implements MetricReader {
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      final CompletableResultCode flushResult = scheduled.doRun();
+      CompletableResultCode flushResult = scheduled.doRun();
       flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
@@ -82,7 +82,7 @@ public final class PeriodicMetricReader implements MetricReader {
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
-      final CompletableResultCode shutdownResult = scheduled.shutdown();
+      CompletableResultCode shutdownResult = scheduled.shutdown();
       shutdownResult.whenComplete(
           () -> {
             if (!shutdownResult.isSuccess()) {
@@ -119,10 +119,10 @@ public final class PeriodicMetricReader implements MetricReader {
 
     // Runs a collect + export cycle.
     CompletableResultCode doRun() {
-      final CompletableResultCode flushResult = new CompletableResultCode();
+      CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          final CompletableResultCode result = exporter.export(producer.collectAllMetrics());
+          CompletableResultCode result = exporter.export(producer.collectAllMetrics());
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {

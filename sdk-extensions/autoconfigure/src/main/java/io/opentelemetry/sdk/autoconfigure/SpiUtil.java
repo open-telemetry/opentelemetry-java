@@ -29,7 +29,7 @@ final class SpiUtil {
     Map<String, T> result = new HashMap<>();
     for (U provider : ServiceLoader.load(spiClass, serviceClassLoader)) {
       String name = getName.apply(provider);
-      final T configurable;
+      T configurable;
       try {
         configurable = getConfigurable.apply(provider, config);
       } catch (Throwable t) {

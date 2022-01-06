@@ -47,9 +47,9 @@ class PromisePropagationTest {
   @Test
   void testPromiseCallback() {
     phaser.register(); // register test thread
-    final AtomicReference<String> successResult1 = new AtomicReference<>();
-    final AtomicReference<String> successResult2 = new AtomicReference<>();
-    final AtomicReference<Throwable> errorResult = new AtomicReference<>();
+    AtomicReference<String> successResult1 = new AtomicReference<>();
+    AtomicReference<String> successResult2 = new AtomicReference<>();
+    AtomicReference<Throwable> errorResult = new AtomicReference<>();
 
     try (PromiseContext context = new PromiseContext(phaser, 3)) {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();

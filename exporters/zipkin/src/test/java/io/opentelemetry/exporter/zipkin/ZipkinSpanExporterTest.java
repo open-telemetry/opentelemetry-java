@@ -154,7 +154,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_ResourceServiceNameMapping() {
-    final Resource resource =
+    Resource resource =
         Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "super-zipkin-service"));
     SpanData data = buildStandardSpan().setResource(resource).build();
 

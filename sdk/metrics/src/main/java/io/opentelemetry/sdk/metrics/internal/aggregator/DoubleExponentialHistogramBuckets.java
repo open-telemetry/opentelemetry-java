@@ -231,7 +231,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     if (!(obj instanceof DoubleExponentialHistogramBuckets)) {
       return false;
     }
-    final DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
+    DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
     // Don't need to compare getTotalCount() because equivalent bucket counts
     // imply equivalent overall count.
     return getBucketCounts().equals(other.getBucketCounts())

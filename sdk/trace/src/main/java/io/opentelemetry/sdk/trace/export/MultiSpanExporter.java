@@ -39,7 +39,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode exportResult;
+      CompletableResultCode exportResult;
       try {
         exportResult = spanExporter.export(spans);
       } catch (RuntimeException e) {
@@ -62,7 +62,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode flush() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode flushResult;
+      CompletableResultCode flushResult;
       try {
         flushResult = spanExporter.flush();
       } catch (RuntimeException e) {
@@ -80,7 +80,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode shutdownResult;
+      CompletableResultCode shutdownResult;
       try {
         shutdownResult = spanExporter.shutdown();
       } catch (RuntimeException e) {

@@ -154,10 +154,10 @@ class RateLimiterTest {
   void testRateLimiterConcurrency() throws InterruptedException, ExecutionException {
     int numWorkers = 8;
     ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
-    final int creditsPerWorker = 1000;
+    int creditsPerWorker = 1000;
     TestClock clock = TestClock.create();
-    final RateLimiter limiter = new RateLimiter(1, numWorkers * creditsPerWorker, clock);
-    final AtomicInteger count = new AtomicInteger();
+    RateLimiter limiter = new RateLimiter(1, numWorkers * creditsPerWorker, clock);
+    AtomicInteger count = new AtomicInteger();
     List<Future<?>> futures = new ArrayList<>(numWorkers);
     for (int w = 0; w < numWorkers; ++w) {
       Future<?> future =
