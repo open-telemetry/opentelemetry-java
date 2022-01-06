@@ -174,6 +174,9 @@ class JaegerRemoteSamplerGrpcNettyTest {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setChannel(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("channel");
     assertThatThrownBy(
             () -> JaegerRemoteSampler.builder().setPollingInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
