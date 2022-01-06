@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -32,7 +33,6 @@ public class SpiUtilTest {
     NamedSpiManager<SpiExample> spiProvider =
         SpiUtil.loadConfigurable(
             SpiExampleProvider.class,
-            Collections.singletonList(SpiExampleProviderImplementation.NAME),
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
             EMPTY,
@@ -54,7 +54,6 @@ public class SpiUtilTest {
     NamedSpiManager<SpiExample> spiProvider =
         SpiUtil.loadConfigurable(
             SpiExampleProvider.class,
-            Collections.singletonList(SpiExampleProviderImplementation.NAME),
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
             EMPTY,
@@ -75,7 +74,6 @@ public class SpiUtilTest {
     NamedSpiManager<SpiExample> spiProvider =
         SpiUtil.loadConfigurable(
             SpiExampleProvider.class,
-            Collections.singletonList(SpiExampleProviderImplementation.NAME),
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
             EMPTY,
@@ -88,11 +86,12 @@ public class SpiUtilTest {
   }
 
   @Test
-  public void failureToInitializeCaughtReturnNull() {
+  public void failureToInitializeThrows() {
+    String exceptionMessage = "failure to initialize should throw";
     SpiExampleProvider mockProvider = mock(SpiExampleProvider.class);
     when(mockProvider.getName()).thenReturn("init-failure-example");
     when(mockProvider.createSpiExample(any()))
-        .thenThrow(new RuntimeException("failure to initialize should catch/ignore"));
+        .thenThrow(new RuntimeException());
 
     SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
     when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
@@ -100,15 +99,14 @@ public class SpiUtilTest {
     NamedSpiManager<SpiExample> spiProvider =
         SpiUtil.loadConfigurable(
             SpiExampleProvider.class,
-            Collections.singletonList(SpiExampleProviderImplementation.NAME),
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
             EMPTY,
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertNull(spiProvider.getByName("init-failure-example"));
-    verify(mockProvider).createSpiExample(EMPTY); // tried to initialize but failed
+    assertThrows(RuntimeException.class, () -> spiProvider.getByName("init-failure-example"),
+        exceptionMessage);
   }
 
   private interface SpiExampleProvider {

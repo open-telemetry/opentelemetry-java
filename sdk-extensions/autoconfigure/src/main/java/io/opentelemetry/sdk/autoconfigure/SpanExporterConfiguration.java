@@ -65,7 +65,6 @@ final class SpanExporterConfiguration {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
-            exporterNames,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
             config,

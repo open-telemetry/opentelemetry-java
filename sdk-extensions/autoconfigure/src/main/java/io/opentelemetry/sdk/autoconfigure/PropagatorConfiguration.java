@@ -34,7 +34,6 @@ final class PropagatorConfiguration {
     NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
         SpiUtil.loadConfigurable(
             ConfigurablePropagatorProvider.class,
-            requestedPropagators,
             ConfigurablePropagatorProvider::getName,
             ConfigurablePropagatorProvider::getPropagator,
             config,
