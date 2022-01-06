@@ -123,7 +123,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public String toString() {
-    return "BatchSpanProcessor{" + "worker=" + worker + '}';
+    return "BatchSpanProcessor{"
+        + "spanExporter="
+        + worker.spanExporter
+        + ", scheduleDelayNanos="
+        + worker.scheduleDelayNanos
+        + ", maxExportBatchSize="
+        + worker.maxExportBatchSize
+        + ", exporterTimeoutNanos="
+        + worker.exporterTimeoutNanos
+        + '}';
   }
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
@@ -321,20 +330,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
       } finally {
         batch.clear();
       }
-    }
-
-    @Override
-    public String toString() {
-      return "Worker{"
-          + "spanExporter="
-          + spanExporter
-          + ", scheduleDelayNanos="
-          + scheduleDelayNanos
-          + ", maxExportBatchSize="
-          + maxExportBatchSize
-          + ", exporterTimeoutNanos="
-          + exporterTimeoutNanos
-          + '}';
     }
   }
 }

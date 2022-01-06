@@ -297,12 +297,11 @@ class OpenTelemetrySdkTest {
         .isEqualTo(
             "OpenTelemetrySdk{"
                 + "tracerProvider=SdkTracerProvider{"
-                + "sharedState=TracerSharedState{"
                 + "clock=SystemClock{}, "
                 + "idGenerator=RandomIdGenerator{}, "
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.10.0-SNAPSHOT\"}}, "
                 + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
                 + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
-                + "activeSpanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}}");
+                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}");
   }
 }

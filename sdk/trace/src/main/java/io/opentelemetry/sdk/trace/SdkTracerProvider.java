@@ -136,6 +136,19 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
 
   @Override
   public String toString() {
-    return "SdkTracerProvider{" + "sharedState=" + sharedState + '}';
+    return "SdkTracerProvider{"
+        + "clock="
+        + sharedState.getClock()
+        + ", idGenerator="
+        + sharedState.getIdGenerator()
+        + ", resource="
+        + sharedState.getResource()
+        + ", spanLimitsSupplier="
+        + sharedState.getSpanLimits()
+        + ", sampler="
+        + sharedState.getSampler()
+        + ", spanProcessor="
+        + sharedState.getActiveSpanProcessor()
+        + '}';
   }
 }
