@@ -11,7 +11,7 @@ javaagent**, see [opentelemetry-java-instrumentation][].
 If you are looking for **examples** on how to use the OpenTelemetry API to
 write your own **manual instrumentation**, or how to set up the OpenTelemetry
 Java SDK, see [Manual instrumentation][]. Fully-functional examples
-are available from the [examples](examples) directory.
+are available in [opentelemetry-java-docs][].
 
 For a general overview of OpenTelemetry, visit [opentelemetry.io][].
 
@@ -43,7 +43,6 @@ This project contains the following top level components:
 * [sdk-extensions](sdk-extensions/) defines additional SDK extensions, which are not part of the core SDK.
 * [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [OpenCensus shim](opencensus-shim/) defines a bridge layer from OpenCensus to the OpenTelemetry API.
-* [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
 This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
 [`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
@@ -244,4 +243,5 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
+[opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
 [opentelemetry.io]: https://opentelemetry.io
