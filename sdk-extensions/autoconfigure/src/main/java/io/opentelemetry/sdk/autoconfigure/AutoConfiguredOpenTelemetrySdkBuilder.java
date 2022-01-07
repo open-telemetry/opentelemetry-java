@@ -182,7 +182,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     ConfigProperties config = getConfig();
-    Resource resource = ResourceConfiguration.configureResource(config, resourceCustomizer);
+    Resource resource =
+        ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
     MeterProvider meterProvider =
         MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
