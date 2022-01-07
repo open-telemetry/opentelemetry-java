@@ -1,72 +1,69 @@
 # Changelog
 
-## Version 1.10.0 (unreleased):
+## Version 1.11.0 (unreleased):
 
-## Version 1.10.0 RC2 2021-12-23:
-
-### API
-
-- Performance of `GlobalOpenTelemetry.get` improved
-- `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces are empty but will allow adding functionality in the future
-- BREAKING CHANGE: `Double/LongMeasurement.observe` have been removed
-- BREAKING CHANGE: `GlobalMeterProvider` has been removed
-- BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not previously deprecated but is expected to have no use in apps due to the lack of functionality
-
-### SDK
-
-- HTTP exporters now support experimental retry
-- Deprecated methods have been removed from the `opentelemetry-sdk-autoconfigure` artifact.
-
-#### Metrics
-
-- `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The current class has been deprecated in this release
-- Metric instrument usage violations consistently report issues as debug logs
-
-#### Logs
-
-- A `opentelemetry-sdk-logs-testing` module has been added
-- `SdkLogEmitterProvider` is now available through `OpenTelemetrySdk`
-#### AWS
-
-- HTTP requests now use OkHttp instead of the JDK
-
-### OpenCensus Shim
-
-- Shim span attributes are set before the span is created instead of after
-- Exceptions are not thrown when activating a null span
-
-## Version 1.10.0 RC1 2021-12-10:
+## Version 1.10.0 2022-01-07:
 
 ### API
+
+* Performance of `GlobalOpenTelemetry.get` improved
+* `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces are empty but will allow adding functionality in the future
+* BREAKING CHANGE: `Double/LongMeasurement.observe` have been removed
+* BREAKING CHANGE: `GlobalMeterProvider` has been removed
+* BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not previously deprecated but is expected to have no use in apps due to the lack of functionality
 * The Metrics API has been merged into the `opentelemetry-api` artifact. `OpenTelemetry.getMeterProvider()` is the new entrypoint
 * BREAKING CHANGE: Bound metrics instruments have been removed for now to allow more time to bake while still providing a stable metrics API
 * `Double/LongMeasurement.observe` has been renamed to `record`.`observe` is deprecated in this release
 * `GlobalMeterProvider` has been deprecated. `GlobalOpenTelemetry.getMeterProvider` should be used instead
+* A warning is logged now when registering async instruments with the same name. Previously subsequent invocations were just ignored.
+* `GlobalOpenTelemetry` extended with helpers for meter creation
 
 ### SDK
 
 * The semantic conventions have been updated to 1.8.0
+* Deprecated methods have been removed from the `opentelemetry-sdk-autoconfigure` artifact.
 
 #### Exporter
 * The OkHttp gRPC exporters now support experimental retry
 * OkHttp dispatcher threads are now spawned as daemon threads
 * The JPMS module name for the logs exporter has been fixed
 * Metrics exporters can have temporality configured
+* HTTP exporters now support experimental retry
+* Jaeger exporter allows setting trusted certificates
+* gRPC exporter metric typos corected
 
-#### Metrics (Alpha)
+#### Metrics
+
+* `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The current class has been deprecated in this release
+* Metric instrument usage violations consistently report issues as debug logs
 * Some user callbacks have been wrapped to catch exceptions instead of throwing
 * MinMaxSumCount/Count aggregation has been removed
 * Empty aggregator is renamed to `drop`
 * Cumulative aggregations will not be aggressively dropped every collection cycle
 
-#### Logs (Alpha)
+#### Logs
+
+* A `opentelemetry-sdk-logs-testing` module has been added
+* `SdkLogEmitterProvider` is now available through `OpenTelemetrySdk`
 * LogDataBuilder can now take a SpanContext directly
 * SdkLogEmitterProvider.get convenience method added
+
+#### AWS
+
+* HTTP requests now use OkHttp instead of the JDK
+
+### OpenCensus Shim
+
+* Shim span attributes are set before the span is created instead of after
+* Exceptions are not thrown when activating a null span
 
 #### SDK Extensions
 * BREAKING CHANGE: Deprecated trace incubator types (DelegatingSpanData, SpanDataBuidler) have been removed
 * BREAKING CHANGE: Deprecated `ExecutorServiceSpanProcessor` has been removed
 * `cloud.platform` is now populated in AWS `Resource`
+* Auto-configuration correctly uses configured class loader for configuring Resource
+* Auto-configuration prints a debug log with the resolved tracer configuration
+* Auto-configuration supports the logs signal
 
 ---
 ## Version 1.9.1 2021-11-23:
