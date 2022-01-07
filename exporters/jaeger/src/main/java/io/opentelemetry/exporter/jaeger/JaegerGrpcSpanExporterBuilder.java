@@ -84,6 +84,16 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
+   * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
+   * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
+   * use the system default trusted certificates.
+   */
+  public JaegerGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    delegate.setTrustedCertificates(trustedCertificatesPem);
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance.
