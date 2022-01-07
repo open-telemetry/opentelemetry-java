@@ -26,7 +26,7 @@ public class DelayingSpanExporter implements SpanExporter {
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     executor.schedule((Runnable) result::succeed, delayMs, TimeUnit.MILLISECONDS);
     return result;
   }

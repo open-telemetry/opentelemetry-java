@@ -6,19 +6,20 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of the {@code SpanExporter} that simply forwards all received spans to a list of
- * {@code SpanExporter}.
+ * {@link SpanExporter} that forwards all received spans to a list of {@link SpanExporter}.
  *
- * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a {@code
- * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
+ * <p>Can be used to export to multiple backends using the same {@link SpanProcessor} like a {@link
+ * SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
  */
 final class MultiSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
@@ -39,7 +40,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode exportResult;
+      CompletableResultCode exportResult;
       try {
         exportResult = spanExporter.export(spans);
       } catch (RuntimeException e) {
@@ -62,7 +63,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode flush() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode flushResult;
+      CompletableResultCode flushResult;
       try {
         flushResult = spanExporter.flush();
       } catch (RuntimeException e) {
@@ -80,7 +81,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode shutdownResult;
+      CompletableResultCode shutdownResult;
       try {
         shutdownResult = spanExporter.shutdown();
       } catch (RuntimeException e) {
@@ -96,5 +97,10 @@ final class MultiSpanExporter implements SpanExporter {
 
   private MultiSpanExporter(SpanExporter[] spanExporters) {
     this.spanExporters = spanExporters;
+  }
+
+  @Override
+  public String toString() {
+    return "MultiSpanExporter{" + "spanExporters=" + Arrays.toString(spanExporters) + '}';
   }
 }

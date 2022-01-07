@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -15,8 +15,8 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
 

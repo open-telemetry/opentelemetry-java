@@ -1,12 +1,12 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.39.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("com.gradle.enterprise") version "3.7"
+    id("com.github.ben-manes.versions") version "0.41.0"
+    id("com.github.johnrengelman.shadow") version "7.1.1"
+    id("com.gradle.enterprise") version "3.8"
     id("de.undercouch.download") version "4.1.2"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("nebula.release") version "16.0.0"
-    id("org.jetbrains.kotlin.jvm") version "1.5.31"
+    id("org.jetbrains.kotlin.jvm") version "1.6.10"
     id("org.unbroken-dome.test-sets") version "4.0.0"
   }
 }
@@ -25,7 +25,6 @@ dependencyResolutionManagement {
 rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
-include(":api:metrics")
 include(":semconv")
 include(":bom")
 include(":bom-alpha")
@@ -46,6 +45,7 @@ include(":exporters:otlp:all")
 include(":exporters:otlp:common")
 include(":exporters:otlp:logs")
 include(":exporters:otlp:metrics")
+include(":exporters:otlp:testing-internal")
 include(":exporters:otlp:trace")
 include(":exporters:otlp-http:logs")
 include(":exporters:otlp-http:metrics")
@@ -60,6 +60,7 @@ include(":perf-harness")
 include(":sdk:all")
 include(":sdk:common")
 include(":sdk:logs")
+include(":sdk:logs-testing")
 include(":sdk:metrics")
 include(":sdk:metrics-testing")
 include(":sdk:testing")

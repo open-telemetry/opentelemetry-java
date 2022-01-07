@@ -22,8 +22,8 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -254,11 +254,12 @@ public class OtlpPipelineStressTest {
                 PeriodicMetricReader.builder(metricExporter)
                     .setInterval(Duration.ofSeconds(1))
                     .newMetricReaderFactory())
-            .buildAndRegisterGlobal();
+            .build();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
+            .setMeterProvider(meterProvider)
             .setEndpoint(
                 "http://"
                     + toxiproxyContainer.getHost()
@@ -268,6 +269,7 @@ public class OtlpPipelineStressTest {
             .build();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.builder(spanExporter)
+            .setMeterProvider(meterProvider)
             //            .setMaxQueueSize(1000)
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)

@@ -62,7 +62,7 @@ import java.io.OutputStream;
 // - No support for writing fields with tag, we alway write tags separately
 // - Allow resetting and use a ThreadLocal instance
 //
-@SuppressWarnings({"UngroupedOverloads", "InlineMeSuggester"})
+@SuppressWarnings({"UnnecessaryFinal", "UngroupedOverloads", "InlineMeSuggester"})
 abstract class CodedOutputStream {
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */

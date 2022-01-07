@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -65,6 +66,7 @@ class TracerProviderConfigurationTest {
             resource,
             DefaultConfigProperties.createForTest(properties),
             TracerProviderConfiguration.class.getClassLoader(),
+            MeterProvider.noop(),
             (a, unused) -> a,
             (a, unused) -> a);
     try {

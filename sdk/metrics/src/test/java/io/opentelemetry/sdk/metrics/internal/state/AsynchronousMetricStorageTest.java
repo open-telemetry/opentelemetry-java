@@ -5,14 +5,17 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -23,11 +26,11 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.EnumSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +45,9 @@ public class AsynchronousMetricStorageTest {
   private View view;
   private CollectionHandle handle;
   private Set<CollectionHandle> all;
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
   @Mock private MetricReader reader;
 
@@ -73,8 +79,6 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void doubleAsynchronousAccumulator_AttributesProcessor_used() {
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.doubleAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -83,7 +87,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
-            value -> value.observe(1.0, Attributes.empty()))
+            value -> value.record(1.0, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),
@@ -96,8 +100,6 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void longAsynchronousAccumulator_AttributesProcessor_used() {
-    Mockito.when(reader.getSupportedTemporality())
-        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.longAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -106,7 +108,7 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            value -> value.observe(1, Attributes.empty()))
+            value -> value.record(1, Attributes.empty()))
         .collectAndReset(
             CollectionInfo.create(handle, all, reader),
             meterProviderSharedState.getResource(),
@@ -115,5 +117,73 @@ public class AsynchronousMetricStorageTest {
             testClock.nanoTime(),
             false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
+  }
+
+  @Test
+  void collectAndReset_IgnoresDuplicates() {
+    MetricStorage metricStorage =
+        AsynchronousMetricStorage.longAsynchronousAccumulator(
+            view,
+            InstrumentDescriptor.create(
+                "my-instrument",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            measurement -> {
+              measurement.record(1, Attributes.builder().put("key", "a").build());
+              measurement.record(2, Attributes.builder().put("key", "a").build());
+              measurement.record(3, Attributes.builder().put("key", "b").build());
+            });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongGaugeData().getPoints())
+                    .satisfiesExactlyInAnyOrder(
+                        dataPoint -> {
+                          assertThat(dataPoint.getValue()).isEqualTo(1);
+                          assertThat(dataPoint.getAttributes())
+                              .isEqualTo(Attributes.builder().put("key", "a").build());
+                        },
+                        dataPoint -> {
+                          assertThat(dataPoint.getValue()).isEqualTo(3);
+                          assertThat(dataPoint.getAttributes())
+                              .isEqualTo(Attributes.builder().put("key", "b").build());
+                        }));
+    logs.assertContains(
+        "Instrument my-instrument has recorded multiple values for the same attributes.");
+  }
+
+  @Test
+  void collectAndReset_CallbackException() {
+    MetricStorage metricStorage =
+        AsynchronousMetricStorage.longAsynchronousAccumulator(
+            view,
+            InstrumentDescriptor.create(
+                "my-instrument",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            unused -> {
+              throw new RuntimeException("Error!");
+            });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                false))
+        .isEqualTo(EmptyMetricData.getInstance());
+    logs.assertContains("An exception occurred invoking callback for instrument my-instrument.");
   }
 }

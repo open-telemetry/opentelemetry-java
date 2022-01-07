@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
+ * SpanProcessor is the interface {@link SdkTracer} uses to allow synchronous hooks for when a
  * {@code Span} is started or when a {@code Span} is ended.
  */
 @ThreadSafe
@@ -56,7 +56,7 @@ public interface SpanProcessor extends Closeable {
    * execution thread.
    *
    * @param parentContext the parent {@code Context} of the span that just started.
-   * @param span the {@code ReadableSpan} that just started.
+   * @param span the {@code Span} that just started.
    */
   void onStart(Context parentContext, ReadWriteSpan span);
 
@@ -74,7 +74,7 @@ public interface SpanProcessor extends Closeable {
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
    *
-   * @param span the {@code ReadableSpan} that just ended.
+   * @param span the {@code Span} that just ended.
    */
   void onEnd(ReadableSpan span);
 

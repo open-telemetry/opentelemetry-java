@@ -6,22 +6,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 final class SdkLongCounter extends AbstractInstrument implements LongCounter {
+  private static final ObservableLongCounter NOOP = new ObservableLongCounter() {};
+
+  private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final WriteableMetricStorage storage;
 
   private SdkLongCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -32,7 +41,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment, Attributes attributes, Context context) {
     if (increment < 0) {
-      throw new IllegalArgumentException("Counters can only increase");
+      throttlingLogger.log(
+          Level.WARNING,
+          "Counters can only increase. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return;
     }
     storage.recordLong(increment, attributes, context);
   }
@@ -47,16 +61,19 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public BoundLongCounter bind(Attributes attributes) {
-    return new BoundInstrument(storage.bind(attributes), attributes);
+  BoundLongCounter bind(Attributes attributes) {
+    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongCounter {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+    private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle handle;
     private final Attributes attributes;
 
-    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+    BoundInstrument(
+        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
+      this.descriptor = descriptor;
       this.handle = handle;
       this.attributes = attributes;
     }
@@ -64,7 +81,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     @Override
     public void add(long increment, Context context) {
       if (increment < 0) {
-        throw new IllegalArgumentException("Counters can only increase");
+        throttlingLogger.log(
+            Level.WARNING,
+            "Counters can only increase. Instrument "
+                + descriptor.getName()
+                + " has recorded a negative value.");
+        return;
       }
       handle.recordLong(increment, attributes, context);
     }
@@ -116,8 +138,9 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+    public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
+      return NOOP;
     }
   }
 }

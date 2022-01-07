@@ -106,4 +106,18 @@ class MultiSpanProcessorTest {
     verify(spanProcessor1).shutdown();
     verify(spanProcessor2).shutdown();
   }
+
+  @Test
+  void stringRepresentation() {
+    when(spanProcessor1.toString()).thenReturn("spanProcessor1");
+    when(spanProcessor2.toString()).thenReturn("spanProcessor1");
+    SpanProcessor multiSpanProcessor =
+        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
+    assertThat(multiSpanProcessor)
+        .hasToString(
+            "MultiSpanProcessor{"
+                + "spanProcessorsStart=[spanProcessor1, spanProcessor1], "
+                + "spanProcessorsEnd=[spanProcessor1, spanProcessor1], "
+                + "spanProcessorsAll=[spanProcessor1, spanProcessor1]}");
+  }
 }

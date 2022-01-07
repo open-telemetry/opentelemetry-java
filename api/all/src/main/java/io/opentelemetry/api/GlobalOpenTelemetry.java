@@ -6,6 +6,9 @@
 package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -50,11 +53,13 @@ public final class GlobalOpenTelemetry {
    *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
-    if (globalOpenTelemetry == null) {
+    OpenTelemetry openTelemetry = globalOpenTelemetry;
+    if (openTelemetry == null) {
       synchronized (mutex) {
-        if (globalOpenTelemetry == null) {
+        openTelemetry = globalOpenTelemetry;
+        if (openTelemetry == null) {
 
-          OpenTelemetry autoConfigured = maybeAutoConfigure();
+          OpenTelemetry autoConfigured = maybeAutoConfigureAndSetGlobal();
           if (autoConfigured != null) {
             return autoConfigured;
           }
@@ -64,7 +69,7 @@ public final class GlobalOpenTelemetry {
         }
       }
     }
-    return globalOpenTelemetry;
+    return openTelemetry;
   }
 
   /**
@@ -142,6 +147,43 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
+   * Returns the globally registered {@link MeterProvider}.
+   *
+   * @since 1.10.0
+   */
+  public static MeterProvider getMeterProvider() {
+    return get().getMeterProvider();
+  }
+
+  /**
+   * Gets or creates a named meter instance from the globally registered {@link MeterProvider}.
+   *
+   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @return a Meter instance.
+   * @since 1.10.0
+   */
+  public static Meter getMeter(String instrumentationName) {
+    return get().getMeter(instrumentationName);
+  }
+
+  /**
+   * Creates a MeterBuilder for a named {@link Meter} instance.
+   *
+   * <p>This is a shortcut method for {@code get().meterBuilder(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a MeterBuilder instance.
+   * @since 1.10.0
+   */
+  public static MeterBuilder meterBuilder(String instrumentationName) {
+    return get().meterBuilder(instrumentationName);
+  }
+
+  /**
    * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
    * reconfigure {@link OpenTelemetry}.
    */
@@ -157,8 +199,8 @@ public final class GlobalOpenTelemetry {
   }
 
   @Nullable
-  private static OpenTelemetry maybeAutoConfigure() {
-    final Class<?> openTelemetrySdkAutoConfiguration;
+  private static OpenTelemetry maybeAutoConfigureAndSetGlobal() {
+    Class<?> openTelemetrySdkAutoConfiguration;
     try {
       openTelemetrySdkAutoConfiguration =
           Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
@@ -203,6 +245,11 @@ public final class GlobalOpenTelemetry {
     @Override
     public TracerProvider getTracerProvider() {
       return delegate.getTracerProvider();
+    }
+
+    @Override
+    public MeterProvider getMeterProvider() {
+      return delegate.getMeterProvider();
     }
 
     @Override

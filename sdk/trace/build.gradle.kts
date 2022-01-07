@@ -24,7 +24,6 @@ dependencies {
 
   compileOnly(project(":sdk:trace-shaded-deps"))
 
-  implementation(project(":api:metrics"))
   implementation(project(":semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -42,6 +41,7 @@ dependencies {
     // dependencies.
     isTransitive = false
   }
+  jmh(project(":sdk:metrics-testing"))
   jmh(project(":exporters:jaeger-thrift"))
   jmh(project(":exporters:otlp:trace")) {
     // The opentelemetry-exporter-otlp-trace depends on this project itself. So don"t pull in

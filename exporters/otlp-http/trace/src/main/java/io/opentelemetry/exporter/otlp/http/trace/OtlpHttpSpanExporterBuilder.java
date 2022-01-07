@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import java.time.Duration;
@@ -80,6 +81,16 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     delegate.setTrustedCertificates(trustedCertificatesPem);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   */
+  public OtlpHttpSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 

@@ -35,12 +35,12 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(spanDataList);
 
-    final ResourceSpansMarshaler[] resourceSpansMarshalers =
+    ResourceSpansMarshaler[] resourceSpansMarshalers =
         new ResourceSpansMarshaler[resourceAndLibraryMap.size()];
     int posResource = 0;
     for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> entry :
         resourceAndLibraryMap.entrySet()) {
-      final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers =
+      InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers =
           new InstrumentationLibrarySpansMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
       for (Map.Entry<InstrumentationLibraryInfo, List<SpanMarshaler>> entryIs :

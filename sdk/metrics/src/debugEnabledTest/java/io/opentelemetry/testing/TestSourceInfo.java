@@ -38,23 +38,22 @@ class TestSourceInfo {
                 "name",
                 "description",
                 "unit",
-                InstrumentType.HISTOGRAM,
+                InstrumentType.OBSERVABLE_SUM,
                 InstrumentValueType.DOUBLE));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             View.builder().build(),
             InstrumentDescriptor.create(
-                "name",
-                "description2",
-                "unit2",
-                InstrumentType.HISTOGRAM,
-                InstrumentValueType.DOUBLE));
+                "name", "description2", "unit2", InstrumentType.COUNTER, InstrumentValueType.LONG));
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
         .contains("- Unit [unit2] does not match [unit]")
         .contains("- Description [description2] does not match [description]")
+        .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_SUM]")
+        .contains("- InstrumentValueType [LONG] does not match [DOUBLE]")
+        .contains("- InstrumentType [OBSERVABLE_SUM] is async and already registered")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
-        .contains("Original instrument registered with same name but different description or unit")
+        .contains("Original instrument registered with same name but is incompatible.")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
   }
@@ -119,7 +118,7 @@ class TestSourceInfo {
         .contains("FROM instrument name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- Unit [unit] does not match [unit2]")
-        .contains("Original instrument registered with same name but different description or unit")
+        .contains("Original instrument registered with same name but is incompatible.")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
   }

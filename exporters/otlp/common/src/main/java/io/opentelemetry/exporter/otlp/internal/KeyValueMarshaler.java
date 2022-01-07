@@ -49,7 +49,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
   @SuppressWarnings("unchecked")
   private static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
-    final byte[] keyUtf8;
+    byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {
       keyUtf8 = MarshalerUtil.EMPTY_BYTES;
     } else if (attributeKey instanceof InternalAttributeKeyImpl) {

@@ -140,6 +140,7 @@ public interface Attributes {
    * Returns a {@link Attributes} instance with the given key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
+  @SuppressWarnings("TooManyParameters")
   static <T, U, V, W, X, Y> Attributes of(
       AttributeKey<T> key1,
       T value1,

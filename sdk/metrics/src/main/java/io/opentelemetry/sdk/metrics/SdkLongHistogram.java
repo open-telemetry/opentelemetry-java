@@ -6,19 +6,25 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 final class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
+  private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final WriteableMetricStorage storage;
 
   private SdkLongHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
@@ -28,6 +34,14 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
 
   @Override
   public void record(long value, Attributes attributes, Context context) {
+    if (value < 0) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Histograms can only record non-negative values. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return;
+    }
     storage.recordLong(value, attributes, context);
   }
 
@@ -41,22 +55,33 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     record(value, Attributes.empty());
   }
 
-  @Override
-  public BoundLongHistogram bind(Attributes attributes) {
-    return new BoundInstrument(storage.bind(attributes), attributes);
+  BoundLongHistogram bind(Attributes attributes) {
+    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongHistogram {
+    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+    private final InstrumentDescriptor descriptor;
     private final BoundStorageHandle handle;
     private final Attributes attributes;
 
-    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+    BoundInstrument(
+        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
+      this.descriptor = descriptor;
       this.handle = handle;
       this.attributes = attributes;
     }
 
     @Override
     public void record(long value, Context context) {
+      if (value < 0) {
+        throttlingLogger.log(
+            Level.WARNING,
+            "Histograms can only record non-negative values. Instrument "
+                + descriptor.getName()
+                + " has recorded a negative value.");
+        return;
+      }
       handle.recordLong(value, attributes, context);
     }
 

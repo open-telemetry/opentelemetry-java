@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -55,11 +54,6 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return exporter.getSupportedTemporality();
-  }
-
-  @Override
   @Nullable
   public AggregationTemporality getPreferredTemporality() {
     return exporter.getPreferredTemporality();
@@ -72,7 +66,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     ScheduledFuture<?> scheduledFuture = this.scheduledFuture;
     if (scheduledFuture != null) {
       scheduledFuture.cancel(false);
@@ -80,7 +74,7 @@ public final class PeriodicMetricReader implements MetricReader {
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      final CompletableResultCode flushResult = scheduled.doRun();
+      CompletableResultCode flushResult = scheduled.doRun();
       flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
@@ -88,7 +82,7 @@ public final class PeriodicMetricReader implements MetricReader {
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
-      final CompletableResultCode shutdownResult = scheduled.shutdown();
+      CompletableResultCode shutdownResult = scheduled.shutdown();
       shutdownResult.whenComplete(
           () -> {
             if (!shutdownResult.isSuccess()) {
@@ -125,10 +119,10 @@ public final class PeriodicMetricReader implements MetricReader {
 
     // Runs a collect + export cycle.
     CompletableResultCode doRun() {
-      final CompletableResultCode flushResult = new CompletableResultCode();
+      CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          final CompletableResultCode result = exporter.export(producer.collectAllMetrics());
+          CompletableResultCode result = exporter.export(producer.collectAllMetrics());
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {

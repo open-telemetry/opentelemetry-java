@@ -6,16 +6,16 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class SdkDoubleUpDownSumObserverTest {
         .upDownCounterBuilder("testObserver")
         .ofDoubles()
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -120,7 +120,7 @@ class SdkDoubleUpDownSumObserverTest {
         .upDownCounterBuilder("testObserver")
         .ofDoubles()
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

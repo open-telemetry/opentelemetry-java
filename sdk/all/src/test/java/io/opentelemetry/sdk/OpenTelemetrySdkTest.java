@@ -9,15 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -35,6 +38,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
+  @Mock private SdkMeterProvider meterProvider;
+  @Mock private SdkLogEmitterProvider logEmitterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -51,6 +56,9 @@ class OpenTelemetrySdkTest {
     assertThat(sdk.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
+    assertThat(sdk.getMeterProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getMeterProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getMeter(""));
 
     assertThat(GlobalOpenTelemetry.getPropagators())
         .isSameAs(GlobalOpenTelemetry.get().getPropagators())
@@ -87,6 +95,20 @@ class OpenTelemetrySdkTest {
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
                 .build());
+
+    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
+        .isSameAs(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
+    assertThat(
+            GlobalOpenTelemetry.meterBuilder("testMeter2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build())
+        .isSameAs(
+            GlobalOpenTelemetry.getMeterProvider()
+                .meterBuilder("testMeter2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build());
   }
 
   @Test
@@ -94,10 +116,16 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider())
         .isInstanceOfSatisfying(
-            ObfuscatedTracerProvider.class,
+            OpenTelemetrySdk.ObfuscatedTracerProvider.class,
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(SdkTracerProvider.class));
+    assertThat(openTelemetry.getMeterProvider())
+        .isInstanceOfSatisfying(
+            OpenTelemetrySdk.ObfuscatedMeterProvider.class,
+            obfuscatedMeterProvider ->
+                assertThat(obfuscatedMeterProvider.unobfuscate())
+                    .isInstanceOf(SdkMeterProvider.class));
   }
 
   @Test
@@ -105,11 +133,20 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
+            .setLogEmitterProvider(logEmitterProvider)
             .setPropagators(propagators)
             .build();
-    assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
+    assertThat(
+            ((OpenTelemetrySdk.ObfuscatedTracerProvider) openTelemetry.getTracerProvider())
+                .unobfuscate())
         .isEqualTo(tracerProvider);
     assertThat(openTelemetry.getSdkTracerProvider()).isEqualTo(tracerProvider);
+    assertThat(
+            ((OpenTelemetrySdk.ObfuscatedMeterProvider) openTelemetry.getMeterProvider())
+                .unobfuscate())
+        .isEqualTo(meterProvider);
+    assertThat(openTelemetry.getSdkLogEmitterProvider()).isEqualTo(logEmitterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
   }
 
@@ -129,7 +166,8 @@ class OpenTelemetrySdkTest {
                     .build())
             .build();
     TracerProvider unobfuscatedTracerProvider =
-        ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
+        ((OpenTelemetrySdk.ObfuscatedTracerProvider) openTelemetry.getTracerProvider())
+            .unobfuscate();
 
     assertThat(unobfuscatedTracerProvider)
         .isInstanceOfSatisfying(
@@ -147,14 +185,14 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testTracerBuilder() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
   void testTracerBuilderViaProvider() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
@@ -164,10 +202,23 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
     assertThat(openTelemetry.getTracerProvider())
-        .asInstanceOf(type(ObfuscatedTracerProvider.class))
+        .asInstanceOf(type(OpenTelemetrySdk.ObfuscatedTracerProvider.class))
         .isNotNull()
-        .matches(obfuscated -> obfuscated.unobfuscate() == tracerProvider);
+        .extracting(OpenTelemetrySdk.ObfuscatedTracerProvider::unobfuscate)
+        .isSameAs(tracerProvider);
     assertThat(openTelemetry.getSdkTracerProvider()).isNotNull();
+  }
+
+  @Test
+  void testMeterProviderAccess() {
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+    assertThat(openTelemetry.getMeterProvider())
+        .asInstanceOf(type(OpenTelemetrySdk.ObfuscatedMeterProvider.class))
+        .isNotNull()
+        .extracting(OpenTelemetrySdk.ObfuscatedMeterProvider::unobfuscate)
+        .isSameAs(meterProvider);
+    assertThat(openTelemetry.getSdkMeterProvider()).isNotNull();
   }
 
   // This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
@@ -228,5 +279,33 @@ class OpenTelemetrySdkTest {
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
+  }
+
+  @Test
+  void stringRepresentation() {
+    SpanExporter exporter = mock(SpanExporter.class);
+    when(exporter.toString()).thenReturn("MockSpanExporter{}");
+    Resource resource =
+        Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .setResource(resource)
+                    .addSpanProcessor(
+                        SimpleSpanProcessor.create(SpanExporter.composite(exporter, exporter)))
+                    .build())
+            .build();
+
+    assertThat(sdk.toString())
+        .isEqualTo(
+            "OpenTelemetrySdk{"
+                + "tracerProvider=SdkTracerProvider{"
+                + "clock=SystemClock{}, "
+                + "idGenerator=RandomIdGenerator{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
+                + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
+                + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
+                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}");
   }
 }

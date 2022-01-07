@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -96,7 +95,6 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   }
 
   @Override
-  @Nullable
   public MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,
@@ -105,8 +103,7 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(
-            collectionInfo.getSupportedAggregation(), collectionInfo.getPreferredAggregation());
+        TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
     Map<Attributes, T> result =
         deltaMetricStorage.collectFor(
             collectionInfo.getCollector(),

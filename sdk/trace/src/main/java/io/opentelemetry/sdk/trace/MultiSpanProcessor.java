@@ -92,4 +92,16 @@ final class MultiSpanProcessor implements SpanProcessor {
       }
     }
   }
+
+  @Override
+  public String toString() {
+    return "MultiSpanProcessor{"
+        + "spanProcessorsStart="
+        + spanProcessorsStart
+        + ", spanProcessorsEnd="
+        + spanProcessorsEnd
+        + ", spanProcessorsAll="
+        + spanProcessorsAll
+        + '}';
+  }
 }

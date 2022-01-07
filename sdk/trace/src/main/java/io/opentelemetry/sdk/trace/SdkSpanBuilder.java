@@ -164,10 +164,10 @@ final class SdkSpanBuilder implements SpanBuilder {
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Span startSpan() {
-    final Context parentContext = parent == null ? Context.current() : parent;
-    final Span parentSpan = Span.fromContext(parentContext);
-    final SpanContext parentSpanContext = parentSpan.getSpanContext();
-    final String traceId;
+    Context parentContext = parent == null ? Context.current() : parent;
+    Span parentSpan = Span.fromContext(parentContext);
+    SpanContext parentSpanContext = parentSpan.getSpanContext();
+    String traceId;
     IdGenerator idGenerator = tracerSharedState.getIdGenerator();
     String spanId = idGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {

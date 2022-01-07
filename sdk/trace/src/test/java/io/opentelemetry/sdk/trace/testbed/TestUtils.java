@@ -25,13 +25,12 @@ public final class TestUtils {
   /**
    * Returns the number of finished {@code Span}s in the specified {@code OpenTelemetryExtension}.
    */
-  public static Callable<Integer> finishedSpansSize(final OpenTelemetryExtension otelTesting) {
+  public static Callable<Integer> finishedSpansSize(OpenTelemetryExtension otelTesting) {
     return () -> otelTesting.getSpans().size();
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified attribute. */
-  public static <T> List<SpanData> getByAttr(
-      List<SpanData> spans, final AttributeKey<T> key, final T value) {
+  public static <T> List<SpanData> getByAttr(List<SpanData> spans, AttributeKey<T> key, T value) {
     return getByCondition(
         spans,
         span -> {
@@ -59,7 +58,7 @@ public final class TestUtils {
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified kind. */
-  public static List<SpanData> getByKind(List<SpanData> spans, final SpanKind kind) {
+  public static List<SpanData> getByKind(List<SpanData> spans, SpanKind kind) {
     return getByCondition(spans, span -> span.getKind() == kind);
   }
 
@@ -68,7 +67,7 @@ public final class TestUtils {
    * instance being matched, an {@code IllegalArgumentException} will be thrown.
    */
   @Nullable
-  public static SpanData getOneByKind(List<SpanData> spans, final SpanKind kind) {
+  public static SpanData getOneByKind(List<SpanData> spans, SpanKind kind) {
 
     List<SpanData> found = getByKind(spans, kind);
     if (found.size() > 1) {
@@ -79,7 +78,7 @@ public final class TestUtils {
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified name. */
-  private static List<SpanData> getByName(List<SpanData> spans, final String name) {
+  private static List<SpanData> getByName(List<SpanData> spans, String name) {
     return getByCondition(spans, span -> span.getName().equals(name));
   }
 
@@ -88,7 +87,7 @@ public final class TestUtils {
    * instance being matched, an {@code IllegalArgumentException} will be thrown.
    */
   @Nullable
-  public static SpanData getOneByName(List<SpanData> spans, final String name) {
+  public static SpanData getOneByName(List<SpanData> spans, String name) {
 
     List<SpanData> found = getByName(spans, name);
     if (found.size() > 1) {

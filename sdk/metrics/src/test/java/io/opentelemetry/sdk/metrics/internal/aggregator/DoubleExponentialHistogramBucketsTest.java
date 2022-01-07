@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

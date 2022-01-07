@@ -53,6 +53,11 @@ public final class OtlpHttpLogExporter implements LogExporter {
     return delegate.export(exportRequest, logs.size());
   }
 
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
   /** Shutdown the exporter. */
   @Override
   public CompletableResultCode shutdown() {

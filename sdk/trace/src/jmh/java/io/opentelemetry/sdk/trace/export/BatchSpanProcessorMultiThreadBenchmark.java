@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.TimeUnit;
@@ -46,9 +47,10 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     @Setup(Level.Iteration)
     public final void setup() {
       collector = InMemoryMetricReader.create();
-      SdkMeterProvider.builder().registerMetricReader(collector).buildAndRegisterGlobal();
+      MeterProvider meterProvider =
+          SdkMeterProvider.builder().registerMetricReader(collector).build();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
-      processor = BatchSpanProcessor.builder(exporter).build();
+      processor = BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build();
       tracer =
           SdkTracerProvider.builder().addSpanProcessor(processor).build().get("benchmarkTracer");
     }

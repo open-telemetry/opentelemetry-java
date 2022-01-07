@@ -24,15 +24,15 @@ public abstract class Aggregation {
    * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
    *     measurements.
    * @param exemplarFilter the filter on which measurements should turn into exemplars
-   * @return a new {@link Aggregator}. {@link Aggregator#empty()} indicates no measurements should
-   *     be recorded.
+   * @return a new {@link Aggregator}. {@link Aggregator#drop()} indicates no measurements should be
+   *     recorded.
    */
   public abstract <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 
-  /** The None Aggregation will ignore/drop all Instrument Measurements. */
-  public static Aggregation none() {
-    return NoAggregation.INSTANCE;
+  /** The drop Aggregation will ignore/drop all Instrument Measurements. */
+  public static Aggregation drop() {
+    return DropAggregation.INSTANCE;
   }
 
   /** The default aggregation for an instrument will be chosen. */

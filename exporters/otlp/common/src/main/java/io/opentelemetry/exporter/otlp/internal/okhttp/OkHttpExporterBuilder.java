@@ -5,8 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.internal.okhttp;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -30,6 +34,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private RetryPolicy retryPolicy;
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   public OkHttpExporterBuilder(String type, String defaultEndpoint) {
     this.type = type;
@@ -84,9 +90,21 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public OkHttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  public OkHttpExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+    this.retryPolicy = retryPolicy;
+    return this;
+  }
+
   public OkHttpExporter<T> build() {
     OkHttpClient.Builder clientBuilder =
-        new OkHttpClient.Builder().callTimeout(Duration.ofNanos(timeoutNanos));
+        new OkHttpClient.Builder()
+            .dispatcher(OkHttpUtil.newDispatcher())
+            .callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (trustedCertificatesPem != null) {
       try {
@@ -101,6 +119,32 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OkHttpExporter<>(type, clientBuilder.build(), endpoint, headers, compressionEnabled);
+    if (retryPolicy != null) {
+      clientBuilder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpExporter::isRetryable));
+    }
+
+    return new OkHttpExporter<>(
+        type, clientBuilder.build(), meterProvider, endpoint, headers, compressionEnabled);
+  }
+
+  /**
+   * Reflectively access a {@link OkHttpExporterBuilder} instance in field called "delegate" of the
+   * instance.
+   *
+   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
+   *     type {@link OkHttpExporterBuilder}
+   */
+  public static <T> OkHttpExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
+    try {
+      Field field = type.getDeclaredField("delegate");
+      field.setAccessible(true);
+      Object value = field.get(instance);
+      if (!(value instanceof OkHttpExporterBuilder)) {
+        throw new IllegalArgumentException("delegate field is not type OkHttpExporterBuilder");
+      }
+      return (OkHttpExporterBuilder<?>) value;
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
+    }
   }
 }

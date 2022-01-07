@@ -103,12 +103,12 @@ final class MetricAdapter {
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(
       String name, MetricDataType type, Collection<? extends PointData> points) {
-    final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
+    List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (PointData pointData : points) {
       Attributes attributes = pointData.getAttributes();
-      final List<String> labelNames = new ArrayList<>(attributes.size());
-      final List<String> labelValues = new ArrayList<>(attributes.size());
+      List<String> labelNames = new ArrayList<>(attributes.size());
+      List<String> labelValues = new ArrayList<>(attributes.size());
       attributes.forEach(
           (key, value) -> {
             String sanitizedLabelName = sanitizer.apply(key.getKey());
@@ -128,7 +128,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   doublePoint.getValue(),
-                  lastExemplarOrNull(doublePoint.getExemplars()),
+                  // Prometheus doesn't support exemplars on SUM/GAUGE
+                  null,
                   doublePoint.getEpochNanos()));
           break;
         case LONG_SUM:
@@ -140,7 +141,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   longPoint.getValue(),
-                  lastExemplarOrNull(longPoint.getExemplars()),
+                  // Prometheus doesn't support exemplars on SUM/GAUGE
+                  null,
                   longPoint.getEpochNanos()));
           break;
         case SUMMARY:
@@ -255,15 +257,6 @@ final class MetricAdapter {
   }
 
   @Nullable
-  private static ExemplarData lastExemplarOrNull(Collection<ExemplarData> exemplars) {
-    ExemplarData result = null;
-    for (ExemplarData e : exemplars) {
-      result = e;
-    }
-    return result;
-  }
-
-  @Nullable
   private static ExemplarData filterExemplars(
       Collection<ExemplarData> exemplars, double min, double max) {
     ExemplarData result = null;
@@ -278,7 +271,7 @@ final class MetricAdapter {
 
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
     if (type == MetricDataType.SUMMARY) {
-      // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
+      // count + sum + estimated 2 percentiles
       return numPoints * 4;
     }
     return numPoints;

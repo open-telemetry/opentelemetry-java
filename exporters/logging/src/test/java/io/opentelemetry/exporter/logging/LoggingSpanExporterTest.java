@@ -91,7 +91,7 @@ class LoggingSpanExporterTest {
 
   @BeforeEach
   void setUp() {
-    exporter = new LoggingSpanExporter();
+    exporter = LoggingSpanExporter.create();
   }
 
   @AfterEach
@@ -149,7 +149,7 @@ class LoggingSpanExporterTest {
 
   @Test
   void testFlush() {
-    final AtomicBoolean flushed = new AtomicBoolean(false);
+    AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingSpanExporter.class.getName())
         .addHandler(
             new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {

@@ -8,17 +8,16 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -29,8 +28,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -44,21 +41,10 @@ final class SpanExporterConfiguration {
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
       ClassLoader serviceClassLoader,
+      MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer) {
-    List<String> exporterNamesList = config.getList("otel.traces.exporter");
-    Set<String> exporterNames = new HashSet<>(exporterNamesList);
-    if (exporterNamesList.size() != exporterNames.size()) {
-      String duplicates =
-          exporterNamesList.stream()
-              .collect(groupingBy(Function.identity(), counting()))
-              .entrySet()
-              .stream()
-              .filter(entry -> entry.getValue() > 1)
-              .map(Map.Entry::getKey)
-              .collect(joining(",", "[", "]"));
-      throw new ConfigurationException("otel.traces.exporter contains duplicates: " + duplicates);
-    }
+    Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.traces.exporter");
     if (exporterNames.contains(EXPORTER_NONE)) {
       if (exporterNames.size() > 1) {
         throw new ConfigurationException(
@@ -69,7 +55,7 @@ final class SpanExporterConfiguration {
       if (customized == noop) {
         return Collections.emptyMap();
       }
-      return Collections.singletonMap("none", customized);
+      return Collections.singletonMap(EXPORTER_NONE, customized);
     }
 
     if (exporterNames.isEmpty()) {
@@ -79,7 +65,7 @@ final class SpanExporterConfiguration {
     Map<String, SpanExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
-            exporterNamesList,
+            exporterNames,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
             config,
@@ -91,15 +77,19 @@ final class SpanExporterConfiguration {
                 Function.identity(),
                 exporterName ->
                     spanExporterCustomizer.apply(
-                        configureExporter(exporterName, config, spiExporters), config)));
+                        configureExporter(exporterName, config, spiExporters, meterProvider),
+                        config)));
   }
 
   // Visible for testing
   static SpanExporter configureExporter(
-      String name, ConfigProperties config, Map<String, SpanExporter> spiExporters) {
+      String name,
+      ConfigProperties config,
+      Map<String, SpanExporter> spiExporters,
+      MeterProvider meterProvider) {
     switch (name) {
       case "otlp":
-        return configureOtlp(config);
+        return configureOtlp(config, meterProvider);
       case "jaeger":
         return configureJaeger(config);
       case "zipkin":
@@ -109,7 +99,7 @@ final class SpanExporterConfiguration {
             "io.opentelemetry.exporter.logging.LoggingSpanExporter",
             "Logging Trace Exporter",
             "opentelemetry-exporter-logging");
-        return new LoggingSpanExporter();
+        return LoggingSpanExporter.create();
       default:
         SpanExporter spiExporter = spiExporters.get(name);
         if (spiExporter == null) {
@@ -120,7 +110,7 @@ final class SpanExporterConfiguration {
   }
 
   // Visible for testing
-  static SpanExporter configureOtlp(ConfigProperties config) {
+  static SpanExporter configureOtlp(ConfigProperties config, MeterProvider meterProvider) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
@@ -138,7 +128,11 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          unused -> {});
+          retryPolicy ->
+              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpSpanExporterBuilder.class, builder)
+                  .setRetryPolicy(retryPolicy));
+
+      builder.setMeterProvider(meterProvider);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -159,7 +153,9 @@ final class SpanExporterConfiguration {
           retryPolicy ->
               DefaultGrpcExporterBuilder.getDelegateBuilder(
                       OtlpGrpcSpanExporterBuilder.class, builder)
-                  .addRetryPolicy(retryPolicy));
+                  .setRetryPolicy(retryPolicy));
+      builder.setMeterProvider(meterProvider);
+
       return builder.build();
     } else {
       throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);

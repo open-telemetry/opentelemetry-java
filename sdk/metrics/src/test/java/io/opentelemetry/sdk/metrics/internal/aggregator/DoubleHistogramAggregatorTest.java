@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
@@ -209,13 +209,12 @@ public class DoubleHistogramAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    final AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
-    final Histogram summarizer = new Histogram();
-    final ImmutableList<Long> updates =
-        ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
-    final int numberOfThreads = updates.size();
-    final int numberOfUpdates = 10000;
-    final ThreadPoolExecutor executor =
+    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    Histogram summarizer = new Histogram();
+    ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
+    int numberOfThreads = updates.size();
+    int numberOfUpdates = 10000;
+    ThreadPoolExecutor executor =
         (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
 
     executor.invokeAll(

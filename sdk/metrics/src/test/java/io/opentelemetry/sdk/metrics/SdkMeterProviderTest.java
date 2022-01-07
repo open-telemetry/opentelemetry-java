@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -24,11 +24,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Collections;
@@ -332,26 +332,26 @@ class SdkMeterProviderTest {
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(-10, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testLongValueObserver")
         .ofLongs()
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
 
     sdkMeter
         .counterBuilder("testDoubleSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testDoubleUpDownSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(-10.1, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testDoubleValueObserver")
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
@@ -468,7 +468,7 @@ class SdkMeterProviderTest {
         .gaugeBuilder("test")
         .setDescription("desc")
         .setUnit("unit")
-        .buildWithCallback(o -> o.observe(1));
+        .buildWithCallback(o -> o.record(1));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -560,7 +560,7 @@ class SdkMeterProviderTest {
         .gaugeBuilder("test")
         .setDescription("desc")
         .setUnit("unit")
-        .buildWithCallback(obs -> obs.observe(1.0));
+        .buildWithCallback(obs -> obs.record(1.0));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             metric ->
@@ -602,11 +602,9 @@ class SdkMeterProviderTest {
 
     // Make sure whether or not we explicitly pass baggage, all values have it appended.
     counter.add(1, Attributes.empty(), context);
-    counter.bind(Attributes.empty()).add(1, context);
     // Also check implicit context
     try (Scope scope = context.makeCurrent()) {
       counter.add(1, Attributes.empty());
-      counter.bind(Attributes.empty()).add(1);
     }
     // Now make sure all metrics have baggage appended.
     // Implicitly we should have ONLY ONE metric data point that has baggage appended.
@@ -636,26 +634,26 @@ class SdkMeterProviderTest {
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver")
-        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(-10, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testLongValueObserver")
         .ofLongs()
-        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
+        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
 
     sdkMeter
         .counterBuilder("testDoubleSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
     sdkMeter
         .upDownCounterBuilder("testDoubleUpDownSumObserver")
         .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(-10.1, Attributes.empty()));
     sdkMeter
         .gaugeBuilder("testDoubleValueObserver")
-        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
+        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
 
     testClock.advance(Duration.ofNanos(50));
 
@@ -729,8 +727,8 @@ class SdkMeterProviderTest {
             .registerMetricReader(collector2)
             .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
-    final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
-    final long startTime = testClock.now();
+    LongCounter counter = sdkMeter.counterBuilder("testSum").build();
+    long startTime = testClock.now();
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
@@ -808,8 +806,8 @@ class SdkMeterProviderTest {
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
-    final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
-    final long startTime = testClock.now();
+    LongCounter counter = sdkMeter.counterBuilder("testSum").build();
+    long startTime = testClock.now();
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
@@ -867,6 +865,25 @@ class SdkMeterProviderTest {
                                 .hasStartEpochNanos(collectorOneTimeOne)
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(1)));
+  }
+
+  @Test
+  void collectAll_DropAggregator() {
+    InMemoryMetricReader collector = InMemoryMetricReader.create();
+    Meter meter =
+        sdkMeterProviderBuilder
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder().setAggregation(Aggregation.drop()).build())
+            .registerMetricReader(collector)
+            .build()
+            .get("my-meter");
+    meter.counterBuilder("sync-counter").build().add(1);
+    meter.counterBuilder("async-counter").buildWithCallback(measurement -> measurement.record(1));
+    assertThat(collector.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasResource(RESOURCE).hasName("async-counter"));
   }
 
   @Test

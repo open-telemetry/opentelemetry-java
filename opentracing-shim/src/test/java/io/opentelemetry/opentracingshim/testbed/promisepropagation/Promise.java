@@ -38,8 +38,8 @@ final class Promise<T> {
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
-  public void success(final T result) {
-    for (final SuccessCallback<T> callback : successCallbacks) {
+  public void success(T result) {
+    for (SuccessCallback<T> callback : successCallbacks) {
       context.submit(
           () -> {
             Span childSpan =
@@ -59,8 +59,8 @@ final class Promise<T> {
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
-  public void error(final Throwable error) {
-    for (final ErrorCallback callback : errorCallbacks) {
+  public void error(Throwable error) {
+    for (ErrorCallback callback : errorCallbacks) {
       context.submit(
           () -> {
             Span childSpan =

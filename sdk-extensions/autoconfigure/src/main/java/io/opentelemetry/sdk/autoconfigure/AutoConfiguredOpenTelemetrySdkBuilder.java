@@ -7,12 +7,19 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
@@ -21,6 +28,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -29,6 +38,9 @@ import javax.annotation.Nullable;
  * behavior such as filtering out telemetry attributes.
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
+
+  private static final Logger logger =
+      Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
 
   @Nullable private ConfigProperties config;
 
@@ -160,7 +172,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
-  @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
   public AutoConfiguredOpenTelemetrySdk build() {
     if (!customized) {
       customized = true;
@@ -172,17 +183,47 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     ConfigProperties config = getConfig();
     Resource resource =
-        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
-    OpenTelemetrySdk sdk =
-        OpenTelemetrySdkAutoConfiguration.newOpenTelemetrySdk(
-            config,
+        ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
+
+    MeterProvider meterProvider =
+        MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
+
+    SdkTracerProvider tracerProvider =
+        TracerProviderConfiguration.configureTracerProvider(
             resource,
+            config,
             serviceClassLoader,
-            propagatorCustomizer,
+            meterProvider,
             spanExporterCustomizer,
-            samplerCustomizer,
-            setResultAsGlobal);
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, config);
+            samplerCustomizer);
+
+    SdkLogEmitterProvider logEmitterProvider =
+        LogEmitterProviderConfiguration.configureLogEmitterProvider(
+            resource, config, meterProvider);
+
+    ContextPropagators propagators =
+        PropagatorConfiguration.configurePropagators(
+            config, serviceClassLoader, propagatorCustomizer);
+
+    OpenTelemetrySdkBuilder sdkBuilder =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setLogEmitterProvider(logEmitterProvider)
+            .setPropagators(propagators);
+
+    if (meterProvider instanceof SdkMeterProvider) {
+      sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);
+    }
+
+    OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
+
+    if (setResultAsGlobal) {
+      GlobalOpenTelemetry.set(openTelemetrySdk);
+      logger.log(
+          Level.FINE, "Global OpenTelemetrySdk set to {0} by autoconfiguration", openTelemetrySdk);
+    }
+
+    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
   private ConfigProperties getConfig() {

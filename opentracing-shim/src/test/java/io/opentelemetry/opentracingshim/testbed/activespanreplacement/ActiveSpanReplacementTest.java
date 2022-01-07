@@ -61,7 +61,7 @@ class ActiveSpanReplacementTest {
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
-  private void submitAnotherTask(final Span initialSpan) {
+  private void submitAnotherTask(Span initialSpan) {
 
     executor.submit(
         () -> {

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -84,12 +83,15 @@ public final class SdkMeterProviderBuilder {
    *   .setInstrumentType(InstrumentType.COUNTER)
    *   .build();
    *
-   * // create a specification of how you want the metrics aggregated:
-   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
-   *
    * // register the view with the SdkMeterProviderBuilder
-   * meterProviderBuilder.registerView(instrumentSelector, View.builder()
-   *   .setAggregatorFactory(aggregatorFactory).build());
+   * meterProviderBuilder.registerView(
+   *   instrumentSelector,
+   *   View.builder()
+   *       .setAggregation(
+   *           Aggregation.explicitBucketHistogram(Arrays.asList(10d, 20d, 30d, 40d, 50d)))
+   *       .setName("my-view-name")
+   *       .setDescription("my-view-description")
+   *       .build());
    * }</pre>
    *
    * @since 1.1.0
@@ -99,19 +101,6 @@ public final class SdkMeterProviderBuilder {
     Objects.requireNonNull(view, "view");
     viewRegistryBuilder.addView(selector, view);
     return this;
-  }
-
-  /**
-   * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
-   * SdkMeterProviderBuilder} and registers it as the global {@link
-   * io.opentelemetry.api.metrics.MeterProvider}.
-   *
-   * @see GlobalMeterProvider
-   */
-  public SdkMeterProvider buildAndRegisterGlobal() {
-    SdkMeterProvider meterProvider = build();
-    GlobalMeterProvider.set(meterProvider);
-    return meterProvider;
   }
 
   /**
@@ -141,13 +130,7 @@ public final class SdkMeterProviderBuilder {
 
   /**
    * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
-   * SdkMeterProviderBuilder}. This provider is not registered as the global {@link
-   * io.opentelemetry.api.metrics.MeterProvider}. It is recommended that you register one provider
-   * using {@link SdkMeterProviderBuilder#buildAndRegisterGlobal()} for use by instrumentation when
-   * that requires access to a global instance of {@link
-   * io.opentelemetry.api.metrics.MeterProvider}.
-   *
-   * @see GlobalMeterProvider
+   * SdkMeterProviderBuilder}.
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(

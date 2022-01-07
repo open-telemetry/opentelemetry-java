@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -31,12 +32,12 @@ class BeanstalkResourceTest {
     Resource resource = BeanstalkResource.buildResource(file.getPath());
     Attributes attributes = resource.getAttributes();
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.CLOUD_PROVIDER, "aws",
-                ResourceAttributes.SERVICE_INSTANCE_ID, "4",
-                ResourceAttributes.SERVICE_VERSION, "2",
-                ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
+        .containsOnly(
+            entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
+            entry(ResourceAttributes.CLOUD_PLATFORM, "aws_elastic_beanstalk"),
+            entry(ResourceAttributes.SERVICE_INSTANCE_ID, "4"),
+            entry(ResourceAttributes.SERVICE_VERSION, "2"),
+            entry(ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
     assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
   }
 
@@ -44,7 +45,7 @@ class BeanstalkResourceTest {
   void testConfigFileMissing() {
     Attributes attributes =
         BeanstalkResource.buildResource("a_file_never_existing").getAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
+    assertThat(attributes).isEmpty();
   }
 
   @Test
@@ -55,7 +56,7 @@ class BeanstalkResourceTest {
             + "environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
     Attributes attributes = BeanstalkResource.buildResource(file.getPath()).getAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
+    assertThat(attributes).isEmpty();
   }
 
   @Test

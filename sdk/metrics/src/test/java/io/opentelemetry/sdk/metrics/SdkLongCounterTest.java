@@ -6,20 +6,23 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkLongCounter}. */
 class SdkLongCounterTest {
@@ -38,6 +41,8 @@ class SdkLongCounterTest {
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(SdkLongCounter.class);
+
   @Test
   void add_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().add(1, null))
@@ -47,7 +52,8 @@ class SdkLongCounterTest {
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().bind(null))
+    assertThatThrownBy(
+            () -> ((SdkLongCounter) sdkMeter.counterBuilder("testCounter").build()).bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -55,7 +61,8 @@ class SdkLongCounterTest {
   @Test
   void collectMetrics_NoRecords() {
     LongCounter longCounter = sdkMeter.counterBuilder("Counter").build();
-    BoundLongCounter bound = longCounter.bind(Attributes.builder().put("foo", "bar").build());
+    BoundLongCounter bound =
+        ((SdkLongCounter) longCounter).bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -64,7 +71,6 @@ class SdkLongCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
     LongCounter longCounter =
         sdkMeter.counterBuilder("testCounter").setDescription("description").setUnit("By").build();
@@ -94,11 +100,11 @@ class SdkLongCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-    BoundLongCounter bound = longCounter.bind(Attributes.builder().put("K", "V").build());
+    BoundLongCounter bound =
+        ((SdkLongCounter) longCounter).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       longCounter.add(12, Attributes.empty());
@@ -163,25 +169,31 @@ class SdkLongCounterTest {
   }
 
   @Test
-  void longCounterAdd_MonotonicityCheck() {
+  void longCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> longCounter.add(-45, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    longCounter.add(-45);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Counters can only increase. Instrument testCounter has recorded a negative value.");
   }
 
   @Test
-  void boundLongCounterAdd_MonotonicityCheck() {
+  void boundLongCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    assertThatThrownBy(() -> longCounter.bind(Attributes.empty()).add(-9))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundLongCounter bound = ((SdkLongCounter) longCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Counters can only increase. Instrument testCounter has recorded a negative value.");
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest() {
-    final LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -197,7 +209,8 @@ class SdkLongCounterTest {
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  longCounter.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkLongCounter) longCounter)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -224,11 +237,10 @@ class SdkLongCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -245,7 +257,8 @@ class SdkLongCounterTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  longCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkLongCounter) longCounter)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -266,7 +279,7 @@ class SdkLongCounterTest {
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(20_000))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

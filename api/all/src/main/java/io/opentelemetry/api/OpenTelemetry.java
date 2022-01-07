@@ -5,6 +5,9 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -74,6 +77,40 @@ public interface OpenTelemetry {
    */
   default TracerBuilder tracerBuilder(String instrumentationName) {
     return getTracerProvider().tracerBuilder(instrumentationName);
+  }
+
+  /**
+   * Returns the {@link MeterProvider} for this {@link OpenTelemetry}.
+   *
+   * @since 1.10.0
+   */
+  default MeterProvider getMeterProvider() {
+    return MeterProvider.noop();
+  }
+
+  /**
+   * Gets or creates a named meter instance from the {@link MeterProvider} for this {@link
+   * OpenTelemetry}.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @return a Meter instance.
+   * @since 1.10.0
+   */
+  default Meter getMeter(String instrumentationName) {
+    return getMeterProvider().get(instrumentationName);
+  }
+
+  /**
+   * Creates a {@link MeterBuilder} for a named {@link Tracer} instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a MeterBuilder instance.
+   * @since 1.10.0
+   */
+  default MeterBuilder meterBuilder(String instrumentationName) {
+    return getMeterProvider().meterBuilder(instrumentationName);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */

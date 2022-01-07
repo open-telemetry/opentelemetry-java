@@ -8,8 +8,9 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
+import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
 import java.util.Random;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
 /**
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
  */
 final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
   private final Supplier<Random> randomSupplier;
-  private final LongAdder numMeasurements = new LongAdder();
+  private final LongAdder numMeasurements = AdderUtil.createLongAdder();
 
   /**
    * Instantiates an exemplar reservoir of fixed size.

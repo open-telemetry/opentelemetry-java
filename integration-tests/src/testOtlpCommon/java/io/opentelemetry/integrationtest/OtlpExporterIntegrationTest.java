@@ -25,7 +25,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -386,15 +385,12 @@ abstract class OtlpExporterIntegrationTest {
             .setSeverity(Severity.DEBUG)
             .setSeverityText("DEBUG")
             .setEpoch(Instant.now())
-            .setContext(
-                Context.root()
-                    .with(
-                        Span.wrap(
-                            SpanContext.create(
-                                IdGenerator.random().generateTraceId(),
-                                IdGenerator.random().generateSpanId(),
-                                TraceFlags.getDefault(),
-                                TraceState.getDefault()))))
+            .setSpanContext(
+                SpanContext.create(
+                    IdGenerator.random().generateTraceId(),
+                    IdGenerator.random().generateSpanId(),
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()))
             .build();
 
     logExporter.export(Collections.singletonList(logData));

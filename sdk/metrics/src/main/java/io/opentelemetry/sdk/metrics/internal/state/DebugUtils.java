@@ -36,7 +36,7 @@ public final class DebugUtils {
    */
   public static String duplicateMetricErrorMessage(
       MetricDescriptor existing, MetricDescriptor conflict) {
-    final StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
+    StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
     result.append(existing.getName()).append("\n");
     // Now we write out where the existing metric descriptor is coming from, either a raw instrument
     // or a view on a raw instrument.
@@ -74,13 +74,40 @@ public final class DebugUtils {
           .append(existing.getUnit())
           .append("]\n");
     }
+    if (!existing
+        .getSourceInstrument()
+        .getType()
+        .equals(conflict.getSourceInstrument().getType())) {
+      result
+          .append("- InstrumentType [")
+          .append(conflict.getSourceInstrument().getType())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getType())
+          .append("]\n");
+    }
+    if (!existing
+        .getSourceInstrument()
+        .getValueType()
+        .equals(conflict.getSourceInstrument().getValueType())) {
+      result
+          .append("- InstrumentValueType [")
+          .append(conflict.getSourceInstrument().getValueType())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getValueType())
+          .append("]\n");
+    }
+    if (existing.isAsync()) {
+      result
+          .append("- InstrumentType [")
+          .append(existing.getSourceInstrument().getType())
+          .append("] is async and already registered\n");
+    }
 
-    // Next we write out where the existing metric deescriptor came from, either a raw instrument
+    // Next we write out where the existing metric descriptor came from, either a raw instrument
     // or a view on a raw instrument.
     if (existing.getName().equals(existing.getSourceInstrument().getName())) {
       result
-          .append(
-              "Original instrument registered with same name but different description or unit.\n")
+          .append("Original instrument registered with same name but is incompatible.\n")
           .append(existing.getSourceInstrument().getSourceInfo().multiLineDebugString())
           .append("\n");
     } else {

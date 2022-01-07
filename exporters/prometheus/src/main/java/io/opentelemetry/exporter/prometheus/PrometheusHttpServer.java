@@ -36,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,11 +110,6 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
   }
 
   @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.of(AggregationTemporality.CUMULATIVE);
-  }
-
-  @Override
   public AggregationTemporality getPreferredTemporality() {
     return AggregationTemporality.CUMULATIVE;
   }
@@ -127,7 +121,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     Thread thread =
         THREAD_FACTORY.newThread(
             () -> {
@@ -201,7 +195,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
       } else {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-        final OutputStreamWriter writer;
+        OutputStreamWriter writer;
         if (compress) {
           writer =
               new OutputStreamWriter(

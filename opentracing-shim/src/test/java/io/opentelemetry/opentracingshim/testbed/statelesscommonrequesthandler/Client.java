@@ -24,7 +24,7 @@ final class Client {
   }
 
   /** Send a request....... */
-  public Future<String> send(final Object message) {
+  public Future<String> send(Object message) {
 
     return executor.submit(
         () -> {

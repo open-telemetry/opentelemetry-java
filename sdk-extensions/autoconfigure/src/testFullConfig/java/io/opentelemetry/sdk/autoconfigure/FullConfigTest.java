@@ -134,6 +134,8 @@ class FullConfigTest {
     keys.add("test");
     assertThat(fields).containsExactlyInAnyOrderElementsOf(keys);
 
+    GlobalOpenTelemetry.get().getMeterProvider().get("test").counterBuilder("test").build().add(1);
+
     GlobalOpenTelemetry.get()
         .getTracer("test")
         .spanBuilder("test")
@@ -148,8 +150,7 @@ class FullConfigTest {
               assertThat(otlpTraceRequests).hasSize(1);
 
               // Not well defined how many metric exports would have happened by now, check that
-              // any
-              // did. The metrics will be BatchSpanProcessor metrics.
+              // any did.
               assertThat(otlpMetricsRequests).isNotEmpty();
             });
 
@@ -193,10 +194,15 @@ class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
+
     for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
+      assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+          .anySatisfy(
+              ilm -> assertThat(ilm.getInstrumentationLibrary().getName()).isEqualTo("test"));
       for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
           resourceMetrics.getInstrumentationLibraryMetricsList()) {
         for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
+          // SPI was loaded
           assertThat(getFirstDataPointLabels(metric))
               .contains(
                   KeyValue.newBuilder()

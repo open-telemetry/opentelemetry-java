@@ -445,6 +445,9 @@ class W3CBaggagePropagatorTest {
             .put("nometa", "nometa-value")
             .put("needsEncoding", "blah blah blah")
             .put("meta", "meta-value", BaggageEntryMetadata.create("somemetadata; someother=foo"))
+            .put("\2ab\3cd", "wacky key nonprintable")
+            .put(null, "null key")
+            .put("nullvalue", null)
             .build();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();

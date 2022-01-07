@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -25,7 +26,8 @@ class SpanExporterConfigurationTest {
             () ->
                 SpanExporterConfiguration.configureOtlp(
                     DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo"))))
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
   }
@@ -38,7 +40,8 @@ class SpanExporterConfigurationTest {
             "otlp",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.otlp.timeout", "10")),
-            Collections.emptyMap());
+            Collections.emptyMap(),
+            MeterProvider.noop());
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -60,7 +63,8 @@ class SpanExporterConfigurationTest {
             "jaeger",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.jaeger.timeout", "10")),
-            Collections.emptyMap());
+            Collections.emptyMap(),
+            MeterProvider.noop());
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -82,7 +86,8 @@ class SpanExporterConfigurationTest {
             "zipkin",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")),
-            Collections.emptyMap());
+            Collections.emptyMap(),
+            MeterProvider.noop());
     try {
       assertThat(exporter).isNotNull();
     } finally {
