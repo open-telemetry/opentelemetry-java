@@ -265,7 +265,7 @@ class JaegerGrpcSpanExporterTest {
             getTagValue(batch.getProcess().getTagsList(), "ip")
                 .orElseThrow(() -> new AssertionError("ip not found"))
                 .getVStr())
-        .isEqualTo(InetAddress.getLocalHost().getHostAddress());
+        .isEqualTo(exporter.getJaegerResource().getAttribute(JaegerGrpcSpanExporter.IP_KEY));
 
     assertThat(
             getTagValue(batch.getProcess().getTagsList(), "hostname")
