@@ -86,4 +86,20 @@ public abstract class MetricDescriptor {
         && Objects.equals(
             getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
   }
+
+  /** Returns whether the descriptor describes an async {@link InstrumentType}. */
+  public boolean isAsync() {
+    switch (getSourceInstrument().getType()) {
+      case OBSERVABLE_UP_DOWN_SUM:
+      case OBSERVABLE_GAUGE:
+      case OBSERVABLE_SUM:
+        return true;
+      case HISTOGRAM:
+      case COUNTER:
+      case UP_DOWN_COUNTER:
+        return false;
+    }
+    throw new IllegalStateException(
+        "Unrecognized instrument type " + getSourceInstrument().getType());
+  }
 }
