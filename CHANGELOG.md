@@ -2,6 +2,8 @@
 
 ## Version 1.11.0 (unreleased):
 
+---
+
 ## Version 1.10.0 2022-01-07:
 
 ### API
