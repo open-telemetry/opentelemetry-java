@@ -488,6 +488,20 @@ class BatchSpanProcessorTest {
     assertThat(result.isSuccess()).isFalse();
   }
 
+  @Test
+  void stringRepresentation() {
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
+    String processorStr = processor.toString();
+    processor.close();
+    assertThat(processorStr)
+        .hasToString(
+            "BatchSpanProcessor{"
+                + "spanExporter=mockSpanExporter, "
+                + "scheduleDelayNanos=5000000000, "
+                + "maxExportBatchSize=512, "
+                + "exporterTimeoutNanos=30000000000}");
+  }
+
   private static final class BlockingSpanExporter implements SpanExporter {
 
     final Object monitor = new Object();

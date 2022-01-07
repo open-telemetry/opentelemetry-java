@@ -31,4 +31,9 @@ final class NoopSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
   }
+
+  @Override
+  public String toString() {
+    return "NoopSpanExporter{}";
+  }
 }

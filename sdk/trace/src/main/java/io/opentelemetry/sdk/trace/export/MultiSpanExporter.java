@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -96,5 +97,10 @@ final class MultiSpanExporter implements SpanExporter {
 
   private MultiSpanExporter(SpanExporter[] spanExporters) {
     this.spanExporters = spanExporters;
+  }
+
+  @Override
+  public String toString() {
+    return "MultiSpanExporter{" + "spanExporters=" + Arrays.toString(spanExporters) + '}';
   }
 }

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -36,6 +38,9 @@ import javax.annotation.Nullable;
  * behavior such as filtering out telemetry attributes.
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
+
+  private static final Logger logger =
+      Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
 
   @Nullable private ConfigProperties config;
 
@@ -213,6 +218,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
+      logger.log(
+          Level.FINE, "Global OpenTelemetrySdk set to {0} by autoconfiguration", openTelemetrySdk);
     }
 
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
