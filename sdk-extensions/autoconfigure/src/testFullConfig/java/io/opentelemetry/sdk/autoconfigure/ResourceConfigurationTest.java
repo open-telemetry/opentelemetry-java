@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +20,9 @@ class ResourceConfigurationTest {
   void resource() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(Collections.emptyMap()), (r, c) -> r)
+                DefaultConfigProperties.get(Collections.emptyMap()),
+                ResourceConfigurationTest.class.getClassLoader(),
+                (r, c) -> r)
             .getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
@@ -31,5 +35,26 @@ class ResourceConfigurationTest {
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_VERSION)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION)).isNotNull();
+  }
+
+  @Test
+  void emptyClassLoader() {
+    Attributes attributes =
+        ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(Collections.emptyMap()),
+                new URLClassLoader(new URL[0], null),
+                (r, c) -> r)
+            .getAttributes();
+
+    assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
+
+    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNull();
+
+    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_VERSION)).isNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION)).isNull();
   }
 }
