@@ -194,8 +194,8 @@ This is a **current** feature status list:
 | Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.10.0<!--/VERSION_STABLE-->  |
 | Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.10.0<!--/VERSION_STABLE-->  |
 | OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.10.0<!--/VERSION_STABLE-->  |
+| Metrics API                 | v<!--VERSION_STABLE-->1.10.0<!--/VERSION_STABLE-->  |
 | OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.10.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics API                 | v<!--VERSION_UNSTABLE-->1.10.0-alpha<!--/VERSION_UNSTABLE-->  |
 | Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.10.0-alpha<!--/VERSION_UNSTABLE-->  |
 | Logs SDK                    | v<!--VERSION_UNSTABLE-->1.10.0-alpha<!--/VERSION_UNSTABLE-->  |
 | Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.10.0-alpha<!--/VERSION_UNSTABLE-->  |
