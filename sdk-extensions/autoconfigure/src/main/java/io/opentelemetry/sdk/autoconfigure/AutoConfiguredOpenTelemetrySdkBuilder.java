@@ -16,16 +16,20 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -57,6 +61,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private ClassLoader serviceClassLoader =
       AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader();
+
+  private boolean registerShutdownHook = true;
 
   private boolean setResultAsGlobal = true;
 
@@ -152,6 +158,22 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
+   * the shutdown hook is registered.
+   *
+   * <p>Skipping the registration of the shutdown hook may cause unexpected behavior. This
+   * configuration is for SDK consumers that require control over the SDK lifecycle. In this case,
+   * alternatives must be provided by the SDK consumer to shut down the SDK.
+   *
+   * @param registerShutdownHook a boolean <code>true</code> will register the hook, otherwise
+   *     <code>false</code> will skip registration.
+   */
+  public AutoConfiguredOpenTelemetrySdkBuilder registerShutdownHook(boolean registerShutdownHook) {
+    this.registerShutdownHook = registerShutdownHook;
+    return this;
+  }
+
+  /**
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
    */
@@ -200,6 +222,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     SdkLogEmitterProvider logEmitterProvider =
         LogEmitterProviderConfiguration.configureLogEmitterProvider(
             resource, config, meterProvider);
+
+    if (registerShutdownHook) {
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    List<CompletableResultCode> shutdown = new ArrayList<>();
+                    shutdown.add(tracerProvider.shutdown());
+                    if (meterProvider instanceof SdkMeterProvider) {
+                      shutdown.add(((SdkMeterProvider) meterProvider).shutdown());
+                    }
+                    shutdown.add(logEmitterProvider.shutdown());
+                    CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
+                  }));
+    }
 
     ContextPropagators propagators =
         PropagatorConfiguration.configurePropagators(
