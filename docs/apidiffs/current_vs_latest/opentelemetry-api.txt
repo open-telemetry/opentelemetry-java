@@ -1,6 +1,7 @@
 Comparing source compatibility of  against 
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.GlobalOpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) java.util.logging.Logger API_USAGE_LOGGER
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.Meter getMeter(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.metrics.MeterBuilder meterBuilder(java.lang.String)
