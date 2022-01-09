@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import static io.opentelemetry.api.GlobalOpenTelemetry.API_USAGE_LOGGER;
+
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import javax.annotation.concurrent.Immutable;
@@ -76,6 +78,7 @@ public final class TraceId {
    */
   public static String fromBytes(byte[] traceIdBytes) {
     if (traceIdBytes == null || traceIdBytes.length < BYTES_LENGTH) {
+      API_USAGE_LOGGER.finest("Trace.fromBytes: traceIdBytes is null or too short");
       return INVALID;
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);
@@ -102,6 +105,8 @@ public final class TraceId {
    */
   public static String fromLongs(long traceIdLongHighPart, long traceIdLongLowPart) {
     if (traceIdLongHighPart == 0 && traceIdLongLowPart == 0) {
+      API_USAGE_LOGGER.finest(
+          "Trace.fromLongs: traceIdLongHighPart == 0 or traceIdLongLowPart == 0");
       return getInvalid();
     }
     char[] chars = TemporaryBuffers.chars(HEX_LENGTH);

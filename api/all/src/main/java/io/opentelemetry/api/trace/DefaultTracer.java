@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import static io.opentelemetry.api.GlobalOpenTelemetry.API_USAGE_LOGGER;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -49,6 +51,7 @@ final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
+        API_USAGE_LOGGER.finest("DefaultTracer.setParent: context is null");
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();

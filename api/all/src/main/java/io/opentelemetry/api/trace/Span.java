@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import static io.opentelemetry.api.GlobalOpenTelemetry.API_USAGE_LOGGER;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -42,6 +43,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span fromContext(Context context) {
     if (context == null) {
+      API_USAGE_LOGGER.finest("Span.fromContext: context is null");
       return Span.getInvalid();
     }
     Span span = context.get(SpanContextKey.KEY);
@@ -55,6 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
+      API_USAGE_LOGGER.finest("Span.fromContextOrNull: context is null");
       return null;
     }
     return context.get(SpanContextKey.KEY);
@@ -75,6 +78,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null || !spanContext.isValid()) {
+      API_USAGE_LOGGER.finest("Span.wrap: context is null or invalid");
       return getInvalid();
     }
     return PropagatedSpan.create(spanContext);
