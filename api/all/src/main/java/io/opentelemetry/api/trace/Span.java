@@ -5,12 +5,12 @@
 
 package io.opentelemetry.api.trace;
 
-import static io.opentelemetry.api.GlobalOpenTelemetry.API_USAGE_LOGGER;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import java.time.Instant;
@@ -43,7 +43,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span fromContext(Context context) {
     if (context == null) {
-      API_USAGE_LOGGER.finest("Span.fromContext: context is null");
+      ValidationUtil.log("context is null", new NullPointerException());
       return Span.getInvalid();
     }
     Span span = context.get(SpanContextKey.KEY);
@@ -57,7 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
-      API_USAGE_LOGGER.finest("Span.fromContextOrNull: context is null");
+      ValidationUtil.log(" context is null", new NullPointerException());
       return null;
     }
     return context.get(SpanContextKey.KEY);
@@ -77,8 +77,11 @@ public interface Span extends ImplicitContextKeyed {
    * to propagate a valid {@link SpanContext} downstream.
    */
   static Span wrap(SpanContext spanContext) {
-    if (spanContext == null || !spanContext.isValid()) {
-      API_USAGE_LOGGER.finest("Span.wrap: context is null or invalid");
+    if (spanContext == null) {
+      ValidationUtil.log("context is null or invalid", new NullPointerException());
+      return getInvalid();
+    }
+    if (!spanContext.isValid()) {
       return getInvalid();
     }
     return PropagatedSpan.create(spanContext);
