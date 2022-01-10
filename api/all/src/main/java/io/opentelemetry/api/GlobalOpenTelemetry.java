@@ -34,7 +34,6 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 public final class GlobalOpenTelemetry {
 
-  public static final Logger API_USAGE_LOGGER = Logger.getLogger("ApiUsageLogging");
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
