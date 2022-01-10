@@ -240,6 +240,31 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  void unimplemented_error_server_response() {
+    addGrpcError(12, null);
+
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .build();
+    closer.register(sampler);
+
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+
+    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+    // wait until correct response is returned
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+
+    LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+  }
+
+  @Test
   void invalidArguments() {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setServiceName(null))
         .isInstanceOf(NullPointerException.class)
