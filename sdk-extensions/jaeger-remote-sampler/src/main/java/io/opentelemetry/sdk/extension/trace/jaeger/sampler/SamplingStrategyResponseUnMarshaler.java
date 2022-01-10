@@ -49,7 +49,6 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
         case 26:
           input.readRawVarint32(); // skip length
           responseBuilder.setRateLimitingSamplingStrategy(parseRateLimiting(input));
-          parseRateLimiting(input);
           break;
         case 34:
           input.readRawVarint32(); // skip length

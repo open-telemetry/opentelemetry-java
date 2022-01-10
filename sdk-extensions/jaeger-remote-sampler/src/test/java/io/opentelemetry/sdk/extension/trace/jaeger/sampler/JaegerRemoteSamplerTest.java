@@ -45,6 +45,9 @@ class JaegerRemoteSamplerTest {
   private static final ConcurrentLinkedQueue<ArmeriaStatusException> grpcErrors =
       new ConcurrentLinkedQueue<>();
 
+  private static final ConcurrentLinkedQueue<Sampling.SamplingStrategyResponse> responses =
+      new ConcurrentLinkedQueue<>();
+
   private static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
@@ -70,14 +73,19 @@ class JaegerRemoteSamplerTest {
                     throw grpcError;
                   }
 
-                  Sampling.SamplingStrategyResponse response =
-                      Sampling.SamplingStrategyResponse.newBuilder()
-                          .setStrategyType(SamplingStrategyType.RATE_LIMITING)
-                          .setRateLimitingSampling(
-                              RateLimitingSamplingStrategy.newBuilder()
-                                  .setMaxTracesPerSecond(RATE)
-                                  .build())
-                          .build();
+                  Sampling.SamplingStrategyResponse response = responses.poll();
+                  // use default
+                  if (response == null) {
+                    response =
+                        Sampling.SamplingStrategyResponse.newBuilder()
+                            .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+                            .setRateLimitingSampling(
+                                RateLimitingSamplingStrategy.newBuilder()
+                                    .setMaxTracesPerSecond(RATE)
+                                    .build())
+                            .build();
+                  }
+
                   return CompletableFuture.completedFuture(response.toByteArray());
                 }
               });
@@ -91,6 +99,7 @@ class JaegerRemoteSamplerTest {
   public void before() {
     numPolls.set(0);
     grpcErrors.clear();
+    responses.clear();
   }
 
   @AfterEach
@@ -187,6 +196,48 @@ class JaegerRemoteSamplerTest {
     Thread.sleep(500);
 
     assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+  }
+
+  @Test
+  void perOperationSampling() {
+    Sampling.SamplingStrategyResponse response =
+        Sampling.SamplingStrategyResponse.newBuilder()
+            .setOperationSampling(
+                Sampling.PerOperationSamplingStrategies.newBuilder()
+                    .setDefaultSamplingProbability(0.55)
+                    .setDefaultLowerBoundTracesPerSecond(100)
+                    .setDefaultUpperBoundTracesPerSecond(200)
+                    .addPerOperationStrategies(
+                        Sampling.OperationSamplingStrategy.newBuilder()
+                            .setOperation("foo")
+                            .setProbabilisticSampling(
+                                Sampling.ProbabilisticSamplingStrategy.newBuilder()
+                                    .setSamplingRate(0.90)
+                                    .build())
+                            .build())
+                    .build())
+            .setRateLimitingSampling(
+                RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(RATE).build())
+            .build();
+    responses.add(response);
+
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .build();
+    closer.register(sampler);
+
+    assertThat(sampler.getDescription())
+        .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+
+    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 0);
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
+    // wait until correct response is returned
+    assertThat(sampler.getDescription())
+        .startsWith(
+            "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}");
   }
 
   @Test
