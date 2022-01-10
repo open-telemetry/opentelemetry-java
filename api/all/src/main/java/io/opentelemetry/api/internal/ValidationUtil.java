@@ -18,7 +18,7 @@ public final class ValidationUtil {
   private static final Logger API_USAGE_LOGGER =
       Logger.getLogger("io.opentelemetry.ApiUsageLogging");
 
-  public static void log(String msg, Throwable thrown) {
-    API_USAGE_LOGGER.log(Level.FINEST, msg, thrown);
+  public static void log(String msg) {
+    API_USAGE_LOGGER.log(Level.FINEST, msg, new NullPointerException());
   }
 }

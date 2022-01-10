@@ -77,7 +77,7 @@ public final class TraceId {
    */
   public static String fromBytes(byte[] traceIdBytes) {
     if (traceIdBytes == null || traceIdBytes.length < BYTES_LENGTH) {
-      ValidationUtil.log("traceIdBytes is null or too short", new NullPointerException());
+      ValidationUtil.log("traceIdBytes is null or too short");
       return INVALID;
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);

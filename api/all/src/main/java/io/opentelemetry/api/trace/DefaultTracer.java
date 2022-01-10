@@ -50,7 +50,7 @@ final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
-        ValidationUtil.log("context is null", new NullPointerException());
+        ValidationUtil.log("context is null");
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();

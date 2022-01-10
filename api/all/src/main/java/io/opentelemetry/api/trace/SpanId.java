@@ -73,7 +73,7 @@ public final class SpanId {
    */
   public static String fromBytes(byte[] spanIdBytes) {
     if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
-      ValidationUtil.log("spanIdBytes is null or too short", new NullPointerException());
+      ValidationUtil.log("spanIdBytes is null or too short");
       return INVALID;
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);

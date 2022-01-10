@@ -43,7 +43,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span fromContext(Context context) {
     if (context == null) {
-      ValidationUtil.log("context is null", new NullPointerException());
+      ValidationUtil.log("context is null");
       return Span.getInvalid();
     }
     Span span = context.get(SpanContextKey.KEY);
@@ -57,7 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
-      ValidationUtil.log(" context is null", new NullPointerException());
+      ValidationUtil.log(" context is null");
       return null;
     }
     return context.get(SpanContextKey.KEY);
@@ -78,7 +78,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null) {
-      ValidationUtil.log("context is null or invalid", new NullPointerException());
+      ValidationUtil.log("context is null or invalid");
       return getInvalid();
     }
     if (!spanContext.isValid()) {
