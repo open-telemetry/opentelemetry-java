@@ -237,7 +237,7 @@ class JaegerRemoteSamplerTest {
             .build();
     closer.register(sampler);
 
-    await().atMost(Duration.ofSeconds(500)).until(() -> numPolls.get() > 0);
+    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 0);
     assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
     // wait until correct response is returned
     assertThat(sampler.getDescription())
