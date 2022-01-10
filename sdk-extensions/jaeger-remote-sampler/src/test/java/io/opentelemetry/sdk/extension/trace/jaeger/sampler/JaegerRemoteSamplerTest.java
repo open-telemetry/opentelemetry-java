@@ -215,6 +215,14 @@ class JaegerRemoteSamplerTest {
                                     .setSamplingRate(0.90)
                                     .build())
                             .build())
+                    .addPerOperationStrategies(
+                        Sampling.OperationSamplingStrategy.newBuilder()
+                            .setOperation("bar")
+                            .setProbabilisticSampling(
+                                Sampling.ProbabilisticSamplingStrategy.newBuilder()
+                                    .setSamplingRate(0.7)
+                                    .build())
+                            .build())
                     .build())
             .setRateLimitingSampling(
                 RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(RATE).build())
@@ -225,19 +233,17 @@ class JaegerRemoteSamplerTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build();
     closer.register(sampler);
 
-    assertThat(sampler.getDescription())
-        .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
-
-    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 0);
+    await().atMost(Duration.ofSeconds(500)).until(() -> numPolls.get() > 0);
     assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
     // wait until correct response is returned
     assertThat(sampler.getDescription())
         .startsWith(
-            "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}");
+            "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+    assertThat(sampler.getDescription()).contains("bar");
   }
 
   @Test

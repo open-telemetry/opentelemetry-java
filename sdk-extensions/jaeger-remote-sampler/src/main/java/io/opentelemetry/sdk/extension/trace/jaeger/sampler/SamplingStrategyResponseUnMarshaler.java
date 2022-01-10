@@ -26,7 +26,7 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
       parseResponse(responseBuilder, codedInputStream);
       samplingStrategyResponse = responseBuilder.build();
     } catch (IOException ex) {
-      // use empty/default message
+      // use null message
     }
   }
 
@@ -192,7 +192,7 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
           break;
       }
 
-      if (!operationParsed && probabilisticSamplingParsed) {
+      if (operationParsed && probabilisticSamplingParsed) {
         break;
       }
     }
