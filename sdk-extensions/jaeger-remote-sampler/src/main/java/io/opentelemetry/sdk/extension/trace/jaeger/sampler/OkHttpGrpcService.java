@@ -12,9 +12,9 @@ import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -79,20 +79,23 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
       String status = grpcStatus(response);
       if ("0".equals(status)) {
         if (bodyBytes.length > 5) {
-          InputStream bodyStream = new ByteArrayInputStream(bodyBytes);
+          ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
           bodyStream.skip(5);
           if (bodyBytes[0] == '1') {
             Buffer buffer = new Buffer();
             buffer.readFrom(bodyStream);
             GzipSource gzipSource = new GzipSource(buffer);
-            bodyStream = Okio.buffer(gzipSource).inputStream();
-          } // else do nothing data are not compressed
-          responseUnmarshaller.read(bodyStream);
+            bodyBytes = Okio.buffer(gzipSource).getBuffer().readByteArray();
+          } else {
+            bodyBytes = Arrays.copyOfRange(bodyBytes, 5, bodyBytes.length);
+          }
+          responseUnmarshaller.read(bodyBytes);
           return;
         }
         return;
       }
 
+      // handle non OK status codes
       String codeMessage =
           status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);

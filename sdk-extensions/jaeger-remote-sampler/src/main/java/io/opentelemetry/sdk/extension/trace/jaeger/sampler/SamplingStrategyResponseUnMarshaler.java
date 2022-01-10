@@ -6,9 +6,7 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.annotation.Nullable;
 
 class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
@@ -21,11 +19,10 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
   }
 
   @Override
-  public void read(InputStream inputStream) throws IOException {
-    byte[] bytes = readAllBytes(inputStream);
+  public void read(byte[] payload) throws IOException {
     SamplingStrategyResponse.Builder responseBuilder = new SamplingStrategyResponse.Builder();
     try {
-      CodedInputStream codedInputStream = CodedInputStream.newInstance(bytes);
+      CodedInputStream codedInputStream = CodedInputStream.newInstance(payload);
       parseResponse(responseBuilder, codedInputStream);
       samplingStrategyResponse = responseBuilder.build();
     } catch (IOException ex) {
@@ -201,34 +198,5 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
       }
     }
     return builder.build();
-  }
-
-  private static byte[] readAllBytes(InputStream inputStream) throws IOException {
-    int bufLen = 4 * 0x400; // 4KB
-    byte[] buf = new byte[bufLen];
-    int readLen;
-    IOException exception = null;
-
-    try {
-      try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-        while ((readLen = inputStream.read(buf, 0, bufLen)) != -1) {
-          outputStream.write(buf, 0, readLen);
-        }
-        return outputStream.toByteArray();
-      }
-    } catch (IOException e) {
-      exception = e;
-      throw e;
-    } finally {
-      if (exception == null) {
-        inputStream.close();
-      } else {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          exception.addSuppressed(e);
-        }
-      }
-    }
   }
 }
