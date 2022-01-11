@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -46,14 +45,12 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,
       MeterProvider meterProvider,
-      long timeoutNanos,
-      boolean compressionEnabled) {
+      long timeoutNanos) {
     this.type = type;
     this.exporterMetrics = ExporterMetrics.createGrpc(type, meterProvider);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
-    this.stub = stub.withCompression(codec.getMessageEncoding());
+    this.stub = stub;
   }
 
   @Override

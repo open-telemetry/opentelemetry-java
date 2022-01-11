@@ -170,8 +170,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
-    return new DefaultGrpcExporter<>(
-        type, channel, stub, meterProvider, timeoutNanos, compressionEnabled);
+    return new DefaultGrpcExporter<>(type, channel, stub, meterProvider, timeoutNanos);
   }
 
   /**
