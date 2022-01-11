@@ -78,7 +78,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null) {
-      ValidationUtil.log("context is null or invalid");
+      ValidationUtil.log("context is null");
       return getInvalid();
     }
     if (!spanContext.isValid()) {
