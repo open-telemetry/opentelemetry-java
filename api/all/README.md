@@ -19,5 +19,4 @@ to run a specific benchmark class.
 
 ---
 #### Logging API mis-use
-Define `logging.level.io.opentelemetry.ApiUsageLogging=TRACE` to enable TRACE logging for possible invalid or
-no-op API calls
+Define `logging.level.io.opentelemetry.ApiUsageLogging=TRACE` to enable TRACE logging for invalid API calls.
