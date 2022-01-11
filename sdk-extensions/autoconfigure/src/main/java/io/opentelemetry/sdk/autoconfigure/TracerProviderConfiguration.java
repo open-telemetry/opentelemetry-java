@@ -63,9 +63,7 @@ final class TracerProviderConfiguration {
     configureSpanProcessors(config, exportersByName)
         .forEach(tracerProviderBuilder::addSpanProcessor);
 
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
-    return tracerProvider;
+    return tracerProviderBuilder.build();
   }
 
   static List<SpanProcessor> configureSpanProcessors(

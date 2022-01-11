@@ -31,9 +31,7 @@ final class LogEmitterProviderConfiguration {
 
     configureLogProcessors(exportersByName).forEach(builder::addLogProcessor);
 
-    SdkLogEmitterProvider logEmitterProvider = builder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(logEmitterProvider::close));
-    return logEmitterProvider;
+    return builder.build();
   }
 
   // Visible for testing
