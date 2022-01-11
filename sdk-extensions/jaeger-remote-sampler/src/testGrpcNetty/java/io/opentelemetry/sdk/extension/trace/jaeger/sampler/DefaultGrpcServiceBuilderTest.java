@@ -108,5 +108,9 @@ class DefaultGrpcServiceBuilderTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+
+    assertThatThrownBy(() -> exporterBuilder().setChannel(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("channel");
   }
 }
