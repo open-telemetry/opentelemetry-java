@@ -25,6 +25,7 @@ final class ResourceConfiguration {
 
   static Resource configureResource(
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
@@ -33,7 +34,8 @@ final class ResourceConfiguration {
     // to implement it for now.
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
-    for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
+    for (ResourceProvider resourceProvider :
+        ServiceLoader.load(ResourceProvider.class, serviceClassLoader)) {
       if (disabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;
       }

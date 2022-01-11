@@ -6,15 +6,14 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
- * UnMarshaller from an SDK structure to protobuf wire format.
+ * UnMarshaler from protobuf wire format to SDK data type.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-abstract class UnMarshaller {
+abstract class UnMarshaler {
 
-  public abstract void read(InputStream inputStream) throws IOException;
+  public abstract void read(byte[] payload) throws IOException;
 }

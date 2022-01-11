@@ -125,4 +125,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofAll(pendingExports);
   }
+
+  @Override
+  public String toString() {
+    return "SimpleSpanProcessor{" + "spanExporter=" + spanExporter + '}';
+  }
 }

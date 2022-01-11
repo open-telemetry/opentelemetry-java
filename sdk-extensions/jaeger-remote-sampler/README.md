@@ -11,7 +11,6 @@ The following example shows initialization and installation of the sampler:
 
 ```java
 Builder remoteSamplerBuilder = JaegerRemoteSampler.builder()
-    .setChannel(grpcChannel)
     .setServiceName("my-service");
 TraceConfig traceConfig = provider.getActiveTraceConfig()
     .toBuilder().setSampler(remoteSamplerBuilder.build())

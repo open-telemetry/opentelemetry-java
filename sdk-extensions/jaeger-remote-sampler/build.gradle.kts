@@ -28,8 +28,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
-
-  testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
@@ -41,7 +39,6 @@ testing {
     val testGrpcNetty by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":sdk:testing"))
-        implementation("com.fasterxml.jackson.jr:jackson-jr-stree")
         implementation("com.google.protobuf:protobuf-java-util")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")

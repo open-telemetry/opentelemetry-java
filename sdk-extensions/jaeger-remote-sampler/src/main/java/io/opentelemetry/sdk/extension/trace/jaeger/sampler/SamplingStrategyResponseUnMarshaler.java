@@ -6,30 +6,28 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import javax.annotation.Nullable;
 
-class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
+class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
 
-  private SamplingStrategyResponse samplingStrategyResponse =
-      new SamplingStrategyResponse.Builder().build();
+  @Nullable private SamplingStrategyResponse samplingStrategyResponse;
 
+  @Nullable
   public SamplingStrategyResponse get() {
     return samplingStrategyResponse;
   }
 
   @Override
-  public void read(InputStream inputStream) throws IOException {
-    byte[] bytes = readAllBytes(inputStream);
+  public void read(byte[] payload) throws IOException {
     SamplingStrategyResponse.Builder responseBuilder = new SamplingStrategyResponse.Builder();
     try {
-      CodedInputStream codedInputStream = CodedInputStream.newInstance(bytes);
+      CodedInputStream codedInputStream = CodedInputStream.newInstance(payload);
       parseResponse(responseBuilder, codedInputStream);
+      samplingStrategyResponse = responseBuilder.build();
     } catch (IOException ex) {
-      // use empty/default message
+      // use null message
     }
-    samplingStrategyResponse = responseBuilder.build();
   }
 
   private static void parseResponse(
@@ -51,7 +49,6 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
         case 26:
           input.readRawVarint32(); // skip length
           responseBuilder.setRateLimitingSamplingStrategy(parseRateLimiting(input));
-          parseRateLimiting(input);
           break;
         case 34:
           input.readRawVarint32(); // skip length
@@ -195,39 +192,10 @@ class SamplingStrategyResponseUnMarshaller extends UnMarshaller {
           break;
       }
 
-      if (!operationParsed && probabilisticSamplingParsed) {
+      if (operationParsed && probabilisticSamplingParsed) {
         break;
       }
     }
     return builder.build();
-  }
-
-  private static byte[] readAllBytes(InputStream inputStream) throws IOException {
-    int bufLen = 4 * 0x400; // 4KB
-    byte[] buf = new byte[bufLen];
-    int readLen;
-    IOException exception = null;
-
-    try {
-      try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-        while ((readLen = inputStream.read(buf, 0, bufLen)) != -1) {
-          outputStream.write(buf, 0, readLen);
-        }
-        return outputStream.toByteArray();
-      }
-    } catch (IOException e) {
-      exception = e;
-      throw e;
-    } finally {
-      if (exception == null) {
-        inputStream.close();
-      } else {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          exception.addSuppressed(e);
-        }
-      }
-    }
   }
 }

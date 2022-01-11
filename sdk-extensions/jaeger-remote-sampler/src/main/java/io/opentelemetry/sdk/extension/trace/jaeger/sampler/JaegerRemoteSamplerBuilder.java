@@ -34,7 +34,7 @@ public final class JaegerRemoteSamplerBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   private final GrpcServiceBuilder<
-          SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       delegate;
 
   /**
@@ -120,7 +120,7 @@ public final class JaegerRemoteSamplerBuilder {
   }
 
   // Visible for testing
-  GrpcServiceBuilder<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+  GrpcServiceBuilder<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       getDelegate() {
     return delegate;
   }

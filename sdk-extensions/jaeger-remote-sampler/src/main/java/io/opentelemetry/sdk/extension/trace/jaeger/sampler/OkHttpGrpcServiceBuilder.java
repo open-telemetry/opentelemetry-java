@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.grpc.ManagedChannel;
-import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +28,9 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 
-final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
-    implements GrpcServiceBuilder<ReqT, ResT> {
+final class OkHttpGrpcServiceBuilder<
+        ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+    implements GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> {
 
   private final String type;
   private final String grpcEndpointPath;
@@ -39,9 +41,7 @@ final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMars
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
 
-  /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   OkHttpGrpcServiceBuilder(
       String type, String grpcEndpointPath, long defaultTimeoutSecs, URI defaultEndpoint) {
     this.type = type;
@@ -51,73 +51,71 @@ final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMars
   }
 
   @Override
-  public GrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
+  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setChannel(ManagedChannel channel) {
     throw new UnsupportedOperationException("Only available on DefaultGrpcService");
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTimeout(
+      long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTimeout(Duration timeout) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    checkArgument(!timeout.isNegative(), "timeout must be non-negative");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setEndpoint(String endpoint) {
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = uri;
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setEndpoint(String endpoint) {
+    requireNonNull(endpoint, "endpoint");
+    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setCompression(String compressionMethod) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setCompression(
+      String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTrustedCertificates(
       byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addHeader(
+      String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "val");
     headers.add(key, value);
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy) {
+  public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addRetryPolicy(
+      RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
     this.retryPolicy = retryPolicy;
     return this;
   }
 
   @Override
-  public OkHttpGrpcServiceBuilder<ReqT, ResT> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
-    return this;
-  }
-
-  @Override
-  public GrpcService<ReqT, ResT> build() {
+  public GrpcService<ReqMarshalerT, ResUnMarshalerT> build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
 
@@ -151,6 +149,6 @@ final class OkHttpGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMars
     }
 
     return new OkHttpGrpcService<>(
-        type, clientBuilder.build(), meterProvider, endpoint, headers.build(), compressionEnabled);
+        type, clientBuilder.build(), endpoint, headers.build(), compressionEnabled);
   }
 }

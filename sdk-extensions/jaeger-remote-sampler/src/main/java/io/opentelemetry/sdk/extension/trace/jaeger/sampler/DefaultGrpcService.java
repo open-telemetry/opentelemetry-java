@@ -16,21 +16,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class DefaultGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
-    implements GrpcService<ReqT, ResT> {
+final class DefaultGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+    implements GrpcService<ReqMarshalerT, ResUnMarshalerT> {
 
   private static final Logger logger = Logger.getLogger(DefaultGrpcService.class.getName());
 
   private final String type;
   private final ManagedChannel managedChannel;
-  private final MarshalerServiceStub<ReqT, ResT, ?> stub;
+  private final MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub;
   private final long timeoutNanos;
 
   /** Creates a new {@link DefaultGrpcService}. */
   DefaultGrpcService(
       String type,
       ManagedChannel channel,
-      MarshalerServiceStub<ReqT, ResT, ?> stub,
+      MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub,
       long timeoutNanos) {
     this.type = type;
     this.managedChannel = channel;
@@ -39,8 +39,9 @@ final class DefaultGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller
   }
 
   @Override
-  public ResT execute(ReqT exportRequest, ResT responseUnmarshaller) {
-    MarshalerServiceStub<ReqT, ResT, ?> stub = this.stub;
+  public ResUnMarshalerT execute(
+      ReqMarshalerT exportRequest, ResUnMarshalerT responseUnmarshaller) {
+    MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub = this.stub;
     if (timeoutNanos > 0) {
       stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     }
@@ -72,7 +73,7 @@ final class DefaultGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller
             Level.WARNING,
             "Failed to execute "
                 + type
-                + "s. Server responded with "
+                + "s. Server responded with gRPC status code "
                 + status.getCode().value()
                 + ". Error message: "
                 + status.getDescription());

@@ -13,7 +13,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
@@ -27,7 +26,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
-final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaller>
+final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaler>
     implements GrpcServiceBuilder<ReqT, ResT> {
 
   private final String type;
@@ -118,11 +117,6 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
-    return this;
-  }
-
-  @Override
-  public DefaultGrpcServiceBuilder<ReqT, ResT> setMeterProvider(MeterProvider meterProvider) {
     return this;
   }
 

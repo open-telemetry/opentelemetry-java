@@ -22,7 +22,7 @@ jobs:
           - 17
         include:
           - os: ubuntu-20.04
-            test-java-version: 11
+            test-java-version: 17
             coverage: true
     steps:
       - uses: actions/checkout@v2.4.0

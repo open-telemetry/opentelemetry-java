@@ -14,16 +14,19 @@ import java.net.URI;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-interface GrpcService<ReqT extends Marshaler, ResT extends UnMarshaller> {
+interface GrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler> {
 
   /** Returns a new {@link GrpcExporterBuilder}. */
-  static <ReqT extends Marshaler, ResT extends UnMarshaller> GrpcServiceBuilder<ReqT, ResT> builder(
-      String type,
-      long defaultTimeoutSecs,
-      URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ResT, ?>>> stubFactory,
-      String grpcServiceName,
-      String grpcEndpointPath) {
+  static <ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+      GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> builder(
+          String type,
+          long defaultTimeoutSecs,
+          URI defaultEndpoint,
+          Supplier<
+                  Function<ManagedChannel, MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?>>>
+              stubFactory,
+          String grpcServiceName,
+          String grpcEndpointPath) {
     return GrpcServiceUtil.serviceBuilder(
         type, defaultTimeoutSecs, defaultEndpoint, stubFactory, grpcServiceName, grpcEndpointPath);
   }
@@ -32,7 +35,7 @@ interface GrpcService<ReqT extends Marshaler, ResT extends UnMarshaller> {
    * Exports the {@code exportRequest} which is a request {@link Marshaler} for {@code numItems}
    * items.
    */
-  ResT execute(ReqT request, ResT response);
+  ResUnMarshalerT execute(ReqMarshalerT request, ResUnMarshalerT response);
 
   /** Shuts the exporter down. */
   CompletableResultCode shutdown();

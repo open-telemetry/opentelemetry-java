@@ -28,12 +28,14 @@ final class GrpcServiceUtil {
     USE_OKHTTP = useOkhttp;
   }
 
-  static <ReqT extends Marshaler, ResT extends UnMarshaller>
-      GrpcServiceBuilder<ReqT, ResT> serviceBuilder(
+  static <ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+      GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> serviceBuilder(
           String type,
           long defaultTimeoutSecs,
           URI defaultEndpoint,
-          Supplier<Function<ManagedChannel, MarshalerServiceStub<ReqT, ResT, ?>>> stubFactory,
+          Supplier<
+                  Function<ManagedChannel, MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?>>>
+              stubFactory,
           String grpcServiceName,
           String grpcEndpointPath) {
     if (USE_OKHTTP) {

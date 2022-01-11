@@ -11,15 +11,15 @@ import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.internal.SamplingStrategyParameters;
 import java.io.IOException;
 
-final class SamplingStrategyParametersMarshaller extends MarshalerWithSize {
+final class SamplingStrategyParametersMarshaler extends MarshalerWithSize {
 
   private final byte[] serviceNameUtf8;
 
-  static SamplingStrategyParametersMarshaller create(String serviceName) {
-    return new SamplingStrategyParametersMarshaller(MarshalerUtil.toBytes(serviceName));
+  static SamplingStrategyParametersMarshaler create(String serviceName) {
+    return new SamplingStrategyParametersMarshaler(MarshalerUtil.toBytes(serviceName));
   }
 
-  private SamplingStrategyParametersMarshaller(byte[] serviceName) {
+  private SamplingStrategyParametersMarshaler(byte[] serviceName) {
     super(calculateSize(serviceName));
     this.serviceNameUtf8 = serviceName;
   }

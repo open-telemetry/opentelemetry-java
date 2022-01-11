@@ -99,7 +99,7 @@ public final class CodedInputStream {
     if (size <= 0) {
       throw newNegativeException();
     }
-    throw newTrucatedException();
+    throw newTruncatedException();
   }
 
   /** Skips a field. */
@@ -183,7 +183,7 @@ public final class CodedInputStream {
 
   private byte readRawByte() throws IOException {
     if (pos == limit) {
-      throw newTrucatedException();
+      throw newTruncatedException();
     }
     return buffer[pos++];
   }
@@ -204,7 +204,7 @@ public final class CodedInputStream {
     int tempPos = pos;
 
     if (limit - tempPos < FIXED64_SIZE) {
-      throw newTrucatedException();
+      throw newTruncatedException();
     }
 
     final byte[] buffer = this.buffer;
@@ -247,7 +247,7 @@ public final class CodedInputStream {
     if (length < 0) {
       throw newNegativeException();
     }
-    throw newTrucatedException();
+    throw newTruncatedException();
   }
 
   private static IOException newNegativeException() {
@@ -256,7 +256,7 @@ public final class CodedInputStream {
             + "which claimed to have negative size.");
   }
 
-  private static IOException newTrucatedException() {
+  private static IOException newTruncatedException() {
     return new IOException(
         "While parsing a protocol message, the input ended unexpectedly "
             + "in the middle of a field.  This could mean either that the "

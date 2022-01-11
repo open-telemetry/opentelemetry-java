@@ -14,6 +14,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,34 +22,34 @@ class MarshallerRemoteSamplerServiceGrpc {
 
   private static final String SERVICE_NAME = "jaeger.api_v2.SamplingManager";
 
-  private static final MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaller>
+  private static final MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaler>
       REQUEST_MARSHALLER =
-          new MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaller>() {
+          new MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaler>() {
             @Override
-            public InputStream stream(SamplingStrategyParametersMarshaller value) {
+            public InputStream stream(SamplingStrategyParametersMarshaler value) {
               return new MarshalerInputStream(value);
             }
 
             @Override
-            public SamplingStrategyParametersMarshaller parse(InputStream stream) {
+            public SamplingStrategyParametersMarshaler parse(InputStream stream) {
               throw new UnsupportedOperationException("Only for serializing");
             }
           };
 
-  private static final MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaller>
+  private static final MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaler>
       RESPONSE_MARSHALLER =
-          new MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaller>() {
+          new MethodDescriptor.Marshaller<SamplingStrategyResponseUnMarshaler>() {
             @Override
-            public InputStream stream(SamplingStrategyResponseUnMarshaller value) {
+            public InputStream stream(SamplingStrategyResponseUnMarshaler value) {
               throw new UnsupportedOperationException("Only for parsing");
             }
 
             @Override
-            public SamplingStrategyResponseUnMarshaller parse(InputStream stream) {
-              SamplingStrategyResponseUnMarshaller unmarshaller =
-                  new SamplingStrategyResponseUnMarshaller();
+            public SamplingStrategyResponseUnMarshaler parse(InputStream stream) {
+              SamplingStrategyResponseUnMarshaler unmarshaller =
+                  new SamplingStrategyResponseUnMarshaler();
               try {
-                unmarshaller.read(stream);
+                unmarshaller.read(readAllBytes(stream));
               } catch (IOException e) {
                 // could not parse response
                 throw new IllegalStateException(
@@ -59,10 +60,10 @@ class MarshallerRemoteSamplerServiceGrpc {
           };
 
   private static final MethodDescriptor<
-          SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       getPostSpansMethod =
           MethodDescriptor
-              .<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+              .<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
                   newBuilder()
               .setType(MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetSamplingStrategy"))
@@ -76,8 +77,8 @@ class MarshallerRemoteSamplerServiceGrpc {
 
   static final class SamplingManagerFutureStub
       extends MarshalerServiceStub<
-          SamplingStrategyParametersMarshaller,
-          SamplingStrategyResponseUnMarshaller,
+          SamplingStrategyParametersMarshaler,
+          SamplingStrategyResponseUnMarshaler,
           SamplingManagerFutureStub> {
 
     private SamplingManagerFutureStub(Channel channel, CallOptions callOptions) {
@@ -90,10 +91,39 @@ class MarshallerRemoteSamplerServiceGrpc {
     }
 
     @Override
-    public ListenableFuture<SamplingStrategyResponseUnMarshaller> export(
-        SamplingStrategyParametersMarshaller request) {
+    public ListenableFuture<SamplingStrategyResponseUnMarshaler> export(
+        SamplingStrategyParametersMarshaler request) {
       return ClientCalls.futureUnaryCall(
           getChannel().newCall(getPostSpansMethod, getCallOptions()), request);
+    }
+  }
+
+  private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+    int bufLen = 4 * 0x400; // 4KB
+    byte[] buf = new byte[bufLen];
+    int readLen;
+    IOException exception = null;
+
+    try {
+      try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        while ((readLen = inputStream.read(buf, 0, bufLen)) != -1) {
+          outputStream.write(buf, 0, readLen);
+        }
+        return outputStream.toByteArray();
+      }
+    } catch (IOException e) {
+      exception = e;
+      throw e;
+    } finally {
+      if (exception == null) {
+        inputStream.close();
+      } else {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          exception.addSuppressed(e);
+        }
+      }
     }
   }
 

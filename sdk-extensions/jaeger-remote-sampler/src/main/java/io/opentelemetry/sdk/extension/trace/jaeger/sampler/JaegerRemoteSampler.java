@@ -37,11 +37,11 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private volatile Sampler sampler;
 
   private final GrpcService<
-          SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       delegate;
 
   JaegerRemoteSampler(
-      GrpcService<SamplingStrategyParametersMarshaller, SamplingStrategyResponseUnMarshaller>
+      GrpcService<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
           delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
@@ -68,11 +68,11 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private void getAndUpdateSampler() {
     try {
-      SamplingStrategyResponseUnMarshaller responseParameters =
+      SamplingStrategyResponseUnMarshaler samplingStrategyResponseUnMarshaler =
           delegate.execute(
-              SamplingStrategyParametersMarshaller.create(this.serviceName),
-              new SamplingStrategyResponseUnMarshaller());
-      SamplingStrategyResponse response = responseParameters.get();
+              SamplingStrategyParametersMarshaler.create(this.serviceName),
+              new SamplingStrategyResponseUnMarshaler());
+      SamplingStrategyResponse response = samplingStrategyResponseUnMarshaler.get();
       if (response != null) {
         this.sampler = updateSampler(response);
       }

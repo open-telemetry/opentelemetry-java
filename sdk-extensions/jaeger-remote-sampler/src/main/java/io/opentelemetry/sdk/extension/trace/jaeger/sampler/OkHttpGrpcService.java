@@ -5,16 +5,16 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -27,8 +27,8 @@ import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 
-final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
-    implements GrpcService<ReqT, ResT> {
+final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
+    implements GrpcService<ReqMarshalerT, ResUnMarshalerT> {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -45,7 +45,6 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   OkHttpGrpcService(
       String type,
       OkHttpClient client,
-      MeterProvider meterProvider,
       String endpoint,
       Headers headers,
       boolean compressionEnabled) {
@@ -57,7 +56,8 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
   }
 
   @Override
-  public ResT execute(ReqT exportRequest, ResT responseUnmarshaller) {
+  public ResUnMarshalerT execute(
+      ReqMarshalerT exportRequest, ResUnMarshalerT responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
@@ -66,21 +66,9 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
     try {
       Response response = client.newCall(requestBuilder.build()).execute();
 
+      byte[] bodyBytes;
       try {
-        InputStream inputStream = response.body().byteStream();
-        byte[] arrCompressionAndLength = new byte[5];
-        int bytesRead = inputStream.read(arrCompressionAndLength, 0, 5);
-        if (bytesRead < 5) {
-          return responseUnmarshaller;
-        }
-
-        if (arrCompressionAndLength[0] == '1') {
-          Buffer buffer = new Buffer();
-          buffer.readFrom(inputStream);
-          GzipSource gzipSource = new GzipSource(buffer);
-          inputStream = Okio.buffer(gzipSource).inputStream();
-        } // else do nothing data are not compressed
-        responseUnmarshaller.read(inputStream);
+        bodyBytes = response.body().bytes();
       } catch (IOException e) {
         logger.log(
             Level.WARNING,
@@ -91,9 +79,24 @@ final class OkHttpGrpcService<ReqT extends Marshaler, ResT extends UnMarshaller>
 
       String status = grpcStatus(response);
       if ("0".equals(status)) {
+        if (bodyBytes.length > 5) {
+          ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
+          bodyStream.skip(5);
+          if (bodyBytes[0] == '1') {
+            Buffer buffer = new Buffer();
+            buffer.readFrom(bodyStream);
+            GzipSource gzipSource = new GzipSource(buffer);
+            bodyBytes = Okio.buffer(gzipSource).getBuffer().readByteArray();
+          } else {
+            bodyBytes = Arrays.copyOfRange(bodyBytes, 5, bodyBytes.length);
+          }
+          responseUnmarshaller.read(bodyBytes);
+          return responseUnmarshaller;
+        }
         return responseUnmarshaller;
       }
 
+      // handle non OK status codes
       String codeMessage =
           status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);
