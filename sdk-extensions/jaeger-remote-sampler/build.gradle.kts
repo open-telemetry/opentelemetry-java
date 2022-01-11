@@ -45,6 +45,7 @@ testing {
         implementation("org.testcontainers:junit-jupiter")
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
+        implementation(project(":exporters:otlp:common"))
       }
     }
   }

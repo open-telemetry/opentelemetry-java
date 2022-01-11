@@ -101,7 +101,7 @@ final class OkHttpGrpcServiceBuilder<
   public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addHeader(
       String key, String value) {
     requireNonNull(key, "key");
-    requireNonNull(value, "val");
+    requireNonNull(value, "value");
     headers.add(key, value);
     return this;
   }
