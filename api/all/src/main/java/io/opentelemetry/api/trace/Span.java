@@ -57,7 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
-      ValidationUtil.log(" context is null");
+      ValidationUtil.log("context is null");
       return null;
     }
     return context.get(SpanContextKey.KEY);
