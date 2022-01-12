@@ -29,7 +29,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
@@ -46,7 +45,6 @@ class JaegerRemoteSamplerGrpcNettyTest {
   private static final String SERVICE_NAME = "my-service";
   private static final int RATE = 999;
 
-  private static final AtomicInteger numPolls = new AtomicInteger();
   private static final ConcurrentLinkedQueue<ArmeriaStatusException> grpcErrors =
       new ConcurrentLinkedQueue<>();
 
@@ -59,7 +57,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   // Workaround https://github.com/netmikey/logunit/pull/4
   @SuppressWarnings("unused")
-  private static final Logger loggerRef = Logger.getLogger(OkHttpGrpcService.class.getName());
+  private static final Logger loggerRef = Logger.getLogger(DefaultGrpcService.class.getName());
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcService.class, Level.TRACE);
@@ -81,7 +79,6 @@ class JaegerRemoteSamplerGrpcNettyTest {
                 protected CompletionStage<byte[]> handleMessage(
                     ServiceRequestContext ctx, byte[] message) {
 
-                  numPolls.incrementAndGet();
                   ArmeriaStatusException grpcError = grpcErrors.poll();
                   if (grpcError != null) {
                     throw grpcError;
@@ -113,7 +110,6 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   @BeforeEach
   public void before() {
-    numPolls.set(0);
     grpcErrors.clear();
     responses.clear();
   }
@@ -133,13 +129,10 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .build();
     closer.register(sampler);
 
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
@@ -153,13 +146,10 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .build();
     closer.register(sampler);
 
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
   }
 
   @Test
@@ -175,11 +165,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
-
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   @Test
@@ -205,13 +191,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
     closer.register(sampler);
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
-
-    Thread.sleep(500);
-
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   @Test
@@ -225,13 +205,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
     closer.register(sampler);
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
-
-    Thread.sleep(500);
-
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   @Test
@@ -269,17 +243,19 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
+            // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build();
     closer.register(sampler);
 
-    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 0);
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
-    // wait until correct response is returned
-    assertThat(sampler.getDescription())
-        .startsWith(
-            "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
-    assertThat(sampler.getDescription()).contains("bar");
+    await()
+        .untilAsserted(
+            () -> {
+              assertThat(sampler.getDescription())
+                  .startsWith(
+                      "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+              assertThat(sampler.getDescription()).contains("bar");
+            });
   }
 
   @Test
@@ -290,18 +266,14 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build();
     closer.register(sampler);
 
     assertThat(sampler.getDescription())
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
-    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
-    // wait until correct response is returned
-    assertThat(sampler.getDescription())
-        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     LoggingEvent log = logs.assertContains(" Server responded with gRPC status code 13");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -315,18 +287,14 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build();
     closer.register(sampler);
 
     assertThat(sampler.getDescription())
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
-    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
-    // wait until correct response is returned
-    assertThat(sampler.getDescription())
-        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
     assertThat(log.getLevel()).isEqualTo(Level.ERROR);
@@ -340,18 +308,14 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(200, TimeUnit.MILLISECONDS)
+            .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build();
     closer.register(sampler);
 
     assertThat(sampler.getDescription())
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
-    await().atMost(Duration.ofSeconds(10)).until(() -> numPolls.get() > 2);
-    assertThat(numPolls).hasValueGreaterThanOrEqualTo(2);
-    // wait until correct response is returned
-    assertThat(sampler.getDescription())
-        .startsWith("JaegerRemoteSampler{ParentBased{root:RateLimitingSampler{999.00}");
+    await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
     assertThat(log.getLevel()).isEqualTo(Level.ERROR);
@@ -365,9 +329,6 @@ class JaegerRemoteSamplerGrpcNettyTest {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setChannel(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("channel");
     assertThatThrownBy(
             () -> JaegerRemoteSampler.builder().setPollingInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
