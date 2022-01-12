@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class SdkLogEmitterProviderBuilderTest {
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(13L);
 
-    List<LogData> seenLogs = new LinkedList<>();
+    List<LogData> seenLogs = new ArrayList<>();
 
     LogProcessor processor = seenLogs::add;
 
