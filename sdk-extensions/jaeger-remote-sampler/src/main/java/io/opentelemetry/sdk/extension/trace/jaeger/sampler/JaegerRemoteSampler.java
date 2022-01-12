@@ -125,7 +125,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   @Override
   public void close() {
     pollFuture.cancel(true);
-    pollExecutor.shutdown();
+    pollExecutor.shutdownNow();
     delegate.shutdown();
   }
 }
