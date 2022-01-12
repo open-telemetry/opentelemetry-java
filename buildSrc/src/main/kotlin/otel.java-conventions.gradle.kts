@@ -19,7 +19,7 @@ base {
   // May be set already by a parent project, only set if not.
   // TODO(anuraaga): Make this less hacky by creating a "module group" plugin.
   if (!archivesName.get().startsWith("opentelemetry-")) {
-    archivesName.set("opentelemetry-${name}")
+    archivesName.set("opentelemetry-$name")
   }
 }
 
@@ -47,23 +47,25 @@ tasks {
       release.set(8)
 
       if (name != "jmhCompileGeneratedClasses") {
-        compilerArgs.addAll(listOf(
-          "-Xlint:all",
-          // We suppress the "try" warning because it disallows managing an auto-closeable with
-          // try-with-resources without referencing the auto-closeable within the try block.
-          "-Xlint:-try",
-          // We suppress the "processing" warning as suggested in
-          // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
-          "-Xlint:-processing",
-          // We suppress the "options" warning because it prevents compilation on modern JDKs
-          "-Xlint:-options",
+        compilerArgs.addAll(
+          listOf(
+            "-Xlint:all",
+            // We suppress the "try" warning because it disallows managing an auto-closeable with
+            // try-with-resources without referencing the auto-closeable within the try block.
+            "-Xlint:-try",
+            // We suppress the "processing" warning as suggested in
+            // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
+            "-Xlint:-processing",
+            // We suppress the "options" warning because it prevents compilation on modern JDKs
+            "-Xlint:-options",
 
-          // Fail build on any warning
-          "-Werror"
-        ))
+            // Fail build on any warning
+            "-Werror"
+          )
+        )
       }
 
-      //disable deprecation warnings for the protobuf module
+      // disable deprecation warnings for the protobuf module
       if (project.name == "proto") {
         compilerArgs.add("-Xlint:-deprecation")
       }
@@ -81,9 +83,11 @@ tasks {
     useJUnitPlatform()
 
     if (testJavaVersion != null) {
-      javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
-      })
+      javaLauncher.set(
+        javaToolchains.launcherFor {
+          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+        }
+      )
     }
 
     testLogging {
@@ -120,7 +124,8 @@ tasks {
         "Built-By" to System.getProperty("user.name"),
         "Built-JDK" to System.getProperty("java.version"),
         "Implementation-Title" to project.name,
-        "Implementation-Version" to project.version)
+        "Implementation-Version" to project.version
+      )
     }
   }
 

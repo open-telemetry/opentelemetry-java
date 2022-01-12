@@ -1,5 +1,8 @@
 plugins {
   `kotlin-dsl`
+
+  // When updating, update below in dependencies too
+  id("com.diffplug.spotless") version "6.0.5"
 }
 
 repositories {
@@ -37,5 +40,12 @@ tasks {
     with(options) {
       release.set(8)
     }
+  }
+}
+
+spotless {
+  kotlinGradle {
+    ktlint().userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
+    target("**/*.gradle.kts")
   }
 }
