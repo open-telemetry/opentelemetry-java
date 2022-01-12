@@ -6,20 +6,22 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.toServiceConfig;
+import static java.util.Objects.requireNonNull;
 
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -58,42 +60,39 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     this.channel = channel;
     return this;
   }
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    checkArgument(!timeout.isNegative(), "timeout must be non-negative");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setEndpoint(String endpoint) {
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = uri;
+    requireNonNull(endpoint, "endpoint");
+    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }
@@ -101,12 +100,15 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(
       byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "value");
     if (metadata == null) {
       metadata = new Metadata();
     }
@@ -116,6 +118,7 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
 
   @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
     this.retryPolicy = retryPolicy;
     return this;
   }

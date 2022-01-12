@@ -14,13 +14,16 @@ import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -32,6 +35,7 @@ import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
@@ -56,6 +60,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcService.class, Level.TRACE);
 
+  @Order(1)
+  @RegisterExtension
+  static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
+
+  @Order(2)
   @RegisterExtension
   static final ServerExtension server =
       new ServerExtension() {
@@ -91,6 +100,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
                 }
               });
           sb.http(0);
+          sb.https(0);
+          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
         }
       };
 
@@ -127,6 +138,26 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setEndpoint(server.httpUri().toString())
             .setPollingInterval(1, TimeUnit.SECONDS)
+            .setServiceName(SERVICE_NAME)
+            .build();
+    closer.register(sampler);
+
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+    // verify
+    assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    assertThat(numPolls).hasValueGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  void tlsConnectionWorks() throws IOException {
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpsUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setServiceName(SERVICE_NAME)
             .build();
     closer.register(sampler);

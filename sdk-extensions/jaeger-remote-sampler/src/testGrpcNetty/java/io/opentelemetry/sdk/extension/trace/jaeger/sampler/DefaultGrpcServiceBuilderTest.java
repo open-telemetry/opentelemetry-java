@@ -15,12 +15,13 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class OkHttpGrpcServiceBuilderTest {
+class DefaultGrpcServiceBuilderTest {
 
-  private static OkHttpGrpcServiceBuilder<
+  private static DefaultGrpcServiceBuilder<
           SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       exporterBuilder() {
-    return new OkHttpGrpcServiceBuilder<>("some", "some", 1, URI.create("htt://localhost:8080"));
+    return new DefaultGrpcServiceBuilder<>(
+        "some", null, 10, URI.create("htt://localhost:8080"), "some");
   }
 
   @Test
@@ -107,5 +108,9 @@ class OkHttpGrpcServiceBuilderTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
+
+    assertThatThrownBy(() -> exporterBuilder().setChannel(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("channel");
   }
 }

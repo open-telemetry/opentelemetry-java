@@ -58,6 +58,13 @@ public final class JaegerRemoteSamplerBuilder {
     return this;
   }
 
+  /** Sets trusted certificate. */
+  public JaegerRemoteSamplerBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
+    delegate.setTrustedCertificates(trustedCertificatesPem);
+    return this;
+  }
+
   /**
    * Sets the polling interval for configuration updates. If unset, defaults to {@value
    * DEFAULT_POLLING_INTERVAL_MILLIS}ms. Must be positive.
