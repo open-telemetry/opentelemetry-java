@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
-import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
+import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -23,23 +23,23 @@ import javax.annotation.Nullable;
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
-  public static final int MAX_SCALE = 20;
-
-  private static final int MAX_BUCKETS = MapCounter.MAX_SIZE;
-
+  private final ExponentialCounterFactory counterFactory;
   private ExponentialCounter counts;
   private BucketMapper bucketMapper;
   private int scale;
 
-  DoubleExponentialHistogramBuckets() {
-    this.counts = new MapCounter();
-    this.bucketMapper = new LogarithmMapper(MAX_SCALE);
-    this.scale = MAX_SCALE;
+  DoubleExponentialHistogramBuckets(
+      int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
+    this.counterFactory = counterFactory;
+    this.counts = counterFactory.newCounter(maxBuckets);
+    this.bucketMapper = new LogarithmMapper(scale);
+    this.scale = scale;
   }
 
   // For copying
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
-    this.counts = new MapCounter(buckets.counts); // copy counts
+    this.counterFactory = buckets.counterFactory;
+    this.counts = counterFactory.copy(buckets.counts);
     this.bucketMapper = new LogarithmMapper(buckets.scale);
     this.scale = buckets.scale;
   }
@@ -90,7 +90,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     if (!counts.isEmpty()) {
-      ExponentialCounter newCounts = new MapCounter();
+      ExponentialCounter newCounts = counterFactory.newCounter(counts.getMaxSize());
 
       for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         long count = counts.get(i);
@@ -218,7 +218,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   int getScaleReduction(long newStart, long newEnd) {
     int scaleReduction = 0;
 
-    while (newEnd - newStart + 1 > MAX_BUCKETS) {
+    while (newEnd - newStart + 1 > counts.getMaxSize()) {
       newStart >>= 1;
       newEnd >>= 1;
       scaleReduction++;

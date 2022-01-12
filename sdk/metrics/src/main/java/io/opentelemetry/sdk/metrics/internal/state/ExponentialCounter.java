@@ -48,4 +48,7 @@ public interface ExponentialCounter {
    * @return true if no recordings, false if at least one recording.
    */
   boolean isEmpty();
+
+  /** Returns the maximum number of buckets allowed in this counter. */
+  int getMaxSize();
 }

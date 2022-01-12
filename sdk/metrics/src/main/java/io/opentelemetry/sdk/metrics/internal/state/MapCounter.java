@@ -18,18 +18,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * at any time
  */
 public class MapCounter implements ExponentialCounter {
-
-  public static final int MAX_SIZE = 320;
-
   private static final int NULL_INDEX = Integer.MIN_VALUE;
 
+  private final int maxSize;
   private final Map<Integer, AtomicLong> backing;
   private int indexStart;
   private int indexEnd;
 
   /** Instantiate a MapCounter. */
-  public MapCounter() {
-    this.backing = new ConcurrentHashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
+  public MapCounter(int maxSize) {
+    this.maxSize = maxSize;
+    this.backing = new ConcurrentHashMap<>((int) Math.ceil(maxSize / 0.75) + 1);
     this.indexEnd = NULL_INDEX;
     this.indexStart = NULL_INDEX;
   }
@@ -40,7 +39,8 @@ public class MapCounter implements ExponentialCounter {
    * @param otherCounter another exponential counter to make a deep copy of.
    */
   public MapCounter(ExponentialCounter otherCounter) {
-    this.backing = new ConcurrentHashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
+    this.maxSize = otherCounter.getMaxSize();
+    this.backing = new ConcurrentHashMap<>((int) Math.ceil(maxSize / 0.75) + 1);
     this.indexStart = otherCounter.getIndexStart();
     this.indexEnd = otherCounter.getIndexEnd();
 
@@ -74,12 +74,12 @@ public class MapCounter implements ExponentialCounter {
 
     // Extend window if possible. if it would exceed maxSize, then return false.
     if (index > indexEnd) {
-      if (index - indexStart + 1 > MAX_SIZE) {
+      if (index - indexStart + 1 > maxSize) {
         return false;
       }
       indexEnd = index;
     } else if (index < indexStart) {
-      if (indexEnd - index + 1 > MAX_SIZE) {
+      if (indexEnd - index + 1 > maxSize) {
         return false;
       }
       indexStart = index;
@@ -104,6 +104,11 @@ public class MapCounter implements ExponentialCounter {
   @Override
   public boolean isEmpty() {
     return backing.isEmpty();
+  }
+
+  @Override
+  public int getMaxSize() {
+    return maxSize;
   }
 
   private synchronized void doIncrement(int index, long delta) {
