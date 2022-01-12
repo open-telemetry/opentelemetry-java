@@ -11,7 +11,7 @@ publishing {
       val release = findProperty("otel.release")
       if (release != null) {
         val versionParts = version.split('-').toMutableList()
-        versionParts[0] += "-${release}"
+        versionParts[0] += "-$release"
         version = versionParts.joinToString("-")
       }
       groupId = "io.opentelemetry"

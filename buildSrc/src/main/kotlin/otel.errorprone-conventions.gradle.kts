@@ -45,10 +45,10 @@ tasks {
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
-        //apparently disabling android doesn't disable this
+        // apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
 
-        //until we have everything converted, we need these
+        // until we have everything converted, we need these
         disable("JdkObsolete")
         disable("UnnecessaryAnonymousClass")
 
