@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -94,6 +95,19 @@ class JaegerRemoteSamplerTest {
       };
 
   private final Closer closer = Closer.create();
+
+  @BeforeAll
+  public static void beforeAll() {
+    // TODO(anuraaga): For some reason OkHttpGrpcService is not getting classloaded soon enough to
+    // allow logunit to
+    // reference the correct Logger. Force a classload hackily for now.
+    JaegerRemoteSampler.builder()
+        .setEndpoint(server.httpUri().toString())
+        .setPollingInterval(1, TimeUnit.SECONDS)
+        .setServiceName(SERVICE_NAME)
+        .build()
+        .close();
+  }
 
   @BeforeEach
   public void before() {
