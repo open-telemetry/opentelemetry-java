@@ -30,10 +30,10 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -56,6 +56,10 @@ class JaegerRemoteSamplerTest {
   private static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
+
+  // Workaround https://github.com/netmikey/logunit/pull/4
+  @SuppressWarnings("unused")
+  private static final Logger loggerRef = Logger.getLogger(OkHttpGrpcService.class.getName());
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcService.class, Level.TRACE);
@@ -106,19 +110,6 @@ class JaegerRemoteSamplerTest {
       };
 
   private final Closer closer = Closer.create();
-
-  @BeforeAll
-  public static void beforeAll() {
-    // TODO(anuraaga): For some reason OkHttpGrpcService is not getting classloaded soon enough to
-    // allow logunit to
-    // reference the correct Logger. Force a classload hackily for now.
-    JaegerRemoteSampler.builder()
-        .setEndpoint(server.httpUri().toString())
-        .setPollingInterval(1, TimeUnit.SECONDS)
-        .setServiceName(SERVICE_NAME)
-        .build()
-        .close();
-  }
 
   @BeforeEach
   public void before() {
