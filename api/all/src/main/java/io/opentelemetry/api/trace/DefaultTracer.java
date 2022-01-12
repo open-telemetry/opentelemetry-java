@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.context.Context;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -49,6 +50,7 @@ final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
+        ValidationUtil.log("context is null");
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();
