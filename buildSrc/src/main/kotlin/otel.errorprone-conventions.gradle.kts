@@ -48,10 +48,6 @@ tasks {
         //apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
 
-        //until we have everything converted, we need these
-        disable("JdkObsolete")
-        disable("UnnecessaryAnonymousClass")
-
         // Limits APIs
         disable("NoFunctionalReturnType")
 
