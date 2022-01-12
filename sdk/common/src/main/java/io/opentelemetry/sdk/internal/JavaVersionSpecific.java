@@ -32,6 +32,9 @@ import java.util.logging.Logger;
  * implementations in this class must be forwards-compatible on all Java versions because this class
  * may be used outside the multi-release JAR, e.g., in testing or when a user shades without
  * creating their own multi-release JAR.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public class JavaVersionSpecific {
 

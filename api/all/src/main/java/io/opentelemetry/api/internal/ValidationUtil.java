@@ -9,7 +9,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
-/** General internal validation utility methods. */
+/**
+ * General internal validation utility methods.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 public final class ValidationUtil {
 

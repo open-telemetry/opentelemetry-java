@@ -12,7 +12,12 @@ import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** A builder for {@link GrpcExporter}. */
+/**
+ * A builder for {@link GrpcExporter}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public interface GrpcExporterBuilder<T extends Marshaler> {
   GrpcExporterBuilder<T> setChannel(ManagedChannel channel);
 
