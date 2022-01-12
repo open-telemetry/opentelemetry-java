@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +34,12 @@ public final class SdkLogEmitterProvider implements Closeable {
     return new SdkLogEmitterProviderBuilder();
   }
 
-  SdkLogEmitterProvider(Resource resource, List<LogProcessor> processors, Clock clock) {
-    this.sharedState = new LogEmitterSharedState(resource, processors, clock);
+  SdkLogEmitterProvider(
+      Resource resource,
+      Supplier<LogLimits> logLimitsSupplier,
+      List<LogProcessor> processors,
+      Clock clock) {
+    this.sharedState = new LogEmitterSharedState(resource, logLimitsSupplier, processors, clock);
     this.logEmitterComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->

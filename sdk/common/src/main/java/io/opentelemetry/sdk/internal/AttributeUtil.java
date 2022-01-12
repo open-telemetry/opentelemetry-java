@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -13,7 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-final class AttributeUtil {
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
+public final class AttributeUtil {
 
   private AttributeUtil() {}
 
@@ -25,7 +29,8 @@ final class AttributeUtil {
    * lengthLimit} limits the length of attribute string and string list values.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes applyAttributesLimit(Attributes attributes, int countLimit, int lengthLimit) {
+  public static Attributes applyAttributesLimit(
+      Attributes attributes, int countLimit, int lengthLimit) {
     if (attributes.isEmpty() || attributes.size() <= countLimit) {
       if (lengthLimit == Integer.MAX_VALUE) {
         return attributes;
@@ -72,7 +77,7 @@ final class AttributeUtil {
    * Apply the {@code lengthLimit} to the attribute {@code value}. Strings and strings in lists
    * which exceed the length limit are truncated.
    */
-  static Object applyAttributeLengthLimit(Object value, int lengthLimit) {
+  public static Object applyAttributeLengthLimit(Object value, int lengthLimit) {
     if (lengthLimit == Integer.MAX_VALUE) {
       return value;
     }

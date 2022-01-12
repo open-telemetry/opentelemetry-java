@@ -40,6 +40,7 @@ class SdkLogBuilderTest {
     LogData logData = mock(LogData.class);
     Context context = mock(Context.class);
 
+    when(state.getLogLimits()).thenReturn(LogLimits.getDefault());
     when(state.getLogProcessor()).thenReturn(logProcessor);
     when(delegate.build()).thenReturn(logData);
 
