@@ -27,15 +27,23 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
   }
 
   public AdaptingCircularBufferCounter(ExponentialCounter toCopy) {
-    // TODO - if toCopy is an AdaptingCircularBuffer, just do a copy of the underlying array
+    // If toCopy is an AdaptingCircularBuffer, just do a copy of the underlying array
     // and baseIndex.
-    this.backing = new AdaptingIntegerArray(toCopy.getMaxSize());
-    this.startIndex = NULL_INDEX;
-    this.baseIndex = NULL_INDEX;
-    this.endIndex = NULL_INDEX;
-    for (int i = toCopy.getIndexStart(); i <= toCopy.getIndexEnd(); i++) {
-      long val = toCopy.get(i);
-      this.increment(i, val);
+    if (toCopy instanceof AdaptingCircularBufferCounter) {
+      this.backing = new AdaptingIntegerArray(((AdaptingCircularBufferCounter) toCopy).backing);
+      this.startIndex = toCopy.getIndexStart();
+      this.endIndex = toCopy.getIndexEnd();
+      this.baseIndex = ((AdaptingCircularBufferCounter) toCopy).baseIndex;
+    } else {
+      // Copy values from some other implementation of ExponentialCounter.
+      this.backing = new AdaptingIntegerArray(toCopy.getMaxSize());
+      this.startIndex = NULL_INDEX;
+      this.baseIndex = NULL_INDEX;
+      this.endIndex = NULL_INDEX;
+      for (int i = toCopy.getIndexStart(); i <= toCopy.getIndexEnd(); i++) {
+        long val = toCopy.get(i);
+        this.increment(i, val);
+      }
     }
   }
 

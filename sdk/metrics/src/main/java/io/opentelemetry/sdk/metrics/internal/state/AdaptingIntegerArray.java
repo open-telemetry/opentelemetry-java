@@ -5,11 +5,19 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import java.util.Arrays;
 import javax.annotation.Nullable;
 
 /**
  * An integer array that automatically expands its memory consumption (via copy/allocation) when
  * reaching limits. This assumes counts remain low, to lower memory overhead.
+ *
+ * <p>This class is NOT thread-safe. It is expected to be behind a synchronized incrementer.
+ *
+ * <p>Instances start by attempting to store one-byte per-cell in the integer array. As values grow,
+ * this will automatically instantiate the next-size integer array (byte => short => int => long)
+ * and copy over values into the larger array. This class expects most usage to remain within the
+ * byte boundary (e.g. cell values < 128).
  *
  * <p>This class lives in the (very) hot path of metric recording. As such, we do "fun" things, like
  * switch on markers and assume non-null based on presence of the markers, as such we suppress
@@ -18,10 +26,10 @@ import javax.annotation.Nullable;
  * <p>Implementations MUST preserve the following:
  *
  * <ul>
- *   <li>If cellSizeBytes == Byte.BYTES then byteBacking is not null
- *   <li>If cellSizeBytes == Short.BYTES then shortBacking is not null
- *   <li>If cellSizeBytes == Integer.BYTES then intBacking is not null
- *   <li>If cellSizeBytes == Long.BYTES then longBacking is not null
+ *   <li>If cellSize == BYTE then byteBacking is not null
+ *   <li>If cellSize == SHORT then shortBacking is not null
+ *   <li>If cellSize == INT then intBacking is not null
+ *   <li>If cellSize == LONG then longBacking is not null
  * </ul>
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
@@ -32,41 +40,50 @@ public class AdaptingIntegerArray {
   @Nullable private short[] shortBacking;
   @Nullable private int[] intBacking;
   @Nullable private long[] longBacking;
+
+  /** Possible sizes of backing arrays. */
+  private enum ArrayCellSize {
+    BYTE,
+    SHORT,
+    INT,
+    LONG
+  }
   /** The current byte size of integer cells in this array. */
-  private byte cellSizeBytes;
+  private ArrayCellSize cellSize;
 
   /** Construct an adapting integer array of a given size. */
   public AdaptingIntegerArray(int size) {
-    this(size, Byte.BYTES);
+    this.cellSize = ArrayCellSize.BYTE;
+    this.byteBacking = new byte[size];
   }
 
-  /** Construct an adapting integer array with given size and integer size in bytes. */
-  public AdaptingIntegerArray(int size, int cellSize) {
-    this.cellSizeBytes = (byte) cellSize;
+  /** Creates deep copy of another adapting integer array. */
+  @SuppressWarnings("NullAway")
+  public AdaptingIntegerArray(AdaptingIntegerArray toCopy) {
+    this.cellSize = toCopy.cellSize;
     switch (cellSize) {
-      case Byte.BYTES:
-        this.byteBacking = new byte[size];
+      case BYTE:
+        this.byteBacking = Arrays.copyOf(toCopy.byteBacking, toCopy.byteBacking.length);
         break;
-      case Short.BYTES:
-        this.shortBacking = new short[size];
+      case SHORT:
+        this.shortBacking = Arrays.copyOf(toCopy.shortBacking, toCopy.shortBacking.length);
         break;
-      case Integer.BYTES:
-        this.intBacking = new int[size];
+      case INT:
+        this.intBacking = Arrays.copyOf(toCopy.intBacking, toCopy.intBacking.length);
         break;
-      case Long.BYTES:
-        this.longBacking = new long[size];
+      case LONG:
+        this.longBacking = Arrays.copyOf(toCopy.longBacking, toCopy.longBacking.length);
         break;
-      default:
-        throw new IllegalStateException("Unexpected integer size: " + cellSizeBytes);
     }
   }
 
+  /** Add {@code count} to the value stored at {@code index}. */
   @SuppressWarnings("NullAway")
   public void increment(int idx, long count) {
     // TODO - prevent bad index
     long result;
-    switch (cellSizeBytes) {
-      case Byte.BYTES:
+    switch (cellSize) {
+      case BYTE:
         result = byteBacking[idx] + count;
         if (result > Byte.MAX_VALUE) {
           // Resize + add
@@ -76,7 +93,7 @@ public class AdaptingIntegerArray {
         }
         byteBacking[idx] = (byte) result;
         return;
-      case Short.BYTES:
+      case SHORT:
         result = shortBacking[idx] + count;
         if (result > Short.MAX_VALUE) {
           resizeToInt();
@@ -85,7 +102,7 @@ public class AdaptingIntegerArray {
         }
         shortBacking[idx] = (short) result;
         return;
-      case Integer.BYTES:
+      case INT:
         result = intBacking[idx] + count;
         if (result > Integer.MAX_VALUE) {
           resizeToLong();
@@ -94,44 +111,52 @@ public class AdaptingIntegerArray {
         }
         intBacking[idx] = (int) result;
         return;
-      case Long.BYTES:
+      case LONG:
         longBacking[idx] = longBacking[idx] + count;
         return;
-      default:
-        throw new IllegalStateException("Unexpected integer size: " + this.cellSizeBytes);
     }
   }
 
+  /** Grab the value stored at {@code index}. */
   @SuppressWarnings("NullAway")
   public long get(int index) {
-    switch (this.cellSizeBytes) {
-      case Byte.BYTES:
-        return this.byteBacking[index];
-      case Short.BYTES:
-        return this.shortBacking[index];
-      case Integer.BYTES:
-        return this.intBacking[index];
-      case Long.BYTES:
-        return this.longBacking[index];
-      default:
-        throw new IllegalStateException("Unexpected integer size: " + this.cellSizeBytes);
+    long value = 0;
+    switch (this.cellSize) {
+      case BYTE:
+        value = this.byteBacking[index];
+        break;
+      case SHORT:
+        value = this.shortBacking[index];
+        break;
+      case INT:
+        value = this.intBacking[index];
+        break;
+      case LONG:
+        value = this.longBacking[index];
+        break;
     }
+    return value;
   }
 
+  /** Return the length of this integer array. */
   @SuppressWarnings("NullAway")
   public int length() {
-    switch (this.cellSizeBytes) {
-      case Byte.BYTES:
-        return this.byteBacking.length;
-      case Short.BYTES:
-        return this.shortBacking.length;
-      case Integer.BYTES:
-        return this.intBacking.length;
-      case Long.BYTES:
-        return this.longBacking.length;
-      default:
-        throw new IllegalStateException("Unexpected integer size: " + this.cellSizeBytes);
+    int length = 0;
+    switch (this.cellSize) {
+      case BYTE:
+        length = this.byteBacking.length;
+        break;
+      case SHORT:
+        length = this.shortBacking.length;
+        break;
+      case INT:
+        length = this.intBacking.length;
+        break;
+      case LONG:
+        length = this.longBacking.length;
+        break;
     }
+    return length;
   }
 
   /** Convert from byte => short backing array. */
@@ -141,7 +166,7 @@ public class AdaptingIntegerArray {
     for (int i = 0; i < this.byteBacking.length; i++) {
       this.shortBacking[i] = this.byteBacking[i];
     }
-    this.cellSizeBytes = (byte) Short.BYTES;
+    this.cellSize = ArrayCellSize.SHORT;
     this.byteBacking = null;
   }
 
@@ -152,7 +177,7 @@ public class AdaptingIntegerArray {
     for (int i = 0; i < this.shortBacking.length; i++) {
       this.intBacking[i] = this.shortBacking[i];
     }
-    this.cellSizeBytes = (byte) Integer.BYTES;
+    this.cellSize = ArrayCellSize.INT;
     this.shortBacking = null;
   }
   /** convert from int => long backing array. */
@@ -162,7 +187,7 @@ public class AdaptingIntegerArray {
     for (int i = 0; i < this.intBacking.length; i++) {
       this.longBacking[i] = this.intBacking[i];
     }
-    this.cellSizeBytes = (byte) Long.BYTES;
+    this.cellSize = ArrayCellSize.LONG;
     this.intBacking = null;
   }
 }
