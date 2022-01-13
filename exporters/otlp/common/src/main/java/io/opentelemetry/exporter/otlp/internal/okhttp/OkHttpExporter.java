@@ -29,7 +29,12 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 
-/** An exporter for http/protobuf using a signal-specific Marshaler. */
+/**
+ * An exporter for http/protobuf using a signal-specific Marshaler.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @SuppressWarnings("checkstyle:JavadocMethod")
 public final class OkHttpExporter<T extends Marshaler> {
 

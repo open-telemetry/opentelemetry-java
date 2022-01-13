@@ -7,7 +7,12 @@ package io.opentelemetry.api.internal;
 
 import javax.annotation.concurrent.Immutable;
 
-/** General internal utility methods. */
+/**
+ * General internal utility methods.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 public final class Utils {
 

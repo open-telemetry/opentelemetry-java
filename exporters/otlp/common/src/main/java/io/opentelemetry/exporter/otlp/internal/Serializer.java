@@ -17,6 +17,9 @@ import javax.annotation.Nullable;
  *   <li>Handles proto3 semantics of not outputting the value when it matches the default of a field
  *   <li>Can be implemented to serialize into protobuf JSON format (not binary)
  * </ul>
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public abstract class Serializer implements AutoCloseable {
 

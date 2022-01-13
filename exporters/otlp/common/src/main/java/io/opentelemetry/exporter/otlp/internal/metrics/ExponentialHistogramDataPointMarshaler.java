@@ -14,6 +14,10 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import java.io.IOException;
 import java.util.Collection;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
 
   private final long startTimeUnixNano;

@@ -14,6 +14,10 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
   private final int offset;
   private final List<Long> counts;

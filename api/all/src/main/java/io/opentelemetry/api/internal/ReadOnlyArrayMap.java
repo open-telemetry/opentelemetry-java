@@ -31,7 +31,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-/** A read-only view of an array of key-value pairs. */
+/**
+ * A read-only view of an array of key-value pairs.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @SuppressWarnings("unchecked")
 public final class ReadOnlyArrayMap<K, V> extends AbstractMap<K, V> {
 

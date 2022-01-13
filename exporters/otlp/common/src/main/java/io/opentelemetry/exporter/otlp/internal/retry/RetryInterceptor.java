@@ -12,7 +12,12 @@ import java.util.function.Function;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
-/** Retrier of OkHttp requests. */
+/**
+ * Retrier of OkHttp requests.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
