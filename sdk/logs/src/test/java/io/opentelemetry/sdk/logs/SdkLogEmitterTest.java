@@ -14,19 +14,18 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
-import static java.util.stream.Collectors.joining;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class SdkLogEmitterTest {
@@ -62,7 +61,7 @@ class SdkLogEmitterTest {
             .setLogLimits(() -> LogLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
     LogBuilder logBuilder = logEmitterProvider.get("test").logBuilder();
-    String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
+    String strVal = StringUtils.padLeft("", maxLength);
     String tooLongStrVal = strVal + strVal;
 
     logBuilder
