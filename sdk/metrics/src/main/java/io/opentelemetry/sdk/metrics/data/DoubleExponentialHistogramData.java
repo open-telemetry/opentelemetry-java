@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.data;
 import com.google.auto.value.AutoValue;
 import java.util.Collection;
 import java.util.Collections;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A simple, autovalue implementation of {@link ExponentialHistogramData}. For more detailed javadoc
@@ -17,7 +16,6 @@ import javax.annotation.concurrent.Immutable;
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
  */
-@Immutable
 @AutoValue
 abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
 

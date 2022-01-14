@@ -9,9 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 
-@Immutable
 @AutoValue
 abstract class ExponentialHistogramAccumulation {
   ExponentialHistogramAccumulation() {}

@@ -7,13 +7,11 @@ package io.opentelemetry.exporter.otlp.internal.retry;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-@Immutable
 @AutoValue
 public abstract class RetryPolicy {
 
