@@ -6,17 +6,18 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,10 @@ class SdkLongUpDownCounterTest {
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testUpDownCounter").build().bind(null))
+    assertThatThrownBy(
+            () ->
+                ((SdkLongUpDownCounter) sdkMeter.upDownCounterBuilder("testUpDownCounter").build())
+                    .bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -57,7 +61,8 @@ class SdkLongUpDownCounterTest {
     LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound =
-        longUpDownCounter.bind(Attributes.builder().put("foo", "bar").build());
+        ((SdkLongUpDownCounter) longUpDownCounter)
+            .bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -66,7 +71,6 @@ class SdkLongUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
     LongUpDownCounter longUpDownCounter =
         sdkMeter
@@ -100,13 +104,12 @@ class SdkLongUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound =
-        longUpDownCounter.bind(Attributes.builder().put("K", "V").build());
+        ((SdkLongUpDownCounter) longUpDownCounter).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       longUpDownCounter.add(12, Attributes.empty());
@@ -171,9 +174,8 @@ class SdkLongUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest() {
-    final LongUpDownCounter longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -190,7 +192,8 @@ class SdkLongUpDownCounterTest {
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  longUpDownCounter.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkLongUpDownCounter) longUpDownCounter)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -217,11 +220,10 @@ class SdkLongUpDownCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongUpDownCounter longUpDownCounter =
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -239,7 +241,8 @@ class SdkLongUpDownCounterTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  longUpDownCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkLongUpDownCounter) longUpDownCounter)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -260,7 +263,7 @@ class SdkLongUpDownCounterTest {
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(20_000))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opencensusshim.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opencensus.contrib.exemplar.util.ExemplarUtils;

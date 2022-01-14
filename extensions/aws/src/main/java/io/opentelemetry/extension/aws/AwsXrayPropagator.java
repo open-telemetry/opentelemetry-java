@@ -186,7 +186,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     int pos = 0;
     while (pos < traceHeader.length()) {
       int delimiterIndex = traceHeader.indexOf(TRACE_HEADER_DELIMITER, pos);
-      final String part;
+      String part;
       if (delimiterIndex >= 0) {
         part = traceHeader.substring(pos, delimiterIndex);
         pos = delimiterIndex + 1;

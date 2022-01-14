@@ -37,14 +37,14 @@ public final class CompletableResultCode {
    * Returns a {@link CompletableResultCode} that completes after all the provided {@link
    * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
    */
-  public static CompletableResultCode ofAll(final Collection<CompletableResultCode> codes) {
+  public static CompletableResultCode ofAll(Collection<CompletableResultCode> codes) {
     if (codes.isEmpty()) {
       return ofSuccess();
     }
-    final CompletableResultCode result = new CompletableResultCode();
-    final AtomicInteger pending = new AtomicInteger(codes.size());
-    final AtomicBoolean failed = new AtomicBoolean();
-    for (final CompletableResultCode code : codes) {
+    CompletableResultCode result = new CompletableResultCode();
+    AtomicInteger pending = new AtomicInteger(codes.size());
+    AtomicBoolean failed = new AtomicBoolean();
+    for (CompletableResultCode code : codes) {
       code.whenComplete(
           () -> {
             if (!code.isSuccess()) {
@@ -149,7 +149,7 @@ public final class CompletableResultCode {
     if (isDone()) {
       return this;
     }
-    final CountDownLatch latch = new CountDownLatch(1);
+    CountDownLatch latch = new CountDownLatch(1);
     whenComplete(latch::countDown);
     try {
       if (!latch.await(timeout, unit)) {

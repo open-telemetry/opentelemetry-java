@@ -34,7 +34,7 @@ class AttributesTest {
 
   @Test
   void forEach() {
-    final Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
+    Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 
@@ -46,7 +46,7 @@ class AttributesTest {
 
   @Test
   void forEach_singleAttribute() {
-    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key"), "value");
     attributes.forEach(entriesSeen::put);
@@ -161,7 +161,7 @@ class AttributesTest {
 
   @Test
   void forEach_empty() {
-    final AtomicBoolean sawSomething = new AtomicBoolean(false);
+    AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
     emptyAttributes.forEach((key, value) -> sawSomething.set(true));
     assertThat(sawSomething.get()).isFalse();

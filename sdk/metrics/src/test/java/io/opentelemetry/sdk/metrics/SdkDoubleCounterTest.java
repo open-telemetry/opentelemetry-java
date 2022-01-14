@@ -6,20 +6,23 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link SdkDoubleCounter}. */
 class SdkDoubleCounterTest {
@@ -38,6 +41,8 @@ class SdkDoubleCounterTest {
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(SdkDoubleCounter.class);
+
   @Test
   void add_PreventNullAttributes() {
     assertThatThrownBy(
@@ -48,7 +53,10 @@ class SdkDoubleCounterTest {
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().bind(null))
+    assertThatThrownBy(
+            () ->
+                ((SdkDoubleCounter) sdkMeter.counterBuilder("testCounter").ofDoubles().build())
+                    .bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -56,7 +64,8 @@ class SdkDoubleCounterTest {
   @Test
   void collectMetrics_NoRecords() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("foo", "bar").build());
+    BoundDoubleCounter bound =
+        ((SdkDoubleCounter) doubleCounter).bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -65,7 +74,6 @@ class SdkDoubleCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
     DoubleCounter doubleCounter =
         sdkMeter
@@ -100,11 +108,11 @@ class SdkDoubleCounterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("K", "V").build());
+    BoundDoubleCounter bound =
+        ((SdkDoubleCounter) doubleCounter).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleCounter.add(12.1d, Attributes.empty());
@@ -173,23 +181,29 @@ class SdkDoubleCounterTest {
   @Test
   void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
+    doubleCounter.add(-45.77d);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+    logs.assertContains(
+        "Counters can only increase. Instrument testCounter has recorded a negative value.");
   }
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.bind(Attributes.empty()).add(-9.3))
-        .isInstanceOf(IllegalArgumentException.class);
+    BoundDoubleCounter bound = ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty());
+    try {
+      bound.add(-9.3);
+      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+      logs.assertContains(
+          "Counters can only increase. Instrument testCounter has recorded a negative value.");
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest() {
-    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -205,7 +219,8 @@ class SdkDoubleCounterTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  doubleCounter.bind(Attributes.builder().put("K", "V").build()))));
+                  ((SdkDoubleCounter) doubleCounter)
+                      .bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -233,9 +248,9 @@ class SdkDoubleCounterTest {
 
   @Test
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -252,7 +267,8 @@ class SdkDoubleCounterTest {
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  doubleCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  ((SdkDoubleCounter) doubleCounter)
+                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -272,7 +288,7 @@ class SdkDoubleCounterTest {
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(40_000))
-                    .extracting(point -> point.getAttributes())
+                    .extracting(PointData::getAttributes)
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
                         Attributes.of(stringKey(keys[1]), values[1]),

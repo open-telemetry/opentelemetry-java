@@ -41,4 +41,103 @@ class MetricDescriptorTest {
     assertThat(simple.getSourceInstrument()).isEqualTo(instrument);
     assertThat(simple.getSourceView()).contains(view);
   }
+
+  @Test
+  void metricDescriptor_isCompatible() {
+    View view = View.builder().build();
+    MetricDescriptor descriptor =
+        MetricDescriptor.create(
+            view,
+            InstrumentDescriptor.create(
+                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+    // Same name, description, unit, instrument type, and value type is compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "unit",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.DOUBLE))))
+        .isTrue();
+    // Different name is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "foo",
+                        "description",
+                        "unit",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.DOUBLE))))
+        .isFalse();
+    // Different description is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "name",
+                        "foo",
+                        "unit",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.DOUBLE))))
+        .isFalse();
+    // Different unit is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "foo",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.DOUBLE))))
+        .isFalse();
+    // Different instrument type is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "unit",
+                        InstrumentType.HISTOGRAM,
+                        InstrumentValueType.DOUBLE))))
+        .isFalse();
+    // Different instrument value type is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    view,
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "unit",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.LONG))))
+        .isFalse();
+  }
+
+  @Test
+  void isAsync() {
+    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM).isAsync()).isTrue();
+    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_GAUGE).isAsync()).isTrue();
+    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_SUM).isAsync()).isTrue();
+    assertThat(descriptorForInstrument(InstrumentType.HISTOGRAM).isAsync()).isFalse();
+    assertThat(descriptorForInstrument(InstrumentType.COUNTER).isAsync()).isFalse();
+    assertThat(descriptorForInstrument(InstrumentType.UP_DOWN_COUNTER).isAsync()).isFalse();
+  }
+
+  private static MetricDescriptor descriptorForInstrument(InstrumentType instrumentType) {
+    InstrumentDescriptor instrument =
+        InstrumentDescriptor.create(
+            "name", "description", "unit", instrumentType, InstrumentValueType.DOUBLE);
+    return MetricDescriptor.create(View.builder().build(), instrument);
+  }
 }

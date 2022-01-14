@@ -43,8 +43,8 @@ public abstract class MetricDescriptor {
 
   /** Constructs a metric descriptor for a given View + instrument. */
   public static MetricDescriptor create(View view, InstrumentDescriptor instrument) {
-    final String name = (view.getName() == null) ? instrument.getName() : view.getName();
-    final String description =
+    String name = (view.getName() == null) ? instrument.getName() : view.getName();
+    String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
     return new AutoValue_MetricDescriptor(
         name, description, instrument.getUnit(), Optional.of(view), instrument);
@@ -65,10 +65,41 @@ public abstract class MetricDescriptor {
   @Override
   public abstract int hashCode();
 
-  /** Returns true if another metric descriptor is compatible with this one. */
+  /**
+   * Returns true if another metric descriptor is compatible with this one.
+   *
+   * <p>A metric descriptor is compatible with another if the following are true:
+   *
+   * <ul>
+   *   <li>{@link #getName()} is equal
+   *   <li>{@link #getDescription()} is equal
+   *   <li>{@link #getUnit()} is equal
+   *   <li>{@link InstrumentDescriptor#getType()} is equal
+   *   <li>{@link InstrumentDescriptor#getValueType()} is equal
+   * </ul>
+   */
   public boolean isCompatibleWith(MetricDescriptor other) {
     return Objects.equals(getName(), other.getName())
         && Objects.equals(getDescription(), other.getDescription())
-        && Objects.equals(getUnit(), other.getUnit());
+        && Objects.equals(getUnit(), other.getUnit())
+        && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
+        && Objects.equals(
+            getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
+  }
+
+  /** Returns whether the descriptor describes an async {@link InstrumentType}. */
+  public boolean isAsync() {
+    switch (getSourceInstrument().getType()) {
+      case OBSERVABLE_UP_DOWN_SUM:
+      case OBSERVABLE_GAUGE:
+      case OBSERVABLE_SUM:
+        return true;
+      case HISTOGRAM:
+      case COUNTER:
+      case UP_DOWN_COUNTER:
+        return false;
+    }
+    throw new IllegalStateException(
+        "Unrecognized instrument type " + getSourceInstrument().getType());
   }
 }

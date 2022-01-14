@@ -13,12 +13,12 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
+import javax.annotation.Nullable;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
  *
- * <p>Can be created using {@code InMemoryMetricReader.create(sdkMeterProvider)}
+ * <p>Can be created using {@code InMemoryMetricReader.create()}
  *
  * <p>Example usage:
  *
@@ -40,10 +40,13 @@ import java.util.EnumSet;
  *   }
  * }
  * </code></pre>
+ *
+ * @deprecated Moved to {@code io.opentelemetry:opentelemetry-sdk-metrics-testing} module.
  */
+@Deprecated
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private final AggregationTemporality preferred;
-  private volatile MetricProducer metricProducer;
+  @Nullable private volatile MetricProducer metricProducer;
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
@@ -53,16 +56,6 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   /** Creates a new {@link InMemoryMetricReader} that prefers DELTA aggregation. */
   public static InMemoryMetricReader createDelta() {
     return new InMemoryMetricReader(AggregationTemporality.DELTA);
-  }
-
-  /**
-   * Constructs a new {@link InMemoryMetricReader}.
-   *
-   * @deprecated Use {@link #create()}.
-   */
-  @Deprecated
-  public InMemoryMetricReader() {
-    this(AggregationTemporality.CUMULATIVE);
   }
 
   private InMemoryMetricReader(AggregationTemporality preferred) {
@@ -76,11 +69,6 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
       return metricProducer.collectAllMetrics();
     }
     return Collections.emptyList();
-  }
-
-  @Override
-  public EnumSet<AggregationTemporality> getSupportedTemporality() {
-    return EnumSet.of(AggregationTemporality.CUMULATIVE, AggregationTemporality.DELTA);
   }
 
   @Override

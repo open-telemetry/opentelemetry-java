@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.logs.LogEmitter;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -48,9 +49,9 @@ class InMemoryLogExporterTest {
     List<LogData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
-    assertThat(logItems.get(0).getBody().asString()).isEqualTo("message 1");
-    assertThat(logItems.get(1).getBody().asString()).isEqualTo("message 2");
-    assertThat(logItems.get(2).getBody().asString()).isEqualTo("message 3");
+    LogAssertions.assertThat(logItems.get(0)).hasBody("message 1");
+    LogAssertions.assertThat(logItems.get(1)).hasBody("message 2");
+    LogAssertions.assertThat(logItems.get(2)).hasBody("message 3");
   }
 
   @Test

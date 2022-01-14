@@ -46,7 +46,9 @@ public final class EcsResource {
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
-    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_ECS);
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
       attrBuilders.put(ResourceAttributes.CONTAINER_NAME, hostName);

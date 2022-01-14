@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +36,6 @@ class SdkLogEmitterTest {
 
     // Have to test through the builder
     logBuilder.emit();
-    assertThat(seenLog.get().getBody().asString()).isEqualTo("foo");
+    assertThat(seenLog.get()).hasBody("foo");
   }
 }

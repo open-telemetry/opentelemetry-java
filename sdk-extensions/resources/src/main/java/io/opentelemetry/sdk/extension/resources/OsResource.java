@@ -27,7 +27,7 @@ public final class OsResource {
   // Visible for testing
   static Resource buildResource() {
 
-    final String os;
+    String os;
     try {
       os = System.getProperty("os.name");
     } catch (SecurityException t) {

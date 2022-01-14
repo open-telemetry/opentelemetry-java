@@ -13,12 +13,13 @@ import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
+import io.opentelemetry.sdk.metrics.internal.concurrent.DoubleAdder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.DoubleAdder;
 import java.util.function.Supplier;
 
 /**
@@ -96,7 +97,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   }
 
   static final class Handle extends AggregatorHandle<DoubleAccumulation> {
-    private final DoubleAdder current = new DoubleAdder();
+    private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
     Handle(ExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);

@@ -1,8 +1,8 @@
 subprojects {
   val proj = this
   plugins.withId("java") {
-    configure<BasePluginConvention> {
-      archivesBaseName = "opentelemetry-extension-${proj.name}"
+    configure<BasePluginExtension> {
+      archivesName.set("opentelemetry-extension-${proj.name}")
     }
   }
 }

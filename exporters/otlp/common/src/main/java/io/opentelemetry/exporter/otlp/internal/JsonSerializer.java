@@ -52,6 +52,11 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  protected void writeSInt32(ProtoFieldInfo field, int value) throws IOException {
+    generator.writeNumberField(field.getJsonName(), value);
+  }
+
+  @Override
   protected void writeint32(ProtoFieldInfo field, int value) throws IOException {
     generator.writeNumberField(field.getJsonName(), value);
   }
@@ -68,6 +73,11 @@ final class JsonSerializer extends Serializer {
 
   @Override
   protected void writeFixed64Value(long value) throws IOException {
+    generator.writeString(Long.toString(value));
+  }
+
+  @Override
+  protected void writeUInt64Value(long value) throws IOException {
     generator.writeString(Long.toString(value));
   }
 
@@ -121,6 +131,17 @@ final class JsonSerializer extends Serializer {
 
   @Override
   protected void writeEndRepeatedPrimitive() throws IOException {
+    generator.writeEndArray();
+  }
+
+  @Override
+  protected void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize)
+      throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+  }
+
+  @Override
+  protected void writeEndRepeatedVarint() throws IOException {
     generator.writeEndArray();
   }
 

@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
@@ -75,7 +76,7 @@ final class MetricExporterConfiguration {
 
   private static void configureLoggingMetrics(
       ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
-    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, new LoggingMetricExporter());
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, LoggingMetricExporter.create());
   }
 
   // Visible for testing
@@ -105,7 +106,9 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          (unused) -> {});
+          retryPolicy ->
+              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpMetricExporterBuilder.class, builder)
+                  .setRetryPolicy(retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
@@ -134,7 +137,7 @@ final class MetricExporterConfiguration {
           retryPolicy ->
               DefaultGrpcExporterBuilder.getDelegateBuilder(
                       OtlpGrpcMetricExporterBuilder.class, builder)
-                  .addRetryPolicy(retryPolicy));
+                  .setRetryPolicy(retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();
@@ -153,9 +156,6 @@ final class MetricExporterConfiguration {
       MetricExporter exporter) {
 
     Duration exportInterval = config.getDuration("otel.metric.export.interval");
-    if (exportInterval == null) {
-      exportInterval = config.getDuration("otel.imr.export.interval");
-    }
     if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }

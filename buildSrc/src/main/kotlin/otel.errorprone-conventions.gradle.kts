@@ -40,14 +40,13 @@ tasks {
         // Ignore warnings for protobuf and jmh generated files.
         excludedPaths.set(".*generated.*|.*internal.shaded.*")
 
+        // We use animal sniffer
         disable("Java7ApiChecker")
+        disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
+
         //apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
-
-        //until we have everything converted, we need these
-        disable("JdkObsolete")
-        disable("UnnecessaryAnonymousClass")
 
         // Limits APIs
         disable("NoFunctionalReturnType")
@@ -62,9 +61,21 @@ tasks {
         // We don't get much benefit from it anyways.
         disable("InlineMeSuggester")
 
+        // Prevents defensive null checks, and we have nullaway anyways
+        disable("ParameterMissingNullable")
+
+        // javax.annotation.Nullable doesn't support annotating type parameters
+        disable("VoidMissingNullable")
+
+        // Only used in comments, but couldn't SuppressWarnings for some reason
+        disable("UnicodeEscape")
+
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")
+
+          // We only enable null checking on main sources
+          disable("FieldMissingNullable")
         }
 
         option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")

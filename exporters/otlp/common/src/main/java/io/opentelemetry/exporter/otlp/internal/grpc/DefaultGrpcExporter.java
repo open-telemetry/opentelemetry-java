@@ -8,9 +8,9 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -44,14 +44,13 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       String type,
       ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,
-      long timeoutNanos,
-      boolean compressionEnabled) {
+      MeterProvider meterProvider,
+      long timeoutNanos) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpc(type);
+    this.exporterMetrics = ExporterMetrics.createGrpc(type, meterProvider);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
-    this.stub = stub.withCompression(codec.getMessageEncoding());
+    this.stub = stub;
   }
 
   @Override
@@ -87,7 +86,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
                         + "This usually means that your collector is not configured with an otlp "
                         + "receiver in the \"pipelines\" section of the configuration. "
                         + "Full error message: "
-                        + t.getMessage());
+                        + status.getDescription());
                 break;
               case UNAVAILABLE:
                 logger.log(
@@ -97,12 +96,17 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
                         + "s. Server is UNAVAILABLE. "
                         + "Make sure your collector is running and reachable from this network. "
                         + "Full error message:"
-                        + t.getMessage());
+                        + status.getDescription());
                 break;
               default:
                 logger.log(
                     Level.WARNING,
-                    "Failed to export " + type + "s. Error message: " + t.getMessage());
+                    "Failed to export "
+                        + type
+                        + "s. Server responded with gRPC status code "
+                        + status.getCode().value()
+                        + ". Error message: "
+                        + status.getDescription());
                 break;
             }
             if (logger.isLoggable(Level.FINEST)) {
@@ -121,7 +125,6 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
     if (managedChannel.isTerminated()) {
       return CompletableResultCode.ofSuccess();
     }
-    exporterMetrics.unbind();
     return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 }

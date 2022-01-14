@@ -18,6 +18,19 @@ import java.util.logging.Logger;
 public final class LoggingSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
 
+  /** Returns a new {@link LoggingSpanExporter}. */
+  public static LoggingSpanExporter create() {
+    return new LoggingSpanExporter();
+  }
+
+  /**
+   * Class constructor.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
+  public LoggingSpanExporter() {}
+
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     // We always have 32 + 16 + name + several whitespace, 60 seems like an OK initial guess.

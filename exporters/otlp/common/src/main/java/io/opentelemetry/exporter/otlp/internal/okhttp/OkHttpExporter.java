@@ -5,9 +5,11 @@
 
 package io.opentelemetry.exporter.otlp.internal.okhttp;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -46,6 +48,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   OkHttpExporter(
       String type,
       OkHttpClient client,
+      MeterProvider meterProvider,
       String endpoint,
       @Nullable Headers headers,
       boolean compressionEnabled) {
@@ -55,7 +58,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
 
-    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type);
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -122,11 +125,15 @@ public final class OkHttpExporter<T extends Marshaler> {
   }
 
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = CompletableResultCode.ofSuccess();
+    CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
-    exporterMetrics.unbind();
+    client.connectionPool().evictAll();
     return result;
+  }
+
+  static boolean isRetryable(Response response) {
+    return RetryUtil.retryableHttpResponseCodes().contains(response.code());
   }
 
   private static RequestBody gzipRequestBody(RequestBody requestBody) {

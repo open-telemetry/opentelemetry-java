@@ -5,29 +5,24 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.retryableStatusCodes;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generateFakeLog;
+import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generateFakeMetric;
+import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generateFakeSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,35 +37,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OtlpGrpcRetryTest {
 
-  private static final List<SpanData> SPAN_DATA =
-      Lists.newArrayList(
-          TestSpanData.builder()
-              .setHasEnded(true)
-              .setName("name")
-              .setStartEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
-              .setEndEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
-              .setKind(SpanKind.SERVER)
-              .setStatus(StatusData.error())
-              .setTotalRecordedEvents(0)
-              .setTotalRecordedLinks(0)
-              .build());
-  private static final List<MetricData> METRIC_DATA =
-      Lists.newArrayList(
-          MetricData.createLongSum(
-              Resource.empty(),
-              InstrumentationLibraryInfo.empty(),
-              "metric_name",
-              "metric_description",
-              "ms",
-              LongSumData.create(
-                  false,
-                  AggregationTemporality.CUMULATIVE,
-                  Collections.singletonList(
-                      LongPointData.create(
-                          MILLISECONDS.toNanos(System.currentTimeMillis()),
-                          MILLISECONDS.toNanos(System.currentTimeMillis()),
-                          Attributes.of(stringKey("key"), "value"),
-                          10)))));
+  private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
+  private static final List<MetricData> METRIC_DATA = Lists.newArrayList(generateFakeMetric());
+  private static final List<LogData> LOG_DATA = Lists.newArrayList(generateFakeLog());
 
   @RegisterExtension
   @Order(1)
@@ -90,7 +59,10 @@ class OtlpGrpcRetryTest {
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
+            "otlp",
+            DefaultConfigProperties.createForTest(props),
+            Collections.emptyMap(),
+            MeterProvider.noop());
 
     testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
     testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
@@ -112,6 +84,21 @@ class OtlpGrpcRetryTest {
     testDefaultRetryPolicy(() -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
   }
 
+  @Test
+  void configureLogExporterRetryPolicy() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort());
+    props.put(
+        "otel.exporter.otlp.logs.certificate", certificate.certificateFile().getAbsolutePath());
+    props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
+    LogExporter logExporter =
+        LogExporterConfiguration.configureOtlpLogs(
+            DefaultConfigProperties.createForTest(props), MeterProvider.noop());
+
+    testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+    testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+  }
+
   private static <T> void testRetryableStatusCodes(
       Supplier<T> dataSupplier,
       Function<T, CompletableResultCode> exporter,
@@ -124,7 +111,8 @@ class OtlpGrpcRetryTest {
 
       CompletableResultCode resultCode =
           exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
-      boolean retryable = retryableStatusCodes().contains(code);
+      boolean retryable =
+          RetryUtil.retryableGrpcStatusCodes().contains(String.valueOf(code.value()));
       boolean expectedResult = retryable || code == Status.Code.OK;
       assertThat(resultCode.isSuccess())
           .as(
@@ -146,9 +134,10 @@ class OtlpGrpcRetryTest {
 
     // Set the server to fail with a retryable status code for the max attempts
     int maxAttempts = RetryPolicy.getDefault().getMaxAttempts();
-    Status.Code retryableCode = retryableStatusCodes().get(0);
+    int retryableCode =
+        RetryUtil.retryableGrpcStatusCodes().stream().map(Integer::parseInt).findFirst().get();
     for (int i = 0; i < maxAttempts; i++) {
-      server.responseStatuses.add(Status.fromCode(retryableCode));
+      server.responseStatuses.add(Status.fromCodeValue(retryableCode));
     }
 
     // Result should be failure, sever should have received maxAttempts requests

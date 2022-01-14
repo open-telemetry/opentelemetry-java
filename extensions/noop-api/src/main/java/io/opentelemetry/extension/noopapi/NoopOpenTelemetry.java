@@ -6,6 +6,7 @@
 package io.opentelemetry.extension.noopapi;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -52,6 +53,12 @@ public class NoopOpenTelemetry implements OpenTelemetry {
   @Override
   public TracerProvider getTracerProvider() {
     return NoopTracerProvider.INSTANCE;
+  }
+
+  @Override
+  public MeterProvider getMeterProvider() {
+    // Default implementation is already truly no-op.
+    return MeterProvider.noop();
   }
 
   @Override

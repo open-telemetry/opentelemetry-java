@@ -13,8 +13,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,6 +45,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private RetryPolicy retryPolicy;
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
   // Visible for testing
@@ -118,8 +120,14 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
+  public GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
+    return this;
+  }
+
+  @Override
+  public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
+    this.meterProvider = meterProvider;
     return this;
   }
 
@@ -127,7 +135,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   public GrpcExporter<T> build() {
     ManagedChannel channel = this.channel;
     if (channel == null) {
-      final ManagedChannelBuilder<?> managedChannelBuilder =
+      ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
       if (endpoint.getScheme().equals("https")) {
@@ -162,7 +170,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
-    return new DefaultGrpcExporter<>(type, channel, stub, timeoutNanos, compressionEnabled);
+    return new DefaultGrpcExporter<>(type, channel, stub, meterProvider, timeoutNanos);
   }
 
   /**

@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import javax.annotation.Nullable;
 
-/** The extend Span interface used by the SDK. */
+/** SDK representation of a {@code Span} that can be read. */
 public interface ReadableSpan {
 
   /**
@@ -26,10 +26,10 @@ public interface ReadableSpan {
   SpanContext getSpanContext();
 
   /**
-   * Returns the parent {@link SpanContext} of the {@link Span}, or {@link SpanContext#getInvalid()}
+   * Returns the parent {@link SpanContext} of the {@code Span}, or {@link SpanContext#getInvalid()}
    * if this is a root span.
    *
-   * @return the parent {@link SpanContext} of the {@link Span}
+   * @return the parent {@link SpanContext} of the {@code Span}
    */
   SpanContext getParentSpanContext();
 

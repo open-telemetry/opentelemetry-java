@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -36,6 +37,7 @@ public abstract class InstrumentSelector {
    * Returns {@link InstrumentType} that should be selected. If null, then this specifier will not
    * be used.
    */
+  @Nullable
   public abstract InstrumentType getInstrumentType();
 
   /**

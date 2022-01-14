@@ -55,6 +55,11 @@ public final class OtlpGrpcLogExporter implements LogExporter {
     return delegate.export(request, logs.size());
   }
 
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
   /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
    * cancelled.

@@ -47,7 +47,9 @@ Next, update the
 
 Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
-Finally, update the files `website_docs` directory to point at the newly released version.
+Finally, update the [website docs][] to refer to the newly released version.
+
+[website docs]: https://github.com/open-telemetry/opentelemetry.io/tree/main/content/en/docs/instrumentation/java
 
 ## Patch Release
 

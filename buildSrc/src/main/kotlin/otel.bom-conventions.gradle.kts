@@ -33,7 +33,7 @@ rootProject.tasks.named(generateBuildSubstitutions.name) {
 afterEvaluate {
   otelBom.projectFilter.finalizeValue()
   val bomProjects = rootProject.subprojects
-    .sortedBy { it.findProperty("archivesBaseName") as String? }
+    .sortedBy { it.findProperty("archivesName") as String? }
     .filter { !it.name.startsWith("bom") }
     .filter(otelBom.projectFilter.get()::test)
     .filter { it.plugins.hasPlugin("maven-publish") }

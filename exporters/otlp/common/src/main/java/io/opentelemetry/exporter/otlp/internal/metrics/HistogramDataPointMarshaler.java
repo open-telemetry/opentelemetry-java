@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.HistogramDataPoint;
+import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import java.io.IOException;
 import java.util.Collection;
@@ -85,7 +86,8 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     output.serializeFixed64(HistogramDataPoint.COUNT, count);
     output.serializeDouble(HistogramDataPoint.SUM, sum);
-    output.serializeRepeatedFixed64(HistogramDataPoint.BUCKET_COUNTS, bucketCounts);
+    output.serializeRepeatedFixed64(
+        HistogramDataPoint.BUCKET_COUNTS, PrimitiveLongList.toArray(bucketCounts));
     output.serializeRepeatedDouble(HistogramDataPoint.EXPLICIT_BOUNDS, explicitBounds);
     output.serializeRepeatedMessage(HistogramDataPoint.EXEMPLARS, exemplars);
     output.serializeRepeatedMessage(HistogramDataPoint.ATTRIBUTES, attributes);

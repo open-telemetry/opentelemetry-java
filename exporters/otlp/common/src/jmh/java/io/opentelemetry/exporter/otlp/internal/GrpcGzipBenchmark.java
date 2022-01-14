@@ -19,8 +19,8 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -82,7 +82,7 @@ public class GrpcGzipBenchmark {
         .ofLongs()
         .buildWithCallback(
             measurement ->
-                measurement.observe(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
+                measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
     LongCounter longCounter =
         meter1
             .counterBuilder("counter")
@@ -107,7 +107,7 @@ public class GrpcGzipBenchmark {
         .gaugeBuilder("doublegauge")
         .setDescription("doublegauge")
         .setUnit("unit")
-        .buildWithCallback(measurement -> measurement.observe(5.0));
+        .buildWithCallback(measurement -> measurement.record(5.0));
     DoubleCounter doubleCounter = meter2.counterBuilder("doublecounter").ofDoubles().build();
     doubleCounter.add(1.0);
     doubleCounter.add(2.0);

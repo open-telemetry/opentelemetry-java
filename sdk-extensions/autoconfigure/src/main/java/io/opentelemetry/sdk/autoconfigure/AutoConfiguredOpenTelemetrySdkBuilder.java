@@ -7,20 +7,34 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -30,8 +44,13 @@ import javax.annotation.Nullable;
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 
+  private static final Logger logger =
+      Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
+
   @Nullable private ConfigProperties config;
 
+  private BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+      tracerProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
@@ -46,6 +65,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private ClassLoader serviceClassLoader =
       AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader();
 
+  private boolean registerShutdownHook = true;
+
   private boolean setResultAsGlobal = true;
 
   private boolean customized;
@@ -59,6 +80,22 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkTracerProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addTracerProviderCustomizer(
+      BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+          tracerProviderCustomizer) {
+    requireNonNull(tracerProviderCustomizer, "tracerProviderCustomizer");
+    this.tracerProviderCustomizer =
+        mergeCustomizer(this.tracerProviderCustomizer, tracerProviderCustomizer);
     return this;
   }
 
@@ -140,6 +177,22 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
+   * the shutdown hook is registered.
+   *
+   * <p>Skipping the registration of the shutdown hook may cause unexpected behavior. This
+   * configuration is for SDK consumers that require control over the SDK lifecycle. In this case,
+   * alternatives must be provided by the SDK consumer to shut down the SDK.
+   *
+   * @param registerShutdownHook a boolean <code>true</code> will register the hook, otherwise
+   *     <code>false</code> will skip registration.
+   */
+  public AutoConfiguredOpenTelemetrySdkBuilder registerShutdownHook(boolean registerShutdownHook) {
+    this.registerShutdownHook = registerShutdownHook;
+    return this;
+  }
+
+  /**
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
    */
@@ -160,7 +213,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
-  @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
   public AutoConfiguredOpenTelemetrySdk build() {
     if (!customized) {
       customized = true;
@@ -170,19 +222,68 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
     }
 
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     ConfigProperties config = getConfig();
+    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+
     Resource resource =
-        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
-    OpenTelemetrySdk sdk =
-        OpenTelemetrySdkAutoConfiguration.newOpenTelemetrySdk(
+        ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
+    tracerProviderBuilder.setResource(resource);
+
+    MeterProvider meterProvider =
+        MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
+
+    SdkTracerProvider tracerProvider =
+        TracerProviderConfiguration.configureTracerProvider(
+            tracerProviderBuilder,
             config,
-            resource,
             serviceClassLoader,
-            propagatorCustomizer,
+            meterProvider,
             spanExporterCustomizer,
-            samplerCustomizer,
-            setResultAsGlobal);
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, config);
+            samplerCustomizer);
+
+    SdkLogEmitterProvider logEmitterProvider =
+        LogEmitterProviderConfiguration.configureLogEmitterProvider(
+            resource, config, meterProvider);
+
+    if (registerShutdownHook) {
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    List<CompletableResultCode> shutdown = new ArrayList<>();
+                    shutdown.add(tracerProvider.shutdown());
+                    if (meterProvider instanceof SdkMeterProvider) {
+                      shutdown.add(((SdkMeterProvider) meterProvider).shutdown());
+                    }
+                    shutdown.add(logEmitterProvider.shutdown());
+                    CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
+                  }));
+    }
+
+    ContextPropagators propagators =
+        PropagatorConfiguration.configurePropagators(
+            config, serviceClassLoader, propagatorCustomizer);
+
+    OpenTelemetrySdkBuilder sdkBuilder =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setLogEmitterProvider(logEmitterProvider)
+            .setPropagators(propagators);
+
+    if (meterProvider instanceof SdkMeterProvider) {
+      sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);
+    }
+
+    OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
+
+    if (setResultAsGlobal) {
+      GlobalOpenTelemetry.set(openTelemetrySdk);
+      logger.log(
+          Level.FINE, "Global OpenTelemetrySdk set to {0} by autoconfiguration", openTelemetrySdk);
+    }
+
+    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
   private ConfigProperties getConfig() {

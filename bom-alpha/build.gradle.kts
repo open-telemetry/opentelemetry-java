@@ -4,6 +4,6 @@ plugins {
 
 description = "OpenTelemetry Bill of Materials (Alpha)"
 group = "io.opentelemetry"
-base.archivesBaseName = "opentelemetry-bom-alpha"
+base.archivesName.set("opentelemetry-bom-alpha")
 
 otelBom.projectFilter.set { it.findProperty("otel.release") == "alpha" }

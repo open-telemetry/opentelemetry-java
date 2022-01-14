@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
@@ -273,8 +273,8 @@ public class DoubleExponentialHistogramAggregatorTest {
   void testInsert1M() {
     AggregatorHandle<ExponentialHistogramAccumulation> handle = aggregator.createHandle();
 
-    final double min = 1.0 / (1 << 16);
-    final int n = 1024 * 1024 - 1;
+    double min = 1.0 / (1 << 16);
+    int n = 1024 * 1024 - 1;
     double d = min;
     for (int i = 0; i < n; i++) {
       handle.recordDouble(d);
@@ -382,11 +382,11 @@ public class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
     AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
-    final ExponentialHistogram summarizer = new ExponentialHistogram();
-    final ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
-    final int numberOfThreads = updates.size();
-    final int numberOfUpdates = 10000;
-    final ThreadPoolExecutor executor =
+    ExponentialHistogram summarizer = new ExponentialHistogram();
+    ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
+    int numberOfThreads = updates.size();
+    int numberOfUpdates = 10000;
+    ThreadPoolExecutor executor =
         (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
 
     executor.invokeAll(

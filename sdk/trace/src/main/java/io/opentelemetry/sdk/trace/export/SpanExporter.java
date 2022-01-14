@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -25,22 +26,20 @@ import java.util.concurrent.TimeUnit;
 public interface SpanExporter extends Closeable {
 
   /**
-   * Returns a {@link SpanExporter} which simply delegates all exports to the {@code exporters} in
-   * order.
+   * Returns a {@link SpanExporter} which delegates all exports to the {@code exporters} in order.
    *
-   * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a
-   * {@code SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link SpanProcessor} like a
+   * {@link SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
    */
   static SpanExporter composite(SpanExporter... exporters) {
     return composite(Arrays.asList(exporters));
   }
 
   /**
-   * Returns a {@link SpanExporter} which simply delegates all exports to the {@code exporters} in
-   * order.
+   * Returns a {@link SpanExporter} which delegates all exports to the {@code exporters} in order.
    *
-   * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a
-   * {@code SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link SpanProcessor} like a
+   * {@link SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
    */
   static SpanExporter composite(Iterable<SpanExporter> exporters) {
     List<SpanExporter> exportersList = new ArrayList<>();

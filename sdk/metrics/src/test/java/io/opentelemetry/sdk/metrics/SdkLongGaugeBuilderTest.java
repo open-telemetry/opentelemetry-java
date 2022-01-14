@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -50,8 +50,7 @@ class SdkLongGaugeBuilderTest {
     sdkMeter
         .gaugeBuilder("testObserver")
         .ofLongs()
-        .buildWithCallback(
-            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
+        .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(

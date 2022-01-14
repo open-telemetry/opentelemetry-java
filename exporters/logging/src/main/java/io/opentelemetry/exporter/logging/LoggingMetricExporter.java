@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.logging;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -15,6 +16,40 @@ import java.util.logging.Logger;
 
 public final class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
+
+  private final AggregationTemporality preferredTemporality;
+
+  /**
+   * Returns a new {@link LoggingMetricExporter} with a preferred temporality of {@link
+   * AggregationTemporality#CUMULATIVE}.
+   */
+  public static LoggingMetricExporter create() {
+    return create(AggregationTemporality.CUMULATIVE);
+  }
+
+  /** Returns a new {@link LoggingMetricExporter} with the given {@code preferredTemporality}. */
+  public static LoggingMetricExporter create(AggregationTemporality preferredTemporality) {
+    return new LoggingMetricExporter(preferredTemporality);
+  }
+
+  /**
+   * Class constructor with a preferred temporality of {@link AggregationTemporality#CUMULATIVE}.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
+  public LoggingMetricExporter() {
+    this(AggregationTemporality.CUMULATIVE);
+  }
+
+  private LoggingMetricExporter(AggregationTemporality preferredTemporality) {
+    this.preferredTemporality = preferredTemporality;
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return preferredTemporality;
+  }
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {

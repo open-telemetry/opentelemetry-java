@@ -24,6 +24,8 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
@@ -186,6 +188,16 @@ class OtlpHttpMetricExporterTest {
     assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setPreferredTemporality(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("preferredTemporality");
+  }
+
+  @Test
+  void testBuilderDelegate() {
+    assertThatCode(
+            () ->
+                OkHttpExporterBuilder.getDelegateBuilder(
+                        OtlpHttpMetricExporterBuilder.class, OtlpHttpMetricExporter.builder())
+                    .setRetryPolicy(RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test

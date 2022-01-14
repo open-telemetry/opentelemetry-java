@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.openjdk.jmh.annotations.AuxCounters;
@@ -39,9 +40,10 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     @Setup(Level.Iteration)
     public final void setup() {
       metricReader = InMemoryMetricReader.create();
-      SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
+      MeterProvider meterProvider =
+          SdkMeterProvider.builder().registerMetricReader(metricReader).build();
       SpanExporter exporter = new DelayingSpanExporter(0);
-      processor = BatchSpanProcessor.builder(exporter).build();
+      processor = BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build();
 
       tracer = SdkTracerProvider.builder().build().get("benchmarkTracer");
     }

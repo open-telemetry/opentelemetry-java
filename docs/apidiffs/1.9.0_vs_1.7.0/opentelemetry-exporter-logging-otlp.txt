@@ -1,0 +1,7 @@
+Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogExporter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.export.LogExporter create()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()

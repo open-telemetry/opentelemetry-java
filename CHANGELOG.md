@@ -1,13 +1,121 @@
 # Changelog
 
-## Version 1.8.0 (unreleased):
+## Version 1.11.0 (unreleased):
+
+---
+
+## Version 1.10.0 2022-01-07:
+
+### API
+
+* Performance of `GlobalOpenTelemetry.get` improved
+* `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces are empty but will allow adding functionality in the future
+* BREAKING CHANGE: `Double/LongMeasurement.observe` have been removed
+* BREAKING CHANGE: `GlobalMeterProvider` has been removed
+* BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not previously deprecated but is expected to have no use in apps due to the lack of functionality
+* The Metrics API has been merged into the `opentelemetry-api` artifact. `OpenTelemetry.getMeterProvider()` is the new entrypoint
+* BREAKING CHANGE: Bound metrics instruments have been removed for now to allow more time to bake while still providing a stable metrics API
+* `Double/LongMeasurement.observe` has been renamed to `record`.`observe` is deprecated in this release
+* `GlobalMeterProvider` has been deprecated. `GlobalOpenTelemetry.getMeterProvider` should be used instead
+* A warning is logged now when registering async instruments with the same name. Previously subsequent invocations were just ignored.
+* `GlobalOpenTelemetry` extended with helpers for meter creation
+
+### SDK
+
+* The semantic conventions have been updated to 1.8.0
+* Deprecated methods have been removed from the `opentelemetry-sdk-autoconfigure` artifact.
+
+#### Exporter
+* The OkHttp gRPC exporters now support experimental retry
+* OkHttp dispatcher threads are now spawned as daemon threads
+* The JPMS module name for the logs exporter has been fixed
+* Metrics exporters can have temporality configured
+* HTTP exporters now support experimental retry
+* Jaeger exporter allows setting trusted certificates
+* gRPC exporter metric typos corected
+
+#### Metrics
+
+* `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The current class has been deprecated in this release
+* Metric instrument usage violations consistently report issues as debug logs
+* Some user callbacks have been wrapped to catch exceptions instead of throwing
+* MinMaxSumCount/Count aggregation has been removed
+* Empty aggregator is renamed to `drop`
+* Cumulative aggregations will not be aggressively dropped every collection cycle
+
+#### Logs
+
+* A `opentelemetry-sdk-logs-testing` module has been added
+* `SdkLogEmitterProvider` is now available through `OpenTelemetrySdk`
+* LogDataBuilder can now take a SpanContext directly
+* SdkLogEmitterProvider.get convenience method added
+
+#### AWS
+
+* HTTP requests now use OkHttp instead of the JDK
+
+### OpenCensus Shim
+
+* Shim span attributes are set before the span is created instead of after
+* Exceptions are not thrown when activating a null span
+
+#### SDK Extensions
+* BREAKING CHANGE: Deprecated trace incubator types (DelegatingSpanData, SpanDataBuidler) have been removed
+* BREAKING CHANGE: Deprecated `ExecutorServiceSpanProcessor` has been removed
+* `cloud.platform` is now populated in AWS `Resource`
+* Auto-configuration correctly uses configured class loader for configuring Resource
+* Auto-configuration prints a debug log with the resolved tracer configuration
+* Auto-configuration supports the logs signal
+
+---
+## Version 1.9.1 2021-11-23:
+
+### Bugfixes
+
+- In Prometheus exporter, only populate exemplars for Prometheus types that support them
+- Fix proto encoding of oneof values in metrics
+- Correctly cleanup OkHttp client resources when shutting down exporters
+
+---
+## Version 1.9.0 2021-11-11:
+
+### General
+
+- IMPORTANT: The deprecated `io.opentelemetry:opentelemetry-proto` module was removed. Java bindings for OTLP
+  protobufs are now published
+  via [opentelemetry-proto-java](https://github.com/open-telemetry/opentelemetry-proto-java), and
+  available at maven coordinates `io.opentelemetry.proto:opentelemetry-proto`.
 
 ### API
 
 - New `AttributesBuilder#remove(String)` and `AttributeBuilder#removeIf(Predicate<AttributeKey<?>>)`
   methods improve ergonomics of modifying attributes.
+- `W3CBaggagePropagator` now encodes baggage values in URL encoded UTF-8 format, per
+  the [W3C Baggage Specification](https://w3c.github.io/baggage/).
 
 ### SDK
+
+- `DelegatingSpanData` has been promoted from incubation and is now available in the Trace SDK.
+  The `DelegatingSpanData` class in
+  the `io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator` module is now deprecated.
+
+#### Exporters
+
+- The prometheus metric exporter now includes the `time_unix_nano` representing the epoch timestamp
+  when collection occurred.
+- The OTLP `grpc` exporters (`OtlpGrpcSpanExporter`, `OtlpGrpcLogExporter`,
+  and `OtlpGrpcMetricExporter`) now include a default client implementation (`okhttp`). If a `grpc`
+  implementation is detected on the classpath it will be used, but the exporters now work "out of
+  the box" with no additional dependencies.
+
+#### SDK Extensions
+
+- IMPORTANT: The deprecated `io.opentelemetry:opentelemetry-sdk-extension-async-processor`
+  module was removed. This module is now published
+  via [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib),
+  and available at maven coordinates `io.opentelemetry.contrib:opentelemetry-disruptor-processor`.
+- The `ExecutorServiceSpanProcessor` from
+  the `io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator` module is now deprecated.
 
 #### Logging (alpha)
 
@@ -15,13 +123,51 @@
   implement [OTEP-0150](https://github.com/open-telemetry/oteps/blob/main/text/logs/0150-logging-library-sdk.md)
   and to have more symmetry to the Trace SDK. `LogSink` is now `LogEmitter`. `LogEmitter` instances
   are obtained from `SdkLogEmitterProvider`. Other additions include `MultiLogProcessor` (accessed
-  via `LogProcessor#composite(...)`), `SimpleLogProcessor`, and `InMemoryLogExporter`.
+  via `LogProcessor#composite(...)`), `SimpleLogProcessor`, `InMemoryLogExporter`
+  , `OtlpJsonLoggingLogExporter`, and `SystemOutLogExporter`.
+- The Log SDK maven coordinates have changed
+  from `io.opentelemetry:opentelemetry-sdk-extension-logging`
+  to `io.opentelemetry:opentelemetry-sdk-logs`.
+
+### Metrics (alpha)
+
+- The `new InMemoryMetricReader()` constructor has been deprecated.
+  Use `InMemoryMetricReader.create()` instead.
+- A typo in `Aggregation.explictBucketHistogram()` has been fixed, and is now accessible
+  at `Aggregation.explicitBucketHistogram()`.
+- The `PeriodicMetricReader#builder(MetricExporter)` builder
+  replaces `PeriodicMetricReader#newMetricReaderFactory(MetricExporter, Duration)`.
+- Aggregation temporality is now influenced by metric exporters, and the ability to configure
+  aggregation temporality via the view API has been removed. For example, the OTLP metric exporters
+  support both `DELTA` and `CUMULATIVE` temporality. `CUMULATIVE` is the default preferred, but this
+  can be changed either via programmatic configuration or
+  via `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY` if using autoconfigure.
+- The `MeterProvider#get(String instrumentationName, String instrumentationVersion, String schemaUrl)`
+  method is deprecated. Use `MeterProvider#meterBuilder(String instrumentationName)` with
+  corresponding builder setters instead.
+- Metric cardinality defenses have been added. Each instrument view now can have at most 2000
+  distinct metric streams per collection cycle. Recordings for additional streams are dropped with a
+  diagnostic log message. Additionally, cumulative metric streams (both for synchronous and
+  asynchronous instruments) are aggressively forgotten each time a metric export occurs that does
+  not include recordings for a particular stream. The net effect is that there is now a cap on
+  metric memory consumption.
 
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: Remove deprecated `otel.experimental.exporter.otlp.protocol`,
   `otel.experimental.exporter.otlp.{signal}.protocol` properties. Please use
   `otel.exporter.otlp.protocol`, `otel.exporter.otlp.{signal}.protocol` instead.
+- The autoconfigure module has introduced a powerful new `AutoConfiguredOpenTelemetrySdkBuilder`,
+  and SPI for programmatically configuring the builder with `AutoConfigurationCustomizerProvider`.
+  This provides improved ergonomics and control around autoconfigure customization.
+- Added experimental support for enabling OTLP retry support for the `grpc` exporters. If enabled
+  via `otel.experimental.exporter.otlp.retry.enabled`,
+  a [default retry policy](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#otlp-exporter-retry)
+  will be used.
+- The metric export interval of `PeriodicMetricReader` is now configured
+  via `otel.metric.export.interval`. The existing `otel.imr.export.interval` property has been
+  deprecated.
+- The SPI classloader can now be specified when using the autoconfigure module programmatically.
 
 ---
 ## Version 1.7.1 (2021-11-03):

@@ -31,12 +31,11 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface Aggregator<T> {
-  /**
-   * Returns the empty aggregator, an aggregator that never records measurements or reports values.
-   */
-  static Aggregator<Void> empty() {
-    return EmptyAggregator.INSTANCE;
+  /** Returns the drop aggregator, an aggregator that drops measurements. */
+  static Aggregator<Object> drop() {
+    return DropAggregator.INSTANCE;
   }
+
   /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
    * recorded measurements during the collection cycle.
@@ -50,8 +49,10 @@ public interface Aggregator<T> {
    * instruments to create {@code Accumulation} that are passed to the processor.
    *
    * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
+   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no
+   *     recordings.
    */
+  @Nullable
   default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
     AggregatorHandle<T> handle = createHandle();
     handle.recordLong(value, attributes, context);
@@ -63,8 +64,10 @@ public interface Aggregator<T> {
    * instruments to create {@code Accumulation} that are passed to the processor.
    *
    * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
+   * @return a new {@code Accumulation} for the given value, or {@code null} if there are no
+   *     recordings.
    */
+  @Nullable
   default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {
     AggregatorHandle<T> handle = createHandle();
     handle.recordDouble(value, attributes, context);
@@ -104,7 +107,6 @@ public interface Aggregator<T> {
    * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricDataType} that this {@code Aggregation} will produce.
    */
-  @Nullable
   MetricData toMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,

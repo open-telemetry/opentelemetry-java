@@ -28,4 +28,9 @@ class NoopSpanProcessorTest {
     noopSpanProcessor.forceFlush();
     noopSpanProcessor.shutdown();
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(NoopSpanProcessor.getInstance()).hasToString("NoopSpanProcessor{}");
+  }
 }

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
@@ -54,9 +53,9 @@ public final class Ec2Resource {
   // Visible for testing
   static Resource buildResource(String endpoint) {
     String urlBase = "http://" + endpoint;
-    final URL identityDocumentUrl;
-    final URL hostnameUrl;
-    final URL tokenUrl;
+    URL identityDocumentUrl;
+    URL hostnameUrl;
+    URL tokenUrl;
     try {
       identityDocumentUrl = new URL(urlBase + "/latest/dynamic/instance-identity/document");
       hostnameUrl = new URL(urlBase + "/latest/meta-data/hostname");
@@ -79,7 +78,9 @@ public final class Ec2Resource {
     String hostname = fetchHostname(hostnameUrl, token);
 
     AttributesBuilder attrBuilders = Attributes.builder();
-    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_EC2);
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -137,7 +138,7 @@ public final class Ec2Resource {
 
   // Generic HTTP fetch function for IMDS.
   private static String fetchString(String httpMethod, URL url, String token, boolean includeTtl) {
-    JdkHttpClient client = new JdkHttpClient();
+    SimpleHttpClient client = new SimpleHttpClient();
     Map<String, String> headers = new HashMap<>();
 
     if (includeTtl) {

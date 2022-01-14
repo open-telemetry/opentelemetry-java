@@ -16,6 +16,15 @@ import java.io.IOException;
  */
 public final class GrpcStatusUtil {
 
+  public static final String GRPC_STATUS_CANCELLED = "1";
+  public static final String GRPC_STATUS_DEADLINE_EXCEEDED = "4";
+  public static final String GRPC_STATUS_RESOURCE_EXHAUSTED = "8";
+  public static final String GRPC_STATUS_ABORTED = "10";
+  public static final String GRPC_STATUS_OUT_OF_RANGE = "11";
+  public static final String GRPC_STATUS_UNIMPLEMENTED = "12";
+  public static final String GRPC_STATUS_UNAVAILABLE = "14";
+  public static final String GRPC_STATUS_DATA_LOSS = "15";
+
   /** Parses the message out of a serialized gRPC Status. */
   public static String getStatusMessage(byte[] serializedStatus) throws IOException {
     CodedInputStream input = CodedInputStream.newInstance(serializedStatus);
