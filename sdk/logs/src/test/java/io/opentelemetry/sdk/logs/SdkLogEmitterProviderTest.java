@@ -72,6 +72,41 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
+  void builder_defaultLogLimits() {
+    assertThat(SdkLogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getLogLimits)
+        .isSameAs(LogLimits.getDefault());
+  }
+
+  @Test
+  void builder_logLimitsProvided() {
+    LogLimits logLimits =
+        LogLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(1).build();
+    assertThat(SdkLogEmitterProvider.builder().setLogLimits(() -> logLimits).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getLogLimits)
+        .isSameAs(logLimits);
+  }
+
+  @Test
+  void builder_defaultClock() {
+    assertThat(SdkLogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getClock)
+        .isSameAs(Clock.getDefault());
+  }
+
+  @Test
+  void builder_clockProvided() {
+    Clock clock = mock(Clock.class);
+    assertThat(SdkLogEmitterProvider.builder().setClock(clock).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getClock)
+        .isSameAs(clock);
+  }
+
+  @Test
   void builder_multipleProcessors() {
     assertThat(
             SdkLogEmitterProvider.builder()
