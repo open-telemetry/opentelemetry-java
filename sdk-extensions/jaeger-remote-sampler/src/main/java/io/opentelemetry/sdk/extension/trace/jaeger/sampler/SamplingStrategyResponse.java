@@ -27,12 +27,12 @@ class SamplingStrategyResponse {
     static class Builder {
       private int maxTracesPerSecond;
 
-      public Builder setMaxTracesPerSecond(int maxTracesPerSecond) {
+      Builder setMaxTracesPerSecond(int maxTracesPerSecond) {
         this.maxTracesPerSecond = maxTracesPerSecond;
         return this;
       }
 
-      public RateLimitingSamplingStrategy build() {
+      RateLimitingSamplingStrategy build() {
         return new RateLimitingSamplingStrategy(this);
       }
     }
@@ -48,22 +48,22 @@ class SamplingStrategyResponse {
     static class Builder {
       private double samplingRate;
 
-      public Builder setSamplingRate(double samplingRate) {
+      Builder setSamplingRate(double samplingRate) {
         this.samplingRate = samplingRate;
         return this;
       }
 
-      public ProbabilisticSamplingStrategy build() {
+      ProbabilisticSamplingStrategy build() {
         return new ProbabilisticSamplingStrategy(this);
       }
     }
   }
 
   static class PerOperationSamplingStrategies {
-    public final double defaultSamplingProbability;
-    public final double defaultLowerBoundTracesPerSecond;
-    public final double defaultUpperBoundTracesPerSecond;
-    public final List<OperationSamplingStrategy> strategies;
+    final double defaultSamplingProbability;
+    final double defaultLowerBoundTracesPerSecond;
+    final double defaultUpperBoundTracesPerSecond;
+    final List<OperationSamplingStrategy> strategies;
 
     private PerOperationSamplingStrategies(Builder builder) {
       this.defaultSamplingProbability = builder.defaultSamplingProbability;
@@ -78,35 +78,35 @@ class SamplingStrategyResponse {
       private double defaultUpperBoundTracesPerSecond;
       private final List<OperationSamplingStrategy> strategies = new ArrayList<>();
 
-      public Builder setDefaultSamplingProbability(double defaultSamplingProbability) {
+      Builder setDefaultSamplingProbability(double defaultSamplingProbability) {
         this.defaultSamplingProbability = defaultSamplingProbability;
         return this;
       }
 
-      public Builder setDefaultLowerBoundTracesPerSecond(double defaultLowerBoundTracesPerSecond) {
+      Builder setDefaultLowerBoundTracesPerSecond(double defaultLowerBoundTracesPerSecond) {
         this.defaultLowerBoundTracesPerSecond = defaultLowerBoundTracesPerSecond;
         return this;
       }
 
-      public Builder setDefaultUpperBoundTracesPerSecond(double defaultUpperBoundTracesPerSecond) {
+      Builder setDefaultUpperBoundTracesPerSecond(double defaultUpperBoundTracesPerSecond) {
         this.defaultUpperBoundTracesPerSecond = defaultUpperBoundTracesPerSecond;
         return this;
       }
 
-      public Builder addOperationStrategy(OperationSamplingStrategy operationSamplingStrategy) {
+      Builder addOperationStrategy(OperationSamplingStrategy operationSamplingStrategy) {
         this.strategies.add(operationSamplingStrategy);
         return this;
       }
 
-      public PerOperationSamplingStrategies build() {
+      PerOperationSamplingStrategies build() {
         return new PerOperationSamplingStrategies(this);
       }
     }
   }
 
   static class OperationSamplingStrategy {
-    public final String operation;
-    public final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
+    final String operation;
+    final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
 
     private OperationSamplingStrategy(Builder builder) {
       this.operation = builder.operation;
@@ -118,27 +118,27 @@ class SamplingStrategyResponse {
       private ProbabilisticSamplingStrategy probabilisticSamplingStrategy =
           new ProbabilisticSamplingStrategy.Builder().build();
 
-      public Builder setOperation(String operation) {
+      Builder setOperation(String operation) {
         this.operation = operation;
         return this;
       }
 
-      public Builder setProbabilisticSamplingStrategy(
+      Builder setProbabilisticSamplingStrategy(
           ProbabilisticSamplingStrategy probabilisticSamplingStrategy) {
         this.probabilisticSamplingStrategy = probabilisticSamplingStrategy;
         return this;
       }
 
-      public OperationSamplingStrategy build() {
+      OperationSamplingStrategy build() {
         return new OperationSamplingStrategy(this);
       }
     }
   }
 
-  public final SamplingStrategyType strategyType;
-  public final RateLimitingSamplingStrategy rateLimitingSamplingStrategy;
-  public final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
-  public final PerOperationSamplingStrategies perOperationSamplingStrategies;
+  final SamplingStrategyType strategyType;
+  final RateLimitingSamplingStrategy rateLimitingSamplingStrategy;
+  final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
+  final PerOperationSamplingStrategies perOperationSamplingStrategies;
 
   private SamplingStrategyResponse(Builder builder) {
     this.strategyType = builder.samplingStrategyType;
@@ -156,30 +156,30 @@ class SamplingStrategyResponse {
     private PerOperationSamplingStrategies perOperationSamplingStrategies =
         new PerOperationSamplingStrategies.Builder().build();
 
-    public Builder setSamplingStrategyType(SamplingStrategyType samplingStrategyType) {
+    Builder setSamplingStrategyType(SamplingStrategyType samplingStrategyType) {
       this.samplingStrategyType = samplingStrategyType;
       return this;
     }
 
-    public Builder setRateLimitingSamplingStrategy(
+    Builder setRateLimitingSamplingStrategy(
         RateLimitingSamplingStrategy rateLimitingSamplingStrategy) {
       this.rateLimitingSamplingStrategy = rateLimitingSamplingStrategy;
       return this;
     }
 
-    public Builder setProbabilisticSamplingStrategy(
+    Builder setProbabilisticSamplingStrategy(
         ProbabilisticSamplingStrategy probabilisticSamplingStrategy) {
       this.probabilisticSamplingStrategy = probabilisticSamplingStrategy;
       return this;
     }
 
-    public Builder setPerOperationSamplingStrategies(
+    Builder setPerOperationSamplingStrategies(
         PerOperationSamplingStrategies perOperationSamplingStrategies) {
       this.perOperationSamplingStrategies = perOperationSamplingStrategies;
       return this;
     }
 
-    public SamplingStrategyResponse build() {
+    SamplingStrategyResponse build() {
       return new SamplingStrategyResponse(this);
     }
   }

@@ -15,5 +15,5 @@ import java.io.IOException;
  */
 abstract class UnMarshaler {
 
-  public abstract void read(byte[] payload) throws IOException;
+  abstract void read(byte[] payload) throws IOException;
 }
