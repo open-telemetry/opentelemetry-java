@@ -26,6 +26,7 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
     this.backing = new AdaptingIntegerArray(maxSize);
   }
 
+  /** (Deep)-Copies the values from another exponential counter. */
   public AdaptingCircularBufferCounter(ExponentialCounter toCopy) {
     // If toCopy is an AdaptingCircularBuffer, just do a copy of the underlying array
     // and baseIndex.
