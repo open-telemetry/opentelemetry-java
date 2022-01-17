@@ -95,16 +95,15 @@ public class AdaptingIntegerArray {
     }
   }
 
-  /** Copies the size + integer cell size of another array, but allocating a new array of zero
+  /**
+   * Copies the size + integer cell size of another array, but allocating a new array of zero
    * counts.
    *
-   * @param toZero  The other addapting integer array to mirror the size of.
+   * @param toZero The other addapting integer array to mirror the size of.
    */
   public static AdaptingIntegerArray zeroOf(AdaptingIntegerArray toZero) {
     return new AdaptingIntegerArray(toZero.length(), toZero.cellSize);
   }
-
-
 
   /** Add {@code count} to the value stored at {@code index}. */
   @SuppressWarnings("NullAway")
