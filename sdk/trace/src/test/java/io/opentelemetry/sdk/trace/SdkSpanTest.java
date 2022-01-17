@@ -922,7 +922,7 @@ class SdkSpanTest {
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
     assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
-        .isEqualTo("io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException");
+        .isEqualTo("io.opentelemetry.sdk.trace.SdkSpanTest.InnerClassException");
   }
 
   @Test

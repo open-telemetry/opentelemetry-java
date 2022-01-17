@@ -527,7 +527,7 @@ final class SdkSpan implements ReadWriteSpan {
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }
-    return "RecordEventsReadableSpan{traceId="
+    return "SdkSpan{traceId="
         + context.getTraceId()
         + ", spanId="
         + context.getSpanId()
