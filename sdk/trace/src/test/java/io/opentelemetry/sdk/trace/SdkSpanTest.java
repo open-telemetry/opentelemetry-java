@@ -61,7 +61,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 @ExtendWith(MockitoExtension.class)
-class RecordEventsReadableSpanTest {
+class SdkSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
@@ -99,7 +99,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void nothingChangedAfterEnd() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
@@ -119,7 +119,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void endSpanTwice_DoNotCrash() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     assertThat(span.hasEnded()).isFalse();
     span.end();
     assertThat(span.hasEnded()).isTrue();
@@ -129,7 +129,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_ActiveSpan() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       assertThat(span.hasEnded()).isFalse();
       spanDoWork(span, null, null);
@@ -157,7 +157,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_EndedSpan() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       spanDoWork(span, StatusCode.ERROR, "CANCELLED");
     } finally {
@@ -181,7 +181,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_immutableLinks() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(() -> spanData.getLinks().add(LinkData.create(SpanContext.getInvalid())))
@@ -190,7 +190,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_immutableEvents() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(
@@ -200,7 +200,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_immutableEvents_ended() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     span.end();
     SpanData spanData = span.toSpanData();
 
@@ -211,7 +211,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_RootSpan() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     try {
       spanDoWork(span, null, null);
     } finally {
@@ -224,7 +224,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_ChildSpan() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       spanDoWork(span, null, null);
     } finally {
@@ -239,7 +239,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_WithInitialAttributes() {
-    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    SdkSpan span = createTestSpanWithAttributes(attributes);
     span.setAttribute("anotherKey", "anotherValue");
     span.end();
     SpanData spanData = span.toSpanData();
@@ -250,7 +250,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void toSpanData_SpanDataDoesNotChangeWhenModifyingSpan() {
     // Create a span
-    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    SdkSpan span = createTestSpanWithAttributes(attributes);
 
     // Convert it to a SpanData object -- this should be an immutable snapshot.
     SpanData spanData = span.toSpanData();
@@ -283,7 +283,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_Status() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
+    SdkSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
       testClock.advance(Duration.ofSeconds(1));
       assertThat(span.toSpanData().getStatus()).isEqualTo(StatusData.unset());
@@ -299,7 +299,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_Kind() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
+    SdkSpan span = createTestSpan(SpanKind.SERVER);
     try {
       assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.SERVER);
     } finally {
@@ -309,7 +309,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getKind() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
+    SdkSpan span = createTestSpan(SpanKind.SERVER);
     try {
       assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
     } finally {
@@ -319,7 +319,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getAttribute() {
-    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    SdkSpan span = createTestSpanWithAttributes(attributes);
     try {
       assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
     } finally {
@@ -329,7 +329,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getInstrumentationLibraryInfo() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.CLIENT);
+    SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     } finally {
@@ -339,7 +339,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getAndUpdateSpanName() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     try {
       assertThat(span.getName()).isEqualTo(SPAN_NAME);
       span.updateName(SPAN_NEW_NAME);
@@ -351,7 +351,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getLatencyNs_ActiveSpan() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       testClock.advance(Duration.ofSeconds(1));
       long elapsedTimeNanos1 = testClock.now() - START_EPOCH_NANOS;
@@ -366,7 +366,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getLatencyNs_EndedSpan() {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     testClock.advance(Duration.ofSeconds(1));
     span.end();
     long elapsedTimeNanos = testClock.now() - START_EPOCH_NANOS;
@@ -377,7 +377,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
       span.setAttribute("NullStringKey", null);
@@ -439,7 +439,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute_emptyKeys() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAttribute("", "");
     span.setAttribute("", 1000L);
     span.setAttribute("", 10.0);
@@ -453,7 +453,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute_nullKeys() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAttribute(stringKey(null), "");
     span.setAttribute(null, 1000L);
     span.setAttribute(null, 10.0);
@@ -467,7 +467,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute_emptyArrayAttributeValue() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isZero();
     span.setAttribute(stringArrayKey("stringArrayAttribute"), Collections.emptyList());
@@ -488,7 +488,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute_nullStringValue() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAttribute("nullString", null);
     span.setAttribute("emptyString", "");
     span.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -498,7 +498,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAttribute_nullAttributeValue() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
     span.setAttribute(stringKey("nullString"), null);
     span.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -515,7 +515,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAllAttributes() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     Attributes attributes =
         Attributes.builder()
             .put("StringKey", "StringVal")
@@ -580,7 +580,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAllAttributes_mergesAttributes() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     Attributes attributes =
         Attributes.builder()
             .put("StringKey", "StringVal")
@@ -613,21 +613,21 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setAllAttributes_nullAttributes() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAllAttributes(null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
   }
 
   @Test
   void setAllAttributes_emptyAttributes() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     span.setAllAttributes(Attributes.empty());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
   }
 
   @Test
   void addEvent() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
     try {
       span.addEvent("event1");
       span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));
@@ -692,7 +692,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void attributeLength() {
     int maxLength = 25;
-    RecordEventsReadableSpan span =
+    SdkSpan span =
         createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
     try {
       String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
@@ -730,7 +730,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void eventAttributeLength() {
     int maxLength = 25;
-    RecordEventsReadableSpan span =
+    SdkSpan span =
         createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
     try {
       String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
@@ -770,7 +770,7 @@ class RecordEventsReadableSpanTest {
     int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
         SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    SdkSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
@@ -788,14 +788,14 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void endWithTimestamp_numeric() {
-    RecordEventsReadableSpan span1 = createTestRootSpan();
+    SdkSpan span1 = createTestRootSpan();
     span1.end(10, TimeUnit.NANOSECONDS);
     assertThat(span1.toSpanData().getEndEpochNanos()).isEqualTo(10);
   }
 
   @Test
   void endWithTimestamp_instant() {
-    RecordEventsReadableSpan span1 = createTestRootSpan();
+    SdkSpan span1 = createTestRootSpan();
     span1.end(Instant.ofEpochMilli(10));
     assertThat(span1.toSpanData().getEndEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(10));
   }
@@ -805,7 +805,7 @@ class RecordEventsReadableSpanTest {
     int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
         SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    SdkSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
@@ -839,7 +839,7 @@ class RecordEventsReadableSpanTest {
   void droppingEvents() {
     int maxNumberOfEvents = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    SdkSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
         span.addEvent("event2", Attributes.empty());
@@ -871,7 +871,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void recordException() {
     IllegalStateException exception = new IllegalStateException("there was an exception");
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
 
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
@@ -899,7 +899,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void recordException_noMessage() {
     IllegalStateException exception = new IllegalStateException();
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
 
     span.recordException(exception);
 
@@ -914,7 +914,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void recordException_innerClassException() {
     InnerClassException exception = new InnerClassException();
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
 
     span.recordException(exception);
 
@@ -928,7 +928,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void recordException_additionalAttributes() {
     IllegalStateException exception = new IllegalStateException("there was an exception");
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
 
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
@@ -962,7 +962,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void badArgsIgnored() {
-    RecordEventsReadableSpan span = createTestRootSpan();
+    SdkSpan span = createTestRootSpan();
 
     // Should be no exceptions
     span.setAttribute(null, 0L);
@@ -991,8 +991,7 @@ class RecordEventsReadableSpanTest {
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
-  private RecordEventsReadableSpan createTestSpanWithAttributes(
-      Map<AttributeKey, Object> attributes) {
+  private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
     SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
         new AttributesMap(
@@ -1006,7 +1005,7 @@ class RecordEventsReadableSpanTest {
         Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestRootSpan() {
+  private SdkSpan createTestRootSpan() {
     return createTestSpan(
         SpanKind.INTERNAL,
         SpanLimits.getDefault(),
@@ -1015,25 +1014,25 @@ class RecordEventsReadableSpanTest {
         Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestSpan(SpanKind kind) {
+  private SdkSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
         kind, SpanLimits.getDefault(), parentSpanId, null, Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestSpan(SpanLimits config) {
+  private SdkSpan createTestSpan(SpanLimits config) {
     return createTestSpan(
         SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestSpan(
+  private SdkSpan createTestSpan(
       SpanKind kind,
       SpanLimits config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
       List<LinkData> links) {
 
-    RecordEventsReadableSpan span =
-        RecordEventsReadableSpan.startSpan(
+    SdkSpan span =
+        SdkSpan.startSpan(
             spanContext,
             SPAN_NAME,
             instrumentationLibraryInfo,
@@ -1057,9 +1056,7 @@ class RecordEventsReadableSpanTest {
   }
 
   private void spanDoWork(
-      RecordEventsReadableSpan span,
-      @Nullable StatusCode canonicalCode,
-      @Nullable String descriptio) {
+      SdkSpan span, @Nullable StatusCode canonicalCode, @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);
     testClock.advance(Duration.ofSeconds(1));
@@ -1121,8 +1118,8 @@ class RecordEventsReadableSpanTest {
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
     LinkData link1 = LinkData.create(context, TestUtils.generateRandomAttributes());
 
-    RecordEventsReadableSpan readableSpan =
-        RecordEventsReadableSpan.startSpan(
+    SdkSpan readableSpan =
+        SdkSpan.startSpan(
             context,
             name,
             instrumentationLibraryInfo,
@@ -1177,7 +1174,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void testConcurrentModification() throws ExecutionException, InterruptedException {
-    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
         es.submit(
