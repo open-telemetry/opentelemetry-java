@@ -24,6 +24,9 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>An AttributesProcessor is used to define the actual set of attributes that will be used in a
  * Metric vs. the inbound set of attributes from a measurement.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 public abstract class AttributesProcessor {

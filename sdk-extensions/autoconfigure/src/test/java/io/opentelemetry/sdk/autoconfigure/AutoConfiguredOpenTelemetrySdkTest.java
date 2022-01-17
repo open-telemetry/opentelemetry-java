@@ -12,6 +12,9 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -20,6 +23,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -38,6 +42,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   private static final ContextKey<String> CONTEXT_KEY = ContextKey.named("animal");
 
+  @Mock private IdGenerator idGenerator;
   @Mock private TextMapPropagator propagator1;
   @Mock private TextMapPropagator propagator2;
   @Mock private TextMapGetter<Map<String, String>> getter;
@@ -54,6 +59,10 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void customize() {
     Context extracted = Context.root().with(CONTEXT_KEY, "bear");
+
+    when(idGenerator.generateTraceId()).thenReturn(TraceId.fromLongs(9999999999L, 9999999999L));
+    when(idGenerator.generateSpanId()).thenReturn(SpanId.fromLong(9999999999L));
+
     when(propagator2.extract(any(), any(), any())).thenReturn(extracted);
 
     when(sampler2.shouldSample(any(), any(), any(), any(), any(), any()))
@@ -65,6 +74,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
         AutoConfiguredOpenTelemetrySdk.builder()
+            .addTracerProviderCustomizer(
+                (tracerProviderBuilder, config) ->
+                    tracerProviderBuilder.setIdGenerator(idGenerator))
             .addPropagatorCustomizer(
                 (previous, config) -> {
                   assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
@@ -129,7 +141,11 @@ class AutoConfiguredOpenTelemetrySdkTest {
                 .extract(Context.root(), Collections.emptyMap(), getter))
         .isEqualTo(extracted);
 
-    sdk.getTracerProvider().get("test").spanBuilder("test").startSpan().end();
+    Span span = sdk.getTracerProvider().get("test").spanBuilder("test").startSpan();
+    assertThat(span.getSpanContext().getSpanId()).isEqualTo(SpanId.fromLong(9999999999L));
+    assertThat(span.getSpanContext().getTraceId())
+        .isEqualTo(TraceId.fromLongs(9999999999L, 9999999999L));
+    span.end();
 
     // Ensures the export happened.
     sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);

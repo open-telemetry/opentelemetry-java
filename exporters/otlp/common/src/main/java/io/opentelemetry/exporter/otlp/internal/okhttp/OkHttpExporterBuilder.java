@@ -21,7 +21,12 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 
-/** A builder for {@link OkHttpExporter}. */
+/**
+ * A builder for {@link OkHttpExporter}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @SuppressWarnings("checkstyle:JavadocMethod")
 public final class OkHttpExporterBuilder<T extends Marshaler> {
   public static final long DEFAULT_TIMEOUT_SECS = 10;

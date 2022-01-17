@@ -13,6 +13,10 @@ import io.opentelemetry.proto.metrics.v1.internal.ExponentialHistogram;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import java.io.IOException;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public class ExponentialHistogramMarshaler extends MarshalerWithSize {
   private final ExponentialHistogramDataPointMarshaler[] dataPoints;
   private final ProtoEnumInfo aggregationTemporality;

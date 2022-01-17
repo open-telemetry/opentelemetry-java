@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -33,17 +32,15 @@ import java.util.function.BiFunction;
 final class TracerProviderConfiguration {
 
   static SdkTracerProvider configureTracerProvider(
-      Resource resource,
+      SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
-    SdkTracerProviderBuilder tracerProviderBuilder =
-        SdkTracerProvider.builder()
-            .setResource(resource)
-            .setSpanLimits(configureSpanLimits(config));
+
+    tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
 
     String sampler = config.getString("otel.traces.sampler");
     if (sampler == null) {
@@ -66,9 +63,7 @@ final class TracerProviderConfiguration {
     configureSpanProcessors(config, exportersByName)
         .forEach(tracerProviderBuilder::addSpanProcessor);
 
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
-    return tracerProvider;
+    return tracerProviderBuilder.build();
   }
 
   static List<SpanProcessor> configureSpanProcessors(

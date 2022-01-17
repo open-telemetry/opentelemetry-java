@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -192,7 +192,7 @@ class SdkLogEmitterProviderTest {
     long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
-    List<LogData> seenLogs = new LinkedList<>();
+    List<LogData> seenLogs = new ArrayList<>();
     logProcessor = seenLogs::add;
     sdkLogEmitterProvider =
         SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
