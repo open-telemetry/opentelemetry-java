@@ -29,7 +29,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
@@ -54,10 +53,6 @@ class JaegerRemoteSamplerTest {
   private static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
-
-  // Workaround https://github.com/netmikey/logunit/pull/4
-  @SuppressWarnings("unused")
-  private static final Logger loggerRef = Logger.getLogger(OkHttpGrpcService.class.getName());
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcService.class, Level.TRACE);
