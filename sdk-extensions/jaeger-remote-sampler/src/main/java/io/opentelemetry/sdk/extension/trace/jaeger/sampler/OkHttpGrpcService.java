@@ -66,15 +66,14 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
     try {
       Response response = client.newCall(requestBuilder.build()).execute();
 
-      byte[] bodyBytes;
+      byte[] bodyBytes = new byte[0];
       try {
         bodyBytes = response.body().bytes();
-      } catch (IOException e) {
-        logger.log(
-            Level.WARNING,
-            "Failed to execute " + type + "s, could not consume server response.",
-            e);
-        return responseUnmarshaller;
+      } catch (IOException ignored) {
+        // It's unlikely a transport exception would actually be useful in debugging. There may
+        // be gRPC status information available handled below though, so ignore this exception
+        // and continue through gRPC error handling logic. In the worst case we will record the
+        // HTTP error.
       }
 
       String status = grpcStatus(response);
