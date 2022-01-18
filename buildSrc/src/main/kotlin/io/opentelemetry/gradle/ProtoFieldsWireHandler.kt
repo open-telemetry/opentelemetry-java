@@ -23,6 +23,7 @@ import okio.IOException
 import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toPath
+import java.io.File
 import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.Modifier.STATIC
@@ -63,7 +64,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
         val generatedFilePath = modulePath / javaFile.packageName / "${javaFile.typeSpec.name}.java"
 
         val filePath = modulePath /
-          javaFile.packageName.replace(".", "/") /
+          javaFile.packageName.replace('.', File.separatorChar) /
           "${javaTypeName.simpleName()}.java"
 
         logger.artifact(modulePath, javaFile)
