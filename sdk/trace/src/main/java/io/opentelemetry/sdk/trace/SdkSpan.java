@@ -35,9 +35,9 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class RecordEventsReadableSpan implements ReadWriteSpan {
+final class SdkSpan implements ReadWriteSpan {
 
-  private static final Logger logger = Logger.getLogger(RecordEventsReadableSpan.class.getName());
+  private static final Logger logger = Logger.getLogger(SdkSpan.class.getName());
 
   // The config used when constructing this Span.
   private final SpanLimits spanLimits;
@@ -87,7 +87,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private boolean hasEnded;
 
-  private RecordEventsReadableSpan(
+  private SdkSpan(
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -133,7 +133,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
    * @return a new and started span.
    */
-  static RecordEventsReadableSpan startSpan(
+  static SdkSpan startSpan(
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -150,8 +150,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       long userStartEpochNanos) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
-    if (parentSpan instanceof RecordEventsReadableSpan) {
-      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parentSpan;
+    if (parentSpan instanceof SdkSpan) {
+      SdkSpan parentRecordEventsSpan = (SdkSpan) parentSpan;
       clock = parentRecordEventsSpan.clock;
       createdAnchoredClock = false;
     } else {
@@ -171,8 +171,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       startEpochNanos = clock.now();
     }
 
-    RecordEventsReadableSpan span =
-        new RecordEventsReadableSpan(
+    SdkSpan span =
+        new SdkSpan(
             context,
             name,
             instrumentationLibraryInfo,
@@ -527,7 +527,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }
-    return "RecordEventsReadableSpan{traceId="
+    return "SdkSpan{traceId="
         + context.getTraceId()
         + ", spanId="
         + context.getSpanId()
