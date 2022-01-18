@@ -11,7 +11,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Dispatcher;
 
-/** Utilities for OkHttp. */
+/**
+ * Utilities for OkHttp.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class OkHttpUtil {
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */

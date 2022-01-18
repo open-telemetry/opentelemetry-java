@@ -10,7 +10,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 
-/** Internal accessor of JCTools package for fast queues. */
+/**
+ * Internal accessor of JCTools package for fast queues.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class JcTools {
 
   /**

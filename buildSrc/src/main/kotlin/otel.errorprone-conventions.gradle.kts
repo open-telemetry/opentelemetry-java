@@ -45,7 +45,7 @@ tasks {
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
-        //apparently disabling android doesn't disable this
+        // apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
 
         // Limits APIs

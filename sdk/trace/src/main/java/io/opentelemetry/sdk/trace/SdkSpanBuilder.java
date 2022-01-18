@@ -215,7 +215,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     AttributesMap recordedAttributes = attributes;
     attributes = null;
 
-    return RecordEventsReadableSpan.startSpan(
+    return SdkSpan.startSpan(
         spanContext,
         spanName,
         instrumentationLibraryInfo,

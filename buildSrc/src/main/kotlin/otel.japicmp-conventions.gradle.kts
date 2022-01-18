@@ -5,7 +5,6 @@ import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Severity
 import me.champeau.gradle.japicmp.report.Violation
 import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
-import me.champeau.gradle.japicmp.report.stdrules.BinaryIncompatibleRule
 import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup
 import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule
 import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule
@@ -30,7 +29,6 @@ val latestReleasedVersion: String by lazy {
   logger.debug("Discovered latest release version: " + moduleVersion)
   moduleVersion
 }
-
 
 class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
@@ -59,7 +57,7 @@ fun findArtifact(version: String): File {
     // Maven coordinates as the project, which Gradle would not allow otherwise.
     group = "virtual_group"
     val depModule = "io.opentelemetry:${base.archivesName.get()}:$version@jar"
-    val depJar = "${base.archivesName.get()}-${version}.jar"
+    val depJar = "${base.archivesName.get()}-$version.jar"
     val configuration: Configuration = configurations.detachedConfiguration(
       dependencies.create(depModule)
     )
@@ -84,7 +82,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           ?: file(getByName<Jar>("jar").archiveFile)
         newClasspath = files(newArtifact)
 
-        //only output changes, not everything
+        // only output changes, not everything
         isOnlyModified = true
 
         // the japicmp "old" version is either the user-specified one, or the latest release.
@@ -93,8 +91,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         oldClasspath = try {
           files(findArtifact(baselineVersion))
         } catch (e: Exception) {
-          //if we can't find the baseline artifact, this is probably one that's never been published before,
-          //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
+          // if we can't find the baseline artifact, this is probably one that's never been published before,
+          // so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
           isOnlyModified = false
           files()
         }
@@ -111,12 +109,12 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           addRule(SourceCompatibleRule::class.java)
         }
 
-        //this is needed so that we only consider the current artifact, and not dependencies
+        // this is needed so that we only consider the current artifact, and not dependencies
         isIgnoreMissingClasses = true
         packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
-        txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
-          ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
+        txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
+          ?: file("$rootDir/docs/apidiffs/current_vs_$baseVersionString/${base.archivesName.get()}.txt")
       }
       // have the check task depend on the api comparison task, to make it more likely it will get used.
       named("check") {

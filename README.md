@@ -211,23 +211,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
-- [Armin Ruech](https://github.com/arminru), Dynatrace
-- [Pavol Loffay](https://github.com/pavolloffay), Traceable.ai
-- [Tyler Benson](https://github.com/tylerbenson), DataDog
-- [Giovanni Liva](https://github.com/thisthat), Dynatrace
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
-- [Jack Berg](https://github.com/jack-berg), New Relic
 - [Josh Suereth](https://github.com/jsuereth), Google
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
-- [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-- [John Watson](https://github.com/jkwatson), Splunk
 - [Anuraag Agrawal](https://github.com/anuraaga), AWS
+- [Jack Berg](https://github.com/jack-berg), New Relic
+- [John Watson](https://github.com/jkwatson), Splunk
+
+Maintainer Emeritus:
+
+- [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
+
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

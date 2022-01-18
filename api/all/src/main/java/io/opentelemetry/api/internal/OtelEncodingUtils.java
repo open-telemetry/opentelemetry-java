@@ -8,6 +8,10 @@ package io.opentelemetry.api.internal;
 import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 @Immutable
 public final class OtelEncodingUtils {
   static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
