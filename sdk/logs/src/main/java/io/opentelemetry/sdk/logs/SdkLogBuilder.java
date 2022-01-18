@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -17,10 +18,12 @@ final class SdkLogBuilder implements LogBuilder {
 
   private final LogDataBuilder logDataBuilder;
   private final LogEmitterSharedState logEmitterSharedState;
+  private final LogLimits logLimits;
 
   SdkLogBuilder(LogEmitterSharedState logEmitterSharedState, LogDataBuilder logDataBuilder) {
     this.logEmitterSharedState = logEmitterSharedState;
     this.logDataBuilder = logDataBuilder;
+    this.logLimits = logEmitterSharedState.getLogLimits();
   }
 
   @Override
@@ -67,7 +70,11 @@ final class SdkLogBuilder implements LogBuilder {
 
   @Override
   public LogBuilder setAttributes(Attributes attributes) {
-    logDataBuilder.setAttributes(attributes);
+    logDataBuilder.setAttributes(
+        AttributeUtil.applyAttributesLimit(
+            attributes,
+            logLimits.getMaxNumberOfAttributes(),
+            logLimits.getMaxAttributeValueLength()));
     return this;
   }
 

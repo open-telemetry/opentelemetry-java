@@ -12,12 +12,14 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /** Builder class for {@link SdkLogEmitterProvider} instances. */
 public final class SdkLogEmitterProviderBuilder {
 
   private final List<LogProcessor> logProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
+  private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
 
   SdkLogEmitterProviderBuilder() {}
@@ -32,6 +34,23 @@ public final class SdkLogEmitterProviderBuilder {
   public SdkLogEmitterProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
     this.resource = resource;
+    return this;
+  }
+
+  /**
+   * Assign a {@link Supplier} of {@link LogLimits}. {@link LogLimits} will be retrieved each time a
+   * {@link LogEmitter#logBuilder()} is called.
+   *
+   * <p>The {@code logLimitsSupplier} must be thread-safe and return immediately (no remote calls,
+   * as contention free as possible).
+   *
+   * @param logLimitsSupplier the supplier that will be used to retrieve the {@link LogLimits} for
+   *     every {@link LogBuilder}.
+   * @return this
+   */
+  public SdkLogEmitterProviderBuilder setLogLimits(Supplier<LogLimits> logLimitsSupplier) {
+    requireNonNull(logLimitsSupplier, "logLimitsSupplier");
+    this.logLimitsSupplier = logLimitsSupplier;
     return this;
   }
 
@@ -70,6 +89,6 @@ public final class SdkLogEmitterProviderBuilder {
    * @return an instance configured with the provided options
    */
   public SdkLogEmitterProvider build() {
-    return new SdkLogEmitterProvider(resource, logProcessors, clock);
+    return new SdkLogEmitterProvider(resource, logLimitsSupplier, logProcessors, clock);
   }
 }
