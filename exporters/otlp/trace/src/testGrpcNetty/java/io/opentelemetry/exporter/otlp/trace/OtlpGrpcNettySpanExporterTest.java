@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
@@ -44,9 +45,8 @@ class OtlpGrpcNettySpanExporterTest
   void builderDelegate() {
     assertThatCode(
             () ->
-                DefaultGrpcExporterBuilder.getDelegateBuilder(
-                        OtlpGrpcSpanExporterBuilder.class, OtlpGrpcSpanExporter.builder())
-                    .setRetryPolicy(RetryPolicy.getDefault()))
+                RetryUtil.setRetryPolicyOnDelegate(
+                    OtlpGrpcSpanExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 

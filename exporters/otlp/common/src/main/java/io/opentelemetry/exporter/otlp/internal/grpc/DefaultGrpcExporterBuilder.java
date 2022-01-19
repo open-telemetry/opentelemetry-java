@@ -166,7 +166,11 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
    *
    * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
    *     type {@link DefaultGrpcExporterBuilder}
+   * @deprecated Use {@link
+   *     io.opentelemetry.exporter.otlp.internal.retry.RetryUtil#setRetryPolicyOnDelegate(Object,
+   *     RetryPolicy)}
    */
+  @Deprecated
   public static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
     try {
       Field field = type.getDeclaredField("delegate");
