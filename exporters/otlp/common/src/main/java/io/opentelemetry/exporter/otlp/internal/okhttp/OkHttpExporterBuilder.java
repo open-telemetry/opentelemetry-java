@@ -6,13 +6,13 @@
 package io.opentelemetry.exporter.otlp.internal.okhttp;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryInterceptor;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -58,20 +58,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   }
 
   public OkHttpExporterBuilder<T> setEndpoint(String endpoint) {
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = endpoint;
+    URI uri = ExporterBuilderUtil.validateEndpoint(endpoint);
+    this.endpoint = uri.toString();
     return this;
   }
 

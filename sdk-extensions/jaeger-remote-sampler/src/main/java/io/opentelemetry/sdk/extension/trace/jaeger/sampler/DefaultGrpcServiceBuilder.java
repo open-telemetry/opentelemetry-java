@@ -3,21 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.grpc;
+package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.toServiceConfig;
+import static java.util.Objects.requireNonNull;
 
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -25,17 +28,11 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
-/**
- * A builder for {@link DefaultGrpcExporter}.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- */
-public final class DefaultGrpcExporterBuilder<T extends Marshaler>
-    implements GrpcExporterBuilder<T> {
+final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaler>
+    implements GrpcServiceBuilder<ReqT, ResT> {
 
   private final String type;
-  private final Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory;
+  private final Function<ManagedChannel, MarshalerServiceStub<ReqT, ResT, ?>> stubFactory;
   private final String grpcServiceName;
 
   @Nullable private ManagedChannel channel;
@@ -45,13 +42,12 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
 
-  /** Creates a new {@link DefaultGrpcExporterBuilder}. */
+  /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   // Visible for testing
-  public DefaultGrpcExporterBuilder(
+  DefaultGrpcServiceBuilder(
       String type,
-      Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
+      Function<ManagedChannel, MarshalerServiceStub<ReqT, ResT, ?>> stubFactory,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       String grpcServiceName) {
@@ -63,42 +59,56 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setChannel(ManagedChannel channel) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     this.channel = channel;
     return this;
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setTimeout(Duration timeout) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    checkArgument(!timeout.isNegative(), "timeout must be non-negative");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setEndpoint(String endpoint) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setEndpoint(String endpoint) {
+    requireNonNull(endpoint, "endpoint");
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setCompression(String compressionMethod) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(
+      byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
 
   @Override
-  public DefaultGrpcExporterBuilder<T> addHeader(String key, String value) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "value");
     if (metadata == null) {
       metadata = new Metadata();
     }
@@ -107,19 +117,14 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+  public DefaultGrpcServiceBuilder<ReqT, ResT> addRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
     this.retryPolicy = retryPolicy;
     return this;
   }
 
   @Override
-  public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
-    return this;
-  }
-
-  @Override
-  public GrpcExporter<T> build() {
+  public GrpcService<ReqT, ResT> build() {
     ManagedChannel channel = this.channel;
     if (channel == null) {
       ManagedChannelBuilder<?> managedChannelBuilder =
@@ -155,29 +160,8 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     }
 
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
-    MarshalerServiceStub<T, ?, ?> stub =
+    MarshalerServiceStub<ReqT, ResT, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
-    return new DefaultGrpcExporter<>(type, channel, stub, meterProvider, timeoutNanos);
-  }
-
-  /**
-   * Reflectively access a {@link DefaultGrpcExporterBuilder} instance in field called "delegate" of
-   * the instance.
-   *
-   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
-   *     type {@link DefaultGrpcExporterBuilder}
-   */
-  public static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
-    try {
-      Field field = type.getDeclaredField("delegate");
-      field.setAccessible(true);
-      Object value = field.get(instance);
-      if (!(value instanceof DefaultGrpcExporterBuilder)) {
-        throw new IllegalArgumentException("delegate field is not type DefaultGrpcExporterBuilder");
-      }
-      return (DefaultGrpcExporterBuilder<?>) value;
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
-    }
+    return new DefaultGrpcService<>(type, channel, stub, timeoutNanos);
   }
 }

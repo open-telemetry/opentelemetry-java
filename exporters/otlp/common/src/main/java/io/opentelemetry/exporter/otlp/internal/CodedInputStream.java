@@ -99,7 +99,7 @@ public final class CodedInputStream {
     if (size <= 0) {
       throw newNegativeException();
     }
-    throw newTrucatedException();
+    throw newTruncatedException();
   }
 
   /** Skips a field. */
@@ -126,7 +126,8 @@ public final class CodedInputStream {
     return pos == limit;
   }
 
-  private int readRawVarint32() throws IOException {
+  /** Read varint32. */
+  public int readRawVarint32() throws IOException {
     // See implementation notes for readRawVarint64
     fastpath:
     {
@@ -182,7 +183,7 @@ public final class CodedInputStream {
 
   private byte readRawByte() throws IOException {
     if (pos == limit) {
-      throw newTrucatedException();
+      throw newTruncatedException();
     }
     return buffer[pos++];
   }
@@ -193,6 +194,29 @@ public final class CodedInputStream {
     } else {
       skipRawVarintSlowPath();
     }
+  }
+
+  public double readDouble() throws IOException {
+    return Double.longBitsToDouble(readRawLittleEndian64());
+  }
+
+  private long readRawLittleEndian64() throws IOException {
+    int tempPos = pos;
+
+    if (limit - tempPos < FIXED64_SIZE) {
+      throw newTruncatedException();
+    }
+
+    final byte[] buffer = this.buffer;
+    pos = tempPos + FIXED64_SIZE;
+    return ((buffer[tempPos] & 0xffL)
+        | ((buffer[tempPos + 1] & 0xffL) << 8)
+        | ((buffer[tempPos + 2] & 0xffL) << 16)
+        | ((buffer[tempPos + 3] & 0xffL) << 24)
+        | ((buffer[tempPos + 4] & 0xffL) << 32)
+        | ((buffer[tempPos + 5] & 0xffL) << 40)
+        | ((buffer[tempPos + 6] & 0xffL) << 48)
+        | ((buffer[tempPos + 7] & 0xffL) << 56));
   }
 
   private void skipRawVarintFastPath() throws IOException {
@@ -223,7 +247,7 @@ public final class CodedInputStream {
     if (length < 0) {
       throw newNegativeException();
     }
-    throw newTrucatedException();
+    throw newTruncatedException();
   }
 
   private static IOException newNegativeException() {
@@ -232,7 +256,7 @@ public final class CodedInputStream {
             + "which claimed to have negative size.");
   }
 
-  private static IOException newTrucatedException() {
+  private static IOException newTruncatedException() {
     return new IOException(
         "While parsing a protocol message, the input ended unexpectedly "
             + "in the middle of a field.  This could mean either that the "

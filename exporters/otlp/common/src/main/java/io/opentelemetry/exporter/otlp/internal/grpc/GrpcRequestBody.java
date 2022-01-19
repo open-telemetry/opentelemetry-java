@@ -21,7 +21,7 @@ import okio.Okio;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class GrpcRequestBody extends RequestBody {
+public final class GrpcRequestBody extends RequestBody {
 
   private static final int HEADER_LENGTH = 5;
 
@@ -36,7 +36,7 @@ final class GrpcRequestBody extends RequestBody {
   private final boolean compressed;
 
   /** Creates a new {@link GrpcRequestBody}. */
-  GrpcRequestBody(Marshaler marshaler, boolean compressed) {
+  public GrpcRequestBody(Marshaler marshaler, boolean compressed) {
     this.marshaler = marshaler;
     this.compressed = compressed;
 

@@ -39,7 +39,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-class JaegerRemoteSamplerTest {
+class JaegerRemoteSamplerGrpcNettyTest {
 
   private static final String SERVICE_NAME = "my-service";
   private static final int RATE = 999;
@@ -55,7 +55,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcService.class, Level.TRACE);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcService.class, Level.TRACE);
 
   @Order(1)
   @RegisterExtension
@@ -341,9 +341,9 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  void usingOkHttp() {
+  void usingGrpc() {
     assertThat(JaegerRemoteSampler.builder().getDelegate())
-        .isInstanceOf(OkHttpGrpcServiceBuilder.class);
+        .isInstanceOf(DefaultGrpcServiceBuilder.class);
   }
 
   static ThrowingRunnable samplerIsType(
