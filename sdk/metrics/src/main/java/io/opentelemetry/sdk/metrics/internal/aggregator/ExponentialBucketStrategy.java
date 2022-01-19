@@ -26,8 +26,7 @@ interface ExponentialBucketStrategy {
       @Override
       public DoubleExponentialHistogramBuckets zeroBucketFrom(
           DoubleExponentialHistogramBuckets old) {
-        // TODO: Implement.
-        return new DoubleExponentialHistogramBuckets(old.getScale(), maxBuckets, counterFactory);
+        return DoubleExponentialHistogramBuckets.zeroBucketFrom(old);
       }
     };
   }

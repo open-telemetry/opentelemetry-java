@@ -36,12 +36,27 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.scale = scale;
   }
 
+  // For zeroing
+  DoubleExponentialHistogramBuckets(
+      int scale, ExponentialCounter counts, ExponentialCounterFactory counterFactory) {
+    this.counterFactory = counterFactory;
+    this.counts = counts;
+    this.bucketMapper = new LogarithmMapper(scale);
+    this.scale = scale;
+  }
+
   // For copying
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
     this.counterFactory = buckets.counterFactory;
     this.counts = counterFactory.copy(buckets.counts);
     this.bucketMapper = new LogarithmMapper(buckets.scale);
     this.scale = buckets.scale;
+  }
+
+  /** Constructs a new set of buckets with 0 counts re-using runtime optimisations. */
+  static DoubleExponentialHistogramBuckets zeroBucketFrom(DoubleExponentialHistogramBuckets other) {
+    return new DoubleExponentialHistogramBuckets(
+        other.scale, other.counterFactory.zeroFrom(other.counts), other.counterFactory);
   }
 
   boolean record(double value) {

@@ -23,7 +23,12 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
 
   /** Constructs a circular buffer that will hold at most {@code maxSize} buckets. */
   public AdaptingCircularBufferCounter(int maxSize) {
-    this.backing = new AdaptingIntegerArray(maxSize);
+    this(new AdaptingIntegerArray(maxSize));
+  }
+
+  /** Constructs an instance with preallocated backing array. */
+  private AdaptingCircularBufferCounter(AdaptingIntegerArray backing) {
+    this.backing = backing;
   }
 
   /** (Deep)-Copies the values from another exponential counter. */
@@ -46,6 +51,11 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
         this.increment(i, val);
       }
     }
+  }
+
+  /** Construct a new circular buffer that preserves previosuly seen cell-size in backing array. */
+  public static AdaptingCircularBufferCounter zeroOf(AdaptingCircularBufferCounter other) {
+    return new AdaptingCircularBufferCounter(AdaptingIntegerArray.zeroOf(other.backing));
   }
 
   @Override
