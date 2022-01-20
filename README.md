@@ -233,7 +233,11 @@ Maintainer Emeritus:
 
 ### Thanks to all the people who have contributed
 
-[![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-java)](https://github.com/open-telemetry/opentelemetry-java/graphs/contributors)
+<a href="https://github.com/open-telemetry/opentelemetry-java/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-java" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg
 [ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3Aci+branch%3Amain
