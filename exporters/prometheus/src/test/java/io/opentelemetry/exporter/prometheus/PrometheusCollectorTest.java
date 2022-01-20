@@ -7,11 +7,13 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
@@ -25,6 +27,7 @@ import io.prometheus.client.exporter.common.TextFormat;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +44,18 @@ class PrometheusCollectorTest {
     // Apply the SDK metric producer registers with prometheus.
     prometheusCollector = new PrometheusCollector(metricProducer);
     prometheusCollector.register();
+  }
+
+  @Test
+  void registerWithSdkMeterProvider() {
+    assertThatCode(
+            () ->
+                SdkMeterProvider.builder()
+                    .registerMetricReader(PrometheusCollector.create())
+                    .build()
+                    .forceFlush()
+                    .join(10, TimeUnit.SECONDS))
+        .doesNotThrowAnyException();
   }
 
   @Test
