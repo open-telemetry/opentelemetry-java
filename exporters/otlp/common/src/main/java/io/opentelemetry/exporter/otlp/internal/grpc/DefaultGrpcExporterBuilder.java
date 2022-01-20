@@ -43,7 +43,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private RetryPolicy retryPolicy;
+  @Nullable RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
