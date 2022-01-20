@@ -17,7 +17,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -158,30 +157,5 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
     return new DefaultGrpcExporter<>(type, channel, stub, meterProvider, timeoutNanos);
-  }
-
-  /**
-   * Reflectively access a {@link DefaultGrpcExporterBuilder} instance in field called "delegate" of
-   * the instance.
-   *
-   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
-   *     type {@link DefaultGrpcExporterBuilder}
-   * @deprecated Use {@link
-   *     io.opentelemetry.exporter.otlp.internal.retry.RetryUtil#setRetryPolicyOnDelegate(Object,
-   *     RetryPolicy)}
-   */
-  @Deprecated
-  public static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
-    try {
-      Field field = type.getDeclaredField("delegate");
-      field.setAccessible(true);
-      Object value = field.get(instance);
-      if (!(value instanceof DefaultGrpcExporterBuilder)) {
-        throw new IllegalArgumentException("delegate field is not type DefaultGrpcExporterBuilder");
-      }
-      return (DefaultGrpcExporterBuilder<?>) value;
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
-    }
   }
 }
