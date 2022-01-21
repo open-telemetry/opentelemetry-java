@@ -36,6 +36,11 @@ testing {
 }
 
 tasks {
+  // Don't need javadoc.
+  javadoc {
+    isEnabled = false
+  }
+
   check {
     dependsOn(testing.suites)
   }
