@@ -43,6 +43,7 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.skyscreamer:jsonassert")
+  testImplementation("org.assertj:assertj-core")
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
