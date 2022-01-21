@@ -84,6 +84,16 @@ git fetch upstream v1.2.x
 git checkout upstream/v1.2.x
 ```
 
+If the release branch does not exist, checkout the tag, create the release branch from it, and push
+it to the `upstream`.
+
+```
+git fetch upstream v1.2.0
+git checkout v1.2.0
+git checkout -b v1.2.x
+git push upstream v1.2.x
+```
+
 Apply cherrypicks manually and commit. It is ok to apply multiple cherrypicks in a single commit.
 Use a commit message such as "Manual cherrypick for commits commithash1, commithash2".
 
