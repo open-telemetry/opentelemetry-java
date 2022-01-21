@@ -25,13 +25,31 @@ import java.util.List;
  */
 public final class PrometheusCollector extends Collector implements MetricReader {
   private final MetricProducer metricProducer;
+  private volatile boolean registered = false;
 
   PrometheusCollector(MetricProducer metricProducer) {
     this.metricProducer = metricProducer;
   }
 
+  /**
+   * This method is called in {@link Factory#apply(MetricProducer)}. {@link Collector#register()}
+   * triggers a call to {@link #collect()}, which throws an error because {@link
+   * MetricProducer#collectAllMetrics()} is not yet read to accept calls. To get around this, we
+   * have {@link #collect()} exit early until registration is complete.
+   */
+  @SuppressWarnings("TypeParameterUnusedInFormals")
+  @Override
+  public <T extends Collector> T register() {
+    T result = super.register();
+    this.registered = true;
+    return result;
+  }
+
   @Override
   public List<MetricFamilySamples> collect() {
+    if (!registered) {
+      return Collections.emptyList();
+    }
     Collection<MetricData> allMetrics = metricProducer.collectAllMetrics();
     List<MetricFamilySamples> allSamples = new ArrayList<>(allMetrics.size());
     for (MetricData metricData : allMetrics) {

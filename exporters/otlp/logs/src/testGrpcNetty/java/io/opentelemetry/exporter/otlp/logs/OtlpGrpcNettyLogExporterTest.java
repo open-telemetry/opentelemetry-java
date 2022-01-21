@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -39,9 +40,8 @@ class OtlpGrpcNettyLogExporterTest
   void testBuilderDelegate() {
     assertThatCode(
             () ->
-                DefaultGrpcExporterBuilder.getDelegateBuilder(
-                        OtlpGrpcLogExporterBuilder.class, OtlpGrpcLogExporter.builder())
-                    .setRetryPolicy(RetryPolicy.getDefault()))
+                RetryUtil.setRetryPolicyOnDelegate(
+                    OtlpGrpcLogExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 
