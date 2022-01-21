@@ -5,7 +5,10 @@
 
 package io.opentelemetry.exporter.otlp.internal.retry;
 
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,5 +46,30 @@ public class RetryUtil {
   /** Returns the retryable HTTP status codes. */
   public static Set<Integer> retryableHttpResponseCodes() {
     return RETRYABLE_HTTP_STATUS_CODES;
+  }
+
+  /**
+   * Reflectively access a {@link DefaultGrpcExporterBuilder} or {@link OkHttpGrpcExporterBuilder}
+   * instance in field called "delegate" of the instance, and set the {@link RetryPolicy}.
+   *
+   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
+   *     type {@link DefaultGrpcExporterBuilder}
+   */
+  public static void setRetryPolicyOnDelegate(Object instance, RetryPolicy retryPolicy) {
+    try {
+      Field field = instance.getClass().getDeclaredField("delegate");
+      field.setAccessible(true);
+      Object value = field.get(instance);
+      if (value instanceof DefaultGrpcExporterBuilder) {
+        ((DefaultGrpcExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
+      } else if (value instanceof OkHttpGrpcExporterBuilder) {
+        ((OkHttpGrpcExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
+      } else {
+        throw new IllegalArgumentException(
+            "delegate field is not type DefaultGrpcExporterBuilder or OkHttpGrpcExporterBuilder");
+      }
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
+    }
   }
 }

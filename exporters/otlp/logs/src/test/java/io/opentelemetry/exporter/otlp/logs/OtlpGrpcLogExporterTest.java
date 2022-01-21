@@ -6,12 +6,14 @@
 package io.opentelemetry.exporter.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -31,6 +33,15 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
 
   OtlpGrpcLogExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
+  }
+
+  @Test
+  void testBuilderDelegate() {
+    assertThatCode(
+            () ->
+                RetryUtil.setRetryPolicyOnDelegate(
+                    OtlpGrpcLogExporter.builder(), RetryPolicy.getDefault()))
+        .doesNotThrowAnyException();
   }
 
   @Test
