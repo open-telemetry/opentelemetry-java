@@ -3,6 +3,14 @@
 ## Version 1.11.0 (unreleased):
 
 ---
+## Version 1.10.1 2022-01-21:
+
+### Bugfixes
+
+- Fix issue preventing registration of PrometheusCollector with SDK
+- Allow retry policy to be set for OkHttpGrpcExporter
+
+---
 
 ## Version 1.10.0 2022-01-07:
 
