@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
-import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
-import io.opentelemetry.exporter.otlp.internal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.internal.SamplingStrategyParameters;
 import java.io.IOException;
 

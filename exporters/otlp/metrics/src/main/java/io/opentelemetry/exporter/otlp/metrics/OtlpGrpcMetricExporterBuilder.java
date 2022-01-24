@@ -9,9 +9,9 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.net.URI;
 import java.time.Duration;

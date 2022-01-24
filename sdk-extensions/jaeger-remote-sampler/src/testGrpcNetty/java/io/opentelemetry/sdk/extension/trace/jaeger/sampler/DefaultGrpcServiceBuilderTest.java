@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

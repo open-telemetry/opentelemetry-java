@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.toServiceConfig;
+import static io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil.toServiceConfig;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.Codec;
@@ -15,12 +15,12 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.otlp.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

@@ -9,8 +9,8 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 

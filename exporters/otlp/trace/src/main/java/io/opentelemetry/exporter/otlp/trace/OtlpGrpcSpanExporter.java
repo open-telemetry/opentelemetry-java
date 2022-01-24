@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;

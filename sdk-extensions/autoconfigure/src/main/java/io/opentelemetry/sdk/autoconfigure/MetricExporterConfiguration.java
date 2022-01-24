@@ -9,11 +9,11 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRIC
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;

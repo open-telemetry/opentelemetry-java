@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcRequestBody;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
+import io.opentelemetry.exporter.internal.grpc.GrpcRequestBody;
+import io.opentelemetry.exporter.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
