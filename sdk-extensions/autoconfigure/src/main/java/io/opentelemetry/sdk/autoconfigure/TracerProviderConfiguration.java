@@ -89,8 +89,7 @@ final class TracerProviderConfiguration {
   // VisibleForTesting
   static BatchSpanProcessor configureBatchSpanProcessor(
       ConfigProperties config, SpanExporter exporter, MeterProvider meterProvider) {
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
-    builder.setMeterProvider(meterProvider);
+    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider);
 
     Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
     if (scheduleDelay != null) {
