@@ -43,23 +43,21 @@ public class JaegerRemoteSamplerProviderTest {
     assertThat(samplerProviders)
         .singleElement(type(JaegerRemoteSamplerProvider.class))
         .satisfies(
-            provider ->
-                assertThat(provider.createSampler(mockConfig))
+            provider -> {
+              try (JaegerRemoteSampler s =
+                  (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
+                assertThat(s)
                     .extracting("sampler", type(Sampler.class))
                     .asString()
-                    .isEqualTo(sampler.toString()))
-        .satisfies(
-            provider ->
-                assertThat(provider.createSampler(mockConfig))
-                    .extracting("serviceName")
-                    .isEqualTo("test_service"))
-        .satisfies(
-            provider ->
-                assertThat(provider.createSampler(mockConfig))
+                    .isEqualTo(sampler.toString());
+                assertThat(s).extracting("serviceName").isEqualTo("test_service");
+                assertThat(s)
                     .extracting("delegate")
                     .extracting("endpoint")
                     .isEqualTo(
-                        "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
+                        "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy");
+              }
+            });
   }
 
   @Test
@@ -74,9 +72,11 @@ public class JaegerRemoteSamplerProviderTest {
     assertThat(samplerProviders)
         .singleElement(type(JaegerRemoteSamplerProvider.class))
         .satisfies(
-            provider ->
-                assertThat(provider.createSampler(mockConfig))
-                    .extracting("serviceName")
-                    .isEqualTo("test_service2"));
+            provider -> {
+              try (JaegerRemoteSampler s =
+                  (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
+                assertThat(s).extracting("serviceName").isEqualTo("test_service2");
+              }
+            });
   }
 }
