@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -230,7 +229,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
     tracerProviderBuilder.setResource(resource);
 
-    MeterProvider meterProvider =
+    SdkMeterProvider meterProvider =
         MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
 
     SdkTracerProvider tracerProvider =
@@ -253,9 +252,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                   () -> {
                     List<CompletableResultCode> shutdown = new ArrayList<>();
                     shutdown.add(tracerProvider.shutdown());
-                    if (meterProvider instanceof SdkMeterProvider) {
-                      shutdown.add(((SdkMeterProvider) meterProvider).shutdown());
-                    }
+                    shutdown.add(meterProvider.shutdown());
                     shutdown.add(logEmitterProvider.shutdown());
                     CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
                   }));
@@ -269,11 +266,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .setLogEmitterProvider(logEmitterProvider)
+            .setMeterProvider(meterProvider)
             .setPropagators(propagators);
-
-    if (meterProvider instanceof SdkMeterProvider) {
-      sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);
-    }
 
     OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
 
