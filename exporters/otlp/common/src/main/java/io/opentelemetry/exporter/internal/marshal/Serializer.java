@@ -53,6 +53,7 @@ public abstract class Serializer implements AutoCloseable {
     writeBool(field, value);
   }
 
+  /** Writes a protobuf {@code bool} field, even if it matches the default value. */
   public abstract void writeBool(ProtoFieldInfo field, boolean value) throws IOException;
 
   /** Serializes a protobuf {@code enum} field. */
@@ -104,6 +105,7 @@ public abstract class Serializer implements AutoCloseable {
     writeInt64(field, value);
   }
 
+  /** Writes a protobuf {@code int64} field, even if it matches the default value. */
   public abstract void writeInt64(ProtoFieldInfo field, long value) throws IOException;
 
   /** Serializes a protobuf {@code fixed64} field. */
@@ -147,6 +149,7 @@ public abstract class Serializer implements AutoCloseable {
     writeDouble(field, value);
   }
 
+  /** Writes a protobuf {@code double} field, even if it matches the default value. */
   public abstract void writeDouble(ProtoFieldInfo field, double value) throws IOException;
 
   protected abstract void writeDoubleValue(double value) throws IOException;
@@ -162,6 +165,7 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, utf8Bytes);
   }
 
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */

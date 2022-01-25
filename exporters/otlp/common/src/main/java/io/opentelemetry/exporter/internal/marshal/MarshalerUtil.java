@@ -46,7 +46,7 @@ public final class MarshalerUtil {
     JSON_AVAILABLE = jsonAvailable;
   }
 
-  public static final byte[] EMPTY_BYTES = new byte[0];
+  private static final byte[] EMPTY_BYTES = new byte[0];
 
   /** Groups SDK items by resource and instrumentation library. */
   public static <T, U>

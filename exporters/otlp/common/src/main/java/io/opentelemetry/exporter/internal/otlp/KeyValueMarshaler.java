@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
  * at any time.
  */
 public final class KeyValueMarshaler extends MarshalerWithSize {
+  private static final byte[] EMPTY_BYTES = new byte[0];
   private static final KeyValueMarshaler[] EMPTY_REPEATED = new KeyValueMarshaler[0];
 
   /** Returns Marshalers for the given Attributes. */
@@ -56,7 +57,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {
-      keyUtf8 = MarshalerUtil.EMPTY_BYTES;
+      keyUtf8 = EMPTY_BYTES;
     } else if (attributeKey instanceof InternalAttributeKeyImpl) {
       keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
     } else {
