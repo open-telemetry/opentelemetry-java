@@ -144,15 +144,7 @@ class FullConfigTest {
         .setAttribute("dog", "bark")
         .end();
 
-    await()
-        .untilAsserted(
-            () -> {
-              assertThat(otlpTraceRequests).hasSize(1);
-
-              // Not well defined how many metric exports would have happened by now, check that
-              // any did.
-              assertThat(otlpMetricsRequests).isNotEmpty();
-            });
+    await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
     ExportTraceServiceRequest traceRequest = otlpTraceRequests.take();
     assertThat(traceRequest.getResourceSpans(0).getResource().getAttributesList())
@@ -183,35 +175,44 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
 
-    ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
-    assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
-        .contains(
-            KeyValue.newBuilder()
-                .setKey("service.name")
-                .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("cat")
-                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                .build());
+    // await on assertions since metrics may come in different order for BatchSpanProcessor,
+    // exporter, or the ones we
+    // created in the test.
+    await()
+        .untilAsserted(
+            () -> {
+              ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
+              assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
+                  .contains(
+                      KeyValue.newBuilder()
+                          .setKey("service.name")
+                          .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                          .build(),
+                      KeyValue.newBuilder()
+                          .setKey("cat")
+                          .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                          .build());
 
-    for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
-      assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
-          .anySatisfy(
-              ilm -> assertThat(ilm.getInstrumentationLibrary().getName()).isEqualTo("test"));
-      for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
-          resourceMetrics.getInstrumentationLibraryMetricsList()) {
-        for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
-          // SPI was loaded
-          assertThat(getFirstDataPointLabels(metric))
-              .contains(
-                  KeyValue.newBuilder()
-                      .setKey("configured")
-                      .setValue(AnyValue.newBuilder().setBoolValue(true).build())
-                      .build());
-        }
-      }
-    }
+              for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
+                assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+                    .anySatisfy(
+                        ilm ->
+                            assertThat(ilm.getInstrumentationLibrary().getName())
+                                .isEqualTo("test"));
+                for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
+                    resourceMetrics.getInstrumentationLibraryMetricsList()) {
+                  for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
+                    // SPI was loaded
+                    assertThat(getFirstDataPointLabels(metric))
+                        .contains(
+                            KeyValue.newBuilder()
+                                .setKey("configured")
+                                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                                .build());
+                  }
+                }
+              }
+            });
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {
