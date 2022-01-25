@@ -89,7 +89,8 @@ class TracerProviderConfigurationTest {
   @Test
   void configureBatchSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureBatchSpanProcessor(EMPTY, mockSpanExporter);
+        TracerProviderConfiguration.configureBatchSpanProcessor(
+            EMPTY, mockSpanExporter, MeterProvider.noop());
 
     try {
       assertThat(processor)
@@ -124,7 +125,9 @@ class TracerProviderConfigurationTest {
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
-            DefaultConfigProperties.createForTest(properties), mockSpanExporter);
+            DefaultConfigProperties.createForTest(properties),
+            mockSpanExporter,
+            MeterProvider.noop());
 
     try {
       assertThat(processor)
