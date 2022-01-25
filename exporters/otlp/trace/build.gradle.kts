@@ -54,9 +54,9 @@ testing {
     }
     val testSpanPipeline by registering(JvmTestSuite::class) {
       dependencies {
-        implementation("io.grpc:grpc-protobuf")
-        implementation("io.grpc:grpc-testing")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
+        implementation("com.linecorp.armeria:armeria-grpc-protocol")
+        implementation("com.linecorp.armeria:armeria-junit5")
       }
     }
   }
