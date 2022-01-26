@@ -51,7 +51,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
-        pollExecutor.scheduleAtFixedRate(
+        pollExecutor.scheduleWithFixedDelay(
             this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
