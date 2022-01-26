@@ -92,7 +92,7 @@ public class MapCounter implements ExponentialCounter {
   @Override
   public long get(int index) {
     if (index < indexStart || index > indexEnd) {
-      throw new IndexOutOfBoundsException(String.format("Index %d out of range.", index));
+      return 0;
     }
     AtomicLong result = backing.get(index);
     if (result == null) {
@@ -109,6 +109,13 @@ public class MapCounter implements ExponentialCounter {
   @Override
   public int getMaxSize() {
     return maxSize;
+  }
+
+  @Override
+  public void clear() {
+    this.backing.clear();
+    this.indexStart = NULL_INDEX;
+    this.indexEnd = NULL_INDEX;
   }
 
   private synchronized void doIncrement(int index, long delta) {

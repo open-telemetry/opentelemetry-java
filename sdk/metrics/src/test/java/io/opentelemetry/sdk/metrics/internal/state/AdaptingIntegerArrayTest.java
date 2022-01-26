@@ -73,16 +73,13 @@ class AdaptingIntegerArrayTest {
 
   @ParameterizedTest
   @MethodSource("interestingValues")
-  void testZero(long value) {
+  void testClear(long value) {
     AdaptingIntegerArray counter = new AdaptingIntegerArray(1);
     counter.increment(0, value);
     assertThat(counter.get(0)).isEqualTo(value);
 
-    AdaptingIntegerArray copy = AdaptingIntegerArray.zeroOf(counter);
-    assertThat(copy.get(0)).isEqualTo(0);
-    // Ensure we did NOT just zero out previous instance.
-    copy.increment(0, 1);
-    assertThat(copy.get(0)).isEqualTo(1);
-    assertThat(counter.get(0)).isEqualTo(value);
+    counter.clear();
+    counter.increment(0, 1);
+    assertThat(counter.get(0)).isEqualTo(1);
   }
 }

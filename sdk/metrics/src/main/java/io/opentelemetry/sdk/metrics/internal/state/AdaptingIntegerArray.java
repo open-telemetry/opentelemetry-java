@@ -57,24 +57,6 @@ public class AdaptingIntegerArray {
     this.byteBacking = new byte[size];
   }
 
-  private AdaptingIntegerArray(int size, ArrayCellSize cellSize) {
-    this.cellSize = cellSize;
-    switch (cellSize) {
-      case BYTE:
-        this.byteBacking = new byte[size];
-        break;
-      case SHORT:
-        this.shortBacking = new short[size];
-        break;
-      case INT:
-        this.intBacking = new int[size];
-        break;
-      case LONG:
-        this.longBacking = new long[size];
-        break;
-    }
-  }
-
   /** Creates deep copy of another adapting integer array. */
   @SuppressWarnings("NullAway")
   public AdaptingIntegerArray(AdaptingIntegerArray toCopy) {
@@ -93,16 +75,6 @@ public class AdaptingIntegerArray {
         this.longBacking = Arrays.copyOf(toCopy.longBacking, toCopy.longBacking.length);
         break;
     }
-  }
-
-  /**
-   * Copies the size + integer cell size of another array, but allocating a new array of zero
-   * counts.
-   *
-   * @param toZero The other addapting integer array to mirror the size of.
-   */
-  public static AdaptingIntegerArray zeroOf(AdaptingIntegerArray toZero) {
-    return new AdaptingIntegerArray(toZero.length(), toZero.cellSize);
   }
 
   /** Add {@code count} to the value stored at {@code index}. */
@@ -185,6 +157,24 @@ public class AdaptingIntegerArray {
         break;
     }
     return length;
+  }
+  /** Zeroes out all counts in this array. */
+  @SuppressWarnings("NullAway")
+  public void clear() {
+    switch (this.cellSize) {
+      case BYTE:
+        Arrays.fill(this.byteBacking, (byte) 0);
+        break;
+      case SHORT:
+        Arrays.fill(this.shortBacking, (short) 0);
+        break;
+      case INT:
+        Arrays.fill(this.intBacking, 0);
+        break;
+      case LONG:
+        Arrays.fill(this.longBacking, 0L);
+        break;
+    }
   }
 
   /** Convert from byte => short backing array. */

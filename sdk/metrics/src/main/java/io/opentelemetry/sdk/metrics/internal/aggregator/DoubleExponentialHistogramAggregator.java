@@ -28,7 +28,8 @@ final class DoubleExponentialHistogramAggregator
   DoubleExponentialHistogramAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this(
         reservoirSupplier,
-        ExponentialBucketStrategy.newStrategy(20, 320, ExponentialCounterFactory.mapCounter()));
+        ExponentialBucketStrategy.newStrategy(
+            20, 320, ExponentialCounterFactory.circularBufferCounter()));
   }
 
   DoubleExponentialHistogramAggregator(
@@ -143,8 +144,8 @@ final class DoubleExponentialHistogramAggregator
 
   static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {
     private final ExponentialBucketStrategy bucketStrategy;
-    private DoubleExponentialHistogramBuckets positiveBuckets;
-    private DoubleExponentialHistogramBuckets negativeBuckets;
+    private final DoubleExponentialHistogramBuckets positiveBuckets;
+    private final DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
 
@@ -164,14 +165,14 @@ final class DoubleExponentialHistogramAggregator
           ExponentialHistogramAccumulation.create(
               this.positiveBuckets.getScale(),
               sum,
-              positiveBuckets,
-              negativeBuckets,
+              positiveBuckets.copy(),
+              negativeBuckets.copy(),
               zeroCount,
               exemplars);
       this.sum = 0;
       this.zeroCount = 0;
-      this.positiveBuckets = this.bucketStrategy.zeroBucketFrom(positiveBuckets);
-      this.negativeBuckets = this.bucketStrategy.zeroBucketFrom(negativeBuckets);
+      this.positiveBuckets.clear();
+      this.negativeBuckets.clear();
       return acc;
     }
 

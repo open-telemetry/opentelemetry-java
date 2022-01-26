@@ -23,12 +23,7 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
 
   /** Constructs a circular buffer that will hold at most {@code maxSize} buckets. */
   public AdaptingCircularBufferCounter(int maxSize) {
-    this(new AdaptingIntegerArray(maxSize));
-  }
-
-  /** Constructs an instance with preallocated backing array. */
-  private AdaptingCircularBufferCounter(AdaptingIntegerArray backing) {
-    this.backing = backing;
+    this.backing = new AdaptingIntegerArray(maxSize);
   }
 
   /** (Deep)-Copies the values from another exponential counter. */
@@ -51,11 +46,6 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
         this.increment(i, val);
       }
     }
-  }
-
-  /** Construct a new circular buffer that preserves previosuly seen cell-size in backing array. */
-  public static AdaptingCircularBufferCounter zeroOf(AdaptingCircularBufferCounter other) {
-    return new AdaptingCircularBufferCounter(AdaptingIntegerArray.zeroOf(other.backing));
   }
 
   @Override
@@ -98,6 +88,9 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
 
   @Override
   public long get(int index) {
+    if (index < startIndex || index > endIndex) {
+      return 0;
+    }
     return backing.get(toBufferIndex(index));
   }
 
@@ -109,6 +102,14 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
   @Override
   public int getMaxSize() {
     return backing.length();
+  }
+
+  @Override
+  public void clear() {
+    this.backing.clear();
+    this.baseIndex = NULL_INDEX;
+    this.endIndex = NULL_INDEX;
+    this.startIndex = NULL_INDEX;
   }
 
   private int toBufferIndex(int index) {
@@ -125,7 +126,7 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder("{");
-    for (int i = startIndex; i <= endIndex; i++) {
+    for (int i = startIndex; i <= endIndex && startIndex != NULL_INDEX; i++) {
       if (i != startIndex) {
         result.append(',');
       }

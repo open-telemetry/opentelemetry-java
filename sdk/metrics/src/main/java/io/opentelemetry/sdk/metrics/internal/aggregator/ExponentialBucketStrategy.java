@@ -8,26 +8,29 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 
 /** The configuration for how to create exponential histogram buckets. */
-interface ExponentialBucketStrategy {
-  /** Constructs fresh new buckets. */
-  DoubleExponentialHistogramBuckets newBuckets();
+final class ExponentialBucketStrategy {
+  /** Starting scale of exponential buckets. */
+  private final int scale;
+  /** The maximum number of buckets that will be used for positive or negative recordings. */
+  private final int maxBuckets;
+  /** The mechanism of constructing and copying buckets. */
+  private final ExponentialCounterFactory counterFactory;
 
-  /** Constructs "empty" count buckets using settings from previous recorded bucket. */
-  DoubleExponentialHistogramBuckets zeroBucketFrom(DoubleExponentialHistogramBuckets old);
+  private ExponentialBucketStrategy(
+      int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
+    this.scale = scale;
+    this.maxBuckets = maxBuckets;
+    this.counterFactory = counterFactory;
+  }
 
+  /** Constructs fresh new buckets with default settings. */
+  DoubleExponentialHistogramBuckets newBuckets() {
+    return new DoubleExponentialHistogramBuckets(scale, maxBuckets, counterFactory);
+  }
+
+  /** Create a new strategy for generating Exponential Buckets. */
   static ExponentialBucketStrategy newStrategy(
       int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
-    return new ExponentialBucketStrategy() {
-      @Override
-      public DoubleExponentialHistogramBuckets newBuckets() {
-        return new DoubleExponentialHistogramBuckets(scale, maxBuckets, counterFactory);
-      }
-
-      @Override
-      public DoubleExponentialHistogramBuckets zeroBucketFrom(
-          DoubleExponentialHistogramBuckets old) {
-        return DoubleExponentialHistogramBuckets.zeroBucketFrom(old);
-      }
-    };
+    return new ExponentialBucketStrategy(scale, maxBuckets, counterFactory);
   }
 }

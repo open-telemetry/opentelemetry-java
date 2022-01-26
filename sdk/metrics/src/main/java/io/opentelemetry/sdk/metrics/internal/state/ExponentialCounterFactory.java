@@ -23,9 +23,6 @@ public interface ExponentialCounterFactory {
   /** Returns a deep-copy of an ExponentialCounter. */
   ExponentialCounter copy(ExponentialCounter other);
 
-  /** Returns a new "zeroed" counter re-using known size / optimisations from previous version. */
-  ExponentialCounter zeroFrom(ExponentialCounter other);
-
   /** Constructs exponential counters using {@link MapCounter}. */
   static ExponentialCounterFactory mapCounter() {
     return new ExponentialCounterFactory() {
@@ -37,11 +34,6 @@ public interface ExponentialCounterFactory {
       @Override
       public ExponentialCounter copy(ExponentialCounter other) {
         return new MapCounter(other);
-      }
-
-      @Override
-      public ExponentialCounter zeroFrom(ExponentialCounter other) {
-        return new MapCounter(other.getMaxSize());
       }
 
       @Override
@@ -61,15 +53,6 @@ public interface ExponentialCounterFactory {
       @Override
       public ExponentialCounter copy(ExponentialCounter other) {
         return new AdaptingCircularBufferCounter(other);
-      }
-
-      @Override
-      public ExponentialCounter zeroFrom(ExponentialCounter other) {
-        if (other instanceof AdaptingCircularBufferCounter) {
-          // Attempt to preserve previous integer size.
-          return AdaptingCircularBufferCounter.zeroOf((AdaptingCircularBufferCounter) other);
-        }
-        return new AdaptingCircularBufferCounter(other.getMaxSize());
       }
 
       @Override
