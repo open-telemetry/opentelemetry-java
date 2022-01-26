@@ -73,52 +73,55 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
-    SpanExporter spanExporter =
-        SpanExporterConfiguration.configureExporter(
-            "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
-    MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
-    LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
+    try (SpanExporter spanExporter =
+            SpanExporterConfiguration.configureExporter(
+                "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
+        MetricExporter metricExporter =
+            MetricExporterConfiguration.configureOtlpMetrics(
+                properties, SdkMeterProvider.builder());
+        LogExporter logExporter =
+            LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
+      assertThat(spanExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(spanExporter.export(SPAN_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(server.traceRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
+                      && headers.contains("header-key", "header-value")
+                      && headers.contains("grpc-encoding", "gzip"));
 
-    assertThat(spanExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(spanExporter.export(SPAN_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.traceRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
-                    && headers.contains("header-key", "header-value")
-                    && headers.contains("grpc-encoding", "gzip"));
+      assertThat(metricExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
+      assertThat(server.metricRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path",
+                          "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
+                      && headers.contains("header-key", "header-value")
+                      && headers.contains("grpc-encoding", "gzip"));
 
-    assertThat(metricExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.metricRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
-                    && headers.contains("header-key", "header-value")
-                    && headers.contains("grpc-encoding", "gzip"));
-
-    assertThat(logExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.logRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.logs.v1.LogsService/Export")
-                    && headers.contains("header-key", "header-value")
-                    && headers.contains("grpc-encoding", "gzip"));
+      assertThat(logExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(server.logRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path", "/opentelemetry.proto.collector.logs.v1.LogsService/Export")
+                      && headers.contains("header-key", "header-value")
+                      && headers.contains("grpc-encoding", "gzip"));
+    }
   }
 
   @Test
@@ -137,24 +140,24 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
-    SpanExporter spanExporter =
+    try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
             Collections.emptyMap(),
-            MeterProvider.noop());
-
-    assertThat(spanExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(spanExporter.export(SPAN_DATA).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.traceRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
-                    && headers.contains("header-key", "header-value"));
+            MeterProvider.noop())) {
+      assertThat(spanExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(spanExporter.export(SPAN_DATA).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(server.traceRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
+                      && headers.contains("header-key", "header-value"));
+    }
   }
 
   @Test
@@ -174,23 +177,26 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
-    MetricExporter metricExporter =
+    try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
+            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder())) {
 
-    assertThat(metricExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
-    assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.metricRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
-                    && headers.contains("header-key", "header-value")
-                    && headers.contains("grpc-encoding", "gzip"));
+      assertThat(metricExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
+      assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
+      assertThat(server.metricRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path",
+                          "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
+                      && headers.contains("header-key", "header-value")
+                      && headers.contains("grpc-encoding", "gzip"));
+    }
   }
 
   @Test
@@ -209,22 +215,23 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.logs.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.logs.compression", "gzip");
     props.put("otel.exporter.otlp.logs.timeout", "15s");
-    LogExporter logExporter =
+    try (LogExporter logExporter =
         LogExporterConfiguration.configureOtlpLogs(
-            DefaultConfigProperties.createForTest(props), MeterProvider.noop());
+            DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
-    assertThat(logExporter)
-        .extracting("delegate.timeoutNanos")
-        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-    assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(server.logRequests).hasSize(1);
-    assertThat(server.requestHeaders)
-        .anyMatch(
-            headers ->
-                headers.contains(
-                        ":path", "/opentelemetry.proto.collector.logs.v1.LogsService/Export")
-                    && headers.contains("header-key", "header-value")
-                    && headers.contains("grpc-encoding", "gzip"));
+      assertThat(logExporter)
+          .extracting("delegate.timeoutNanos")
+          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+      assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(server.logRequests).hasSize(1);
+      assertThat(server.requestHeaders)
+          .anyMatch(
+              headers ->
+                  headers.contains(
+                          ":path", "/opentelemetry.proto.collector.logs.v1.LogsService/Export")
+                      && headers.contains("header-key", "header-value")
+                      && headers.contains("grpc-encoding", "gzip"));
+    }
   }
 
   @Test

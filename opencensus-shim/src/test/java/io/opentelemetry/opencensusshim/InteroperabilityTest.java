@@ -66,7 +66,6 @@ class InteroperabilityTest {
 
   static {
     spanExporter = spy(SpanExporter.class);
-    when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
 
     SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
     openTelemetry =
@@ -80,6 +79,7 @@ class InteroperabilityTest {
   @BeforeEach
   void resetMocks() {
     reset(spanExporter);
+    when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
