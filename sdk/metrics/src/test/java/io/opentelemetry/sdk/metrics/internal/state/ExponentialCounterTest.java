@@ -72,4 +72,44 @@ public class ExponentialCounterTest {
     assertThat(copy.get(2)).as("copy[2]").isEqualTo(2);
     assertThat(counter.get(2)).as("counter[2]").isEqualTo(1);
   }
+
+  @ParameterizedTest
+  @MethodSource("counterProviders")
+  void shouldCopyMapCounters(ExponentialCounterFactory counterFactory) {
+    ExponentialCounter counter = ExponentialCounterFactory.mapCounter().newCounter(2);
+    assertThat(counter.increment(2, 1)).isTrue();
+    assertThat(counter.increment(1, 1)).isTrue();
+    assertThat(counter.increment(3, 1)).isFalse();
+
+    ExponentialCounter copy = counterFactory.copy(counter);
+    assertThat(counter.get(2)).as("counter[2]").isEqualTo(1);
+    assertThat(copy.get(2)).as("copy[2]").isEqualTo(1);
+    assertThat(copy.getMaxSize()).isEqualTo(counter.getMaxSize());
+    assertThat(copy.getIndexStart()).isEqualTo(counter.getIndexStart());
+    assertThat(copy.getIndexEnd()).isEqualTo(counter.getIndexEnd());
+    // Mutate copy and make sure original is unchanged.
+    assertThat(copy.increment(2, 1)).isTrue();
+    assertThat(copy.get(2)).as("copy[2]").isEqualTo(2);
+    assertThat(counter.get(2)).as("counter[2]").isEqualTo(1);
+  }
+
+  @ParameterizedTest
+  @MethodSource("counterProviders")
+  void shouldCopyCircularBufferCounters(ExponentialCounterFactory counterFactory) {
+    ExponentialCounter counter = ExponentialCounterFactory.circularBufferCounter().newCounter(2);
+    assertThat(counter.increment(2, 1)).isTrue();
+    assertThat(counter.increment(1, 1)).isTrue();
+    assertThat(counter.increment(3, 1)).isFalse();
+
+    ExponentialCounter copy = counterFactory.copy(counter);
+    assertThat(counter.get(2)).as("counter[2]").isEqualTo(1);
+    assertThat(copy.get(2)).as("copy[2]").isEqualTo(1);
+    assertThat(copy.getMaxSize()).isEqualTo(counter.getMaxSize());
+    assertThat(copy.getIndexStart()).isEqualTo(counter.getIndexStart());
+    assertThat(copy.getIndexEnd()).isEqualTo(counter.getIndexEnd());
+    // Mutate copy and make sure original is unchanged.
+    assertThat(copy.increment(2, 1)).isTrue();
+    assertThat(copy.get(2)).as("copy[2]").isEqualTo(2);
+    assertThat(counter.get(2)).as("counter[2]").isEqualTo(1);
+  }
 }

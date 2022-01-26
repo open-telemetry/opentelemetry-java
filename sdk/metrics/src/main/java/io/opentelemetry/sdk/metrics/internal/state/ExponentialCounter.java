@@ -56,6 +56,6 @@ public interface ExponentialCounter {
   /** Returns the maximum number of buckets allowed in this counter. */
   int getMaxSize();
 
-  /** Resets all bucket counts to zero. */
+  /** Resets all bucket counts to zero and resets index start/end tracking. */
   void clear();
 }
