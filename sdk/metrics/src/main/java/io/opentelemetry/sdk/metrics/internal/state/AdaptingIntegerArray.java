@@ -190,32 +190,35 @@ public class AdaptingIntegerArray {
   /** Convert from byte => short backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToShort() {
-    this.shortBacking = new short[this.byteBacking.length];
+    short[] shortBacking = new short[this.byteBacking.length];
     for (int i = 0; i < this.byteBacking.length; i++) {
-      this.shortBacking[i] = this.byteBacking[i];
+      shortBacking[i] = this.byteBacking[i];
     }
     this.cellSize = ArrayCellSize.SHORT;
+    this.shortBacking = shortBacking;
     this.byteBacking = null;
   }
 
   /** Convert from short => int backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToInt() {
-    this.intBacking = new int[this.shortBacking.length];
+    int[] intBacking = new int[this.shortBacking.length];
     for (int i = 0; i < this.shortBacking.length; i++) {
-      this.intBacking[i] = this.shortBacking[i];
+      intBacking[i] = this.shortBacking[i];
     }
     this.cellSize = ArrayCellSize.INT;
+    this.intBacking = intBacking;
     this.shortBacking = null;
   }
   /** convert from int => long backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToLong() {
-    this.longBacking = new long[this.intBacking.length];
+    long[] longBacking = new long[this.intBacking.length];
     for (int i = 0; i < this.intBacking.length; i++) {
-      this.longBacking[i] = this.intBacking[i];
+      longBacking[i] = this.intBacking[i];
     }
     this.cellSize = ArrayCellSize.LONG;
+    this.longBacking = longBacking;
     this.intBacking = null;
   }
 }
