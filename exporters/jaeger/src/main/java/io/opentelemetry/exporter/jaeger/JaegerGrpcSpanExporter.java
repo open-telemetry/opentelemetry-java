@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.jaeger;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;

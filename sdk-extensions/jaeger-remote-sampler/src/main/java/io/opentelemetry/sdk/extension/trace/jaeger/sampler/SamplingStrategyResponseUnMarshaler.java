@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
+import io.opentelemetry.exporter.internal.marshal.CodedInputStream;
 import java.io.IOException;
 import javax.annotation.Nullable;
 

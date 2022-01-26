@@ -84,8 +84,8 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
   private class JavaGenerator(private val schema: Schema, private val typeToJavaName: Map<ProtoType, TypeName>) {
 
     companion object {
-      private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
-      private val PROTO_ENUM_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoEnumInfo")
+      private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.internal.marshal", "ProtoFieldInfo")
+      private val PROTO_ENUM_INFO = ClassName.get("io.opentelemetry.exporter.internal.marshal", "ProtoEnumInfo")
       private val WIRETYPE_VARINT = 0
       private val WIRETYPE_FIXED64 = 1
       private val WIRETYPE_LENGTH_DELIMITED = 2

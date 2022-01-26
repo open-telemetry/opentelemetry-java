@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.jaeger;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.internal.Batch;
-import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
-import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
-import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;

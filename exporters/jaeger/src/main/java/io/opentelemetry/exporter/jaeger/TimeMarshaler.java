@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.jaeger;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.jaeger.internal.protobuf.internal.Time;
-import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
-import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
-import io.opentelemetry.exporter.otlp.internal.Serializer;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 

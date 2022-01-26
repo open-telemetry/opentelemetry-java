@@ -10,11 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;

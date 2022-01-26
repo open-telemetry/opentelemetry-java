@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
-import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;

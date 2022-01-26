@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
