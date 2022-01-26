@@ -60,14 +60,16 @@ final class TracerProviderConfiguration {
         SpanExporterConfiguration.configureSpanExporters(
             config, serviceClassLoader, meterProvider, spanExporterCustomizer);
 
-    configureSpanProcessors(config, exportersByName)
+    configureSpanProcessors(config, exportersByName, meterProvider)
         .forEach(tracerProviderBuilder::addSpanProcessor);
 
     return tracerProviderBuilder.build();
   }
 
   static List<SpanProcessor> configureSpanProcessors(
-      ConfigProperties config, Map<String, SpanExporter> exportersByName) {
+      ConfigProperties config,
+      Map<String, SpanExporter> exportersByName,
+      MeterProvider meterProvider) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
 
@@ -78,7 +80,7 @@ final class TracerProviderConfiguration {
 
     if (!exportersByNameCopy.isEmpty()) {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
-      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter));
+      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider));
     }
 
     return spanProcessors;
@@ -86,8 +88,9 @@ final class TracerProviderConfiguration {
 
   // VisibleForTesting
   static BatchSpanProcessor configureBatchSpanProcessor(
-      ConfigProperties config, SpanExporter exporter) {
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
+      ConfigProperties config, SpanExporter exporter, MeterProvider meterProvider) {
+    BatchSpanProcessorBuilder builder =
+        BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider);
 
     Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
     if (scheduleDelay != null) {
