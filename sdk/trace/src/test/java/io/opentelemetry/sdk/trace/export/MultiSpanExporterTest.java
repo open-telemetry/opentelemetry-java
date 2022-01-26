@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -104,6 +105,7 @@ class MultiSpanExporterTest {
   }
 
   @Test
+  @SuppressLogger(MultiSpanExporter.class)
   void twoSpanExporter_FirstThrows() {
     SpanExporter multiSpanExporter =
         SpanExporter.composite(Arrays.asList(spanExporter1, spanExporter2));

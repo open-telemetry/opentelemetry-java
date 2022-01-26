@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.metrics.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.io.Closeable;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /**
@@ -17,7 +19,7 @@ import javax.annotation.Nullable;
  *
  * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
  */
-public interface MetricExporter {
+public interface MetricExporter extends Closeable {
 
   /** Returns the preferred temporality for metrics. */
   @Nullable
@@ -50,4 +52,10 @@ public interface MetricExporter {
    * @return a {@link CompletableResultCode} which is completed when shutdown completes.
    */
   CompletableResultCode shutdown();
+
+  /** Closes this {@link MetricExporter}, releasing any resources. */
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
+  }
 }
