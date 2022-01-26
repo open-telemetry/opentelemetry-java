@@ -18,11 +18,13 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -51,13 +53,23 @@ class SdkMeterProviderTest {
   @Mock MetricReader metricReader;
 
   @Test
+  void noopImplementationWithNoReaders() {
+    SdkMeterProvider meterProvider = sdkMeterProviderBuilder.build();
+    assertThat(meterProvider.meterBuilder("test"))
+        .isSameAs(MeterProvider.noop().meterBuilder("test"));
+    assertThat(meterProvider.get("test")).isSameAs(MeterProvider.noop().get("test"));
+    assertThat(meterProvider.forceFlush().isSuccess()).isTrue();
+    assertThat(meterProvider.shutdown().isSuccess()).isTrue();
+  }
+
+  @Test
   void defaultMeterName() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(InMemoryMetricReader.create()).build();
     assertThat(sdkMeterProvider.get(null)).isSameAs(sdkMeterProvider.get("unknown"));
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
@@ -176,7 +188,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
@@ -232,7 +243,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_DeltaHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
@@ -277,7 +287,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter",
             "testDoubleCounter",
@@ -313,7 +323,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter",
             "testDoubleCounter",
@@ -324,7 +334,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
@@ -445,7 +454,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void viewSdk_AllowRenames() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -480,7 +488,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void viewSdk_AllowMulitpleViewsPerSynchronousInstrument() {
     InstrumentSelector selector =
         InstrumentSelector.builder()
@@ -528,7 +535,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void viewSdk_AllowMulitpleViewsPerAsynchronousInstrument() {
     InstrumentSelector selector =
         InstrumentSelector.builder()
@@ -603,7 +609,7 @@ class SdkMeterProviderTest {
     // Make sure whether or not we explicitly pass baggage, all values have it appended.
     counter.add(1, Attributes.empty(), context);
     // Also check implicit context
-    try (Scope scope = context.makeCurrent()) {
+    try (Scope ignored = context.makeCurrent()) {
       counter.add(1, Attributes.empty());
     }
     // Now make sure all metrics have baggage appended.
@@ -624,7 +630,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
@@ -675,7 +680,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongSumObserver",
             "testDoubleSumObserver",
@@ -706,7 +711,7 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
-        .extracting(metric -> metric.getName())
+        .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongSumObserver",
             "testDoubleSumObserver",
@@ -717,7 +722,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void sdkMeterProvider_supportsMultipleCollectorsCumulative() {
     InMemoryMetricReader collector1 = InMemoryMetricReader.create();
     InMemoryMetricReader collector2 = InMemoryMetricReader.create();
@@ -788,7 +792,6 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void sdkMeterProvider_supportsMultipleCollectorsDelta() {
     // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
     // now.
