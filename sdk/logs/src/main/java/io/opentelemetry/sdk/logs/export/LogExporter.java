@@ -9,16 +9,18 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An exporter is responsible for taking a collection of {@link LogData}s and transmitting them to
  * their ultimate destination.
  */
-public interface LogExporter {
+public interface LogExporter extends Closeable {
 
   /**
    * Returns a {@link LogExporter} which delegates all exports to the {@code exporters} in order.
@@ -73,4 +75,10 @@ public interface LogExporter {
    * @return a {@link CompletableResultCode} which is completed when shutdown completes
    */
   CompletableResultCode shutdown();
+
+  /** Closes this {@link LogExporter}, releasing any resources. */
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
+  }
 }
