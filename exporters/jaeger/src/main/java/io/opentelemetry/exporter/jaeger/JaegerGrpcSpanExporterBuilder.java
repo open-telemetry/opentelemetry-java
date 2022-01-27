@@ -9,8 +9,8 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +46,10 @@ public final class JaegerGrpcSpanExporterBuilder {
    *
    * @param channel the channel to use.
    * @return this.
+   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
+   *     methods on this builder, please file an issue to let us know what it is.
    */
+  @Deprecated
   public JaegerGrpcSpanExporterBuilder setChannel(ManagedChannel channel) {
     delegate.setChannel(channel);
     return this;

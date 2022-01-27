@@ -14,8 +14,8 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
@@ -57,15 +57,16 @@ class OtlpGrpcRetryTest {
     props.put(
         "otel.exporter.otlp.traces.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    SpanExporter spanExporter =
+    try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
             Collections.emptyMap(),
-            MeterProvider.noop());
+            MeterProvider.noop())) {
 
-    testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
-    testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+      testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+      testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+    }
   }
 
   @Test
@@ -91,12 +92,13 @@ class OtlpGrpcRetryTest {
     props.put(
         "otel.exporter.otlp.logs.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    LogExporter logExporter =
+    try (LogExporter logExporter =
         LogExporterConfiguration.configureOtlpLogs(
-            DefaultConfigProperties.createForTest(props), MeterProvider.noop());
+            DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
-    testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
-    testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+      testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+      testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+    }
   }
 
   private static <T> void testRetryableStatusCodes(

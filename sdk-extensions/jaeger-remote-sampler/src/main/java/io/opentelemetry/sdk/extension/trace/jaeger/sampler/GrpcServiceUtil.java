@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.function.Supplier;

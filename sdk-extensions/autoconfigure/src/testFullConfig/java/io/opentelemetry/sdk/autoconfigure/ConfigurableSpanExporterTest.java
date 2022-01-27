@@ -119,7 +119,7 @@ public class ConfigurableSpanExporterTest {
 
     assertThat(
             TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of(exporterName, exporter)))
+                properties, ImmutableMap.of(exporterName, exporter), MeterProvider.noop()))
         .hasSize(1)
         .first()
         .isInstanceOf(SimpleSpanProcessor.class);
@@ -134,7 +134,7 @@ public class ConfigurableSpanExporterTest {
 
     assertThat(
             TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of(exporterName, exporter)))
+                properties, ImmutableMap.of(exporterName, exporter), MeterProvider.noop()))
         .hasSize(1)
         .first()
         .isInstanceOf(BatchSpanProcessor.class);
@@ -150,7 +150,9 @@ public class ConfigurableSpanExporterTest {
 
     assertThat(
             TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of("otlp", otlpExporter, "zipkin", zipkinExporter)))
+                properties,
+                ImmutableMap.of("otlp", otlpExporter, "zipkin", zipkinExporter),
+                MeterProvider.noop()))
         .hasSize(1)
         .hasAtLeastOneElementOfType(BatchSpanProcessor.class)
         .first()
@@ -185,7 +187,9 @@ public class ConfigurableSpanExporterTest {
 
     assertThat(
             TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of("logging", loggingExporter, "zipkin", zipkinExporter)))
+                properties,
+                ImmutableMap.of("logging", loggingExporter, "zipkin", zipkinExporter),
+                MeterProvider.noop()))
         .hasSize(2)
         .hasAtLeastOneElementOfType(SimpleSpanProcessor.class)
         .hasAtLeastOneElementOfType(BatchSpanProcessor.class);

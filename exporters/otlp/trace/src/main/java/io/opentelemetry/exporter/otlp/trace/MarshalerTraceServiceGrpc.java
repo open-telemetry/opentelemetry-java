@@ -8,9 +8,9 @@ package io.opentelemetry.exporter.otlp.trace;
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 import io.grpc.MethodDescriptor;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.io.InputStream;
 
 // Adapted from the protoc generated code for TraceServiceGrpc.

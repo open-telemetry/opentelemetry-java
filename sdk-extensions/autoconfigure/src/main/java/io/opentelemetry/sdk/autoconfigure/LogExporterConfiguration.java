@@ -10,11 +10,11 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.SystemOutLogExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;

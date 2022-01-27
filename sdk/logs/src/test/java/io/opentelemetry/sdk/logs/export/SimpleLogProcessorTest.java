@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.logs.data.Severity.DEBUG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,7 @@ class SimpleLogProcessorTest {
   @BeforeEach
   void setUp() {
     logProcessor = SimpleLogProcessor.create(logExporter);
+    when(logExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
     when(logExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 

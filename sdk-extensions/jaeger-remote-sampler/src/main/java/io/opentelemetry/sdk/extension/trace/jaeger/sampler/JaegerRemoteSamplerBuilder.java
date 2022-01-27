@@ -98,7 +98,11 @@ public final class JaegerRemoteSamplerBuilder {
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
+   *
+   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
+   *     methods on this builder, please file an issue to let us know what it is.
    */
+  @Deprecated
   public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
     requireNonNull(channel, "channel");
     delegate.setChannel(channel);
