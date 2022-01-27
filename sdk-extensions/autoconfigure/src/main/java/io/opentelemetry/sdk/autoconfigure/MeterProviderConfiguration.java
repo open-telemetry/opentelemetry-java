@@ -10,14 +10,18 @@ import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 
 final class MeterProviderConfiguration {
 
   static SdkMeterProvider configureMeterProvider(
-      Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
-    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
+      SdkMeterProviderBuilder meterProviderBuilder,
+      ConfigProperties config,
+      ClassLoader serviceClassLoader,
+      BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
+          metricExporterCustomizer) {
 
     // Configure default exemplar filters.
     String exemplarFilter = config.getString("otel.metrics.exemplar.filter");
@@ -45,7 +49,7 @@ final class MeterProviderConfiguration {
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName != null && !exporterName.equals("none")) {
       MetricExporterConfiguration.configureExporter(
-          exporterName, config, serviceClassLoader, meterProviderBuilder);
+          exporterName, config, serviceClassLoader, meterProviderBuilder, metricExporterCustomizer);
     }
 
     return meterProviderBuilder.build();

@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -77,8 +76,7 @@ class OtlpGrpcConfigTest {
             SpanExporterConfiguration.configureExporter(
                 "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
         MetricExporter metricExporter =
-            MetricExporterConfiguration.configureOtlpMetrics(
-                properties, SdkMeterProvider.builder());
+            MetricExporterConfiguration.configureOtlpMetrics(properties);
         LogExporter logExporter =
             LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
       assertThat(spanExporter)
@@ -179,7 +177,7 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
     try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder())) {
+            DefaultConfigProperties.createForTest(props))) {
 
       assertThat(metricExporter)
           .extracting("delegate.timeoutNanos")
@@ -247,10 +245,7 @@ class OtlpGrpcConfigTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureOtlpMetrics(
-                    properties, SdkMeterProvider.builder()))
+    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

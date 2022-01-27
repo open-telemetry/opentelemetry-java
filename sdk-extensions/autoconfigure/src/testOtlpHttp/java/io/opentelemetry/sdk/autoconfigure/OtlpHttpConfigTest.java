@@ -19,7 +19,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -65,8 +64,7 @@ class OtlpHttpConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
-    MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
+    MetricExporter metricExporter = MetricExporterConfiguration.configureOtlpMetrics(properties);
     LogExporter logExporter =
         LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
 
@@ -196,7 +194,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
+            DefaultConfigProperties.createForTest(props));
 
     assertThat(metricExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -273,10 +271,7 @@ class OtlpHttpConfigTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureOtlpMetrics(
-                    properties, SdkMeterProvider.builder()))
+    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

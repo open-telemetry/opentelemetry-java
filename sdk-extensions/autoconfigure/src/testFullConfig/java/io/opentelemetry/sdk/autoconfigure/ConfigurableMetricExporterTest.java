@@ -42,7 +42,8 @@ public class ConfigurableMetricExporterTest {
                     "testExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     new URLClassLoader(new URL[0], null),
-                    SdkMeterProvider.builder()))
+                    SdkMeterProvider.builder(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -55,7 +56,8 @@ public class ConfigurableMetricExporterTest {
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder()))
+                    SdkMeterProvider.builder(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }

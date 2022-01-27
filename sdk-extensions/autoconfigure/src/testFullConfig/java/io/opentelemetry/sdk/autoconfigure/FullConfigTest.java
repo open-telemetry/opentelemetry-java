@@ -17,6 +17,7 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
@@ -144,6 +145,10 @@ class FullConfigTest {
         .setAttribute("dog", "bark")
         .end();
 
+    Meter meter = GlobalOpenTelemetry.get().getMeter("test");
+    meter.counterBuilder("my-metric").build().add(1);
+    meter.counterBuilder("my-other-metric").build().add(1);
+
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
     ExportTraceServiceRequest traceRequest = otlpTraceRequests.take();
@@ -203,6 +208,10 @@ class FullConfigTest {
                     resourceMetrics.getInstrumentationLibraryMetricsList()) {
                   for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
                     // SPI was loaded
+                    // MetricExporterCustomizer filters metrics not named my-metric
+                    assertThat(metric.getName()).isEqualTo("my-metric");
+                    // TestMeterProviderConfigurer configures a view that adds the "configured=true"
+                    // attribute
                     assertThat(getFirstDataPointLabels(metric))
                         .contains(
                             KeyValue.newBuilder()
