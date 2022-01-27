@@ -109,8 +109,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     if (!counts.isEmpty()) {
-      // TODO - We want to preserve other optimisations here as well, e.g. integer size.
-      ExponentialCounter newCounts = counterFactory.newCounter(counts.getMaxSize());
+      // We want to preserve other optimisations here as well, e.g. integer size.
+      // Instead of  creating a new counter, we copy the existing one (for bucket size
+      // optimisations), and clear the values before writing the new ones.
+      ExponentialCounter newCounts = counterFactory.copy(counts);
+      newCounts.clear();
 
       for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         long count = counts.get(i);
@@ -282,7 +285,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   public int hashCode() {
     int hash = 1;
     hash *= 1000003;
-    // We need a new algorithm here that lines up w/ equals, so we only use non-negative counts.
+    // We need a new algorithm here that lines up w/ equals, so we only use non-zero counts.
     for (int idx = this.counts.getIndexStart(); idx <= this.counts.getIndexEnd(); idx++) {
       long count = this.counts.get(idx);
       if (count != 0) {
