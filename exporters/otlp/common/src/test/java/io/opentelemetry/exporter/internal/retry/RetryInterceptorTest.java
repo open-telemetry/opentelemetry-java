@@ -6,15 +6,20 @@
 package io.opentelemetry.exporter.internal.retry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
@@ -52,7 +57,11 @@ class RetryInterceptorTest {
             r -> !r.isSuccessful(),
             sleeper,
             random);
-    client = new OkHttpClient.Builder().addInterceptor(retrier).build();
+    client =
+        new OkHttpClient.Builder()
+            .connectTimeout(Duration.ofSeconds(1))
+            .addInterceptor(retrier)
+            .build();
   }
 
   @Test
@@ -116,6 +125,22 @@ class RetryInterceptorTest {
     for (int i = 0; i < 2; i++) {
       server.takeRequest(0, TimeUnit.NANOSECONDS);
     }
+  }
+
+  @Test
+  void connectTimeout() throws Exception {
+    when(random.get(anyLong())).thenReturn(1L);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    // Connecting to a non-routable IP address to trigger connection timeout
+    assertThatThrownBy(
+            () ->
+                client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
+        .isInstanceOf(SocketTimeoutException.class)
+        .hasMessage("Connect timed out");
+
+    // Should retry maxAttempts, and sleep maxAttempts - 1 times
+    verify(sleeper, times(4)).sleep(anyLong());
   }
 
   private Response sendRequest() throws IOException {

@@ -5,10 +5,13 @@
 
 package io.opentelemetry.exporter.internal.retry;
 
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
@@ -20,6 +23,9 @@ import okhttp3.Response;
  */
 public final class RetryInterceptor implements Interceptor {
 
+  private static final Logger logger = Logger.getLogger(RetryInterceptor.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
   private final Sleeper sleeper;
@@ -48,34 +54,52 @@ public final class RetryInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) throws IOException {
-    Response response = chain.proceed(chain.request());
-    if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
+    Response response = null;
+    IOException exception = null;
+    int attempt = 0;
+    long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
+    do {
+      if (attempt > 0) {
+        // Compute and sleep for backoff
+        // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
+        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos = randomLong.get(upperBoundNanos);
+        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        try {
+          sleeper.sleep(backoffNanos);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break; // Break out and return response or throw
+        }
+        // Close response from previous attempt
+        if (response != null) {
+          response.close();
+        }
+      }
+
+      attempt++;
+      try {
+        response = chain.proceed(chain.request());
+      } catch (IOException e) {
+        throttlingLogger.log(
+            Level.FINE,
+            "Error executing "
+                + chain.request().method()
+                + " "
+                + chain.request().url()
+                + ": "
+                + e.getMessage());
+        exception = e;
+      }
+      if (response != null && !Boolean.TRUE.equals(isRetryable.apply(response))) {
+        return response;
+      }
+    } while (attempt < retryPolicy.getMaxAttempts());
+
+    if (response != null) {
       return response;
     }
-    long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
-    // Made an attempt already, starting with the 2nd.
-    for (int attempt = 2; attempt <= retryPolicy.getMaxAttempts(); attempt++) {
-      // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
-      // Careful - the document says "retry attempt" but our maxAttempts includes the original
-      // request. The numbers are tricky but the unit test should be more clear.
-      long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-      long backoffNanos = randomLong.get(upperBoundNanos);
-
-      try {
-        sleeper.sleep(backoffNanos);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return response;
-      }
-      // Close response from previous attempt and try again.
-      response.close();
-      response = chain.proceed(chain.request());
-      if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
-        return response;
-      }
-      nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
-    }
-    return response;
+    throw exception;
   }
 
   // Visible for testing
