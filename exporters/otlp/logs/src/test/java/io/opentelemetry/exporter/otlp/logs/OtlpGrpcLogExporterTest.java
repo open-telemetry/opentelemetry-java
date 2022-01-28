@@ -36,7 +36,7 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
   }
 
   @Test
-  void testBuilderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(

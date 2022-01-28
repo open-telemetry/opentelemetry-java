@@ -41,7 +41,7 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
   }
 
   @Test
-  void testBuilderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(
