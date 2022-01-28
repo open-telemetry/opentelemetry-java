@@ -49,19 +49,18 @@ final class TracerProviderConfiguration {
     tracerProviderBuilder.setSampler(
         samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
-    // Run user configuration before setting exporters from environment to allow user span
-    // processors to effect export.
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
-      configurer.configure(tracerProviderBuilder, config);
-    }
-
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
             config, serviceClassLoader, meterProvider, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName, meterProvider)
         .forEach(tracerProviderBuilder::addSpanProcessor);
+
+    // Run user configuration at the last step, so they can have the final say.
+    for (SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
+      configurer.configure(tracerProviderBuilder, config);
+    }
 
     return tracerProviderBuilder.build();
   }
