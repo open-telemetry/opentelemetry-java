@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,11 +40,23 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AutoConfiguredOpenTelemetrySdkTest {
+
+  @Mock private IdGenerator idGenerator;
+  @Mock private TextMapPropagator propagator1;
+  @Mock private TextMapPropagator propagator2;
+  @Mock private TextMapGetter<Map<String, String>> getter;
+  @Mock private Sampler sampler1;
+  @Mock private Sampler sampler2;
+  @Mock private SpanExporter spanExporter1;
+  @Mock private SpanExporter spanExporter2;
+  @Mock private MetricReaderFactory metricReaderFactory;
+  @Mock private MetricReader metricReader;
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;
 
@@ -60,8 +71,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addTracerProviderCustomizer() {
-    IdGenerator idGenerator = mock(IdGenerator.class);
-
     when(idGenerator.generateTraceId()).thenReturn(TraceId.fromLongs(9999999999L, 9999999999L));
     when(idGenerator.generateSpanId()).thenReturn(SpanId.fromLong(9999999999L));
 
@@ -83,12 +92,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void builder_addPropagatorCustomizer() {
     Context extracted = Context.root().with(ContextKey.named("animal"), "bear");
-    TextMapPropagator propagator1 = mock(TextMapPropagator.class);
-    TextMapPropagator propagator2 = mock(TextMapPropagator.class);
-    TextMapGetter<Map<String, String>> getter = mock(TextMapGetter.class);
+
     when(propagator2.extract(any(), any(), any())).thenReturn(extracted);
 
     OpenTelemetrySdk sdk =
@@ -130,9 +136,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addSamplerCustomizer() {
-    Sampler sampler1 = mock(Sampler.class);
-    Sampler sampler2 = mock(Sampler.class);
-
     SdkTracerProvider sdkTracerProvider =
         builder
             .addSamplerCustomizer(
@@ -157,9 +160,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addSpanExporterCustomizer() {
-    SpanExporter spanExporter1 = mock(SpanExporter.class);
-    SpanExporter spanExporter2 = mock(SpanExporter.class);
-
     Mockito.lenient().when(spanExporter2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
 
     SdkTracerProvider sdkTracerProvider =
@@ -206,9 +206,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addMeterProviderCustomizer() {
-    MetricReaderFactory metricReaderFactory = mock(MetricReaderFactory.class);
-    MetricReader metricReader = mock(MetricReader.class);
-
     when(metricReaderFactory.apply(any())).thenReturn(metricReader);
     Mockito.lenient().when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(metricReader.flush()).thenReturn(CompletableResultCode.ofSuccess());
