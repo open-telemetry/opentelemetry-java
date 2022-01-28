@@ -30,6 +30,9 @@ public final class LoggerExtension
                     context.getRequiredTestClass().getAnnotationsByType(SuppressLogger.class)))
             .map(suppression -> Logger.getLogger(suppression.value().getName()))
             .collect(Collectors.toList());
+    if (loggers.isEmpty()) {
+      return;
+    }
 
     loggers.forEach(logger -> logger.setUseParentHandlers(false));
     context
