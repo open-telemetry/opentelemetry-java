@@ -272,7 +272,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    */
   private boolean sameBucketCounts(DoubleExponentialHistogramBuckets other) {
     int min = Math.min(this.counts.getIndexStart(), other.counts.getIndexStart());
-    int max = Math.max(this.counts.getIndexEnd(), other.counts.getIndexStart());
+    int max = Math.max(this.counts.getIndexEnd(), other.counts.getIndexEnd());
     for (int idx = min; idx <= max; idx++) {
       if (this.counts.get(idx) != other.counts.get(idx)) {
         return false;
