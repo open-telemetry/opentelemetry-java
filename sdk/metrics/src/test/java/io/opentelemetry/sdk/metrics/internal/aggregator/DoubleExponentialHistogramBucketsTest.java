@@ -74,21 +74,45 @@ public class DoubleExponentialHistogramBucketsTest {
     DoubleExponentialHistogramBuckets a = buckets.newBuckets();
     DoubleExponentialHistogramBuckets b = buckets.newBuckets();
 
-    assertNotEquals(a, null);
+    assertThat(a).isNotNull();
     assertEquals(a, b);
     assertEquals(b, a);
-    assertEquals(a.hashCode(), b.hashCode());
+    assertThat(a).hasSameHashCodeAs(b);
 
     a.record(1);
     assertNotEquals(a, b);
     assertNotEquals(b, a);
-    assertNotEquals(a.hashCode(), b.hashCode());
+    assertThat(a).doesNotHaveSameHashCodeAs(b);
 
     b.record(1);
     assertEquals(a, b);
     assertEquals(b, a);
-    assertEquals(a.hashCode(), b.hashCode());
+    assertThat(a).hasSameHashCodeAs(b);
+
+    // Now we start to play with altering offset, but having same effective counts.
+    DoubleExponentialHistogramBuckets empty = buckets.newBuckets();
+    empty.downscale(20);
+    DoubleExponentialHistogramBuckets c = buckets.newBuckets();
+    c.downscale(20);
+    assertThat(c.record(1)).isTrue();
+    // Record can fail if scale is not set correctly.
+    assertThat(c.record(3)).isTrue();
+    assertThat(c.getTotalCount()).isEqualTo(2);
+
+    DoubleExponentialHistogramBuckets resultCC = DoubleExponentialHistogramBuckets.diff(c, c);
+    assertThat(c).isNotEqualTo(resultCC);
+    assertEquals(resultCC, empty);
+    assertThat(resultCC).hasSameHashCodeAs(empty);
+
+    DoubleExponentialHistogramBuckets d = buckets.newBuckets();
+    d.record(1);
+    // Downscale d to be the same as C but do NOT record the value 3.
+    d.downscale(20);
+    DoubleExponentialHistogramBuckets resultCD = DoubleExponentialHistogramBuckets.diff(c, d);
+    assertThat(c).isNotEqualTo(d);
+    assertThat(resultCD).isNotEqualTo(empty);
   }
+
 
   @ParameterizedTest
   @MethodSource("bucketStrategies")
