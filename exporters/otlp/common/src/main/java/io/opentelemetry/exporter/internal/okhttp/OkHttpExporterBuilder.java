@@ -11,7 +11,6 @@ import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -118,26 +117,5 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
     return new OkHttpExporter<>(
         type, clientBuilder.build(), meterProvider, endpoint, headers, compressionEnabled);
-  }
-
-  /**
-   * Reflectively access a {@link OkHttpExporterBuilder} instance in field called "delegate" of the
-   * instance.
-   *
-   * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
-   *     type {@link OkHttpExporterBuilder}
-   */
-  public static <T> OkHttpExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
-    try {
-      Field field = type.getDeclaredField("delegate");
-      field.setAccessible(true);
-      Object value = field.get(instance);
-      if (!(value instanceof OkHttpExporterBuilder)) {
-        throw new IllegalArgumentException("delegate field is not type OkHttpExporterBuilder");
-      }
-      return (OkHttpExporterBuilder<?>) value;
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new IllegalArgumentException("Unable to access delegate reflectively.", e);
-    }
   }
 }

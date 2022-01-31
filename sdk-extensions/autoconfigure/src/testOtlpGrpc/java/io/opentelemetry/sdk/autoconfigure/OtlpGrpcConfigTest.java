@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +73,7 @@ class OtlpGrpcConfigTest {
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (SpanExporter spanExporter =
             SpanExporterConfiguration.configureExporter(
-                "otlp", properties, Collections.emptyMap(), MeterProvider.noop());
+                "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop());
         MetricExporter metricExporter =
             MetricExporterConfiguration.configureOtlpMetrics(properties);
         LogExporter logExporter =
@@ -142,7 +141,7 @@ class OtlpGrpcConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
-            Collections.emptyMap(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop())) {
       assertThat(spanExporter)
           .extracting("delegate.timeoutNanos")
@@ -241,7 +240,7 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, Collections.emptyMap(), MeterProvider.noop()))
+                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

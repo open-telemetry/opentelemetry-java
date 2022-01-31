@@ -23,9 +23,9 @@ import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -186,12 +186,11 @@ class OtlpHttpLogExporterTest {
   }
 
   @Test
-  void testBuilderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
-                OkHttpExporterBuilder.getDelegateBuilder(
-                        OtlpHttpLogExporterBuilder.class, OtlpHttpLogExporter.builder())
-                    .setRetryPolicy(RetryPolicy.getDefault()))
+                RetryUtil.setRetryPolicyOnDelegate(
+                    OtlpHttpLogExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 

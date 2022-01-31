@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.SystemOutLogExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
@@ -102,9 +101,7 @@ class LogExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpLogExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
 

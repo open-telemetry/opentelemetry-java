@@ -39,7 +39,7 @@ class OtlpGrpcMetricExporterTest
   }
 
   @Test
-  void testBuilderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(

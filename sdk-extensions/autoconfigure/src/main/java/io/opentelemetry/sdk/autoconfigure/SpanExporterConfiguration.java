@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
@@ -62,10 +61,9 @@ final class SpanExporterConfiguration {
       exporterNames = Collections.singleton("otlp");
     }
 
-    Map<String, SpanExporter> spiExporters =
+    NamedSpiManager<SpanExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
-            exporterNames,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
             config,
@@ -77,7 +75,7 @@ final class SpanExporterConfiguration {
                 Function.identity(),
                 exporterName ->
                     spanExporterCustomizer.apply(
-                        configureExporter(exporterName, config, spiExporters, meterProvider),
+                        configureExporter(exporterName, config, spiExportersManager, meterProvider),
                         config)));
   }
 
@@ -85,7 +83,7 @@ final class SpanExporterConfiguration {
   static SpanExporter configureExporter(
       String name,
       ConfigProperties config,
-      Map<String, SpanExporter> spiExporters,
+      NamedSpiManager<SpanExporter> spiExportersManager,
       MeterProvider meterProvider) {
     switch (name) {
       case "otlp":
@@ -101,7 +99,7 @@ final class SpanExporterConfiguration {
             "opentelemetry-exporter-logging");
         return LoggingSpanExporter.create();
       default:
-        SpanExporter spiExporter = spiExporters.get(name);
+        SpanExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.traces.exporter: " + name);
         }
@@ -128,9 +126,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpSpanExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
 

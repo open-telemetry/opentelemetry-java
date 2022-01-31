@@ -6,17 +6,14 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
 final class MeterProviderConfiguration {
 
-  static SdkMeterProvider configureMeterProvider(
+  static void configureMeterProvider(
       SdkMeterProviderBuilder meterProviderBuilder,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
@@ -41,18 +38,11 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    for (SdkMeterProviderConfigurer configurer :
-        ServiceLoader.load(SdkMeterProviderConfigurer.class, serviceClassLoader)) {
-      configurer.configure(meterProviderBuilder, config);
-    }
-
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName != null && !exporterName.equals("none")) {
       MetricExporterConfiguration.configureExporter(
           exporterName, config, serviceClassLoader, meterProviderBuilder, metricExporterCustomizer);
     }
-
-    return meterProviderBuilder.build();
   }
 
   private MeterProviderConfiguration() {}

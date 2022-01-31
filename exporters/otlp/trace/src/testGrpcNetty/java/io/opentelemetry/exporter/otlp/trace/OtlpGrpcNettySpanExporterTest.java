@@ -42,7 +42,7 @@ class OtlpGrpcNettySpanExporterTest
   }
 
   @Test
-  void builderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(

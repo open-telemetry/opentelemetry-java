@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRIC
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -26,8 +25,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Map;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
@@ -77,15 +74,14 @@ final class MetricExporterConfiguration {
   @Nullable
   static MetricExporter configureSpiExporter(
       String name, ConfigProperties config, ClassLoader serviceClassLoader) {
-    Map<String, MetricExporter> spiExporters =
+    NamedSpiManager<MetricExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
             ConfigurableMetricExporterProvider.class,
-            Collections.singletonList(name),
             ConfigurableMetricExporterProvider::getName,
             ConfigurableMetricExporterProvider::createExporter,
             config,
             serviceClassLoader);
-    return spiExporters.get(name);
+    return spiExportersManager.getByName(name);
   }
 
   // Visible for testing
@@ -114,9 +110,7 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpMetricExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
       exporter = builder.build();

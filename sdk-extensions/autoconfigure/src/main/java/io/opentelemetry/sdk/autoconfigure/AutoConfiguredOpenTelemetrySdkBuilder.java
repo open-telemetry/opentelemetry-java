@@ -15,6 +15,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -256,6 +258,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   public AutoConfiguredOpenTelemetrySdk build() {
     if (!customized) {
       customized = true;
+      mergeSdkTracerProviderConfigurer();
+      mergeSdkMeterProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
           ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
@@ -263,27 +267,28 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     ConfigProperties config = getConfig();
+
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
     meterProviderBuilder.setResource(resource);
-    SdkMeterProvider meterProvider =
-        MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
+    MeterProviderConfiguration.configureMeterProvider(
+        meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
+    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
     SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
     tracerProviderBuilder.setResource(resource);
-    SdkTracerProvider tracerProvider =
-        TracerProviderConfiguration.configureTracerProvider(
-            tracerProviderBuilder,
-            config,
-            serviceClassLoader,
-            meterProvider,
-            spanExporterCustomizer,
-            samplerCustomizer);
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        config,
+        serviceClassLoader,
+        meterProvider,
+        spanExporterCustomizer,
+        samplerCustomizer);
+    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
     SdkLogEmitterProvider logEmitterProvider =
         LogEmitterProviderConfiguration.configureLogEmitterProvider(
@@ -322,6 +327,28 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+  }
+
+  private void mergeSdkTracerProviderConfigurer() {
+    for (SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
+      addTracerProviderCustomizer(
+          (builder, config) -> {
+            configurer.configure(builder, config);
+            return builder;
+          });
+    }
+  }
+
+  private void mergeSdkMeterProviderConfigurer() {
+    for (SdkMeterProviderConfigurer configurer :
+        ServiceLoader.load(SdkMeterProviderConfigurer.class, serviceClassLoader)) {
+      addMeterProviderCustomizer(
+          (builder, config) -> {
+            configurer.configure(builder, config);
+            return builder;
+          });
+    }
   }
 
   private ConfigProperties getConfig() {
