@@ -37,16 +37,15 @@ final class MeterProviderConfiguration {
         break;
     }
 
+    for (SdkMeterProviderConfigurer configurer :
+        ServiceLoader.load(SdkMeterProviderConfigurer.class, serviceClassLoader)) {
+      configurer.configure(meterProviderBuilder, config);
+    }
+
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName != null && !exporterName.equals("none")) {
       MetricExporterConfiguration.configureExporter(
           exporterName, config, serviceClassLoader, meterProviderBuilder);
-    }
-
-    // Run user configuration at the last step, so they can have the final say.
-    for (SdkMeterProviderConfigurer configurer :
-        ServiceLoader.load(SdkMeterProviderConfigurer.class, serviceClassLoader)) {
-      configurer.configure(meterProviderBuilder, config);
     }
 
     return meterProviderBuilder.build();
