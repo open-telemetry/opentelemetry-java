@@ -9,8 +9,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
@@ -26,12 +24,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
-  static SdkTracerProvider configureTracerProvider(
+  static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
@@ -49,21 +46,12 @@ final class TracerProviderConfiguration {
     tracerProviderBuilder.setSampler(
         samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
-    // Run user configuration before setting exporters from environment to allow user span
-    // processors to effect export.
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
-      configurer.configure(tracerProviderBuilder, config);
-    }
-
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
             config, serviceClassLoader, meterProvider, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName, meterProvider)
         .forEach(tracerProviderBuilder::addSpanProcessor);
-
-    return tracerProviderBuilder.build();
   }
 
   static List<SpanProcessor> configureSpanProcessors(
