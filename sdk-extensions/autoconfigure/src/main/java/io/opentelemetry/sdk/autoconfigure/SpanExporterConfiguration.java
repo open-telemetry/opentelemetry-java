@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
@@ -128,9 +127,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpSpanExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
 

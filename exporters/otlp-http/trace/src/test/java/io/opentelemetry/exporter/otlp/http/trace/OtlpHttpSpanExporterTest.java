@@ -26,9 +26,9 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -174,12 +174,11 @@ class OtlpHttpSpanExporterTest {
   }
 
   @Test
-  void testBuilderDelegate() {
+  void testSetRetryPolicyOnDelegate() {
     assertThatCode(
             () ->
-                OkHttpExporterBuilder.getDelegateBuilder(
-                        OtlpHttpSpanExporterBuilder.class, OtlpHttpSpanExporter.builder())
-                    .setRetryPolicy(RetryPolicy.getDefault()))
+                RetryUtil.setRetryPolicyOnDelegate(
+                    OtlpHttpSpanExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 
