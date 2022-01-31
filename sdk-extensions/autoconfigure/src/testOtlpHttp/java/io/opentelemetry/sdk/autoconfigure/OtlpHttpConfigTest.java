@@ -63,7 +63,7 @@ class OtlpHttpConfigTest {
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", properties, NamedSpiManager.emptyManager(), MeterProvider.noop());
+            "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop());
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
     LogExporter logExporter =
@@ -149,7 +149,7 @@ class OtlpHttpConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
-            NamedSpiManager.emptyManager(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
 
     assertThat(spanExporter)
@@ -268,7 +268,7 @@ class OtlpHttpConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, NamedSpiManager.emptyManager(), MeterProvider.noop()))
+                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

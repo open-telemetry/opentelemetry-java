@@ -8,14 +8,10 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 final class SpiUtil {
 
@@ -47,36 +43,8 @@ final class SpiUtil {
       String name = getName.apply(provider);
       nameToProvider.put(name, () -> getConfigurable.apply(provider, config));
     }
-    return new LazyLoadingNamedSpiManager<>(nameToProvider);
+    return NamedSpiManager.create(nameToProvider);
   }
 
   private SpiUtil() {}
-
-  private static class LazyLoadingNamedSpiManager<T> implements NamedSpiManager<T> {
-
-    private final Map<String, Supplier<T>> nameToProvider;
-    private final ConcurrentMap<String, Optional<T>> nameToImplementation =
-        new ConcurrentHashMap<>();
-
-    LazyLoadingNamedSpiManager(Map<String, Supplier<T>> nameToProvider) {
-      this.nameToProvider = nameToProvider;
-    }
-
-    @Override
-    @Nullable
-    public T getByName(String name) {
-      return nameToImplementation
-          .computeIfAbsent(name, this::tryLoadImplementationForName)
-          .orElse(null);
-    }
-
-    private Optional<T> tryLoadImplementationForName(String name) {
-      Supplier<T> provider = nameToProvider.get(name);
-      if (provider == null) {
-        return Optional.empty();
-      }
-
-      return Optional.ofNullable(provider.get());
-    }
-  }
 }

@@ -58,7 +58,7 @@ class OtlpHttpRetryTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
-            NamedSpiManager.emptyManager(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
 
     testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
