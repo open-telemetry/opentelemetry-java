@@ -161,13 +161,13 @@ class AutoConfiguredOpenTelemetrySdkTest {
     AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addTracerProviderCustomizer(
-                (tracerProviderBuilder, config) ->{
-                    tracerProviderBuilder.setResource(Resource.builder().put("cat","meow").build());
-                    return tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter));
+                (tracerProviderBuilder, config) -> {
+                  tracerProviderBuilder.setResource(Resource.builder().put("cat", "meow").build());
+                  return tracerProviderBuilder.addSpanProcessor(
+                      SimpleSpanProcessor.create(spanExporter));
                 })
             .addResourceCustomizer(
-                (resource, config) ->
-                    resource.merge(Resource.builder().put("cow", "moo").build()))
+                (resource, config) -> resource.merge(Resource.builder().put("cow", "moo").build()))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))

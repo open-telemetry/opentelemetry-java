@@ -62,8 +62,8 @@ class TracerProviderConfigurationTest {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
     // are verified in other test sets like testFullConfig.
-    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
-        .setResource(resource);
+    SdkTracerProviderBuilder tracerProviderBuilder =
+        SdkTracerProvider.builder().setResource(resource);
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
         DefaultConfigProperties.createForTest(properties),
