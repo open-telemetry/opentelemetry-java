@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -16,6 +15,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -216,6 +216,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   public AutoConfiguredOpenTelemetrySdk build() {
     if (!customized) {
       customized = true;
+      mergeSdkTracerProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
           ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
@@ -224,23 +225,23 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     ConfigProperties config = getConfig();
-    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
 
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
-    tracerProviderBuilder.setResource(resource);
 
-    MeterProvider meterProvider =
+    SdkMeterProvider meterProvider =
         MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
 
-    SdkTracerProvider tracerProvider =
-        TracerProviderConfiguration.configureTracerProvider(
-            tracerProviderBuilder,
-            config,
-            serviceClassLoader,
-            meterProvider,
-            spanExporterCustomizer,
-            samplerCustomizer);
+    tracerProviderBuilder.setResource(resource);
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        config,
+        serviceClassLoader,
+        meterProvider,
+        spanExporterCustomizer,
+        samplerCustomizer);
+    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
     SdkLogEmitterProvider logEmitterProvider =
         LogEmitterProviderConfiguration.configureLogEmitterProvider(
@@ -253,9 +254,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                   () -> {
                     List<CompletableResultCode> shutdown = new ArrayList<>();
                     shutdown.add(tracerProvider.shutdown());
-                    if (meterProvider instanceof SdkMeterProvider) {
-                      shutdown.add(((SdkMeterProvider) meterProvider).shutdown());
-                    }
+                    shutdown.add(meterProvider.shutdown());
                     shutdown.add(logEmitterProvider.shutdown());
                     CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
                   }));
@@ -269,11 +268,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .setLogEmitterProvider(logEmitterProvider)
+            .setMeterProvider(meterProvider)
             .setPropagators(propagators);
-
-    if (meterProvider instanceof SdkMeterProvider) {
-      sdkBuilder.setMeterProvider((SdkMeterProvider) meterProvider);
-    }
 
     OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
 
@@ -284,6 +280,17 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+  }
+
+  private void mergeSdkTracerProviderConfigurer() {
+    for (SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
+      addTracerProviderCustomizer(
+          (builder, config) -> {
+            configurer.configure(builder, config);
+            return builder;
+          });
+    }
   }
 
   private ConfigProperties getConfig() {

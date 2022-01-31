@@ -95,6 +95,8 @@ tasks {
       showExceptions = true
       showCauses = true
       showStackTraces = true
+
+      showStandardStreams = true
     }
     maxHeapSize = "1500m"
   }

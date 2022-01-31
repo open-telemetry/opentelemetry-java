@@ -23,12 +23,16 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -146,6 +150,39 @@ class AutoConfiguredOpenTelemetrySdkTest {
     assertThat(span.getSpanContext().getTraceId())
         .isEqualTo(TraceId.fromLongs(9999999999L, 9999999999L));
     span.end();
+
+    // Ensures the export happened.
+    sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void tracerProviderCustomizer() {
+    InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+    AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addTracerProviderCustomizer(
+                (tracerProviderBuilder, config) -> {
+                  tracerProviderBuilder.setResource(Resource.builder().put("cat", "meow").build());
+                  return tracerProviderBuilder.addSpanProcessor(
+                      SimpleSpanProcessor.create(spanExporter));
+                })
+            .addResourceCustomizer(
+                (resource, config) -> resource.merge(Resource.builder().put("cow", "moo").build()))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
+            .setResultAsGlobal(false);
+
+    GlobalOpenTelemetry.set(OpenTelemetry.noop());
+    AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
+    assertThat(autoConfigured.getResource().getAttribute(stringKey("cow"))).isEqualTo("moo");
+
+    OpenTelemetrySdk sdk = autoConfigured.getOpenTelemetrySdk();
+    sdk.getTracerProvider().get("test").spanBuilder("test").startSpan().end();
+    List<SpanData> spanItems = spanExporter.getFinishedSpanItems();
+    assertThat(spanItems.size()).isEqualTo(1);
+    SpanData spanData = spanItems.get(0);
+    assertThat(spanData.getResource().getAttribute(stringKey("cat"))).isEqualTo("meow");
 
     // Ensures the export happened.
     sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);

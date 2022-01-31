@@ -89,6 +89,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   @Override
   public MeterBuilder meterBuilder(String instrumentationName) {
+    if (collectionInfoMap.isEmpty()) {
+      return MeterProvider.noop().meterBuilder(instrumentationName);
+    }
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;
@@ -101,6 +104,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
    * resulting {@link CompletableResultCode} completes when all complete.
    */
   public CompletableResultCode forceFlush() {
+    if (collectionInfoMap.isEmpty()) {
+      return CompletableResultCode.ofSuccess();
+    }
     List<CompletableResultCode> results = new ArrayList<>();
     for (CollectionInfo collectionInfo : collectionInfoMap.values()) {
       results.add(collectionInfo.getReader().flush());
@@ -115,6 +121,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   public CompletableResultCode shutdown() {
     if (!isClosed.compareAndSet(false, true)) {
       LOGGER.info("Multiple close calls");
+      return CompletableResultCode.ofSuccess();
+    }
+    if (collectionInfoMap.isEmpty()) {
       return CompletableResultCode.ofSuccess();
     }
     List<CompletableResultCode> results = new ArrayList<>();
