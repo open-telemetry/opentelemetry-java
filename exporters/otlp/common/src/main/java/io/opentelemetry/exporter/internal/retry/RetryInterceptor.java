@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.retry;
 
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -28,6 +29,7 @@ public final class RetryInterceptor implements Interceptor {
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
+  private final Function<IOException, Boolean> isRetryableException;
   private final Sleeper sleeper;
   private final BoundedLongGenerator randomLong;
 
@@ -36,6 +38,7 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
+        RetryInterceptor::isRetryableException,
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -44,10 +47,12 @@ public final class RetryInterceptor implements Interceptor {
   RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetryable,
+      Function<IOException, Boolean> isRetryableException,
       Sleeper sleeper,
       BoundedLongGenerator randomLong) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
+    this.isRetryableException = isRetryableException;
     this.sleeper = sleeper;
     this.randomLong = randomLong;
   }
@@ -94,12 +99,20 @@ public final class RetryInterceptor implements Interceptor {
       if (response != null && !Boolean.TRUE.equals(isRetryable.apply(response))) {
         return response;
       }
+      if (exception != null && !Boolean.TRUE.equals(isRetryableException.apply(exception))) {
+        throw exception;
+      }
     } while (attempt < retryPolicy.getMaxAttempts());
 
     if (response != null) {
       return response;
     }
     throw exception;
+  }
+
+  // Visible for testing
+  static boolean isRetryableException(IOException e) {
+    return e instanceof SocketTimeoutException;
   }
 
   // Visible for testing

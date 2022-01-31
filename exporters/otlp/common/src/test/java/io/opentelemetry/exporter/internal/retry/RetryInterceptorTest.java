@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.retry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +45,15 @@ class RetryInterceptorTest {
 
   @Mock private RetryInterceptor.Sleeper sleeper;
   @Mock private RetryInterceptor.BoundedLongGenerator random;
+  // Note: cannot replace this with lambda or method reference because we need to spy on it
+  @Spy
+  private Function<IOException, Boolean> isRetryableException =
+      new Function<IOException, Boolean>() {
+        @Override
+        public Boolean apply(IOException exception) {
+          return RetryInterceptor.isRetryableException(exception);
+        }
+      };
 
   private OkHttpClient client;
 
@@ -55,6 +68,7 @@ class RetryInterceptorTest {
                 .setMaxAttempts(5)
                 .build(),
             r -> !r.isSuccessful(),
+            isRetryableException,
             sleeper,
             random);
     client =
@@ -137,10 +151,19 @@ class RetryInterceptorTest {
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOf(SocketTimeoutException.class)
-        .hasMessage("Connect timed out");
+        .matches(
+            (Predicate<Throwable>)
+                throwable -> throwable.getMessage().equalsIgnoreCase("connect timed out"));
 
+    verify(isRetryableException, times(5)).apply(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
+  }
+
+  @Test
+  void isRetryableException() {
+    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("error"))).isTrue();
+    assertThat(RetryInterceptor.isRetryableException(new IOException("error"))).isFalse();
   }
 
   private Response sendRequest() throws IOException {
