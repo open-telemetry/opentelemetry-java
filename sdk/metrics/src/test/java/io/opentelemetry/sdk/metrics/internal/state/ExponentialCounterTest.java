@@ -20,6 +20,18 @@ public class ExponentialCounterTest {
 
   @ParameterizedTest
   @MethodSource("counterProviders")
+  void returnsZeroOutsidePopulatedRange(ExponentialCounterFactory counterFactory) {
+    ExponentialCounter counter = counterFactory.newCounter(10);
+    assertThat(counter.get(0)).isEqualTo(0);
+    assertThat(counter.get(100)).isEqualTo(0);
+    counter.increment(2, 1);
+    counter.increment(99, 1);
+    assertThat(counter.get(0)).isEqualTo(0);
+    assertThat(counter.get(100)).isEqualTo(0);
+  }
+
+  @ParameterizedTest
+  @MethodSource("counterProviders")
   void expandLower(ExponentialCounterFactory counterFactory) {
     ExponentialCounter counter = counterFactory.newCounter(320);
     assertThat(counter.increment(10, 1)).isTrue();
