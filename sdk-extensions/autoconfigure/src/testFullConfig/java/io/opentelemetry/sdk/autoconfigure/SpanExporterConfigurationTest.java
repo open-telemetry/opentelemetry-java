@@ -40,7 +40,7 @@ class SpanExporterConfigurationTest {
             "otlp",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.otlp.timeout", "10")),
-            Collections.emptyMap(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
     try {
       assertThat(exporter)
@@ -63,7 +63,7 @@ class SpanExporterConfigurationTest {
             "jaeger",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.jaeger.timeout", "10")),
-            Collections.emptyMap(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
     try {
       assertThat(exporter)
@@ -86,7 +86,7 @@ class SpanExporterConfigurationTest {
             "zipkin",
             DefaultConfigProperties.createForTest(
                 Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")),
-            Collections.emptyMap(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
     try {
       assertThat(exporter).isNotNull();
