@@ -50,6 +50,7 @@ tasks {
 
         // Limits APIs
         disable("NoFunctionalReturnType")
+        disable("PreferredInterfaceType")
 
         // We don't depend on Guava so use normal splitting
         disable("StringSplitter")
@@ -61,10 +62,10 @@ tasks {
         // We don't get much benefit from it anyways.
         disable("InlineMeSuggester")
 
-        // Prevents defensive null checks, and we have nullaway anyways
+        // We have nullaway so don't need errorprone nullable checks which have more false positives.
+        disable("FieldMissingNullable")
         disable("ParameterMissingNullable")
-
-        // javax.annotation.Nullable doesn't support annotating type parameters
+        disable("ReturnMissingNullable")
         disable("VoidMissingNullable")
 
         // Only used in comments, but couldn't SuppressWarnings for some reason
@@ -73,9 +74,6 @@ tasks {
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")
-
-          // We only enable null checking on main sources
-          disable("FieldMissingNullable")
         }
 
         option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")
