@@ -245,7 +245,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportMoreSpansThanTheMaximumLimit() {
-    final int maxQueuedSpans = 8;
+    int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(maxQueuedSpans, CompletableResultCode.ofSuccess());
     sdkTracerProvider =
@@ -486,6 +486,20 @@ class BatchSpanProcessorTest {
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  void stringRepresentation() {
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
+    String processorStr = processor.toString();
+    processor.close();
+    assertThat(processorStr)
+        .hasToString(
+            "BatchSpanProcessor{"
+                + "spanExporter=mockSpanExporter, "
+                + "scheduleDelayNanos=5000000000, "
+                + "maxExportBatchSize=512, "
+                + "exporterTimeoutNanos=30000000000}");
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {

@@ -9,9 +9,9 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.net.URI;
 import java.time.Duration;
@@ -53,7 +53,10 @@ public final class OtlpGrpcMetricExporterBuilder {
    *
    * @param channel the channel to use
    * @return this builder's instance
+   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
+   *     methods on this builder, please file an issue to let us know what it is.
    */
+  @Deprecated
   public OtlpGrpcMetricExporterBuilder setChannel(ManagedChannel channel) {
     delegate.setChannel(channel);
     return this;

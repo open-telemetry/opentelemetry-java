@@ -226,7 +226,7 @@ class BatchLogProcessorTest {
 
   @Test
   void emitMoreLogsThanTheMaximumLimit() {
-    final int maxQueuedLogs = 8;
+    int maxQueuedLogs = 8;
     BlockingLogExporter blockingLogExporter = new BlockingLogExporter();
     WaitingLogExporter waitingLogExporter =
         new WaitingLogExporter(maxQueuedLogs, CompletableResultCode.ofSuccess());

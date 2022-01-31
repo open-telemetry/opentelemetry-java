@@ -148,7 +148,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
     // todo
     return result.succeed();
   }

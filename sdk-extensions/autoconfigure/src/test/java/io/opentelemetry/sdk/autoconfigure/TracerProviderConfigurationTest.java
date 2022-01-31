@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -61,14 +62,16 @@ class TracerProviderConfigurationTest {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
     // are verified in other test sets like testFullConfig.
-    SdkTracerProvider tracerProvider =
-        TracerProviderConfiguration.configureTracerProvider(
-            resource,
-            DefaultConfigProperties.createForTest(properties),
-            TracerProviderConfiguration.class.getClassLoader(),
-            MeterProvider.noop(),
-            (a, unused) -> a,
-            (a, unused) -> a);
+    SdkTracerProviderBuilder tracerProviderBuilder =
+        SdkTracerProvider.builder().setResource(resource);
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        DefaultConfigProperties.createForTest(properties),
+        TracerProviderConfiguration.class.getClassLoader(),
+        MeterProvider.noop(),
+        (a, unused) -> a,
+        (a, unused) -> a);
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     try {
       assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
 
@@ -89,7 +92,8 @@ class TracerProviderConfigurationTest {
   @Test
   void configureBatchSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureBatchSpanProcessor(EMPTY, mockSpanExporter);
+        TracerProviderConfiguration.configureBatchSpanProcessor(
+            EMPTY, mockSpanExporter, MeterProvider.noop());
 
     try {
       assertThat(processor)
@@ -124,7 +128,9 @@ class TracerProviderConfigurationTest {
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
-            DefaultConfigProperties.createForTest(properties), mockSpanExporter);
+            DefaultConfigProperties.createForTest(properties),
+            mockSpanExporter,
+            MeterProvider.noop());
 
     try {
       assertThat(processor)

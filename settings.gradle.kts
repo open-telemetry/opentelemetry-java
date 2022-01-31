@@ -7,7 +7,6 @@ pluginManagement {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("nebula.release") version "16.0.0"
     id("org.jetbrains.kotlin.jvm") version "1.6.10"
-    id("org.unbroken-dome.test-sets") version "4.0.0"
   }
 }
 
@@ -53,6 +52,7 @@ include(":exporters:otlp-http:trace")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
 include(":integration-tests")
+include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")
 include(":opencensus-shim")
 include(":opentracing-shim")

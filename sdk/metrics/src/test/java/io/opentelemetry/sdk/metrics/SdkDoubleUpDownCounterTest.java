@@ -186,7 +186,7 @@ class SdkDoubleUpDownCounterTest {
 
   @Test
   void stressTest() {
-    final DoubleUpDownCounter doubleUpDownCounter =
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -232,9 +232,9 @@ class SdkDoubleUpDownCounterTest {
 
   @Test
   void stressTest_WithDifferentLabelSet() {
-    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleUpDownCounter doubleUpDownCounter =
+    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =

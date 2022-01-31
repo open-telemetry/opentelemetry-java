@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
@@ -66,4 +67,16 @@ public interface AutoConfigurationCustomizer {
    */
   AutoConfigurationCustomizer addPropertiesSupplier(
       Supplier<Map<String, String>> propertiesSupplier);
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkTracerProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addTracerProviderCustomizer(
+      BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+          tracerProviderCustomizer) {
+    return this;
+  }
 }

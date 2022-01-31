@@ -56,7 +56,7 @@ public final class NestedCallbacksTest {
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
-  private void submitCallbacks(final Span span) {
+  private void submitCallbacks(Span span) {
 
     executor.submit(
         () -> {

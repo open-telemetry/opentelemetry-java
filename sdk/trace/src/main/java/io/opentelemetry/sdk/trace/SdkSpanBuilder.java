@@ -21,6 +21,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -164,10 +165,10 @@ final class SdkSpanBuilder implements SpanBuilder {
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Span startSpan() {
-    final Context parentContext = parent == null ? Context.current() : parent;
-    final Span parentSpan = Span.fromContext(parentContext);
-    final SpanContext parentSpanContext = parentSpan.getSpanContext();
-    final String traceId;
+    Context parentContext = parent == null ? Context.current() : parent;
+    Span parentSpan = Span.fromContext(parentContext);
+    SpanContext parentSpanContext = parentSpan.getSpanContext();
+    String traceId;
     IdGenerator idGenerator = tracerSharedState.getIdGenerator();
     String spanId = idGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {
@@ -214,7 +215,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     AttributesMap recordedAttributes = attributes;
     attributes = null;
 
-    return RecordEventsReadableSpan.startSpan(
+    return SdkSpan.startSpan(
         spanContext,
         spanName,
         instrumentationLibraryInfo,

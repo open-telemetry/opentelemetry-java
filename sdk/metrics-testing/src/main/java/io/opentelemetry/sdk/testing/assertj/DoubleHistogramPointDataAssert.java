@@ -24,6 +24,13 @@ public class DoubleHistogramPointDataAssert
     return this;
   }
 
+  /** Ensures the {@code sum} field contains a greater value than the passed {@code boundary}. */
+  public DoubleHistogramPointDataAssert hasSumGreaterThan(double boundary) {
+    isNotNull();
+    Assertions.assertThat(actual.getSum()).as("sum").isGreaterThan(boundary);
+    return this;
+  }
+
   /** Ensures the {@code count} field matches the expected value. */
   public DoubleHistogramPointDataAssert hasCount(long expected) {
     isNotNull();

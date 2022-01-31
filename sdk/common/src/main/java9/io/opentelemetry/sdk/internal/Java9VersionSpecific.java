@@ -36,7 +36,7 @@ class Java9VersionSpecific extends JavaVersionSpecific {
 
   @Override
   public long currentTimeNanos() {
-    final Instant now = Clock.systemUTC().instant();
+    Instant now = Clock.systemUTC().instant();
     return TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano();
   }
 }

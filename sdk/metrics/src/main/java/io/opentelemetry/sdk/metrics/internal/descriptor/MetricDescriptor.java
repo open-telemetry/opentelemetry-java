@@ -43,8 +43,8 @@ public abstract class MetricDescriptor {
 
   /** Constructs a metric descriptor for a given View + instrument. */
   public static MetricDescriptor create(View view, InstrumentDescriptor instrument) {
-    final String name = (view.getName() == null) ? instrument.getName() : view.getName();
-    final String description =
+    String name = (view.getName() == null) ? instrument.getName() : view.getName();
+    String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
     return new AutoValue_MetricDescriptor(
         name, description, instrument.getUnit(), Optional.of(view), instrument);
@@ -85,5 +85,21 @@ public abstract class MetricDescriptor {
         && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
         && Objects.equals(
             getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
+  }
+
+  /** Returns whether the descriptor describes an async {@link InstrumentType}. */
+  public boolean isAsync() {
+    switch (getSourceInstrument().getType()) {
+      case OBSERVABLE_UP_DOWN_SUM:
+      case OBSERVABLE_GAUGE:
+      case OBSERVABLE_SUM:
+        return true;
+      case HISTOGRAM:
+      case COUNTER:
+      case UP_DOWN_COUNTER:
+        return false;
+    }
+    throw new IllegalStateException(
+        "Unrecognized instrument type " + getSourceInstrument().getType());
   }
 }

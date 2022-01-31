@@ -38,7 +38,7 @@ final class MultiLogExporter implements LogExporter {
   public CompletableResultCode export(Collection<LogData> logs) {
     List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
     for (LogExporter logExporter : logExporters) {
-      final CompletableResultCode exportResult;
+      CompletableResultCode exportResult;
       try {
         exportResult = logExporter.export(logs);
       } catch (RuntimeException e) {
@@ -61,7 +61,7 @@ final class MultiLogExporter implements LogExporter {
   public CompletableResultCode flush() {
     List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
     for (LogExporter logExporter : logExporters) {
-      final CompletableResultCode flushResult;
+      CompletableResultCode flushResult;
       try {
         flushResult = logExporter.flush();
       } catch (RuntimeException e) {
@@ -79,7 +79,7 @@ final class MultiLogExporter implements LogExporter {
   public CompletableResultCode shutdown() {
     List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
     for (LogExporter logExporter : logExporters) {
-      final CompletableResultCode shutdownResult;
+      CompletableResultCode shutdownResult;
       try {
         shutdownResult = logExporter.shutdown();
       } catch (RuntimeException e) {

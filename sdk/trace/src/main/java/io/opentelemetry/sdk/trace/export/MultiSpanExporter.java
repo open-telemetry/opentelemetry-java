@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,7 +40,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode exportResult;
+      CompletableResultCode exportResult;
       try {
         exportResult = spanExporter.export(spans);
       } catch (RuntimeException e) {
@@ -62,7 +63,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode flush() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode flushResult;
+      CompletableResultCode flushResult;
       try {
         flushResult = spanExporter.flush();
       } catch (RuntimeException e) {
@@ -80,7 +81,7 @@ final class MultiSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
-      final CompletableResultCode shutdownResult;
+      CompletableResultCode shutdownResult;
       try {
         shutdownResult = spanExporter.shutdown();
       } catch (RuntimeException e) {
@@ -96,5 +97,10 @@ final class MultiSpanExporter implements SpanExporter {
 
   private MultiSpanExporter(SpanExporter[] spanExporters) {
     this.spanExporters = spanExporters;
+  }
+
+  @Override
+  public String toString() {
+    return "MultiSpanExporter{" + "spanExporters=" + Arrays.toString(spanExporters) + '}';
   }
 }

@@ -9,9 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -183,14 +185,14 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testTracerBuilder() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
   void testTracerBuilderViaProvider() {
-    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
@@ -277,5 +279,33 @@ class OpenTelemetrySdkTest {
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
+  }
+
+  @Test
+  void stringRepresentation() {
+    SpanExporter exporter = mock(SpanExporter.class);
+    when(exporter.toString()).thenReturn("MockSpanExporter{}");
+    Resource resource =
+        Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .setResource(resource)
+                    .addSpanProcessor(
+                        SimpleSpanProcessor.create(SpanExporter.composite(exporter, exporter)))
+                    .build())
+            .build();
+
+    assertThat(sdk.toString())
+        .isEqualTo(
+            "OpenTelemetrySdk{"
+                + "tracerProvider=SdkTracerProvider{"
+                + "clock=SystemClock{}, "
+                + "idGenerator=RandomIdGenerator{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
+                + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
+                + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
+                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}");
   }
 }

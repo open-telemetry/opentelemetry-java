@@ -12,9 +12,9 @@ import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
-import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import java.io.InputStream;
 
 // Adapted from the protoc generated code for MetricsServiceGrpc.

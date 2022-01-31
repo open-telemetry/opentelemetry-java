@@ -71,7 +71,7 @@ public enum MetricsTestOperationBuilder {
 
   private final OperationBuilder builder;
 
-  MetricsTestOperationBuilder(final OperationBuilder builder) {
+  MetricsTestOperationBuilder(OperationBuilder builder) {
     this.builder = builder;
   }
 

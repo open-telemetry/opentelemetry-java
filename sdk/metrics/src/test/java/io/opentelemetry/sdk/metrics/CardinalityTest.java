@@ -69,7 +69,7 @@ class CardinalityTest {
                       .hasSize(1));
 
       // Make sure we preserve previous cumulatives
-      final int currentSize = i;
+      int currentSize = i;
       assertThat(cumulativeReader.collectAllMetrics())
           .as("Cumulative collection " + i)
           .hasSize(1)

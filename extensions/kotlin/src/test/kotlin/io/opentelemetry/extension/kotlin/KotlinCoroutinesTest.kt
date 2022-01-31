@@ -79,8 +79,10 @@ class KotlinCoroutinesTest {
     val context1 = Context.root().with(ANIMAL, "cat")
     runBlocking(context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
+      delay(10)
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
       for (i in 0 until 100) {
-        GlobalScope.launch {
+        launch {
           assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
           withContext(context1.with(ANIMAL, "dog").asContextElement()) {
             assertThat(Context.current().get(ANIMAL)).isEqualTo("dog")
@@ -88,7 +90,7 @@ class KotlinCoroutinesTest {
             assertThat(Context.current().get(ANIMAL)).isEqualTo("dog")
           }
         }
-        GlobalScope.launch {
+        launch {
           assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
           withContext(context1.with(ANIMAL, "koala").asContextElement()) {
             assertThat(Context.current().get(ANIMAL)).isEqualTo("koala")

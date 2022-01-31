@@ -32,7 +32,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.9.0",
+    "2.11.0",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
@@ -80,7 +80,7 @@ val DEPENDENCIES = listOf(
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.5",
-  "io.github.netmikey.logunit:logunit-jul:1.1.2",
+  "io.github.netmikey.logunit:logunit-jul:1.1.3",
   "io.jaegertracing:jaeger-client:1.7.0",
   "io.opentelemetry.proto:opentelemetry-proto:0.11.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",

@@ -200,7 +200,7 @@ public final class GlobalOpenTelemetry {
 
   @Nullable
   private static OpenTelemetry maybeAutoConfigureAndSetGlobal() {
-    final Class<?> openTelemetrySdkAutoConfiguration;
+    Class<?> openTelemetrySdkAutoConfiguration;
     try {
       openTelemetrySdkAutoConfiguration =
           Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");

@@ -114,7 +114,7 @@ class LoggingMetricExporterTest {
 
   @Test
   void testFlush() {
-    final AtomicBoolean flushed = new AtomicBoolean(false);
+    AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingMetricExporter.class.getName())
         .addHandler(
             new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {

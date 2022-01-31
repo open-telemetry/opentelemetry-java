@@ -14,7 +14,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-/** Will limit the number of log messages emitted, so as not to spam when problems are happening. */
+/**
+ * Will limit the number of log messages emitted, so as not to spam when problems are happening.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public class ThrottlingLogger {
   private static final double RATE_LIMIT = 5;
   private static final double THROTTLED_RATE_LIMIT = 1;

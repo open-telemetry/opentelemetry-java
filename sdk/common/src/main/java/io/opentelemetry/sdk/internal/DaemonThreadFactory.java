@@ -12,6 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
  * threads as daemon.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;

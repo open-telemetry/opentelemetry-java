@@ -36,7 +36,7 @@ public final class DebugUtils {
    */
   public static String duplicateMetricErrorMessage(
       MetricDescriptor existing, MetricDescriptor conflict) {
-    final StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
+    StringBuilder result = new StringBuilder("Found duplicate metric definition: ");
     result.append(existing.getName()).append("\n");
     // Now we write out where the existing metric descriptor is coming from, either a raw instrument
     // or a view on a raw instrument.
@@ -96,13 +96,18 @@ public final class DebugUtils {
           .append(existing.getSourceInstrument().getValueType())
           .append("]\n");
     }
+    if (existing.isAsync()) {
+      result
+          .append("- InstrumentType [")
+          .append(existing.getSourceInstrument().getType())
+          .append("] is async and already registered\n");
+    }
 
     // Next we write out where the existing metric descriptor came from, either a raw instrument
     // or a view on a raw instrument.
     if (existing.getName().equals(existing.getSourceInstrument().getName())) {
       result
-          .append(
-              "Original instrument registered with same name but different description, unit, instrument type, or instrument value type.\n")
+          .append("Original instrument registered with same name but is incompatible.\n")
           .append(existing.getSourceInstrument().getSourceInfo().multiLineDebugString())
           .append("\n");
     } else {

@@ -11,13 +11,12 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -127,9 +126,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              OkHttpExporterBuilder.getDelegateBuilder(OtlpHttpSpanExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
 
@@ -149,10 +146,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
-          retryPolicy ->
-              DefaultGrpcExporterBuilder.getDelegateBuilder(
-                      OtlpGrpcSpanExporterBuilder.class, builder)
-                  .setRetryPolicy(retryPolicy));
+          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       builder.setMeterProvider(meterProvider);
 
       return builder.build();

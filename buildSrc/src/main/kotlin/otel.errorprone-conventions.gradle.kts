@@ -40,17 +40,17 @@ tasks {
         // Ignore warnings for protobuf and jmh generated files.
         excludedPaths.set(".*generated.*|.*internal.shaded.*")
 
+        // We use animal sniffer
         disable("Java7ApiChecker")
+        disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
-        //apparently disabling android doesn't disable this
-        disable("StaticOrDefaultInterfaceMethod")
 
-        //until we have everything converted, we need these
-        disable("JdkObsolete")
-        disable("UnnecessaryAnonymousClass")
+        // apparently disabling android doesn't disable this
+        disable("StaticOrDefaultInterfaceMethod")
 
         // Limits APIs
         disable("NoFunctionalReturnType")
+        disable("PreferredInterfaceType")
 
         // We don't depend on Guava so use normal splitting
         disable("StringSplitter")
@@ -61,6 +61,15 @@ tasks {
         // Seems to trigger even when a deprecated method isn't called anywhere.
         // We don't get much benefit from it anyways.
         disable("InlineMeSuggester")
+
+        // We have nullaway so don't need errorprone nullable checks which have more false positives.
+        disable("FieldMissingNullable")
+        disable("ParameterMissingNullable")
+        disable("ReturnMissingNullable")
+        disable("VoidMissingNullable")
+
+        // Only used in comments, but couldn't SuppressWarnings for some reason
+        disable("UnicodeEscape")
 
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names

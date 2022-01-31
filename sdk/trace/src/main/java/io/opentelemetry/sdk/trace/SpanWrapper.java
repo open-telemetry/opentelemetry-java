@@ -19,19 +19,18 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable class that stores {@link SpanData} based on a {@link RecordEventsReadableSpan}.
+ * Immutable class that stores {@link SpanData} based on a {@link SdkSpan}.
  *
- * <p>This class stores a reference to a mutable {@link RecordEventsReadableSpan} ({@code delegate})
- * which it uses only the immutable parts from, and a copy of all the mutable parts.
+ * <p>This class stores a reference to a mutable {@link SdkSpan} ({@code delegate}) which it uses
+ * only the immutable parts from, and a copy of all the mutable parts.
  *
- * <p>When adding a new field to {@link RecordEventsReadableSpan}, store a copy if and only if the
- * field is mutable in the {@link RecordEventsReadableSpan}. Otherwise retrieve it from the
- * referenced {@link RecordEventsReadableSpan}.
+ * <p>When adding a new field to {@link SdkSpan}, store a copy if and only if the field is mutable
+ * in the {@link SdkSpan}. Otherwise retrieve it from the referenced {@link SdkSpan}.
  */
 @Immutable
 @AutoValue
 abstract class SpanWrapper implements SpanData {
-  abstract RecordEventsReadableSpan delegate();
+  abstract SdkSpan delegate();
 
   abstract List<LinkData> resolvedLinks();
 
@@ -56,7 +55,7 @@ abstract class SpanWrapper implements SpanData {
    * preserve the overall immutability of the class.
    */
   static SpanWrapper create(
-      RecordEventsReadableSpan delegate,
+      SdkSpan delegate,
       List<LinkData> links,
       List<EventData> events,
       Attributes attributes,

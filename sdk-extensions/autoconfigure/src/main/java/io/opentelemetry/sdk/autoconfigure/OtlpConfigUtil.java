@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -102,7 +102,7 @@ final class OtlpConfigUtil {
       if (!Files.exists(path)) {
         throw new ConfigurationException("Invalid OTLP certificate path: " + path);
       }
-      final byte[] certificateBytes;
+      byte[] certificateBytes;
       try {
         certificateBytes = Files.readAllBytes(path);
       } catch (IOException e) {

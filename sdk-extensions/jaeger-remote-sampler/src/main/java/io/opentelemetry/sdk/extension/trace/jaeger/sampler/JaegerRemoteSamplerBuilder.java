@@ -8,26 +8,34 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** A builder for {@link JaegerRemoteSampler}. */
 public final class JaegerRemoteSamplerBuilder {
-  private static final String DEFAULT_ENDPOINT = "localhost:14250";
+
+  private static final String GRPC_SERVICE_NAME = "jaeger.api_v2.SamplingManager";
+  // Visible for testing
+  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/GetSamplingStrategy";
+
+  private static final String DEFAULT_ENDPOINT_URL = "http://localhost:14250";
+  private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final int DEFAULT_POLLING_INTERVAL_MILLIS = 60000;
   private static final Sampler INITIAL_SAMPLER =
       Sampler.parentBased(Sampler.traceIdRatioBased(0.001));
 
-  private String endpoint = DEFAULT_ENDPOINT;
-  @Nullable private ManagedChannel channel;
   @Nullable private String serviceName;
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
-  private boolean closeChannel = true;
+  private static final long DEFAULT_TIMEOUT_SECS = 10;
+
+  private final GrpcServiceBuilder<
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
+      delegate;
 
   /**
    * Sets the service name to be used by this exporter. Required.
@@ -41,24 +49,19 @@ public final class JaegerRemoteSamplerBuilder {
     return this;
   }
 
-  /** Sets the Jaeger endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. */
+  /**
+   * Sets the Jaeger endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}.
+   */
   public JaegerRemoteSamplerBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    this.endpoint = endpoint;
+    delegate.setEndpoint(endpoint);
     return this;
   }
 
-  /**
-   * Sets the managed channel to use when communicating with the backend. Takes precedence over
-   * {@link #setEndpoint(String)} if both are called.
-   *
-   * <p>Note: if you use this option, the provided channel will *not* be closed when {@code close()}
-   * is called on the resulting {@link JaegerRemoteSampler}.
-   */
-  public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
-    requireNonNull(channel, "channel");
-    this.channel = channel;
-    closeChannel = false;
+  /** Sets trusted certificate. */
+  public JaegerRemoteSamplerBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
+    delegate.setTrustedCertificates(trustedCertificatesPem);
     return this;
   }
 
@@ -93,18 +96,43 @@ public final class JaegerRemoteSamplerBuilder {
   }
 
   /**
+   * Sets the managed channel to use when communicating with the backend. Takes precedence over
+   * {@link #setEndpoint(String)} if both are called.
+   *
+   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
+   *     methods on this builder, please file an issue to let us know what it is.
+   */
+  @Deprecated
+  public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
+    delegate.setChannel(channel);
+    return this;
+  }
+
+  /**
    * Builds the {@link JaegerRemoteSampler}.
    *
    * @return the remote sampler instance.
    */
   public JaegerRemoteSampler build() {
-    ManagedChannel channel = this.channel;
-    if (channel == null) {
-      channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
-    }
     return new JaegerRemoteSampler(
-        serviceName, channel, pollingIntervalMillis, initialSampler, closeChannel);
+        delegate.build(), serviceName, pollingIntervalMillis, initialSampler);
   }
 
-  JaegerRemoteSamplerBuilder() {}
+  JaegerRemoteSamplerBuilder() {
+    delegate =
+        GrpcService.builder(
+            "remoteSampling",
+            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_ENDPOINT,
+            () -> MarshallerRemoteSamplerServiceGrpc::newFutureStub,
+            GRPC_SERVICE_NAME,
+            GRPC_ENDPOINT_PATH);
+  }
+
+  // Visible for testing
+  GrpcServiceBuilder<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
+      getDelegate() {
+    return delegate;
+  }
 }

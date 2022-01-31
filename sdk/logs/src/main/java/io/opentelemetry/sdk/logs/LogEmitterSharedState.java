@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -18,18 +19,28 @@ import javax.annotation.Nullable;
 final class LogEmitterSharedState {
   private final Object lock = new Object();
   private final Resource resource;
+  private final Supplier<LogLimits> logLimitsSupplier;
   private final LogProcessor logProcessor;
   private final Clock clock;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
-  LogEmitterSharedState(Resource resource, List<LogProcessor> logProcessors, Clock clock) {
+  LogEmitterSharedState(
+      Resource resource,
+      Supplier<LogLimits> logLimitsSupplier,
+      List<LogProcessor> logProcessors,
+      Clock clock) {
     this.resource = resource;
+    this.logLimitsSupplier = logLimitsSupplier;
     this.logProcessor = LogProcessor.composite(logProcessors);
     this.clock = clock;
   }
 
   Resource getResource() {
     return resource;
+  }
+
+  LogLimits getLogLimits() {
+    return logLimitsSupplier.get();
   }
 
   LogProcessor getLogProcessor() {

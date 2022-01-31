@@ -9,7 +9,7 @@ import static io.opentelemetry.exporter.logging.otlp.JsonUtil.JSON_FACTORY;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
-import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;

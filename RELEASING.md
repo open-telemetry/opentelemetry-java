@@ -49,7 +49,7 @@ Create a PR to mark the new release in README.md and CHANGELOG.md on the main br
 
 Finally, update the [website docs][] to refer to the newly released version.
 
-[website docs]: https://github.com/open-telemetry/opentelemetry-java-docs/tree/main/website_docs
+[website docs]: https://github.com/open-telemetry/opentelemetry.io/tree/main/content/en/docs/instrumentation/java
 
 ## Patch Release
 
@@ -82,6 +82,16 @@ First, checkout the release branch
 ```
 git fetch upstream v1.2.x
 git checkout upstream/v1.2.x
+```
+
+If the release branch does not exist, checkout the tag, create the release branch from it, and push
+it to the `upstream`.
+
+```
+git fetch upstream v1.2.0
+git checkout v1.2.0
+git checkout -b v1.2.x
+git push upstream v1.2.x
 ```
 
 Apply cherrypicks manually and commit. It is ok to apply multiple cherrypicks in a single commit.

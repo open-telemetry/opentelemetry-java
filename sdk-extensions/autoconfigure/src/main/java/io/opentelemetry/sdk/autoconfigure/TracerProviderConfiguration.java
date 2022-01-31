@@ -9,9 +9,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
@@ -26,23 +23,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
-  static SdkTracerProvider configureTracerProvider(
-      Resource resource,
+  static void configureTracerProvider(
+      SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
-    SdkTracerProviderBuilder tracerProviderBuilder =
-        SdkTracerProvider.builder()
-            .setResource(resource)
-            .setSpanLimits(configureSpanLimits(config));
+
+    tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
 
     String sampler = config.getString("otel.traces.sampler");
     if (sampler == null) {
@@ -51,27 +45,18 @@ final class TracerProviderConfiguration {
     tracerProviderBuilder.setSampler(
         samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
-    // Run user configuration before setting exporters from environment to allow user span
-    // processors to effect export.
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
-      configurer.configure(tracerProviderBuilder, config);
-    }
-
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
             config, serviceClassLoader, meterProvider, spanExporterCustomizer);
 
-    configureSpanProcessors(config, exportersByName)
+    configureSpanProcessors(config, exportersByName, meterProvider)
         .forEach(tracerProviderBuilder::addSpanProcessor);
-
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
-    return tracerProvider;
   }
 
   static List<SpanProcessor> configureSpanProcessors(
-      ConfigProperties config, Map<String, SpanExporter> exportersByName) {
+      ConfigProperties config,
+      Map<String, SpanExporter> exportersByName,
+      MeterProvider meterProvider) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
 
@@ -82,7 +67,7 @@ final class TracerProviderConfiguration {
 
     if (!exportersByNameCopy.isEmpty()) {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
-      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter));
+      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider));
     }
 
     return spanProcessors;
@@ -90,8 +75,9 @@ final class TracerProviderConfiguration {
 
   // VisibleForTesting
   static BatchSpanProcessor configureBatchSpanProcessor(
-      ConfigProperties config, SpanExporter exporter) {
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
+      ConfigProperties config, SpanExporter exporter, MeterProvider meterProvider) {
+    BatchSpanProcessorBuilder builder =
+        BatchSpanProcessor.builder(exporter).setMeterProvider(meterProvider);
 
     Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
     if (scheduleDelay != null) {

@@ -16,3 +16,7 @@
 From the root of the repo run `./gradlew clean :api:jmh` to run all the benchmarks
 or run `./gradlew clean :api:jmh -PjmhIncludeSingleClass=<ClassNameHere>`
 to run a specific benchmark class.
+
+---
+#### Logging API mis-use
+Define `logging.level.io.opentelemetry.ApiUsageLogging=TRACE` to enable TRACE logging for invalid API calls.

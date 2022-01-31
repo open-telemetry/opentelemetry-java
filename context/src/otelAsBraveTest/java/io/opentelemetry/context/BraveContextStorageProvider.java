@@ -73,7 +73,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
     }
 
     BraveContextValues with(Object key, Object value) {
-      final Object[] copy;
+      Object[] copy;
       for (int i = 0; i < values.length; i += 2) {
         if (values[i] == key) {
           copy = values.clone();
@@ -124,7 +124,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
           break;
         }
       }
-      final List<Object> newExtras;
+      List<Object> newExtras;
       if (values == null) {
         values = new BraveContextValues(k1, v1);
         newExtras = new ArrayList<>(extras.size() + 1);

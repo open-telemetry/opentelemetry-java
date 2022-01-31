@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 

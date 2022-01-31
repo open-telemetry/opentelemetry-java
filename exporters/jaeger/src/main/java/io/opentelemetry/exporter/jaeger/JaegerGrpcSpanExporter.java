@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.jaeger;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -28,8 +28,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       AttributeKey.stringKey("jaeger.version");
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final AttributeKey<String> HOSTNAME_KEY = AttributeKey.stringKey("hostname");
-  private static final AttributeKey<String> IP_KEY = AttributeKey.stringKey("ip");
   private static final String IP_DEFAULT = "0.0.0.0";
+  // Visible for testing
+  static final AttributeKey<String> IP_KEY = AttributeKey.stringKey("ip");
 
   private final GrpcExporter<PostSpansRequestMarshaler> delegate;
 
@@ -107,5 +108,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  // Visible for testing
+  Resource getJaegerResource() {
+    return jaegerResource;
   }
 }

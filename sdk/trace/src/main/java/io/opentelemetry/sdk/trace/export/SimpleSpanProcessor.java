@@ -78,7 +78,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     }
     try {
       List<SpanData> spans = Collections.singletonList(span.toSpanData());
-      final CompletableResultCode result = spanExporter.export(spans);
+      CompletableResultCode result = spanExporter.export(spans);
       pendingExports.add(result);
       result.whenComplete(
           () -> {
@@ -102,12 +102,12 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     if (isShutdown.getAndSet(true)) {
       return CompletableResultCode.ofSuccess();
     }
-    final CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode result = new CompletableResultCode();
 
-    final CompletableResultCode flushResult = forceFlush();
+    CompletableResultCode flushResult = forceFlush();
     flushResult.whenComplete(
         () -> {
-          final CompletableResultCode shutdownResult = spanExporter.shutdown();
+          CompletableResultCode shutdownResult = spanExporter.shutdown();
           shutdownResult.whenComplete(
               () -> {
                 if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
@@ -124,5 +124,10 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   @Override
   public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofAll(pendingExports);
+  }
+
+  @Override
+  public String toString() {
+    return "SimpleSpanProcessor{" + "spanExporter=" + spanExporter + '}';
   }
 }

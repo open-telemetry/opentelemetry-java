@@ -103,12 +103,12 @@ final class MetricAdapter {
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(
       String name, MetricDataType type, Collection<? extends PointData> points) {
-    final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
+    List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (PointData pointData : points) {
       Attributes attributes = pointData.getAttributes();
-      final List<String> labelNames = new ArrayList<>(attributes.size());
-      final List<String> labelValues = new ArrayList<>(attributes.size());
+      List<String> labelNames = new ArrayList<>(attributes.size());
+      List<String> labelValues = new ArrayList<>(attributes.size());
       attributes.forEach(
           (key, value) -> {
             String sanitizedLabelName = sanitizer.apply(key.getKey());

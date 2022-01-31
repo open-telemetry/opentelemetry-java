@@ -17,6 +17,9 @@ import javax.annotation.Nullable;
 /**
  * Base class for all the provider classes (TracerProvider, MeterProvider, etc.).
  *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can hange at
+ * any time.
+ *
  * @param <V> the type of the registered value.
  */
 public final class ComponentRegistry<V> {
@@ -36,7 +39,7 @@ public final class ComponentRegistry<V> {
    * @param instrumentationName the name of the instrumentation library.
    * @return the registered value associated with this name and {@code null} version.
    */
-  public final V get(String instrumentationName) {
+  public V get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
@@ -49,7 +52,7 @@ public final class ComponentRegistry<V> {
    * @param instrumentationVersion the version of the instrumentation library.
    * @return the registered value associated with this name and version.
    */
-  public final V get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public V get(String instrumentationName, @Nullable String instrumentationVersion) {
     return get(instrumentationName, instrumentationVersion, null);
   }
 
@@ -63,7 +66,7 @@ public final class ComponentRegistry<V> {
    * @return the registered value associated with this name and version.
    * @since 1.4.0
    */
-  public final V get(
+  public V get(
       String instrumentationName,
       @Nullable String instrumentationVersion,
       @Nullable String schemaUrl) {
@@ -86,7 +89,7 @@ public final class ComponentRegistry<V> {
    *
    * @return a {@code Collection} view of the registered components.
    */
-  public final Collection<V> getComponents() {
+  public Collection<V> getComponents() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
   }
 }

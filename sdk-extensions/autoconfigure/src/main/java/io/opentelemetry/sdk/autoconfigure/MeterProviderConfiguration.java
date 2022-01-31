@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -16,7 +15,7 @@ import java.util.ServiceLoader;
 
 final class MeterProviderConfiguration {
 
-  static MeterProvider configureMeterProvider(
+  static SdkMeterProvider configureMeterProvider(
       Resource resource, ConfigProperties config, ClassLoader serviceClassLoader) {
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
@@ -44,19 +43,12 @@ final class MeterProviderConfiguration {
     }
 
     String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName == null || exporterName.equals("none")) {
-      // In the event no exporters are configured set a noop exporter
-      return MeterProvider.noop();
+    if (exporterName != null && !exporterName.equals("none")) {
+      MetricExporterConfiguration.configureExporter(
+          exporterName, config, serviceClassLoader, meterProviderBuilder);
     }
-    MetricExporterConfiguration.configureExporter(
-        exporterName, config, serviceClassLoader, meterProviderBuilder);
 
-    SdkMeterProvider meterProvider = meterProviderBuilder.build();
-
-    // Make sure metrics shut down when JVM shuts down.
-    Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));
-
-    return meterProvider;
+    return meterProviderBuilder.build();
   }
 
   private MeterProviderConfiguration() {}

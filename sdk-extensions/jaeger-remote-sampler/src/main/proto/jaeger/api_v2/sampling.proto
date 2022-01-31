@@ -7,8 +7,6 @@ syntax = "proto3";
 
 package jaeger.api_v2;
 
-import "google/api/annotations.proto";
-
 option java_package = "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2";
 
 enum SamplingStrategyType {
@@ -48,10 +46,5 @@ message SamplingStrategyParameters {
 }
 
 service SamplingManager {
-  rpc GetSamplingStrategy(SamplingStrategyParameters) returns (SamplingStrategyResponse) {
-    option (google.api.http) = {
-      post: "/api/v2/samplingStrategy"
-      body: "*"
-    };
-  }
+  rpc GetSamplingStrategy(SamplingStrategyParameters) returns (SamplingStrategyResponse) {}
 }

@@ -24,6 +24,9 @@ import javax.annotation.concurrent.Immutable;
  * of being "empty", you'll need to remove them before calling the constructor, assuming you don't
  * want the "empty" keys to be kept in your collection.
  *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
  * @param <V> The type of the values contained in this.
  */
 @Immutable
@@ -246,7 +249,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("{");
+    StringBuilder sb = new StringBuilder("{");
     for (int i = 0; i < data.length; i += 2) {
       // Quote string values
       Object value = data[i + 1];

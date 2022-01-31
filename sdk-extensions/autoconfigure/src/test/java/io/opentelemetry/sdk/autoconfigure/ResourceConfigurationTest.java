@@ -30,7 +30,9 @@ class ResourceConfigurationTest {
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(props), (r, c) -> r))
+                DefaultConfigProperties.get(props),
+                ResourceConfigurationTest.class.getClassLoader(),
+                (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put(ResourceAttributes.SERVICE_NAME, "test-service")

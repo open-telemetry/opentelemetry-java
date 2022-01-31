@@ -53,9 +53,9 @@ public final class Ec2Resource {
   // Visible for testing
   static Resource buildResource(String endpoint) {
     String urlBase = "http://" + endpoint;
-    final URL identityDocumentUrl;
-    final URL hostnameUrl;
-    final URL tokenUrl;
+    URL identityDocumentUrl;
+    URL hostnameUrl;
+    URL tokenUrl;
     try {
       identityDocumentUrl = new URL(urlBase + "/latest/dynamic/instance-identity/document");
       hostnameUrl = new URL(urlBase + "/latest/meta-data/hostname");

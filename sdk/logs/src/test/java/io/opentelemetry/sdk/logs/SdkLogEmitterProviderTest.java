@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -69,6 +69,41 @@ class SdkLogEmitterProviderTest {
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
         .extracting(LogEmitterSharedState::getLogProcessor)
         .isSameAs(NoopLogProcessor.getInstance());
+  }
+
+  @Test
+  void builder_defaultLogLimits() {
+    assertThat(SdkLogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getLogLimits)
+        .isSameAs(LogLimits.getDefault());
+  }
+
+  @Test
+  void builder_logLimitsProvided() {
+    LogLimits logLimits =
+        LogLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(1).build();
+    assertThat(SdkLogEmitterProvider.builder().setLogLimits(() -> logLimits).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getLogLimits)
+        .isSameAs(logLimits);
+  }
+
+  @Test
+  void builder_defaultClock() {
+    assertThat(SdkLogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getClock)
+        .isSameAs(Clock.getDefault());
+  }
+
+  @Test
+  void builder_clockProvided() {
+    Clock clock = mock(Clock.class);
+    assertThat(SdkLogEmitterProvider.builder().setClock(clock).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getClock)
+        .isSameAs(clock);
   }
 
   @Test
@@ -192,7 +227,7 @@ class SdkLogEmitterProviderTest {
     long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
-    List<LogData> seenLogs = new LinkedList<>();
+    List<LogData> seenLogs = new ArrayList<>();
     logProcessor = seenLogs::add;
     sdkLogEmitterProvider =
         SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
