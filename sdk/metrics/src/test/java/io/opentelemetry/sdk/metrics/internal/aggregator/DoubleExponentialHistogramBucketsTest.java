@@ -113,7 +113,6 @@ public class DoubleExponentialHistogramBucketsTest {
     assertThat(resultCD).isNotEqualTo(empty);
   }
 
-
   @ParameterizedTest
   @MethodSource("bucketStrategies")
   void testToString(ExponentialBucketStrategy buckets) {
