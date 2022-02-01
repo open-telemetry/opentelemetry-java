@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,10 +132,9 @@ final class TracerProviderConfiguration {
   // Visible for testing
   static Sampler configureSampler(
       String sampler, ConfigProperties config, ClassLoader serviceClassLoader) {
-    Map<String, Sampler> spiSamplers =
+    NamedSpiManager<Sampler> spiSamplersManager =
         SpiUtil.loadConfigurable(
             ConfigurableSamplerProvider.class,
-            Collections.singletonList(sampler),
             ConfigurableSamplerProvider::getName,
             ConfigurableSamplerProvider::createSampler,
             config,
@@ -168,7 +166,7 @@ final class TracerProviderConfiguration {
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:
-        Sampler spiSampler = spiSamplers.get(sampler);
+        Sampler spiSampler = spiSamplersManager.getByName(sampler);
         if (spiSampler == null) {
           throw new ConfigurationException(
               "Unrecognized value for otel.traces.sampler: " + sampler);

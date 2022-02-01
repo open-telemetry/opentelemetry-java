@@ -11,6 +11,7 @@ import static org.slf4j.event.Level.INFO;
 import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressLogger(ThrottlingLoggerTest.class)
 class ThrottlingLoggerTest {
 
   private static final Logger realLogger = Logger.getLogger(ThrottlingLoggerTest.class.getName());

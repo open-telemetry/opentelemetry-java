@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,7 @@ class OtlpHttpRetryTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
-            Collections.emptyMap(),
+            NamedSpiManager.createEmpty(),
             MeterProvider.noop());
 
     testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
