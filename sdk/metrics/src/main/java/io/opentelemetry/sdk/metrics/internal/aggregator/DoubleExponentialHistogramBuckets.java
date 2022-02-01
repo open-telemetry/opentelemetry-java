@@ -257,6 +257,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
     // Don't need to compare getTotalCount() because equivalent bucket counts
     // imply equivalent overall count.
+    // Additionally, we compare the "semantics" of bucket counts, that is
+    // it's ok for getOffset() to diverge as long as the populated counts remain
+    // the same.  This is because we don't "normalize" buckets after doing
+    // difference/subtraction operations.
     return this.scale == other.scale && sameBucketCounts(other);
   }
 
