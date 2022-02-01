@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -129,6 +130,7 @@ class PeriodicMetricReaderTest {
 
   @Test
   @Timeout(2)
+  @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     MetricReaderFactory factory =

@@ -196,10 +196,22 @@ dependencies {
   compileOnly("javax.annotation:javax.annotation-api")
 }
 
+class TestArgumentsProvider(
+  @InputFile
+  @PathSensitive(PathSensitivity.RELATIVE)
+  val loggingProperties: File,
+) : CommandLineArgumentProvider {
+  override fun asArguments() = listOf(
+    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
+  )
+}
+
 testing {
   suites.withType(JvmTestSuite::class).configureEach {
     dependencies {
       implementation(project)
+
+      implementation(project(":testing-internal"))
 
       compileOnly("com.google.auto.value:auto-value-annotations")
       compileOnly("com.google.errorprone:error_prone_annotations")
@@ -215,6 +227,15 @@ testing {
       implementation("io.github.netmikey.logunit:logunit-jul")
 
       runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    }
+
+    targets {
+      all {
+        testTask.configure {
+          jvmArgumentProviders.add(TestArgumentsProvider(rootProject.file("buildscripts/test-logging.properties")))
+          systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn")
+        }
+      }
     }
   }
 }

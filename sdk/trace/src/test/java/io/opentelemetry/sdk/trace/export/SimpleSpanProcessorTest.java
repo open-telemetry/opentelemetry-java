@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -65,6 +66,7 @@ class SimpleSpanProcessorTest {
   @BeforeEach
   void setUp() {
     simpleSampledSpansProcessor = SimpleSpanProcessor.create(spanExporter);
+    when(spanExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
     when(spanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
