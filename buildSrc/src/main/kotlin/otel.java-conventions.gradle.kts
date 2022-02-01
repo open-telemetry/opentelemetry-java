@@ -65,11 +65,6 @@ tasks {
         )
       }
 
-      // disable deprecation warnings for the protobuf module
-      if (project.name == "proto") {
-        compilerArgs.add("-Xlint:-deprecation")
-      }
-
       encoding = "UTF-8"
 
       if (name.contains("Test")) {
