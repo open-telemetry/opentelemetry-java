@@ -14,6 +14,10 @@ import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+/**
+ * JUnit5 extension to enable the {@link SuppressLogger} annotation which can suppress output of log
+ * messages during test execution, i.e. when the log messages are expected.
+ */
 public final class LoggerExtension
     implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
