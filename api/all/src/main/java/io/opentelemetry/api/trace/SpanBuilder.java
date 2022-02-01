@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.anyco.rpc");
+ *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.anyco.rpc");
  *
  *   void doWork {
  *     // Create a Span as a child of the current Span.
@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <pre>{@code
  * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
- *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+ *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.example.rpc");
  *   private Span mySpan;
  *
  *   public MyRpcInterceptor() {}
@@ -84,7 +84,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+ *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.example.rpc");
  *
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilder("MyChildSpan")
@@ -305,7 +305,7 @@ public interface SpanBuilder {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+   *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.example.rpc");
    *
    *   void doWork(Span parent) {
    *     Span childSpan = tracer.spanBuilder("MyChildSpan")

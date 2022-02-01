@@ -85,7 +85,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (SdkTracerProvider) OpenTelemetry.getGlobalTracerProvider()}.
+   * use patterns like {@code (SdkTracerProvider) GlobalOpenTelemetry.getTracerProvider()}.
    */
   @ThreadSafe
   // Visible for testing
