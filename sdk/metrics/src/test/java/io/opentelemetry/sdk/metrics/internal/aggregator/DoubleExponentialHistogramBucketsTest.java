@@ -99,18 +99,18 @@ public class DoubleExponentialHistogramBucketsTest {
     assertThat(c.record(3)).isTrue();
     assertThat(c.getTotalCount()).isEqualTo(2);
 
-    DoubleExponentialHistogramBuckets resultCC = DoubleExponentialHistogramBuckets.diff(c, c);
-    assertThat(c).isNotEqualTo(resultCC);
-    assertEquals(resultCC, empty);
-    assertThat(resultCC).hasSameHashCodeAs(empty);
+    DoubleExponentialHistogramBuckets resultCc = DoubleExponentialHistogramBuckets.diff(c, c);
+    assertThat(c).isNotEqualTo(resultCc);
+    assertEquals(resultCc, empty);
+    assertThat(resultCc).hasSameHashCodeAs(empty);
 
     DoubleExponentialHistogramBuckets d = buckets.newBuckets();
     d.record(1);
     // Downscale d to be the same as C but do NOT record the value 3.
     d.downscale(20);
-    DoubleExponentialHistogramBuckets resultCD = DoubleExponentialHistogramBuckets.diff(c, d);
+    DoubleExponentialHistogramBuckets resultCd = DoubleExponentialHistogramBuckets.diff(c, d);
     assertThat(c).isNotEqualTo(d);
-    assertThat(resultCD).isNotEqualTo(empty);
+    assertThat(resultCd).isNotEqualTo(empty);
   }
 
   @ParameterizedTest
