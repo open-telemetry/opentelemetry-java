@@ -23,6 +23,7 @@ import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -221,6 +222,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void tls_untrusted() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpsUri().toString()).build();
@@ -234,6 +236,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void tls_badCert() {
     assertThatThrownBy(
             () ->
@@ -283,6 +286,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void error() {
     addGrpcError(13, null);
     assertThat(
@@ -300,6 +304,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void errorWithMessage() {
     addGrpcError(8, "out of quota");
     assertThat(
@@ -317,6 +322,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void errorWithEscapedMessage() {
     addGrpcError(5, "クマ🐻");
     assertThat(
@@ -334,6 +340,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void testExport_Unavailable() {
     addGrpcError(14, null);
     assertThat(
@@ -352,6 +359,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
     assertThat(
@@ -415,6 +423,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @ParameterizedTest
   @ValueSource(ints = {2, 3, 5, 6, 7, 9, 12, 13, 16})
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void nonRetryableError(int code) {
     addGrpcError(code, null);
 

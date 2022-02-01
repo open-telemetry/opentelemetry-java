@@ -12,6 +12,8 @@ dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
 
+  implementation(project(":testing-internal"))
+
   api("io.opentelemetry.proto:opentelemetry-proto")
   api("org.junit.jupiter:junit-jupiter-api")
   implementation("org.junit.jupiter:junit-jupiter-params")
@@ -20,5 +22,4 @@ dependencies {
   implementation("com.linecorp.armeria:armeria-junit5")
   implementation("io.github.netmikey.logunit:logunit-jul")
   implementation("org.assertj:assertj-core")
-  runtimeOnly("org.slf4j:slf4j-simple")
 }

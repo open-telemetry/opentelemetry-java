@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -84,6 +85,7 @@ class SimpleHttpClientTest {
     }
 
     @Test
+    @SuppressLogger(SimpleHttpClient.class)
     void missingCert() {
       SimpleHttpClient httpClient = new SimpleHttpClient();
       String result =
@@ -96,6 +98,7 @@ class SimpleHttpClientTest {
     }
 
     @Test
+    @SuppressLogger(SimpleHttpClient.class)
     void badCert(@TempDir Path tempDir) throws Exception {
       Path certFile = tempDir.resolve("test.crt");
       Files.write(certFile, "bad cert".getBytes(StandardCharsets.UTF_8));

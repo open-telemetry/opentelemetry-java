@@ -18,8 +18,6 @@ dependencies {
   compileOnly(project(":sdk-extensions:autoconfigure"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
-
-  testImplementation("org.junit-pioneer:junit-pioneer")
 }
 
 for (version in mrJarVersions) {

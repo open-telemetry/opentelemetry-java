@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.entry;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -49,6 +50,7 @@ class BeanstalkResourceTest {
   }
 
   @Test
+  @SuppressLogger(BeanstalkResource.class)
   void testBadConfigFile(@TempDir File tempFolder) throws IOException {
     File file = new File(tempFolder, "beanstalk.config");
     String content =
