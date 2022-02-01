@@ -63,7 +63,7 @@ class AdaptingIntegerArrayTest {
     counter.increment(0, value);
     assertThat(counter.get(0)).isEqualTo(value);
 
-    AdaptingIntegerArray copy = new AdaptingIntegerArray(counter);
+    AdaptingIntegerArray copy = counter.copy();
     assertThat(copy.get(0)).isEqualTo(value);
 
     counter.increment(0, 1);

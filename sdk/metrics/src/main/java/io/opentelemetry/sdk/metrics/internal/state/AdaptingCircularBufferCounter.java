@@ -31,7 +31,7 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
     // If toCopy is an AdaptingCircularBuffer, just do a copy of the underlying array
     // and baseIndex.
     if (toCopy instanceof AdaptingCircularBufferCounter) {
-      this.backing = new AdaptingIntegerArray(((AdaptingCircularBufferCounter) toCopy).backing);
+      this.backing = ((AdaptingCircularBufferCounter) toCopy).backing.copy();
       this.startIndex = toCopy.getIndexStart();
       this.endIndex = toCopy.getIndexEnd();
       this.baseIndex = ((AdaptingCircularBufferCounter) toCopy).baseIndex;

@@ -59,7 +59,7 @@ public class AdaptingIntegerArray {
 
   /** Creates deep copy of another adapting integer array. */
   @SuppressWarnings("NullAway")
-  public AdaptingIntegerArray(AdaptingIntegerArray toCopy) {
+  private AdaptingIntegerArray(AdaptingIntegerArray toCopy) {
     this.cellSize = toCopy.cellSize;
     switch (cellSize) {
       case BYTE:
@@ -75,6 +75,11 @@ public class AdaptingIntegerArray {
         this.longBacking = Arrays.copyOf(toCopy.longBacking, toCopy.longBacking.length);
         break;
     }
+  }
+
+  /** Returns a deep-copy of this array, preserving cell size. */
+  public AdaptingIntegerArray copy() {
+    return new AdaptingIntegerArray(this);
   }
 
   /** Add {@code count} to the value stored at {@code index}. */
