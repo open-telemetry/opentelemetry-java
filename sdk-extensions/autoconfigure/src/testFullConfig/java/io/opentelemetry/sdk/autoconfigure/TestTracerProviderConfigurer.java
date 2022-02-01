@@ -7,13 +7,14 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-public class TestTracerProviderConfigurer implements SdkTracerProviderConfigurer {
+@SuppressWarnings("deprecation") // Support testings of SdkTracerProviderConfigurer
+public class TestTracerProviderConfigurer
+    implements io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer {
   @Override
   public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
     tracerProvider.addSpanProcessor(
