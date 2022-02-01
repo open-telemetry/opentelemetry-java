@@ -29,13 +29,14 @@ final class LogEmitterProviderConfiguration {
 
     Map<String, LogExporter> exportersByName = configureLogExporters(config, meterProvider);
 
-    configureLogProcessors(exportersByName).forEach(builder::addLogProcessor);
+    configureLogProcessors(exportersByName, meterProvider).forEach(builder::addLogProcessor);
 
     return builder.build();
   }
 
   // Visible for testing
-  static List<LogProcessor> configureLogProcessors(Map<String, LogExporter> exportersByName) {
+  static List<LogProcessor> configureLogProcessors(
+      Map<String, LogExporter> exportersByName, MeterProvider meterProvider) {
     Map<String, LogExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<LogProcessor> logProcessors = new ArrayList<>();
 
@@ -46,7 +47,8 @@ final class LogEmitterProviderConfiguration {
 
     if (!exportersByNameCopy.isEmpty()) {
       LogExporter compositeLogExporter = LogExporter.composite(exportersByNameCopy.values());
-      logProcessors.add(BatchLogProcessor.builder(compositeLogExporter).build());
+      logProcessors.add(
+          BatchLogProcessor.builder(compositeLogExporter).setMeterProvider(meterProvider).build());
     }
 
     return logProcessors;
