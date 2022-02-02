@@ -22,10 +22,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example of usage on the client:
  *
  * <pre>{@code
- * private static final Tracer tracer = GlobalOpenTelemetry.getTracer();
  * void onSendRequest() {
  *   try (Scope ignored = span.makeCurrent()) {
- *     ContextPropagators propagators = GlobalOpenTelemetry.getPropagators();
+ *     ContextPropagators propagators = openTelemetry.getPropagators();
  *     TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
@@ -44,9 +43,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example of usage in the server:
  *
  * <pre>{@code
- * private static final Tracer tracer = GlobalOpenTelemetry.getTracer();
+ * private final Tracer tracer = openTelemetry.getTracer("com.example");
  * void onRequestReceived() {
- *   ContextPropagators propagators = GlobalOpenTelemetry.getPropagators();
+ *   ContextPropagators propagators = openTelemetry.getPropagators();
  *   TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
