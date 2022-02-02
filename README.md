@@ -52,8 +52,11 @@ We would love to hear from the larger community: please provide feedback proacti
 
 ## Requirements
 
-Unless otherwise noted, all published artifacts support Java 8 or higher. See [CONTRIBUTING.md](./CONTRIBUTING.md)
-for additional instructions for building this project for development.
+Unless otherwise noted, all published artifacts support Java 8 or higher.
+
+**Android Disclaimer:** _It's highly recommended enabling [desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in order to avoid odd Runtime exceptions (i.e. Issue [#4137](https://github.com/open-telemetry/opentelemetry-java/issues/4137)._
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for additional instructions for building this project for development.
 
 ### Note about extensions
 
