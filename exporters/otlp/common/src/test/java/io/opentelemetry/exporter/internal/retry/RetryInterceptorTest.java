@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -73,7 +74,7 @@ class RetryInterceptorTest {
             random);
     client =
         new OkHttpClient.Builder()
-            .connectTimeout(Duration.ofSeconds(1))
+            .connectTimeout(Duration.ofMillis(10))
             .addInterceptor(retrier)
             .build();
   }
@@ -158,6 +159,24 @@ class RetryInterceptorTest {
     verify(isRetryableException, times(5)).apply(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
+  }
+
+  @Test
+  void nonRetryableException() throws InterruptedException {
+    // Override isRetryableException so that no exception is retryable
+    when(isRetryableException.apply(any())).thenReturn(false);
+
+    // Connecting to a non-routable IP address to trigger connection timeout
+    assertThatThrownBy(
+        () ->
+            client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
+        .isInstanceOf(SocketTimeoutException.class)
+        .matches(
+            (Predicate<Throwable>)
+                throwable -> throwable.getMessage().equalsIgnoreCase("connect timed out"));
+
+    verify(isRetryableException, times(1)).apply(any());
+    verify(sleeper, never()).sleep(anyLong());
   }
 
   @Test

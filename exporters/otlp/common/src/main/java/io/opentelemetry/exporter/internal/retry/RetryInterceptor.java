@@ -5,14 +5,11 @@
 
 package io.opentelemetry.exporter.internal.retry;
 
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
@@ -24,9 +21,6 @@ import okhttp3.Response;
  */
 public final class RetryInterceptor implements Interceptor {
 
-  private static final Logger logger = Logger.getLogger(RetryInterceptor.class.getName());
-
-  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
   private final Function<IOException, Boolean> isRetryableException;
@@ -86,14 +80,6 @@ public final class RetryInterceptor implements Interceptor {
       try {
         response = chain.proceed(chain.request());
       } catch (IOException e) {
-        throttlingLogger.log(
-            Level.FINE,
-            "Error executing "
-                + chain.request().method()
-                + " "
-                + chain.request().url()
-                + ": "
-                + e.getMessage());
         exception = e;
       }
       if (response != null && !Boolean.TRUE.equals(isRetryable.apply(response))) {
