@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -58,6 +59,7 @@ class SimpleLogProcessorTest {
   }
 
   @Test
+  @SuppressLogger(SimpleLogProcessor.class)
   void addLogRecord_ExporterError() {
     LogData logData = TestUtil.createLogData(DEBUG, "Log message");
     when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));

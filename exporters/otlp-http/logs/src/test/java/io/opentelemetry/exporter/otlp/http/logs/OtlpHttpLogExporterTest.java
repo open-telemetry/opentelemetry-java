@@ -26,6 +26,7 @@ import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -268,6 +269,7 @@ class OtlpHttpLogExporterTest {
   }
 
   @Test
+  @SuppressLogger(OkHttpExporter.class)
   void testServerError() {
     server.enqueue(
         buildResponse(
@@ -283,6 +285,7 @@ class OtlpHttpLogExporterTest {
   }
 
   @Test
+  @SuppressLogger(OkHttpExporter.class)
   void testServerErrorParseError() {
     server.enqueue(
         HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, APPLICATION_PROTOBUF, "Server error!"));

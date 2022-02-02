@@ -65,7 +65,12 @@ val DEPENDENCY_SETS = listOf(
     "org.mockito",
     "4.2.0",
     listOf("mockito-core", "mockito-junit-jupiter")
-  )
+  ),
+  DependencySet(
+    "org.slf4j",
+    "1.7.32",
+    listOf("jul-to-slf4j", "slf4j-simple")
+  ),
 )
 
 val DEPENDENCIES = listOf(
@@ -93,7 +98,6 @@ val DEPENDENCIES = listOf(
   "org.jctools:jctools-core:3.3.0",
   "org.junit-pioneer:junit-pioneer:1.5.0",
   "org.skyscreamer:jsonassert:1.5.0",
-  "org.slf4j:slf4j-simple:1.7.32"
 )
 
 javaPlatform {

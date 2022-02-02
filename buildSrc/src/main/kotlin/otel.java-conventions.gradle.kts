@@ -224,16 +224,17 @@ testing {
       implementation("org.mockito:mockito-junit-jupiter")
       implementation("org.assertj:assertj-core")
       implementation("org.awaitility:awaitility")
+      implementation("org.junit-pioneer:junit-pioneer")
       implementation("io.github.netmikey.logunit:logunit-jul")
 
       runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+      runtimeOnly("org.slf4j:slf4j-simple")
     }
 
     targets {
       all {
         testTask.configure {
-          jvmArgumentProviders.add(TestArgumentsProvider(rootProject.file("buildscripts/test-logging.properties")))
-          systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn")
+          systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
         }
       }
     }
