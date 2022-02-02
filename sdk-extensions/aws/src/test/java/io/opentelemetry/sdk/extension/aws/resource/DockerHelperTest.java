@@ -9,9 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
 import java.io.IOException;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
