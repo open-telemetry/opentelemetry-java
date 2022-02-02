@@ -315,7 +315,11 @@ public interface SpanBuilder {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.example.rpc");
+   *   private final Tracer tracer;
+   *
+   *   MyClass(OpenTelemetry openTelemetry) {
+   *     tracer = openTelemetry.getTracer("com.example.rpc");
+   *   }
    *
    *   void doWork(Span parent) {
    *     Span childSpan = tracer.spanBuilder("MyChildSpan")
