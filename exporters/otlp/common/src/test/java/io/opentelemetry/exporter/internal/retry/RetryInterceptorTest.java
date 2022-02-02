@@ -168,8 +168,8 @@ class RetryInterceptorTest {
 
     // Connecting to a non-routable IP address to trigger connection timeout
     assertThatThrownBy(
-        () ->
-            client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
+            () ->
+                client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOf(SocketTimeoutException.class)
         .matches(
             (Predicate<Throwable>)
