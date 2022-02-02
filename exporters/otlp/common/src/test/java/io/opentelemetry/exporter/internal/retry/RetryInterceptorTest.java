@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,20 +46,21 @@ class RetryInterceptorTest {
 
   @Mock private RetryInterceptor.Sleeper sleeper;
   @Mock private RetryInterceptor.BoundedLongGenerator random;
-  // Note: cannot replace this with lambda or method reference because we need to spy on it
-  @Spy
-  private Function<IOException, Boolean> isRetryableException =
-      new Function<IOException, Boolean>() {
-        @Override
-        public Boolean apply(IOException exception) {
-          return RetryInterceptor.isRetryableException(exception);
-        }
-      };
+  private Function<IOException, Boolean> isRetryableException;
 
   private OkHttpClient client;
 
   @BeforeEach
   void setUp() {
+    // Note: cannot replace this with lambda or method reference because we need to spy on it
+    isRetryableException =
+        spy(
+            new Function<IOException, Boolean>() {
+              @Override
+              public Boolean apply(IOException exception) {
+                return RetryInterceptor.isRetryableException(exception);
+              }
+            });
     RetryInterceptor retrier =
         new RetryInterceptor(
             RetryPolicy.builder()
