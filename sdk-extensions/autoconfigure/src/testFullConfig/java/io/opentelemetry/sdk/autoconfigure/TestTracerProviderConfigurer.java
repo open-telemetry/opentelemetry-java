@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-@SuppressWarnings("deprecation") // Support testings of SdkTracerProviderConfigurer
+@SuppressWarnings("deprecation") // Support testing of SdkTracerProviderConfigurer
 public class TestTracerProviderConfigurer
     implements io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer {
   @Override
