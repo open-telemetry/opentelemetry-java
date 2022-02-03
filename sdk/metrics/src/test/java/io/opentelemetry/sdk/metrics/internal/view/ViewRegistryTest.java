@@ -217,7 +217,7 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG),
+                    "", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
         .hasSize(1)
         .element(0)
@@ -233,7 +233,11 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_UP_DOWN_COUNTER,
+                    InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
         .hasSize(1)
         .element(0)

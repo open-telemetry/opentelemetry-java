@@ -108,7 +108,7 @@ class SdkLongSumObserverTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_COUNTER)
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();

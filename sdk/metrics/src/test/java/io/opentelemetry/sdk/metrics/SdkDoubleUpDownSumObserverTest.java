@@ -111,7 +111,7 @@ class SdkDoubleUpDownSumObserverTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
