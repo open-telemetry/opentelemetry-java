@@ -54,7 +54,7 @@ We would love to hear from the larger community: please provide feedback proacti
 
 Unless otherwise noted, all published artifacts support Java 8 or higher.
 
-**Android Disclaimer:** For compatibility reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled. (i.e. Issue [#4137](https://github.com/open-telemetry/opentelemetry-java/issues/4137)).
+**Android Disclaimer:** For compatibility reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for additional instructions for building this project for development.
 
