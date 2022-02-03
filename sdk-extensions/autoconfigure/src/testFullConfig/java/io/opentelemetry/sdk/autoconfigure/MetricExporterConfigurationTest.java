@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import org.junit.jupiter.api.Test;
 
 public class MetricExporterConfigurationTest {
@@ -20,8 +19,7 @@ public class MetricExporterConfigurationTest {
             () ->
                 MetricExporterConfiguration.configureOtlpMetrics(
                     DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                    SdkMeterProvider.builder()))
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }

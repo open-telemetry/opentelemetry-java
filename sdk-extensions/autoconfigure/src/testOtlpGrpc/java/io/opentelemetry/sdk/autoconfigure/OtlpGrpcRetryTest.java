@@ -21,7 +21,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -81,7 +80,7 @@ class OtlpGrpcRetryTest {
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder())) {
+            DefaultConfigProperties.createForTest(props))) {
 
       testRetryableStatusCodes(
           () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
