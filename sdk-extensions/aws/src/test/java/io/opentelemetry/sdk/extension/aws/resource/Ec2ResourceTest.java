@@ -14,6 +14,7 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -112,6 +113,7 @@ class Ec2ResourceTest {
   }
 
   @Test
+  @SuppressLogger(Ec2Resource.class)
   void badJson() {
     server.enqueue(HttpResponse.of(HttpStatus.NOT_FOUND));
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, "I'm not JSON"));

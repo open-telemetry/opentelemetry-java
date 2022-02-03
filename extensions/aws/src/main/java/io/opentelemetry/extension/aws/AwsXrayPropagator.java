@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 
 /**
  * Implementation of the AWS X-Ray Trace Header propagation protocol. See <a href=
- * https://https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader>AWS
+ * https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader>AWS
  * Tracing header spec</a>
  *
  * <p>To register the X-Ray propagator together with default propagator when using the SDK:

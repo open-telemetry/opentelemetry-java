@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.zpages;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.ByteArrayOutputStream;
@@ -199,6 +200,7 @@ class TraceConfigzZPageHandlerTest {
   }
 
   @Test
+  @SuppressLogger(TraceConfigzZPageHandler.class)
   void applyChanges_emitErrorOnInvalidInput() {
     // Invalid samplingProbability (not type of double)
     OutputStream output = new ByteArrayOutputStream();

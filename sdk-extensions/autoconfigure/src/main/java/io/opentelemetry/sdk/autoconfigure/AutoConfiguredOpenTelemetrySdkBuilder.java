@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -328,9 +327,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
+  @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
   private void mergeSdkTracerProviderConfigurer() {
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
+    for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(
+            io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class,
+            serviceClassLoader)) {
       addTracerProviderCustomizer(
           (builder, config) -> {
             configurer.configure(builder, config);

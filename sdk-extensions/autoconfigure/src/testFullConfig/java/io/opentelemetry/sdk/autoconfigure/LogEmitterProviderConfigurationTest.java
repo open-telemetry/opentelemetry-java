@@ -71,7 +71,8 @@ class LogEmitterProviderConfigurationTest {
 
     assertThat(
             LogEmitterProviderConfiguration.configureLogProcessors(
-                ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter)))
+                ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter),
+                MeterProvider.noop()))
         .hasSize(2)
         .hasAtLeastOneElementOfType(SimpleLogProcessor.class)
         .hasAtLeastOneElementOfType(BatchLogProcessor.class);

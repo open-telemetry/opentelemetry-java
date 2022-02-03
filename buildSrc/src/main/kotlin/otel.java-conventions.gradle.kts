@@ -65,11 +65,6 @@ tasks {
         )
       }
 
-      // disable deprecation warnings for the protobuf module
-      if (project.name == "proto") {
-        compilerArgs.add("-Xlint:-deprecation")
-      }
-
       encoding = "UTF-8"
 
       if (name.contains("Test")) {
@@ -201,10 +196,22 @@ dependencies {
   compileOnly("javax.annotation:javax.annotation-api")
 }
 
+class TestArgumentsProvider(
+  @InputFile
+  @PathSensitive(PathSensitivity.RELATIVE)
+  val loggingProperties: File,
+) : CommandLineArgumentProvider {
+  override fun asArguments() = listOf(
+    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
+  )
+}
+
 testing {
   suites.withType(JvmTestSuite::class).configureEach {
     dependencies {
       implementation(project)
+
+      implementation(project(":testing-internal"))
 
       compileOnly("com.google.auto.value:auto-value-annotations")
       compileOnly("com.google.errorprone:error_prone_annotations")
@@ -217,9 +224,19 @@ testing {
       implementation("org.mockito:mockito-junit-jupiter")
       implementation("org.assertj:assertj-core")
       implementation("org.awaitility:awaitility")
+      implementation("org.junit-pioneer:junit-pioneer")
       implementation("io.github.netmikey.logunit:logunit-jul")
 
       runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+      runtimeOnly("org.slf4j:slf4j-simple")
+    }
+
+    targets {
+      all {
+        testTask.configure {
+          systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
+        }
+      }
     }
   }
 }

@@ -14,8 +14,10 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
@@ -43,6 +45,7 @@ class OtlpHttpRetryTest {
   public static final OtlpHttpServerExtension server = new OtlpHttpServerExtension();
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureSpanExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.traces.protocol", "http/protobuf");
@@ -53,18 +56,20 @@ class OtlpHttpRetryTest {
         "otel.exporter.otlp.traces.certificate",
         server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    SpanExporter spanExporter =
+    try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(props),
             NamedSpiManager.createEmpty(),
-            MeterProvider.noop());
+            MeterProvider.noop())) {
 
-    testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
-    testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+      testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+      testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
+    }
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureMetricExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.metrics.protocol", "http/protobuf");
@@ -75,16 +80,19 @@ class OtlpHttpRetryTest {
         "otel.exporter.otlp.metrics.certificate",
         server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    MetricExporter metricExporter =
+    try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props));
+            DefaultConfigProperties.createForTest(props))) {
 
-    testRetryableStatusCodes(
-        () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
-    testDefaultRetryPolicy(() -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+      testRetryableStatusCodes(
+          () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+      testDefaultRetryPolicy(
+          () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+    }
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureLogExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.protocol", "http/protobuf");
@@ -94,12 +102,13 @@ class OtlpHttpRetryTest {
         "otel.exporter.otlp.logs.certificate",
         server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    LogExporter logExporter =
+    try (LogExporter logExporter =
         LogExporterConfiguration.configureOtlpLogs(
-            DefaultConfigProperties.createForTest(props), MeterProvider.noop());
+            DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
-    testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
-    testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+      testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+      testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+    }
   }
 
   private static <T> void testRetryableStatusCodes(

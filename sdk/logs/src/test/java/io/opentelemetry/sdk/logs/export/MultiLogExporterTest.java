@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -102,6 +103,7 @@ class MultiLogExporterTest {
   }
 
   @Test
+  @SuppressLogger(MultiLogExporter.class)
   void twoLogExporter_FirstThrows() {
     LogExporter multiLogExporter = LogExporter.composite(Arrays.asList(logExporter1, logExporter2));
 
