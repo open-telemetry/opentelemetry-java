@@ -17,6 +17,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -63,6 +65,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       meterProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
       metricExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+      logEmitterProviderCustomizer = (a, unused) -> a;
+  private BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+      logExporterCustomizer = (a, unused) -> a;
 
   private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
@@ -217,6 +224,38 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkLogEmitterProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogEmitterProviderCustomizer(
+      BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+          logEmitterProviderCustomizer) {
+    requireNonNull(logEmitterProviderCustomizer, "logEmitterProviderCustomizer");
+    this.logEmitterProviderCustomizer =
+        mergeCustomizer(this.logEmitterProviderCustomizer, logEmitterProviderCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogExporterCustomizer(
+      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+          logExporterCustomizer) {
+    requireNonNull(logExporterCustomizer, "logExporterCustomizer");
+    this.logExporterCustomizer = mergeCustomizer(this.logExporterCustomizer, logExporterCustomizer);
+    return this;
+  }
+
+  /**
    * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
@@ -288,9 +327,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
-    SdkLogEmitterProvider logEmitterProvider =
-        LogEmitterProviderConfiguration.configureLogEmitterProvider(
-            resource, config, meterProvider);
+    SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
+    logEmitterProviderBuilder.setResource(resource);
+    LogEmitterProviderConfiguration.configureLogEmitterProvider(
+        logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
+    logEmitterProviderBuilder =
+        logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
+    SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
 
     if (registerShutdownHook) {
       Runtime.getRuntime()

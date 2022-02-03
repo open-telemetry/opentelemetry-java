@@ -21,7 +21,9 @@ class LogExporterConfigurationTest {
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,otlp"));
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureLogExporters(config, MeterProvider.noop()))
+            () ->
+                LogExporterConfiguration.configureLogExporters(
+                    config, MeterProvider.noop(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
   }
@@ -32,7 +34,9 @@ class LogExporterConfigurationTest {
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "foo"));
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureLogExporters(config, MeterProvider.noop()))
+            () ->
+                LogExporterConfiguration.configureLogExporters(
+                    config, MeterProvider.noop(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
   }
@@ -43,7 +47,9 @@ class LogExporterConfigurationTest {
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,none"));
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureLogExporters(config, MeterProvider.noop()))
+            () ->
+                LogExporterConfiguration.configureLogExporters(
+                    config, MeterProvider.noop(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
   }

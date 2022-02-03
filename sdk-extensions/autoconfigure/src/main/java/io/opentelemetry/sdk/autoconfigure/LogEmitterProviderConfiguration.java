@@ -10,28 +10,29 @@ import static io.opentelemetry.sdk.autoconfigure.LogExporterConfiguration.config
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 final class LogEmitterProviderConfiguration {
 
-  static SdkLogEmitterProvider configureLogEmitterProvider(
-      Resource resource, ConfigProperties config, MeterProvider meterProvider) {
-    SdkLogEmitterProviderBuilder builder = SdkLogEmitterProvider.builder().setResource(resource);
+  static void configureLogEmitterProvider(
+      SdkLogEmitterProviderBuilder logEmitterProviderBuilder,
+      ConfigProperties config,
+      MeterProvider meterProvider,
+      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+          logExporterCustomizer) {
+    Map<String, LogExporter> exportersByName =
+        configureLogExporters(config, meterProvider, logExporterCustomizer);
 
-    Map<String, LogExporter> exportersByName = configureLogExporters(config, meterProvider);
-
-    configureLogProcessors(exportersByName, meterProvider).forEach(builder::addLogProcessor);
-
-    return builder.build();
+    configureLogProcessors(exportersByName, meterProvider)
+        .forEach(logEmitterProviderBuilder::addLogProcessor);
   }
 
   // Visible for testing
