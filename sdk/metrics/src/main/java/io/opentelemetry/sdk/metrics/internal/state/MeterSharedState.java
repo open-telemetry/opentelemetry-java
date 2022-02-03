@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -19,7 +21,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -88,7 +89,7 @@ public abstract class MeterSharedState {
             .filter(m -> !m.isEmpty())
             .map(this::register)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
 
     if (storage.size() == 1) {
       return storage.get(0);
@@ -98,39 +99,55 @@ public abstract class MeterSharedState {
   }
 
   /** Registers new asynchronous storage associated with a given {@code long} instrument. */
-  public final void registerLongAsynchronousInstrument(
-      InstrumentDescriptor instrument,
-      MeterProviderSharedState meterProviderSharedState,
-      Consumer<ObservableLongMeasurement> metricUpdater) {
+  public final List<AsynchronousMetricStorage<?, ObservableLongMeasurement>>
+      registerLongAsynchronousInstrument(
+          InstrumentDescriptor instrument,
+          MeterProviderSharedState meterProviderSharedState,
+          Consumer<ObservableLongMeasurement> callback) {
 
-    meterProviderSharedState
-        .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo())
-        .stream()
-        .map(
-            view ->
-                AsynchronousMetricStorage.longAsynchronousAccumulator(
-                    view, instrument, metricUpdater))
-        .filter(m -> !m.isEmpty())
-        .forEach(this::register);
+    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> storages =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findViews(instrument, getInstrumentationLibraryInfo())
+            .stream()
+            .map(
+                view ->
+                    AsynchronousMetricStorage.createLongAsyncStorage(
+                        view, instrument, getMetricStorageRegistry()))
+            .filter(m -> !m.isEmpty())
+            .map(this::register)
+            .filter(Objects::nonNull)
+            .collect(toList());
+
+    storages.forEach(metricStorage -> metricStorage.addCallback(callback));
+
+    return storages;
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
-  public final void registerDoubleAsynchronousInstrument(
-      InstrumentDescriptor instrument,
-      MeterProviderSharedState meterProviderSharedState,
-      Consumer<ObservableDoubleMeasurement> metricUpdater) {
+  public final List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>>
+      registerDoubleAsynchronousInstrument(
+          InstrumentDescriptor instrument,
+          MeterProviderSharedState meterProviderSharedState,
+          Consumer<ObservableDoubleMeasurement> callback) {
 
-    meterProviderSharedState
-        .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo())
-        .stream()
-        .map(
-            view ->
-                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                    view, instrument, metricUpdater))
-        .filter(m -> !m.isEmpty())
-        .forEach(this::register);
+    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> storages =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findViews(instrument, getInstrumentationLibraryInfo())
+            .stream()
+            .map(
+                view ->
+                    AsynchronousMetricStorage.createDoubleAsyncStorage(
+                        view, instrument, getMetricStorageRegistry()))
+            .filter(m -> !m.isEmpty())
+            .map(this::register)
+            .filter(Objects::nonNull)
+            .collect(toList());
+
+    storages.forEach(metricStorage -> metricStorage.addCallback(callback));
+
+    return storages;
   }
 
   @Nullable

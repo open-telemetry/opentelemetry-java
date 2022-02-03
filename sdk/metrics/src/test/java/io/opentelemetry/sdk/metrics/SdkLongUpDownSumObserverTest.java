@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -20,7 +21,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongUpDownSumObserverSdk}. */
+/** Unit tests for SDK {@link ObservableLongUpDownCounter}. */
 class SdkLongUpDownSumObserverTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
@@ -30,6 +31,26 @@ class SdkLongUpDownSumObserverTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
+
+  @Test
+  void removeCallback() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    ObservableLongUpDownCounter counter =
+        sdkMeterProviderBuilder
+            .registerMetricReader(sdkMeterReader)
+            .build()
+            .get(getClass().getName())
+            .upDownCounterBuilder("testCounter")
+            .buildWithCallback(measurement -> measurement.record(10));
+
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasName("testCounter").hasLongSum().points().hasSize(1));
+
+    counter.remove();
+
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
 
   @Test
   void collectMetrics_NoRecords() {
@@ -46,7 +67,6 @@ class SdkLongUpDownSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
@@ -100,7 +120,6 @@ class SdkLongUpDownSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =

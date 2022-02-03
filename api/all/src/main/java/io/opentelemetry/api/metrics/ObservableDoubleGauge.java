@@ -14,4 +14,4 @@ import java.util.function.Consumer;
  * <p>This interface currently has no methods but may be extended in the future with functionality
  * such as canceling the observable.
  */
-public interface ObservableDoubleGauge {}
+public interface ObservableDoubleGauge extends ObservableInstrument {}

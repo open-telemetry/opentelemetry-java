@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
 final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
-  private static final ObservableLongUpDownCounter NOOP = new ObservableLongUpDownCounter() {};
 
   private final WriteableMetricStorage storage;
 
@@ -114,8 +113,10 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
-      return NOOP;
+      return new SdkObservableInstrument<>(
+          instrumentName,
+          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback),
+          callback);
     }
   }
 }

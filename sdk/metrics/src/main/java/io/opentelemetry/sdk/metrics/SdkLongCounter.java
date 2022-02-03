@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class SdkLongCounter extends AbstractInstrument implements LongCounter {
-  private static final ObservableLongCounter NOOP = new ObservableLongCounter() {};
 
   private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
 
@@ -139,8 +138,10 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
-      return NOOP;
+      return new SdkObservableInstrument<>(
+          instrumentName,
+          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback),
+          callback);
     }
   }
 }

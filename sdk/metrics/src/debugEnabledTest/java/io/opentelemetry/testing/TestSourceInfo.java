@@ -51,7 +51,6 @@ class TestSourceInfo {
         .contains("- Description [description2] does not match [description]")
         .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_SUM]")
         .contains("- InstrumentValueType [LONG] does not match [DOUBLE]")
-        .contains("- InstrumentType [OBSERVABLE_SUM] is async and already registered")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("Original instrument registered with same name but is incompatible.")
         .contains(

@@ -102,8 +102,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   static final class Builder extends AbstractInstrumentBuilder<SdkDoubleCounter.Builder>
       implements DoubleCounterBuilder {
 
-    private static final ObservableDoubleCounter NOOP = new ObservableDoubleCounter() {};
-
     Builder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
@@ -127,8 +125,10 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
-      return NOOP;
+      return new SdkObservableInstrument<>(
+          instrumentName,
+          registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback),
+          callback);
     }
   }
 }

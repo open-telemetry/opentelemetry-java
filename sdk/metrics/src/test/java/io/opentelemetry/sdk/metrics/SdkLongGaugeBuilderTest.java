@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -17,7 +18,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongValueObserverSdk}. */
+/** Unit tests for SDK {@link ObservableLongGauge}. */
 class SdkLongGaugeBuilderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
@@ -32,6 +33,23 @@ class SdkLongGaugeBuilderTest {
           .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  @Test
+  void removeCallback() {
+    ObservableLongGauge gauge =
+        sdkMeter
+            .gaugeBuilder("testGauge")
+            .ofLongs()
+            .buildWithCallback(measurement -> measurement.record(10));
+
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasName("testGauge").hasLongGauge().points().hasSize(1));
+
+    gauge.remove();
+
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
 
   @Test
   void collectMetrics_NoRecords() {

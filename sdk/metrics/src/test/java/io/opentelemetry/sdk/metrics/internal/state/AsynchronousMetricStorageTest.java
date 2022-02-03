@@ -6,9 +6,15 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,6 +34,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +61,7 @@ public class AsynchronousMetricStorageTest {
 
   @BeforeEach
   void setup() {
-    spyAttributesProcessor = Mockito.spy(AttributesProcessor.noop());
+    spyAttributesProcessor = spy(AttributesProcessor.noop());
     view =
         View.builder()
             .setAggregation(Aggregation.lastValue())
@@ -80,7 +87,8 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void doubleAsynchronousAccumulator_AttributesProcessor_used() {
-    AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+    AsynchronousMetricStorage<?, ObservableDoubleMeasurement> doubleAsyncStorage =
+        AsynchronousMetricStorage.createDoubleAsyncStorage(
             view,
             InstrumentDescriptor.create(
                 "name",
@@ -88,20 +96,22 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
-            value -> value.record(1.0, Attributes.empty()))
-        .collectAndReset(
-            CollectionInfo.create(handle, all, reader),
-            meterProviderSharedState.getResource(),
-            meterSharedState.getInstrumentationLibraryInfo(),
-            0,
-            testClock.now(),
-            false);
+            new MetricStorageRegistry());
+    doubleAsyncStorage.addCallback(value -> value.record(1.0, Attributes.empty()));
+    doubleAsyncStorage.collectAndReset(
+        CollectionInfo.create(handle, all, reader),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        0,
+        testClock.now(),
+        /* suppressSynchronousCollection= */ false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test
   void longAsynchronousAccumulator_AttributesProcessor_used() {
-    AsynchronousMetricStorage.longAsynchronousAccumulator(
+    AsynchronousMetricStorage<?, ObservableLongMeasurement> longAsyncStorage =
+        AsynchronousMetricStorage.createLongAsyncStorage(
             view,
             InstrumentDescriptor.create(
                 "name",
@@ -109,21 +119,23 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            value -> value.record(1, Attributes.empty()))
-        .collectAndReset(
-            CollectionInfo.create(handle, all, reader),
-            meterProviderSharedState.getResource(),
-            meterSharedState.getInstrumentationLibraryInfo(),
-            0,
-            testClock.nanoTime(),
-            false);
+            new MetricStorageRegistry());
+    longAsyncStorage.addCallback(value -> value.record(1, Attributes.empty()));
+    longAsyncStorage.collectAndReset(
+        CollectionInfo.create(handle, all, reader),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        0,
+        testClock.nanoTime(),
+        /* suppressSynchronousCollection= */ false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test
-  void collectAndReset_IgnoresDuplicates() {
-    MetricStorage metricStorage =
-        AsynchronousMetricStorage.longAsynchronousAccumulator(
+  void registerAndUnregister() {
+    MetricStorageRegistry storageRegistry = spy(new MetricStorageRegistry());
+    AsynchronousMetricStorage<?, ObservableLongMeasurement> metricStorage =
+        AsynchronousMetricStorage.createLongAsyncStorage(
             view,
             InstrumentDescriptor.create(
                 "my-instrument",
@@ -131,11 +143,65 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            measurement -> {
-              measurement.record(1, Attributes.builder().put("key", "a").build());
-              measurement.record(2, Attributes.builder().put("key", "a").build());
-              measurement.record(3, Attributes.builder().put("key", "b").build());
-            });
+            storageRegistry);
+
+    Consumer<ObservableLongMeasurement> callback1 =
+        measurement -> measurement.record(10, Attributes.builder().put("key", "a").build());
+    Consumer<ObservableLongMeasurement> callback2 =
+        measurement -> measurement.record(10, Attributes.builder().put("key", "b").build());
+
+    // Add both callbacks, and remove the first
+    metricStorage.addCallback(callback1);
+    metricStorage.addCallback(callback2);
+    metricStorage.removeCallback(callback1);
+
+    logs.assertDoesNotContain(
+        "Attempting to add callback for my-instrument after storage has been unregistered.");
+    logs.assertDoesNotContain(
+        "Attempting to remove callback for my-instrument after storage has been unregistered.");
+    verify(storageRegistry, never()).unregister(any());
+
+    // Remove second callback
+    metricStorage.removeCallback(callback2);
+
+    logs.assertDoesNotContain(
+        "Attempting to add callback for my-instrument after storage has been unregistered.");
+    logs.assertDoesNotContain(
+        "Attempting to remove callback for my-instrument after storage has been unregistered.");
+    verify(storageRegistry).unregister(metricStorage);
+
+    // Attempting to add or remove after all callbacks are removed logs warning
+    Mockito.reset(storageRegistry);
+    metricStorage.addCallback(callback1);
+    logs.assertContains(
+        "Attempting to add callback for my-instrument after storage has been unregistered.");
+    metricStorage.removeCallback(callback1);
+    logs.assertContains(
+        "Attempting to remove callback for my-instrument after storage has been unregistered.");
+    verify(storageRegistry, never()).unregister(any());
+  }
+
+  @Test
+  void collectAndReset_CallsMultipleCallbacks() {
+    AsynchronousMetricStorage<?, ObservableLongMeasurement> metricStorage =
+        AsynchronousMetricStorage.createLongAsyncStorage(
+            view,
+            InstrumentDescriptor.create(
+                "my-instrument",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            new MetricStorageRegistry());
+    // Callbacks partially overlap for the metrics they record, should take first registered
+    metricStorage.addCallback(
+        measurement -> measurement.record(1, Attributes.builder().put("key", "a").build()));
+    metricStorage.addCallback(
+        measurement -> {
+          measurement.record(2, Attributes.builder().put("key", "a").build());
+          measurement.record(3, Attributes.builder().put("key", "b").build());
+        });
+
     assertThat(
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
@@ -143,7 +209,51 @@ public class AsynchronousMetricStorageTest {
                 meterSharedState.getInstrumentationLibraryInfo(),
                 0,
                 testClock.nanoTime(),
-                false))
+                /* suppressSynchronousCollection= */ false))
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongGaugeData().getPoints())
+                    .satisfiesExactlyInAnyOrder(
+                        dataPoint -> {
+                          assertThat(dataPoint.getValue()).isEqualTo(1);
+                          assertThat(dataPoint.getAttributes())
+                              .isEqualTo(Attributes.builder().put("key", "a").build());
+                        },
+                        dataPoint -> {
+                          assertThat(dataPoint.getValue()).isEqualTo(3);
+                          assertThat(dataPoint.getAttributes())
+                              .isEqualTo(Attributes.builder().put("key", "b").build());
+                        }));
+    logs.assertContains(
+        "Instrument my-instrument has recorded multiple values for the same attributes.");
+  }
+
+  @Test
+  void collectAndReset_IgnoresDuplicates() {
+    AsynchronousMetricStorage<?, ObservableLongMeasurement> metricStorage =
+        AsynchronousMetricStorage.createLongAsyncStorage(
+            view,
+            InstrumentDescriptor.create(
+                "my-instrument",
+                "description",
+                "unit",
+                InstrumentType.OBSERVABLE_GAUGE,
+                InstrumentValueType.LONG),
+            new MetricStorageRegistry());
+    metricStorage.addCallback(
+        measurement -> {
+          measurement.record(1, Attributes.builder().put("key", "a").build());
+          measurement.record(2, Attributes.builder().put("key", "a").build());
+          measurement.record(3, Attributes.builder().put("key", "b").build());
+        });
+    assertThat(
+            metricStorage.collectAndReset(
+                CollectionInfo.create(handle, all, reader),
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                0,
+                testClock.nanoTime(),
+                /* suppressSynchronousCollection= */ false))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongGaugeData().getPoints())
@@ -165,8 +275,8 @@ public class AsynchronousMetricStorageTest {
   @Test
   @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAndReset_CallbackException() {
-    MetricStorage metricStorage =
-        AsynchronousMetricStorage.longAsynchronousAccumulator(
+    AsynchronousMetricStorage<?, ObservableDoubleMeasurement> metricStorage =
+        AsynchronousMetricStorage.createDoubleAsyncStorage(
             view,
             InstrumentDescriptor.create(
                 "my-instrument",
@@ -174,9 +284,11 @@ public class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
-            unused -> {
-              throw new RuntimeException("Error!");
-            });
+            new MetricStorageRegistry());
+    metricStorage.addCallback(
+        unused -> {
+          throw new RuntimeException("Error!");
+        });
     assertThat(
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
@@ -184,7 +296,7 @@ public class AsynchronousMetricStorageTest {
                 meterSharedState.getInstrumentationLibraryInfo(),
                 0,
                 testClock.nanoTime(),
-                false))
+                /* suppressSynchronousCollection= */ false))
         .isEqualTo(EmptyMetricData.getInstance());
     logs.assertContains("An exception occurred invoking callback for instrument my-instrument.");
   }

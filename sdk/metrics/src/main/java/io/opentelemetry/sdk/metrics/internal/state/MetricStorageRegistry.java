@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.api.metrics.ObservableInstrument;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,14 +70,16 @@ public class MetricStorageRegistry {
           descriptor,
           "Metric with same name and different descriptor already created.");
     }
-    // Descriptors are compatible, but can't register async instruments multiple times.
-    if (descriptor.isAsync()) {
-      throw new DuplicateMetricStorageException(
-          oldOrNewStorage.getMetricDescriptor(),
-          descriptor,
-          "Async metric with same name has already been created.");
-    }
     // Metric already existed, and is compatible with new storage.
     return (I) oldOrNewStorage;
+  }
+
+  /**
+   * Unregister the {@code storage}. Allows {@link AsynchronousMetricStorage} to be forgotten after
+   * all callbacks for an instrument have been removed via {@link ObservableInstrument#remove()}.
+   */
+  public <I extends MetricStorage> void unregister(I storage) {
+    MetricDescriptor descriptor = storage.getMetricDescriptor();
+    registry.remove(descriptor.getName().toLowerCase());
   }
 }

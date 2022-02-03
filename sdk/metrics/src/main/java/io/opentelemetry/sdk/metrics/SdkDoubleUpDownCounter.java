@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
 final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
-  private static final ObservableDoubleUpDownCounter NOOP = new ObservableDoubleUpDownCounter() {};
 
   private final WriteableMetricStorage storage;
 
@@ -101,8 +100,10 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
-      return NOOP;
+      return new SdkObservableInstrument<>(
+          instrumentName,
+          registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback),
+          callback);
     }
   }
 }
