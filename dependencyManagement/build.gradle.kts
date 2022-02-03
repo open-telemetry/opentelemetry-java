@@ -14,14 +14,14 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.13.1",
   "com.google.guava:guava-bom:31.0.1-jre",
-  "com.google.protobuf:protobuf-bom:3.19.1",
-  "com.linecorp.armeria:armeria-bom:1.13.4",
+  "com.google.protobuf:protobuf-bom:3.19.4",
+  "com.linecorp.armeria:armeria-bom:1.14.0",
   "com.squareup.okhttp3:okhttp-bom:4.9.3",
-  "io.grpc:grpc-bom:1.43.1",
+  "io.grpc:grpc-bom:1.44.0",
   "io.zipkin.brave:brave-bom:5.13.7",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.8.2",
-  "org.testcontainers:testcontainers-bom:1.16.2"
+  "org.testcontainers:testcontainers-bom:1.16.3"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -37,7 +37,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "io.opencensus",
-    "0.30.0",
+    "0.31.0",
     listOf(
       "opencensus-api",
       "opencensus-impl-core",
@@ -63,38 +63,38 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.mockito",
-    "4.2.0",
+    "4.3.1",
     listOf("mockito-core", "mockito-junit-jupiter")
   ),
   DependencySet(
     "org.slf4j",
-    "1.7.32",
+    "1.7.35",
     listOf("jul-to-slf4j", "slf4j-simple")
   ),
 )
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.7.0",
+  "com.google.api.grpc:proto-google-common-protos:2.7.2",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:0.22.0",
-  "com.uber.nullaway:nullaway:0.9.4",
+  "com.uber.nullaway:nullaway:0.9.5",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.5",
   "io.github.netmikey.logunit:logunit-jul:1.1.3",
-  "io.jaegertracing:jaeger-client:1.7.0",
+  "io.jaegertracing:jaeger-client:1.8.0",
   "io.opentelemetry.proto:opentelemetry-proto:0.11.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.8.2",
+  "nl.jqno.equalsverifier:equalsverifier:3.9",
   "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.1",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.20",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.21",
   "org.jctools:jctools-core:3.3.0",
   "org.junit-pioneer:junit-pioneer:1.5.0",
   "org.skyscreamer:jsonassert:1.5.0",
