@@ -23,6 +23,8 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
@@ -61,6 +63,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private SpanExporter spanExporter2;
   @Mock private MetricReaderFactory metricReaderFactory;
   @Mock private MetricReader metricReader;
+  @Mock private LogProcessor logProcessor;
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;
 
@@ -228,6 +231,26 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
+
+  @Test
+  void builder_addLogEmitterProviderCustomizer() {
+    Mockito.lenient().when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SdkLogEmitterProvider sdkLogEmitterProvider =
+        builder
+            .addLogEmitterProviderCustomizer(
+                (logEmitterProviderBuilder, configProperties) ->
+                    logEmitterProviderBuilder.addLogProcessor(logProcessor))
+            .build()
+            .getOpenTelemetrySdk()
+            .getSdkLogEmitterProvider();
+    sdkLogEmitterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    verify(logProcessor).forceFlush();
+  }
+
+  // TODO: add test for addLogExporterCustomizer once OTLP export is enabled by default
 
   @Test
   void builder_setResultAsGlobalFalse() {

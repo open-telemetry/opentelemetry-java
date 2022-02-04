@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 class LogExporterConfiguration {
@@ -31,7 +32,10 @@ class LogExporterConfiguration {
 
   // Visible for test
   static Map<String, LogExporter> configureLogExporters(
-      ConfigProperties config, MeterProvider meterProvider) {
+      ConfigProperties config,
+      MeterProvider meterProvider,
+      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+          logExporterCustomizer) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.logs.exporter");
 
     // Default to no exporter
@@ -51,7 +55,8 @@ class LogExporterConfiguration {
     for (String name : exporterNames) {
       LogExporter logExporter = configureExporter(name, config, meterProvider);
       if (logExporter != null) {
-        exportersByName.put(name, logExporter);
+        LogExporter customizedLogExporter = logExporterCustomizer.apply(logExporter, config);
+        exportersByName.put(name, customizedLogExporter);
       }
     }
 
