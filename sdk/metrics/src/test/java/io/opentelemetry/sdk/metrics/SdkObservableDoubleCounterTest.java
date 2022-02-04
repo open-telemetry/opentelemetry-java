@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -20,13 +21,13 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleSumObserverSdk}. */
-class SdkDoubleSumObserverTest {
+/** Unit tests for SDK {@link ObservableDoubleCounter}. */
+class SdkObservableDoubleCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkDoubleSumObserverTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkObservableDoubleCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -47,7 +48,6 @@ class SdkDoubleSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
@@ -107,7 +107,6 @@ class SdkDoubleSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =

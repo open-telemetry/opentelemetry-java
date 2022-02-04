@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -20,13 +21,13 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongSumObserverSdk}. */
-class SdkLongSumObserverTest {
+/** Unit tests for SDK {@link ObservableLongUpDownCounter}. */
+class SdkObservableLongUpDownCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkLongSumObserverTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkObservableLongUpDownCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -38,22 +39,21 @@ class SdkLongSumObserverTest {
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
-        .setDescription("My own LongSumObserver")
+        .upDownCounterBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
+        .upDownCounterBuilder("testObserver")
         .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
@@ -64,7 +64,7 @@ class SdkLongSumObserverTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -85,7 +85,7 @@ class SdkLongSumObserverTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -100,7 +100,6 @@ class SdkLongSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
@@ -108,13 +107,13 @@ class SdkLongSumObserverTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_COUNTER)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
+        .upDownCounterBuilder("testObserver")
         .buildWithCallback(result -> result.record(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
@@ -125,7 +124,7 @@ class SdkLongSumObserverTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isDelta()
                     .points()
                     .satisfiesExactly(
@@ -146,7 +145,7 @@ class SdkLongSumObserverTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isDelta()
                     .points()
                     .satisfiesExactly(

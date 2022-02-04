@@ -188,6 +188,7 @@ class ViewRegistryTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // Test deprecated code until removed
   void defaults() {
     ViewRegistry viewRegistry = ViewRegistry.builder().build();
     assertThat(
@@ -217,6 +218,14 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
+                    "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
+        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
         .hasSize(1)
@@ -226,6 +235,14 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
+        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
         .hasSize(1)
         .element(0)
