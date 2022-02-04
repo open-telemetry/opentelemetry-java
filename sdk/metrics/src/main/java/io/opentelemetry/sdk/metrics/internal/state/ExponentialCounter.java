@@ -15,12 +15,16 @@ public interface ExponentialCounter {
   /**
    * The first index with a recording. May be negative.
    *
+   * <p>Note: the returned value is not meaningful when isEmpty returns true.
+   *
    * @return the first index with a recording.
    */
   int getIndexStart();
 
   /**
    * The last index with a recording. May be negative.
+   *
+   * <p>Note: the returned value is not meaningful when isEmpty returns true.
    *
    * @return The last index with a recording.
    */
@@ -38,7 +42,7 @@ public interface ExponentialCounter {
   /**
    * Get the number of recordings for the given index.
    *
-   * @return the number of recordings for the index.
+   * @return the number of recordings for the index, or 0 if the index is out of bounds.
    */
   long get(int index);
 
@@ -48,4 +52,10 @@ public interface ExponentialCounter {
    * @return true if no recordings, false if at least one recording.
    */
   boolean isEmpty();
+
+  /** Returns the maximum number of buckets allowed in this counter. */
+  int getMaxSize();
+
+  /** Resets all bucket counts to zero and resets index start/end tracking. */
+  void clear();
 }
