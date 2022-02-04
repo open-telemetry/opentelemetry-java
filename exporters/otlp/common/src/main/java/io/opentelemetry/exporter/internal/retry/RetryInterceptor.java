@@ -98,7 +98,11 @@ public final class RetryInterceptor implements Interceptor {
 
   // Visible for testing
   static boolean isRetryableException(IOException e) {
-    return e instanceof SocketTimeoutException;
+    if (!(e instanceof SocketTimeoutException)) {
+      return false;
+    }
+    String message = e.getMessage();
+    return message != null && message.toLowerCase().contains("connect timed out");
   }
 
   // Visible for testing

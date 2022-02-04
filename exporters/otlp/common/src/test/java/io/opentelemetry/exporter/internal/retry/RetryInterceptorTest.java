@@ -182,7 +182,17 @@ class RetryInterceptorTest {
 
   @Test
   void isRetryableException() {
-    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("error"))).isTrue();
+    assertThat(
+            RetryInterceptor.isRetryableException(new SocketTimeoutException("Connect timed out")))
+        .isTrue();
+    assertThat(
+            RetryInterceptor.isRetryableException(new SocketTimeoutException("connect timed out")))
+        .isTrue();
+    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("Read timed out")))
+        .isFalse();
+    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("timeout")))
+        .isFalse();
+    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException())).isFalse();
     assertThat(RetryInterceptor.isRetryableException(new IOException("error"))).isFalse();
   }
 
