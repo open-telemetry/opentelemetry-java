@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DoubleExponentialHistogramAggregatorTest {
+class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
 

@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class AggregatorHandleTest {
+class AggregatorHandleTest {
 
   @Mock ExemplarReservoir reservoir;
 

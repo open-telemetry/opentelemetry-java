@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * These are extra test cases for buckets. Much of this class is already tested via more complex
  * test cases at {@link DoubleExponentialHistogramAggregatorTest}.
  */
-public class DoubleExponentialHistogramBucketsTest {
+class DoubleExponentialHistogramBucketsTest {
 
   static Stream<ExponentialBucketStrategy> bucketStrategies() {
     return Stream.of(

@@ -13,6 +13,9 @@ package io.opentelemetry.sdk.metrics.internal.state;
  * <p>This expand start/End index as it sees values.
  *
  * <p>This class is NOT thread-safe. It is expected to be behind a synchronized incrementer.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time
  */
 public class AdaptingCircularBufferCounter implements ExponentialCounter {
   private static final int NULL_INDEX = Integer.MIN_VALUE;
