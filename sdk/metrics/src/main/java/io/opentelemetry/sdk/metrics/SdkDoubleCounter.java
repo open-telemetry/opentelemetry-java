@@ -127,7 +127,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
+      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
       return NOOP;
     }
   }

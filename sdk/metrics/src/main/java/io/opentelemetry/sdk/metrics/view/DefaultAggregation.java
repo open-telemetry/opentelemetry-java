@@ -27,7 +27,9 @@ class DefaultAggregation extends Aggregation {
       case COUNTER:
       case UP_DOWN_COUNTER:
       case OBSERVABLE_SUM:
+      case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_SUM:
+      case OBSERVABLE_UP_DOWN_COUNTER:
         return SumAggregation.DEFAULT;
       case HISTOGRAM:
         return ExplicitBucketHistogramAggregation.DEFAULT;
