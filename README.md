@@ -184,22 +184,23 @@ Check out information about the [latest release](https://github.com/open-telemet
 
 This is a **current** feature status list:
 
-| Component                   | Version |
-| --------------------------- | ------- |
-| Trace API                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Trace SDK                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Context                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Baggage                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| Metrics API                 | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Component                   | Version                                                      |
+|-----------------------------|--------------------------------------------------------------|
+| Trace API                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Context                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Baggage                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| Metrics API                 | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| OTLP Exporter (Logs)        | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues
