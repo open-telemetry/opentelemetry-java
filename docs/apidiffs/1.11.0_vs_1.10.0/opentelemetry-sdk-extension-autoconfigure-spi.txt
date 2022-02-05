@@ -1,0 +1,11 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogEmitterProviderCustomizer(java.util.function.BiFunction)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogExporterCustomizer(java.util.function.BiFunction)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addMeterProviderCustomizer(java.util.function.BiFunction)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addMetricExporterCustomizer(java.util.function.BiFunction)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addTracerProviderCustomizer(java.util.function.BiFunction)
+===  UNCHANGED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
