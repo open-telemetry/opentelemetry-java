@@ -31,7 +31,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
     this.counterFactory = counterFactory;
     this.counts = counterFactory.newCounter(maxBuckets);
-    this.bucketMapper = new LogarithmMapper(scale);
     this.scale = scale;
   }
 
@@ -39,7 +38,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
     this.counterFactory = buckets.counterFactory;
     this.counts = counterFactory.copy(buckets.counts);
-    this.bucketMapper = new LogarithmMapper(buckets.scale);
     this.scale = buckets.scale;
   }
 
