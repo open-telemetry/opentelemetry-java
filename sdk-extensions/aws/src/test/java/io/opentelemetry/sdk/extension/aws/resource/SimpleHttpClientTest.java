@@ -14,6 +14,7 @@ import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,6 +85,7 @@ class SimpleHttpClientTest {
     }
 
     @Test
+    @SuppressLogger(SimpleHttpClient.class)
     void missingCert() {
       SimpleHttpClient httpClient = new SimpleHttpClient();
       String result =
@@ -96,6 +98,7 @@ class SimpleHttpClientTest {
     }
 
     @Test
+    @SuppressLogger(SimpleHttpClient.class)
     void badCert(@TempDir Path tempDir) throws Exception {
       Path certFile = tempDir.resolve("test.crt");
       Files.write(certFile, "bad cert".getBytes(StandardCharsets.UTF_8));

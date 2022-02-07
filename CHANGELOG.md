@@ -1,14 +1,56 @@
 # Changelog
 
-## Version 1.11.0 (unreleased):
+## Version 1.12.0 (unreleased):
+
+## Version 1.11.0 2022-02-04:
+
+### General
+
+* Examples moved
+  to [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs)
+
+### SDK
+
+#### Exporter
+
+* Switch Jaeger remote sampler to use grpc lite
+* Deprecate `.setChannel(ManagedChannel)` methods on OTLP gRPC exporters
+* Deprecate `.setChannel(ManagedChannel)` methods on Jaeger gRPC exporter
+* Experimental OTLP retry support now retries on connection timeouts
+
+#### Metrics
+
+* BREAKING Change: Deprecated `InMemoryMetricExporter` and `InMemoryMetricReader` have been removed.
+  Use versions in `opentelemetry-sdk-metrics-testing` instead
+* Deprecate `InstrumentType` values `OBSERVABLE_SUM` and `OBSERVABLE_UP_DOWN_SUM` in favor
+  of `OBSERVABLE_COUNTER` and `OBSERVABLE_UP_DOWN_COUNTER`
+
+#### Logs
+
+* Add ability to configure log attribute limits via `SdkLogEmitterProviderBuilder#setLogLimits(..)`
+
+#### SDK Extensions
+
+* Auto-configuration added options to `AutoConfigurationCustomizer` for
+  customizing `SdkTracerProviderBuilder`, `SdkMeterProviderBuilder`, `MetricExporter`
+  , `SdkLogEmitterProviderBuilder`, and `LogExporter`
+* Auto-configuration added option to skip shutdown hooks
+* Auto-configuration adjusted the execution order of tracer and meter provider customization to
+  happen after autoconfiguration
+* Auto-configuration adjusted SPI factories to evaluate lazily
+* Auto-configuration now uses sets configured `SdkMeterProvider` on `BatchLogProcessor`
+  and `BatchSpanProcessor`
+* Auto-configuration deprecated `SdkTracerProviderConfigurer` in favor
+  of `AutoConfigurationCustomizer#addTracerProviderCustomizer(..)`
 
 ---
+
 ## Version 1.10.1 2022-01-21:
 
 ### Bugfixes
 
-- Fix issue preventing registration of PrometheusCollector with SDK
-- Allow retry policy to be set for OkHttpGrpcExporter
+* Fix issue preventing registration of PrometheusCollector with SDK
+* Allow retry policy to be set for OkHttpGrpcExporter
 
 ---
 
@@ -17,15 +59,22 @@
 ### API
 
 * Performance of `GlobalOpenTelemetry.get` improved
-* `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces are empty but will allow adding functionality in the future
+* `buildWithCallback` for asynchronous metrics now return interfaces instead of void. The interfaces
+  are empty but will allow adding functionality in the future
 * BREAKING CHANGE: `Double/LongMeasurement.observe` have been removed
 * BREAKING CHANGE: `GlobalMeterProvider` has been removed
-* BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not previously deprecated but is expected to have no use in apps due to the lack of functionality
-* The Metrics API has been merged into the `opentelemetry-api` artifact. `OpenTelemetry.getMeterProvider()` is the new entrypoint
-* BREAKING CHANGE: Bound metrics instruments have been removed for now to allow more time to bake while still providing a stable metrics API
-* `Double/LongMeasurement.observe` has been renamed to `record`.`observe` is deprecated in this release
-* `GlobalMeterProvider` has been deprecated. `GlobalOpenTelemetry.getMeterProvider` should be used instead
-* A warning is logged now when registering async instruments with the same name. Previously subsequent invocations were just ignored.
+* BREAKING CHANGE: `ObservableMeasurement`, an empty interface, has been removed. This type was not
+  previously deprecated but is expected to have no use in apps due to the lack of functionality
+* The Metrics API has been merged into the `opentelemetry-api`
+  artifact. `OpenTelemetry.getMeterProvider()` is the new entrypoint
+* BREAKING CHANGE: Bound metrics instruments have been removed for now to allow more time to bake
+  while still providing a stable metrics API
+* `Double/LongMeasurement.observe` has been renamed to `record`.`observe` is deprecated in this
+  release
+* `GlobalMeterProvider` has been deprecated. `GlobalOpenTelemetry.getMeterProvider` should be used
+  instead
+* A warning is logged now when registering async instruments with the same name. Previously
+  subsequent invocations were just ignored.
 * `GlobalOpenTelemetry` extended with helpers for meter creation
 
 ### SDK
@@ -34,6 +83,7 @@
 * Deprecated methods have been removed from the `opentelemetry-sdk-autoconfigure` artifact.
 
 #### Exporter
+
 * The OkHttp gRPC exporters now support experimental retry
 * OkHttp dispatcher threads are now spawned as daemon threads
 * The JPMS module name for the logs exporter has been fixed
@@ -44,7 +94,8 @@
 
 #### Metrics
 
-* `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The current class has been deprecated in this release
+* `InMemoryMetricExporter` has been moved to the `opentelemetry-sdk-metrics-testing` artifact. The
+  current class has been deprecated in this release
 * Metric instrument usage violations consistently report issues as debug logs
 * Some user callbacks have been wrapped to catch exceptions instead of throwing
 * MinMaxSumCount/Count aggregation has been removed
@@ -68,7 +119,9 @@
 * Exceptions are not thrown when activating a null span
 
 #### SDK Extensions
-* BREAKING CHANGE: Deprecated trace incubator types (DelegatingSpanData, SpanDataBuidler) have been removed
+
+* BREAKING CHANGE: Deprecated trace incubator types (DelegatingSpanData, SpanDataBuidler) have been
+  removed
 * BREAKING CHANGE: Deprecated `ExecutorServiceSpanProcessor` has been removed
 * `cloud.platform` is now populated in AWS `Resource`
 * Auto-configuration correctly uses configured class loader for configuring Resource

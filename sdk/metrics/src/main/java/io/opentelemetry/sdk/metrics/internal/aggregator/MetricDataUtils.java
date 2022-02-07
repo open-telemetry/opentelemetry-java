@@ -21,11 +21,13 @@ final class MetricDataUtils {
   private MetricDataUtils() {}
 
   /** Returns true if the instrument does not allow negative measurements. */
+  @SuppressWarnings("deprecation") // Support OBSERVABLE_SUM until removed
   static boolean isMonotonicInstrument(InstrumentDescriptor descriptor) {
     InstrumentType type = descriptor.getType();
     return type == InstrumentType.HISTOGRAM
         || type == InstrumentType.COUNTER
-        || type == InstrumentType.OBSERVABLE_SUM;
+        || type == InstrumentType.OBSERVABLE_SUM
+        || type == InstrumentType.OBSERVABLE_COUNTER;
   }
 
   static List<LongPointData> toLongPointList(

@@ -35,7 +35,11 @@ class TemporalMetricStorageTest {
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
   private static final InstrumentDescriptor ASYNC_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name", "description", "unit", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.DOUBLE);
+          "name",
+          "description",
+          "unit",
+          InstrumentType.OBSERVABLE_COUNTER,
+          InstrumentValueType.DOUBLE);
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final Aggregator<DoubleAccumulation> SUM =

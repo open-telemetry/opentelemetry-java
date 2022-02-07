@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.retry;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -22,6 +23,7 @@ public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
+  private final Function<IOException, Boolean> isRetryableException;
   private final Sleeper sleeper;
   private final BoundedLongGenerator randomLong;
 
@@ -30,6 +32,7 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
+        RetryInterceptor::isRetryableException,
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -38,44 +41,68 @@ public final class RetryInterceptor implements Interceptor {
   RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetryable,
+      Function<IOException, Boolean> isRetryableException,
       Sleeper sleeper,
       BoundedLongGenerator randomLong) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
+    this.isRetryableException = isRetryableException;
     this.sleeper = sleeper;
     this.randomLong = randomLong;
   }
 
   @Override
   public Response intercept(Chain chain) throws IOException {
-    Response response = chain.proceed(chain.request());
-    if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
+    Response response = null;
+    IOException exception = null;
+    int attempt = 0;
+    long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
+    do {
+      if (attempt > 0) {
+        // Compute and sleep for backoff
+        // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
+        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos = randomLong.get(upperBoundNanos);
+        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        try {
+          sleeper.sleep(backoffNanos);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break; // Break out and return response or throw
+        }
+        // Close response from previous attempt
+        if (response != null) {
+          response.close();
+        }
+      }
+
+      attempt++;
+      try {
+        response = chain.proceed(chain.request());
+      } catch (IOException e) {
+        exception = e;
+      }
+      if (response != null && !Boolean.TRUE.equals(isRetryable.apply(response))) {
+        return response;
+      }
+      if (exception != null && !Boolean.TRUE.equals(isRetryableException.apply(exception))) {
+        throw exception;
+      }
+    } while (attempt < retryPolicy.getMaxAttempts());
+
+    if (response != null) {
       return response;
     }
-    long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
-    // Made an attempt already, starting with the 2nd.
-    for (int attempt = 2; attempt <= retryPolicy.getMaxAttempts(); attempt++) {
-      // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
-      // Careful - the document says "retry attempt" but our maxAttempts includes the original
-      // request. The numbers are tricky but the unit test should be more clear.
-      long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-      long backoffNanos = randomLong.get(upperBoundNanos);
+    throw exception;
+  }
 
-      try {
-        sleeper.sleep(backoffNanos);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return response;
-      }
-      // Close response from previous attempt and try again.
-      response.close();
-      response = chain.proceed(chain.request());
-      if (!Boolean.TRUE.equals(isRetryable.apply(response))) {
-        return response;
-      }
-      nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+  // Visible for testing
+  static boolean isRetryableException(IOException e) {
+    if (!(e instanceof SocketTimeoutException)) {
+      return false;
     }
-    return response;
+    String message = e.getMessage();
+    return message != null && message.toLowerCase().contains("connect timed out");
   }
 
   // Visible for testing

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -162,6 +163,7 @@ public class AsynchronousMetricStorageTest {
   }
 
   @Test
+  @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAndReset_CallbackException() {
     MetricStorage metricStorage =
         AsynchronousMetricStorage.longAsynchronousAccumulator(

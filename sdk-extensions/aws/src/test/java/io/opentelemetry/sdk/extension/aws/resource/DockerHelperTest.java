@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 class DockerHelperTest {
 
   @Test
+  @SuppressLogger(DockerHelper.class)
   void testCgroupFileMissing() {
     DockerHelper dockerHelper = new DockerHelper("a_file_never_existing");
     assertThat(dockerHelper.getContainerId()).isEmpty();

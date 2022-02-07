@@ -18,7 +18,6 @@ dependencies {
 
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")
-  testRuntimeOnly("org.slf4j:slf4j-simple")
 }
 
 testing {

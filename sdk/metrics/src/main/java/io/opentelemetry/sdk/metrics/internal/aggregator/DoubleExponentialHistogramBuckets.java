@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
-import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
+import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -23,22 +23,34 @@ import javax.annotation.Nullable;
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
-  public static final int MAX_SCALE = 20;
-
-  private static final int MAX_BUCKETS = MapCounter.MAX_SIZE;
-
+  private final ExponentialCounterFactory counterFactory;
   private ExponentialCounter counts;
   private int scale;
 
-  DoubleExponentialHistogramBuckets() {
-    this.counts = new MapCounter();
-    this.scale = MAX_SCALE;
+  DoubleExponentialHistogramBuckets(
+      int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
+    this.counterFactory = counterFactory;
+    this.counts = counterFactory.newCounter(maxBuckets);
+    this.bucketMapper = new LogarithmMapper(scale);
+    this.scale = scale;
   }
 
   // For copying
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
-    this.counts = new MapCounter(buckets.counts); // copy counts
+    this.counterFactory = buckets.counterFactory;
+    this.counts = counterFactory.copy(buckets.counts);
+    this.bucketMapper = new LogarithmMapper(buckets.scale);
     this.scale = buckets.scale;
+  }
+
+  /** Returns a copy of this bucket. */
+  DoubleExponentialHistogramBuckets copy() {
+    return new DoubleExponentialHistogramBuckets(this);
+  }
+
+  /** Resets all counters in this bucket set to zero, but preserves scale. */
+  public void clear() {
+    this.counts.clear();
   }
 
   boolean record(double value) {
@@ -52,6 +64,12 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   @Override
   public int getOffset() {
+    // We need to unify the behavior of empty buckets.
+    // Unfortunately, getIndexStart is not meaningful for empty counters, so we default to
+    // returning 0 for offset and an empty list.
+    if (counts.isEmpty()) {
+      return 0;
+    }
     return counts.getIndexStart();
   }
 
@@ -71,6 +89,9 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   @Override
   public long getTotalCount() {
+    if (counts.isEmpty()) {
+      return 0;
+    }
     long totalCount = 0;
     for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
       totalCount += counts.get(i);
@@ -87,7 +108,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     if (!counts.isEmpty()) {
-      ExponentialCounter newCounts = new MapCounter();
+      // We want to preserve other optimisations here as well, e.g. integer size.
+      // Instead of  creating a new counter, we copy the existing one (for bucket size
+      // optimisations), and clear the values before writing the new ones.
+      ExponentialCounter newCounts = counterFactory.copy(counts);
+      newCounts.clear();
 
       for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         long count = counts.get(i);
@@ -113,7 +138,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    */
   static DoubleExponentialHistogramBuckets diff(
       DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
-    DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
+    DoubleExponentialHistogramBuckets copy = a.copy();
     copy.mergeWith(b, /* additive= */ false);
     return copy;
   }
@@ -129,11 +154,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   static DoubleExponentialHistogramBuckets merge(
       DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
     if (b.counts.isEmpty()) {
-      return new DoubleExponentialHistogramBuckets(a);
+      return a;
     } else if (a.counts.isEmpty()) {
-      return new DoubleExponentialHistogramBuckets(b);
+      return b;
     }
-    DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
+    DoubleExponentialHistogramBuckets copy = a.copy();
     copy.mergeWith(b, /* additive= */ true);
     return copy;
   }
@@ -214,7 +239,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   int getScaleReduction(long newStart, long newEnd) {
     int scaleReduction = 0;
 
-    while (newEnd - newStart + 1 > MAX_BUCKETS) {
+    while (newEnd - newStart + 1 > counts.getMaxSize()) {
       newStart >>= 1;
       newEnd >>= 1;
       scaleReduction++;
@@ -258,19 +283,48 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
     // Don't need to compare getTotalCount() because equivalent bucket counts
     // imply equivalent overall count.
-    return getBucketCounts().equals(other.getBucketCounts())
-        && this.getOffset() == other.getOffset()
-        && this.scale == other.scale;
+    // Additionally, we compare the "semantics" of bucket counts, that is
+    // it's ok for getOffset() to diverge as long as the populated counts remain
+    // the same.  This is because we don't "normalize" buckets after doing
+    // difference/subtraction operations.
+    return this.scale == other.scale && sameBucketCounts(other);
+  }
+
+  /**
+   * Tests if two bucket counts are equivalent semantically.
+   *
+   * <p>Semantic equivalence means:
+   *
+   * <ul>
+   *   <li>All counts are stored between indexStart/indexEnd.
+   *   <li>Offset does NOT need to be the same
+   * </ul>
+   */
+  private boolean sameBucketCounts(DoubleExponentialHistogramBuckets other) {
+    int min = Math.min(this.counts.getIndexStart(), other.counts.getIndexStart());
+    int max = Math.max(this.counts.getIndexEnd(), other.counts.getIndexEnd());
+    for (int idx = min; idx <= max; idx++) {
+      if (this.counts.get(idx) != other.counts.get(idx)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
   public int hashCode() {
     int hash = 1;
     hash *= 1000003;
-    hash ^= getOffset();
-    hash *= 1000003;
-    hash ^= getBucketCounts().hashCode();
-    hash *= 1000003;
+    // We need a new algorithm here that lines up w/ equals, so we only use non-zero counts.
+    for (int idx = this.counts.getIndexStart(); idx <= this.counts.getIndexEnd(); idx++) {
+      long count = this.counts.get(idx);
+      if (count != 0) {
+        hash ^= idx;
+        hash *= 1000003;
+        hash = (int) (hash ^ count);
+        hash *= 1000003;
+      }
+    }
     hash ^= scale;
     // Don't need to hash getTotalCount() because equivalent bucket
     // counts imply equivalent overall count.

@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DoubleExponentialHistogramAggregatorTest {
+class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
 
@@ -178,6 +178,9 @@ public class DoubleExponentialHistogramAggregatorTest {
         getTestAccumulation(previousExemplars, 0, 1, -1);
 
     // Assure most recent exemplars are kept
+    // Note: This test relies on implementation details of ExponentialCounter, specifically it
+    // assumes that an Array of all zeros is the same as an empty counter array for negative
+    // buckets.
     assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
         .isEqualTo(getTestAccumulation(exemplars, 0, 1));
   }

@@ -14,12 +14,13 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -50,6 +51,7 @@ class OtlpGrpcRetryTest {
   public static final OtlpGrpcServerExtension server = new OtlpGrpcServerExtension(certificate);
 
   @Test
+  @SuppressLogger(DefaultGrpcExporter.class)
   void configureSpanExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.traces.endpoint", "https://localhost:" + server.httpsPort());
@@ -69,22 +71,26 @@ class OtlpGrpcRetryTest {
   }
 
   @Test
+  @SuppressLogger(DefaultGrpcExporter.class)
   void configureMetricExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.metrics.endpoint", "https://localhost:" + server.httpsPort());
     props.put(
         "otel.exporter.otlp.metrics.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    MetricExporter metricExporter =
+    try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
+            DefaultConfigProperties.createForTest(props))) {
 
-    testRetryableStatusCodes(
-        () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
-    testDefaultRetryPolicy(() -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+      testRetryableStatusCodes(
+          () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+      testDefaultRetryPolicy(
+          () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
+    }
   }
 
   @Test
+  @SuppressLogger(DefaultGrpcExporter.class)
   void configureLogExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort());

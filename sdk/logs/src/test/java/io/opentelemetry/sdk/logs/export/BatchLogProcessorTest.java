@@ -16,6 +16,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -293,6 +294,7 @@ class BatchLogProcessorTest {
   }
 
   @Test
+  @SuppressLogger(MultiLogExporter.class)
   void exporterThrowsException() {
     WaitingLogExporter waitingLogExporter =
         new WaitingLogExporter(1, CompletableResultCode.ofSuccess());

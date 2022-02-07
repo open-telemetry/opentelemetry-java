@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -37,6 +38,7 @@ public class EksResourceTest {
   @Mock private SimpleHttpClient httpClient;
 
   @Test
+  @SuppressLogger(EksResource.class)
   void testEks(@TempDir File tempFolder) throws IOException {
     File mockK8sTokenFile = new File(tempFolder, "k8sToken");
     String token = "token123";

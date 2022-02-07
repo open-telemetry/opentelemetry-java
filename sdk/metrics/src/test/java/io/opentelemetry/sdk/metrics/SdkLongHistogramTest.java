@@ -13,6 +13,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -191,6 +192,7 @@ class SdkLongHistogramTest {
   }
 
   @Test
+  @SuppressLogger(SdkLongHistogram.class)
   void longHistogramRecord_NonNegativeCheck() {
     LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     histogram.record(-45);
@@ -200,6 +202,7 @@ class SdkLongHistogramTest {
   }
 
   @Test
+  @SuppressLogger(SdkLongHistogram.class)
   void boundLongHistogramRecord_MonotonicityCheck() {
     LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     BoundLongHistogram bound = ((SdkLongHistogram) histogram).bind(Attributes.empty());

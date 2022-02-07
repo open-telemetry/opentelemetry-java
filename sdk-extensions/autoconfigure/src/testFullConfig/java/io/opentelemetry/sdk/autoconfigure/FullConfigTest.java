@@ -17,11 +17,15 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -30,9 +34,13 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.sdk.logs.LogEmitter;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.data.Severity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +56,8 @@ class FullConfigTest {
   private static final BlockingQueue<ExportTraceServiceRequest> otlpTraceRequests =
       new LinkedBlockingDeque<>();
   private static final BlockingQueue<ExportMetricsServiceRequest> otlpMetricsRequests =
+      new LinkedBlockingDeque<>();
+  private static final BlockingQueue<ExportLogsServiceRequest> otlpLogsRequests =
       new LinkedBlockingDeque<>();
 
   @RegisterExtension
@@ -102,24 +112,56 @@ class FullConfigTest {
                           responseObserver.onCompleted();
                         }
                       })
+                  // OTLP logs
+                  .addService(
+                      new LogsServiceGrpc.LogsServiceImplBase() {
+                        @Override
+                        public void export(
+                            ExportLogsServiceRequest request,
+                            StreamObserver<ExportLogsServiceResponse> responseObserver) {
+                          try {
+                            RequestHeaders headers =
+                                ServiceRequestContext.current().request().headers();
+                            assertThat(headers.get("cat")).isEqualTo("meow");
+                            assertThat(headers.get("dog")).isEqualTo("bark");
+                          } catch (Throwable t) {
+                            responseObserver.onError(t);
+                            return;
+                          }
+                          if (request.getResourceLogsCount() > 0) {
+                            otlpLogsRequests.add(request);
+                          }
+                          responseObserver.onNext(ExportLogsServiceResponse.getDefaultInstance());
+                          responseObserver.onCompleted();
+                        }
+                      })
                   .useBlockingTaskExecutor(true)
                   .build());
           sb.decorator(LoggingService.newDecorator());
         }
       };
 
+  private SdkLogEmitterProvider logEmitterProvider;
+
   @BeforeEach
   void setUp() {
     otlpTraceRequests.clear();
     otlpMetricsRequests.clear();
-  }
+    otlpLogsRequests.clear();
 
-  @Test
-  void configures() throws Exception {
     String endpoint = "http://localhost:" + server.httpPort();
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
+    // SdkLogEmitterProvider isn't globally accessible so we initialize here to get a reference
+    logEmitterProvider =
+        AutoConfiguredOpenTelemetrySdk.initialize()
+            .getOpenTelemetrySdk()
+            .getSdkLogEmitterProvider();
+  }
+
+  @Test
+  void configures() throws Exception {
     Collection<String> fields =
         GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();
     List<String> keys = new ArrayList<>();
@@ -143,6 +185,14 @@ class FullConfigTest {
         .setAttribute("cat", "meow")
         .setAttribute("dog", "bark")
         .end();
+
+    Meter meter = GlobalOpenTelemetry.get().getMeter("test");
+    meter.counterBuilder("my-metric").build().add(1);
+    meter.counterBuilder("my-other-metric").build().add(1);
+
+    LogEmitter logEmitter = logEmitterProvider.get("test");
+    logEmitter.logBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
+    logEmitter.logBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
@@ -203,6 +253,10 @@ class FullConfigTest {
                     resourceMetrics.getInstrumentationLibraryMetricsList()) {
                   for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
                     // SPI was loaded
+                    // MetricExporterCustomizer filters metrics not named my-metric
+                    assertThat(metric.getName()).isEqualTo("my-metric");
+                    // TestMeterProviderConfigurer configures a view that adds the "configured=true"
+                    // attribute
                     assertThat(getFirstDataPointLabels(metric))
                         .contains(
                             KeyValue.newBuilder()
@@ -213,6 +267,23 @@ class FullConfigTest {
                 }
               }
             });
+
+    await().untilAsserted(() -> assertThat(otlpLogsRequests).hasSize(1));
+    ExportLogsServiceRequest logRequest = otlpLogsRequests.take();
+    assertThat(logRequest.getResourceLogs(0).getResource().getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey("service.name")
+                .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("cat")
+                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                .build());
+    // MetricExporterCustomizer filters logs not whose level is less than Severity.INFO
+    LogRecord log = logRequest.getResourceLogs(0).getInstrumentationLibraryLogs(0).getLogs(0);
+    assertThat(log.getBody().getStringValue()).isEqualTo("info log message");
+    assertThat(log.getSeverityNumberValue()).isEqualTo(Severity.INFO.getSeverityNumber());
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

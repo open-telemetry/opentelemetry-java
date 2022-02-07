@@ -16,6 +16,7 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
@@ -245,6 +246,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcService.class)
   void internal_error_server_response() {
     addGrpcError(13, "internal error");
 
@@ -269,6 +271,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcService.class)
   void unavailable_error_server_response() {
     addGrpcError(14, "クマ🐻 resource exhausted");
 
@@ -292,6 +295,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcService.class)
   void unimplemented_error_server_response() {
     addGrpcError(12, null);
 

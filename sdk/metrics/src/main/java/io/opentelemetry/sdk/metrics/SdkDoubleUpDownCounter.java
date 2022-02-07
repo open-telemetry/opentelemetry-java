@@ -101,7 +101,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
+      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
       return NOOP;
     }
   }

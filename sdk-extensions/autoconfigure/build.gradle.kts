@@ -35,7 +35,6 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-grpc")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  testRuntimeOnly("org.slf4j:slf4j-simple")
 }
 
 testing {
@@ -50,8 +49,6 @@ testing {
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
-
-        implementation("org.junit-pioneer:junit-pioneer")
       }
     }
     val testFullConfig by registering(JvmTestSuite::class) {

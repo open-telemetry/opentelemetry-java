@@ -13,8 +13,6 @@ dependencies {
   implementation(project(":semconv"))
 
   testImplementation(project(":sdk:testing"))
-
-  testImplementation("org.slf4j:slf4j-simple")
 }
 
 tasks {
