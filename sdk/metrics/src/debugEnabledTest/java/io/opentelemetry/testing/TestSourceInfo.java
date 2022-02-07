@@ -38,7 +38,7 @@ class TestSourceInfo {
                 "name",
                 "description",
                 "unit",
-                InstrumentType.OBSERVABLE_SUM,
+                InstrumentType.OBSERVABLE_COUNTER,
                 InstrumentValueType.DOUBLE));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
@@ -49,7 +49,7 @@ class TestSourceInfo {
         .contains("Found duplicate metric definition: name")
         .contains("- Unit [unit2] does not match [unit]")
         .contains("- Description [description2] does not match [description]")
-        .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_SUM]")
+        .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_COUNTER]")
         .contains("- InstrumentValueType [LONG] does not match [DOUBLE]")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("Original instrument registered with same name but is incompatible.")

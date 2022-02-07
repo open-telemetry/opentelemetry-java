@@ -13,6 +13,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -169,6 +170,7 @@ class SdkLongCounterTest {
   }
 
   @Test
+  @SuppressLogger(SdkLongCounter.class)
   void longCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
     longCounter.add(-45);
@@ -178,6 +180,7 @@ class SdkLongCounterTest {
   }
 
   @Test
+  @SuppressLogger(SdkLongCounter.class)
   void boundLongCounterAdd_Monotonicity() {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
     BoundLongCounter bound = ((SdkLongCounter) longCounter).bind(Attributes.empty());

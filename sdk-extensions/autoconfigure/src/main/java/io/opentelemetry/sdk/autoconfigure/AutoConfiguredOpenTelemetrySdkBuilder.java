@@ -15,10 +15,13 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -55,9 +58,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
       spanExporterCustomizer = (a, unused) -> a;
-  private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
-      (a, unused) -> a;
   private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
+      (a, unused) -> a;
+
+  private BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+      meterProviderCustomizer = (a, unused) -> a;
+  private BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
+      metricExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+      logEmitterProviderCustomizer = (a, unused) -> a;
+  private BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+      logExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
 
   private Supplier<Map<String, String>> propertiesSupplier = Collections::emptyMap;
@@ -177,6 +191,71 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkMeterProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addMeterProviderCustomizer(
+      BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+          meterProviderCustomizer) {
+    requireNonNull(meterProviderCustomizer, "meterProviderCustomizer");
+    this.meterProviderCustomizer =
+        mergeCustomizer(this.meterProviderCustomizer, meterProviderCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link SpanExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addMetricExporterCustomizer(
+      BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
+          metricExporterCustomizer) {
+    requireNonNull(metricExporterCustomizer, "metricExporterCustomizer");
+    this.metricExporterCustomizer =
+        mergeCustomizer(this.metricExporterCustomizer, metricExporterCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkLogEmitterProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogEmitterProviderCustomizer(
+      BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+          logEmitterProviderCustomizer) {
+    requireNonNull(logEmitterProviderCustomizer, "logEmitterProviderCustomizer");
+    this.logEmitterProviderCustomizer =
+        mergeCustomizer(this.logEmitterProviderCustomizer, logEmitterProviderCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogExporterCustomizer(
+      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
+          logExporterCustomizer) {
+    requireNonNull(logExporterCustomizer, "logExporterCustomizer");
+    this.logExporterCustomizer = mergeCustomizer(this.logExporterCustomizer, logExporterCustomizer);
+    return this;
+  }
+
+  /**
    * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
@@ -217,21 +296,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (!customized) {
       customized = true;
       mergeSdkTracerProviderConfigurer();
+      mergeSdkMeterProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
           ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
       }
     }
 
-    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     ConfigProperties config = getConfig();
 
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
-    SdkMeterProvider meterProvider =
-        MeterProviderConfiguration.configureMeterProvider(resource, config, serviceClassLoader);
+    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+    meterProviderBuilder.setResource(resource);
+    MeterProviderConfiguration.configureMeterProvider(
+        meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
+    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     tracerProviderBuilder.setResource(resource);
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
@@ -243,9 +327,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
-    SdkLogEmitterProvider logEmitterProvider =
-        LogEmitterProviderConfiguration.configureLogEmitterProvider(
-            resource, config, meterProvider);
+    SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
+    logEmitterProviderBuilder.setResource(resource);
+    LogEmitterProviderConfiguration.configureLogEmitterProvider(
+        logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
+    logEmitterProviderBuilder =
+        logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
+    SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
 
     if (registerShutdownHook) {
       Runtime.getRuntime()
@@ -282,10 +370,27 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
+  @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
   private void mergeSdkTracerProviderConfigurer() {
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class, serviceClassLoader)) {
+    for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(
+            io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class,
+            serviceClassLoader)) {
       addTracerProviderCustomizer(
+          (builder, config) -> {
+            configurer.configure(builder, config);
+            return builder;
+          });
+    }
+  }
+
+  @SuppressWarnings("deprecation") // Remove once SdkMeterProviderConfigurer is removed
+  private void mergeSdkMeterProviderConfigurer() {
+    for (io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer configurer :
+        ServiceLoader.load(
+            io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer.class,
+            serviceClassLoader)) {
+      addMeterProviderCustomizer(
           (builder, config) -> {
             configurer.configure(builder, config);
             return builder;

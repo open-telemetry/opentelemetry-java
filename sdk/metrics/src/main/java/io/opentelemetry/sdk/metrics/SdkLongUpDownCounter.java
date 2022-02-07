@@ -115,7 +115,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
         Consumer<ObservableLongMeasurement> callback) {
       return new SdkObservableInstrument<>(
           instrumentName,
-          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback),
+          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback),
           callback);
     }
   }

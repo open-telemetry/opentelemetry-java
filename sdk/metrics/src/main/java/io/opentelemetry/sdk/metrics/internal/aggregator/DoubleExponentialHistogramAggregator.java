@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +23,24 @@ final class DoubleExponentialHistogramAggregator
     implements Aggregator<ExponentialHistogramAccumulation> {
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final ExponentialBucketStrategy bucketStrategy;
 
   DoubleExponentialHistogramAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+    this(
+        reservoirSupplier,
+        ExponentialBucketStrategy.newStrategy(
+            20, 320, ExponentialCounterFactory.circularBufferCounter()));
+  }
+
+  DoubleExponentialHistogramAggregator(
+      Supplier<ExemplarReservoir> reservoirSupplier, ExponentialBucketStrategy bucketStrategy) {
     this.reservoirSupplier = reservoirSupplier;
+    this.bucketStrategy = bucketStrategy;
   }
 
   @Override
   public AggregatorHandle<ExponentialHistogramAccumulation> createHandle() {
-    return new Handle(reservoirSupplier.get());
+    return new Handle(reservoirSupplier.get(), this.bucketStrategy);
   }
 
   /**
@@ -132,20 +143,19 @@ final class DoubleExponentialHistogramAggregator
   }
 
   static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {
-
-    private int scale;
-    private DoubleExponentialHistogramBuckets positiveBuckets;
-    private DoubleExponentialHistogramBuckets negativeBuckets;
+    private final ExponentialBucketStrategy bucketStrategy;
+    private final DoubleExponentialHistogramBuckets positiveBuckets;
+    private final DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
 
-    Handle(ExemplarReservoir reservoir) {
+    Handle(ExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
       super(reservoir);
       this.sum = 0;
       this.zeroCount = 0;
-      this.scale = DoubleExponentialHistogramBuckets.MAX_SCALE;
-      this.positiveBuckets = new DoubleExponentialHistogramBuckets();
-      this.negativeBuckets = new DoubleExponentialHistogramBuckets();
+      this.bucketStrategy = bucketStrategy;
+      this.positiveBuckets = this.bucketStrategy.newBuckets();
+      this.negativeBuckets = this.bucketStrategy.newBuckets();
     }
 
     @Override
@@ -153,11 +163,16 @@ final class DoubleExponentialHistogramAggregator
         List<ExemplarData> exemplars) {
       ExponentialHistogramAccumulation acc =
           ExponentialHistogramAccumulation.create(
-              scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);
+              this.positiveBuckets.getScale(),
+              sum,
+              positiveBuckets.copy(),
+              negativeBuckets.copy(),
+              zeroCount,
+              exemplars);
       this.sum = 0;
       this.zeroCount = 0;
-      this.positiveBuckets = new DoubleExponentialHistogramBuckets();
-      this.negativeBuckets = new DoubleExponentialHistogramBuckets();
+      this.positiveBuckets.clear();
+      this.negativeBuckets.clear();
       return acc;
     }
 
@@ -180,6 +195,8 @@ final class DoubleExponentialHistogramAggregator
       // Record; If recording fails, calculate scale reduction and scale down to fit new value.
       // 2nd attempt at recording should work with new scale
       DoubleExponentialHistogramBuckets buckets = (c > 0) ? positiveBuckets : negativeBuckets;
+      // TODO: We should experiment with downscale on demand during sync execution and only
+      // unifying scale factor between positive/negative at collection time (doAccumulate).
       if (!buckets.record(value)) {
         // getScaleReduction() used with downScale() will scale down as required to record value,
         // fit inside max allowed buckets, and make sure index can be represented by int.
@@ -196,7 +213,6 @@ final class DoubleExponentialHistogramAggregator
     void downScale(int by) {
       positiveBuckets.downscale(by);
       negativeBuckets.downscale(by);
-      this.scale -= by;
     }
   }
 }

@@ -22,12 +22,12 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for SDK {@link ObservableDoubleCounter}. */
-class SdkDoubleSumObserverTest {
+class SdkObservableDoubleCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkDoubleSumObserverTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkObservableDoubleCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -69,7 +69,6 @@ class SdkDoubleSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
@@ -129,7 +128,6 @@ class SdkDoubleSumObserverTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
@@ -137,7 +135,7 @@ class SdkDoubleSumObserverTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_COUNTER)
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();

@@ -6,6 +6,10 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -77,6 +81,55 @@ public interface AutoConfigurationCustomizer {
   default AutoConfigurationCustomizer addTracerProviderCustomizer(
       BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
           tracerProviderCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkMeterProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addMeterProviderCustomizer(
+      BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+          meterProviderCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link MetricExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addMetricExporterCustomizer(
+      BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
+          exporterCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkLogEmitterProviderBuilder} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addLogEmitterProviderCustomizer(
+      BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+          meterProviderCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addLogExporterCustomizer(
+      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter> exporterCustomizer) {
     return this;
   }
 }

@@ -16,10 +16,11 @@ documentation, because the Github Actions cannot push changes to the main branch
 
 ## Announcement
 
-Once the GitHub workflow completes, go to Github [release
-page](https://github.com/open-telemetry/opentelemetry-java/releases), press
+Once the GitHub workflow completes, go to
+Github [release page](https://github.com/open-telemetry/opentelemetry-java/releases), press
 `Draft a new release` to write release notes about the new release. If there is already a draft
-release notes, just point it at the created tag.
+release notes, just point it at the created tag. Click "Create a discussion for this release" and
+select category "Announcements" to create a corresponding discussion upon publish.
 
 You can use `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent`
 or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/)

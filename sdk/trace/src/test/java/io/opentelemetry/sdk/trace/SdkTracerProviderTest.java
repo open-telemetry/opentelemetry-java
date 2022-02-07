@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -208,6 +209,7 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  @SuppressLogger(SdkTracerProvider.class)
   void shutdownTwice_OnlyFlushSpanProcessorOnce() {
     tracerFactory.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
