@@ -25,6 +25,7 @@ final class TracerSharedState {
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
+  private final SpanExceptionRecorder spanExceptionRecorder;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -34,6 +35,7 @@ final class TracerSharedState {
       Resource resource,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
+      SpanExceptionRecorder spanExceptionRecorder,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
@@ -41,6 +43,7 @@ final class TracerSharedState {
     this.resource = resource;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
+    this.spanExceptionRecorder = spanExceptionRecorder;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
@@ -77,6 +80,10 @@ final class TracerSharedState {
    */
   SpanProcessor getActiveSpanProcessor() {
     return activeSpanProcessor;
+  }
+
+  SpanExceptionRecorder getSpanExceptionRecorder() {
+    return spanExceptionRecorder;
   }
 
   /**

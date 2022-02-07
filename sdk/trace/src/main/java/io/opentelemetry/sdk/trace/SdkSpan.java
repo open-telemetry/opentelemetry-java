@@ -23,8 +23,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +57,8 @@ final class SdkSpan implements ReadWriteSpan {
   private final AnchoredClock clock;
   // The resource associated with this span.
   private final Resource resource;
+  // TODO
+  private final SpanExceptionRecorder spanExceptionRecorder;
   // instrumentation library of the named tracer which created this span
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   // The start time of the span.
@@ -98,6 +98,7 @@ final class SdkSpan implements ReadWriteSpan {
       SpanProcessor spanProcessor,
       AnchoredClock clock,
       Resource resource,
+      SpanExceptionRecorder spanExceptionRecorder,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
       int totalRecordedLinks,
@@ -111,6 +112,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
+    this.spanExceptionRecorder = spanExceptionRecorder;
     this.hasEnded = false;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
@@ -145,6 +147,7 @@ final class SdkSpan implements ReadWriteSpan {
       SpanProcessor spanProcessor,
       Clock tracerClock,
       Resource resource,
+      SpanExceptionRecorder spanExceptionRecorder,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
       int totalRecordedLinks,
@@ -183,6 +186,7 @@ final class SdkSpan implements ReadWriteSpan {
             spanProcessor,
             clock,
             resource,
+            spanExceptionRecorder,
             attributes,
             links,
             totalRecordedLinks,
@@ -398,24 +402,16 @@ final class SdkSpan implements ReadWriteSpan {
     if (exception == null) {
       return this;
     }
-    if (additionalAttributes == null) {
-      additionalAttributes = Attributes.empty();
+    AttributesBuilder attributesBuilder =
+        spanExceptionRecorder.recordException(exception, Attributes.builder());
+    if (additionalAttributes != null) {
+      attributesBuilder.putAll(additionalAttributes);
     }
     long timestampNanos = clock.now();
 
-    AttributesBuilder attributes = Attributes.builder();
-    attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
-    if (exception.getMessage() != null) {
-      attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
-    }
-    StringWriter writer = new StringWriter();
-    exception.printStackTrace(new PrintWriter(writer));
-    attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
-    attributes.putAll(additionalAttributes);
-
     addEvent(
         SemanticAttributes.EXCEPTION_EVENT_NAME,
-        attributes.build(),
+        attributesBuilder.build(),
         timestampNanos,
         TimeUnit.NANOSECONDS);
     return this;

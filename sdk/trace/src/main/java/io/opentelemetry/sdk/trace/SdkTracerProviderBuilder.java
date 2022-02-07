@@ -25,6 +25,7 @@ public final class SdkTracerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
+  private SpanExceptionRecorder spanExceptionRecorder = DefaultSpanExceptionRecorder.INSTANCE;
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link
@@ -120,6 +121,21 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Assign a {@link io.opentelemetry.sdk.trace.SpanExceptionRecorder} to use for recording the
+   * attributes for exceptions recorded to a {@link io.opentelemetry.api.trace.Span}.
+   *
+   * @param spanExceptionRecorder the {@link io.opentelemetry.sdk.trace.SpanExceptionRecorder} to
+   *     use for recording exceptions
+   * @return this
+   */
+  public SdkTracerProviderBuilder setSpanExceptionRecorder(
+      SpanExceptionRecorder spanExceptionRecorder) {
+    requireNonNull(spanExceptionRecorder, "spanExceptionRecorder");
+    this.spanExceptionRecorder = spanExceptionRecorder;
+    return this;
+  }
+
+  /**
    * Add a SpanProcessor to the span pipeline that will be built. {@link SpanProcessor} will be
    * called each time a {@link io.opentelemetry.api.trace.Span} is started or ended.
    *
@@ -141,7 +157,13 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProvider build() {
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+        clock,
+        idsGenerator,
+        resource,
+        spanLimitsSupplier,
+        sampler,
+        spanExceptionRecorder,
+        spanProcessors);
   }
 
   SdkTracerProviderBuilder() {}

@@ -1,2 +1,9 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SdkTracerProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder setSpanExceptionRecorder(io.opentelemetry.sdk.trace.SpanExceptionRecorder)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.SpanExceptionRecorder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.AttributesBuilder recordException(java.lang.Throwable, io.opentelemetry.api.common.AttributesBuilder)
+	+++  NEW ANNOTATION: java.lang.FunctionalInterface

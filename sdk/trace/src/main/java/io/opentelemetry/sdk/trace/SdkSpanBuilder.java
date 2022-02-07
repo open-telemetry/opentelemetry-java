@@ -226,6 +226,7 @@ final class SdkSpanBuilder implements SpanBuilder {
         tracerSharedState.getActiveSpanProcessor(),
         tracerSharedState.getClock(),
         tracerSharedState.getResource(),
+        tracerSharedState.getSpanExceptionRecorder(),
         recordedAttributes,
         immutableLinks,
         totalNumberOfLinksAdded,
