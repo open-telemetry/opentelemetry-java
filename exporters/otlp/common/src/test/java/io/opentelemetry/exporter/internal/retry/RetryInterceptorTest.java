@@ -48,6 +48,7 @@ class RetryInterceptorTest {
   @Mock private RetryInterceptor.BoundedLongGenerator random;
   private Function<IOException, Boolean> isRetryableException;
 
+  private RetryInterceptor retrier;
   private OkHttpClient client;
 
   @BeforeEach
@@ -61,7 +62,7 @@ class RetryInterceptorTest {
                 return RetryInterceptor.isRetryableException(exception);
               }
             });
-    RetryInterceptor retrier =
+    retrier =
         new RetryInterceptor(
             RetryPolicy.builder()
                 .setBackoffMultiplier(1.6)
@@ -75,7 +76,6 @@ class RetryInterceptorTest {
             random);
     client =
         new OkHttpClient.Builder()
-            .connectTimeout(Duration.ofMillis(10))
             .addInterceptor(retrier)
             .build();
   }
@@ -145,6 +145,7 @@ class RetryInterceptorTest {
 
   @Test
   void connectTimeout() throws Exception {
+    client = connectTimeoutClient();
     when(random.get(anyLong())).thenReturn(1L);
     doNothing().when(sleeper).sleep(anyLong());
 
@@ -164,6 +165,7 @@ class RetryInterceptorTest {
 
   @Test
   void nonRetryableException() throws InterruptedException {
+    client = connectTimeoutClient();
     // Override isRetryableException so that no exception is retryable
     when(isRetryableException.apply(any())).thenReturn(false);
 
@@ -178,6 +180,13 @@ class RetryInterceptorTest {
 
     verify(isRetryableException, times(1)).apply(any());
     verify(sleeper, never()).sleep(anyLong());
+  }
+
+  private OkHttpClient connectTimeoutClient() {
+    return new OkHttpClient.Builder()
+        .connectTimeout(Duration.ofMillis(10))
+        .addInterceptor(retrier)
+        .build();
   }
 
   @Test
