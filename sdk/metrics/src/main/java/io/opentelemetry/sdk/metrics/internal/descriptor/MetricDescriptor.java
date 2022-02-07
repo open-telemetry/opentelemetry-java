@@ -90,10 +90,8 @@ public abstract class MetricDescriptor {
   /** Returns whether the descriptor describes an async {@link InstrumentType}. */
   public boolean isAsync() {
     switch (getSourceInstrument().getType()) {
-      case OBSERVABLE_UP_DOWN_SUM:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
-      case OBSERVABLE_SUM:
       case OBSERVABLE_COUNTER:
         return true;
       case HISTOGRAM:

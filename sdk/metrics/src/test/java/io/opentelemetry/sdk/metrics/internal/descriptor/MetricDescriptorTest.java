@@ -125,13 +125,10 @@ class MetricDescriptorTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // Test deprecated code until removed
   void isAsync() {
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM).isAsync()).isTrue();
     assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER).isAsync())
         .isTrue();
     assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_GAUGE).isAsync()).isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_SUM).isAsync()).isTrue();
     assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_COUNTER).isAsync()).isTrue();
     assertThat(descriptorForInstrument(InstrumentType.HISTOGRAM).isAsync()).isFalse();
     assertThat(descriptorForInstrument(InstrumentType.COUNTER).isAsync()).isFalse();
