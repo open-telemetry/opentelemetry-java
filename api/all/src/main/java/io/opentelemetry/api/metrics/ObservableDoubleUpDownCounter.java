@@ -10,8 +10,14 @@ import java.util.function.Consumer;
 /**
  * A reference to an observable metric registered with {@link
  * DoubleUpDownCounterBuilder#buildWithCallback(Consumer)}.
- *
- * <p>This interface currently has no methods but may be extended in the future with functionality
- * such as canceling the observable.
  */
-public interface ObservableDoubleUpDownCounter extends ObservableInstrument {}
+public interface ObservableDoubleUpDownCounter extends AutoCloseable {
+  /**
+   * Remove the callback associated with this instrument. After this is called, callbacks won't be
+   * invoked on future collections. Subsequent calls to {@link #close()} will have no effect.
+   *
+   * @see DoubleUpDownCounterBuilder#buildWithCallback(Consumer)
+   */
+  @Override
+  default void close() {}
+}

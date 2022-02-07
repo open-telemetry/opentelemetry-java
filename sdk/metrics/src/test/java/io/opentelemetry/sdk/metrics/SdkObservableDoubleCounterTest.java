@@ -48,7 +48,7 @@ class SdkObservableDoubleCounterTest {
         .satisfiesExactly(
             metric -> assertThat(metric).hasName("testCounter").hasDoubleSum().points().hasSize(1));
 
-    counter.remove();
+    counter.close();
 
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }

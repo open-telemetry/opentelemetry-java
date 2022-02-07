@@ -42,7 +42,7 @@ class SdkObservableInstrument<O>
   }
 
   @Override
-  public void remove() {
+  public void close() {
     if (removed) {
       throttlingLogger.log(
           Level.WARNING, "Instrument " + instrumentName + " has called remove() multiple times.");

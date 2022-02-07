@@ -110,10 +110,7 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo())
             .stream()
-            .map(
-                view ->
-                    AsynchronousMetricStorage.createLongAsyncStorage(
-                        view, instrument, getMetricStorageRegistry()))
+            .map(view -> AsynchronousMetricStorage.createLongAsyncStorage(view, instrument))
             .filter(m -> !m.isEmpty())
             .map(this::register)
             .filter(Objects::nonNull)
@@ -136,10 +133,7 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo())
             .stream()
-            .map(
-                view ->
-                    AsynchronousMetricStorage.createDoubleAsyncStorage(
-                        view, instrument, getMetricStorageRegistry()))
+            .map(view -> AsynchronousMetricStorage.createDoubleAsyncStorage(view, instrument))
             .filter(m -> !m.isEmpty())
             .map(this::register)
             .filter(Objects::nonNull)

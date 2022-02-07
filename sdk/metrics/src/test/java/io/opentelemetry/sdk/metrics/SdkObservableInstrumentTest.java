@@ -37,14 +37,14 @@ class SdkObservableInstrumentTest {
         new SdkObservableInstrument<>("my-instrument", Arrays.asList(storage1, storage2), callback);
 
     // First call to removal should trigger remove from storage
-    observableInstrument.remove();
+    observableInstrument.close();
     verify(storage1).removeCallback(callback);
     verify(storage2).removeCallback(callback);
     logs.assertDoesNotContain("Instrument my-instrument has called remove() multiple times.");
 
     // Removal a second time should not trigger remove from storage and should log a warning
     Mockito.reset(storage1, storage2);
-    observableInstrument.remove();
+    observableInstrument.close();
     verify(storage1, never()).removeCallback(any());
     verify(storage2, never()).removeCallback(any());
     logs.assertContains("Instrument my-instrument has called remove() multiple times.");

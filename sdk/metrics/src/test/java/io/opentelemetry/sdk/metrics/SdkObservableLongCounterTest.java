@@ -47,7 +47,7 @@ class SdkObservableLongCounterTest {
         .satisfiesExactly(
             metric -> assertThat(metric).hasName("testCounter").hasLongSum().points().hasSize(1));
 
-    counter.remove();
+    counter.close();
 
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }

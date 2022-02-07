@@ -43,7 +43,7 @@ class SdkDoubleGaugeBuilderTest {
         .satisfiesExactly(
             metric -> assertThat(metric).hasName("testGauge").hasDoubleGauge().points().hasSize(1));
 
-    gauge.remove();
+    gauge.close();
 
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
@@ -59,7 +59,6 @@ class SdkDoubleGaugeBuilderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
         .gaugeBuilder("testObserver")

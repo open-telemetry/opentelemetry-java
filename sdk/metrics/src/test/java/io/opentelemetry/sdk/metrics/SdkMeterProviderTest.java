@@ -494,7 +494,7 @@ class SdkMeterProviderTest {
                                     .hasAttributes(
                                         Attributes.builder().put("callback", "two").build())));
 
-    observableCounter1.remove();
+    observableCounter1.close();
 
     assertThat(reader.collectAllMetrics())
         .hasSize(1)
@@ -511,7 +511,7 @@ class SdkMeterProviderTest {
                                     .hasAttributes(
                                         Attributes.builder().put("callback", "two").build())));
 
-    observableCounter2.remove();
+    observableCounter2.close();
     assertThat(reader.collectAllMetrics()).hasSize(0);
   }
 

@@ -46,7 +46,7 @@ class SdkLongGaugeBuilderTest {
         .satisfiesExactly(
             metric -> assertThat(metric).hasName("testGauge").hasLongGauge().points().hasSize(1));
 
-    gauge.remove();
+    gauge.close();
 
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
@@ -63,7 +63,6 @@ class SdkLongGaugeBuilderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
         .gaugeBuilder("testObserver")

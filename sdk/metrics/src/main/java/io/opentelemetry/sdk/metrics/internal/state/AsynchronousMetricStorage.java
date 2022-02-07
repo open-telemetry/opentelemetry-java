@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.api.metrics.ObservableInstrument;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -47,24 +46,19 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final ReentrantLock collectLock = new ReentrantLock();
   private final ReentrantLock callbackLock = new ReentrantLock();
-  private final MetricStorageRegistry metricStorageRegistry;
   private final MetricDescriptor metricDescriptor;
   private final TemporalMetricStorage<T> storage;
   private final AsyncAccumulator<T> accumulator;
   private final O measurement;
 
   @GuardedBy("callbackLock")
-  private volatile boolean unregistered = false;
-
   private final List<Consumer<O>> callbacks = new ArrayList<>();
 
   private AsynchronousMetricStorage(
-      MetricStorageRegistry metricStorageRegistry,
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       AsyncAccumulator<T> accumulator,
       O measurement) {
-    this.metricStorageRegistry = metricStorageRegistry;
     this.metricDescriptor = metricDescriptor;
     this.storage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
     this.accumulator = accumulator;
@@ -74,7 +68,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   /** Create an asynchronous storage instance for double measurements. */
   public static <T>
       AsynchronousMetricStorage<?, ObservableDoubleMeasurement> createDoubleAsyncStorage(
-          View view, InstrumentDescriptor instrument, MetricStorageRegistry metricStorageRegistry) {
+          View view, InstrumentDescriptor instrument) {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: optimize when aggregator is Aggregator.drop()
     Aggregator<T> aggregator =
@@ -83,13 +77,12 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     ObservableDoubleMeasurement measurement =
         new ObservableDoubleMeasurementImpl<>(
             aggregator, accumulator, view.getAttributesProcessor());
-    return new AsynchronousMetricStorage<>(
-        metricStorageRegistry, metricDescriptor, aggregator, accumulator, measurement);
+    return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 
   /** Create an asynchronous storage instance for long measurements. */
   public static <T> AsynchronousMetricStorage<?, ObservableLongMeasurement> createLongAsyncStorage(
-      View view, InstrumentDescriptor instrument, MetricStorageRegistry metricStorageRegistry) {
+      View view, InstrumentDescriptor instrument) {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: optimize when aggregator is Aggregator.drop()
     Aggregator<T> aggregator =
@@ -97,8 +90,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
     ObservableLongMeasurement measurement =
         new ObservableLongMeasurementImpl<>(aggregator, accumulator, view.getAttributesProcessor());
-    return new AsynchronousMetricStorage<>(
-        metricStorageRegistry, metricDescriptor, aggregator, accumulator, measurement);
+    return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 
   @Override
@@ -155,21 +147,10 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     }
   }
 
-  /**
-   * Add a callback to the storage. Once all callbacks have already been removed via {@link
-   * #removeCallback(Consumer)}, subsequent registrations will fail.
-   */
+  /** Add a callback to the storage. */
   public void addCallback(Consumer<O> callback) {
     callbackLock.lock();
     try {
-      if (unregistered) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Attempting to add callback for "
-                + getMetricDescriptor().getName()
-                + " after storage has been unregistered.");
-        return;
-      }
       this.callbacks.add(callback);
     } finally {
       callbackLock.unlock();
@@ -177,26 +158,13 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   }
 
   /**
-   * Remove the callback from the storage. Called when {@link ObservableInstrument#remove()} is
-   * invoked. When the last callback is removed, the storage is unregistered from {@link
-   * #metricStorageRegistry}.
+   * Remove the callback from the storage. Called when {@link AutoCloseable#close()} is invoked on
+   * observable instruments.
    */
   public void removeCallback(Consumer<O> callback) {
     callbackLock.lock();
     try {
-      if (unregistered) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Attempting to remove callback for "
-                + getMetricDescriptor().getName()
-                + " after storage has been unregistered.");
-        return;
-      }
       this.callbacks.remove(callback);
-      if (callbacks.size() == 0) {
-        metricStorageRegistry.unregister(this);
-        unregistered = true;
-      }
     } finally {
       callbackLock.unlock();
     }

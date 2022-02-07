@@ -18,8 +18,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MetricStorageRegistry}. */
@@ -73,21 +71,6 @@ class MetricStorageRegistryTest {
             () -> metricStorageRegistry.register(new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Metric with same name and different descriptor already created.");
-  }
-
-  @Test
-  void unregister() {
-    TestMetricStorage storage1 = new TestMetricStorage(ASYNC_DESCRIPTOR);
-    TestMetricStorage storage2 = new TestMetricStorage(OTHER_SYNC_DESCRIPTOR);
-
-    metricStorageRegistry.register(storage1);
-    metricStorageRegistry.register(storage2);
-    assertThat(metricStorageRegistry.getMetrics())
-        .hasSameElementsAs(Arrays.asList(storage1, storage2));
-
-    metricStorageRegistry.unregister(storage1);
-    assertThat(metricStorageRegistry.getMetrics())
-        .hasSameElementsAs(Collections.singletonList(storage2));
   }
 
   private static MetricDescriptor descriptor(
