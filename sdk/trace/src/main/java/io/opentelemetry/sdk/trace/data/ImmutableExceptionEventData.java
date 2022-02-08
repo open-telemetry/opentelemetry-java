@@ -123,13 +123,13 @@ final class ImmutableExceptionEventData implements ExceptionEventData {
 
   @Override
   public int hashCode() {
-    int h$ = 1;
-    h$ *= 1000003;
-    h$ ^= exception.hashCode();
-    h$ *= 1000003;
-    h$ ^= additionalAttributes.hashCode();
-    h$ *= 1000003;
-    h$ ^= (int) ((epochNanos >>> 32) ^ epochNanos);
-    return h$;
+    int hc = 1;
+    hc *= 1000003;
+    hc ^= exception.hashCode();
+    hc *= 1000003;
+    hc ^= additionalAttributes.hashCode();
+    hc *= 1000003;
+    hc ^= (int) ((epochNanos >>> 32) ^ epochNanos);
+    return hc;
   }
 }
