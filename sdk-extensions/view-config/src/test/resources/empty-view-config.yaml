@@ -1,0 +1,7 @@
+- selector:
+    instrumentName: name1
+    instrumentType: COUNTER
+    meterName: meterName1
+    meterVersion: 1.0.0
+    meterSchemaUrl: http://example1.com
+  view:
