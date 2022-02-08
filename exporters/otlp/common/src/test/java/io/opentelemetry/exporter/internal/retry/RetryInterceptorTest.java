@@ -74,10 +74,7 @@ class RetryInterceptorTest {
             isRetryableException,
             sleeper,
             random);
-    client =
-        new OkHttpClient.Builder()
-            .addInterceptor(retrier)
-            .build();
+    client = new OkHttpClient.Builder().addInterceptor(retrier).build();
   }
 
   @Test
