@@ -296,7 +296,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (!customized) {
       customized = true;
       mergeSdkTracerProviderConfigurer();
-      mergeSdkMeterProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
           ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
@@ -377,20 +376,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class,
             serviceClassLoader)) {
       addTracerProviderCustomizer(
-          (builder, config) -> {
-            configurer.configure(builder, config);
-            return builder;
-          });
-    }
-  }
-
-  @SuppressWarnings("deprecation") // Remove once SdkMeterProviderConfigurer is removed
-  private void mergeSdkMeterProviderConfigurer() {
-    for (io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer configurer :
-        ServiceLoader.load(
-            io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer.class,
-            serviceClassLoader)) {
-      addMeterProviderCustomizer(
           (builder, config) -> {
             configurer.configure(builder, config);
             return builder;
