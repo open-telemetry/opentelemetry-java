@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -885,6 +886,7 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
+    assertThat(event).isInstanceOf(ExceptionEventData.class);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
@@ -894,6 +896,7 @@ class SdkSpanTest {
                 .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
                 .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
+    assertThat(((ExceptionEventData) event).getException()).isSameAs(exception);
   }
 
   @Test
@@ -906,7 +909,9 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
+    assertThat(event).isInstanceOf(ExceptionEventData.class);
     assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isNull();
+    assertThat(((ExceptionEventData) event).getException()).isSameAs(exception);
   }
 
   private static class InnerClassException extends Exception {}
@@ -921,8 +926,10 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
+    assertThat(event).isInstanceOf(ExceptionEventData.class);
     assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
         .isEqualTo("io.opentelemetry.sdk.trace.SdkSpanTest.InnerClassException");
+    assertThat(((ExceptionEventData) event).getException()).isSameAs(exception);
   }
 
   @Test
@@ -948,6 +955,7 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
+    assertThat(event).isInstanceOf(ExceptionEventData.class);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
@@ -958,6 +966,7 @@ class SdkSpanTest {
                 .put("exception.message", "this is a precedence attribute")
                 .put("exception.stacktrace", stacktrace)
                 .build());
+    assertThat(((ExceptionEventData) event).getException()).isSameAs(exception);
   }
 
   @Test

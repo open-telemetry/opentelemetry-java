@@ -24,13 +24,8 @@ public interface ExceptionEventData extends EventData {
 
   /**
    * Return the {@link Throwable exception} of the {@link ExceptionEventData}.
+   *
    * @return the {@link Throwable exception} of the {@link ExceptionEventData}
    */
   Throwable getException();
-
-  /**
-   * Return the additional {@link Attributes} of the {@link ExceptionEventData}.
-   * @return the additional {@link Attributes} of the {@link ExceptionEventData}.
-   */
-  Attributes getAdditionalAttributes();
 }

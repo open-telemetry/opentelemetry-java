@@ -4,5 +4,4 @@ Comparing source compatibility of  against
 	+++  NEW INTERFACE: io.opentelemetry.sdk.trace.data.EventData
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.data.ExceptionEventData create(long, java.lang.Throwable, io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAdditionalAttributes()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Throwable getException()
