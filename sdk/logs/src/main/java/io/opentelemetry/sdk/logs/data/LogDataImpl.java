@@ -14,7 +14,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
+@AutoValue.CopyAnnotations
 @Immutable
+@SuppressWarnings("deprecation") // name field to be removed
 abstract class LogDataImpl implements LogData {
 
   LogDataImpl() {}

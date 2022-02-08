@@ -36,6 +36,7 @@ class OtlpJsonLoggingLogExporterTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
 
+  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG1 =
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
           .setName("testLog1")
@@ -52,6 +53,7 @@ class OtlpJsonLoggingLogExporterTest {
                   TraceState.getDefault()))
           .build();
 
+  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG2 =
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .setName("testLog2")

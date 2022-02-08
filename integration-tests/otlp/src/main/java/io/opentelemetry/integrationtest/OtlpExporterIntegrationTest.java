@@ -373,6 +373,7 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpHttpLogExporter);
   }
 
+  @SuppressWarnings("deprecation") // test deprecated setName method
   private static void testLogExporter(LogExporter logExporter) {
     LogData logData =
         LogDataBuilder.create(

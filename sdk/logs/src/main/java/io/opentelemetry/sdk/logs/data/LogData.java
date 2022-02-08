@@ -40,6 +40,7 @@ public interface LogData {
   String getSeverityText();
 
   /** Returns the name for this log, or null if unset. */
+  @Deprecated
   @Nullable
   String getName();
 

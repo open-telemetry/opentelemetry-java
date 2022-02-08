@@ -86,6 +86,7 @@ public final class LogDataBuilder {
   }
 
   /** Set the name. */
+  @Deprecated
   public LogDataBuilder setName(String name) {
     this.name = name;
     return this;

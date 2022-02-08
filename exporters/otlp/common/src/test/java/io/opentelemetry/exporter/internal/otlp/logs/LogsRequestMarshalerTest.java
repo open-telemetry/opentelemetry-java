@@ -50,6 +50,7 @@ class LogsRequestMarshalerTest {
   private static final String BODY = "Hello world from this log...";
 
   @Test
+  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoResourceLogs() {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
@@ -83,6 +84,7 @@ class LogsRequestMarshalerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoLogRecord() {
     LogRecord logRecord =
         parse(
