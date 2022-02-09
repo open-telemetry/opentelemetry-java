@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
@@ -25,10 +24,10 @@ import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -45,14 +44,11 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final ReentrantLock collectLock = new ReentrantLock();
-  private final ReentrantLock callbackLock = new ReentrantLock();
+  private final List<Consumer<O>> callbacks = new CopyOnWriteArrayList<>();
   private final MetricDescriptor metricDescriptor;
   private final TemporalMetricStorage<T> storage;
   private final AsyncAccumulator<T> accumulator;
   private final O measurement;
-
-  @GuardedBy("callbackLock")
-  private final List<Consumer<O>> callbacks = new ArrayList<>();
 
   private AsynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
@@ -108,21 +104,17 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
         TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
-    List<Consumer<O>> callbacks;
-    callbackLock.lock();
-    try {
-      callbacks = new ArrayList<>(this.callbacks);
-    } finally {
-      callbackLock.unlock();
-    }
-
     collectLock.lock();
     try {
       try {
-        if (callbacks.size() == 0) {
+        boolean empty = true;
+        for (Consumer<O> callback : callbacks) {
+          empty = false;
+          callback.accept(measurement);
+        }
+        if (empty) {
           return EmptyMetricData.getInstance();
         }
-        callbacks.forEach(callback -> callback.accept(measurement));
       } catch (Throwable e) {
         propagateIfFatal(e);
         throttlingLogger.log(
@@ -149,12 +141,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
 
   /** Add a callback to the storage. */
   public void addCallback(Consumer<O> callback) {
-    callbackLock.lock();
-    try {
-      this.callbacks.add(callback);
-    } finally {
-      callbackLock.unlock();
-    }
+    this.callbacks.add(callback);
   }
 
   /**
@@ -162,12 +149,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
    * observable instruments.
    */
   public void removeCallback(Consumer<O> callback) {
-    callbackLock.lock();
-    try {
-      this.callbacks.remove(callback);
-    } finally {
-      callbackLock.unlock();
-    }
+    this.callbacks.remove(callback);
   }
 
   /** Helper class to record async measurements on demand. */
