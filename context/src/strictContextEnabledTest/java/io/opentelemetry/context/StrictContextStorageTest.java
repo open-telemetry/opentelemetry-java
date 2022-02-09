@@ -29,6 +29,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
+@SuppressLogger(StrictContextStorage.class)
 @SuppressWarnings("MustBeClosedChecker")
 class StrictContextStorageTest {
 
