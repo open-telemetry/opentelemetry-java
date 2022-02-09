@@ -57,6 +57,11 @@ final class MetricExporterConfiguration {
         metricExporter = spiExporter;
     }
 
+    // exporter may be null in otlp case
+    if (metricExporter == null) {
+      return;
+    }
+
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
     sdkMeterProviderBuilder.registerMetricReader(
         configurePeriodicMetricReader(config, metricExporter));
