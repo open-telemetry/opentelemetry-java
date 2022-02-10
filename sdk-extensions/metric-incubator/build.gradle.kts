@@ -3,8 +3,8 @@ plugins {
   id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry View Config SDK Extension"
-otelJava.moduleName.set("io.opentelemetry.sdk.extension.view.config")
+description = "OpenTelemetry SDK Metric Incubator"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.metric.incubator")
 
 dependencies {
   implementation(project(":sdk:metrics"))

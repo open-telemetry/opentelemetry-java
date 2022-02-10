@@ -1,8 +1,12 @@
-# OpenTelemetry View Config SDK Extension
+# OpenTelemetry Metric Incubator
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This artifact contains experimental code for enabling file based YAML configuration of Metric SDK Views.
+This artifact contains experimental code related to metrics.
+
+## View File Configuration
+
+Adds support for file based YAML configuration of Metric SDK Views.
 
 For example, a YAML file at `/Users/user123/view.yaml` could be used to configure views by calling:
 
@@ -58,6 +62,6 @@ Notes on usage:
   result in the default from `View` being used.
 - Advanced selection criteria, like regular expressions, is not yet supported.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-view-config.svg
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator
 
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-view-config
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator
