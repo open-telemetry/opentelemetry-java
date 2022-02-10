@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.viewconfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
+import java.util.List;
 import javax.annotation.Nullable;
 
 @AutoValue
@@ -27,6 +28,9 @@ abstract class ViewSpecification {
   @Nullable
   abstract String getAggregation();
 
+  @Nullable
+  abstract List<String> getAttributeKeys();
+
   @AutoValue.Builder
   interface Builder {
     @JsonProperty("name")
@@ -37,6 +41,9 @@ abstract class ViewSpecification {
 
     @JsonProperty("aggregation")
     Builder aggregation(@Nullable String aggregation);
+
+    @JsonProperty("attribute_keys")
+    Builder attributeKeys(@Nullable List<String> attributeKeys);
 
     ViewSpecification build();
   }

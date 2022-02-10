@@ -17,8 +17,10 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Enables file based YAML configuration of Metric SDK {@link View}s.
@@ -36,11 +38,14 @@ import java.util.Optional;
  *       name: new-instrument-name
  *       description: new-description
  *       aggregation: histogram
+ *       attribute_keys:
+ *         - foo
+ *         - bar
  * </pre>
  *
  * <p>Is equivalent to the following configuration:
  *
- * <pre>
+ * <pre>{@code
  * SdkMeterProvider.builder()
  *     .registerView(
  *         InstrumentSelector.builder()
@@ -57,8 +62,9 @@ import java.util.Optional;
  *             .setName("new-instrument")
  *             .setDescription("new-description")
  *             .setAggregation(Aggregation.histogram())
+ *             .filterAttributes(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
  *             .build());
- * </pre>
+ * }</pre>
  */
 public class ViewConfig {
 
@@ -114,6 +120,12 @@ public class ViewConfig {
     Optional.ofNullable(viewSpec.getAggregation())
         .map(ViewConfig::toAggregation)
         .ifPresent(builder::setAggregation);
+    Optional.ofNullable(viewSpec.getAttributeKeys())
+        .ifPresent(
+            attributeKeys -> {
+              Set<String> keySet = new HashSet<>(attributeKeys);
+              builder.filterAttributes(keySet::contains);
+            });
     return builder.build();
   }
 

@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.viewconfig;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -18,7 +21,9 @@ import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +85,7 @@ class ViewConfigTest {
               assertThat(viewSpec.getName()).isEqualTo("name1");
               assertThat(viewSpec.getDescription()).isEqualTo("description1");
               assertThat(viewSpec.getAggregation()).isEqualTo("sum");
+              assertThat(viewSpec.getAttributeKeys()).isEqualTo(Arrays.asList("foo", "bar"));
             },
             viewConfigSpec -> {
               SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
@@ -92,6 +98,7 @@ class ViewConfigTest {
               assertThat(viewSpec.getName()).isEqualTo("name2");
               assertThat(viewSpec.getDescription()).isEqualTo("description2");
               assertThat(viewSpec.getAggregation()).isEqualTo("last_value");
+              assertThat(viewSpec.getAttributeKeys()).isEqualTo(Arrays.asList("baz", "qux"));
             });
   }
 
@@ -132,10 +139,25 @@ class ViewConfigTest {
                 .name("name")
                 .description("description")
                 .aggregation("sum")
+                .attributeKeys(Arrays.asList("foo", "bar"))
                 .build());
     assertThat(view.getName()).isEqualTo("name");
     assertThat(view.getDescription()).isEqualTo("description");
     assertThat(view.getAggregation()).isEqualTo(Aggregation.sum());
+    assertThat(
+            view.getAttributesProcessor()
+                .process(
+                    Attributes.builder()
+                        .put("foo", "val")
+                        .put("bar", "val")
+                        .put("baz", "val")
+                        .build(),
+                    Context.current()))
+        .containsEntry("foo", "val")
+        .containsEntry("bar", "val")
+        .satisfies(
+            (Consumer<Attributes>)
+                attributes -> assertThat(attributes.get(AttributeKey.stringKey("baz"))).isBlank());
   }
 
   @Test

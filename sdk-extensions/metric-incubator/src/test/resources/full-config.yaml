@@ -8,6 +8,9 @@
     name: name1
     description: description1
     aggregation: sum
+    attribute_keys:
+      - foo
+      - bar
 - selector:
     instrument_name: name2
     instrument_type: COUNTER
@@ -18,3 +21,6 @@
     name: name2
     description: description2
     aggregation: last_value
+    attribute_keys:
+      - baz
+      - qux

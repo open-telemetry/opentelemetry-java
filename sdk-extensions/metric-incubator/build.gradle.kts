@@ -15,4 +15,6 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
   annotationProcessor("com.google.auto.value:auto-value")
+
+  testImplementation(project(":sdk:testing"))
 }

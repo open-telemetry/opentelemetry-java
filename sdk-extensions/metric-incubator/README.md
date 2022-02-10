@@ -28,6 +28,9 @@ Suppose `/Users/user123/view.yaml` had content as follows:
     name: new-instrument-name
     description: new-description
     aggregation: histogram
+    attribute_keys:
+      - foo
+      - bar
 ```
 
 That would produce a view configuration equivalent to:
@@ -49,6 +52,7 @@ SdkMeterProvider.builder()
            .setName("new-instrument")
            .setDescription("new-description")
            .setAggregation(Aggregation.histogram())
+           .filterAttributes(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
            .build());
 ```
 
