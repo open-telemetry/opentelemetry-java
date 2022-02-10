@@ -1,19 +1,19 @@
 - selector:
-    instrumentName: name1
-    instrumentType: COUNTER
-    meterName: meterName1
-    meterVersion: 1.0.0
-    meterSchemaUrl: http://example1.com
+    instrument_name: name1
+    instrument_type: COUNTER
+    meter_name: meterName1
+    meter_version: 1.0.0
+    meter_schema_url: http://example1.com
   view:
     name: name1
     description: description1
     aggregation: sum
 - selector:
-    instrumentName: name2
-    instrumentType: COUNTER
-    meterName: meterName2
-    meterVersion: 2.0.0
-    meterSchemaUrl: http://example2.com
+    instrument_name: name2
+    instrument_type: COUNTER
+    meter_name: meterName2
+    meter_version: 2.0.0
+    meter_schema_url: http://example2.com
   view:
     name: name2
     description: description2

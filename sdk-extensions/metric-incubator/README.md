@@ -19,11 +19,11 @@ Suppose `/Users/user123/view.yaml` had content as follows:
 
 ```yaml
 - selector:
-    instrumentName: my-instrument
-    instrumentType: COUNTER
-    meterName: my-meter
-    meterVersion: 1.0.0
-    meterSchemaUrl: http://example.com
+    instrument_name: my-instrument
+    instrument_type: COUNTER
+    meter_name: my-meter
+    meter_version: 1.0.0
+    meter_schema_url: http://example.com
   view:
     name: new-instrument-name
     description: new-description

@@ -36,19 +36,19 @@ abstract class SelectorSpecification {
 
   @AutoValue.Builder
   interface Builder {
-    @JsonProperty("instrumentName")
-    Builder instrumentName(@Nullable String name);
+    @JsonProperty("instrument_name")
+    Builder instrumentName(@Nullable String instrumentName);
 
-    @JsonProperty("instrumentType")
+    @JsonProperty("instrument_type")
     Builder instrumentType(@Nullable InstrumentType instrumentType);
 
-    @JsonProperty("meterName")
+    @JsonProperty("meter_name")
     Builder meterName(@Nullable String meterName);
 
-    @JsonProperty("meterVersion")
+    @JsonProperty("meter_version")
     Builder meterVersion(@Nullable String meterVersion);
 
-    @JsonProperty("meterSchemaUrl")
+    @JsonProperty("meter_schema_url")
     Builder meterSchemaUrl(@Nullable String meterSchemaUrl);
 
     SelectorSpecification build();
