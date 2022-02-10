@@ -26,7 +26,6 @@ final class MetricDataUtils {
     InstrumentType type = descriptor.getType();
     return type == InstrumentType.HISTOGRAM
         || type == InstrumentType.COUNTER
-        || type == InstrumentType.OBSERVABLE_SUM
         || type == InstrumentType.OBSERVABLE_COUNTER;
   }
 
