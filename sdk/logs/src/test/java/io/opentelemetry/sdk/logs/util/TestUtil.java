@@ -22,7 +22,6 @@ public final class TestUtil {
         .setEpoch(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
         .setSeverity(severity)
         .setSeverityText("really severe")
-        .setName("log1")
         .setBody(message)
         .setAttributes(Attributes.builder().put("animal", "cat").build())
         .build();

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 class SdkLogBuilderTest {
 
   @Test
+  @SuppressWarnings("deprecation") // test deprecated setName method
   void buildAndEmit() {
     Instant now = Instant.now();
     String name = "skippy";

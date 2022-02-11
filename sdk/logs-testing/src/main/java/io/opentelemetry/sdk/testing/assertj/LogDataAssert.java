@@ -114,6 +114,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given name. */
+  @Deprecated
   public LogDataAssert hasName(String name) {
     isNotNull();
     if (!name.equals(actual.getName())) {
@@ -149,7 +150,6 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
           actual.getAttributes(),
           attributes,
           "Expected log to have attributes <%s> but was <%s>",
-          actual.getName(),
           attributes,
           actual.getAttributes());
     }

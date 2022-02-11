@@ -57,6 +57,7 @@ final class SdkLogBuilder implements LogBuilder {
   }
 
   @Override
+  @Deprecated
   public LogBuilder setName(String name) {
     logDataBuilder.setName(name);
     return this;
