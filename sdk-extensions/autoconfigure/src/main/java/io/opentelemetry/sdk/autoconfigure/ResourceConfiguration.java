@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashSet;
 import java.util.ServiceLoader;
@@ -22,6 +23,7 @@ final class ResourceConfiguration {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  static final String DISABLED_ATTRIBUTE_KEYS = "otel.experimental.disabled.resource.keys";
 
   static Resource configureResource(
       ConfigProperties config,
@@ -44,6 +46,8 @@ final class ResourceConfiguration {
 
     result = result.merge(createEnvironmentResource(config));
 
+    result = filterAttributes(result, config);
+
     return resourceCustomizer.apply(result, config);
   }
 
@@ -60,6 +64,24 @@ final class ResourceConfiguration {
       resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);
     }
     return resourceAttributes.build();
+  }
+
+  // visible for testing
+  static Resource filterAttributes(Resource resource, ConfigProperties configProperties) {
+    Set<String> disabledKeys = new HashSet<>(configProperties.getList(DISABLED_ATTRIBUTE_KEYS));
+
+    Attributes filteredAttributes =
+        resource.getAttributes().toBuilder()
+            .removeIf(attributeKey -> disabledKeys.contains(attributeKey.getKey()))
+            .build();
+
+    ResourceBuilder builder = Resource.builder().putAll(filteredAttributes);
+
+    if (resource.getSchemaUrl() != null) {
+      builder.setSchemaUrl(resource.getSchemaUrl());
+    }
+
+    return builder.build();
   }
 
   private ResourceConfiguration() {}

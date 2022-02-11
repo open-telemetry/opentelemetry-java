@@ -161,10 +161,11 @@ Supported values are
 The [OpenTelemetry Resource](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/sdk.md)
 is a representation of the entity producing telemetry.
 
-| System property          | Environment variable     | Description                                                                                                |
-|--------------------------|--------------------------|------------------------------------------------------------------------------------------------------------|
-| otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
-| otel.service.name        | OTEL_SERVICE_NAME        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
+| System property                          | Environment variable                     | Description                                                                                                |
+|------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| otel.resource.attributes                 | OTEL_RESOURCE_ATTRIBUTES                 | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
+| otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
+| otel.experimental.disabled.resource.keys | OTEL_EXPERIMENTAL_DISABLED_RESOURCE_KEYS | Specify resource attribute keys that are filtered.                                                         |
 
 You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
 It corresponds to how you describe the application, for example `authservice` could be an application that authenticates requests, and `cats` could be an application that returns information about [cats](https://en.wikipedia.org/wiki/Cat).
