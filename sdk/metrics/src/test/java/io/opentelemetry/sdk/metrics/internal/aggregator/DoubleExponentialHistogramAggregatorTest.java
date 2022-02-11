@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,10 +29,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,6 +52,15 @@ class DoubleExponentialHistogramAggregatorTest {
       InstrumentationLibraryInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
+
+  private static Stream<DoubleExponentialHistogramAggregator> provideAggregator() {
+    return Stream.of(
+        aggregator,
+        new DoubleExponentialHistogramAggregator(
+            ExemplarReservoir::noSamples,
+            ExponentialBucketStrategy.newStrategy(
+                20, 320, ExponentialCounterFactory.circularBufferCounter())));
+  }
 
   private static int valueToIndex(int scale, double value) {
     double scaleFactor = Math.scalb(1D / Math.log(2), scale);
@@ -120,6 +133,45 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(0);
     assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(0);
     assertThat(acc.getZeroCount()).isEqualTo(0);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideAggregator")
+  void testRecordingsAtLimits(DoubleExponentialHistogramAggregator aggregator) {
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+
+    aggregatorHandle.recordDouble(Double.MIN_VALUE);
+    aggregatorHandle.recordDouble(Double.MAX_VALUE);
+
+    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    List<Long> bucketCounts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
+
+    // assert buckets == [1 0 0 0 ... 1]
+    assertThat(bucketCounts.get(0)).isEqualTo(1);
+    assertThat(bucketCounts.get(bucketCounts.size() - 1)).isEqualTo(1);
+    assertThat(bucketCounts.stream().filter(i -> i == 0).count())
+        .isEqualTo(bucketCounts.size() - 2);
+
+    // With 320 buckets, minimum scale is -3
+    assertThat(acc.getScale()).isEqualTo(-3);
+
+    // if scale is -3, base is 256.
+    int base = 256;
+
+    // Verify the rule holds:
+    // base ^ (offset+i) <= (values recorded to bucket i) < base ^ (offset+i+1)
+
+    // lowest bucket:
+    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset()))
+        .isLessThanOrEqualTo(Double.MIN_VALUE);
+    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + 1))
+        .isGreaterThan(Double.MIN_VALUE);
+
+    // highest bucket
+    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + bucketCounts.size() - 1))
+        .isLessThanOrEqualTo(Double.MAX_VALUE);
+    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + bucketCounts.size()))
+        .isGreaterThan(Double.MAX_VALUE);
   }
 
   @Test
