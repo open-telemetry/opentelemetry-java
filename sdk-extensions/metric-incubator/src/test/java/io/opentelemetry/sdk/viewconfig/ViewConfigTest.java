@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
@@ -41,28 +42,6 @@ class ViewConfigTest {
             "viewRegistryBuilder", as(InstanceOfAssertFactories.type(ViewRegistryBuilder.class)))
         .extracting("orderedViews", as(InstanceOfAssertFactories.list(Object.class)))
         .hasSize(2);
-  }
-
-  @Test
-  void registerViews_EmptyConfig() {
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-
-    assertThatThrownBy(
-            () ->
-                ViewConfig.registerViews(
-                    builder,
-                    new File(
-                        ViewConfigTest.class.getResource("/empty-view-config.yaml").getFile())))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid view configuration - empty view specification.");
-    assertThatThrownBy(
-            () ->
-                ViewConfig.registerViews(
-                    builder,
-                    new File(
-                        ViewConfigTest.class.getResource("/empty-selector-config.yaml").getFile())))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid view configuration - empty selector specification.");
   }
 
   @Test
@@ -103,26 +82,27 @@ class ViewConfigTest {
   }
 
   @Test
-  void loadViewConfig_EmptyConfig() {
-    assertThat(
-            ViewConfig.loadViewConfig(
-                new File(ViewConfigTest.class.getResource("/empty-view-config.yaml").getFile())))
-        .hasSize(1)
-        .satisfiesExactly(
-            viewConfigSpec -> {
-              assertThat(viewConfigSpec.getSelectorSpecification()).isNotNull();
-              assertThat(viewConfigSpec.getViewSpecification()).isNull();
-            });
-    assertThat(
-            ViewConfig.loadViewConfig(
-                new File(
-                    ViewConfigTest.class.getResource("/empty-selector-config.yaml").getFile())))
-        .hasSize(1)
-        .satisfiesExactly(
-            viewConfigSpec -> {
-              assertThat(viewConfigSpec.getSelectorSpecification()).isNull();
-              assertThat(viewConfigSpec.getViewSpecification()).isNotNull();
-            });
+  void loadViewConfig_Invalid() {
+    assertThatThrownBy(() -> ViewConfig.loadViewConfig(new File("/" + UUID.randomUUID())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("An error occurred reading view config file:");
+
+    assertThatThrownBy(
+            () ->
+                ViewConfig.loadViewConfig(
+                    new File(
+                        ViewConfigTest.class.getResource("/empty-view-config.yaml").getFile())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Failed to parse view config file")
+        .hasRootCauseMessage("view is required");
+    assertThatThrownBy(
+            () ->
+                ViewConfig.loadViewConfig(
+                    new File(
+                        ViewConfigTest.class.getResource("/empty-selector-config.yaml").getFile())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Failed to parse view config file")
+        .hasRootCauseMessage("selector is required");
   }
 
   @Test

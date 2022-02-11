@@ -10,9 +10,7 @@ dependencies {
   implementation(project(":sdk:metrics"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation("com.fasterxml.jackson.core:jackson-core")
-  implementation("com.fasterxml.jackson.core:jackson-databind")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+  implementation("org.yaml:snakeyaml")
 
   annotationProcessor("com.google.auto.value:auto-value")
 

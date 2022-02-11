@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
@@ -97,8 +96,8 @@ class ViewConfigCustomizerTest {
     assertThatThrownBy(
             () ->
                 ViewConfigCustomizer.customizeMeterProvider(SdkMeterProvider.builder(), properties))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid view configuration - empty selector specification.");
+        .hasMessageContaining("Failed to parse view config file")
+        .hasRootCauseMessage("selector is required");
   }
 
   private static ConfigProperties withConfigFileLocations(List<String> fileLocations) {

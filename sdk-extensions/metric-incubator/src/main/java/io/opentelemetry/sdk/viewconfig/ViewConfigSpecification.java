@@ -5,28 +5,24 @@
 
 package io.opentelemetry.sdk.viewconfig;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 
 @AutoValue
-@JsonDeserialize(builder = AutoValue_ViewConfigSpecification.Builder.class)
 abstract class ViewConfigSpecification {
 
-  @Nullable
+  static AutoValue_ViewConfigSpecification.Builder builder() {
+    return new AutoValue_ViewConfigSpecification.Builder();
+  }
+
   abstract SelectorSpecification getSelectorSpecification();
 
-  @Nullable
   abstract ViewSpecification getViewSpecification();
 
   @AutoValue.Builder
   interface Builder {
-    @JsonProperty("selector")
-    Builder selectorSpecification(@Nullable SelectorSpecification selectorSpecification);
+    Builder selectorSpecification(SelectorSpecification selectorSpecification);
 
-    @JsonProperty("view")
-    Builder viewSpecification(@Nullable ViewSpecification viewSpecification);
+    Builder viewSpecification(ViewSpecification viewSpecification);
 
     ViewConfigSpecification build();
   }
