@@ -17,4 +17,6 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation(project(":sdk:metrics-testing"))
 }

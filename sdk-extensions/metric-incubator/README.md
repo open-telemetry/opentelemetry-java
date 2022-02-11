@@ -8,14 +8,7 @@ This artifact contains experimental code related to metrics.
 
 Adds support for file based YAML configuration of Metric SDK Views.
 
-For example, a YAML file at `/Users/user123/view.yaml` could be used to configure views by calling:
-
-```
-SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-ViewConfig.registerViews(builder, new File("/Users/user123/view.yaml"));
-```
-
-Suppose `/Users/user123/view.yaml` had content as follows:
+For example, suppose `/Users/user123/view.yaml` has the following content:
 
 ```yaml
 - selector:
@@ -33,7 +26,7 @@ Suppose `/Users/user123/view.yaml` had content as follows:
       - bar
 ```
 
-That would produce a view configuration equivalent to:
+The equivalent view configuration would be:
 
 ```
 SdkMeterProvider.builder()
@@ -54,6 +47,19 @@ SdkMeterProvider.builder()
            .setAggregation(Aggregation.histogram())
            .filterAttributes(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
            .build());
+```
+
+If using [autoconfigure](../autoconfigure) with this artifact on your classpath, it will automatically load a list of view config files specified via environment variable or system property:
+
+| System property                      | Environment variable                 | Purpose                                                    |
+|--------------------------------------|--------------------------------------|------------------------------------------------------------|
+| otel.experimental.metric.view.config | OTEL_EXPERIMENTAL_METRIC_VIEW_CONFIG | List of absolute files containing view configuration YAML. |
+
+If not using autoconfigure, a file can be used to configure views as follows:
+
+```
+SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+ViewConfig.registerViews(builder, new File("/Users/user123/view.yaml"));
 ```
 
 Notes on usage:
