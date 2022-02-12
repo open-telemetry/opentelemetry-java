@@ -281,7 +281,7 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
     // MetricExporterCustomizer filters logs not whose level is less than Severity.INFO
-    LogRecord log = logRequest.getResourceLogs(0).getInstrumentationLibraryLogs(0).getLogs(0);
+    LogRecord log = logRequest.getResourceLogs(0).getInstrumentationLibraryLogs(0).getLogRecords(0);
     assertThat(log.getBody().getStringValue()).isEqualTo("info log message");
     assertThat(log.getSeverityNumberValue()).isEqualTo(Severity.INFO.getSeverityNumber());
   }

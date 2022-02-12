@@ -178,7 +178,7 @@ class LogsRequestMarshalerTest {
       ResourceLogs.Builder fixed = (ResourceLogs.Builder) builder;
       for (InstrumentationLibraryLogs.Builder ill :
           fixed.getInstrumentationLibraryLogsBuilderList()) {
-        for (LogRecord.Builder span : ill.getLogsBuilderList()) {
+        for (LogRecord.Builder span : ill.getLogRecordsBuilderList()) {
           fixSpanJsonIds(span);
         }
       }

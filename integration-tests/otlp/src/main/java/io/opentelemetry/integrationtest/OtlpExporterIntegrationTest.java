@@ -415,9 +415,9 @@ abstract class OtlpExporterIntegrationTest {
     InstrumentationLibraryLogs ilLogs = resourceLogs.getInstrumentationLibraryLogs(0);
     assertThat(ilLogs.getInstrumentationLibrary().getName())
         .isEqualTo(OtlpExporterIntegrationTest.class.getName());
-    assertThat(ilLogs.getLogsCount()).isEqualTo(1);
+    assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
-    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogs(0);
+    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);
     assertThat(protoLog.getName()).isEqualTo("log-name");
     assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
     assertThat(protoLog.getAttributesList())

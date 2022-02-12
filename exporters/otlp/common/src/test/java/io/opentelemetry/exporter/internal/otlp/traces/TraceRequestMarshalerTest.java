@@ -7,8 +7,6 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNSET;
@@ -229,45 +227,24 @@ class TraceRequestMarshalerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(parse(Status.getDefaultInstance(), SpanStatusMarshaler.create(StatusData.unset())))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_UNSET)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_UNSET).build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "ERROR"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("ERROR")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("ERROR").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "UNKNOWN"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("UNKNOWN")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("UNKNOWN").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.OK, "OK_OVERRIDE"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_OK)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .setMessage("OK_OVERRIDE")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
   @Test
