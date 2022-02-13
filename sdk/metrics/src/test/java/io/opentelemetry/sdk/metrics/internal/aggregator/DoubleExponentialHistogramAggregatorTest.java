@@ -59,7 +59,7 @@ class DoubleExponentialHistogramAggregatorTest {
         new DoubleExponentialHistogramAggregator(
             ExemplarReservoir::noSamples,
             ExponentialBucketStrategy.newStrategy(
-                20, 320, ExponentialCounterFactory.circularBufferCounter())));
+                20, 320, ExponentialCounterFactory.mapCounter())));
   }
 
   private static int valueToIndex(int scale, double value) {
