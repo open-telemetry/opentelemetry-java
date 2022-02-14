@@ -74,12 +74,12 @@ public class MapCounter implements ExponentialCounter {
 
     // Extend window if possible. if it would exceed maxSize, then return false.
     if (index > indexEnd) {
-      if ((long) index - (long) indexStart + 1L > maxSize) {
+      if ((long) index - indexStart + 1 > maxSize) {
         return false;
       }
       indexEnd = index;
     } else if (index < indexStart) {
-      if ((long) indexEnd - (long) index + 1L > maxSize) {
+      if ((long) indexEnd - index + 1 > maxSize) {
         return false;
       }
       indexStart = index;
