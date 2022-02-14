@@ -13,8 +13,14 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.assertj.core.api.AbstractBooleanAssert;
+import org.assertj.core.api.AbstractDoubleAssert;
+import org.assertj.core.api.AbstractLongAssert;
+import org.assertj.core.api.AbstractStringAssert;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ListAssert;
 
 /**
  * Entry point for assertion methods for OpenTelemetry types. To use type-specific assertions,
@@ -110,6 +116,107 @@ public final class OpenTelemetryAssertions extends Assertions {
         AttributeKey.doubleArrayKey(key),
         Arrays.stream(value).boxed().collect(Collectors.toList()));
   }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<String> key, StringAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<Boolean> key, BooleanAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(AttributeKey<Long> key, LongAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<Double> key, DoubleAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  // Will require a cast only if using a custom implementation of AttributeKey which is highly
+  // unusual usage.
+  @SuppressWarnings("FunctionalInterfaceClash")
+  public static AttributeAssertion satisfies(
+      AttributeKey<List<String>> key, StringListAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<List<Boolean>> key, BooleanListAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<List<Long>> key, LongListAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<List<Double>> key, DoubleListAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with the
+   * given {@code value}.
+   */
+  public static <T> AttributeAssertion attribute(AttributeKey<T> key, T value) {
+    return AttributeAssertion.create(key, val -> val.isEqualTo(value));
+  }
+
+  // Unique interfaces to prevent generic functional interface clash. These are not interesting at
+  // all but are required to be able to use the same method name in methods like satisfies above.
+
+  public interface StringAssertConsumer extends Consumer<AbstractStringAssert<?>> {}
+
+  public interface BooleanAssertConsumer extends Consumer<AbstractBooleanAssert<?>> {}
+
+  public interface LongAssertConsumer extends Consumer<AbstractLongAssert<?>> {}
+
+  public interface DoubleAssertConsumer extends Consumer<AbstractDoubleAssert<?>> {}
+
+  public interface StringListAssertConsumer extends Consumer<ListAssert<String>> {}
+
+  public interface BooleanListAssertConsumer extends Consumer<ListAssert<Boolean>> {}
+
+  public interface LongListAssertConsumer extends Consumer<ListAssert<Long>> {}
+
+  public interface DoubleListAssertConsumer extends Consumer<ListAssert<Double>> {}
 
   private static List<Boolean> toList(boolean... values) {
     Boolean[] boxed = new Boolean[values.length];

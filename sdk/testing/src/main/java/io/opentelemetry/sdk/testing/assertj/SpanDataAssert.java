@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -24,8 +25,11 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
@@ -266,6 +270,57 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return this;
+  }
+
+  /** Asserts the span has attributes matching all {@code assertions} and no more. */
+  public SpanDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the span has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public SpanDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
+    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
+    Set<AttributeKey<?>> expectedKeys =
+        StreamSupport.stream(assertions.spliterator(), false)
+            .map(AttributeAssertion::getKey)
+            .collect(Collectors.toSet());
+    assertThat(actualKeys)
+        .as("span [%s] attribute keys", actual.getName())
+        .containsExactlyInAnyOrderElementsOf(expectedKeys);
+    for (AttributeAssertion attributeAssertion : assertions) {
+      AttributeKey<?> key = attributeAssertion.getKey();
+      Object value = actual.getAttributes().get(key);
+      // Already checked all keys are present.
+      requireNonNull(value);
+      AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
+      attributeAssertion.getAssertion().accept(assertion);
+    }
+    return this;
+  }
+
+  // The return type of these assertions must match the parameters in methods like
+  // OpenTelemetryAssertions.sastisfies.
+  private static AbstractAssert<?, ?> attributeValueAssertion(AttributeKey<?> key, Object value) {
+    switch (key.getType()) {
+      case STRING:
+        return assertThat((String) value);
+      case BOOLEAN:
+        return assertThat((boolean) value);
+      case LONG:
+        return assertThat((long) value);
+      case DOUBLE:
+        return assertThat((double) value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return assertThat((List<?>) value);
+    }
+    throw new IllegalArgumentException("Unknown type for key " + key);
   }
 
   /**
