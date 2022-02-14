@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.data;
+package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.trace.data.EventData;
 
 public interface ExceptionEventData extends EventData {
 
@@ -28,4 +29,11 @@ public interface ExceptionEventData extends EventData {
    * @return the {@link Throwable exception} of the {@link ExceptionEventData}
    */
   Throwable getException();
+
+  /**
+   * Return the additional {@link Attributes attributes} of the {@link ExceptionEventData}.
+   *
+   * @return the additional {@link Attributes attributes} of the {@link ExceptionEventData}
+   */
+  Attributes getAdditionalAttributes();
 }
