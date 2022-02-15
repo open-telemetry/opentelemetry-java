@@ -163,8 +163,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
     // lowest bucket
     // As the bucket lower bound is less than Double.MIN_VALUE, Math.pow() rounds to 0
-    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset()))
-        .isEqualTo(0);
+    assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset())).isEqualTo(0);
     assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + 1))
         .isGreaterThan(Double.MIN_VALUE);
 
