@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attribute;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
@@ -152,14 +152,14 @@ class OpenTelemetryAssertionsTest {
             attributeEntry("scores", 0L, 1L),
             attributeEntry("coins", 0.01, 0.05, 0.1))
         .hasAttributesSatisfyingExactly(
-            attribute(BEAR, "mya"),
-            attribute(WARM, true),
-            attribute(TEMPERATURE, 30L),
-            attribute(LENGTH, 1.2),
-            attribute(COLORS, Arrays.asList("red", "blue")),
-            attribute(CONDITIONS, Arrays.asList(false, true)),
-            attribute(SCORES, Arrays.asList(0L, 1L)),
-            attribute(COINS, Arrays.asList(0.01, 0.05, 0.1)))
+            equalTo(BEAR, "mya"),
+            equalTo(WARM, true),
+            equalTo(TEMPERATURE, 30L),
+            equalTo(LENGTH, 1.2),
+            equalTo(COLORS, Arrays.asList("red", "blue")),
+            equalTo(CONDITIONS, Arrays.asList(false, true)),
+            equalTo(SCORES, Arrays.asList(0L, 1L)),
+            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)))
         .hasAttributesSatisfyingExactly(
             satisfies(BEAR, val -> val.startsWith("mya")),
             satisfies(WARM, val -> val.isTrue()),
@@ -171,13 +171,13 @@ class OpenTelemetryAssertionsTest {
             satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)))
         // Demonstrates common usage of many exact matches and one needing a loose one.
         .hasAttributesSatisfyingExactly(
-            attribute(BEAR, "mya"),
-            attribute(WARM, true),
-            attribute(TEMPERATURE, 30L),
-            attribute(COLORS, Arrays.asList("red", "blue")),
-            attribute(CONDITIONS, Arrays.asList(false, true)),
-            attribute(SCORES, Arrays.asList(0L, 1L)),
-            attribute(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+            equalTo(BEAR, "mya"),
+            equalTo(WARM, true),
+            equalTo(TEMPERATURE, 30L),
+            equalTo(COLORS, Arrays.asList("red", "blue")),
+            equalTo(CONDITIONS, Arrays.asList(false, true)),
+            equalTo(SCORES, Arrays.asList(0L, 1L)),
+            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
             satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
         .hasAttributesSatisfying(
             attributes ->

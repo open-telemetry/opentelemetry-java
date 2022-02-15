@@ -4,7 +4,7 @@ Comparing source compatibility of  against
 	+++  NEW SUPERCLASS: java.lang.Object
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion attribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion equalTo(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion satisfies(io.opentelemetry.api.common.AttributeKey, io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions$StringAssertConsumer)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion satisfies(io.opentelemetry.api.common.AttributeKey, io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions$BooleanAssertConsumer)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion satisfies(io.opentelemetry.api.common.AttributeKey, io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions$LongAssertConsumer)

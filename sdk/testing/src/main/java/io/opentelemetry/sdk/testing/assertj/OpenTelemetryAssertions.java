@@ -195,7 +195,7 @@ public final class OpenTelemetryAssertions extends Assertions {
    * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with the
    * given {@code value}.
    */
-  public static <T> AttributeAssertion attribute(AttributeKey<T> key, T value) {
+  public static <T> AttributeAssertion equalTo(AttributeKey<T> key, T value) {
     return AttributeAssertion.create(key, val -> val.isEqualTo(value));
   }
 
