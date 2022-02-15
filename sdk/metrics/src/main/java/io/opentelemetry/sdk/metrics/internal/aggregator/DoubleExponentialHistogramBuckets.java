@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
-  private final static double LOG_BASE2_E = 1D / Math.log(2);
+  private static final double LOG_BASE2_E = 1D / Math.log(2);
 
   private final ExponentialCounterFactory counterFactory;
   private ExponentialCounter counts;
