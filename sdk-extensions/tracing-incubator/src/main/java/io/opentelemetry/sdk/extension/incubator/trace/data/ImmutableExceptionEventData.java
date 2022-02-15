@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -29,7 +30,23 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
   static ExceptionEventData create(
       long epochNanos, Throwable exception, Attributes additionalAttributes) {
 
+    return new AutoValue_ImmutableExceptionEventData(epochNanos, exception, additionalAttributes);
+  }
+
+  ImmutableExceptionEventData() {}
+
+  @Override
+  public String getName() {
+    return SemanticAttributes.EXCEPTION_EVENT_NAME;
+  }
+
+  @Override
+  @Memoized
+  public Attributes getAttributes() {
+    Throwable exception = getException();
+    Attributes additionalAttributes = getAdditionalAttributes();
     AttributesBuilder attributesBuilder = Attributes.builder();
+
     attributesBuilder.put(
         SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     String message = exception.getMessage();
@@ -42,20 +59,14 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
       exception.printStackTrace(printWriter);
     }
     attributesBuilder.put(SemanticAttributes.EXCEPTION_STACKTRACE, stringWriter.toString());
+    attributesBuilder.putAll(additionalAttributes);
 
-    if (additionalAttributes != null) {
-      attributesBuilder.putAll(additionalAttributes);
-    }
-    Attributes attributes = attributesBuilder.build();
-
-    return new AutoValue_ImmutableExceptionEventData(
-        SemanticAttributes.EXCEPTION_EVENT_NAME,
-        attributes,
-        epochNanos,
-        attributes.size(),
-        exception,
-        additionalAttributes);
+    return attributesBuilder.build();
   }
 
-  ImmutableExceptionEventData() {}
+  @Override
+  @Memoized
+  public int getTotalAttributeCount() {
+    return getAttributes().size();
+  }
 }

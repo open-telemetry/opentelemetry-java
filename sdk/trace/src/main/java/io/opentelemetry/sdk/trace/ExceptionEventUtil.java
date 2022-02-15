@@ -13,8 +13,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import javax.annotation.Nullable;
 
 final class ExceptionEventUtil {
+  private static final String CLASS_NAME =
+      "io.opentelemetry.sdk.extension.incubator.trace.data.ExceptionEventData";
+  private static final String METHOD_NAME = "create";
+  private static final Class<?>[] PARAMETER_TYPES = {long.class, Throwable.class, Attributes.class};
+
   private static final ExceptionEventFactory factory = initializeEventFactory();
 
   static EventData create(Throwable exception, Attributes additionalAttributes, long epochNanos) {
@@ -22,30 +28,36 @@ final class ExceptionEventUtil {
   }
 
   private static ExceptionEventFactory initializeEventFactory() {
-    try {
-      Class<?> clazz =
-          Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.trace.data.ExceptionEventData",
-              false,
-              ExceptionEventUtil.class.getClassLoader());
-      Method method = clazz.getMethod("create", long.class, Throwable.class, Attributes.class);
-      int modifiers = method.getModifiers();
+    Method createMethod = findExceptionEventCreateMethod();
+    if (createMethod != null) {
+      return (exception, attributes, epochNanos) -> {
+        try {
+          return (EventData) createMethod.invoke(null, epochNanos, exception, attributes);
+        } catch (Exception e) {
+          return createEventData(exception, attributes, epochNanos);
+        }
+      };
+    } else {
+      return ExceptionEventUtil::createEventData;
+    }
+  }
 
+  @Nullable
+  private static Method findExceptionEventCreateMethod() {
+    try {
+      Class<?> clazz = Class.forName(CLASS_NAME);
+      Method method = clazz.getMethod(METHOD_NAME, PARAMETER_TYPES);
+      int modifiers = method.getModifiers();
       if (Modifier.isPublic(modifiers)
           && Modifier.isStatic(modifiers)
           && EventData.class.isAssignableFrom(method.getReturnType())) {
+
         method.setAccessible(true);
-        return (exception, attributes, epochNanos) -> {
-          try {
-            return (EventData) method.invoke(null, epochNanos, exception, attributes);
-          } catch (Exception e) {
-            return createEventData(exception, attributes, epochNanos);
-          }
-        };
+        return method;
       }
-      return ExceptionEventUtil::createEventData;
-    } catch (Throwable ignored) {
-      return ExceptionEventUtil::createEventData;
+      return null;
+    } catch (ClassNotFoundException | NoSuchMethodException e) {
+      return null;
     }
   }
 
