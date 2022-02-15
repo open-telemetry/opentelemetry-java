@@ -152,7 +152,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(bucketCounts.stream().filter(i -> i == 0).count())
         .isEqualTo(bucketCounts.size() - 2);
 
-    // With 320 buckets, minimum scale is -3
+    // With 320 buckets allowed, minimum scale is -3
     assertThat(acc.getScale()).isEqualTo(-3);
 
     // if scale is -3, base is 256.
@@ -161,17 +161,19 @@ class DoubleExponentialHistogramAggregatorTest {
     // Verify the rule holds:
     // base ^ (offset+i) <= (values recorded to bucket i) < base ^ (offset+i+1)
 
-    // lowest bucket:
+    // lowest bucket
+    // As the bucket lower bound is less than Double.MIN_VALUE, Math.pow() rounds to 0
     assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset()))
-        .isLessThanOrEqualTo(Double.MIN_VALUE);
+        .isEqualTo(0);
     assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + 1))
         .isGreaterThan(Double.MIN_VALUE);
 
     // highest bucket
     assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + bucketCounts.size() - 1))
         .isLessThanOrEqualTo(Double.MAX_VALUE);
+    // As the bucket upper bound is greater than Double.MAX_VALUE, Math.pow() rounds to infinity
     assertThat(Math.pow(base, acc.getPositiveBuckets().getOffset() + bucketCounts.size()))
-        .isGreaterThan(Double.MAX_VALUE);
+        .isEqualTo(Double.POSITIVE_INFINITY);
   }
 
   @Test
