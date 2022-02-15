@@ -269,9 +269,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * <p>The strategy to retrieve the index is specified in the OpenTelemetry specification:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponential-buckets
    *
-   * <p>If the index cannot be represented by a signed 32 bit integer, it is expected the histogram
-   * will be downscaled.
-   *
    * @param value Measured value (must be non-zero).
    * @return the index of the bucket which the value maps to.
    */
