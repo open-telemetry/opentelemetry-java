@@ -23,15 +23,19 @@ import javax.annotation.Nullable;
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
+  private final static double LOG_BASE2_E = 1D / Math.log(2);
+
   private final ExponentialCounterFactory counterFactory;
   private ExponentialCounter counts;
   private int scale;
+  private double scaleFactor;
 
   DoubleExponentialHistogramBuckets(
       int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
     this.counterFactory = counterFactory;
     this.counts = counterFactory.newCounter(maxBuckets);
     this.scale = scale;
+    this.scaleFactor = computeScaleFactor(scale);
   }
 
   // For copying
@@ -39,6 +43,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.counterFactory = buckets.counterFactory;
     this.counts = counterFactory.copy(buckets.counts);
     this.scale = buckets.scale;
+    this.scaleFactor = buckets.scaleFactor;
   }
 
   /** Returns a copy of this bucket. */
@@ -56,7 +61,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       // Guarded by caller. If passed 0 it would be a bug in the SDK.
       throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
     }
-    int index = valueToIndex(Math.abs(value));
+    int index = valueToIndex(value);
     return this.counts.increment(index, 1);
   }
 
@@ -125,6 +130,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     this.scale = this.scale - by;
+    this.scaleFactor = computeScaleFactor(this.scale);
   }
 
   /**
@@ -228,7 +234,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * @return The required scale reduction in order to fit the value in these buckets.
    */
   int getScaleReduction(double value) {
-    long index = valueToIndex(Math.abs(value));
+    long index = valueToIndex(value);
     long newStart = Math.min(index, counts.getIndexStart());
     long newEnd = Math.max(index, counts.getIndexEnd());
     return getScaleReduction(newStart, newEnd);
@@ -245,19 +251,22 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     return scaleReduction;
   }
 
-  private static int getIndexByLogarithm(double value, int scale) {
-    double scaleFactor = Math.scalb(1D / Math.log(2), scale);
+  private int getIndexByLogarithm(double value) {
     return (int) Math.floor(Math.log(value) * scaleFactor);
   }
 
-  private static int getIndexByExponent(double value, int scale) {
+  private int getIndexByExponent(double value) {
     return Math.getExponent(value) >> -scale;
+  }
+
+  private static double computeScaleFactor(int scale) {
+    return Math.scalb(LOG_BASE2_E, scale);
   }
 
   /**
    * Maps a recorded double value to a bucket index.
    *
-   * <p>The strategy to retrieve the index is specified in the OpenTelemtry specification:
+   * <p>The strategy to retrieve the index is specified in the OpenTelemetry specification:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponential-buckets
    *
    * <p>If the index cannot be represented by a signed 32 bit integer, it is expected the histogram
@@ -267,10 +276,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * @return the index of the bucket which the value maps to.
    */
   private int valueToIndex(double value) {
+    double absValue = Math.abs(value);
     if (scale > 0) {
-      return getIndexByLogarithm(value, scale);
+      return getIndexByLogarithm(absValue);
     }
-    return getIndexByExponent(value, scale);
+    return getIndexByExponent(absValue);
   }
 
   @Override
