@@ -23,7 +23,7 @@ final class ResourceConfiguration {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
-  static final String DISABLED_ATTRIBUTE_KEYS = "otel.experimental.disabled.resource.keys";
+  static final String DISABLED_ATTRIBUTE_KEYS = "otel.experimental.resource.disabled.keys";
 
   static Resource configureResource(
       ConfigProperties config,
