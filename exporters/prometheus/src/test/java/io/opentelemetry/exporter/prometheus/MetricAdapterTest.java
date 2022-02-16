@@ -31,8 +31,14 @@ import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.exemplars.Exemplar;
+import io.prometheus.client.exporter.common.TextFormat;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.junit.jupiter.api.Test;
 
@@ -183,7 +189,9 @@ class MetricAdapterTest {
                       KP_VP_ATTR,
                       5,
                       7,
-                      Collections.emptyList()))));
+                      Arrays.asList(
+                          ValueAtPercentile.create(0.9, 0.1),
+                          ValueAtPercentile.create(0.99, 0.3))))));
   private static final MetricData HISTOGRAM =
       MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -210,53 +218,93 @@ class MetricAdapterTest {
                               /* value= */ 4))))));
 
   @Test
-  void toProtoMetricDescriptorType() {
+  void monotonicCumulativeDoubleSum() {
     MetricFamilySamples metricFamilySamples =
         MetricAdapter.toMetricFamilySamples(MONOTONIC_CUMULATIVE_DOUBLE_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.COUNTER);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM);
+  @Test
+  void nonMonotonicCumulativeDoubleSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(MONOTONIC_DELTA_DOUBLE_SUM);
+  @Test
+  void monotonicDeltaDoubleSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(MONOTONIC_DELTA_DOUBLE_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_DELTA_DOUBLE_SUM);
+  @Test
+  void nonMonotonicDeltaDoubleSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_DELTA_DOUBLE_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(MONOTONIC_CUMULATIVE_LONG_SUM);
+  @Test
+  void monotonicCumulativeLongSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(MONOTONIC_CUMULATIVE_LONG_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.COUNTER);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_CUMULATIVE_LONG_SUM);
+  @Test
+  void nonMontonicCumulativeLongSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_CUMULATIVE_LONG_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(MONOTONIC_DELTA_LONG_SUM);
+  @Test
+  void monotonicDeltaLongSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(MONOTONIC_DELTA_LONG_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_DELTA_LONG_SUM);
+  @Test
+  void nonMonotonicDeltaLongSum() {
+    MetricFamilySamples metricFamilySamples =
+        MetricAdapter.toMetricFamilySamples(NON_MONOTONIC_DELTA_LONG_SUM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(SUMMARY);
+  @Test
+  void summary() {
+    MetricFamilySamples metricFamilySamples = MetricAdapter.toMetricFamilySamples(SUMMARY);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.SUMMARY);
-    assertThat(metricFamilySamples.samples).hasSize(2);
+    assertThat(metricFamilySamples.samples).hasSize(4);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(DOUBLE_GAUGE);
+  @Test
+  void doubleGauge() {
+    MetricFamilySamples metricFamilySamples = MetricAdapter.toMetricFamilySamples(DOUBLE_GAUGE);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(LONG_GAUGE);
+  @Test
+  void longGauge() {
+    MetricFamilySamples metricFamilySamples = MetricAdapter.toMetricFamilySamples(LONG_GAUGE);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+  }
 
-    metricFamilySamples = MetricAdapter.toMetricFamilySamples(HISTOGRAM);
+  @Test
+  void histogram() {
+    MetricFamilySamples metricFamilySamples = MetricAdapter.toMetricFamilySamples(HISTOGRAM);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.HISTOGRAM);
     assertThat(metricFamilySamples.samples).hasSize(3);
   }
@@ -555,6 +603,154 @@ class MetricAdapterTest {
                         5,
                         null,
                         1633950672000L))));
+  }
+
+  @Test
+  void serialize() {
+    assertThat(
+            serialize004(
+                MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                MONOTONIC_DELTA_DOUBLE_SUM,
+                NON_MONOTONIC_DELTA_DOUBLE_SUM,
+                MONOTONIC_CUMULATIVE_LONG_SUM,
+                NON_MONOTONIC_CUMULATIVE_LONG_SUM,
+                MONOTONIC_DELTA_LONG_SUM,
+                NON_MONOTONIC_DELTA_LONG_SUM,
+                DOUBLE_GAUGE,
+                LONG_GAUGE,
+                SUMMARY,
+                HISTOGRAM))
+        .isEqualTo(
+            "# HELP instrument_name_total description\n"
+                + "# TYPE instrument_name_total counter\n"
+                + "instrument_name_total{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name_total description\n"
+                + "# TYPE instrument_name_total counter\n"
+                + "instrument_name_total{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name gauge\n"
+                + "instrument_name{kp=\"vp\",} 5.0 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name summary\n"
+                + "instrument_name_count{kp=\"vp\",} 5.0 1633950672000\n"
+                + "instrument_name_sum{kp=\"vp\",} 7.0 1633950672000\n"
+                + "instrument_name{kp=\"vp\",quantile=\"0.9\",} 0.1 1633950672000\n"
+                + "instrument_name{kp=\"vp\",quantile=\"0.99\",} 0.3 1633950672000\n"
+                + "# HELP instrument_name description\n"
+                + "# TYPE instrument_name histogram\n"
+                + "instrument_name_count{kp=\"vp\",} 2.0 1633950672000\n"
+                + "instrument_name_sum{kp=\"vp\",} 1.0 1633950672000\n"
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\",} 2.0 1633950672000\n");
+
+    assertThat(
+            serializeOpenMetrics(
+                MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                MONOTONIC_DELTA_DOUBLE_SUM,
+                NON_MONOTONIC_DELTA_DOUBLE_SUM,
+                MONOTONIC_CUMULATIVE_LONG_SUM,
+                NON_MONOTONIC_CUMULATIVE_LONG_SUM,
+                MONOTONIC_DELTA_LONG_SUM,
+                NON_MONOTONIC_DELTA_LONG_SUM,
+                DOUBLE_GAUGE,
+                LONG_GAUGE,
+                SUMMARY,
+                HISTOGRAM))
+        .isEqualTo(
+            "# TYPE instrument_name counter\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name counter\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "# TYPE instrument_name summary\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name_count{kp=\"vp\"} 5.0 1633950672.000\n"
+                + "instrument_name_sum{kp=\"vp\"} 7.0 1633950672.000\n"
+                + "instrument_name{kp=\"vp\",quantile=\"0.9\"} 0.1 1633950672.000\n"
+                + "instrument_name{kp=\"vp\",quantile=\"0.99\"} 0.3 1633950672.000\n"
+                + "# TYPE instrument_name histogram\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
+                + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"span_id\",trace_id=\"trace_id\"} 4.0 0.001\n"
+                + "# EOF\n");
+  }
+
+  private static String serialize004(MetricData... metrics) {
+    StringWriter writer = new StringWriter();
+    try {
+      TextFormat.write004(
+          writer,
+          Collections.enumeration(
+              Arrays.stream(metrics)
+                  .map(MetricAdapter::toMetricFamilySamples)
+                  .collect(Collectors.toList())));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return writer.toString();
+  }
+
+  private static String serializeOpenMetrics(MetricData... metrics) {
+    StringWriter writer = new StringWriter();
+    try {
+      TextFormat.writeOpenMetrics100(
+          writer,
+          Collections.enumeration(
+              Arrays.stream(metrics)
+                  .map(MetricAdapter::toMetricFamilySamples)
+                  .collect(Collectors.toList())));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return writer.toString();
   }
 
   /**
