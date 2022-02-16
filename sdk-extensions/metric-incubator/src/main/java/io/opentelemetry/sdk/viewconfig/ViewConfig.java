@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.viewconfig;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -15,6 +16,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -73,24 +74,39 @@ import org.yaml.snakeyaml.Yaml;
  *             .build());
  * }</pre>
  */
-public class ViewConfig {
+public final class ViewConfig {
 
   private ViewConfig() {}
 
   /**
-   * Load the view configuration YAML from the file and apply it to the {@link
+   * Load the view configuration YAML from the {@code viewConfigYamlFile} and apply it to the {@link
    * SdkMeterProviderBuilder}.
    *
    * @throws ConfigurationException if unable to interpret file contents
    */
-  @SuppressWarnings("NullAway")
   public static void registerViews(
       SdkMeterProviderBuilder meterProviderBuilder, File viewConfigYamlFile) {
-    List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(viewConfigYamlFile);
+    BufferedReader bufferedReader;
+    try {
+      bufferedReader = Files.newBufferedReader(viewConfigYamlFile.toPath(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new ConfigurationException(
+          "An error occurred reading view config file: " + viewConfigYamlFile.getAbsolutePath(), e);
+    }
+    registerViews(meterProviderBuilder, bufferedReader);
+  }
+
+  /**
+   * Load the view configuration YAML from the {@code bufferedReader} and apply it to the {@link
+   * SdkMeterProviderBuilder}.
+   *
+   * @throws ConfigurationException if unable to interpret {@code bufferedReader} contents
+   */
+  static void registerViews(
+      SdkMeterProviderBuilder meterProviderBuilder, BufferedReader bufferedReader) {
+    List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(bufferedReader);
 
     for (ViewConfigSpecification viewConfigSpec : viewConfigSpecs) {
-      assert viewConfigSpec.getSelectorSpecification() != null;
-      assert viewConfigSpec.getViewSpecification() != null;
       meterProviderBuilder.registerView(
           toInstrumentSelector(viewConfigSpec.getSelectorSpecification()),
           toView(viewConfigSpec.getViewSpecification()));
@@ -99,19 +115,17 @@ public class ViewConfig {
 
   // Visible for testing
   @SuppressWarnings("unchecked")
-  static List<ViewConfigSpecification> loadViewConfig(File viewConfigYamlFile) {
+  static List<ViewConfigSpecification> loadViewConfig(BufferedReader bufferedReader) {
     Yaml yaml = new Yaml();
     try {
       List<ViewConfigSpecification> result = new ArrayList<>();
-      List<Map<String, Object>> viewConfigs =
-          yaml.load(Files.newBufferedReader(viewConfigYamlFile.toPath(), StandardCharsets.UTF_8));
+      List<Map<String, Object>> viewConfigs = yaml.load(bufferedReader);
       for (Map<String, Object> viewConfigSpecMap : viewConfigs) {
         Map<String, Object> selectorSpecMap =
-            Objects.requireNonNull(
+            requireNonNull(
                 getAsType(viewConfigSpecMap, "selector", Map.class), "selector is required");
         Map<String, Object> viewSpecMap =
-            Objects.requireNonNull(
-                getAsType(viewConfigSpecMap, "view", Map.class), "view is required");
+            requireNonNull(getAsType(viewConfigSpecMap, "view", Map.class), "view is required");
 
         InstrumentType instrumentType =
             Optional.ofNullable(getAsType(selectorSpecMap, "instrument_type", String.class))
@@ -144,13 +158,8 @@ public class ViewConfig {
                 .build());
       }
       return result;
-    } catch (IOException e) {
-      throw new ConfigurationException(
-          "An error occurred reading view config file:  " + viewConfigYamlFile.getAbsolutePath(),
-          e);
     } catch (RuntimeException e) {
-      throw new ConfigurationException(
-          "Failed to parse view config file: " + viewConfigYamlFile.getAbsolutePath(), e);
+      throw new ConfigurationException("Failed to parse view config", e);
     }
   }
 
@@ -173,17 +182,23 @@ public class ViewConfig {
   // Visible for testing
   static View toView(ViewSpecification viewSpec) {
     ViewBuilder builder = View.builder();
-    Optional.ofNullable(viewSpec.getName()).ifPresent(builder::setName);
-    Optional.ofNullable(viewSpec.getDescription()).ifPresent(builder::setDescription);
-    Optional.ofNullable(viewSpec.getAggregation())
-        .map(ViewConfig::toAggregation)
-        .ifPresent(builder::setAggregation);
-    Optional.ofNullable(viewSpec.getAttributeKeys())
-        .ifPresent(
-            attributeKeys -> {
-              Set<String> keySet = new HashSet<>(attributeKeys);
-              builder.filterAttributes(keySet::contains);
-            });
+    String name = viewSpec.getName();
+    if (name != null) {
+      builder.setName(name);
+    }
+    String description = viewSpec.getDescription();
+    if (description != null) {
+      builder.setDescription(description);
+    }
+    String aggregation = viewSpec.getAggregation();
+    if (aggregation != null) {
+      builder.setAggregation(toAggregation(aggregation));
+    }
+    List<String> attributeKeys = viewSpec.getAttributeKeys();
+    if (attributeKeys != null) {
+      Set<String> keySet = new HashSet<>(attributeKeys);
+      builder.filterAttributes(keySet::contains);
+    }
     return builder.build();
   }
 
@@ -206,13 +221,28 @@ public class ViewConfig {
   // Visible for testing
   static InstrumentSelector toInstrumentSelector(SelectorSpecification selectorSpec) {
     InstrumentSelector.Builder builder = InstrumentSelector.builder();
-    Optional.ofNullable(selectorSpec.getInstrumentName()).ifPresent(builder::setInstrumentName);
-    Optional.ofNullable(selectorSpec.getInstrumentType()).ifPresent(builder::setInstrumentType);
+    String instrumentName = selectorSpec.getInstrumentName();
+    if (instrumentName != null) {
+      builder.setInstrumentName(instrumentName);
+    }
+    InstrumentType instrumentType = selectorSpec.getInstrumentType();
+    if (instrumentType != null) {
+      builder.setInstrumentType(instrumentType);
+    }
 
     MeterSelector.Builder meterBuilder = MeterSelector.builder();
-    Optional.ofNullable(selectorSpec.getMeterName()).ifPresent(meterBuilder::setName);
-    Optional.ofNullable(selectorSpec.getMeterVersion()).ifPresent(meterBuilder::setVersion);
-    Optional.ofNullable(selectorSpec.getMeterSchemaUrl()).ifPresent(meterBuilder::setSchemaUrl);
+    String meterName = selectorSpec.getMeterName();
+    if (meterName != null) {
+      meterBuilder.setName(meterName);
+    }
+    String meterVersion = selectorSpec.getMeterVersion();
+    if (meterVersion != null) {
+      meterBuilder.setVersion(meterVersion);
+    }
+    String meterSchemaUrl = selectorSpec.getMeterSchemaUrl();
+    if (meterSchemaUrl != null) {
+      meterBuilder.setSchemaUrl(meterSchemaUrl);
+    }
     builder.setMeterSelector(meterBuilder.build());
 
     return builder.build();

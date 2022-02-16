@@ -17,7 +17,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ViewConfigCustomizerTest {
@@ -26,7 +28,7 @@ class ViewConfigCustomizerTest {
   void customizeMeterProvider_Spi() {
     System.setProperty("otel.traces.exporter", "none");
     System.setProperty(
-        "otel.experimental.metric.view.config",
+        "otel.experimental.metrics.view.config",
         ViewConfigTest.class.getResource("/view-config-customizer-test.yaml").getFile());
 
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -87,22 +89,42 @@ class ViewConfigCustomizerTest {
   }
 
   @Test
-  void customizeMeterProvider_InvalidFile() {
+  void customizeMeterProvider_ClassPathFile() {
     ConfigProperties properties =
         withConfigFileLocations(
-            Arrays.asList(
-                ViewConfigTest.class.getResource("/empty-selector-config.yaml").getFile()));
+            Collections.singletonList("classpath:/view-config-customizer-test.yaml"));
 
-    assertThatThrownBy(
+    assertThatCode(
             () ->
                 ViewConfigCustomizer.customizeMeterProvider(SdkMeterProvider.builder(), properties))
-        .hasMessageContaining("Failed to parse view config file")
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void customizeMeterProvider_Invalid() {
+    assertThatThrownBy(
+            () ->
+                ViewConfigCustomizer.customizeMeterProvider(
+                    SdkMeterProvider.builder(),
+                    withConfigFileLocations(
+                        Collections.singletonList("classpath:" + UUID.randomUUID()))))
+        .hasMessageContaining("Resource not found on classpath:");
+    assertThatThrownBy(
+            () ->
+                ViewConfigCustomizer.customizeMeterProvider(
+                    SdkMeterProvider.builder(),
+                    withConfigFileLocations(
+                        Collections.singletonList(
+                            ViewConfigTest.class
+                                .getResource("/empty-selector-config.yaml")
+                                .getFile()))))
+        .hasMessageContaining("Failed to parse view config")
         .hasRootCauseMessage("selector is required");
   }
 
   private static ConfigProperties withConfigFileLocations(List<String> fileLocations) {
     ConfigProperties properties = mock(ConfigProperties.class);
-    when(properties.getList("otel.experimental.metric.view.config")).thenReturn(fileLocations);
+    when(properties.getList("otel.experimental.metrics.view.config")).thenReturn(fileLocations);
     return properties;
   }
 }

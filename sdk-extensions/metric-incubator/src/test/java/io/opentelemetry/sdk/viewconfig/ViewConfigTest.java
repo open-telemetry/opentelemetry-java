@@ -20,7 +20,12 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +36,17 @@ import org.junit.jupiter.api.Test;
 class ViewConfigTest {
 
   @Test
-  void registerViews_FullConfig() {
+  void registerViews_InvalidFile() {
+    assertThatThrownBy(
+            () ->
+                ViewConfig.registerViews(
+                    SdkMeterProvider.builder(), new File("/" + UUID.randomUUID())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("An error occurred reading view config file:");
+  }
+
+  @Test
+  void registerViews_FileFullConfig() {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
     ViewConfig.registerViews(
@@ -45,10 +60,22 @@ class ViewConfigTest {
   }
 
   @Test
+  void registerViews_BufferedReaderFullConfig() {
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+
+    ViewConfig.registerViews(builder, bufferedReader("full-config.yaml"));
+
+    assertThat(builder)
+        .extracting(
+            "viewRegistryBuilder", as(InstanceOfAssertFactories.type(ViewRegistryBuilder.class)))
+        .extracting("orderedViews", as(InstanceOfAssertFactories.list(Object.class)))
+        .hasSize(2);
+  }
+
+  @Test
   void loadViewConfig_FullConfig() {
     List<ViewConfigSpecification> viewConfigSpecs =
-        ViewConfig.loadViewConfig(
-            new File(ViewConfigTest.class.getResource("/full-config.yaml").getFile()));
+        ViewConfig.loadViewConfig(bufferedReader("full-config.yaml"));
 
     assertThat(viewConfigSpecs)
         .hasSize(2)
@@ -64,7 +91,7 @@ class ViewConfigTest {
               assertThat(viewSpec.getName()).isEqualTo("name1");
               assertThat(viewSpec.getDescription()).isEqualTo("description1");
               assertThat(viewSpec.getAggregation()).isEqualTo("sum");
-              assertThat(viewSpec.getAttributeKeys()).isEqualTo(Arrays.asList("foo", "bar"));
+              assertThat(viewSpec.getAttributeKeys()).containsExactly("foo", "bar");
             },
             viewConfigSpec -> {
               SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
@@ -77,31 +104,20 @@ class ViewConfigTest {
               assertThat(viewSpec.getName()).isEqualTo("name2");
               assertThat(viewSpec.getDescription()).isEqualTo("description2");
               assertThat(viewSpec.getAggregation()).isEqualTo("last_value");
-              assertThat(viewSpec.getAttributeKeys()).isEqualTo(Arrays.asList("baz", "qux"));
+              assertThat(viewSpec.getAttributeKeys()).containsExactly("baz", "qux");
             });
   }
 
   @Test
   void loadViewConfig_Invalid() {
-    assertThatThrownBy(() -> ViewConfig.loadViewConfig(new File("/" + UUID.randomUUID())))
+    assertThatThrownBy(() -> ViewConfig.loadViewConfig(bufferedReader("empty-view-config.yaml")))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("An error occurred reading view config file:");
-
-    assertThatThrownBy(
-            () ->
-                ViewConfig.loadViewConfig(
-                    new File(
-                        ViewConfigTest.class.getResource("/empty-view-config.yaml").getFile())))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Failed to parse view config file")
+        .hasMessageContaining("Failed to parse view config")
         .hasRootCauseMessage("view is required");
     assertThatThrownBy(
-            () ->
-                ViewConfig.loadViewConfig(
-                    new File(
-                        ViewConfigTest.class.getResource("/empty-selector-config.yaml").getFile())))
+            () -> ViewConfig.loadViewConfig(bufferedReader("empty-selector-config.yaml")))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Failed to parse view config file")
+        .hasMessageContaining("Failed to parse view config")
         .hasRootCauseMessage("selector is required");
   }
 
@@ -181,5 +197,18 @@ class ViewConfigTest {
         .isTrue();
     assertThat(selector.getMeterSelector().getSchemaUrlFilter().test("http://example1.com"))
         .isFalse();
+  }
+
+  private static BufferedReader bufferedReader(String resourceFileName) {
+    URL resourceUrl = ViewConfigTest.class.getResource("/" + resourceFileName);
+    if (resourceUrl == null) {
+      throw new IllegalStateException("Could not find resource file: " + resourceFileName);
+    }
+    String path = resourceUrl.getFile();
+    try {
+      return Files.newBufferedReader(new File(path).toPath(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new IllegalStateException("Error loading resource file as buffered reader", e);
+    }
   }
 }

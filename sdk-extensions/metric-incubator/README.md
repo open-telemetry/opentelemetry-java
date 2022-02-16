@@ -51,9 +51,13 @@ SdkMeterProvider.builder()
 
 If using [autoconfigure](../autoconfigure) with this artifact on your classpath, it will automatically load a list of view config files specified via environment variable or system property:
 
-| System property                      | Environment variable                 | Purpose                                                    |
-|--------------------------------------|--------------------------------------|------------------------------------------------------------|
-| otel.experimental.metric.view.config | OTEL_EXPERIMENTAL_METRIC_VIEW_CONFIG | List of absolute files containing view configuration YAML. |
+| System property                       | Environment variable                  | Purpose                                              |
+|---------------------------------------|---------------------------------------|------------------------------------------------------|
+| otel.experimental.metrics.view-config | OTEL_EXPERIMENTAL_METRICS_VIEW_CONFIG | List of files containing view configuration YAML [1] |
+
+**[1]** In addition to absolute paths, resources on the classpath packaged with a jar can be loaded.
+For example, `otel.experimental.metrics.view-config=classpath:/my-view.yaml` loads the
+resource `/my-view.yaml`.
 
 If not using autoconfigure, a file can be used to configure views as follows:
 
