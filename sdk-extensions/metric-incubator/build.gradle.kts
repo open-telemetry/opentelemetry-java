@@ -17,4 +17,6 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":sdk:metrics-testing"))
+
+  testImplementation("com.google.guava:guava")
 }

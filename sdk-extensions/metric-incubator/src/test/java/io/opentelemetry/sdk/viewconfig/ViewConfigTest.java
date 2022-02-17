@@ -20,15 +20,12 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
@@ -36,34 +33,10 @@ import org.junit.jupiter.api.Test;
 class ViewConfigTest {
 
   @Test
-  void registerViews_InvalidFile() {
-    assertThatThrownBy(
-            () ->
-                ViewConfig.registerViews(
-                    SdkMeterProvider.builder(), new File("/" + UUID.randomUUID())))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("An error occurred reading view config file:");
-  }
-
-  @Test
-  void registerViews_FileFullConfig() {
+  void registerViews_FullConfig() {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
-    ViewConfig.registerViews(
-        builder, new File(ViewConfigTest.class.getResource("/full-config.yaml").getFile()));
-
-    assertThat(builder)
-        .extracting(
-            "viewRegistryBuilder", as(InstanceOfAssertFactories.type(ViewRegistryBuilder.class)))
-        .extracting("orderedViews", as(InstanceOfAssertFactories.list(Object.class)))
-        .hasSize(2);
-  }
-
-  @Test
-  void registerViews_BufferedReaderFullConfig() {
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-
-    ViewConfig.registerViews(builder, bufferedReader("full-config.yaml"));
+    ViewConfig.registerViews(builder, resourceFileInputStream("full-config.yaml"));
 
     assertThat(builder)
         .extracting(
@@ -75,10 +48,9 @@ class ViewConfigTest {
   @Test
   void loadViewConfig_FullConfig() {
     List<ViewConfigSpecification> viewConfigSpecs =
-        ViewConfig.loadViewConfig(bufferedReader("full-config.yaml"));
+        ViewConfig.loadViewConfig(resourceFileInputStream("full-config.yaml"));
 
     assertThat(viewConfigSpecs)
-        .hasSize(2)
         .satisfiesExactly(
             viewConfigSpec -> {
               SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
@@ -110,12 +82,13 @@ class ViewConfigTest {
 
   @Test
   void loadViewConfig_Invalid() {
-    assertThatThrownBy(() -> ViewConfig.loadViewConfig(bufferedReader("empty-view-config.yaml")))
+    assertThatThrownBy(
+            () -> ViewConfig.loadViewConfig(resourceFileInputStream("empty-view-config.yaml")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Failed to parse view config")
         .hasRootCauseMessage("view is required");
     assertThatThrownBy(
-            () -> ViewConfig.loadViewConfig(bufferedReader("empty-selector-config.yaml")))
+            () -> ViewConfig.loadViewConfig(resourceFileInputStream("empty-selector-config.yaml")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Failed to parse view config")
         .hasRootCauseMessage("selector is required");
@@ -199,16 +172,16 @@ class ViewConfigTest {
         .isFalse();
   }
 
-  private static BufferedReader bufferedReader(String resourceFileName) {
+  private static InputStream resourceFileInputStream(String resourceFileName) {
     URL resourceUrl = ViewConfigTest.class.getResource("/" + resourceFileName);
     if (resourceUrl == null) {
       throw new IllegalStateException("Could not find resource file: " + resourceFileName);
     }
     String path = resourceUrl.getFile();
     try {
-      return Files.newBufferedReader(new File(path).toPath(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new IllegalStateException("Error loading resource file as buffered reader", e);
+      return new FileInputStream(path);
+    } catch (FileNotFoundException e) {
+      throw new IllegalStateException("File not found: " + path, e);
     }
   }
 }

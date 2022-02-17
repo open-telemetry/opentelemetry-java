@@ -16,11 +16,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -79,32 +75,14 @@ public final class ViewConfig {
   private ViewConfig() {}
 
   /**
-   * Load the view configuration YAML from the {@code viewConfigYamlFile} and apply it to the {@link
+   * Load the view configuration YAML from the {@code inputStream} and apply it to the {@link
    * SdkMeterProviderBuilder}.
    *
-   * @throws ConfigurationException if unable to interpret file contents
+   * @throws ConfigurationException if unable to interpret {@code inputStream} contents
    */
   public static void registerViews(
-      SdkMeterProviderBuilder meterProviderBuilder, File viewConfigYamlFile) {
-    BufferedReader bufferedReader;
-    try {
-      bufferedReader = Files.newBufferedReader(viewConfigYamlFile.toPath(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new ConfigurationException(
-          "An error occurred reading view config file: " + viewConfigYamlFile.getAbsolutePath(), e);
-    }
-    registerViews(meterProviderBuilder, bufferedReader);
-  }
-
-  /**
-   * Load the view configuration YAML from the {@code bufferedReader} and apply it to the {@link
-   * SdkMeterProviderBuilder}.
-   *
-   * @throws ConfigurationException if unable to interpret {@code bufferedReader} contents
-   */
-  static void registerViews(
-      SdkMeterProviderBuilder meterProviderBuilder, BufferedReader bufferedReader) {
-    List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(bufferedReader);
+      SdkMeterProviderBuilder meterProviderBuilder, InputStream inputStream) {
+    List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(inputStream);
 
     for (ViewConfigSpecification viewConfigSpec : viewConfigSpecs) {
       meterProviderBuilder.registerView(
@@ -115,11 +93,11 @@ public final class ViewConfig {
 
   // Visible for testing
   @SuppressWarnings("unchecked")
-  static List<ViewConfigSpecification> loadViewConfig(BufferedReader bufferedReader) {
+  static List<ViewConfigSpecification> loadViewConfig(InputStream inputStream) {
     Yaml yaml = new Yaml();
     try {
       List<ViewConfigSpecification> result = new ArrayList<>();
-      List<Map<String, Object>> viewConfigs = yaml.load(bufferedReader);
+      List<Map<String, Object>> viewConfigs = yaml.load(inputStream);
       for (Map<String, Object> viewConfigSpecMap : viewConfigs) {
         Map<String, Object> selectorSpecMap =
             requireNonNull(

@@ -63,7 +63,9 @@ If not using autoconfigure, a file can be used to configure views as follows:
 
 ```
 SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-ViewConfig.registerViews(builder, new File("/Users/user123/view.yaml"));
+try (FileInputStream fileInputStream = new FileInputStream("/Users/user123/view.yaml")) {
+  ViewConfig.registerViews(builder, fileInputStream);
+}
 ```
 
 Notes on usage:

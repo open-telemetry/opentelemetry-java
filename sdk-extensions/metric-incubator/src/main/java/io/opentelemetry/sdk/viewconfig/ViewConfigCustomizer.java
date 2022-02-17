@@ -10,11 +10,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /** SPI implementation for loading view configuration YAML. */
@@ -33,16 +32,30 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
     for (String configFileLocation : configFileLocations) {
       if (configFileLocation.startsWith("classpath:")) {
         String classpathLocation = configFileLocation.substring("classpath:".length());
-        InputStream inputStream = ViewConfigCustomizer.class.getResourceAsStream(classpathLocation);
-        if (inputStream == null) {
-          throw new ConfigurationException("Resource not found on classpath: " + classpathLocation);
+        try (InputStream inputStream =
+            ViewConfigCustomizer.class.getResourceAsStream(classpathLocation)) {
+          if (inputStream == null) {
+            throw new ConfigurationException(
+                "Resource "
+                    + classpathLocation
+                    + " not found on classpath of classloader "
+                    + ViewConfigCustomizer.class.getClassLoader().getClass().getName());
+          }
+          ViewConfig.registerViews(meterProviderBuilder, inputStream);
+        } catch (IOException e) {
+          throw new ConfigurationException(
+              "An error occurred reading view config resource on classpath: " + classpathLocation,
+              e);
         }
-        BufferedReader bufferedReader =
-            new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-        ViewConfig.registerViews(meterProviderBuilder, bufferedReader);
       } else {
-        File file = new File(configFileLocation);
-        ViewConfig.registerViews(meterProviderBuilder, file);
+        try (FileInputStream fileInputStream = new FileInputStream(configFileLocation)) {
+          ViewConfig.registerViews(meterProviderBuilder, fileInputStream);
+        } catch (FileNotFoundException e) {
+          throw new ConfigurationException("View config file not found: " + configFileLocation, e);
+        } catch (IOException e) {
+          throw new ConfigurationException(
+              "An error occurred reading view config file: " + configFileLocation, e);
+        }
       }
     }
     return meterProviderBuilder;
