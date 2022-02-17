@@ -39,7 +39,7 @@ import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,8 +48,8 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
-  private static final Tracer OTEL_TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim");
+  private static final TracerProvider OTEL_TRACER =
+      GlobalOpenTelemetry.getTracerProvider();
   private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
   private static final TraceOptions OC_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
@@ -134,7 +134,9 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     }
 
     // If sampled
-    io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder = OTEL_TRACER.spanBuilder(name);
+    io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder = OTEL_TRACER
+        .get("io.opentelemetry.opencensusshim")
+        .spanBuilder(name);
     if (ocParent != null && ocParent instanceof OpenTelemetrySpanImpl) {
       otelSpanBuilder.setParent(Context.current().with((OpenTelemetrySpanImpl) ocParent));
     }
