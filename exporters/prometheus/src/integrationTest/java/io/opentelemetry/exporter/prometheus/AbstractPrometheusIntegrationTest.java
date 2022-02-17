@@ -18,12 +18,15 @@ import com.linecorp.armeria.client.WebClient;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.prometheus.client.exporter.HTTPServer;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -33,20 +36,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 @Testcontainers(disabledWithoutDocker = true)
-class PrometheusIntegrationTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+abstract class AbstractPrometheusIntegrationTest {
 
-  private static SdkMeterProvider meterProvider;
+  protected SdkMeterProvider meterProvider;
+  protected int port;
 
-  private static GenericContainer<?> prometheus;
+  private GenericContainer<?> prometheus;
 
   @BeforeAll
-  static void setUp(@TempDir Path tempDir) throws Exception {
-    PrometheusHttpServerFactory factory =
-        (PrometheusHttpServerFactory)
-            PrometheusHttpServer.builder().setPort(0).newMetricReaderFactory();
-    meterProvider = SdkMeterProvider.builder().registerMetricReader(factory).build();
-
-    int port = factory.getAddress().getPort();
+  void setUp(@TempDir Path tempDir) throws Exception {
     exposeHostPorts(port);
 
     String promConfigTemplate =
@@ -69,13 +68,13 @@ class PrometheusIntegrationTest {
   }
 
   @AfterAll
-  static void tearDown() {
+  void tearDown() {
     prometheus.stop();
     meterProvider.shutdown();
   }
 
   @Test
-  void endToEnd() throws Exception {
+  void endToEnd() {
     Meter meter = meterProvider.meterBuilder("test").build();
 
     meter
@@ -132,5 +131,32 @@ class PrometheusIntegrationTest {
                   .isInstanceOfSatisfying(
                       JrsString.class, s -> assertThat(s.getValue()).isEqualTo("9"));
             });
+  }
+
+  static class PrometheusHttpServerIntegrationTest extends AbstractPrometheusIntegrationTest {
+    PrometheusHttpServerIntegrationTest() {
+      PrometheusHttpServerFactory factory =
+          (PrometheusHttpServerFactory)
+              PrometheusHttpServer.builder().setPort(0).newMetricReaderFactory();
+      meterProvider = SdkMeterProvider.builder().registerMetricReader(factory).build();
+      port = factory.getAddress().getPort();
+    }
+  }
+
+  static class PrometheusCollectorIntegrationTest extends AbstractPrometheusIntegrationTest {
+    private final HTTPServer server;
+
+    PrometheusCollectorIntegrationTest() throws IOException {
+      server = new HTTPServer(0);
+      port = server.getPort();
+
+      meterProvider =
+          SdkMeterProvider.builder().registerMetricReader(PrometheusCollector.create()).build();
+    }
+
+    @AfterAll
+    void stopHttpServer() {
+      server.close();
+    }
   }
 }

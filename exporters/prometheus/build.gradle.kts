@@ -27,6 +27,7 @@ testing {
         implementation("com.fasterxml.jackson.jr:jackson-jr-stree")
         implementation("com.google.guava:guava")
         implementation("com.linecorp.armeria:armeria")
+        implementation("io.prometheus:simpleclient_httpserver")
         implementation("org.testcontainers:junit-jupiter")
       }
     }
