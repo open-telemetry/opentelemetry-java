@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -398,10 +399,7 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    long timestampNanos = clock.now();
-    EventData eventData =
-        ExceptionEventUtil.create(exception, additionalAttributes, timestampNanos);
-    addTimedEvent(eventData);
+    addTimedEvent(ExceptionEventData.create(clock.now(), exception, additionalAttributes));
     return this;
   }
 
