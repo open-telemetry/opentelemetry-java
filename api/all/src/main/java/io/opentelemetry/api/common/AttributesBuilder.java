@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 /** A builder of {@link Attributes} supporting an arbitrary number of key-value pairs. */
@@ -98,6 +99,18 @@ public interface AttributesBuilder {
       return this;
     }
     return put(stringArrayKey(key), Arrays.asList(value));
+  }
+
+  /**
+   * Puts a AttributeKey with String array into this.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(AttributeKey<List<String>> key, String... value) {
+    if (value == null) {
+      return this;
+    }
+    return put(key, Arrays.asList(value));
   }
 
   /**

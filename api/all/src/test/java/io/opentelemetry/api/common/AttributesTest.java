@@ -290,6 +290,42 @@ class AttributesTest {
   }
 
   @Test
+  void builderWithAttributeKeyList() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "value1")
+            .put(longKey("long"), 10)
+            .put(stringArrayKey("anotherString"), "value1", "value2", "value3")
+            .build();
+
+    Attributes wantAttributes =
+        Attributes.of(
+            stringKey("string"),
+            "value1",
+            longKey("long"),
+            10L,
+            stringArrayKey("anotherString"),
+            Arrays.asList("value1", "value2", "value3"));
+    assertThat(attributes).isEqualTo(wantAttributes);
+
+    AttributesBuilder newAttributes = attributes.toBuilder();
+    newAttributes.put("newKey", "newValue");
+    assertThat(newAttributes.build())
+        .isEqualTo(
+            Attributes.of(
+                stringKey("string"),
+                "value1",
+                longKey("long"),
+                10L,
+                stringArrayKey("anotherString"),
+                Arrays.asList("value1", "value2", "value3"),
+                stringKey("newKey"),
+                "newValue"));
+    // Original not mutated.
+    assertThat(attributes).isEqualTo(wantAttributes);
+  }
+
+  @Test
   void builder_arrayTypes() {
     Attributes attributes =
         Attributes.builder()
