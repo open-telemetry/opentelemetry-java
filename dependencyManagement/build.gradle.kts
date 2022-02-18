@@ -21,7 +21,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.brave:brave-bom:5.13.7",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.8.2",
-  "org.testcontainers:testcontainers-bom:1.16.3"
+  "org.testcontainers:testcontainers-bom:1.16.3",
+  "org.yaml:snakeyaml:1.30"
 )
 
 val DEPENDENCY_SETS = listOf(
