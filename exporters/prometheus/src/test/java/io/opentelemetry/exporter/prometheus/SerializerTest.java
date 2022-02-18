@@ -376,7 +376,7 @@ class SerializerTest {
   private static String serialize004(MetricData... metrics) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
-      Serializer.Prometheus004Serializer.INSTANCE.write(Arrays.asList(metrics), bos);
+      new Serializer.Prometheus004Serializer(unused -> true).write(Arrays.asList(metrics), bos);
       return bos.toString("UTF-8");
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -386,7 +386,7 @@ class SerializerTest {
   private static String serializeOpenMetrics(MetricData... metrics) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
-      Serializer.OpenMetrics100Serializer.INSTANCE.write(Arrays.asList(metrics), bos);
+      new Serializer.OpenMetrics100Serializer(unused -> true).write(Arrays.asList(metrics), bos);
       return bos.toString("UTF-8");
     } catch (IOException e) {
       throw new UncheckedIOException(e);

@@ -21,19 +21,14 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
-import io.prometheus.client.Collector;
-import io.prometheus.client.Predicate;
-import io.prometheus.client.SampleNameFilter;
-import io.prometheus.client.exporter.common.TextFormat;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
@@ -154,22 +150,13 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-      String contentType =
-          TextFormat.chooseContentType(exchange.getRequestHeaders().getFirst("Accept"));
-      exchange.getResponseHeaders().set("Content-Type", contentType);
-
       Collection<MetricData> metrics = producer.collectAllMetrics();
-      List<Collector.MetricFamilySamples> samples = new ArrayList<>(metrics.size());
+      Set<String> requestedNames = parseQuery(exchange.getRequestURI().getRawQuery());
       Predicate<String> filter =
-          SampleNameFilter.restrictToNamesEqualTo(
-              null, parseQuery(exchange.getRequestURI().getRawQuery()));
-      for (MetricData metric : metrics) {
-        Collector.MetricFamilySamples sample =
-            MetricAdapter.toMetricFamilySamples(metric).filter(filter);
-        if (sample != null) {
-          samples.add(sample);
-        }
-      }
+          requestedNames.isEmpty() ? unused -> true : requestedNames::contains;
+      Serializer serializer =
+          Serializer.create(exchange.getRequestHeaders().getFirst("Accept"), filter);
+      exchange.getResponseHeaders().set("Content-Type", serializer.contentType());
 
       boolean compress = shouldUseCompression(exchange);
       if (compress) {
@@ -180,19 +167,13 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
       } else {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-        OutputStreamWriter writer;
+        OutputStream out;
         if (compress) {
-          writer =
-              new OutputStreamWriter(
-                  new GZIPOutputStream(exchange.getResponseBody()), StandardCharsets.UTF_8);
+          out = new GZIPOutputStream(exchange.getResponseBody());
         } else {
-          writer = new OutputStreamWriter(exchange.getResponseBody(), StandardCharsets.UTF_8);
+          out = exchange.getResponseBody();
         }
-        try {
-          TextFormat.writeFormat(contentType, writer, Collections.enumeration(samples));
-        } finally {
-          writer.close();
-        }
+        serializer.write(metrics, out);
       }
       exchange.close();
     }

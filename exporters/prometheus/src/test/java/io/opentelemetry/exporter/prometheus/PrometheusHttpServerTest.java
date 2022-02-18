@@ -81,12 +81,12 @@ class PrometheusHttpServerTest {
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
-                + "# HELP http_name_total double_description\n"
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5 0\n");
+                + "# HELP http_name_total double_description\n"
+                + "http_name_total{kp=\"vp\"} 3.5 0\n");
   }
 
   @ParameterizedTest
@@ -125,9 +125,9 @@ class PrometheusHttpServerTest {
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n");
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n");
   }
 
   @Test
@@ -143,12 +143,12 @@ class PrometheusHttpServerTest {
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_ENCODING)).isEqualTo("gzip");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
-                + "# HELP http_name_total double_description\n"
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5 0\n");
+                + "# HELP http_name_total double_description\n"
+                + "http_name_total{kp=\"vp\"} 3.5 0\n");
   }
 
   @Test
