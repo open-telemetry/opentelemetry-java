@@ -5,7 +5,10 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
+import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
+
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
@@ -14,10 +17,13 @@ import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
 final class SpanMarshaler extends MarshalerWithSize {
+  private static final byte[] EMPTY_BYTES = new byte[0];
   private final String traceId;
+  private final byte[] traceStateUtf8;
   private final String spanId;
   @Nullable private final String parentSpanId;
   private final byte[] nameUtf8;
@@ -45,9 +51,16 @@ final class SpanMarshaler extends MarshalerWithSize {
             ? spanData.getParentSpanContext().getSpanId()
             : null;
 
+    TraceState traceState = spanData.getSpanContext().getTraceState();
+    byte[] traceStateUtf8 =
+        traceState.isEmpty()
+            ? EMPTY_BYTES
+            : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+
     return new SpanMarshaler(
         spanData.getSpanContext().getTraceId(),
         spanData.getSpanContext().getSpanId(),
+        traceStateUtf8,
         parentSpanId,
         MarshalerUtil.toBytes(spanData.getName()),
         toProtoSpanKind(spanData.getKind()),
@@ -65,6 +78,7 @@ final class SpanMarshaler extends MarshalerWithSize {
   private SpanMarshaler(
       String traceId,
       String spanId,
+      byte[] traceStateUtf8,
       @Nullable String parentSpanId,
       byte[] nameUtf8,
       ProtoEnumInfo spanKind,
@@ -81,6 +95,7 @@ final class SpanMarshaler extends MarshalerWithSize {
         calculateSize(
             traceId,
             spanId,
+            traceStateUtf8,
             parentSpanId,
             nameUtf8,
             spanKind,
@@ -95,6 +110,7 @@ final class SpanMarshaler extends MarshalerWithSize {
             spanStatusMarshaler));
     this.traceId = traceId;
     this.spanId = spanId;
+    this.traceStateUtf8 = traceStateUtf8;
     this.parentSpanId = parentSpanId;
     this.nameUtf8 = nameUtf8;
     this.spanKind = spanKind;
@@ -113,7 +129,7 @@ final class SpanMarshaler extends MarshalerWithSize {
   public void writeTo(Serializer output) throws IOException {
     output.serializeTraceId(Span.TRACE_ID, traceId);
     output.serializeSpanId(Span.SPAN_ID, spanId);
-    // TODO: Set TraceState;
+    output.serializeString(Span.TRACE_STATE, traceStateUtf8);
     output.serializeSpanId(Span.PARENT_SPAN_ID, parentSpanId);
     output.serializeString(Span.NAME, nameUtf8);
 
@@ -137,6 +153,7 @@ final class SpanMarshaler extends MarshalerWithSize {
   private static int calculateSize(
       String traceId,
       String spanId,
+      byte[] traceStateUtf8,
       @Nullable String parentSpanId,
       byte[] nameUtf8,
       ProtoEnumInfo spanKind,
@@ -152,7 +169,7 @@ final class SpanMarshaler extends MarshalerWithSize {
     int size = 0;
     size += MarshalerUtil.sizeTraceId(Span.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(Span.SPAN_ID, spanId);
-    // TODO: Set TraceState;
+    size += MarshalerUtil.sizeBytes(Span.TRACE_STATE, traceStateUtf8);
     size += MarshalerUtil.sizeSpanId(Span.PARENT_SPAN_ID, parentSpanId);
     size += MarshalerUtil.sizeBytes(Span.NAME, nameUtf8);
 
