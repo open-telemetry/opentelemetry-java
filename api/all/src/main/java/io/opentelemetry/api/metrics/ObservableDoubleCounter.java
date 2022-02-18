@@ -14,10 +14,11 @@ import java.util.function.Consumer;
 public interface ObservableDoubleCounter extends AutoCloseable {
 
   /**
-   * Remove the callback associated with this instrument. After this is called, callbacks won't be
-   * invoked on future collections. Subsequent calls to {@link #close()} will have no effect.
+   * Remove the callback registered via {@link DoubleCounterBuilder#buildWithCallback(Consumer)}.
+   * After this is called, the callback won't be invoked on future collections. Subsequent calls to
+   * {@link #close()} have no effect.
    *
-   * @see DoubleCounterBuilder#buildWithCallback(Consumer)
+   * <p>Note: other callbacks registered to the metric with the same identity are unaffected.
    */
   @Override
   default void close() {}

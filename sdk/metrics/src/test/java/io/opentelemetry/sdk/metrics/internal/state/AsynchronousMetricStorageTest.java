@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,7 +46,6 @@ public class AsynchronousMetricStorageTest {
   private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
       MeterSharedState.create(InstrumentationLibraryInfo.empty());
-  private AttributesProcessor spyAttributesProcessor;
   private View view;
   private CollectionHandle handle;
   private Set<CollectionHandle> all;
@@ -55,10 +54,10 @@ public class AsynchronousMetricStorageTest {
   LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
   @Mock private MetricReader reader;
+  @Spy private AttributesProcessor spyAttributesProcessor = AttributesProcessor.noop();
 
   @BeforeEach
   void setup() {
-    spyAttributesProcessor = spy(AttributesProcessor.noop());
     view =
         View.builder()
             .setAggregation(Aggregation.lastValue())
@@ -101,7 +100,7 @@ public class AsynchronousMetricStorageTest {
         0,
         testClock.now(),
         /* suppressSynchronousCollection= */ false);
-    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
+    verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test
@@ -123,7 +122,7 @@ public class AsynchronousMetricStorageTest {
         0,
         testClock.nanoTime(),
         /* suppressSynchronousCollection= */ false);
-    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
+    verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test

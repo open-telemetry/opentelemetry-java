@@ -26,7 +26,7 @@ class SdkObservableInstrumentTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void remove() {
+  void close() {
     AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage1 =
         mock(AsynchronousMetricStorage.class);
     AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage2 =
@@ -36,17 +36,17 @@ class SdkObservableInstrumentTest {
     SdkObservableInstrument<ObservableDoubleMeasurement> observableInstrument =
         new SdkObservableInstrument<>("my-instrument", Arrays.asList(storage1, storage2), callback);
 
-    // First call to removal should trigger remove from storage
+    // First call to close should trigger remove from storage
     observableInstrument.close();
     verify(storage1).removeCallback(callback);
     verify(storage2).removeCallback(callback);
-    logs.assertDoesNotContain("Instrument my-instrument has called remove() multiple times.");
+    logs.assertDoesNotContain("Instrument my-instrument has called close() multiple times.");
 
-    // Removal a second time should not trigger remove from storage and should log a warning
+    // Close a second time should not trigger remove from storage and should log a warning
     Mockito.reset(storage1, storage2);
     observableInstrument.close();
     verify(storage1, never()).removeCallback(any());
     verify(storage2, never()).removeCallback(any());
-    logs.assertContains("Instrument my-instrument has called remove() multiple times.");
+    logs.assertContains("Instrument my-instrument has called close() multiple times.");
   }
 }

@@ -111,14 +111,19 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo())
             .stream()
             .map(view -> AsynchronousMetricStorage.createLongAsyncStorage(view, instrument))
-            .filter(m -> !m.isEmpty())
-            .map(this::register)
-            .filter(Objects::nonNull)
+            .filter(storage -> !storage.isEmpty())
             .collect(toList());
 
-    storages.forEach(metricStorage -> metricStorage.addCallback(callback));
-
-    return storages;
+    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> registeredStorages =
+        new ArrayList<>();
+    for (AsynchronousMetricStorage<?, ObservableLongMeasurement> storage : storages) {
+      AsynchronousMetricStorage<?, ObservableLongMeasurement> registeredStorage = register(storage);
+      if (registeredStorage != null) {
+        registeredStorage.addCallback(callback);
+        registeredStorages.add(registeredStorage);
+      }
+    }
+    return registeredStorages;
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
@@ -134,14 +139,20 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo())
             .stream()
             .map(view -> AsynchronousMetricStorage.createDoubleAsyncStorage(view, instrument))
-            .filter(m -> !m.isEmpty())
-            .map(this::register)
-            .filter(Objects::nonNull)
+            .filter(storage -> !storage.isEmpty())
             .collect(toList());
 
-    storages.forEach(metricStorage -> metricStorage.addCallback(callback));
-
-    return storages;
+    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> registeredStorages =
+        new ArrayList<>();
+    for (AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage : storages) {
+      AsynchronousMetricStorage<?, ObservableDoubleMeasurement> registeredStorage =
+          register(storage);
+      if (registeredStorage != null) {
+        registeredStorage.addCallback(callback);
+        registeredStorages.add(registeredStorage);
+      }
+    }
+    return registeredStorages;
   }
 
   @Nullable
