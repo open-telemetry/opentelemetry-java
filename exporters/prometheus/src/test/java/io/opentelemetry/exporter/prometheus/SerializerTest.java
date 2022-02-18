@@ -206,6 +206,31 @@ class SerializerTest {
                               /* spanId= */ "span_id",
                               /* traceId= */ "trace_id",
                               /* value= */ 4))))));
+  private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
+      MetricData.createDoubleGauge(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationLibraryInfo.create("full", "version"),
+          "instrument.name",
+          "description",
+          "1",
+          DoubleGaugeData.create(
+              Collections.singletonList(
+                  DoublePointData.create(
+                      1633947011000000000L, 1633950672000000000L, Attributes.empty(), 7))));
+  private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
+      MetricData.createDoubleGauge(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationLibraryInfo.create("full", "version"),
+          "instrument.name",
+          "description",
+          "1",
+          DoubleGaugeData.create(
+              Collections.singletonList(
+                  DoublePointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      KP_VP_ATTR.toBuilder().put("animal", "bear").build(),
+                      8))));
 
   @Test
   void prometheus004() {
@@ -226,7 +251,9 @@ class SerializerTest {
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM))
+                HISTOGRAM,
+                DOUBLE_GAUGE_NO_ATTRIBUTES,
+                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
             "# TYPE instrument_name_total counter\n"
                 + "# HELP instrument_name_total description\n"
@@ -268,7 +295,13 @@ class SerializerTest {
                 + "# HELP instrument_name description\n"
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672000\n");
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name 7.0 1633950672000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{animal=\"bear\",kp=\"vp\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -286,7 +319,9 @@ class SerializerTest {
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM))
+                HISTOGRAM,
+                DOUBLE_GAUGE_NO_ATTRIBUTES,
+                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
             "# TYPE instrument_name counter\n"
                 + "# HELP instrument_name description\n"
@@ -329,6 +364,12 @@ class SerializerTest {
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
                 + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"span_id\",trace_id=\"trace_id\"} 4.0 0.001\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name 7.0 1633950672.000\n"
+                + "# TYPE instrument_name gauge\n"
+                + "# HELP instrument_name description\n"
+                + "instrument_name{animal=\"bear\",kp=\"vp\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 

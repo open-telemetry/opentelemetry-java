@@ -77,7 +77,7 @@ abstract class Serializer {
   }
 
   private void write(MetricData metric, Writer writer) throws IOException {
-    // TODO: Implement
+    // Not supported in specification yet.
     if (metric.getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
       return;
     }
