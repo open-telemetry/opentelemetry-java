@@ -102,16 +102,18 @@ public interface AttributesBuilder {
   }
 
   /**
-   * Puts a AttributeKey with String array into this.
+   * Puts a AttributeKey of List<T> into this.
    *
    * @return this Builder
    */
-  default AttributesBuilder put(AttributeKey<List<String>> key, String... value) {
+  @SuppressWarnings("unchecked")
+  default <T> AttributesBuilder put(AttributeKey<List<T>> key, T... value) {
     if (value == null) {
       return this;
     }
     return put(key, Arrays.asList(value));
   }
+
 
   /**
    * Puts a Long array attribute into this.

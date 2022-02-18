@@ -296,6 +296,8 @@ class AttributesTest {
             .put("string", "value1")
             .put(longKey("long"), 10)
             .put(stringArrayKey("anotherString"), "value1", "value2", "value3")
+            .put(longArrayKey("anotherLong"), 10L, 20L, 30L)
+            .put(booleanArrayKey("anotherBoolean"), true, false, true)
             .build();
 
     Attributes wantAttributes =
@@ -305,7 +307,11 @@ class AttributesTest {
             longKey("long"),
             10L,
             stringArrayKey("anotherString"),
-            Arrays.asList("value1", "value2", "value3"));
+            Arrays.asList("value1", "value2", "value3"),
+            longArrayKey("anotherLong"),
+            Arrays.asList(10L, 20L, 30L),
+            booleanArrayKey("anotherBoolean"),
+            Arrays.asList(true, false, true));
     assertThat(attributes).isEqualTo(wantAttributes);
 
     AttributesBuilder newAttributes = attributes.toBuilder();
@@ -319,6 +325,10 @@ class AttributesTest {
                 10L,
                 stringArrayKey("anotherString"),
                 Arrays.asList("value1", "value2", "value3"),
+                longArrayKey("anotherLong"),
+                Arrays.asList(10L, 20L, 30L),
+                booleanArrayKey("anotherBoolean"),
+                Arrays.asList(true, false, true),
                 stringKey("newKey"),
                 "newValue"));
     // Original not mutated.
