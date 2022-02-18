@@ -27,35 +27,31 @@ public interface TracerProvider {
   /**
    * Gets or creates a named tracer instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null. If the
-   *     instrumented library is providing its own instrumentation, this should match the library
-   *     name.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a tracer instance.
    */
-  Tracer get(String instrumentationName);
+  Tracer get(String instrumentationScopeName);
 
   /**
    * Gets or creates a named and versioned tracer instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null. If the
-   *     instrumented library is providing its own instrumentation, this should match the library
-   *     name.
-   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
+   * @param instrumentationScopeVersion The version of the instrumentation scope (e.g., "1.0.0").
    * @return a tracer instance.
    */
-  Tracer get(String instrumentationName, String instrumentationVersion);
+  Tracer get(String instrumentationScopeName, String instrumentationScopeVersion);
 
   /**
    * Creates a TracerBuilder for a named {@link Tracer} instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a TracerBuilder instance.
    * @since 1.4.0
    */
-  default TracerBuilder tracerBuilder(String instrumentationName) {
+  default TracerBuilder tracerBuilder(String instrumentationScopeName) {
     return DefaultTracerBuilder.getInstance();
   }
 }

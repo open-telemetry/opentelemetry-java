@@ -17,12 +17,12 @@ class DefaultTracerProvider implements TracerProvider {
   }
 
   @Override
-  public Tracer get(String instrumentationName) {
+  public Tracer get(String instrumentationScopeName) {
     return DefaultTracer.getInstance();
   }
 
   @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
+  public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
     return DefaultTracer.getInstance();
   }
 

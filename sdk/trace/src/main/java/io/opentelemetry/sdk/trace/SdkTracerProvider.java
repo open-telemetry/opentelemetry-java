@@ -53,14 +53,14 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   }
 
   @Override
-  public Tracer get(String instrumentationName) {
-    return tracerBuilder(instrumentationName).build();
+  public Tracer get(String instrumentationScopeName) {
+    return tracerBuilder(instrumentationScopeName).build();
   }
 
   @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return tracerBuilder(instrumentationName)
-        .setInstrumentationVersion(instrumentationVersion)
+  public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
+    return tracerBuilder(instrumentationScopeName)
+        .setInstrumentationVersion(instrumentationScopeVersion)
         .build();
   }
 

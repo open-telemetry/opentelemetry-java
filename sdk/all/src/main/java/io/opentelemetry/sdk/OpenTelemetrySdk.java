@@ -98,13 +98,13 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     }
 
     @Override
-    public Tracer get(String instrumentationName) {
-      return delegate.get(instrumentationName);
+    public Tracer get(String instrumentationScopeName) {
+      return delegate.get(instrumentationScopeName);
     }
 
     @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return delegate.get(instrumentationName, instrumentationVersion);
+    public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
+      return delegate.get(instrumentationScopeName, instrumentationScopeVersion);
     }
 
     @Override
