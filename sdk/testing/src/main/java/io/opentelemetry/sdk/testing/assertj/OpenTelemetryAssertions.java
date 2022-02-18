@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractBooleanAssert;
 import org.assertj.core.api.AbstractDoubleAssert;
 import org.assertj.core.api.AbstractLongAssert;
@@ -30,17 +31,17 @@ import org.assertj.core.api.ListAssert;
 public final class OpenTelemetryAssertions extends Assertions {
 
   /** Returns an assertion for {@link Attributes}. */
-  public static AttributesAssert assertThat(Attributes attributes) {
+  public static AttributesAssert assertThat(@Nullable Attributes attributes) {
     return new AttributesAssert(attributes);
   }
 
   /** Returns an assertion for {@link SpanDataAssert}. */
-  public static SpanDataAssert assertThat(SpanData spanData) {
+  public static SpanDataAssert assertThat(@Nullable SpanData spanData) {
     return new SpanDataAssert(spanData);
   }
 
   /** Returns an assertion for {@link EventDataAssert}. */
-  public static EventDataAssert assertThat(EventData eventData) {
+  public static EventDataAssert assertThat(@Nullable EventData eventData) {
     return new EventDataAssert(eventData);
   }
 

@@ -54,6 +54,7 @@ class OpenTelemetryAssertionsTest {
       AttributeKey.booleanArrayKey("conditions");
   private static final AttributeKey<List<Long>> SCORES = AttributeKey.longArrayKey("scores");
   private static final AttributeKey<List<Double>> COINS = AttributeKey.doubleArrayKey("coins");
+  private static final AttributeKey<String> UNSET = AttributeKey.stringKey("unset");
 
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
@@ -445,6 +446,51 @@ class OpenTelemetryAssertionsTest {
             () ->
                 assertThat(RESOURCE.getAttributes())
                     .containsOnly(entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void optionalAttributes() {
+    assertThat(SPAN1)
+        .hasAttributesSatisfyingExactly(
+            // Not null
+            satisfies(
+                BEAR,
+                val ->
+                    val.satisfiesAnyOf(
+                        v -> assertThat(v).isNull(), v -> assertThat(v).isEqualTo("mya"))),
+            // Yes null
+            satisfies(
+                UNSET,
+                val ->
+                    val.satisfiesAnyOf(
+                        v -> assertThat(v).isNull(), v -> assertThat(v).isEqualTo("objection"))),
+            satisfies(WARM, val -> val.isTrue()),
+            satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+            satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+            satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+            satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)));
+
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfyingExactly(
+                        // Yes null
+                        satisfies(
+                            UNSET,
+                            val ->
+                                val.satisfiesAnyOf(
+                                    v -> assertThat(v).isNull(),
+                                    v -> assertThat(v).isEqualTo("objection"))),
+                        satisfies(WARM, val -> val.isTrue()),
+                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
         .isInstanceOf(AssertionError.class);
   }
 }

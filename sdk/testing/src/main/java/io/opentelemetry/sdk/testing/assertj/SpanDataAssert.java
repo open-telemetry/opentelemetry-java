@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -23,19 +22,19 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
 public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
 
-  SpanDataAssert(SpanData actual) {
+  SpanDataAssert(@Nullable SpanData actual) {
     super(actual, SpanDataAssert.class);
   }
 
@@ -284,36 +283,41 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    */
   public SpanDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
     Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
-    Set<AttributeKey<?>> expectedKeys =
-        StreamSupport.stream(assertions.spliterator(), false)
-            .map(AttributeAssertion::getKey)
-            .collect(Collectors.toSet());
-    assertThat(actualKeys)
-        .as("span [%s] attribute keys", actual.getName())
-        .containsExactlyInAnyOrderElementsOf(expectedKeys);
+    Set<AttributeKey<?>> checkedKeys = new HashSet<>();
     for (AttributeAssertion attributeAssertion : assertions) {
       AttributeKey<?> key = attributeAssertion.getKey();
       Object value = actual.getAttributes().get(key);
-      // Already checked all keys are present.
-      requireNonNull(value);
+      if (value != null) {
+        checkedKeys.add(key);
+      }
       AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
       attributeAssertion.getAssertion().accept(assertion);
     }
+
+    assertThat(actualKeys)
+        .as("span [%s] attribute keys", actual.getName())
+        .containsExactlyInAnyOrderElementsOf(checkedKeys);
+
     return this;
   }
 
   // The return type of these assertions must match the parameters in methods like
-  // OpenTelemetryAssertions.sastisfies.
-  private static AbstractAssert<?, ?> attributeValueAssertion(AttributeKey<?> key, Object value) {
+  // OpenTelemetryAssertions.satisfies.
+  // Our code is nullness annotated but assertj is not. NullAway seems to still treat the base class
+  // of OpenTelemetryAssertions as annotated though, so there seems to be no way to avoid
+  // suppressing here.
+  @SuppressWarnings("NullAway")
+  private static AbstractAssert<?, ?> attributeValueAssertion(
+      AttributeKey<?> key, @Nullable Object value) {
     switch (key.getType()) {
       case STRING:
         return assertThat((String) value);
       case BOOLEAN:
-        return assertThat((boolean) value);
+        return assertThat((Boolean) value);
       case LONG:
-        return assertThat((long) value);
+        return assertThat((Long) value);
       case DOUBLE:
-        return assertThat((double) value);
+        return assertThat((Double) value);
       case STRING_ARRAY:
       case BOOLEAN_ARRAY:
       case LONG_ARRAY:

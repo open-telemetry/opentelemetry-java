@@ -16,13 +16,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.error.ShouldContainKeys;
 
 /** Assertions for {@link Attributes}. */
 public final class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
 
-  AttributesAssert(Attributes actual) {
+  AttributesAssert(@Nullable Attributes actual) {
     super(actual, AttributesAssert.class);
   }
 
