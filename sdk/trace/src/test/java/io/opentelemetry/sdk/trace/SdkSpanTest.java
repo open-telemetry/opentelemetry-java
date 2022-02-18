@@ -896,10 +896,13 @@ class SdkSpanTest {
                 .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
 
-    assertThat(event).isInstanceOf(ExceptionEventData.class);
-    ExceptionEventData exceptionEvent = (ExceptionEventData) event;
-    assertThat(exceptionEvent.getException()).isSameAs(exception);
-    assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
+            });
   }
 
   @Test
@@ -965,16 +968,19 @@ class SdkSpanTest {
                 .put("exception.stacktrace", stacktrace)
                 .build());
 
-    assertThat(event).isInstanceOf(ExceptionEventData.class);
-    ExceptionEventData exceptionEvent = (ExceptionEventData) event;
-    assertThat(exceptionEvent.getException()).isSameAs(exception);
-    assertThat(exceptionEvent.getAdditionalAttributes())
-        .isEqualTo(
-            Attributes.of(
-                stringKey("key1"),
-                "this is an additional attribute",
-                stringKey("exception.message"),
-                "this is a precedence attribute"));
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes())
+                  .isEqualTo(
+                      Attributes.of(
+                          stringKey("key1"),
+                          "this is an additional attribute",
+                          stringKey("exception.message"),
+                          "this is a precedence attribute"));
+            });
   }
 
   @Test

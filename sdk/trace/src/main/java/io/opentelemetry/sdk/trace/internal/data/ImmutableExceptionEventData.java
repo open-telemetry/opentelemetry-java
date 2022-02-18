@@ -36,7 +36,7 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
   ImmutableExceptionEventData() {}
 
   @Override
-  public String getName() {
+  public final String getName() {
     return SemanticAttributes.EXCEPTION_EVENT_NAME;
   }
 
@@ -65,8 +65,7 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
   }
 
   @Override
-  @Memoized
-  public int getTotalAttributeCount() {
+  public final int getTotalAttributeCount() {
     return getAttributes().size();
   }
 }
