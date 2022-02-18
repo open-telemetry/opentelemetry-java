@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -175,8 +175,8 @@ class SdkLogEmitterProviderTest {
 
   @Test
   void logEmitterBuilder_PropagatesToEmitter() {
-    InstrumentationLibraryInfo expected =
-        InstrumentationLibraryInfo.create("test", "version", "http://url");
+    InstrumentationScopeInfo expected =
+        InstrumentationScopeInfo.create("test", "version", "http://url");
     assertThat(
             ((SdkLogEmitter)
                     sdkLogEmitterProvider
@@ -184,7 +184,7 @@ class SdkLogEmitterProviderTest {
                         .setInstrumentationVersion("version")
                         .setSchemaUrl("http://url")
                         .build())
-                .getInstrumentationLibraryInfo())
+                .getInstrumentationScopeInfo())
         .isEqualTo(expected);
   }
 
@@ -192,13 +192,13 @@ class SdkLogEmitterProviderTest {
   void logEmitterBuilder_DefaultEmitterName() {
     assertThat(
             ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder(null).build())
-                .getInstrumentationLibraryInfo()
+                .getInstrumentationScopeInfo()
                 .getName())
         .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
 
     assertThat(
             ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder("").build())
-                .getInstrumentationLibraryInfo()
+                .getInstrumentationScopeInfo()
                 .getName())
         .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
   }

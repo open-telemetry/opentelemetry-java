@@ -42,8 +42,7 @@ public final class SdkLogEmitterProvider implements Closeable {
     this.sharedState = new LogEmitterSharedState(resource, logLimitsSupplier, processors, clock);
     this.logEmitterComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo ->
-                new SdkLogEmitter(sharedState, instrumentationLibraryInfo));
+            instrumentationScopeInfo -> new SdkLogEmitter(sharedState, instrumentationScopeInfo));
   }
 
   /**

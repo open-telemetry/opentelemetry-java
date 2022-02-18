@@ -8,10 +8,9 @@ package io.opentelemetry.sdk.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import org.junit.jupiter.api.Test;
 
-/** Tests for {@link InstrumentationLibraryInfo}. */
 class ComponentRegistryTest {
 
   private static final String INSTRUMENTATION_NAME = "test_name";
@@ -20,18 +19,18 @@ class ComponentRegistryTest {
       new ComponentRegistry<>(TestComponent::new);
 
   @Test
-  void libraryName_MustNotBeNull() {
+  void scopeName_MustNotBeNull() {
     assertThatThrownBy(() -> registry.get(null, "version"))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("name");
   }
 
   @Test
-  void libraryVersion_AllowsNull() {
+  void scopeVersion_AllowsNull() {
     TestComponent testComponent = registry.get(INSTRUMENTATION_NAME, null);
     assertThat(testComponent).isNotNull();
-    assertThat(testComponent.instrumentationLibraryInfo.getName()).isEqualTo(INSTRUMENTATION_NAME);
-    assertThat(testComponent.instrumentationLibraryInfo.getVersion()).isNull();
+    assertThat(testComponent.instrumentationScopeInfo.getName()).isEqualTo(INSTRUMENTATION_NAME);
+    assertThat(testComponent.instrumentationScopeInfo.getVersion()).isNull();
   }
 
   @Test
@@ -60,10 +59,10 @@ class ComponentRegistryTest {
   }
 
   private static final class TestComponent {
-    private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+    private final InstrumentationScopeInfo instrumentationScopeInfo;
 
-    private TestComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    private TestComponent(InstrumentationScopeInfo instrumentationScopeInfo) {
+      this.instrumentationScopeInfo = instrumentationScopeInfo;
     }
   }
 }

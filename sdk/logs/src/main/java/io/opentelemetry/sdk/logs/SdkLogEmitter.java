@@ -6,19 +6,24 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 
 /** SDK implementation of {@link LogEmitter}. */
 final class SdkLogEmitter implements LogEmitter {
 
   private final LogEmitterSharedState logEmitterSharedState;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   SdkLogEmitter(
       LogEmitterSharedState logEmitterSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      InstrumentationScopeInfo instrumentationScopeInfo) {
     this.logEmitterSharedState = logEmitterSharedState;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.instrumentationLibraryInfo =
+        InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo);
   }
 
   @Override
@@ -32,7 +37,7 @@ final class SdkLogEmitter implements LogEmitter {
   }
 
   // VisibleForTesting
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+  InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 }
