@@ -14,7 +14,6 @@ dependencies {
   implementation(project(":exporters:otlp:common"))
 
   implementation("com.squareup.okhttp3:okhttp")
-  implementation("com.squareup.okio:okio")
 
   testImplementation(project(":sdk:testing"))
 
