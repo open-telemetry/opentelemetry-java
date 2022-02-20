@@ -25,6 +25,9 @@ interface GrpcServiceBuilder<ReqMarshalerT extends Marshaler, ResUnMarshalerT ex
   GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setTrustedCertificates(
       byte[] trustedCertificatesPem);
 
+  GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientKeys(
+          byte[][] clientKeysPem);
+
   GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addHeader(String key, String value);
 
   GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addRetryPolicy(RetryPolicy retryPolicy);

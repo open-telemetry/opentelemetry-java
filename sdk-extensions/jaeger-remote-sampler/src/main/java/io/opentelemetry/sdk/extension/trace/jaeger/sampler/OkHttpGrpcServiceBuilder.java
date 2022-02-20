@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -40,6 +41,7 @@ final class OkHttpGrpcServiceBuilder<
   private boolean compressionEnabled = false;
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private byte[][] clientKeysPem;
   @Nullable private RetryPolicy retryPolicy;
 
   OkHttpGrpcServiceBuilder(
@@ -98,6 +100,13 @@ final class OkHttpGrpcServiceBuilder<
   }
 
   @Override
+  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientKeys(byte[][] clientKeysPem) {
+    requireNonNull(clientKeysPem, "clientKeysPem");
+    this.clientKeysPem = clientKeysPem;
+    return this;
+  }
+
+  @Override
   public OkHttpGrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> addHeader(
       String key, String value) {
     requireNonNull(key, "key");
@@ -124,7 +133,11 @@ final class OkHttpGrpcServiceBuilder<
     if (trustedCertificatesPem != null) {
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
-        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(trustManager), trustManager);
+        X509KeyManager keyManager = null;
+        if (clientKeysPem!=null) {
+        	keyManager = TlsUtil.keyManager(clientKeysPem);
+        }
+        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificates, are they valid X.509 in PEM format?", e);

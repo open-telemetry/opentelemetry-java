@@ -31,6 +31,8 @@ public interface GrpcExporterBuilder<T extends Marshaler> {
 
   GrpcExporterBuilder<T> setTrustedCertificates(byte[] trustedCertificatesPem);
 
+  GrpcExporterBuilder<T> setClientKeys(byte[][] clientKeysPem);
+
   GrpcExporterBuilder<T> addHeader(String key, String value);
 
   GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
