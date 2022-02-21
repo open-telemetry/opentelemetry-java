@@ -102,7 +102,7 @@ public interface AttributesBuilder {
   }
 
   /**
-   * Puts a {@link AttributeKey} of generic List into this.
+   * Puts a List attribute into this.
    *
    * @return this Builder
    */
