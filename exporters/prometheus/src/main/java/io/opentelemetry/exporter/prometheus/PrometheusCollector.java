@@ -22,7 +22,16 @@ import java.util.List;
  * A reader of OpenTelemetry metrics that exports into Prometheus as a Collector.
  *
  * <p>Usage: <code>sdkMeterProvider.registerMetricReader(PrometheusCollector.create());</code>
+ *
+ * @deprecated This class was intended to fill OpenTelemetry metrics into a Prometheus registry.
+ *     Instead, use {@link PrometheusHttpServer} to expose OpenTelemetry metrics as a Prometheus
+ *     HTTP endpoint. If you generate metrics with Micrometer in addition to OpenTelemetry, also use
+ *     <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library">
+ *     Micrometer OpenTelemetry Integration</a> to export Micrometer metrics together. If your use
+ *     case is not handled by these, please file an issue to let us know.
  */
+@Deprecated
 public final class PrometheusCollector extends Collector implements MetricReader {
   private final MetricProducer metricProducer;
   private volatile boolean registered = false;

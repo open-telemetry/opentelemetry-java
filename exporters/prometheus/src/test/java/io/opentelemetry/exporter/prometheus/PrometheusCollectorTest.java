@@ -35,6 +35,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+// Tests deprecated class
+@SuppressWarnings("deprecation")
 class PrometheusCollectorTest {
   @Mock MetricProducer metricProducer;
   PrometheusCollector prometheusCollector;
