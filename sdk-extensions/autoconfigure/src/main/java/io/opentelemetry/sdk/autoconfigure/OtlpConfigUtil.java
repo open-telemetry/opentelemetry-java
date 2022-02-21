@@ -46,6 +46,7 @@ final class OtlpConfigUtil {
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
+      BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
@@ -93,22 +94,20 @@ final class OtlpConfigUtil {
       setTimeout.accept(timeout);
     }
 
-    String certificate = config.getString("otel.exporter.otlp." + dataType + ".certificate");
-    if (certificate == null) {
-      certificate = config.getString("otel.exporter.otlp.certificate");
-    }
-    if (certificate != null) {
-      Path path = Paths.get(certificate);
-      if (!Files.exists(path)) {
-        throw new ConfigurationException("Invalid OTLP certificate path: " + path);
-      }
-      byte[] certificateBytes;
-      try {
-        certificateBytes = Files.readAllBytes(path);
-      } catch (IOException e) {
-        throw new ConfigurationException("Error reading OTLP certificate.", e);
-      }
+    byte[] certificateBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "certificate");
+    if (certificateBytes!=null) {
       setTrustedCertificates.accept(certificateBytes);
+    }
+
+    byte[] clientKeyBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "client.key");
+    byte[] clientKeyChainBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "client.key.chain");
+
+    if (clientKeyBytes != null && clientKeyChainBytes == null) {
+      throw new ConfigurationException("Client key provided but certification chain is missing");
+    } else if (clientKeyBytes == null && clientKeyChainBytes != null) {
+      throw new ConfigurationException("Client key chain provided but key is missing");
+    } else {
+      setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
     Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
@@ -169,6 +168,30 @@ final class OtlpConfigUtil {
           "OTLP endpoint must not have a path: " + endpointUrl.getPath());
     }
     return endpointUrl;
+  }
+
+  private static byte[] readPemByConfig(ConfigProperties config, String prefix, String dataType, String suffix ) {
+    String propertyToRead = prefix + "." + dataType + "." + suffix;
+    String filePath = config.getString(propertyToRead);
+    if (filePath == null) {
+      propertyToRead = prefix + "." + suffix;
+      filePath = config.getString(propertyToRead);
+    }
+    if (filePath != null) {
+      Path path = Paths.get(filePath);
+      if (!Files.exists(path)) {
+        throw new ConfigurationException("Invalid file: " + path + " (configured in property: " + propertyToRead +")");
+      }
+      byte[] fileBytes;
+      try {
+        fileBytes = Files.readAllBytes(path);
+      } catch (IOException e) {
+        throw new ConfigurationException("Error reading content of file (" + path + ") configured in " + propertyToRead, e);
+      }
+      return fileBytes;
+    } else {
+      return null;
+    }
   }
 
   private static String signalPath(String dataType) {

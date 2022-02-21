@@ -85,6 +85,14 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   */
+  public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+    delegate.setClientTls(privateKeyPem, privateKeyChainPem);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
    * will not be collected.
    */

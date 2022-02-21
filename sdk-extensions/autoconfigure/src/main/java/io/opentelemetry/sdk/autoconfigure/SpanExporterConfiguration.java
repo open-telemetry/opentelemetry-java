@@ -126,6 +126,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
@@ -146,6 +147,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       builder.setMeterProvider(meterProvider);
 

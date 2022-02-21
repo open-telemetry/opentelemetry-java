@@ -31,7 +31,7 @@ public interface GrpcExporterBuilder<T extends Marshaler> {
 
   GrpcExporterBuilder<T> setTrustedCertificates(byte[] trustedCertificatesPem);
 
-  GrpcExporterBuilder<T> setClientKeys(byte[][] clientKeysPem);
+  GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem);
 
   GrpcExporterBuilder<T> addHeader(String key, String value);
 

@@ -45,15 +45,16 @@ public final class ManagedChannelUtil {
    * @throws SSLException if error occur processing the certificates
    */
   public static void setClientKeysAndTrustedCertificatesPem(
-      ManagedChannelBuilder<?> managedChannelBuilder, @Nullable byte[][] clientKeysPem, byte[] trustedCertificatesPem)
+      ManagedChannelBuilder<?> managedChannelBuilder, @Nullable byte[] privateKeyPem,
+      @Nullable byte[] privateKeyChainPem, byte[] trustedCertificatesPem)
       throws SSLException {
     requireNonNull(managedChannelBuilder, "managedChannelBuilder");
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
 
     X509TrustManager tmf = TlsUtil.trustManager(trustedCertificatesPem);
     X509KeyManager kmf = null;
-    if (clientKeysPem != null) {
-      kmf = TlsUtil.keyManager(clientKeysPem);
+    if (privateKeyPem != null && privateKeyChainPem!=null) {
+      kmf = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
     }
 
     // gRPC does not abstract TLS configuration so we need to check the implementation and act

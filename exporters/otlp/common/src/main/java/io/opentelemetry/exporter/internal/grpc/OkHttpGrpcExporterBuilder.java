@@ -43,7 +43,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private byte[][] clientKeysPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] privateKeyChainPem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
@@ -92,8 +93,9 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public GrpcExporterBuilder<T> setClientKeys(byte[][] clientKeysPem) {
-    this.clientKeysPem = clientKeysPem;
+  public GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+    this.privateKeyPem = privateKeyPem;
+    this.privateKeyChainPem = privateKeyChainPem;
     return this;
   }
 
@@ -126,8 +128,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
         X509KeyManager keyManager = null;
-        if (clientKeysPem!=null) {
-          keyManager = TlsUtil.keyManager(clientKeysPem);
+        if (privateKeyPem != null && privateKeyChainPem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
         }
         clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {

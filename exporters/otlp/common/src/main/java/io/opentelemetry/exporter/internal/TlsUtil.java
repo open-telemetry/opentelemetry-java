@@ -72,24 +72,26 @@ public final class TlsUtil {
     return sslContext.getSocketFactory();
   }
 
-  public static X509KeyManager keyManager(byte[][] clientKeysPem) throws SSLException {
-    requireNonNull(clientKeysPem, "clientKeysPem");
+  public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] privateKeyChainPem) throws SSLException {
+    requireNonNull(privateKeyPem, "privateKeyPem");
+    requireNonNull(privateKeyChainPem, "privateKeyChainPem");
     try {
       KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
       ks.load(null);
       KeyFactory factory = KeyFactory.getInstance("RSA");
-      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(clientKeysPem[0]);
+      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyPem);
       PrivateKey key = factory.generatePrivate(keySpec);
 
       CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-      Certificate[] chain = new Certificate[clientKeysPem.length-1];
+      List<Certificate> chain = new ArrayList<>();
 
-      for (int i = 1; i<clientKeysPem.length; i++) {
-        chain[i-1] = cf.generateCertificate(new ByteArrayInputStream(clientKeysPem[i]));
+      ByteArrayInputStream is = new ByteArrayInputStream(privateKeyChainPem);
+      while (is.available() > 0) {
+        chain.add(cf.generateCertificate(is));
       }
 
-      ks.setKeyEntry("trusted", key, "".toCharArray(), chain);
+      ks.setKeyEntry("trusted", key, "".toCharArray(), chain.toArray(new Certificate[]{}));
 
       KeyManagerFactory kmf =
           KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -132,19 +134,8 @@ public final class TlsUtil {
    * @return Array of bytes where first item (indexed 0) is private key all others are for chain
    * @throws IOException when there is problem reading provided file
    */
-  public static byte[][] loadPemFile(String filePath) throws IOException {
+  public static byte[] loadPemFile(String filePath) throws IOException {
     BufferedReader bufferedReader = Files.newBufferedReader(new File(filePath).toPath(), UTF_8);
-    List<byte[]> blocks = new ArrayList<>();
-    byte[] block = readNextBlock(bufferedReader);
-    while (block!=null) {
-      blocks.add(block);
-      block = readNextBlock(bufferedReader);
-    }
-    return blocks.toArray(new byte[][]{});
-  }
-
-  @Nullable
-  private static byte[] readNextBlock(BufferedReader bufferedReader) throws IOException {
     String line = bufferedReader.readLine();
     while (line != null && !line.startsWith("-----BEGIN ")) {
       line = bufferedReader.readLine();
@@ -157,9 +148,8 @@ public final class TlsUtil {
         line = bufferedReader.readLine();
       }
       return Base64.getDecoder().decode(buf.toString());
-    } else {
-      return null;
     }
+    throw new IllegalStateException("Start/end blocks not found");
   }
 
 }

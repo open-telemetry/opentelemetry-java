@@ -101,8 +101,8 @@ public final class JaegerGrpcSpanExporterBuilder {
    * The {@code byte[][]} should contain PKCS8 private key and X.509 certificate chain in PEM
    * format.
    */
-  public JaegerGrpcSpanExporterBuilder setClientKeys(byte[][] clientKeysPem) {
-    delegate.setClientKeys(clientKeysPem);
+  public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+    delegate.setClientTls(privateKeyPem, privateKeyChainPem);
     return this;
   }
 

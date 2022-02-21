@@ -304,7 +304,8 @@ class JaegerGrpcSpanExporterTest {
     assertThatCode(
         () ->
             JaegerGrpcSpanExporter.builder()
-                .setClientKeys(new byte[][]{"foobar".getBytes(StandardCharsets.UTF_8)}))
+                .setClientTls("foobar".getBytes(StandardCharsets.UTF_8),
+                    "foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
   }
 

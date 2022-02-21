@@ -39,7 +39,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private byte[][] clientKeysPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] privateKeyChainPem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
@@ -84,8 +85,9 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setClientKeys(byte[][] clientKeysPem) {
-    this.clientKeysPem = clientKeysPem;
+  public OkHttpExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+    this.privateKeyPem = privateKeyPem;
+    this.privateKeyChainPem = privateKeyChainPem;
     return this;
   }
 
@@ -109,8 +111,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
         X509KeyManager keyManager = null;
-        if (clientKeysPem != null) {
-          keyManager = TlsUtil.keyManager(clientKeysPem);
+        if (privateKeyPem != null && privateKeyChainPem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
         }
         clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
