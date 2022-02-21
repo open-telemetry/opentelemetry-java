@@ -146,6 +146,8 @@ abstract class AbstractPrometheusIntegrationTest {
   static class PrometheusCollectorIntegrationTest extends AbstractPrometheusIntegrationTest {
     private final HTTPServer server;
 
+    // Tests deprecated class
+    @SuppressWarnings("deprecation")
     PrometheusCollectorIntegrationTest() throws IOException {
       server = new HTTPServer(0);
       port = server.getPort();
