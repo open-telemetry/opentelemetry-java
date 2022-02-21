@@ -102,7 +102,7 @@ public interface AttributesBuilder {
   }
 
   /**
-   * Puts a AttributeKey of List<T> into this.
+   * Puts a {@link AttributeKey} of generic List into this.
    *
    * @return this Builder
    */
@@ -113,7 +113,6 @@ public interface AttributesBuilder {
     }
     return put(key, Arrays.asList(value));
   }
-
 
   /**
    * Puts a Long array attribute into this.
