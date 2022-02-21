@@ -148,10 +148,10 @@ class ResourceTest {
     assertThat(resource.getAttributes().size()).isEqualTo(8);
 
     // Null arrays should be dropped
-    attributes.put(stringArrayKey("NullArrayStringKey"), null);
-    attributes.put(longArrayKey("NullArrayLongKey"), null);
-    attributes.put(doubleArrayKey("NullArrayDoubleKey"), null);
-    attributes.put(booleanArrayKey("NullArrayBooleanKey"), null);
+    attributes.put(stringArrayKey("NullArrayStringKey"), (String[]) null);
+    attributes.put(longArrayKey("NullArrayLongKey"), (Long[]) null);
+    attributes.put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null);
+    attributes.put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
