@@ -20,7 +20,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -28,11 +27,12 @@ import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,12 +134,12 @@ public final class MetricAdapter {
         "Unknown OpenCensus metric type: " + censusMetric.getMetricDescriptor().getType());
   }
 
-  static LongGaugeData convertLongGauge(Metric censusMetric) {
-    return LongGaugeData.create(convertLongPoints(censusMetric));
+  static GaugeData<LongPointData> convertLongGauge(Metric censusMetric) {
+    return ImmutableGaugeData.create(convertLongPoints(censusMetric));
   }
 
-  static DoubleGaugeData convertDoubleGauge(Metric censusMetric) {
-    return DoubleGaugeData.create(convertDoublePoints(censusMetric));
+  static GaugeData<DoublePointData> convertDoubleGauge(Metric censusMetric) {
+    return ImmutableGaugeData.create(convertDoublePoints(censusMetric));
   }
 
   static LongSumData convertLongSum(Metric censusMetric) {

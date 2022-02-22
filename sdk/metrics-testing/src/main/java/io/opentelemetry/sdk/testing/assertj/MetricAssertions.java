@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -15,10 +14,11 @@ import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import org.assertj.core.api.Assertions;
 
 /** Test assertions for data heading to exporters within the Metrics SDK. */
@@ -28,9 +28,9 @@ public final class MetricAssertions extends Assertions {
     return new MetricDataAssert(metric);
   }
 
-  /** Returns an assertion for {@link DoubleGaugeData}. */
-  public static DoubleGaugeAssert assertThat(DoubleGaugeData metric) {
-    return new DoubleGaugeAssert(metric);
+  /** Returns an assertion for {@link GaugeData}. */
+  public static <T extends PointData> GaugeAssert<T> assertThat(GaugeData<T> metric) {
+    return new GaugeAssert<>(metric);
   }
 
   /** Returns an assertion for {@link DoubleHistogramData}. */
@@ -77,11 +77,6 @@ public final class MetricAssertions extends Assertions {
   /** Returns an assertion for {@link LongPointData}. */
   public static LongPointDataAssert assertThat(LongPointData point) {
     return new LongPointDataAssert(point);
-  }
-
-  /** Returns an assertion for {@link LongGaugeData}. */
-  public static LongGaugeDataAssert assertThat(LongGaugeData metric) {
-    return new LongGaugeDataAssert(metric);
   }
 
   /** Returns an assertion for {@link LongSumData}. */
