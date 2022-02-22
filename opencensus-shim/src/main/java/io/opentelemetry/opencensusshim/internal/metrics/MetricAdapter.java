@@ -17,6 +17,9 @@ import io.opencensus.metrics.export.Summary;
 import io.opencensus.metrics.export.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
@@ -329,8 +332,7 @@ public final class MetricAdapter {
 
   private static ExemplarData mapExemplar(Exemplar exemplar) {
     // Look for trace/span id.
-    String spanId = null;
-    String traceId = null;
+    SpanContext spanContext = SpanContext.getInvalid();
     if (exemplar.getAttachments().containsKey("SpanContext")) {
       // We need to use `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
       // The `toString` will be the following:
@@ -340,15 +342,16 @@ public final class MetricAdapter {
       Matcher m = OPENCENSUS_TRACE_ATTACHMENT_PATTERN.matcher(spanContextToString);
       if (m.matches()) {
         MatchResult mr = m.toMatchResult();
-        traceId = mr.group(1);
-        spanId = mr.group(2);
+        String traceId = mr.group(1);
+        String spanId = mr.group(2);
+        spanContext =
+            SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
       }
     }
     return DoubleExemplarData.create(
         Attributes.empty(),
         mapTimestamp(exemplar.getTimestamp()),
-        spanId,
-        traceId,
+        spanContext,
         exemplar.getValue());
   }
 

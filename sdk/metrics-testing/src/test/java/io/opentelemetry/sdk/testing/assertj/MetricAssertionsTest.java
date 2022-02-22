@@ -10,6 +10,9 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
@@ -134,7 +137,15 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final DoubleExemplarData DOUBLE_EXEMPLAR =
-      DoubleExemplarData.create(Attributes.empty(), 0, "span", "trace", 1.0);
+      DoubleExemplarData.create(
+          Attributes.empty(),
+          0,
+          SpanContext.create(
+              "00000000000000000000000000000001",
+              "0000000000000002",
+              TraceFlags.getDefault(),
+              TraceState.getDefault()),
+          1.0);
 
   private static final DoublePointData DOUBLE_POINT_DATA =
       DoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
@@ -181,7 +192,15 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final LongExemplarData LONG_EXEMPLAR =
-      LongExemplarData.create(Attributes.empty(), 0, "span", "trace", 1);
+      LongExemplarData.create(
+          Attributes.empty(),
+          0,
+          SpanContext.create(
+              "00000000000000000000000000000001",
+              "0000000000000002",
+              TraceFlags.getDefault(),
+              TraceState.getDefault()),
+          1);
 
   private static final LongPointData LONG_POINT_DATA =
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
@@ -346,7 +365,15 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_POINT_DATA)
                     .hasExemplars(
-                        DoubleExemplarData.create(Attributes.empty(), 0, "span", "trace", 1.0)))
+                        DoubleExemplarData.create(
+                            Attributes.empty(),
+                            0,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            1.0)))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -381,7 +408,15 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(LONG_POINT_DATA)
                     .hasExemplars(
-                        LongExemplarData.create(Attributes.empty(), 0, "span", "trace", 1)))
+                        LongExemplarData.create(
+                            Attributes.empty(),
+                            0,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            1)))
         .isInstanceOf(AssertionError.class);
   }
 

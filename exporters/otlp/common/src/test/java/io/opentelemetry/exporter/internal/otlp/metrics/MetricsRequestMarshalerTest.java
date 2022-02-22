@@ -18,6 +18,9 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
@@ -92,8 +95,11 @@ class MetricsRequestMarshalerTest {
                             LongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -131,8 +137,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -174,8 +183,11 @@ class MetricsRequestMarshalerTest {
                             LongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -342,8 +354,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
             HistogramDataPoint.newBuilder()
@@ -399,8 +414,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
             ExponentialHistogramDataPoint.newBuilder()

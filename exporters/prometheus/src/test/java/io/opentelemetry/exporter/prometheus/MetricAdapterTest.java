@@ -10,6 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -213,8 +216,11 @@ class MetricAdapterTest {
                           LongExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
-                              /* spanId= */ "span_id",
-                              /* traceId= */ "trace_id",
+                              SpanContext.create(
+                                  "00000000000000000000000000000001",
+                                  "0000000000000002",
+                                  TraceFlags.getDefault(),
+                                  TraceState.getDefault()),
                               /* value= */ 4))))));
 
   @Test
@@ -544,14 +550,20 @@ class MetricAdapterTest {
                         LongExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ 0,
-                            "other_span_id",
-                            "other_trace_id",
+                            SpanContext.create(
+                                "00000000000000000000000000000004",
+                                "0000000000000003",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
                             /*value=*/ 0),
                         LongExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ TimeUnit.MILLISECONDS.toNanos(2),
-                            "my_span_id",
-                            "my_trace_id",
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
                             /*value=*/ 2)))));
     assertThat(result)
         .withRepresentation(new ExemplarFriendlyRepresentation())
@@ -575,14 +587,26 @@ class MetricAdapterTest {
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "1.0"),
                 4,
-                new Exemplar(0d, 0L, "trace_id", "other_trace_id", "span_id", "other_span_id"),
+                new Exemplar(
+                    0d,
+                    0L,
+                    "trace_id",
+                    "00000000000000000000000000000004",
+                    "span_id",
+                    "0000000000000003"),
                 1633943350000L),
             new Sample(
                 "full_name_bucket",
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "+Inf"),
                 13,
-                new Exemplar(2d, 2L, "trace_id", "my_trace_id", "span_id", "my_span_id"),
+                new Exemplar(
+                    2d,
+                    2L,
+                    "trace_id",
+                    "00000000000000000000000000000001",
+                    "span_id",
+                    "0000000000000002"),
                 1633943350000L));
   }
 
@@ -719,7 +743,7 @@ class MetricAdapterTest {
                 + "# HELP instrument_name description\n"
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"span_id\",trace_id=\"trace_id\"} 4.0 0.001\n"
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "# EOF\n");
   }
 
