@@ -13,7 +13,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
+import io.opentelemetry.sdk.metrics.view.MeterSelectorBuilder;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
 import java.io.InputStream;
@@ -198,7 +200,7 @@ public final class ViewConfig {
 
   // Visible for testing
   static InstrumentSelector toInstrumentSelector(SelectorSpecification selectorSpec) {
-    InstrumentSelector.Builder builder = InstrumentSelector.builder();
+    InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     String instrumentName = selectorSpec.getInstrumentName();
     if (instrumentName != null) {
       builder.setInstrumentName(instrumentName);
@@ -208,7 +210,7 @@ public final class ViewConfig {
       builder.setInstrumentType(instrumentType);
     }
 
-    MeterSelector.Builder meterBuilder = MeterSelector.builder();
+    MeterSelectorBuilder meterBuilder = MeterSelector.builder();
     String meterName = selectorSpec.getMeterName();
     if (meterName != null) {
       meterBuilder.setName(meterName);
