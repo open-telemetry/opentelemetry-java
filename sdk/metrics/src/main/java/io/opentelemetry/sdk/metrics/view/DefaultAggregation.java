@@ -8,12 +8,13 @@ package io.opentelemetry.sdk.metrics.view;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Aggregation that selects the specified default based on instrument. */
-class DefaultAggregation extends Aggregation {
+final class DefaultAggregation extends Aggregation implements AggregatorFactory {
 
   static final Aggregation INSTANCE = new DefaultAggregation();
 
@@ -41,7 +42,8 @@ class DefaultAggregation extends Aggregation {
   @Override
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return resolve(instrumentDescriptor).createAggregator(instrumentDescriptor, exemplarFilter);
+    return ((AggregatorFactory) resolve(instrumentDescriptor))
+        .createAggregator(instrumentDescriptor, exemplarFilter);
   }
 
   @Override

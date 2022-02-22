@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.List;
 
 /**
@@ -17,18 +14,6 @@ import java.util.List;
  */
 public abstract class Aggregation {
   Aggregation() {}
-
-  /**
-   * Returns a new {@link Aggregator}.
-   *
-   * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
-   *     measurements.
-   * @param exemplarFilter the filter on which measurements should turn into exemplars
-   * @return a new {@link Aggregator}. {@link Aggregator#drop()} indicates no measurements should be
-   *     recorded.
-   */
-  public abstract <T> Aggregator<T> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 
   /** The drop Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation drop() {
