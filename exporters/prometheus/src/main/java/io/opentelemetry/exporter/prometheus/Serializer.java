@@ -44,15 +44,35 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
 // Adapted from
 // https://github.com/prometheus/client_java/blob/master/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java
 abstract class Serializer {
 
-  private static final Pattern SANITIZE_PREFIX_PATTERN = Pattern.compile("^[^a-zA-Z_:]");
-  private static final Pattern SANITIZE_BODY_PATTERN = Pattern.compile("[^a-zA-Z0-9_:]");
+  static Serializer create(@Nullable String acceptHeader, Predicate<String> filter) {
+    if (acceptHeader == null) {
+      return new Prometheus004Serializer(filter);
+    }
+
+    for (String accepts : acceptHeader.split(",")) {
+      if ("application/openmetrics-text".equals(accepts.split(";")[0].trim())) {
+        return new OpenMetrics100Serializer(filter);
+      }
+    }
+
+    return new Prometheus004Serializer(filter);
+  }
+
+  private final Predicate<String> metricNameFilter;
+
+  Serializer(Predicate<String> metricNameFilter) {
+    this.metricNameFilter = metricNameFilter;
+  }
+
+  abstract String contentType();
 
   abstract String headerName(String name, PrometheusType type);
 
@@ -83,10 +103,14 @@ abstract class Serializer {
     }
 
     PrometheusType type = PrometheusType.forMetric(metric);
-    String name = sanitizeMetricName(metric.getName());
+    String name = NameSanitizer.INSTANCE.apply(metric.getName());
     String headerName = headerName(name, type);
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
+    }
+
+    if (!metricNameFilter.test(name)) {
+      return;
     }
 
     writer.write("# TYPE ");
@@ -253,7 +277,7 @@ abstract class Serializer {
                 } else {
                   wroteOne = true;
                 }
-                writer.write(MetricAdapter.sanitizer.apply(key.getKey()));
+                writer.write(NameSanitizer.INSTANCE.apply(key.getKey()));
                 writer.write("=\"");
                 writeEscapedLabelValue(writer, value.toString());
                 writer.write('"');
@@ -296,16 +320,16 @@ abstract class Serializer {
     }
   }
 
-  // TODO(anuraaga): Can likely be optimized especially for the already-sanitized case.
-  private static String sanitizeMetricName(String metricName) {
-    return SANITIZE_BODY_PATTERN
-        .matcher(SANITIZE_PREFIX_PATTERN.matcher(metricName).replaceFirst("_"))
-        .replaceAll("_");
-  }
-
   static class Prometheus004Serializer extends Serializer {
 
-    static final Serializer INSTANCE = new Prometheus004Serializer();
+    Prometheus004Serializer(Predicate<String> metricNameFilter) {
+      super(metricNameFilter);
+    }
+
+    @Override
+    String contentType() {
+      return "text/plain; version=0.0.4; charset=utf-8";
+    }
 
     @Override
     String headerName(String name, PrometheusType type) {
@@ -351,7 +375,14 @@ abstract class Serializer {
 
   static class OpenMetrics100Serializer extends Serializer {
 
-    static final Serializer INSTANCE = new OpenMetrics100Serializer();
+    OpenMetrics100Serializer(Predicate<String> metricNameFilter) {
+      super(metricNameFilter);
+    }
+
+    @Override
+    String contentType() {
+      return "application/openmetrics-text; version=1.0.0; charset=utf-8";
+    }
 
     @Override
     String headerName(String name, PrometheusType type) {
