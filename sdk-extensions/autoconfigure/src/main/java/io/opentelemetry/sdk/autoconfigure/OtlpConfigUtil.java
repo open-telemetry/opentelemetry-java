@@ -100,7 +100,8 @@ final class OtlpConfigUtil {
     }
 
     byte[] clientKeyBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "client.key");
-    byte[] clientKeyChainBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "client.key.chain");
+    byte[] clientKeyChainBytes = readPemByConfig(config, "otel.exporter.otlp", dataType,
+        "client.certificate");
 
     if (clientKeyBytes != null && clientKeyChainBytes == null) {
       throw new ConfigurationException("Client key provided but certification chain is missing");
