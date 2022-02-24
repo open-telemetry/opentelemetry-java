@@ -98,7 +98,7 @@ final class MetricAdapter {
     return Collector.Type.UNKNOWN;
   }
 
-  private static final Function<String, String> sanitizer = new LabelNameSanitizer();
+  static final Function<String, String> sanitizer = new NameSanitizer();
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(
@@ -277,7 +277,7 @@ final class MetricAdapter {
     return numPoints;
   }
 
-  private static Collection<? extends PointData> getPoints(MetricData metricData) {
+  static Collection<? extends PointData> getPoints(MetricData metricData) {
     switch (metricData.getType()) {
       case DOUBLE_GAUGE:
         return metricData.getDoubleGaugeData().getPoints();

@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -43,10 +44,12 @@ class TemporalMetricStorageTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final Aggregator<DoubleAccumulation> SUM =
-      Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.sum())
+          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
 
   private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
-      Aggregation.sum().createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.sum())
+          .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
 
   private CollectionHandle collector1;
   private CollectionHandle collector2;

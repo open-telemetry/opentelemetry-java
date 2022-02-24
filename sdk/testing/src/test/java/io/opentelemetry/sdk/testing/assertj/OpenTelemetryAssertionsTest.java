@@ -7,8 +7,11 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -40,16 +43,29 @@ class OpenTelemetryAssertionsTest {
       Resource.create(Attributes.builder().put("dog", "bark").build());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("opentelemetry", "1.0");
+
+  private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
+  private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
+  private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
+  private static final AttributeKey<Long> TEMPERATURE = AttributeKey.longKey("temperature");
+  private static final AttributeKey<Double> LENGTH = AttributeKey.doubleKey("length");
+  private static final AttributeKey<List<String>> COLORS = AttributeKey.stringArrayKey("colors");
+  private static final AttributeKey<List<Boolean>> CONDITIONS =
+      AttributeKey.booleanArrayKey("conditions");
+  private static final AttributeKey<List<Long>> SCORES = AttributeKey.longArrayKey("scores");
+  private static final AttributeKey<List<Double>> COINS = AttributeKey.doubleArrayKey("coins");
+  private static final AttributeKey<String> UNSET = AttributeKey.stringKey("unset");
+
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
-          .put("bear", "mya")
-          .put("warm", true)
-          .put("temperature", 30)
-          .put("length", 1.2)
-          .put("colors", "red", "blue")
-          .put("conditions", false, true)
-          .put("scores", 0L, 1L)
-          .put("coins", 0.01, 0.05, 0.1)
+          .put(BEAR, "mya")
+          .put(WARM, true)
+          .put(TEMPERATURE, 30)
+          .put(LENGTH, 1.2)
+          .put(COLORS, Arrays.asList("red", "blue"))
+          .put(CONDITIONS, Arrays.asList(false, true))
+          .put(SCORES, Arrays.asList(0L, 1L))
+          .put(COINS, Arrays.asList(0.01, 0.05, 0.1))
           .build();
   private static final List<EventData> EVENTS =
       Arrays.asList(
@@ -136,6 +152,34 @@ class OpenTelemetryAssertionsTest {
             attributeEntry("conditions", false, true),
             attributeEntry("scores", 0L, 1L),
             attributeEntry("coins", 0.01, 0.05, 0.1))
+        .hasAttributesSatisfyingExactly(
+            equalTo(BEAR, "mya"),
+            equalTo(WARM, true),
+            equalTo(TEMPERATURE, 30L),
+            equalTo(LENGTH, 1.2),
+            equalTo(COLORS, Arrays.asList("red", "blue")),
+            equalTo(CONDITIONS, Arrays.asList(false, true)),
+            equalTo(SCORES, Arrays.asList(0L, 1L)),
+            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)))
+        .hasAttributesSatisfyingExactly(
+            satisfies(BEAR, val -> val.startsWith("mya")),
+            satisfies(WARM, val -> val.isTrue()),
+            satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+            satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+            satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+            satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)))
+        // Demonstrates common usage of many exact matches and one needing a loose one.
+        .hasAttributesSatisfyingExactly(
+            equalTo(BEAR, "mya"),
+            equalTo(WARM, true),
+            equalTo(TEMPERATURE, 30L),
+            equalTo(COLORS, Arrays.asList("red", "blue")),
+            equalTo(CONDITIONS, Arrays.asList(false, true)),
+            equalTo(SCORES, Arrays.asList(0L, 1L)),
+            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
@@ -231,6 +275,48 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(Attributes.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(attributeEntry("food", "burger")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfyingExactly(
+                        // Failed
+                        satisfies(BEAR, val -> val.doesNotContain("mya")),
+                        satisfies(WARM, val -> val.isTrue()),
+                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    // Missing BEAR
+                    .hasAttributesSatisfyingExactly(
+                        satisfies(WARM, val -> val.isTrue()),
+                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    // Extra CAT
+                    .hasAttributesSatisfyingExactly(
+                        satisfies(BEAR, val -> val.startsWith("mya")),
+                        satisfies(CAT, val -> val.startsWith("nya")),
+                        satisfies(WARM, val -> val.isTrue()),
+                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -360,6 +446,51 @@ class OpenTelemetryAssertionsTest {
             () ->
                 assertThat(RESOURCE.getAttributes())
                     .containsOnly(entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void optionalAttributes() {
+    assertThat(SPAN1)
+        .hasAttributesSatisfyingExactly(
+            // Not null
+            satisfies(
+                BEAR,
+                val ->
+                    val.satisfiesAnyOf(
+                        v -> assertThat(v).isNull(), v -> assertThat(v).isEqualTo("mya"))),
+            // Yes null
+            satisfies(
+                UNSET,
+                val ->
+                    val.satisfiesAnyOf(
+                        v -> assertThat(v).isNull(), v -> assertThat(v).isEqualTo("objection"))),
+            satisfies(WARM, val -> val.isTrue()),
+            satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+            satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+            satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+            satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)));
+
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfyingExactly(
+                        // Yes null
+                        satisfies(
+                            UNSET,
+                            val ->
+                                val.satisfiesAnyOf(
+                                    v -> assertThat(v).isNull(),
+                                    v -> assertThat(v).isEqualTo("objection"))),
+                        satisfies(WARM, val -> val.isTrue()),
+                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
         .isInstanceOf(AssertionError.class);
   }
 }

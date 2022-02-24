@@ -101,6 +101,7 @@ class OtlpJsonLoggingSpanExporterTest {
     assertThat(logs.getEvents())
         .hasSize(1)
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
     JSONAssert.assertEquals(
         "{"
             + "  \"resource\": {"
@@ -124,7 +125,6 @@ class OtlpJsonLoggingSpanExporterTest {
             + "      \"startTimeUnixNano\": \"500\","
             + "      \"endTimeUnixNano\": \"1501\","
             + "      \"status\": {"
-            + "        \"deprecatedCode\": \"DEPRECATED_STATUS_CODE_UNKNOWN_ERROR\","
             + "        \"code\": \"STATUS_CODE_ERROR\""
             + "      }"
             + "    }]"
@@ -167,9 +167,9 @@ class OtlpJsonLoggingSpanExporterTest {
             + "    }]"
             + "  }]"
             + "}",
-        logs.getEvents().get(0).getMessage(),
+        message,
         /* strict= */ false);
-    assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
+    assertThat(message).doesNotContain("\n");
   }
 
   @Test

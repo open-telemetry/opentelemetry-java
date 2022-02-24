@@ -6,9 +6,8 @@
 package io.opentelemetry.exporter.internal.otlp.traces;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNSET;
@@ -58,8 +57,13 @@ class TraceRequestMarshalerTest {
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+  private static final String TRACE_STATE_VALUE = "baz=qux,foo=bar";
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
+      SpanContext.create(
+          TRACE_ID,
+          SPAN_ID,
+          TraceFlags.getSampled(),
+          TraceState.builder().put("foo", "bar").put("baz", "qux").build());
 
   @Test
   void toProtoResourceSpans() {
@@ -132,6 +136,7 @@ class TraceRequestMarshalerTest {
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
+    assertThat(span.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(span.getName()).isEqualTo("GET /api/endpoint");
     assertThat(span.getKind()).isEqualTo(SPAN_KIND_SERVER);
@@ -209,6 +214,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(span.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
     assertThat(span.getStatus()).isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
@@ -229,45 +235,24 @@ class TraceRequestMarshalerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(parse(Status.getDefaultInstance(), SpanStatusMarshaler.create(StatusData.unset())))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_UNSET)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_UNSET).build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "ERROR"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("ERROR")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("ERROR").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "UNKNOWN"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("UNKNOWN")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("UNKNOWN").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.OK, "OK_OVERRIDE"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_OK)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .setMessage("OK_OVERRIDE")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
   @Test
@@ -318,6 +303,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
 
@@ -333,6 +319,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()
                         .setKey("key_string")

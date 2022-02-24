@@ -33,7 +33,7 @@ final class InstrumentationLibraryLogsMarshaler extends MarshalerWithSize {
   public void writeTo(Serializer output) throws IOException {
     output.serializeMessage(
         InstrumentationLibraryLogs.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
-    output.serializeRepeatedMessage(InstrumentationLibraryLogs.LOGS, logMarshalers);
+    output.serializeRepeatedMessage(InstrumentationLibraryLogs.LOG_RECORDS, logMarshalers);
     output.serializeString(InstrumentationLibraryLogs.SCHEMA_URL, schemaUrlUtf8);
   }
 
@@ -46,7 +46,8 @@ final class InstrumentationLibraryLogsMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeMessage(
             InstrumentationLibraryLogs.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
     size += MarshalerUtil.sizeBytes(InstrumentationLibraryLogs.SCHEMA_URL, schemaUrlUtf8);
-    size += MarshalerUtil.sizeRepeatedMessage(InstrumentationLibraryLogs.LOGS, logMarshalers);
+    size +=
+        MarshalerUtil.sizeRepeatedMessage(InstrumentationLibraryLogs.LOG_RECORDS, logMarshalers);
     return size;
   }
 }

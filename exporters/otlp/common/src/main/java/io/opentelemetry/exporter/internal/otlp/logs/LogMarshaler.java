@@ -36,6 +36,7 @@ final class LogMarshaler extends MarshalerWithSize {
   @Nullable private final String traceId;
   @Nullable private final String spanId;
 
+  @SuppressWarnings("deprecation") // name field to be removed
   static LogMarshaler create(io.opentelemetry.sdk.logs.data.LogData logData) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(logData.getAttributes());

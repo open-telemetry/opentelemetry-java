@@ -36,6 +36,7 @@ class OtlpJsonLoggingLogExporterTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
 
+  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG1 =
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
           .setName("testLog1")
@@ -52,6 +53,7 @@ class OtlpJsonLoggingLogExporterTest {
                   TraceState.getDefault()))
           .build();
 
+  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG2 =
       LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .setName("testLog2")
@@ -85,6 +87,7 @@ class OtlpJsonLoggingLogExporterTest {
     assertThat(logs.getEvents())
         .hasSize(1)
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
     JSONAssert.assertEquals(
         "{\n"
             + "   \"resource\":{\n"
@@ -103,7 +106,7 @@ class OtlpJsonLoggingLogExporterTest {
             + "            \"name\":\"instrumentation2\",\n"
             + "            \"version\":\"2\"\n"
             + "         },\n"
-            + "         \"logs\":[\n"
+            + "         \"logRecords\":[\n"
             + "            {\n"
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
@@ -130,7 +133,7 @@ class OtlpJsonLoggingLogExporterTest {
             + "            \"name\":\"instrumentation\",\n"
             + "            \"version\":\"1\"\n"
             + "         },\n"
-            + "         \"logs\":[\n"
+            + "         \"logRecords\":[\n"
             + "            {\n"
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
@@ -160,9 +163,9 @@ class OtlpJsonLoggingLogExporterTest {
             + "      }\n"
             + "   ]\n"
             + "}",
-        logs.getEvents().get(0).getMessage(),
+        message,
         /* strict= */ false);
-    assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
+    assertThat(message).doesNotContain("\n");
   }
 
   @Test

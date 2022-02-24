@@ -317,4 +317,17 @@ class ResourceTest {
     assertThat(attributes.get(stringKey("hello"))).isEqualTo("world");
     assertThat(attributes.get(stringKey("OpenTelemetry"))).isEqualTo("Java");
   }
+
+  @Test
+  public void toBuilder() {
+
+    Resource resource =
+        Resource.builder().setSchemaUrl("http://example.com").put("foo", "val").build();
+
+    Resource newResource = resource.toBuilder().build();
+
+    assertThat(newResource).isNotSameAs(Resource.getDefault());
+    assertThat(newResource.getAttribute(stringKey("foo"))).isEqualTo("val");
+    assertThat(newResource.getSchemaUrl()).isEqualTo("http://example.com");
+  }
 }

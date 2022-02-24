@@ -50,6 +50,7 @@ class LogsRequestMarshalerTest {
   private static final String BODY = "Hello world from this log...";
 
   @Test
+  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoResourceLogs() {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
@@ -83,6 +84,7 @@ class LogsRequestMarshalerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoLogRecord() {
     LogRecord logRecord =
         parse(
@@ -176,7 +178,7 @@ class LogsRequestMarshalerTest {
       ResourceLogs.Builder fixed = (ResourceLogs.Builder) builder;
       for (InstrumentationLibraryLogs.Builder ill :
           fixed.getInstrumentationLibraryLogsBuilderList()) {
-        for (LogRecord.Builder span : ill.getLogsBuilderList()) {
+        for (LogRecord.Builder span : ill.getLogRecordsBuilderList()) {
           fixSpanJsonIds(span);
         }
       }

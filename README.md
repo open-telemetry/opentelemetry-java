@@ -46,14 +46,17 @@ This project contains the following top level components:
 
 This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
 [`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
-the [`opentelemetry-alpha-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
+the [`opentelemetry-bom-alpha`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
 
 We would love to hear from the larger community: please provide feedback proactively.
 
 ## Requirements
 
-Unless otherwise noted, all published artifacts support Java 8 or higher. See [CONTRIBUTING.md](./CONTRIBUTING.md)
-for additional instructions for building this project for development.
+Unless otherwise noted, all published artifacts support Java 8 or higher.
+
+**Android Disclaimer:** For compatibility reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for additional instructions for building this project for development.
 
 ### Note about extensions
 
@@ -213,7 +216,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
-- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 
@@ -225,10 +227,10 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Splunk
 
-Maintainer Emeritus:
+Maintainers Emeritus:
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-
+- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

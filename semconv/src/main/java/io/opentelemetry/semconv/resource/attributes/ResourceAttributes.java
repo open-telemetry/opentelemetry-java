@@ -16,7 +16,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.8.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.9.0";
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
@@ -222,6 +222,19 @@ public final class ResourceAttributes {
    * </ul>
    */
   public static final AttributeKey<String> DEVICE_MODEL_NAME = stringKey("device.model.name");
+
+  /**
+   * The name of the device manufacturer
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The Android OS provides this field via <a
+   *       href="https://developer.android.com/reference/android/os/Build#MANUFACTURER">Build</a>.
+   *       iOS apps SHOULD hardcode the value {@code Apple}.
+   * </ul>
+   */
+  public static final AttributeKey<String> DEVICE_MANUFACTURER = stringKey("device.manufacturer");
 
   /**
    * The name of the single function that this runtime instance executes.

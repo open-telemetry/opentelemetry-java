@@ -66,7 +66,6 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
           javaFile.packageName.replace(".", "/") /
           "${javaTypeName.simpleName()}.java"
 
-        logger.artifact(modulePath, javaFile)
         try {
           fs.createDirectories(filePath.parent!!)
           fs.write(filePath) {

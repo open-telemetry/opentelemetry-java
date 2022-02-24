@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -45,7 +46,8 @@ public class SynchronousMetricStorageTest {
       MetricDescriptor.create("name", "description", "unit");
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
-      Aggregation.lastValue().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.lastValue())
+          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;

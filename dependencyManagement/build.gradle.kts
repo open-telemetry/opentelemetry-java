@@ -21,7 +21,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.brave:brave-bom:5.13.7",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.8.2",
-  "org.testcontainers:testcontainers-bom:1.16.3"
+  "org.testcontainers:testcontainers-bom:1.16.3",
+  "org.yaml:snakeyaml:1.30"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -87,7 +88,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.5",
   "io.github.netmikey.logunit:logunit-jul:1.1.3",
   "io.jaegertracing:jaeger-client:1.8.0",
-  "io.opentelemetry.proto:opentelemetry-proto:0.11.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:0.13.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.9",
