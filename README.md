@@ -46,7 +46,7 @@ This project contains the following top level components:
 
 This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
 [`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
-the [`opentelemetry-alpha-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
+the [`opentelemetry-bom-alpha`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
 
 We would love to hear from the larger community: please provide feedback proactively.
 
