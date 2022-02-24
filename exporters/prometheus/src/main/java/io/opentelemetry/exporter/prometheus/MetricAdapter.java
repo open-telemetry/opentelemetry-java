@@ -98,7 +98,7 @@ final class MetricAdapter {
     return Collector.Type.UNKNOWN;
   }
 
-  static final Function<String, String> sanitizer = new LabelNameSanitizer();
+  static final Function<String, String> sanitizer = new NameSanitizer();
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(

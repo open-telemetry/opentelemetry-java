@@ -216,7 +216,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
-- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 
@@ -228,10 +227,10 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Splunk
 
-Maintainer Emeritus:
+Maintainers Emeritus:
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-
+- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

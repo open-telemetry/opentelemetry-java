@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -59,7 +60,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrument, ExemplarFilter.neverSample());
 
     AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     if (Aggregator.drop() == aggregator) {
@@ -95,7 +97,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableLongMeasurement> metricUpdater) {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrument, ExemplarFilter.neverSample());
     AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
     if (Aggregator.drop() == aggregator) {
       return empty();

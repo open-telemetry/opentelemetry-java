@@ -230,7 +230,13 @@ public abstract class Resource {
    * @since 1.1.0
    */
   public ResourceBuilder toBuilder() {
-    return builder().putAll(this);
+    ResourceBuilder resourceBuilder = builder().putAll(this);
+
+    if (this.getSchemaUrl() != null) {
+      resourceBuilder.setSchemaUrl(this.getSchemaUrl());
+    }
+
+    return resourceBuilder;
   }
 
   Resource() {}

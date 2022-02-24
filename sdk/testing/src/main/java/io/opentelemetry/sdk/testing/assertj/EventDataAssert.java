@@ -12,11 +12,12 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for {@link EventData}. */
 public final class EventDataAssert extends AbstractAssert<EventDataAssert, EventData> {
-  EventDataAssert(EventData actual) {
+  EventDataAssert(@Nullable EventData actual) {
     super(actual, EventDataAssert.class);
   }
 

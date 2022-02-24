@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
@@ -105,5 +106,36 @@ public class MeterSelectorTest {
 
     assertThat(schemaUrl.getSchemaUrlFilter().test("1.0")).isFalse();
     assertThat(schemaUrl.getSchemaUrlFilter().test("1.2")).isFalse();
+  }
+
+  @Test
+  void invalidArgs() {
+    assertThatThrownBy(() -> MeterSelector.builder().setNameFilter(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("nameFilter");
+    assertThatThrownBy(() -> MeterSelector.builder().setNamePattern(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("pattern");
+    assertThatThrownBy(() -> MeterSelector.builder().setName(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
+    assertThatThrownBy(() -> MeterSelector.builder().setVersionFilter(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("versionFilter");
+    assertThatThrownBy(() -> MeterSelector.builder().setVersionPattern(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("pattern");
+    assertThatThrownBy(() -> MeterSelector.builder().setVersion(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("version");
+    assertThatThrownBy(() -> MeterSelector.builder().setSchemaUrlFilter(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("schemaUrlFilter");
+    assertThatThrownBy(() -> MeterSelector.builder().setSchemaUrlPattern(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("pattern");
+    assertThatThrownBy(() -> MeterSelector.builder().setSchemaUrl(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("schemaUrl");
   }
 }
