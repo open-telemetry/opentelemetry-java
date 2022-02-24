@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -41,7 +42,8 @@ class DeltaMetricStorageTest {
     allCollectors.add(collector2);
     storage =
         new DeltaMetricStorage<>(
-            Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()),
+            ((AggregatorFactory) Aggregation.sum())
+                .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()),
             DESCRIPTOR);
   }
 

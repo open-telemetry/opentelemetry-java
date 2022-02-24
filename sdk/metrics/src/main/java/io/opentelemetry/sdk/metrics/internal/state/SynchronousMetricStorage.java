@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -35,7 +36,8 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       View view, InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     Aggregator<T> aggregator =
-        view.getAggregation().createAggregator(instrumentDescriptor, exemplarFilter);
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrumentDescriptor, exemplarFilter);
     // We won't be storing this metric.
     if (Aggregator.drop() == aggregator) {
       return empty();
