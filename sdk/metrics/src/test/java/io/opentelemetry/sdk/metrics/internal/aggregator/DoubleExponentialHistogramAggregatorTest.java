@@ -151,6 +151,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(bucketCounts.get(bucketCounts.size() - 1)).isEqualTo(1);
     assertThat(bucketCounts.stream().filter(i -> i == 0).count())
         .isEqualTo(bucketCounts.size() - 2);
+    assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(2);
 
     // With 320 buckets allowed, minimum scale is -3
     assertThat(acc.getScale()).isEqualTo(-3);
@@ -234,8 +235,8 @@ class DoubleExponentialHistogramAggregatorTest {
     // Note: This test relies on implementation details of ExponentialCounter, specifically it
     // assumes that an Array of all zeros is the same as an empty counter array for negative
     // buckets.
-    assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
-        .isEqualTo(getTestAccumulation(exemplars, 0, 1));
+    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
+    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 0, 1));
   }
 
   @Test
@@ -340,6 +341,7 @@ class DoubleExponentialHistogramAggregatorTest {
     ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
     assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(4);
     assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(320);
+    assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(n);
   }
 
   @Test
@@ -361,6 +363,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getSum()).isEqualTo(23.5);
     assertThat(buckets.getOffset()).isEqualTo(-1);
     assertThat(buckets.getBucketCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L, 0L, 1L));
+    assertThat(buckets.getTotalCount()).isEqualTo(5);
   }
 
   @Test
