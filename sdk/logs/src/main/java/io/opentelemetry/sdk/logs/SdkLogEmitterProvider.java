@@ -48,25 +48,26 @@ public final class SdkLogEmitterProvider implements Closeable {
   /**
    * Gets or creates a named log emitter instance.
    *
-   * @param instrumentationName the name of the instrumentation library
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a log emitter instance
    */
-  public LogEmitter get(String instrumentationName) {
-    return logEmitterBuilder(instrumentationName).build();
+  public LogEmitter get(String instrumentationScopeName) {
+    return logEmitterBuilder(instrumentationScopeName).build();
   }
 
   /**
    * Creates a {@link LogEmitterBuilder} instance.
    *
-   * @param instrumentationName the name of the instrumentation library
+   * @param instrumentationScopeName the name of the instrumentation scope
    * @return a log emitter builder instance
    */
-  public LogEmitterBuilder logEmitterBuilder(String instrumentationName) {
-    if (instrumentationName == null || instrumentationName.isEmpty()) {
-      LOGGER.fine("LogEmitter requested without instrumentation name.");
-      instrumentationName = DEFAULT_EMITTER_NAME;
+  public LogEmitterBuilder logEmitterBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
+      LOGGER.fine("LogEmitter requested without instrumentation scope name.");
+      instrumentationScopeName = DEFAULT_EMITTER_NAME;
     }
-    return new SdkLogEmitterBuilder(logEmitterComponentRegistry, instrumentationName);
+    return new SdkLogEmitterBuilder(logEmitterComponentRegistry, instrumentationScopeName);
   }
 
   /**

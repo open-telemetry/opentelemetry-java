@@ -23,10 +23,10 @@ public interface TracerBuilder {
   /**
    * Assign a version to the instrumentation scope that is using the resulting Tracer.
    *
-   * @param instrumentationVersion The version of the instrumentation scope.
+   * @param instrumentationScopeVersion The version of the instrumentation scope.
    * @return this
    */
-  TracerBuilder setInstrumentationVersion(String instrumentationVersion);
+  TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
    * Gets or creates a {@link Tracer} instance.

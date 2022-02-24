@@ -8,7 +8,7 @@ package io.opentelemetry.api.metrics;
 /** A {@link MeterProvider} that does nothing. */
 class DefaultMeterProvider implements MeterProvider {
   @Override
-  public MeterBuilder meterBuilder(String instrumentationName) {
+  public MeterBuilder meterBuilder(String instrumentationScopeName) {
     return BUILDER_INSTANCE;
   }
 
@@ -29,7 +29,7 @@ class DefaultMeterProvider implements MeterProvider {
     }
 
     @Override
-    public MeterBuilder setInstrumentationVersion(String instrumentationVersion) {
+    public MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
       return this;
     }
 

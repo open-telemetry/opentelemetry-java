@@ -65,13 +65,13 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   }
 
   @Override
-  public TracerBuilder tracerBuilder(@Nullable String instrumentationName) {
+  public TracerBuilder tracerBuilder(@Nullable String instrumentationScopeName) {
     // Per the spec, both null and empty are "invalid" and a default value should be used.
-    if (instrumentationName == null || instrumentationName.isEmpty()) {
-      logger.fine("Tracer requested without instrumentation name.");
-      instrumentationName = DEFAULT_TRACER_NAME;
+    if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
+      logger.fine("Tracer requested without instrumentation scope name.");
+      instrumentationScopeName = DEFAULT_TRACER_NAME;
     }
-    return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationName);
+    return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationScopeName);
   }
 
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */

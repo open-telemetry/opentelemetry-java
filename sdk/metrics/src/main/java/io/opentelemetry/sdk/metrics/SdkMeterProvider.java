@@ -88,15 +88,15 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   @Override
-  public MeterBuilder meterBuilder(String instrumentationName) {
+  public MeterBuilder meterBuilder(String instrumentationScopeName) {
     if (collectionInfoMap.isEmpty()) {
-      return MeterProvider.noop().meterBuilder(instrumentationName);
+      return MeterProvider.noop().meterBuilder(instrumentationScopeName);
     }
-    if (instrumentationName == null || instrumentationName.isEmpty()) {
-      LOGGER.fine("Meter requested without instrumentation name.");
-      instrumentationName = DEFAULT_METER_NAME;
+    if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
+      LOGGER.fine("Meter requested without instrumentation scope name.");
+      instrumentationScopeName = DEFAULT_METER_NAME;
     }
-    return new SdkMeterBuilder(registry, instrumentationName);
+    return new SdkMeterBuilder(registry, instrumentationScopeName);
   }
 
   /**
