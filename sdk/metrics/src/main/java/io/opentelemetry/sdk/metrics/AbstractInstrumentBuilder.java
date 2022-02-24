@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /** Helper to make implementing builders easier. */
-public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
+abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
