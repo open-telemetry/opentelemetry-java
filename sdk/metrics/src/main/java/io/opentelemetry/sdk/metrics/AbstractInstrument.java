@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import javax.annotation.Nullable;
 
-abstract class AbstractInstrument implements Instrument {
+abstract class AbstractInstrument {
 
   private final InstrumentDescriptor descriptor;
 
