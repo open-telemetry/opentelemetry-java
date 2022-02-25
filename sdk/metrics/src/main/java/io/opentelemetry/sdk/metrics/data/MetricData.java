@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -27,7 +28,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleGaugeData data) {
+      GaugeData<DoublePointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -49,7 +50,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      LongGaugeData data) {
+      GaugeData<LongPointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -231,11 +232,12 @@ public interface MetricData {
    * @return the {@code DoubleGaugeData} if type is {@link MetricDataType#DOUBLE_GAUGE}, otherwise a
    *     default empty data.
    */
-  default DoubleGaugeData getDoubleGaugeData() {
+  @SuppressWarnings("unchecked")
+  default GaugeData<DoublePointData> getDoubleGaugeData() {
     if (getType() == MetricDataType.DOUBLE_GAUGE) {
-      return (DoubleGaugeData) getData();
+      return (GaugeData<DoublePointData>) getData();
     }
-    return DoubleGaugeData.EMPTY;
+    return ImmutableGaugeData.empty();
   }
 
   /**
@@ -245,11 +247,12 @@ public interface MetricData {
    * @return the {@code LongGaugeData} if type is {@link MetricDataType#LONG_GAUGE}, otherwise a
    *     default empty data.
    */
-  default LongGaugeData getLongGaugeData() {
+  @SuppressWarnings("unchecked")
+  default GaugeData<LongPointData> getLongGaugeData() {
     if (getType() == MetricDataType.LONG_GAUGE) {
-      return (LongGaugeData) getData();
+      return (GaugeData<LongPointData>) getData();
     }
-    return LongGaugeData.EMPTY;
+    return ImmutableGaugeData.empty();
   }
 
   /**

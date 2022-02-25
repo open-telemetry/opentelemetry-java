@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -73,7 +73,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
-        DoubleGaugeData.create(
+        ImmutableGaugeData.create(
             MetricDataUtils.toDoublePointList(
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)

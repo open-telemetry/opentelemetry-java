@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
@@ -132,7 +134,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleGauge}.
    */
-  public DoubleGaugeAssert hasDoubleGauge() {
+  public GaugeAssert<DoublePointData> hasDoubleGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -142,7 +144,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.DOUBLE_GAUGE,
           actual.getType());
     }
-    return new DoubleGaugeAssert(actual.getDoubleGaugeData());
+    return new GaugeAssert<>(actual.getDoubleGaugeData());
   }
 
   /**
@@ -168,7 +170,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code LongGauge}.
    */
-  public LongGaugeDataAssert hasLongGauge() {
+  public GaugeAssert<LongPointData> hasLongGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -178,7 +180,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.LONG_GAUGE,
           actual.getType());
     }
-    return new LongGaugeDataAssert(actual.getLongGaugeData());
+    return new GaugeAssert<>(actual.getLongGaugeData());
   }
 
   /**

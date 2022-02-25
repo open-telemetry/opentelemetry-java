@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,7 +63,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleGaugeData.create(Collections.emptyList()));
+            ImmutableGaugeData.create(Collections.emptyList()));
     assertThat(metricData.getName()).isEqualTo("metric_name");
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
@@ -87,7 +88,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            LongGaugeData.create(Collections.singletonList(LONG_POINT)));
+            ImmutableGaugeData.create(Collections.singletonList(LONG_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
     metricData =
@@ -119,7 +120,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+            ImmutableGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     metricData =
@@ -231,7 +232,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+            ImmutableGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();

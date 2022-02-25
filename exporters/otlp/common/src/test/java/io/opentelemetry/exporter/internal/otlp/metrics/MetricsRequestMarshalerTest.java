@@ -42,7 +42,6 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -53,12 +52,12 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -614,7 +613,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    LongGaugeData.create(
+                    ImmutableGaugeData.create(
                         singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
@@ -645,7 +644,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleGaugeData.create(
+                    ImmutableGaugeData.create(
                         singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
