@@ -8,12 +8,15 @@ package io.opentelemetry.exporter.prometheus;
 import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -261,7 +264,7 @@ final class MetricAdapter {
       Collection<ExemplarData> exemplars, double min, double max) {
     ExemplarData result = null;
     for (ExemplarData e : exemplars) {
-      double value = e.getValueAsDouble();
+      double value = getExemplarValue(e);
       if (value <= max && value > min) {
         result = e;
       }
@@ -324,17 +327,24 @@ final class MetricAdapter {
 
   private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(
       ExemplarData exemplar) {
-    if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
+    SpanContext spanContext = exemplar.getSpanContext();
+    if (spanContext.isValid()) {
       return new io.prometheus.client.exemplars.Exemplar(
-          exemplar.getValueAsDouble(),
+          getExemplarValue(exemplar),
           // Convert to ms for prometheus, truncate nanosecond precision.
           TimeUnit.NANOSECONDS.toMillis(exemplar.getEpochNanos()),
           "trace_id",
-          exemplar.getTraceId(),
+          spanContext.getTraceId(),
           "span_id",
-          exemplar.getSpanId());
+          spanContext.getSpanId());
     }
-    return new io.prometheus.client.exemplars.Exemplar(exemplar.getValueAsDouble());
+    return new io.prometheus.client.exemplars.Exemplar(getExemplarValue(exemplar));
+  }
+
+  private static double getExemplarValue(ExemplarData exemplar) {
+    return exemplar instanceof DoubleExemplarData
+        ? ((DoubleExemplarData) exemplar).getValue()
+        : (double) ((LongExemplarData) exemplar).getValue();
   }
 
   private MetricAdapter() {}

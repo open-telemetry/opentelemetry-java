@@ -23,10 +23,13 @@ package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
@@ -414,19 +417,18 @@ abstract class Serializer {
         Writer writer, Collection<ExemplarData> exemplars, double minExemplar, double maxExemplar)
         throws IOException {
       for (ExemplarData exemplar : exemplars) {
-        double value = exemplar.getValueAsDouble();
+        double value = getExemplarValue(exemplar);
         if (value > minExemplar && value <= maxExemplar) {
           writer.write(" # {");
-          String traceId = exemplar.getTraceId();
-          String spanId = exemplar.getSpanId();
-          if (traceId != null && spanId != null) {
+          SpanContext spanContext = exemplar.getSpanContext();
+          if (spanContext.isValid()) {
             // NB: Output sorted to match prometheus client library even though it shouldn't matter.
             // OTel generally outputs in trace_id span_id order though so we can consider breaking
             // from reference implementation if it makes sense.
             writer.write("span_id=\"");
-            writer.write(spanId);
+            writer.write(spanContext.getSpanId());
             writer.write("\",trace_id=\"");
-            writer.write(traceId);
+            writer.write(spanContext.getTraceId());
             writer.write('"');
           }
           writer.write("} ");
@@ -443,5 +445,11 @@ abstract class Serializer {
     void writeEof(Writer writer) throws IOException {
       writer.write("# EOF\n");
     }
+  }
+
+  private static double getExemplarValue(ExemplarData exemplar) {
+    return exemplar instanceof DoubleExemplarData
+        ? ((DoubleExemplarData) exemplar).getValue()
+        : (double) ((LongExemplarData) exemplar).getValue();
   }
 }

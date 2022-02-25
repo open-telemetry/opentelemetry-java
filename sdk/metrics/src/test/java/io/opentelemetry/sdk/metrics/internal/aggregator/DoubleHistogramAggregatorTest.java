@@ -9,6 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -65,7 +68,16 @@ class DoubleHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        DoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleHistogramAggregator aggregator =
@@ -103,11 +115,28 @@ class DoubleHistogramAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        DoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+            DoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     HistogramAccumulation previousAccumulation =
         HistogramAccumulation.create(2, new long[] {1, 1, 0}, previousExemplars);
     HistogramAccumulation nextAccumulation =
@@ -120,11 +149,28 @@ class DoubleHistogramAggregatorTest {
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        DoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+            DoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     HistogramAccumulation previousAccumulation =
         HistogramAccumulation.create(2, new long[] {1, 1, 2}, previousExemplars);
     HistogramAccumulation nextAccumulation =
@@ -159,7 +205,16 @@ class DoubleHistogramAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        DoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     HistogramAccumulation accumulation =
         HistogramAccumulation.create(
             2, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));

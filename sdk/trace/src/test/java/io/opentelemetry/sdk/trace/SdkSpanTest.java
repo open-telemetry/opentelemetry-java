@@ -535,10 +535,10 @@ class SdkSpanTest {
             .put(doubleArrayKey("ArrayDoubleKey"), Arrays.asList(0.1, 2.3, 4.5, 6.7, 8.9))
             .put(booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true))
             // These should be dropped
-            .put(stringArrayKey("NullArrayStringKey"), null)
-            .put(longArrayKey("NullArrayLongKey"), null)
-            .put(doubleArrayKey("NullArrayDoubleKey"), null)
-            .put(booleanArrayKey("NullArrayBooleanKey"), null)
+            .put(stringArrayKey("NullArrayStringKey"), (String[]) null)
+            .put(longArrayKey("NullArrayLongKey"), (Long[]) null)
+            .put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null)
+            .put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null)
             // These should be maintained
             .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
             .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))

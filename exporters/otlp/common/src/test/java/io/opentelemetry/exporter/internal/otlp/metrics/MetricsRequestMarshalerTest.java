@@ -18,6 +18,9 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
@@ -39,7 +42,6 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -50,12 +52,12 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -92,8 +94,11 @@ class MetricsRequestMarshalerTest {
                             LongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -131,8 +136,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -174,8 +182,11 @@ class MetricsRequestMarshalerTest {
                             LongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -342,8 +353,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
             HistogramDataPoint.newBuilder()
@@ -399,8 +413,11 @@ class MetricsRequestMarshalerTest {
                             DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
             ExponentialHistogramDataPoint.newBuilder()
@@ -596,7 +613,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    LongGaugeData.create(
+                    ImmutableGaugeData.create(
                         singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
@@ -627,7 +644,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleGaugeData.create(
+                    ImmutableGaugeData.create(
                         singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()

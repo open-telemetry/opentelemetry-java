@@ -8,14 +8,17 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -64,10 +67,28 @@ class LongLastValueAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = LongExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        LongExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
-        Collections.singletonList(LongExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+        Collections.singletonList(
+            LongExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     LongAccumulation result =
         aggregator.merge(
             LongAccumulation.create(1, previousExemplars), LongAccumulation.create(2, exemplars));
@@ -99,7 +120,7 @@ class LongLastValueAggregatorTest {
                 "name",
                 "description",
                 "unit",
-                LongGaugeData.create(
+                ImmutableGaugeData.create(
                     Collections.singletonList(
                         LongPointData.create(2, 100, Attributes.empty(), 10)))));
   }

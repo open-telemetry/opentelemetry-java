@@ -9,9 +9,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -70,7 +70,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
-        LongGaugeData.create(
+        ImmutableGaugeData.create(
             MetricDataUtils.toLongPointList(
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)

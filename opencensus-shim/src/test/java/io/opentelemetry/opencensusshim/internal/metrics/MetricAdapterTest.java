@@ -6,7 +6,6 @@
 package io.opentelemetry.opencensusshim.internal.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opencensus.common.Timestamp;
 import io.opencensus.metrics.LabelKey;
@@ -22,6 +21,9 @@ import io.opencensus.metrics.export.TimeSeries;
 import io.opencensus.metrics.export.Value;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -193,7 +195,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
+            "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
@@ -245,13 +247,16 @@ class MetricAdapterTest {
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
                         DoubleExemplarData.create(
-                            Attributes.empty(),
-                            2000000,
-                            /* spanId= */ null,
-                            /* traceId= */ null,
-                            1.0),
+                            Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
                         DoubleExemplarData.create(
-                            Attributes.empty(), 1000000, "5678", "1234", 4.0)));
+                            Attributes.empty(),
+                            1000000,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            4.0)));
   }
 
   @Test
@@ -306,7 +311,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
+            "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
@@ -357,12 +362,15 @@ class MetricAdapterTest {
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
                         DoubleExemplarData.create(
-                            Attributes.empty(),
-                            2000000,
-                            /* spanId= */ null,
-                            /* traceId= */ null,
-                            1.0),
+                            Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
                         DoubleExemplarData.create(
-                            Attributes.empty(), 1000000, "5678", "1234", 4.0)));
+                            Attributes.empty(),
+                            1000000,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            4.0)));
   }
 }

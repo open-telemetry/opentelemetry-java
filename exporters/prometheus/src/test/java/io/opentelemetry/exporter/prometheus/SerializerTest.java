@@ -9,9 +9,11 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -19,11 +21,11 @@ import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -149,7 +151,7 @@ class SerializerTest {
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
@@ -160,7 +162,7 @@ class SerializerTest {
           "instrument.name",
           "description",
           "1",
-          LongGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
                   LongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
@@ -203,8 +205,11 @@ class SerializerTest {
                           LongExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
-                              /* spanId= */ "span_id",
-                              /* traceId= */ "trace_id",
+                              SpanContext.create(
+                                  "00000000000000000000000000000001",
+                                  "0000000000000002",
+                                  TraceFlags.getDefault(),
+                                  TraceState.getDefault()),
                               /* value= */ 4))))));
   private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
       MetricData.createDoubleGauge(
@@ -213,7 +218,7 @@ class SerializerTest {
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, Attributes.empty(), 7))));
@@ -224,7 +229,7 @@ class SerializerTest {
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
                   DoublePointData.create(
                       1633947011000000000L,
@@ -363,7 +368,7 @@ class SerializerTest {
                 + "# HELP instrument_name description\n"
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"span_id\",trace_id=\"trace_id\"} 4.0 0.001\n"
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "# TYPE instrument_name gauge\n"
                 + "# HELP instrument_name description\n"
                 + "instrument_name 7.0 1633950672.000\n"
