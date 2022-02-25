@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class InstrumentationScopeUtil {
+public final class InstrumentationScopeUtil {
 
   /** Convert to {@link InstrumentationLibraryInfo}. */
   public static InstrumentationLibraryInfo toInstrumentationLibraryInfo(

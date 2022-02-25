@@ -16,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Instrumentation scope is a logical unit of the application code with which emitted telemetry
  * is associated. The most common approach is to use the instrumentation library as the scope,
- * however other scopes are also common, e.g. a module, a package, or a class can be chosen as the
+ * however other scopes are also common, e.g. a module, a package, or a class may be chosen as the
  * instrumentation scope.
  */
 @AutoValue
