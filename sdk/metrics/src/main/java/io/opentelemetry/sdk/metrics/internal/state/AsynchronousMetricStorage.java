@@ -26,7 +26,9 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -38,104 +40,61 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AsynchronousMetricStorage<T> implements MetricStorage {
+public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
-  private final AsyncAccumulator<T> asyncAccumulator;
+  private final List<Consumer<O>> callbacks = new CopyOnWriteArrayList<>();
+  private final MetricDescriptor metricDescriptor;
   private final TemporalMetricStorage<T> storage;
-  private final Runnable metricUpdater;
-
-  /** Constructs asynchronous metric storage which stores nothing. */
-  public static MetricStorage empty() {
-    return EmptyMetricStorage.INSTANCE;
-  }
-
-  /** Constructs storage for {@code double} valued instruments. */
-  public static <T> MetricStorage doubleAsynchronousAccumulator(
-      View view,
-      InstrumentDescriptor instrument,
-      Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
-    Aggregator<T> aggregator =
-        ((AggregatorFactory) view.getAggregation())
-            .createAggregator(instrument, ExemplarFilter.neverSample());
-
-    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    if (Aggregator.drop() == aggregator) {
-      return empty();
-    }
-    AttributesProcessor attributesProcessor = view.getAttributesProcessor();
-    // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
-    ObservableDoubleMeasurement result =
-        new ObservableDoubleMeasurement() {
-          @Override
-          public void record(double value, Attributes attributes) {
-            T accumulation =
-                aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
-            if (accumulation != null) {
-              measurementAccumulator.record(
-                  attributesProcessor.process(attributes, Context.current()), accumulation);
-            }
-          }
-
-          @Override
-          public void record(double value) {
-            record(value, Attributes.empty());
-          }
-        };
-    return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
-  }
-
-  /** Constructs storage for {@code long} valued instruments. */
-  public static <T> MetricStorage longAsynchronousAccumulator(
-      View view,
-      InstrumentDescriptor instrument,
-      Consumer<ObservableLongMeasurement> metricUpdater) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
-    Aggregator<T> aggregator =
-        ((AggregatorFactory) view.getAggregation())
-            .createAggregator(instrument, ExemplarFilter.neverSample());
-    AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>(instrument);
-    if (Aggregator.drop() == aggregator) {
-      return empty();
-    }
-    AttributesProcessor attributesProcessor = view.getAttributesProcessor();
-    // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
-    ObservableLongMeasurement result =
-        new ObservableLongMeasurement() {
-
-          @Override
-          public void record(long value, Attributes attributes) {
-            T accumulation =
-                aggregator.accumulateLongMeasurement(value, attributes, Context.current());
-            if (accumulation != null) {
-              measurementAccumulator.record(
-                  attributesProcessor.process(attributes, Context.current()), accumulation);
-            }
-          }
-
-          @Override
-          public void record(long value) {
-            record(value, Attributes.empty());
-          }
-        };
-    return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
-  }
+  private final AsyncAccumulator<T> accumulator;
+  private final O measurement;
 
   private AsynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AsyncAccumulator<T> asyncAccumulator,
-      Runnable metricUpdater) {
+      AsyncAccumulator<T> accumulator,
+      O measurement) {
     this.metricDescriptor = metricDescriptor;
-    this.asyncAccumulator = asyncAccumulator;
-    this.metricUpdater = metricUpdater;
     this.storage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
+    this.accumulator = accumulator;
+    this.measurement = measurement;
+  }
+
+  /** Create an asynchronous storage instance for double measurements. */
+  public static <T>
+      AsynchronousMetricStorage<?, ObservableDoubleMeasurement> createDoubleAsyncStorage(
+          View view, InstrumentDescriptor instrument) {
+    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    // TODO: optimize when aggregator is Aggregator.drop()
+    Aggregator<T> aggregator =
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrument, ExemplarFilter.neverSample());
+    AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
+    ObservableDoubleMeasurement measurement =
+        new ObservableDoubleMeasurementImpl<>(
+            aggregator, accumulator, view.getAttributesProcessor());
+    return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
+  }
+
+  /** Create an asynchronous storage instance for long measurements. */
+  public static <T> AsynchronousMetricStorage<?, ObservableLongMeasurement> createLongAsyncStorage(
+      View view, InstrumentDescriptor instrument) {
+    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    // TODO: optimize when aggregator is Aggregator.drop()
+    Aggregator<T> aggregator =
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrument, ExemplarFilter.neverSample());
+    AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
+    ObservableLongMeasurement measurement =
+        new ObservableLongMeasurementImpl<>(aggregator, accumulator, view.getAttributesProcessor());
+    return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
+  }
+
+  @Override
+  public MetricDescriptor getMetricDescriptor() {
+    return metricDescriptor;
   }
 
   @Override
@@ -151,7 +110,14 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     collectLock.lock();
     try {
       try {
-        metricUpdater.run();
+        boolean empty = true;
+        for (Consumer<O> callback : callbacks) {
+          empty = false;
+          callback.accept(measurement);
+        }
+        if (empty) {
+          return EmptyMetricData.getInstance();
+        }
       } catch (Throwable e) {
         propagateIfFatal(e);
         throttlingLogger.log(
@@ -168,7 +134,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           instrumentationLibraryInfo,
           getMetricDescriptor(),
           temporality,
-          asyncAccumulator.collectAndReset(),
+          accumulator.collectAndReset(),
           startEpochNanos,
           epochNanos);
     } finally {
@@ -176,9 +142,17 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     }
   }
 
-  @Override
-  public MetricDescriptor getMetricDescriptor() {
-    return metricDescriptor;
+  /** Add a callback to the storage. */
+  public void addCallback(Consumer<O> callback) {
+    this.callbacks.add(callback);
+  }
+
+  /**
+   * Remove the callback from the storage. Called when {@link AutoCloseable#close()} is invoked on
+   * observable instruments.
+   */
+  public void removeCallback(Consumer<O> callback) {
+    this.callbacks.remove(callback);
   }
 
   /** Helper class to record async measurements on demand. */
@@ -192,7 +166,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       this.instrument = instrument;
     }
 
-    public void record(Attributes attributes, T accumulation) {
+    void record(Attributes attributes, T accumulation) {
       // Check we're under the max allowed accumulations
       if (currentAccumulation.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
         throttlingLogger.log(
@@ -218,10 +192,70 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       currentAccumulation.put(attributes, accumulation);
     }
 
-    public Map<Attributes, T> collectAndReset() {
+    Map<Attributes, T> collectAndReset() {
       Map<Attributes, T> result = currentAccumulation;
       currentAccumulation = new HashMap<>();
       return result;
+    }
+  }
+
+  private static class ObservableLongMeasurementImpl<T> implements ObservableLongMeasurement {
+
+    private final Aggregator<T> aggregator;
+    private final AsyncAccumulator<T> asyncAccumulator;
+    private final AttributesProcessor attributesProcessor;
+
+    private ObservableLongMeasurementImpl(
+        Aggregator<T> aggregator,
+        AsyncAccumulator<T> asyncAccumulator,
+        AttributesProcessor attributesProcessor) {
+      this.aggregator = aggregator;
+      this.asyncAccumulator = asyncAccumulator;
+      this.attributesProcessor = attributesProcessor;
+    }
+
+    @Override
+    public void record(long value) {
+      record(value, Attributes.empty());
+    }
+
+    @Override
+    public void record(long value, Attributes attributes) {
+      T accumulation = aggregator.accumulateLongMeasurement(value, attributes, Context.current());
+      if (accumulation != null) {
+        asyncAccumulator.record(
+            attributesProcessor.process(attributes, Context.current()), accumulation);
+      }
+    }
+  }
+
+  private static class ObservableDoubleMeasurementImpl<T> implements ObservableDoubleMeasurement {
+
+    private final Aggregator<T> aggregator;
+    private final AsyncAccumulator<T> asyncAccumulator;
+    private final AttributesProcessor attributesProcessor;
+
+    private ObservableDoubleMeasurementImpl(
+        Aggregator<T> aggregator,
+        AsyncAccumulator<T> asyncAccumulator,
+        AttributesProcessor attributesProcessor) {
+      this.aggregator = aggregator;
+      this.asyncAccumulator = asyncAccumulator;
+      this.attributesProcessor = attributesProcessor;
+    }
+
+    @Override
+    public void record(double value) {
+      record(value, Attributes.empty());
+    }
+
+    @Override
+    public void record(double value, Attributes attributes) {
+      T accumulation = aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
+      if (accumulation != null) {
+        asyncAccumulator.record(
+            attributesProcessor.process(attributes, Context.current()), accumulation);
+      }
     }
   }
 }

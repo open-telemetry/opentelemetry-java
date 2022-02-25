@@ -69,13 +69,6 @@ public class MetricStorageRegistry {
           descriptor,
           "Metric with same name and different descriptor already created.");
     }
-    // Descriptors are compatible, but can't register async instruments multiple times.
-    if (descriptor.isAsync()) {
-      throw new DuplicateMetricStorageException(
-          oldOrNewStorage.getMetricDescriptor(),
-          descriptor,
-          "Async metric with same name has already been created.");
-    }
     // Metric already existed, and is compatible with new storage.
     return (I) oldOrNewStorage;
   }
