@@ -29,6 +29,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   private ExponentialCounter counts;
   private int scale;
   private double scaleFactor;
+  private long totalCount;
 
   DoubleExponentialHistogramBuckets(
       int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
@@ -36,6 +37,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.counts = counterFactory.newCounter(maxBuckets);
     this.scale = scale;
     this.scaleFactor = computeScaleFactor(scale);
+    this.totalCount = 0;
   }
 
   // For copying
@@ -44,6 +46,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.counts = counterFactory.copy(buckets.counts);
     this.scale = buckets.scale;
     this.scaleFactor = buckets.scaleFactor;
+    this.totalCount = buckets.totalCount;
   }
 
   /** Returns a copy of this bucket. */
@@ -53,6 +56,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   /** Resets all counters in this bucket set to zero, but preserves scale. */
   public void clear() {
+    this.totalCount = 0;
     this.counts.clear();
   }
 
@@ -62,7 +66,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
     }
     int index = valueToIndex(value);
-    return this.counts.increment(index, 1);
+    boolean recordingSuccessful = this.counts.increment(index, 1);
+    if (recordingSuccessful) {
+      totalCount++;
+    }
+    return recordingSuccessful;
   }
 
   @Override
@@ -92,13 +100,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   @Override
   public long getTotalCount() {
-    if (counts.isEmpty()) {
-      return 0;
-    }
-    long totalCount = 0;
-    for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
-      totalCount += counts.get(i);
-    }
     return totalCount;
   }
 
@@ -219,6 +220,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
         throw new IllegalStateException("Failed to merge exponential histogram buckets.");
       }
     }
+    this.totalCount += sign * other.totalCount;
   }
 
   int getScale() {
@@ -306,7 +308,20 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * </ul>
    */
   private boolean sameBucketCounts(DoubleExponentialHistogramBuckets other) {
+    if (this.totalCount != other.totalCount) {
+      return false;
+    }
     int min = Math.min(this.counts.getIndexStart(), other.counts.getIndexStart());
+
+    // This check is so we avoid iterating from Integer.MIN_VALUE.
+    // In this case, we can assume that those buckets are empty.
+    // We start iterating from the other bucket index instead.
+    // They still may be equal as it is possible for another set of buckets
+    // to be empty but have a higher start index.
+    if (min == Integer.MIN_VALUE) {
+      min = Math.max(this.counts.getIndexStart(), other.counts.getIndexStart());
+    }
+
     int max = Math.max(this.counts.getIndexEnd(), other.counts.getIndexEnd());
     for (int idx = min; idx <= max; idx++) {
       if (this.counts.get(idx) != other.counts.get(idx)) {
