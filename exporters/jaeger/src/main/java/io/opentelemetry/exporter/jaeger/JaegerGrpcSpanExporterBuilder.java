@@ -97,11 +97,11 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the client key and chain to use for verifying servers when mTLS is enabled.
-   * The {@code byte[][]} should contain PKCS8 private key and X.509 certificate chain in PEM
-   * format.
+   * Sets the client key and chain to use for verifying servers when mTLS is enabled. The {@code
+   * byte[][]} should contain PKCS8 private key and X.509 certificate chain in PEM format.
    */
-  public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+  public JaegerGrpcSpanExporterBuilder setClientTls(
+      byte[] privateKeyPem, byte[] privateKeyChainPem) {
     delegate.setClientTls(privateKeyPem, privateKeyChainPem);
     return this;
   }

@@ -94,14 +94,14 @@ final class OtlpConfigUtil {
       setTimeout.accept(timeout);
     }
 
-    byte[] certificateBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "certificate");
-    if (certificateBytes!=null) {
+    byte[] certificateBytes = readFileBytes(config, "otel.exporter.otlp", dataType, "certificate");
+    if (certificateBytes != null) {
       setTrustedCertificates.accept(certificateBytes);
     }
 
-    byte[] clientKeyBytes = readPemByConfig(config, "otel.exporter.otlp", dataType, "client.key");
-    byte[] clientKeyChainBytes = readPemByConfig(config, "otel.exporter.otlp", dataType,
-        "client.certificate");
+    byte[] clientKeyBytes = readFileBytes(config, "otel.exporter.otlp", dataType, "client.key");
+    byte[] clientKeyChainBytes =
+        readFileBytes(config, "otel.exporter.otlp", dataType, "client.certificate");
 
     if (clientKeyBytes != null && clientKeyChainBytes == null) {
       throw new ConfigurationException("Client key provided but certification chain is missing");
@@ -171,7 +171,8 @@ final class OtlpConfigUtil {
     return endpointUrl;
   }
 
-  private static byte[] readPemByConfig(ConfigProperties config, String prefix, String dataType, String suffix ) {
+  private static byte[] readFileBytes(
+      ConfigProperties config, String prefix, String dataType, String suffix) {
     String propertyToRead = prefix + "." + dataType + "." + suffix;
     String filePath = config.getString(propertyToRead);
     if (filePath == null) {
@@ -181,15 +182,15 @@ final class OtlpConfigUtil {
     if (filePath != null) {
       Path path = Paths.get(filePath);
       if (!Files.exists(path)) {
-        throw new ConfigurationException("Invalid file: " + path + " (configured in property: " + propertyToRead +")");
+        throw new ConfigurationException(
+            "Invalid file: " + path + " (configured in property: " + propertyToRead + ")");
       }
-      byte[] fileBytes;
       try {
-        fileBytes = Files.readAllBytes(path);
+        return Files.readAllBytes(path);
       } catch (IOException e) {
-        throw new ConfigurationException("Error reading content of file (" + path + ") configured in " + propertyToRead, e);
+        throw new ConfigurationException(
+            "Error reading content of file (" + path + ") configured in " + propertyToRead, e);
       }
-      return fileBytes;
     } else {
       return null;
     }

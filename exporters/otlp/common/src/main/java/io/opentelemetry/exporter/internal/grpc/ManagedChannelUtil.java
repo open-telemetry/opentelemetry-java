@@ -45,15 +45,17 @@ public final class ManagedChannelUtil {
    * @throws SSLException if error occur processing the certificates
    */
   public static void setClientKeysAndTrustedCertificatesPem(
-      ManagedChannelBuilder<?> managedChannelBuilder, @Nullable byte[] privateKeyPem,
-      @Nullable byte[] privateKeyChainPem, byte[] trustedCertificatesPem)
+      ManagedChannelBuilder<?> managedChannelBuilder,
+      @Nullable byte[] privateKeyPem,
+      @Nullable byte[] privateKeyChainPem,
+      byte[] trustedCertificatesPem)
       throws SSLException {
     requireNonNull(managedChannelBuilder, "managedChannelBuilder");
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
 
     X509TrustManager tmf = TlsUtil.trustManager(trustedCertificatesPem);
     X509KeyManager kmf = null;
-    if (privateKeyPem != null && privateKeyChainPem!=null) {
+    if (privateKeyPem != null && privateKeyChainPem != null) {
       kmf = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
     }
 
@@ -61,11 +63,8 @@ public final class ManagedChannelUtil {
     // accordingly.
     if (managedChannelBuilder.getClass().getName().equals("io.grpc.netty.NettyChannelBuilder")) {
       NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
-      nettyBuilder.sslContext(GrpcSslContexts.forClient()
-          .keyManager(kmf)
-          .trustManager(tmf)
-          .build()
-      );
+      nettyBuilder.sslContext(
+          GrpcSslContexts.forClient().keyManager(kmf).trustManager(tmf).build());
     } else if (managedChannelBuilder
         .getClass()
         .getName()
@@ -76,8 +75,7 @@ public final class ManagedChannelUtil {
           io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
               .trustManager(tmf)
               .keyManager(kmf)
-              .build()
-      );
+              .build());
     } else if (managedChannelBuilder
         .getClass()
         .getName()

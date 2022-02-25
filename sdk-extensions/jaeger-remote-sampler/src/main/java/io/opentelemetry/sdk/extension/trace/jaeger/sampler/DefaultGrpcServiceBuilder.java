@@ -108,8 +108,8 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   }
 
   @Override
-  public GrpcServiceBuilder<ReqT, ResT> setClientTls(byte[] privateKeyPem,
-      byte[] privateKeyChainPem) {
+  public GrpcServiceBuilder<ReqT, ResT> setClientTls(
+      byte[] privateKeyPem, byte[] privateKeyChainPem) {
     this.privateKeyPem = privateKeyPem;
     this.privateKeyChainPem = privateKeyChainPem;
     return this;

@@ -134,10 +134,11 @@ final class OkHttpGrpcServiceBuilder<
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
         X509KeyManager keyManager = null;
-        if (clientKeysPem!=null) {
-        	keyManager = TlsUtil.keyManager(clientKeysPem);
+        if (clientKeysPem != null) {
+          keyManager = TlsUtil.keyManager(clientKeysPem);
         }
-        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
+        clientBuilder.sslSocketFactory(
+            TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificates, are they valid X.509 in PEM format?", e);

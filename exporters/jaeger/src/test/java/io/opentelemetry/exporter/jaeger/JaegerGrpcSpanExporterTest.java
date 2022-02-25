@@ -288,8 +288,6 @@ class JaegerGrpcSpanExporterTest {
     return tags.stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
   }
 
-  @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
   void validTrustedConfig() {
     assertThatCode(
             () ->
@@ -298,14 +296,13 @@ class JaegerGrpcSpanExporterTest {
         .doesNotThrowAnyException();
   }
 
-  @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
   void validClientKeyConfig() {
     assertThatCode(
-        () ->
-            JaegerGrpcSpanExporter.builder()
-                .setClientTls("foobar".getBytes(StandardCharsets.UTF_8),
-                    "foobar".getBytes(StandardCharsets.UTF_8)))
+            () ->
+                JaegerGrpcSpanExporter.builder()
+                    .setClientTls(
+                        "foobar".getBytes(StandardCharsets.UTF_8),
+                        "foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
   }
 

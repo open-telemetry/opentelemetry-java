@@ -51,9 +51,8 @@ public final class TlsUtil {
   private TlsUtil() {}
 
   /** Returns a {@link SSLSocketFactory} configured to use the given key and trust manager. */
-  public static SSLSocketFactory sslSocketFactory(@Nullable KeyManager keyManager,
-      TrustManager trustManager)
-      throws SSLException {
+  public static SSLSocketFactory sslSocketFactory(
+      @Nullable KeyManager keyManager, TrustManager trustManager) throws SSLException {
 
     SSLContext sslContext;
     try {
@@ -72,7 +71,12 @@ public final class TlsUtil {
     return sslContext.getSocketFactory();
   }
 
-  public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] privateKeyChainPem) throws SSLException {
+  /**
+   * Creates {@link KeyManager} initiaded by keystore containing single private key with matching
+   * certificate chain.
+   */
+  public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] privateKeyChainPem)
+      throws SSLException {
     requireNonNull(privateKeyPem, "privateKeyPem");
     requireNonNull(privateKeyChainPem, "privateKeyChainPem");
     try {
@@ -91,13 +95,18 @@ public final class TlsUtil {
         chain.add(cf.generateCertificate(is));
       }
 
-      ks.setKeyEntry("trusted", key, "".toCharArray(), chain.toArray(new Certificate[]{}));
+      ks.setKeyEntry("trusted", key, "".toCharArray(), chain.toArray(new Certificate[] {}));
 
       KeyManagerFactory kmf =
           KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
       kmf.init(ks, "".toCharArray());
       return (X509KeyManager) kmf.getKeyManagers()[0];
-    } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException | UnrecoverableKeyException | InvalidKeySpecException e) {
+    } catch (CertificateException
+        | KeyStoreException
+        | IOException
+        | NoSuchAlgorithmException
+        | UnrecoverableKeyException
+        | InvalidKeySpecException e) {
       throw new SSLException("Could not build KeyManagerFactory from clientKeysPem.", e);
     }
   }
@@ -127,29 +136,33 @@ public final class TlsUtil {
     }
   }
 
-
   /**
    * Reads pem file with private key and certification chain for the key.
+   *
    * @param filePath path to pem file containing private key with chain
    * @return Array of bytes where first item (indexed 0) is private key all others are for chain
    * @throws IOException when there is problem reading provided file
    */
   public static byte[] loadPemFile(String filePath) throws IOException {
-    BufferedReader bufferedReader = Files.newBufferedReader(new File(filePath).toPath(), UTF_8);
-    String line = bufferedReader.readLine();
-    while (line != null && !line.startsWith("-----BEGIN ")) {
-      line = bufferedReader.readLine();
-    }
-    line = bufferedReader.readLine();
-    if (line != null) {
-      StringBuilder buf = new StringBuilder();
-      while (!line.startsWith("-----END ")) {
-        buf.append(line);
+    try (BufferedReader bufferedReader =
+        Files.newBufferedReader(new File(filePath).toPath(), UTF_8)) {
+      String line = bufferedReader.readLine();
+      while (line != null && !line.startsWith("-----BEGIN ")) {
         line = bufferedReader.readLine();
       }
-      return Base64.getDecoder().decode(buf.toString());
+      line = bufferedReader.readLine();
+      if (line != null) {
+        StringBuilder buf = new StringBuilder();
+        while (!line.startsWith("-----END ")) {
+          buf.append(line);
+          line = bufferedReader.readLine();
+        }
+        if (line == null) {
+          throw new IllegalStateException("End block not found");
+        }
+        return Base64.getDecoder().decode(buf.toString());
+      }
+      throw new IllegalStateException("Start block not found");
     }
-    throw new IllegalStateException("Start/end blocks not found");
   }
-
 }

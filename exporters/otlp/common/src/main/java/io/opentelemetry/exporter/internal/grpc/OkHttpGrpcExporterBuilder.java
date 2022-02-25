@@ -131,7 +131,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
         if (privateKeyPem != null && privateKeyChainPem != null) {
           keyManager = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
         }
-        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
+        clientBuilder.sslSocketFactory(
+            TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificates, are they valid X.509 in PEM format?", e);
