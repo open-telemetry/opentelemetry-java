@@ -6,9 +6,10 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SumData;
 
 // Four types we use are same in prometheus and openmetrics format
 enum PrometheusType {
@@ -29,14 +30,14 @@ enum PrometheusType {
       case DOUBLE_GAUGE:
         return GAUGE;
       case LONG_SUM:
-        LongSumData longSumData = metric.getLongSumData();
+        SumData<LongPointData> longSumData = metric.getLongSumData();
         if (longSumData.isMonotonic()
             && longSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return COUNTER;
         }
         return GAUGE;
       case DOUBLE_SUM:
-        DoubleSumData doubleSumData = metric.getDoubleSumData();
+        SumData<DoublePointData> doubleSumData = metric.getDoubleSumData();
         if (doubleSumData.isMonotonic()
             && doubleSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return COUNTER;
