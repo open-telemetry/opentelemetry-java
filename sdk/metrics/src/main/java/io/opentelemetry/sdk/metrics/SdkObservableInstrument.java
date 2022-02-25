@@ -44,11 +44,11 @@ class SdkObservableInstrument<O>
 
   @Override
   public void close() {
-    if (removed.compareAndSet(false, true)) {
-      storages.forEach(storage -> storage.removeCallback(callback));
+    if (!removed.compareAndSet(false, true)) {
+      throttlingLogger.log(
+          Level.WARNING, "Instrument " + instrumentName + " has called close() multiple times.");
       return;
     }
-    throttlingLogger.log(
-        Level.WARNING, "Instrument " + instrumentName + " has called close() multiple times.");
+    storages.forEach(storage -> storage.removeCallback(callback));
   }
 }
