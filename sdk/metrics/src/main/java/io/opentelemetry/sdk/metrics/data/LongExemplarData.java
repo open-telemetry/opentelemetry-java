@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import javax.annotation.concurrent.Immutable;
 
 /** An {@link ExemplarData} with {@code long} measurements. */
@@ -20,18 +21,12 @@ public abstract class LongExemplarData implements ExemplarData {
    * @param filteredAttributes The set of {@link Attributes} not already associated with the {@link
    *     PointData}.
    * @param recordTimeNanos The time when the sample qas recorded in nanoseconds.
-   * @param spanId (optional) The associated SpanId.
-   * @param traceId (optional) The associated TraceId.
+   * @param spanContext The associated span context.
    * @param value The value recorded.
    */
   public static LongExemplarData create(
-      Attributes filteredAttributes,
-      long recordTimeNanos,
-      String spanId,
-      String traceId,
-      long value) {
-    return new AutoValue_LongExemplarData(
-        filteredAttributes, recordTimeNanos, spanId, traceId, value);
+      Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, long value) {
+    return new AutoValue_LongExemplarData(filteredAttributes, recordTimeNanos, spanContext, value);
   }
 
   LongExemplarData() {}
@@ -40,6 +35,7 @@ public abstract class LongExemplarData implements ExemplarData {
   public abstract long getValue();
 
   @Override
+  @Deprecated
   public final double getValueAsDouble() {
     return (double) getValue();
   }
