@@ -10,7 +10,8 @@ import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -19,19 +20,23 @@ import java.util.Collection;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      InstrumentationScopeInfo instrumentationScopeInfo) {
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
+    this.meterSharedState =
+        MeterSharedState.create(
+            InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo));
   }
 
-  // Only used in testing....
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return meterSharedState.getInstrumentationLibraryInfo();
+  // Visible for testing
+  InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 
   /** Collects all the metric recordings that changed since the previous call. */

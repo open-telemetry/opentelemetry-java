@@ -15,19 +15,18 @@ public interface TracerBuilder {
   /**
    * Assign an OpenTelemetry schema URL to the resulting Tracer.
    *
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
    * @return this
    */
   TracerBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assign a version to the instrumentation library that is using the resulting Tracer.
+   * Assign a version to the instrumentation scope that is using the resulting Tracer.
    *
-   * @param instrumentationVersion The version of the instrumentation library.
+   * @param instrumentationScopeVersion The version of the instrumentation scope.
    * @return this
    */
-  TracerBuilder setInstrumentationVersion(String instrumentationVersion);
+  TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
    * Gets or creates a {@link Tracer} instance.

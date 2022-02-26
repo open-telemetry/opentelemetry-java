@@ -98,18 +98,18 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     }
 
     @Override
-    public Tracer get(String instrumentationName) {
-      return delegate.get(instrumentationName);
+    public Tracer get(String instrumentationScopeName) {
+      return delegate.get(instrumentationScopeName);
     }
 
     @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return delegate.get(instrumentationName, instrumentationVersion);
+    public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
+      return delegate.get(instrumentationScopeName, instrumentationScopeVersion);
     }
 
     @Override
-    public TracerBuilder tracerBuilder(String instrumentationName) {
-      return delegate.tracerBuilder(instrumentationName);
+    public TracerBuilder tracerBuilder(String instrumentationScopeName) {
+      return delegate.tracerBuilder(instrumentationScopeName);
     }
 
     public SdkTracerProvider unobfuscate() {
@@ -135,8 +135,8 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     }
 
     @Override
-    public MeterBuilder meterBuilder(String instrumentationName) {
-      return delegate.meterBuilder(instrumentationName);
+    public MeterBuilder meterBuilder(String instrumentationScopeName) {
+      return delegate.meterBuilder(instrumentationScopeName);
     }
 
     public SdkMeterProvider unobfuscate() {

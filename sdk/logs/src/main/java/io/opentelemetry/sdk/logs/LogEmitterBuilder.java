@@ -11,18 +11,18 @@ public interface LogEmitterBuilder {
   /**
    * Assign an OpenTelemetry schema URL to the resulting {@link LogEmitter}.
    *
-   * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation library
+   * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation scope
    * @return this
    */
   LogEmitterBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assign a version to the instrumentation library that is using the resulting {@link LogEmitter}.
+   * Assign a version to the instrumentation scope that is using the resulting {@link LogEmitter}.
    *
-   * @param instrumentationVersion the version of the instrumentation library
+   * @param instrumentationScopeVersion the version of the instrumentation scope
    * @return this
    */
-  LogEmitterBuilder setInstrumentationVersion(String instrumentationVersion);
+  LogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
    * Gets or creates a {@link LogEmitter} instance.
