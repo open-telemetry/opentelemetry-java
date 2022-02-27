@@ -69,7 +69,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
         instrumentationLibraryInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
+        descriptor.getSourceInstrument().getUnit(),
         ImmutableGaugeData.create(
             MetricDataUtils.toLongPointList(
                 accumulationByLabels,

@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -27,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MetricDescriptor {
 
   /**
-   * Constructs a metric descriptor with no source instrument/view.
+   * Constructs a metric descriptor with no instrument and default view.
    *
    * <p>Used for testing + empty-storage only.
    */
@@ -35,8 +34,7 @@ public abstract class MetricDescriptor {
     return new AutoValue_MetricDescriptor(
         name,
         description,
-        unit,
-        Optional.empty(),
+        View.builder().build(),
         InstrumentDescriptor.create(
             name, description, unit, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE));
   }
@@ -46,20 +44,31 @@ public abstract class MetricDescriptor {
     String name = (view.getName() == null) ? instrument.getName() : view.getName();
     String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
-    return new AutoValue_MetricDescriptor(
-        name, description, instrument.getUnit(), Optional.of(view), instrument);
+    return new AutoValue_MetricDescriptor(name, description, view, instrument);
   }
 
+  /**
+   * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link
+   * InstrumentDescriptor#getName()}.
+   */
   public abstract String getName();
 
+  /**
+   * The description of the descriptor, equal to {@link View#getDescription()} if not null, else
+   * {@link InstrumentDescriptor#getDescription()}.
+   */
   public abstract String getDescription();
 
-  public abstract String getUnit();
+  /** The view that lead to the creation of this metric. */
+  public abstract View getSourceView();
 
-  /** The view that lead to the creation of this metric, if applicable. */
-  public abstract Optional<View> getSourceView();
   /** The instrument which lead to the creation of this metric. */
   public abstract InstrumentDescriptor getSourceInstrument();
+
+  /** The FQCN of the view aggregation. */
+  public String getAggregationName() {
+    return getSourceView().getAggregation().getClass().getName();
+  }
 
   @Memoized
   @Override
@@ -73,7 +82,10 @@ public abstract class MetricDescriptor {
    * <ul>
    *   <li>{@link #getName()} is equal
    *   <li>{@link #getDescription()} is equal
-   *   <li>{@link #getUnit()} is equal
+   *   <li>{@link #getAggregationName()} is equal
+   *   <li>{@link InstrumentDescriptor#getName()} is equal
+   *   <li>{@link InstrumentDescriptor#getDescription()} is equal
+   *   <li>{@link InstrumentDescriptor#getUnit()} is equal
    *   <li>{@link InstrumentDescriptor#getType()} is equal
    *   <li>{@link InstrumentDescriptor#getValueType()} is equal
    * </ul>
@@ -81,7 +93,11 @@ public abstract class MetricDescriptor {
   public boolean isCompatibleWith(MetricDescriptor other) {
     return Objects.equals(getName(), other.getName())
         && Objects.equals(getDescription(), other.getDescription())
-        && Objects.equals(getUnit(), other.getUnit())
+        && Objects.equals(getAggregationName(), other.getAggregationName())
+        && Objects.equals(getSourceInstrument().getName(), other.getSourceInstrument().getName())
+        && Objects.equals(
+            getSourceInstrument().getDescription(), other.getSourceInstrument().getDescription())
+        && Objects.equals(getSourceInstrument().getUnit(), other.getSourceInstrument().getUnit())
         && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
         && Objects.equals(
             getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());

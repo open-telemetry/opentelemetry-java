@@ -5,34 +5,37 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Responsible for storing metrics (by name) and returning access to input pipeline for instrument
- * wiring.
+ * Responsible for storing metrics by {@link MetricDescriptor} and returning access to input
+ * pipeline for instrument measurements.
  *
- * <p>The rules of the registry:
- *
- * <ul>
- *   <li>Only one storage type may be registered per-name. Repeated look-ups per-name will return
- *       the same storage.
- *   <li>The metric descriptor should be "compatible", when returning an existing metric storage,
- *       i.e. same type of metric, same name, description etc.
- *   <li>The registered storage type MUST be either always Asynchronous or always Synchronous. No
- *       mixing and matching.
- * </ul>
+ * <p>Each descriptor in the registry results in an exported metric stream. Under normal
+ * circumstances each descriptor shares a unique {@link MetricDescriptor#getName()}. When multiple
+ * descriptors share the same name, an identity conflict has occurred. The registry detects identity
+ * conflicts on {@link #register(MetricStorage)} and logs diagnostic information when they occur.
+ * See {@link MetricDescriptor#isCompatibleWith(MetricDescriptor)} for definition of compatibility.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 public class MetricStorageRegistry {
-  // TODO: Maybe we store metrics *and* instrument interfaces separately here...
-  private final ConcurrentMap<String, MetricStorage> registry = new ConcurrentHashMap<>();
+  private static final Logger logger = Logger.getLogger(MetricStorageRegistry.class.getName());
+
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
+  private final ConcurrentMap<MetricDescriptor, MetricStorage> registry = new ConcurrentHashMap<>();
 
   /**
    * Returns a {@code Collection} view of the registered {@link MetricStorage}.
@@ -40,36 +43,50 @@ public class MetricStorageRegistry {
    * @return a {@code Collection} view of the registered {@link MetricStorage}.
    */
   public Collection<MetricStorage> getMetrics() {
-    return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
+    synchronized (lock) {
+      return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
+    }
   }
 
   /**
-   * Registers the given {@code Metric} to this registry. Returns the registered storage if no other
-   * metric with the same name is registered or a previously registered metric with same name and
-   * equal with the current metric, otherwise throws an exception.
+   * Registers the metric {@code newStorage} to this registry. If a metric with compatible identity
+   * was previously registered, returns the previously registered storage. If a metric with the same
+   * name (case-insensitive) but incompatible {@link MetricDescriptor} was previously registered,
+   * logs a diagnostic warning and returns the {@code newStorage}.
    *
-   * @param storage the metric storage to use or discard.
-   * @return the given metric storage if no metric with same name already registered, otherwise the
-   *     previous registered instrument.
-   * @throws IllegalArgumentException if instrument cannot be registered.
+   * @param newStorage the metric storage to use or discard.
+   * @return the {@code newStorage} if no compatible metric is already registered, otherwise the
+   *     previously registered storage.
    */
   @SuppressWarnings("unchecked")
-  public <I extends MetricStorage> I register(I storage) {
-    MetricDescriptor descriptor = storage.getMetricDescriptor();
-    MetricStorage oldOrNewStorage =
-        registry.computeIfAbsent(descriptor.getName().toLowerCase(), key -> storage);
-    // Metric didn't already exist in registry, return.
-    if (storage == oldOrNewStorage) {
-      return (I) oldOrNewStorage;
+  public <I extends MetricStorage> I register(I newStorage) {
+    MetricDescriptor descriptor = newStorage.getMetricDescriptor();
+    I oldOrNewStorage;
+    List<MetricStorage> storages;
+    synchronized (lock) {
+      oldOrNewStorage = (I) registry.computeIfAbsent(descriptor, key -> newStorage);
+      // If storage was NOT added to the registry, its description was a perfect match to one
+      // previously registered and we can skip detecting identity conflicts
+      if (newStorage != oldOrNewStorage || !logger.isLoggable(Level.WARNING)) {
+        return oldOrNewStorage;
+      }
+      storages = new ArrayList<>(registry.values());
     }
-    // Make sure the storage is compatible.
-    if (!oldOrNewStorage.getMetricDescriptor().isCompatibleWith(descriptor)) {
-      throw new DuplicateMetricStorageException(
-          oldOrNewStorage.getMetricDescriptor(),
-          descriptor,
-          "Metric with same name and different descriptor already created.");
+    // Else, we need to look for identity conflicts with previously registered storages
+    for (MetricStorage storage : storages) {
+      // Skip the newly registered storage
+      if (storage == newStorage) {
+        continue;
+      }
+      MetricDescriptor existing = storage.getMetricDescriptor();
+      // Check compatibility of metrics which share the same case-insensitive name
+      if (existing.getName().equalsIgnoreCase(descriptor.getName())
+          && !existing.isCompatibleWith(descriptor)) {
+        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
+        break; // Only log information about the first conflict found to reduce noise
+      }
     }
-    // Metric already existed, and is compatible with new storage.
-    return (I) oldOrNewStorage;
+    // Finally, return the storage
+    return oldOrNewStorage;
   }
 }

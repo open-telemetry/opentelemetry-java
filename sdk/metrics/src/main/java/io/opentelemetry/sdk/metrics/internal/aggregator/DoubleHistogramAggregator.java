@@ -103,7 +103,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
         instrumentationLibraryInfo,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
-        metricDescriptor.getUnit(),
+        metricDescriptor.getSourceInstrument().getUnit(),
         DoubleHistogramData.create(
             temporality,
             MetricDataUtils.toDoubleHistogramPointList(

@@ -131,7 +131,7 @@ final class DoubleExponentialHistogramAggregator
         instrumentationLibrary,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
-        metricDescriptor.getUnit(),
+        metricDescriptor.getSourceInstrument().getUnit(),
         ExponentialHistogramData.create(
             temporality,
             MetricDataUtils.toExponentialHistogramPointList(
