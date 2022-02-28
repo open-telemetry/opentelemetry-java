@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import java.util.List;
 import javax.annotation.concurrent.Immutable;

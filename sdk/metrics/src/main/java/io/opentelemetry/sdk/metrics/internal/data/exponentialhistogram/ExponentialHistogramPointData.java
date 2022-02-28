@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -39,7 +41,7 @@ public interface ExponentialHistogramPointData extends PointData {
       Attributes attributes,
       List<ExemplarData> exemplars) {
 
-    return DoubleExponentialHistogramPointData.create(
+    return ImmutableExponentialHistogramPointData.create(
         scale,
         sum,
         zeroCount,

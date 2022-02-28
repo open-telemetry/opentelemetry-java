@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -16,16 +17,16 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-abstract class DoubleExponentialHistogramPointData implements ExponentialHistogramPointData {
+abstract class ImmutableExponentialHistogramPointData implements ExponentialHistogramPointData {
 
-  DoubleExponentialHistogramPointData() {}
+  ImmutableExponentialHistogramPointData() {}
 
   /**
    * Create a DoubleExponentialHistogramPointData.
    *
    * @return a DoubleExponentialHistogramPointData.
    */
-  static DoubleExponentialHistogramPointData create(
+  static ImmutableExponentialHistogramPointData create(
       int scale,
       double sum,
       long zeroCount,
@@ -38,7 +39,7 @@ abstract class DoubleExponentialHistogramPointData implements ExponentialHistogr
 
     long count = zeroCount + positiveBuckets.getTotalCount() + negativeBuckets.getTotalCount();
 
-    return new AutoValue_DoubleExponentialHistogramPointData(
+    return new AutoValue_ImmutableExponentialHistogramPointData(
         scale,
         sum,
         count,

@@ -3,8 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.Data;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
@@ -30,7 +34,21 @@ public interface ExponentialHistogramData extends Data<ExponentialHistogramPoint
    */
   static ExponentialHistogramData create(
       AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
-    return DoubleExponentialHistogramData.create(temporality, points);
+    return ImmutableExponentialHistogramData.create(temporality, points);
+  }
+
+  /**
+   * Returns the {@link ExponentialHistogramData} if type is {@link
+   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   *
+   * @return the {@link ExponentialHistogramData} if type is {@link
+   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   */
+  static ExponentialHistogramData fromMetricData(MetricData data) {
+    if (data.getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      return (ExponentialHistogramData) data.getData();
+    }
+    return ImmutableExponentialHistogramData.empty();
   }
 
   /**
