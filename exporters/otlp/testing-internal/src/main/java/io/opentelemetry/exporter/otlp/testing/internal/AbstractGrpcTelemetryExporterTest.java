@@ -79,6 +79,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @RegisterExtension
   @Order(2)
+  static final SelfSignedCertificateExtension clientCertificate = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  @Order(3)
   static final ServerExtension server =
       new ServerExtension() {
         @Override
@@ -105,6 +109,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           sb.http(0);
           sb.https(0);
           sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
           sb.decorator(LoggingService.newDecorator());
         }
       };
@@ -247,6 +252,24 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Could not set trusted certificates");
+  }
+
+  @Test
+  void clientTls() throws Exception {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setClientTls(clientCertificate.privateKey().getEncoded(),
+                clientCertificate.certificate().getEncoded())
+            .build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test

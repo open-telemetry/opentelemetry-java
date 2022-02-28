@@ -94,6 +94,13 @@ class OtlpGrpcNettyMetricExporterTest
       }
 
       @Override
+      public TelemetryExporterBuilder<MetricData> setClientTls(byte[] privateKeyPem,
+          byte[] privateKeyChainPem) {
+        builder.setClientTls(privateKeyPem, privateKeyChainPem);
+        return this;
+      }
+
+      @Override
       public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
         builder.delegate.setRetryPolicy(retryPolicy);
         return this;

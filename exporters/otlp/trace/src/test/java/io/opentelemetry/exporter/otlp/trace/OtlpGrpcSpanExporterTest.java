@@ -96,6 +96,13 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
       }
 
       @Override
+      public TelemetryExporterBuilder<SpanData> setClientTls(byte[] privateKeyPem,
+          byte[] privateKeyChainPem) {
+        builder.setClientTls(privateKeyPem, privateKeyChainPem);
+        return this;
+      }
+
+      @Override
       public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
         builder.delegate.setRetryPolicy(retryPolicy);
         return this;
