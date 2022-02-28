@@ -8,6 +8,12 @@ package io.opentelemetry.sdk.trace.internal.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventData;
 
+/**
+ * Data representation of an event for a recorded exception.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public interface ExceptionEventData extends EventData {
 
   /**
