@@ -288,6 +288,7 @@ class JaegerGrpcSpanExporterTest {
     return tags.stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
   }
 
+  @Test
   void validTrustedConfig() {
     assertThatCode(
             () ->
@@ -296,6 +297,7 @@ class JaegerGrpcSpanExporterTest {
         .doesNotThrowAnyException();
   }
 
+  @Test
   void validClientKeyConfig() {
     assertThatCode(
             () ->

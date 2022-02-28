@@ -107,7 +107,7 @@ final class OtlpConfigUtil {
       throw new ConfigurationException("Client key provided but certification chain is missing");
     } else if (clientKeyBytes == null && clientKeyChainBytes != null) {
       throw new ConfigurationException("Client key chain provided but key is missing");
-    } else {
+    } else if (clientKeyBytes != null && clientKeyChainBytes != null) {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
@@ -179,20 +179,19 @@ final class OtlpConfigUtil {
       propertyToRead = prefix + "." + suffix;
       filePath = config.getString(propertyToRead);
     }
-    if (filePath != null) {
-      Path path = Paths.get(filePath);
-      if (!Files.exists(path)) {
-        throw new ConfigurationException(
-            "Invalid file: " + path + " (configured in property: " + propertyToRead + ")");
-      }
-      try {
-        return Files.readAllBytes(path);
-      } catch (IOException e) {
-        throw new ConfigurationException(
-            "Error reading content of file (" + path + ") configured in " + propertyToRead, e);
-      }
-    } else {
+    if (filePath == null) {
       return null;
+    }
+    Path path = Paths.get(filePath);
+    if (!Files.exists(path)) {
+      throw new ConfigurationException(
+          "Invalid file: " + path + " (configured in property: " + propertyToRead + ")");
+    }
+    try {
+      return Files.readAllBytes(path);
+    } catch (IOException e) {
+      throw new ConfigurationException(
+          "Error reading content of file (" + path + ") configured in " + propertyToRead, e);
     }
   }
 
