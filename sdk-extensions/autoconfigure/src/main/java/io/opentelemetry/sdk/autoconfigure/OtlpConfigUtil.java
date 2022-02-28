@@ -171,6 +171,7 @@ final class OtlpConfigUtil {
     return endpointUrl;
   }
 
+  @Nullable
   private static byte[] readFileBytes(
       ConfigProperties config, String prefix, String dataType, String suffix) {
     String propertyToRead = prefix + "." + dataType + "." + suffix;

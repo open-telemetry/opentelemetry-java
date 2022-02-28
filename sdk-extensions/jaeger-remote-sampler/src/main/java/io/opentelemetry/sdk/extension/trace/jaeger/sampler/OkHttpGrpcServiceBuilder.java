@@ -41,7 +41,8 @@ final class OkHttpGrpcServiceBuilder<
   private boolean compressionEnabled = false;
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private byte[][] clientKeysPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] privateKeyChainPem;
   @Nullable private RetryPolicy retryPolicy;
 
   OkHttpGrpcServiceBuilder(
@@ -100,9 +101,11 @@ final class OkHttpGrpcServiceBuilder<
   }
 
   @Override
-  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientKeys(byte[][] clientKeysPem) {
-    requireNonNull(clientKeysPem, "clientKeysPem");
-    this.clientKeysPem = clientKeysPem;
+  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+    requireNonNull(privateKeyPem, "privateKeyPem");
+    requireNonNull(privateKeyChainPem, "privateKeyChainPem");
+    this.privateKeyPem = privateKeyPem;
+    this.privateKeyChainPem = privateKeyChainPem;
     return this;
   }
 
@@ -134,8 +137,8 @@ final class OkHttpGrpcServiceBuilder<
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
         X509KeyManager keyManager = null;
-        if (clientKeysPem != null) {
-          keyManager = TlsUtil.keyManager(clientKeysPem);
+        if (privateKeyPem != null && privateKeyChainPem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
         }
         clientBuilder.sslSocketFactory(
             TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
