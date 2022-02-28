@@ -80,7 +80,7 @@ class ViewRegistryTest {
   @Test
   void selection_FirstAddedViewWins() {
     View view1 = View.builder().setAggregation(Aggregation.lastValue()).build();
-    View view2 = View.builder().setAggregation(Aggregation.histogram()).build();
+    View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
