@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.internal.AttributeUtil;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /**
@@ -63,6 +64,14 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
   @Override
   public AttributesBuilder toBuilder() {
     return Attributes.builder().putAll(this);
+  }
+
+  @Override
+  public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> action) {
+    // https://github.com/open-telemetry/opentelemetry-java/issues/4161
+    // Help out android desugaring by having an explicit call to HashMap.forEach, when forEach is
+    // just called through Attributes.forEach desugaring is unable to correctly handle it.
+    super.forEach(action);
   }
 
   @Override
