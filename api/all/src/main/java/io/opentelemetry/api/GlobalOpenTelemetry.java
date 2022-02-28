@@ -27,7 +27,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>If using the OpenTelemetry SDK, you may want to instantiate the {@link OpenTelemetry} to
  * provide configuration, for example of {@code Resource} or {@code Sampler}. See {@code
  * OpenTelemetrySdk} and {@code OpenTelemetrySdk.builder} for information on how to construct the
- * SDK {@link OpenTelemetry}.
+ * SDK's {@link OpenTelemetry} implementation.
+ *
+ * <p>WARNING: Due to the inherent complications around initialization order involving this class
+ * and its single global instance, we strongly recommend *not* using GlobalOpenTelemetry unless you
+ * have a use-case that absolutely requires it. Please favor using instances of OpenTelemetry
+ * wherever possible.
  *
  * @see TracerProvider
  * @see ContextPropagators
