@@ -13,6 +13,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,8 +47,8 @@ class MetricDataImplTest {
           Arrays.asList(
               ValueAtPercentile.create(0.0, DOUBLE_VALUE),
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
-  private static final DoubleHistogramPointData HISTOGRAM_POINT =
-      DoubleHistogramPointData.create(
+  private static final ImmutableHistogramPointData HISTOGRAM_POINT =
+      ImmutableHistogramPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
@@ -177,18 +179,18 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleHistogramData.create(
+            ImmutableHistogramData.create(
                 AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
-    assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
+    assertThat(metricData.getHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
 
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0, 0, Attributes.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0,
                     0,
                     Attributes.empty(),
@@ -198,7 +200,7 @@ class MetricDataImplTest {
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0,
                     0,
                     Attributes.empty(),
@@ -222,7 +224,7 @@ class MetricDataImplTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
+    assertThat(metricData.getHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
 
     metricData =
@@ -237,7 +239,7 @@ class MetricDataImplTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
+    assertThat(metricData.getHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
   }
 }

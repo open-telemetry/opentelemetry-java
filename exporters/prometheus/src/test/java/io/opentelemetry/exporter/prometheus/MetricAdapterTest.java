@@ -15,8 +15,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -28,6 +26,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -201,10 +201,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          DoubleHistogramData.create(
+          ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoubleHistogramPointData.create(
+                  ImmutableHistogramPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR,
@@ -538,7 +538,7 @@ class MetricAdapterTest {
             "full_name",
             MetricDataType.HISTOGRAM,
             ImmutableList.of(
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     1633939689000000000L,
                     1633943350000000000L,
                     KP_VP_ATTR,

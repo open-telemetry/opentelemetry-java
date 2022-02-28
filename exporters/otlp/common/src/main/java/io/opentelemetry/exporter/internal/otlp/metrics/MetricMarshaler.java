@@ -52,7 +52,7 @@ final class MetricMarshaler extends MarshalerWithSize {
         dataField = Metric.SUMMARY;
         break;
       case HISTOGRAM:
-        dataMarshaler = HistogramMarshaler.create(metric.getDoubleHistogramData());
+        dataMarshaler = HistogramMarshaler.create(metric.getHistogramData());
         dataField = Metric.HISTOGRAM;
         break;
       case EXPONENTIAL_HISTOGRAM:

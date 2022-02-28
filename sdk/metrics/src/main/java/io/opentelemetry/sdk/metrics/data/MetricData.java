@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -138,7 +139,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleHistogramData data) {
+      HistogramData data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -304,11 +305,11 @@ public interface MetricData {
    * @return the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
    *     a default empty data.
    */
-  default DoubleHistogramData getDoubleHistogramData() {
+  default HistogramData getHistogramData() {
     if (getType() == MetricDataType.HISTOGRAM) {
-      return (DoubleHistogramData) getData();
+      return (HistogramData) getData();
     }
-    return DoubleHistogramData.EMPTY;
+    return ImmutableHistogramData.empty();
   }
 
   /**

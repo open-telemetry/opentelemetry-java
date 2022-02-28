@@ -98,7 +98,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleHistogram}.
    */
-  public DoubleHistogramAssert hasDoubleHistogram() {
+  public HistogramAssert hasDoubleHistogram() {
     isNotNull();
     if (actual.getType() != MetricDataType.HISTOGRAM) {
       failWithActualExpectedAndMessage(
@@ -108,7 +108,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.HISTOGRAM,
           actual.getType());
     }
-    return new DoubleHistogramAssert(actual.getDoubleHistogramData());
+    return new HistogramAssert(actual.getHistogramData());
   }
 
   /**

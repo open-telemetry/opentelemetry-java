@@ -5,34 +5,34 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link DoubleHistogramPointData}. */
-public class DoubleHistogramPointDataAssert
-    extends AbstractPointDataAssert<DoubleHistogramPointDataAssert, DoubleHistogramPointData> {
+/** Test assertions for {@link HistogramPointData}. */
+public class HistogramPointDataAssert
+    extends AbstractPointDataAssert<HistogramPointDataAssert, HistogramPointData> {
 
-  protected DoubleHistogramPointDataAssert(DoubleHistogramPointData actual) {
-    super(actual, DoubleHistogramPointDataAssert.class);
+  protected HistogramPointDataAssert(HistogramPointData actual) {
+    super(actual, HistogramPointDataAssert.class);
   }
 
   /** Ensures the {@code sum} field matches the expected value. */
-  public DoubleHistogramPointDataAssert hasSum(double expected) {
+  public HistogramPointDataAssert hasSum(double expected) {
     isNotNull();
     Assertions.assertThat(actual.getSum()).as("sum").isEqualTo(expected);
     return this;
   }
 
   /** Ensures the {@code sum} field contains a greater value than the passed {@code boundary}. */
-  public DoubleHistogramPointDataAssert hasSumGreaterThan(double boundary) {
+  public HistogramPointDataAssert hasSumGreaterThan(double boundary) {
     isNotNull();
     Assertions.assertThat(actual.getSum()).as("sum").isGreaterThan(boundary);
     return this;
   }
 
   /** Ensures the {@code count} field matches the expected value. */
-  public DoubleHistogramPointDataAssert hasCount(long expected) {
+  public HistogramPointDataAssert hasCount(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getCount()).as("count").isEqualTo(expected);
     return this;
@@ -43,7 +43,7 @@ public class DoubleHistogramPointDataAssert
    *
    * @param boundaries The set of bucket boundaries in the same order as the expected collection.
    */
-  public DoubleHistogramPointDataAssert hasBucketBoundaries(double... boundaries) {
+  public HistogramPointDataAssert hasBucketBoundaries(double... boundaries) {
     isNotNull();
     Double[] bigBoundaries = Arrays.stream(boundaries).boxed().toArray(Double[]::new);
     Assertions.assertThat(actual.getBoundaries()).as("boundaries").containsExactly(bigBoundaries);
@@ -55,7 +55,7 @@ public class DoubleHistogramPointDataAssert
    *
    * @param counts The set of bucket counts in the same order as the expected collection.
    */
-  public DoubleHistogramPointDataAssert hasBucketCounts(long... counts) {
+  public HistogramPointDataAssert hasBucketCounts(long... counts) {
     isNotNull();
     Long[] bigCounts = Arrays.stream(counts).boxed().toArray(Long[]::new);
     Assertions.assertThat(actual.getCounts()).as("bucketCounts").containsExactly(bigCounts);
