@@ -14,12 +14,12 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -70,9 +70,9 @@ class LoggingMetricExporterTest {
                 "measureOne",
                 "A summarized test measure",
                 "ms",
-                DoubleSummaryData.create(
+                ImmutableSummaryData.create(
                     Collections.singletonList(
-                        DoubleSummaryPointData.create(
+                        ImmutableSummaryPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("a"), "b", stringKey("c"), "d"),

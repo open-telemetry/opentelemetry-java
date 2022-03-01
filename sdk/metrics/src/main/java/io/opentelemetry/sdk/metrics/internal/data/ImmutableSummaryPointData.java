@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -14,12 +16,15 @@ import javax.annotation.concurrent.Immutable;
 /**
  * SummaryPoint is a single data point that summarizes the values in a time series of numeric
  * values.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time
  */
 @Immutable
 @AutoValue
-public abstract class DoubleSummaryPointData implements PointData {
+public abstract class ImmutableSummaryPointData implements SummaryPointData {
   /**
-   * Creates a {@link DoubleSummaryPointData}.
+   * Creates a {@link SummaryPointData}.
    *
    * @param startEpochNanos (optional) The starting time for the period where this point was
    *     sampled.
@@ -29,14 +34,14 @@ public abstract class DoubleSummaryPointData implements PointData {
    * @param sum The sum of measuremnts being sumarized.
    * @param percentileValues Calculations of percentile values from measurements.
    */
-  public static DoubleSummaryPointData create(
+  public static ImmutableSummaryPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
       long count,
       double sum,
       List<ValueAtPercentile> percentileValues) {
-    return new AutoValue_DoubleSummaryPointData(
+    return new AutoValue_ImmutableSummaryPointData(
         startEpochNanos,
         epochNanos,
         attributes,
@@ -46,27 +51,5 @@ public abstract class DoubleSummaryPointData implements PointData {
         percentileValues);
   }
 
-  DoubleSummaryPointData() {}
-
-  /**
-   * The number of values that are being summarized.
-   *
-   * @return the number of values that are being summarized.
-   */
-  public abstract long getCount();
-
-  /**
-   * The sum of all the values that are being summarized.
-   *
-   * @return the sum of the values that are being summarized.
-   */
-  public abstract double getSum();
-
-  /**
-   * Percentile values in the summarization. Note: a percentile 0.0 represents the minimum value in
-   * the distribution.
-   *
-   * @return the percentiles values.
-   */
-  public abstract List<ValueAtPercentile> getPercentileValues();
+  ImmutableSummaryPointData() {}
 }

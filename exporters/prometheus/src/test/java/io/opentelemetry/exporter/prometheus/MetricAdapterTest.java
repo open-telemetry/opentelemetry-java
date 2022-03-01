@@ -19,8 +19,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -28,6 +26,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -183,9 +183,9 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          DoubleSummaryData.create(
+          ImmutableSummaryData.create(
               Collections.singletonList(
-                  DoubleSummaryPointData.create(
+                  ImmutableSummaryPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR,
@@ -431,7 +431,7 @@ class MetricAdapterTest {
                 "full_name",
                 MetricDataType.SUMMARY,
                 ImmutableList.of(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         1633939689000000000L,
                         1633943350000000000L,
                         KP_VP_ATTR,
@@ -466,14 +466,14 @@ class MetricAdapterTest {
                 "full_name",
                 MetricDataType.SUMMARY,
                 ImmutableList.of(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         1633947011000000000L,
                         1633950672000000000L,
                         Attributes.empty(),
                         7,
                         15.3,
                         Collections.emptyList()),
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         1633939689000000000L,
                         1633943350000000000L,
                         KP_VP_ATTR,

@@ -48,7 +48,7 @@ final class MetricMarshaler extends MarshalerWithSize {
         dataField = Metric.SUM;
         break;
       case SUMMARY:
-        dataMarshaler = SummaryMarshaler.create(metric.getDoubleSummaryData());
+        dataMarshaler = SummaryMarshaler.create(metric.getSummaryData());
         dataField = Metric.SUMMARY;
         break;
       case HISTOGRAM:

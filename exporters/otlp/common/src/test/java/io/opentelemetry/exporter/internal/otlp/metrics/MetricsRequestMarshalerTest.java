@@ -46,8 +46,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
@@ -56,8 +54,11 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -271,7 +272,7 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toSummaryDataPoints(
                 singletonList(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         123,
                         456,
                         KV_ATTR,
@@ -296,9 +297,9 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toSummaryDataPoints(
                 ImmutableList.of(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         321,
                         654,
                         KV_ATTR,
@@ -679,9 +680,9 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleSummaryData.create(
+                    ImmutableSummaryData.create(
                         singletonList(
-                            DoubleSummaryPointData.create(
+                            ImmutableSummaryPointData.create(
                                 123,
                                 456,
                                 KV_ATTR,
@@ -959,8 +960,7 @@ class MetricsRequestMarshalerTest {
         .collect(Collectors.toList());
   }
 
-  private static List<SummaryDataPoint> toSummaryDataPoints(
-      Collection<DoubleSummaryPointData> points) {
+  private static List<SummaryDataPoint> toSummaryDataPoints(Collection<SummaryPointData> points) {
     return points.stream()
         .map(
             point ->

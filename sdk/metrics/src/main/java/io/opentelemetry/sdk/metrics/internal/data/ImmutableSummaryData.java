@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
@@ -21,19 +23,24 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Summary is considered a legacy metric type, and shouldn't be produced (by default) from
  * instruments.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time
  */
 @Immutable
 @AutoValue
-public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {
+public abstract class ImmutableSummaryData implements SummaryData {
 
-  static final DoubleSummaryData EMPTY = DoubleSummaryData.create(Collections.emptyList());
+  private static final ImmutableSummaryData EMPTY =
+      ImmutableSummaryData.create(Collections.emptyList());
 
-  DoubleSummaryData() {}
-
-  public static DoubleSummaryData create(Collection<DoubleSummaryPointData> points) {
-    return new AutoValue_DoubleSummaryData(points);
+  public static ImmutableSummaryData empty() {
+    return EMPTY;
   }
 
-  @Override
-  public abstract Collection<DoubleSummaryPointData> getPoints();
+  ImmutableSummaryData() {}
+
+  public static ImmutableSummaryData create(Collection<SummaryPointData> points) {
+    return new AutoValue_ImmutableSummaryData(points);
+  }
 }

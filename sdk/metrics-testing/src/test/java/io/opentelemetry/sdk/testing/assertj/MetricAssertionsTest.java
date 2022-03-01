@@ -20,15 +20,16 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +95,7 @@ public class MetricAssertionsTest {
           /* name= */ "summary",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleSummaryData.create(
+          ImmutableSummaryData.create(
               // Points
               Collections.emptyList()));
 
@@ -209,8 +210,8 @@ public class MetricAssertionsTest {
 
   private static final ValueAtPercentile PERCENTILE_VALUE = ValueAtPercentile.create(0, 1);
 
-  private static final DoubleSummaryPointData DOUBLE_SUMMARY_POINT_DATA =
-      DoubleSummaryPointData.create(
+  private static final SummaryPointData DOUBLE_SUMMARY_POINT_DATA =
+      ImmutableSummaryPointData.create(
           1, 2, Attributes.empty(), 1, 2, Collections.singletonList(PERCENTILE_VALUE));
 
   private static final DoubleHistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =

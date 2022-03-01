@@ -9,13 +9,13 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.Summary;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
 import java.io.IOException;
 
 final class SummaryMarshaler extends MarshalerWithSize {
   private final SummaryDataPointMarshaler[] dataPoints;
 
-  static SummaryMarshaler create(DoubleSummaryData summary) {
+  static SummaryMarshaler create(SummaryData summary) {
     SummaryDataPointMarshaler[] dataPointMarshalers =
         SummaryDataPointMarshaler.createRepeated(summary.getPoints());
     return new SummaryMarshaler(dataPointMarshalers);
