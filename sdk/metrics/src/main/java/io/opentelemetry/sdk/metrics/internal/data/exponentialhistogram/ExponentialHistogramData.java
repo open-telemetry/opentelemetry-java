@@ -23,6 +23,9 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p><i>Note: This is called "ExponentialHistogramData" to reflect which primitives are used to
  * record it, however "ExponentialHistogram" is the equivalent OTLP type.</i>
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 public interface ExponentialHistogramData extends Data<ExponentialHistogramPointData> {

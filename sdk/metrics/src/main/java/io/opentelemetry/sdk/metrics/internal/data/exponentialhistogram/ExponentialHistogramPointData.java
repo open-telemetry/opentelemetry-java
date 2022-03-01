@@ -21,6 +21,9 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 public interface ExponentialHistogramPointData extends PointData {

@@ -14,6 +14,9 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Simple auto value implementation of {@link ExponentialHistogramPointData}. For detailed javadoc
  * on the type, see {@link ExponentialHistogramPointData}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @AutoValue
 @Immutable
