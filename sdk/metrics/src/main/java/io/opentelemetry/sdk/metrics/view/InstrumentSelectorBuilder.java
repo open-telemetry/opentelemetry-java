@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 /** Builder for {@link InstrumentSelector}. */
@@ -21,59 +20,26 @@ public final class InstrumentSelectorBuilder {
   private MeterSelector meterSelector = MeterSelector.builder().build();
 
   /** Sets a specifier for {@link InstrumentType}. */
-  public InstrumentSelectorBuilder setInstrumentType(InstrumentType instrumentType) {
+  public InstrumentSelectorBuilder setType(InstrumentType instrumentType) {
     requireNonNull(instrumentType, "instrumentType");
     this.instrumentType = instrumentType;
     return this;
   }
 
+  /** Sets the exact instrument name that will be selected. */
+  public InstrumentSelectorBuilder setName(String name) {
+    requireNonNull(name, "name");
+    return setName(StringPredicates.exact(name));
+  }
+
   /**
-   * Sets the {@link Pattern} for instrument names that will be selected.
-   *
-   * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-   * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-   * used.
+   * Sets a {@link Predicate} where instrument names matching the {@link Predicate} will be
+   * selected.
    */
-  public InstrumentSelectorBuilder setInstrumentNameFilter(Predicate<String> instrumentNameFilter) {
-    requireNonNull(instrumentNameFilter, "instrumentNameFilter");
-    this.instrumentNameFilter = instrumentNameFilter;
+  public InstrumentSelectorBuilder setName(Predicate<String> nameFilter) {
+    requireNonNull(nameFilter, "nameFilter");
+    this.instrumentNameFilter = nameFilter;
     return this;
-  }
-
-  /**
-   * Sets the {@link Pattern} for instrument names that will be selected.
-   *
-   * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-   * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-   * used.
-   */
-  public InstrumentSelectorBuilder setInstrumentNamePattern(Pattern instrumentNamePattern) {
-    requireNonNull(instrumentNamePattern, "instrumentNamePattern");
-    return setInstrumentNameFilter(StringPredicates.regex(instrumentNamePattern));
-  }
-
-  /**
-   * Sets the exact instrument name that will be selected.
-   *
-   * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-   * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-   * used.
-   */
-  public InstrumentSelectorBuilder setInstrumentName(String instrumentName) {
-    requireNonNull(instrumentName, "instrumentName");
-    return setInstrumentNameFilter(StringPredicates.exact(instrumentName));
-  }
-
-  /**
-   * Sets a specifier for selecting Instruments by name.
-   *
-   * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-   * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-   * used.
-   */
-  public InstrumentSelectorBuilder setInstrumentNameRegex(String instrumentNameRegex) {
-    requireNonNull(instrumentNameRegex, "instrumentNameRegex");
-    return setInstrumentNamePattern(Pattern.compile(instrumentNameRegex));
   }
 
   /**
