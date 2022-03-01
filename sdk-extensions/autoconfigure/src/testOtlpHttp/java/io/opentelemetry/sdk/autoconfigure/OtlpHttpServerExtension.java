@@ -26,8 +26,8 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -134,7 +134,7 @@ class OtlpHttpServerExtension extends ServerExtension {
         "metric_name",
         "metric_description",
         "ms",
-        LongSumData.create(
+        ImmutableSumData.create(
             false,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(

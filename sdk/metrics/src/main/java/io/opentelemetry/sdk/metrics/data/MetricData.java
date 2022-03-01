@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -72,7 +73,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleSumData data) {
+      SumData<DoublePointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -94,7 +95,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      LongSumData data) {
+      SumData<LongPointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -262,11 +263,12 @@ public interface MetricData {
    * @return the {@code DoubleSumData} if type is {@link MetricDataType#DOUBLE_SUM}, otherwise a
    *     default empty data.
    */
-  default DoubleSumData getDoubleSumData() {
+  @SuppressWarnings("unchecked")
+  default SumData<DoublePointData> getDoubleSumData() {
     if (getType() == MetricDataType.DOUBLE_SUM) {
-      return (DoubleSumData) getData();
+      return (ImmutableSumData<DoublePointData>) getData();
     }
-    return DoubleSumData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
@@ -276,11 +278,12 @@ public interface MetricData {
    * @return the {@code LongSumData} if type is {@link MetricDataType#LONG_SUM}, otherwise a default
    *     empty data.
    */
-  default LongSumData getLongSumData() {
+  @SuppressWarnings("unchecked")
+  default SumData<LongPointData> getLongSumData() {
     if (getType() == MetricDataType.LONG_SUM) {
-      return (LongSumData) getData();
+      return (SumData<LongPointData>) getData();
     }
-    return LongSumData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
