@@ -13,14 +13,13 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.prometheus.client.Collector;
@@ -78,14 +77,14 @@ final class MetricAdapter {
       case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
       case LONG_SUM:
-        LongSumData longSumData = metricData.getLongSumData();
+        SumData<LongPointData> longSumData = metricData.getLongSumData();
         if (longSumData.isMonotonic()
             && longSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
       case DOUBLE_SUM:
-        DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
         if (doubleSumData.isMonotonic()
             && doubleSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;

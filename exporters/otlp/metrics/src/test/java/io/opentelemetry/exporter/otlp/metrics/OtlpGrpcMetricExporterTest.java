@@ -22,8 +22,8 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.Collections;
@@ -116,7 +116,7 @@ class OtlpGrpcMetricExporterTest
         "name",
         "description",
         "1",
-        LongSumData.create(
+        ImmutableSumData.create(
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(

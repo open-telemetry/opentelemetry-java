@@ -26,16 +26,16 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -147,13 +147,13 @@ public final class MetricAdapter {
     return ImmutableGaugeData.create(convertDoublePoints(censusMetric));
   }
 
-  static LongSumData convertLongSum(Metric censusMetric) {
-    return LongSumData.create(
+  static SumData<LongPointData> convertLongSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertLongPoints(censusMetric));
   }
 
-  static DoubleSumData convertDoubleSum(Metric censusMetric) {
-    return DoubleSumData.create(
+  static SumData<DoublePointData> convertDoubleSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertDoublePoints(censusMetric));
   }
 

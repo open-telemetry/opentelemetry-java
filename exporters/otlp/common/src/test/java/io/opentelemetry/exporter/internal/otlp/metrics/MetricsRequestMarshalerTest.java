@@ -45,18 +45,17 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -466,7 +465,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    LongSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
                         singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
@@ -501,7 +500,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
                         singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
@@ -540,7 +539,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    LongSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
                         singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
@@ -575,7 +574,7 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
                         singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
@@ -886,7 +885,7 @@ class MetricsRequestMarshalerTest {
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
@@ -897,7 +896,7 @@ class MetricsRequestMarshalerTest {
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
@@ -908,7 +907,7 @@ class MetricsRequestMarshalerTest {
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
@@ -919,7 +918,7 @@ class MetricsRequestMarshalerTest {
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(

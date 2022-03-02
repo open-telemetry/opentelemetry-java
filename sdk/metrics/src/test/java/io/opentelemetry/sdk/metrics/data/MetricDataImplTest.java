@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -100,7 +101,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            LongSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(LONG_POINT)));
@@ -132,7 +133,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(DOUBLE_POINT)));

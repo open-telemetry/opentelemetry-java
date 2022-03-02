@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +34,7 @@ class InMemoryMetricExporterTest {
         "name",
         "description",
         "1",
-        LongSumData.create(
+        ImmutableSumData.create(
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
