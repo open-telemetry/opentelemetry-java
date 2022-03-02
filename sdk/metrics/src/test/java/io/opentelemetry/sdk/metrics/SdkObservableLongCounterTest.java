@@ -33,6 +33,26 @@ class SdkObservableLongCounterTest {
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
   @Test
+  void removeCallback() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    ObservableLongCounter counter =
+        sdkMeterProviderBuilder
+            .registerMetricReader(sdkMeterReader)
+            .build()
+            .get(getClass().getName())
+            .counterBuilder("testCounter")
+            .buildWithCallback(measurement -> measurement.record(10));
+
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasName("testCounter").hasLongSum().points().hasSize(1));
+
+    counter.close();
+
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
   void collectMetrics_NoRecords() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =

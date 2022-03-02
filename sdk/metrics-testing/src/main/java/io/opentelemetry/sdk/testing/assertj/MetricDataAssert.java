@@ -153,7 +153,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleSum}.
    */
-  public DoubleSumDataAssert hasDoubleSum() {
+  public SumDataAssert<DoublePointData> hasDoubleSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_SUM) {
       failWithActualExpectedAndMessage(
@@ -163,7 +163,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.DOUBLE_SUM,
           actual.getType());
     }
-    return new DoubleSumDataAssert(actual.getDoubleSumData());
+    return new SumDataAssert<>(actual.getDoubleSumData());
   }
 
   /**
@@ -189,7 +189,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code LongSum}.
    */
-  public LongSumDataAssert hasLongSum() {
+  public SumDataAssert<LongPointData> hasLongSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_SUM) {
       failWithActualExpectedAndMessage(
@@ -199,7 +199,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.LONG_SUM,
           actual.getType());
     }
-    return new LongSumDataAssert(actual.getLongSumData());
+    return new SumDataAssert<>(actual.getLongSumData());
   }
 
   /**

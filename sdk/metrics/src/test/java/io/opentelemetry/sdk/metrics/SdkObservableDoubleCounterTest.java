@@ -33,6 +33,27 @@ class SdkObservableDoubleCounterTest {
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
   @Test
+  void removeCallback() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    ObservableDoubleCounter counter =
+        sdkMeterProviderBuilder
+            .registerMetricReader(sdkMeterReader)
+            .build()
+            .get(getClass().getName())
+            .counterBuilder("testCounter")
+            .ofDoubles()
+            .buildWithCallback(measurement -> measurement.record(10));
+
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasName("testCounter").hasDoubleSum().points().hasSize(1));
+
+    counter.close();
+
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
   void collectMetrics_NoRecords() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =

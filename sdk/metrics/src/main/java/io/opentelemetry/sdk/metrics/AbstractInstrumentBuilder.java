@@ -10,9 +10,11 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -21,9 +23,10 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final String instrumentName;
   private String description;
   private String unit;
+
+  protected final String instrumentName;
 
   AbstractInstrumentBuilder(
       MeterProviderSharedState meterProviderSharedState,
@@ -69,17 +72,19 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
     return instrumentFactory.apply(descriptor, storage);
   }
 
-  final void registerDoubleAsynchronousInstrument(
-      InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
+  final List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>>
+      registerDoubleAsynchronousInstrument(
+          InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.DOUBLE);
-    meterSharedState.registerDoubleAsynchronousInstrument(
+    return meterSharedState.registerDoubleAsynchronousInstrument(
         descriptor, meterProviderSharedState, updater);
   }
 
-  final void registerLongAsynchronousInstrument(
-      InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
+  final List<AsynchronousMetricStorage<?, ObservableLongMeasurement>>
+      registerLongAsynchronousInstrument(
+          InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.LONG);
-    meterSharedState.registerLongAsynchronousInstrument(
+    return meterSharedState.registerLongAsynchronousInstrument(
         descriptor, meterProviderSharedState, updater);
   }
 

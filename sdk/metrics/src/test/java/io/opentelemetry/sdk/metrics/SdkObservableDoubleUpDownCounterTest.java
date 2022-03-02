@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
@@ -31,6 +32,27 @@ class SdkObservableDoubleUpDownCounterTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
+
+  @Test
+  void removeCallback() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    ObservableDoubleUpDownCounter counter =
+        sdkMeterProviderBuilder
+            .registerMetricReader(sdkMeterReader)
+            .build()
+            .get(getClass().getName())
+            .upDownCounterBuilder("testCounter")
+            .ofDoubles()
+            .buildWithCallback(measurement -> measurement.record(10));
+
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric -> assertThat(metric).hasName("testCounter").hasDoubleSum().points().hasSize(1));
+
+    counter.close();
+
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
 
   @Test
   void collectMetrics_NoRecords() {

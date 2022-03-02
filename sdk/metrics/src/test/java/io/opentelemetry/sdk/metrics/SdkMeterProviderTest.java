@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -19,11 +20,13 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -35,6 +38,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -451,6 +455,64 @@ class SdkMeterProviderTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10.1)));
+  }
+
+  @Test
+  void removeAsyncInstrument() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    Meter meter =
+        sdkMeterProviderBuilder.registerMetricReader(reader).build().get(getClass().getName());
+
+    ObservableLongCounter observableCounter1 =
+        meter
+            .counterBuilder("foo")
+            .buildWithCallback(
+                measurement ->
+                    measurement.record(10, Attributes.builder().put("callback", "one").build()));
+    ObservableLongCounter observableCounter2 =
+        meter
+            .counterBuilder("foo")
+            .buildWithCallback(
+                measurement ->
+                    measurement.record(10, Attributes.builder().put("callback", "two").build()));
+
+    assertThat(reader.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSum()
+                    .points()
+                    .hasSize(2)
+                    .satisfiesExactlyInAnyOrder(
+                        pointData ->
+                            assertThat(pointData)
+                                .hasAttributes(Attributes.builder().put("callback", "one").build()),
+                        (Consumer<LongPointData>)
+                            longPointData ->
+                                assertThat(longPointData)
+                                    .hasAttributes(
+                                        Attributes.builder().put("callback", "two").build())));
+
+    observableCounter1.close();
+
+    assertThat(reader.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSum()
+                    .points()
+                    .hasSize(1)
+                    .satisfiesExactlyInAnyOrder(
+                        (Consumer<LongPointData>)
+                            longPointData ->
+                                assertThat(longPointData)
+                                    .hasAttributes(
+                                        Attributes.builder().put("callback", "two").build())));
+
+    observableCounter2.close();
+    assertThat(reader.collectAllMetrics()).hasSize(0);
   }
 
   @Test

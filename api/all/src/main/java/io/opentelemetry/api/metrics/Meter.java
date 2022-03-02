@@ -13,7 +13,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Instruments are obtained through builders provided by this interface. Each builder has a
  * default "type" associated with recordings that may be changed.
  *
- * <p>A Meter is generally associated with an instrumentation library, e.g. "I monitor apache
+ * <p>A Meter is generally associated with an instrumentation scope, e.g. "I monitor apache
  * httpclient".
  *
  * <p>Choosing an instrument can be hard, but here's a rule of thumb for selecting the right

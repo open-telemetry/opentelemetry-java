@@ -11,13 +11,13 @@ import javax.annotation.Nullable;
 final class SdkLogEmitterBuilder implements LogEmitterBuilder {
 
   private final ComponentRegistry<SdkLogEmitter> registry;
-  private final String instrumentationName;
-  @Nullable private String getInstrumentationVersion;
+  private final String instrumentationScopeName;
+  @Nullable private String instrumentationScopeVersion;
   @Nullable private String schemaUrl;
 
-  SdkLogEmitterBuilder(ComponentRegistry<SdkLogEmitter> registry, String instrumentationName) {
+  SdkLogEmitterBuilder(ComponentRegistry<SdkLogEmitter> registry, String instrumentationScopeName) {
     this.registry = registry;
-    this.instrumentationName = instrumentationName;
+    this.instrumentationScopeName = instrumentationScopeName;
   }
 
   @Override
@@ -27,13 +27,13 @@ final class SdkLogEmitterBuilder implements LogEmitterBuilder {
   }
 
   @Override
-  public SdkLogEmitterBuilder setInstrumentationVersion(String instrumentationVersion) {
-    this.getInstrumentationVersion = instrumentationVersion;
+  public SdkLogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+    this.instrumentationScopeVersion = instrumentationScopeVersion;
     return this;
   }
 
   @Override
   public SdkLogEmitter build() {
-    return registry.get(instrumentationName, getInstrumentationVersion, schemaUrl);
+    return registry.get(instrumentationScopeName, instrumentationScopeVersion, schemaUrl);
   }
 }

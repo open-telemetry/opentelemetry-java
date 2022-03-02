@@ -28,52 +28,49 @@ class MetricStorageRegistryTest {
       descriptor("sync", "other_description", InstrumentType.COUNTER);
   private static final MetricDescriptor ASYNC_DESCRIPTOR =
       descriptor("async", "description", InstrumentType.OBSERVABLE_GAUGE);
+  private static final MetricDescriptor OTHER_ASYNC_DESCRIPTOR =
+      descriptor("async", "other_description", InstrumentType.OBSERVABLE_GAUGE);
 
-  private final MeterSharedState meterSharedState =
-      MeterSharedState.create(InstrumentationLibraryInfo.empty());
+  private final MetricStorageRegistry metricStorageRegistry = new MetricStorageRegistry();
 
   @Test
   void register_Sync() {
-    TestMetricStorage testInstrument = new TestMetricStorage(SYNC_DESCRIPTOR);
-    assertThat(meterSharedState.getMetricStorageRegistry().register(testInstrument))
-        .isSameAs(testInstrument);
-    assertThat(meterSharedState.getMetricStorageRegistry().register(testInstrument))
-        .isSameAs(testInstrument);
-    assertThat(
-            meterSharedState
-                .getMetricStorageRegistry()
-                .register(new TestMetricStorage(SYNC_DESCRIPTOR)))
-        .isSameAs(testInstrument);
+    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(SYNC_DESCRIPTOR)))
+        .isSameAs(storage);
   }
 
   @Test
   void register_SyncIncompatibleDescriptor() {
-    TestMetricStorage testInstrument = new TestMetricStorage(SYNC_DESCRIPTOR);
-    assertThat(meterSharedState.getMetricStorageRegistry().register(testInstrument))
-        .isSameAs(testInstrument);
+    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
 
     assertThatThrownBy(
-            () ->
-                meterSharedState
-                    .getMetricStorageRegistry()
-                    .register(new TestMetricStorage(OTHER_SYNC_DESCRIPTOR)))
+            () -> metricStorageRegistry.register(new TestMetricStorage(OTHER_SYNC_DESCRIPTOR)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Metric with same name and different descriptor already created.");
   }
 
   @Test
   void register_Async() {
-    TestMetricStorage testInstrument = new TestMetricStorage(ASYNC_DESCRIPTOR);
-    assertThat(meterSharedState.getMetricStorageRegistry().register(testInstrument))
-        .isSameAs(testInstrument);
+    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(ASYNC_DESCRIPTOR)))
+        .isSameAs(storage);
+  }
+
+  @Test
+  void register_AsyncIncompatibleDescriptor() {
+    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR);
+    assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
 
     assertThatThrownBy(
-            () ->
-                meterSharedState
-                    .getMetricStorageRegistry()
-                    .register(new TestMetricStorage(ASYNC_DESCRIPTOR)))
+            () -> metricStorageRegistry.register(new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR)))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Async metric with same name has already been created.");
+        .hasMessageContaining("Metric with same name and different descriptor already created.");
   }
 
   private static MetricDescriptor descriptor(

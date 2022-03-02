@@ -9,17 +9,22 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
 final class SdkTracer implements Tracer {
   static final String FALLBACK_SPAN_NAME = "<unspecified span name>";
 
   private final TracerSharedState sharedState;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
-  SdkTracer(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+  SdkTracer(TracerSharedState sharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.sharedState = sharedState;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.instrumentationLibraryInfo =
+        InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo);
   }
 
   @Override
@@ -28,19 +33,15 @@ final class SdkTracer implements Tracer {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {
-      Tracer tracer = TracerProvider.noop().get(instrumentationLibraryInfo.getName());
+      Tracer tracer = TracerProvider.noop().get(instrumentationScopeInfo.getName());
       return tracer.spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
         spanName, instrumentationLibraryInfo, sharedState, sharedState.getSpanLimits());
   }
 
-  /**
-   * Returns the instrumentation library specified when creating the tracer.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo}
-   */
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+  // Visible for testing
+  InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 }

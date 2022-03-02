@@ -19,10 +19,10 @@ public enum MetricDataType {
    */
   DOUBLE_GAUGE,
 
-  /** A sum of non negative long (int64) values. Reports {@link LongSumData} data. */
+  /** A sum of non negative long (int64) values. */
   LONG_SUM,
 
-  /** A sum of non negative double values. Reports {@link DoubleSumData} data. */
+  /** A sum of non negative double values. */
   DOUBLE_SUM,
 
   /**
