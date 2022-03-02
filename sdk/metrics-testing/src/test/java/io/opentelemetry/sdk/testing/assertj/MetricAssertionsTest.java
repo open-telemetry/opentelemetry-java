@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -207,7 +208,7 @@ public class MetricAssertionsTest {
   private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
-  private static final ValueAtPercentile PERCENTILE_VALUE = ValueAtPercentile.create(0, 1);
+  private static final ValueAtPercentile PERCENTILE_VALUE = ImmutableValueAtPercentile.create(0, 1);
 
   private static final SummaryPointData DOUBLE_SUMMARY_POINT_DATA =
       ImmutableSummaryPointData.create(
@@ -476,7 +477,7 @@ public class MetricAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(DOUBLE_SUMMARY_POINT_DATA)
-                    .hasPercentileValues(ValueAtPercentile.create(1, 1)))
+                    .hasPercentileValues(ImmutableValueAtPercentile.create(1, 1)))
         .isInstanceOf(AssertionError.class);
   }
 

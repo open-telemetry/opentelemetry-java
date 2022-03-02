@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,9 +31,9 @@ class MetricDataImplTest {
   private static final double DOUBLE_VALUE = 1.234;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
   private static final ValueAtPercentile MINIMUM_VALUE =
-      ValueAtPercentile.create(0.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE);
   private static final ValueAtPercentile MAXIMUM_VALUE =
-      ValueAtPercentile.create(100.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
       LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
   private static final DoublePointData DOUBLE_POINT =
@@ -46,8 +47,8 @@ class MetricDataImplTest {
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
-              ValueAtPercentile.create(0.0, DOUBLE_VALUE),
-              ValueAtPercentile.create(100, DOUBLE_VALUE)));
+              ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE),
+              ImmutableValueAtPercentile.create(100, DOUBLE_VALUE)));
   private static final DoubleHistogramPointData HISTOGRAM_POINT =
       DoubleHistogramPointData.create(
           START_EPOCH_NANOS,

@@ -15,10 +15,10 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -78,8 +78,8 @@ class LoggingMetricExporterTest {
                             1010,
                             50000,
                             Arrays.asList(
-                                ValueAtPercentile.create(0.0, 25),
-                                ValueAtPercentile.create(100.0, 433)))))),
+                                ImmutableValueAtPercentile.create(0.0, 25),
+                                ImmutableValueAtPercentile.create(100.0, 433)))))),
             MetricData.createLongSum(
                 resource,
                 instrumentationLibraryInfo,

@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -369,7 +370,8 @@ public final class MetricAdapter {
       List<Summary.Snapshot.ValueAtPercentile> valueAtPercentiles) {
     List<ValueAtPercentile> result = new ArrayList<>(valueAtPercentiles.size());
     for (Summary.Snapshot.ValueAtPercentile censusValue : valueAtPercentiles) {
-      result.add(ValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
+      result.add(
+          ImmutableValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
     }
     return result;
   }
