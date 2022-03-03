@@ -34,6 +34,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * have a use-case that absolutely requires it. Please favor using instances of OpenTelemetry
  * wherever possible.
  *
+ * <p>If you are using the OpenTelemetry javaagent, it is generally best to only call
+ * GlobalOpenTelemetry.get() once, and then pass the resulting reference where you need to use it.
+ *
  * @see TracerProvider
  * @see ContextPropagators
  */
