@@ -7,11 +7,14 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ResourceConfigurationTest {
@@ -46,6 +49,26 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
+    assertProcessAttributeIsNull(attributes);
+  }
+
+  @Test
+  void onlyEnabledCustomResourceProvider() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put("otel.java.enabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer");
+    Attributes attributes =
+        ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(customConfigs),
+                ResourceConfigurationTest.class.getClassLoader(),
+                (r, c) -> r)
+            .getAttributes();
+
+    assertProcessAttributeIsNull(attributes);
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+  }
+
+  void assertProcessAttributeIsNull(Attributes attributes) {
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
 
