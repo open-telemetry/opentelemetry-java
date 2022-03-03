@@ -13,13 +13,12 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -87,7 +86,7 @@ class LoggingMetricExporterTest {
                 "counterOne",
                 "A simple counter",
                 "one",
-                LongSumData.create(
+                ImmutableSumData.create(
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
@@ -102,7 +101,7 @@ class LoggingMetricExporterTest {
                 "observedValue",
                 "an observer gauge",
                 "kb",
-                DoubleSumData.create(
+                ImmutableSumData.create(
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(

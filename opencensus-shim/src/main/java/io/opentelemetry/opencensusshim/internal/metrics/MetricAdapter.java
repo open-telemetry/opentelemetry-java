@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -32,12 +31,13 @@ import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,13 +147,13 @@ public final class MetricAdapter {
     return ImmutableGaugeData.create(convertDoublePoints(censusMetric));
   }
 
-  static LongSumData convertLongSum(Metric censusMetric) {
-    return LongSumData.create(
+  static SumData<LongPointData> convertLongSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertLongPoints(censusMetric));
   }
 
-  static DoubleSumData convertDoubleSum(Metric censusMetric) {
-    return DoubleSumData.create(
+  static SumData<DoublePointData> convertDoubleSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertDoublePoints(censusMetric));
   }
 

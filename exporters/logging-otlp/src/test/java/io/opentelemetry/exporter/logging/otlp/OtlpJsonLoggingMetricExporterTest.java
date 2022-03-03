@@ -14,9 +14,9 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,7 @@ class OtlpJsonLoggingMetricExporterTest {
           "metric1",
           "metric1 description",
           "m",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(
@@ -51,7 +51,7 @@ class OtlpJsonLoggingMetricExporterTest {
           "metric2",
           "metric2 description",
           "s",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(

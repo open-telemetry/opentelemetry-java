@@ -17,19 +17,18 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,7 +116,7 @@ public class MetricAssertionsTest {
           /* name= */ "sum",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               // Points
@@ -130,7 +129,7 @@ public class MetricAssertionsTest {
           /* name= */ "sum_delta",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               false,
               AggregationTemporality.DELTA,
               // Points
@@ -172,7 +171,7 @@ public class MetricAssertionsTest {
           /* name= */ "sum",
           /* description= */ "description",
           /* unit= */ "unit",
-          LongSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               // Points
@@ -185,7 +184,7 @@ public class MetricAssertionsTest {
           /* name= */ "sum_delta",
           /* description= */ "description",
           /* unit= */ "unit",
-          LongSumData.create(
+          ImmutableSumData.create(
               false,
               AggregationTemporality.DELTA,
               // Points
