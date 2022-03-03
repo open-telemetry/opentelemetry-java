@@ -19,8 +19,8 @@ import javax.annotation.concurrent.Immutable;
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
  *
- * <p><i>Note: This is called "DoubleHistogram" to reflect which primitives are used to record it,
- * however "Histogram" is the equivalent OTLP type.</i>
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 @AutoValue

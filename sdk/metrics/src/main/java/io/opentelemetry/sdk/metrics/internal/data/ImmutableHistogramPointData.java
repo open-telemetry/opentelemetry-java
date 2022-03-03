@@ -16,18 +16,20 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * DoubleHistogramPointData represents an approximate representation of the distribution of
- * measurements.
+ * An approximate representation of the distribution of measurements.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 @AutoValue
 public abstract class ImmutableHistogramPointData implements HistogramPointData {
 
   /**
-   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
-   * N+1 counts.
+   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
+   * counts.
    *
-   * @return a DoubleHistogramPointData.
+   * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
   public static ImmutableHistogramPointData create(
@@ -42,10 +44,10 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
   }
 
   /**
-   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
-   * N+1 counts.
+   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
+   * counts.
    *
-   * @return a DoubleHistogramPointData.
+   * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
   public static ImmutableHistogramPointData create(
@@ -88,20 +90,11 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
 
   ImmutableHistogramPointData() {}
 
-  /**
-   * Returns the lower bound of a bucket (all values would have been greater than).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
   @Override
   public double getBucketLowerBound(int bucketIndex) {
     return bucketIndex > 0 ? getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
   }
-  /**
-   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
+
   @Override
   public double getBucketUpperBound(int bucketIndex) {
     return (bucketIndex < getBoundaries().size())
