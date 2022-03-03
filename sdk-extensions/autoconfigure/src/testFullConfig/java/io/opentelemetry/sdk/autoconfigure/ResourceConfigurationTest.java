@@ -55,7 +55,8 @@ class ResourceConfigurationTest {
   @Test
   void onlyEnabledCustomResourceProvider() {
     Map<String, String> customConfigs = new HashMap<>(1);
-    customConfigs.put("otel.java.enabled.resource.providers",
+    customConfigs.put(
+        "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer");
     Attributes attributes =
         ResourceConfiguration.configureResource(
