@@ -13,7 +13,12 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
-/** {@link GaugeData} recorded uses {@code double}s. */
+/**
+ * {@link GaugeData} recorded uses {@code double}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableGaugeData<T extends PointData> implements GaugeData<T> {

@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import org.assertj.core.api.AbstractAssert;
 
@@ -98,7 +99,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleHistogram}.
    */
-  public DoubleHistogramAssert hasDoubleHistogram() {
+  public HistogramAssert hasDoubleHistogram() {
     isNotNull();
     if (actual.getType() != MetricDataType.HISTOGRAM) {
       failWithActualExpectedAndMessage(
@@ -108,7 +109,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.HISTOGRAM,
           actual.getType());
     }
-    return new DoubleHistogramAssert(actual.getDoubleHistogramData());
+    return new HistogramAssert(actual.getHistogramData());
   }
 
   /**
@@ -126,7 +127,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.EXPONENTIAL_HISTOGRAM,
           actual.getType());
     }
-    return new ExponentialHistogramAssert(actual.getExponentialHistogramData());
+    return new ExponentialHistogramAssert(ExponentialHistogramData.fromMetricData(actual));
   }
 
   /**

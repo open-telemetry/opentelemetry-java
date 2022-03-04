@@ -198,7 +198,7 @@ class DoubleHistogramAggregatorTest {
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricDataType.HISTOGRAM);
-    assertThat(metricData.getDoubleHistogramData().getAggregationTemporality())
+    assertThat(metricData.getHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
   }
 

@@ -11,7 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.HistogramDataPoint;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -26,16 +26,16 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
   private final ExemplarMarshaler[] exemplars;
   private final KeyValueMarshaler[] attributes;
 
-  static HistogramDataPointMarshaler[] createRepeated(Collection<DoubleHistogramPointData> points) {
+  static HistogramDataPointMarshaler[] createRepeated(Collection<HistogramPointData> points) {
     HistogramDataPointMarshaler[] marshalers = new HistogramDataPointMarshaler[points.size()];
     int index = 0;
-    for (DoubleHistogramPointData point : points) {
+    for (HistogramPointData point : points) {
       marshalers[index++] = HistogramDataPointMarshaler.create(point);
     }
     return marshalers;
   }
 
-  static HistogramDataPointMarshaler create(DoubleHistogramPointData point) {
+  static HistogramDataPointMarshaler create(HistogramPointData point) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(point.getAttributes());
     ExemplarMarshaler[] exemplarMarshalers = ExemplarMarshaler.createRepeated(point.getExemplars());

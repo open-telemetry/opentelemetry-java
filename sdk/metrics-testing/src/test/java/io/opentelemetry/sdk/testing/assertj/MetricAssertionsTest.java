@@ -16,20 +16,21 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class MetricAssertionsTest {
           /* name= */ "histogram",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleHistogramData.create(
+          ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
               // Points
               Collections.emptyList()));
@@ -59,7 +60,7 @@ public class MetricAssertionsTest {
           /* name= */ "histogram_delta",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleHistogramData.create(
+          ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               // Points
               Collections.emptyList()));
@@ -214,8 +215,8 @@ public class MetricAssertionsTest {
       ImmutableSummaryPointData.create(
           1, 2, Attributes.empty(), 1, 2, Collections.singletonList(PERCENTILE_VALUE));
 
-  private static final DoubleHistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =
-      DoubleHistogramPointData.create(
+  private static final HistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =
+      ImmutableHistogramPointData.create(
           1, 2, Attributes.empty(), 15, Collections.singletonList(10.0), Arrays.asList(1L, 2L));
 
   @Test

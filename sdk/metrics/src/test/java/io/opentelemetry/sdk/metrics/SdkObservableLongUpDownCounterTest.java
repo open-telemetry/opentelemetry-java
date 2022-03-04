@@ -127,7 +127,7 @@ class SdkObservableLongUpDownCounterTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
+                    .setType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();

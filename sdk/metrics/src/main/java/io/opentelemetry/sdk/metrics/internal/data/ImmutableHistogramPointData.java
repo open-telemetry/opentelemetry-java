@@ -3,32 +3,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * DoubleHistogramPointData represents an approximate representation of the distribution of
- * measurements.
+ * An approximate representation of the distribution of measurements.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 @AutoValue
-public abstract class DoubleHistogramPointData implements PointData {
+public abstract class ImmutableHistogramPointData implements HistogramPointData {
 
   /**
-   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
-   * N+1 counts.
+   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
+   * counts.
    *
-   * @return a DoubleHistogramPointData.
+   * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
-  public static DoubleHistogramPointData create(
+  public static ImmutableHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
@@ -40,13 +44,13 @@ public abstract class DoubleHistogramPointData implements PointData {
   }
 
   /**
-   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
-   * N+1 counts.
+   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
+   * counts.
    *
-   * @return a DoubleHistogramPointData.
+   * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
-  public static DoubleHistogramPointData create(
+  public static ImmutableHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
@@ -73,7 +77,7 @@ public abstract class DoubleHistogramPointData implements PointData {
     for (long c : PrimitiveLongList.toArray(counts)) {
       totalCount += c;
     }
-    return new AutoValue_DoubleHistogramPointData(
+    return new AutoValue_ImmutableHistogramPointData(
         startEpochNanos,
         epochNanos,
         attributes,
@@ -84,51 +88,14 @@ public abstract class DoubleHistogramPointData implements PointData {
         Collections.unmodifiableList(new ArrayList<>(counts)));
   }
 
-  DoubleHistogramPointData() {}
+  ImmutableHistogramPointData() {}
 
-  /**
-   * The sum of all measurements recorded.
-   *
-   * @return the sum of recorded measurements.
-   */
-  public abstract double getSum();
-
-  /**
-   * The number of measurements taken.
-   *
-   * @return the count of recorded measurements.
-   */
-  public abstract long getCount();
-
-  /**
-   * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: (-inf, x], (x, y], (y, z], (z, +inf).
-   *
-   * @return the read-only bucket boundaries in increasing order. <b>do not mutate</b> the returned
-   *     object.
-   */
-  public abstract List<Double> getBoundaries();
-
-  /**
-   * The counts in each bucket.
-   *
-   * @return the read-only counts in each bucket. <b>do not mutate</b> the returned object.
-   */
-  public abstract List<Long> getCounts();
-
-  /**
-   * Returns the lower bound of a bucket (all values would have been greater than).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
+  @Override
   public double getBucketLowerBound(int bucketIndex) {
     return bucketIndex > 0 ? getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
   }
-  /**
-   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
+
+  @Override
   public double getBucketUpperBound(int bucketIndex) {
     return (bucketIndex < getBoundaries().size())
         ? getBoundaries().get(bucketIndex)

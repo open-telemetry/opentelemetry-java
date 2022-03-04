@@ -5,19 +5,19 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
 
 /** Test assertions for data heading to exporters within the Metrics SDK. */
@@ -35,9 +35,9 @@ public final class MetricAssertions extends Assertions {
     return new GaugeAssert<>(metric);
   }
 
-  /** Returns an assertion for {@link DoubleHistogramData}. */
-  public static DoubleHistogramAssert assertThat(DoubleHistogramData metric) {
-    return new DoubleHistogramAssert(metric);
+  /** Returns an assertion for {@link HistogramData}. */
+  public static HistogramAssert assertThat(HistogramData metric) {
+    return new HistogramAssert(metric);
   }
 
   /** Returns an assertion for {@link SummaryData}. */
@@ -45,9 +45,9 @@ public final class MetricAssertions extends Assertions {
     return new SummaryDataAssert(metric);
   }
 
-  /** Returns an assertion for {@link DoubleHistogramPointData}. */
-  public static DoubleHistogramPointDataAssert assertThat(DoubleHistogramPointData point) {
-    return new DoubleHistogramPointDataAssert(point);
+  /** Returns an assertion for {@link HistogramPointData}. */
+  public static HistogramPointDataAssert assertThat(HistogramPointData point) {
+    return new HistogramPointDataAssert(point);
   }
 
   /** Returns an assertion for {@link SummaryPointData}. */

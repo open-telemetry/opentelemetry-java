@@ -10,14 +10,14 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.Histogram;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
 import java.io.IOException;
 
 final class HistogramMarshaler extends MarshalerWithSize {
   private final HistogramDataPointMarshaler[] dataPoints;
   private final ProtoEnumInfo aggregationTemporality;
 
-  static HistogramMarshaler create(DoubleHistogramData histogram) {
+  static HistogramMarshaler create(HistogramData histogram) {
     HistogramDataPointMarshaler[] dataPointMarshalers =
         HistogramDataPointMarshaler.createRepeated(histogram.getPoints());
     return new HistogramMarshaler(

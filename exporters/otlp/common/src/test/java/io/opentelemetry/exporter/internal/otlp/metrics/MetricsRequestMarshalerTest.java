@@ -42,22 +42,23 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -340,9 +341,9 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toHistogramDataPoints(
                 ImmutableList.of(
-                    DoubleHistogramPointData.create(
+                    ImmutableHistogramPointData.create(
                         123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
-                    DoubleHistogramPointData.create(
+                    ImmutableHistogramPointData.create(
                         123,
                         456,
                         Attributes.empty(),
@@ -734,10 +735,10 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    DoubleHistogramData.create(
+                    ImmutableHistogramData.create(
                         AggregationTemporality.DELTA,
                         singletonList(
-                            DoubleHistogramPointData.create(
+                            ImmutableHistogramPointData.create(
                                 123,
                                 456,
                                 KV_ATTR,
@@ -969,7 +970,7 @@ class MetricsRequestMarshalerTest {
   }
 
   private static List<HistogramDataPoint> toHistogramDataPoints(
-      Collection<DoubleHistogramPointData> points) {
+      Collection<HistogramPointData> points) {
     return points.stream()
         .map(
             point ->

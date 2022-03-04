@@ -30,6 +30,8 @@ class AggregationTest {
   @Test
   void histogramUsesExplicitBucket() {
     // Note: This will change when exponential histograms are launched.
-    assertThat(Aggregation.histogram()).asString().contains("ExplicitBucketHistogram");
+    assertThat(Aggregation.explicitBucketHistogram())
+        .asString()
+        .contains("ExplicitBucketHistogram");
   }
 }
