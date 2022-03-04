@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;

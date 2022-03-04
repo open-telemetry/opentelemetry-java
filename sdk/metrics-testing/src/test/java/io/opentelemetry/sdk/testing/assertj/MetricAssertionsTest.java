@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;

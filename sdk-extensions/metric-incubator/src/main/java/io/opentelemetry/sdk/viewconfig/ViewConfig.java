@@ -177,7 +177,7 @@ public final class ViewConfig {
     List<String> attributeKeys = viewSpec.getAttributeKeys();
     if (attributeKeys != null) {
       Set<String> keySet = new HashSet<>(attributeKeys);
-      builder.filterAttributes(keySet::contains);
+      builder.setAttributeFilter(keySet::contains);
     }
     return builder.build();
   }
@@ -203,11 +203,11 @@ public final class ViewConfig {
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     String instrumentName = selectorSpec.getInstrumentName();
     if (instrumentName != null) {
-      builder.setInstrumentName(instrumentName);
+      builder.setName(instrumentName);
     }
     InstrumentType instrumentType = selectorSpec.getInstrumentType();
     if (instrumentType != null) {
-      builder.setInstrumentType(instrumentType);
+      builder.setType(instrumentType);
     }
 
     MeterSelectorBuilder meterBuilder = MeterSelector.builder();

@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -294,7 +295,7 @@ final class MetricAdapter {
       case HISTOGRAM:
         return metricData.getHistogramData().getPoints();
       case EXPONENTIAL_HISTOGRAM:
-        return metricData.getExponentialHistogramData().getPoints();
+        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
     }
     return Collections.emptyList();
   }

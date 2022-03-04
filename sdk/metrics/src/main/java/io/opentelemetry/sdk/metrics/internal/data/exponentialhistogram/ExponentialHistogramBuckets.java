@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -19,6 +19,9 @@ import javax.annotation.concurrent.Immutable;
  * Then, if <code>offset</code> is 0, the bucket lower bounds would be 1.0, 2.0, 4.0, 8.0, etc. If
  * <code>offset</code> is -3, the bucket lower bounds would be 0.125, 0.25, 0.5, 1.0, 2,0, etc. If
  * <code>offset</code> is +3, the bucket lower bounds would be 8.0, 16.0, 32.0, etc.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
 public interface ExponentialHistogramBuckets {

@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.List;

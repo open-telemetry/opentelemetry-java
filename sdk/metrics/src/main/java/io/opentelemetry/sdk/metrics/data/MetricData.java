@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -313,19 +314,5 @@ public interface MetricData {
       return (HistogramData) getData();
     }
     return ImmutableHistogramData.empty();
-  }
-
-  /**
-   * Returns the {@link ExponentialHistogramData} if type is {@link
-   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
-   *
-   * @return the {@link ExponentialHistogramData} if type is {@link
-   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
-   */
-  default ExponentialHistogramData getExponentialHistogramData() {
-    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
-      return (ExponentialHistogramData) getData();
-    }
-    return DoubleExponentialHistogramData.EMPTY;
   }
 }
