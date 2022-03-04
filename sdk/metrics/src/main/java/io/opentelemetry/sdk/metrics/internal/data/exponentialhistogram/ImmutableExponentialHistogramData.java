@@ -30,11 +30,7 @@ public abstract class ImmutableExponentialHistogramData implements ExponentialHi
     return EMPTY;
   }
 
-  /**
-   * Create a DoubleExponentialHistogramData.
-   *
-   * @return a DoubleExponentialHistogramData
-   */
+  /** Returns a new {@link ExponentialHistogramData}. */
   public static ExponentialHistogramData create(
       AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
     return new AutoValue_ImmutableExponentialHistogramData(temporality, points);
