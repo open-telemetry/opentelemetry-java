@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import java.util.List;
 
+/** A single data point that summarizes the values in a time series of numeric values. */
 public interface SummaryPointData extends PointData {
   /**
    * The number of values that are being summarized.

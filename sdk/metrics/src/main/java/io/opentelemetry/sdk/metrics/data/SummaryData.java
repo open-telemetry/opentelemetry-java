@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import java.util.Collection;
-
-public interface SummaryData extends Data<SummaryPointData> {
-  @Override
-  Collection<SummaryPointData> getPoints();
-}
+/**
+ * A summary metric.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#summary
+ */
+public interface SummaryData extends Data<SummaryPointData> {}
