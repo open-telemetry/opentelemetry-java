@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
