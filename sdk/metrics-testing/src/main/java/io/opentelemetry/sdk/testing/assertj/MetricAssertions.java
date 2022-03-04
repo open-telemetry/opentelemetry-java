@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -32,9 +32,9 @@ public final class MetricAssertions extends Assertions {
     return new GaugeAssert<>(metric);
   }
 
-  /** Returns an assertion for {@link DoubleHistogramData}. */
-  public static DoubleHistogramAssert assertThat(DoubleHistogramData metric) {
-    return new DoubleHistogramAssert(metric);
+  /** Returns an assertion for {@link HistogramData}. */
+  public static HistogramAssert assertThat(HistogramData metric) {
+    return new HistogramAssert(metric);
   }
 
   /** Returns an assertion for {@link DoubleSummaryData}. */
@@ -42,9 +42,9 @@ public final class MetricAssertions extends Assertions {
     return new DoubleSummaryDataAssert(metric);
   }
 
-  /** Returns an assertion for {@link DoubleHistogramPointData}. */
-  public static DoubleHistogramPointDataAssert assertThat(DoubleHistogramPointData point) {
-    return new DoubleHistogramPointDataAssert(point);
+  /** Returns an assertion for {@link HistogramPointData}. */
+  public static HistogramPointDataAssert assertThat(HistogramPointData point) {
+    return new HistogramPointDataAssert(point);
   }
 
   /** Returns an assertion for {@link DoubleSummaryPointData}. */

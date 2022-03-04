@@ -23,18 +23,20 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -155,13 +157,13 @@ public final class MetricAdapter {
         true, AggregationTemporality.CUMULATIVE, convertDoublePoints(censusMetric));
   }
 
-  static DoubleHistogramData convertHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.CUMULATIVE, convertHistogramPoints(censusMetric));
   }
 
-  static DoubleHistogramData convertGaugeHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertGaugeHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.DELTA, convertHistogramPoints(censusMetric));
   }
 
@@ -204,25 +206,25 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleHistogramPointData> convertHistogramPoints(Metric censusMetric) {
+  static Collection<HistogramPointData> convertHistogramPoints(Metric censusMetric) {
     boolean isGauge =
         censusMetric.getMetricDescriptor().getType() == MetricDescriptor.Type.GAUGE_DISTRIBUTION;
     // TODO - preallocate array to correct size.
-    List<DoubleHistogramPointData> result = new ArrayList<>();
+    List<HistogramPointData> result = new ArrayList<>();
     for (TimeSeries ts : censusMetric.getTimeSeriesList()) {
       long startTimestamp = mapTimestamp(ts.getStartTimestamp());
       Attributes attributes =
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         long endTimestamp = mapTimestamp(point.getTimestamp());
-        DoubleHistogramPointData otelPoint =
+        HistogramPointData otelPoint =
             point
                 .getValue()
                 .match(
                     doubleValue -> null,
                     longValue -> null,
                     distribution ->
-                        DoubleHistogramPointData.create(
+                        ImmutableHistogramPointData.create(
                             // Report Gauge histograms as DELTA with "instantaneous" time window.
                             isGauge ? endTimestamp : startTimestamp,
                             endTimestamp,
