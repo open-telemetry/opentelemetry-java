@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -15,24 +16,27 @@ import java.util.Collections;
  *
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @AutoValue
-abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
+public abstract class ImmutableExponentialHistogramData implements ExponentialHistogramData {
 
-  static final ExponentialHistogramData EMPTY =
+  private static final ExponentialHistogramData EMPTY =
       ExponentialHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
-  DoubleExponentialHistogramData() {}
-
-  /**
-   * Create a DoubleExponentialHistogramData.
-   *
-   * @return a DoubleExponentialHistogramData
-   */
-  static DoubleExponentialHistogramData create(
-      AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
-    return new AutoValue_DoubleExponentialHistogramData(temporality, points);
+  public static ExponentialHistogramData empty() {
+    return EMPTY;
   }
+
+  /** Returns a new {@link ExponentialHistogramData}. */
+  public static ExponentialHistogramData create(
+      AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
+    return new AutoValue_ImmutableExponentialHistogramData(temporality, points);
+  }
+
+  ImmutableExponentialHistogramData() {}
 
   @Override
   public abstract AggregationTemporality getAggregationTemporality();
