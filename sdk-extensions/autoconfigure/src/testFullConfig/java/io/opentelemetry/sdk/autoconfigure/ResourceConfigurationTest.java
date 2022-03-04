@@ -69,6 +69,32 @@ class ResourceConfigurationTest {
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
   }
 
+  @Test
+  void settingEnabledAndDisabledConfiguration() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put(
+        "otel.java.enabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer,io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider");
+    customConfigs.put(
+        "otel.java.disabled.resource.providers",
+        "io.opentelemetry.sdk.extension.resources.OsResourceProvider");
+    Attributes attributes =
+        ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(customConfigs),
+                ResourceConfigurationTest.class.getClassLoader(),
+                (r, c) -> r)
+            .getAttributes();
+
+    assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
+
+    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNotNull();
+
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+  }
+
   void assertProcessAttributeIsNull(Attributes attributes) {
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
