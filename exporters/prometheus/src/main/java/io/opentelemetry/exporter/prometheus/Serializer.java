@@ -26,7 +26,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -34,6 +33,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -152,7 +152,7 @@ abstract class Serializer {
           writeHistogram(writer, name, (HistogramPointData) point);
           break;
         case SUMMARY:
-          writeSummary(writer, name, (DoubleSummaryPointData) point);
+          writeSummary(writer, name, (SummaryPointData) point);
           break;
         case EXPONENTIAL_HISTOGRAM:
           throw new IllegalArgumentException("Can't happen");
@@ -188,8 +188,7 @@ abstract class Serializer {
     }
   }
 
-  private void writeSummary(Writer writer, String name, DoubleSummaryPointData point)
-      throws IOException {
+  private void writeSummary(Writer writer, String name, SummaryPointData point) throws IOException {
     writePoint(
         writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
     writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());

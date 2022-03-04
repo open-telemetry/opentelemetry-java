@@ -12,7 +12,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -21,6 +20,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.prometheus.client.Collector;
@@ -149,8 +149,7 @@ final class MetricAdapter {
                   longPoint.getEpochNanos()));
           break;
         case SUMMARY:
-          addSummarySamples(
-              (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
+          addSummarySamples((SummaryPointData) pointData, name, labelNames, labelValues, samples);
           break;
         case HISTOGRAM:
           addHistogramSamples(
@@ -164,7 +163,7 @@ final class MetricAdapter {
   }
 
   private static void addSummarySamples(
-      DoubleSummaryPointData doubleSummaryPoint,
+      SummaryPointData doubleSummaryPoint,
       String name,
       List<String> labelNames,
       List<String> labelValues,
@@ -291,7 +290,7 @@ final class MetricAdapter {
       case LONG_SUM:
         return metricData.getLongSumData().getPoints();
       case SUMMARY:
-        return metricData.getDoubleSummaryData().getPoints();
+        return metricData.getSummaryData().getPoints();
       case HISTOGRAM:
         return metricData.getHistogramData().getPoints();
       case EXPONENTIAL_HISTOGRAM:

@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
@@ -16,6 +14,8 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
@@ -28,6 +28,9 @@ public final class MetricAssertions extends Assertions {
   }
 
   /** Returns an assertion for {@link GaugeData}. */
+  // There is no real use case for passing in a GaugeData that is a lambda, if for some reason it is
+  // desired a cast will still work.
+  @SuppressWarnings("FunctionalInterfaceClash")
   public static <T extends PointData> GaugeAssert<T> assertThat(GaugeData<T> metric) {
     return new GaugeAssert<>(metric);
   }
@@ -37,9 +40,9 @@ public final class MetricAssertions extends Assertions {
     return new HistogramAssert(metric);
   }
 
-  /** Returns an assertion for {@link DoubleSummaryData}. */
-  public static DoubleSummaryDataAssert assertThat(DoubleSummaryData metric) {
-    return new DoubleSummaryDataAssert(metric);
+  /** Returns an assertion for {@link SummaryData}. */
+  public static SummaryDataAssert assertThat(SummaryData metric) {
+    return new SummaryDataAssert(metric);
   }
 
   /** Returns an assertion for {@link HistogramPointData}. */
@@ -47,9 +50,9 @@ public final class MetricAssertions extends Assertions {
     return new HistogramPointDataAssert(point);
   }
 
-  /** Returns an assertion for {@link DoubleSummaryPointData}. */
-  public static DoubleSummaryPointDataAssert assertThat(DoubleSummaryPointData point) {
-    return new DoubleSummaryPointDataAssert(point);
+  /** Returns an assertion for {@link SummaryPointData}. */
+  public static SummaryPointDataAssert assertThat(SummaryPointData point) {
+    return new SummaryPointDataAssert(point);
   }
 
   /** Returns an assertion for {@link ExponentialHistogramPointData}. */

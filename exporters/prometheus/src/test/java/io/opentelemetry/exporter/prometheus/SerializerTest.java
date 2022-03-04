@@ -15,16 +15,16 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -172,17 +172,17 @@ class SerializerTest {
           "instrument.name",
           "description",
           "1",
-          DoubleSummaryData.create(
+          ImmutableSummaryData.create(
               Collections.singletonList(
-                  DoubleSummaryPointData.create(
+                  ImmutableSummaryPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR,
                       5,
                       7,
                       Arrays.asList(
-                          ValueAtPercentile.create(0.9, 0.1),
-                          ValueAtPercentile.create(0.99, 0.3))))));
+                          ImmutableValueAtPercentile.create(0.9, 0.1),
+                          ImmutableValueAtPercentile.create(0.99, 0.3))))));
   private static final MetricData HISTOGRAM =
       MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),

@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
@@ -119,7 +120,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleSummaryData data) {
+      SummaryData data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -295,11 +296,11 @@ public interface MetricData {
    * @return the {@code DoubleSummaryData} if type is {@link MetricDataType#SUMMARY}, otherwise a
    *     default * empty data.
    */
-  default DoubleSummaryData getDoubleSummaryData() {
+  default SummaryData getSummaryData() {
     if (getType() == MetricDataType.SUMMARY) {
-      return (DoubleSummaryData) getData();
+      return (SummaryData) getData();
     }
-    return DoubleSummaryData.EMPTY;
+    return ImmutableSummaryData.empty();
   }
 
   /**

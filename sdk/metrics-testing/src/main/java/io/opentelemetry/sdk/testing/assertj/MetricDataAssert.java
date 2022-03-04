@@ -207,7 +207,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleSummaryData}.
    */
-  public DoubleSummaryDataAssert hasDoubleSummary() {
+  public SummaryDataAssert hasDoubleSummary() {
     isNotNull();
     if (actual.getType() != MetricDataType.SUMMARY) {
       failWithActualExpectedAndMessage(
@@ -217,6 +217,6 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.SUMMARY,
           actual.getType());
     }
-    return new DoubleSummaryDataAssert(actual.getDoubleSummaryData());
+    return new SummaryDataAssert(actual.getSummaryData());
   }
 }

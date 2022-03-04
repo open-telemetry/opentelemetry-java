@@ -16,6 +16,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,24 +33,24 @@ class MetricDataImplTest {
   private static final double DOUBLE_VALUE = 1.234;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
   private static final ValueAtPercentile MINIMUM_VALUE =
-      ValueAtPercentile.create(0.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE);
   private static final ValueAtPercentile MAXIMUM_VALUE =
-      ValueAtPercentile.create(100.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
       LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
   private static final DoublePointData DOUBLE_POINT =
       DoublePointData.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), DOUBLE_VALUE);
-  private static final DoubleSummaryPointData SUMMARY_POINT =
-      DoubleSummaryPointData.create(
+  private static final SummaryPointData SUMMARY_POINT =
+      ImmutableSummaryPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
-              ValueAtPercentile.create(0.0, DOUBLE_VALUE),
-              ValueAtPercentile.create(100, DOUBLE_VALUE)));
+              ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE),
+              ImmutableValueAtPercentile.create(100, DOUBLE_VALUE)));
   private static final ImmutableHistogramPointData HISTOGRAM_POINT =
       ImmutableHistogramPointData.create(
           START_EPOCH_NANOS,
@@ -158,8 +161,8 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
-    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
+            ImmutableSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+    assertThat(metricData.getSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
   }
 
   @Test
@@ -220,13 +223,13 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+            ImmutableSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
     assertThat(metricData.getDoubleGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
     assertThat(metricData.getHistogramData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
 
     metricData =
         MetricData.createDoubleGauge(
@@ -240,7 +243,7 @@ class MetricDataImplTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getSummaryData().getPoints()).isEmpty();
     assertThat(metricData.getHistogramData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
   }
 }

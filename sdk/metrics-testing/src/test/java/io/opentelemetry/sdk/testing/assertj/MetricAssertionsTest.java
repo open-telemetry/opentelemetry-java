@@ -17,17 +17,19 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -94,7 +96,7 @@ public class MetricAssertionsTest {
           /* name= */ "summary",
           /* description= */ "description",
           /* unit= */ "unit",
-          DoubleSummaryData.create(
+          ImmutableSummaryData.create(
               // Points
               Collections.emptyList()));
 
@@ -207,10 +209,10 @@ public class MetricAssertionsTest {
   private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
-  private static final ValueAtPercentile PERCENTILE_VALUE = ValueAtPercentile.create(0, 1);
+  private static final ValueAtPercentile PERCENTILE_VALUE = ImmutableValueAtPercentile.create(0, 1);
 
-  private static final DoubleSummaryPointData DOUBLE_SUMMARY_POINT_DATA =
-      DoubleSummaryPointData.create(
+  private static final SummaryPointData DOUBLE_SUMMARY_POINT_DATA =
+      ImmutableSummaryPointData.create(
           1, 2, Attributes.empty(), 1, 2, Collections.singletonList(PERCENTILE_VALUE));
 
   private static final HistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =
@@ -476,7 +478,7 @@ public class MetricAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(DOUBLE_SUMMARY_POINT_DATA)
-                    .hasPercentileValues(ValueAtPercentile.create(1, 1)))
+                    .hasPercentileValues(ImmutableValueAtPercentile.create(1, 1)))
         .isInstanceOf(AssertionError.class);
   }
 
