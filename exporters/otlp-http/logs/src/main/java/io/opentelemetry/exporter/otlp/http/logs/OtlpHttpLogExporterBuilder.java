@@ -87,8 +87,8 @@ public final class OtlpHttpLogExporterBuilder {
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
    */
-  public OtlpHttpLogExporterBuilder setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
-    delegate.setClientTls(privateKeyPem, privateKeyChainPem);
+  public OtlpHttpLogExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 

@@ -44,7 +44,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] privateKeyChainPem;
+  @Nullable private byte[] certificatePem;
   @Nullable RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
@@ -99,9 +99,9 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
-  public GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+  public GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     this.privateKeyPem = privateKeyPem;
-    this.privateKeyChainPem = privateKeyChainPem;
+    this.certificatePem = certificatePem;
     return this;
   }
 
@@ -146,7 +146,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
       if (trustedCertificatesPem != null) {
         try {
           ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
-              managedChannelBuilder, privateKeyPem, privateKeyChainPem, trustedCertificatesPem);
+              managedChannelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
         } catch (SSLException e) {
           throw new IllegalStateException(
               "Could not set trusted certificates for gRPC TLS connection, are they valid "

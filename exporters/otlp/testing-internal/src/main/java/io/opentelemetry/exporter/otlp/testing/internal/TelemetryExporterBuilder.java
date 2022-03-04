@@ -22,7 +22,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
-  TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem);
+  TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem);
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 

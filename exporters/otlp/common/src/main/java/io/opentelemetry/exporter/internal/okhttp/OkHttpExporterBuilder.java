@@ -40,7 +40,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] privateKeyChainPem;
+  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
@@ -85,9 +85,9 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] privateKeyChainPem) {
+  public OkHttpExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     this.privateKeyPem = privateKeyPem;
-    this.privateKeyChainPem = privateKeyChainPem;
+    this.certificatePem = certificatePem;
     return this;
   }
 
@@ -111,8 +111,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
         X509KeyManager keyManager = null;
-        if (privateKeyPem != null && privateKeyChainPem != null) {
-          keyManager = TlsUtil.keyManager(privateKeyPem, privateKeyChainPem);
+        if (privateKeyPem != null && certificatePem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
         }
         clientBuilder.sslSocketFactory(
             TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);

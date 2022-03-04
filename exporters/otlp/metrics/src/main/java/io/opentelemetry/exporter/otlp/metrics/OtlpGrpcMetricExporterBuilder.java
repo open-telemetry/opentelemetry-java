@@ -120,8 +120,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
    */
   public OtlpGrpcMetricExporterBuilder setClientTls(
-      byte[] privateKeyPem, byte[] privateKeyChainPem) {
-    delegate.setClientTls(privateKeyPem, privateKeyChainPem);
+      byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 

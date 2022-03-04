@@ -92,8 +92,8 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
 
       @Override
       public TelemetryExporterBuilder<LogData> setClientTls(byte[] privateKeyPem,
-          byte[] privateKeyChainPem) {
-        builder.setClientTls(privateKeyPem, privateKeyChainPem);
+          byte[] certificatePem) {
+        builder.setClientTls(privateKeyPem, certificatePem);
         return this;
       }
 

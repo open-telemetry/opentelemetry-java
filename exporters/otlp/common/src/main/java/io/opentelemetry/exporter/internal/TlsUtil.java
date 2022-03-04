@@ -75,10 +75,10 @@ public final class TlsUtil {
    * Creates {@link KeyManager} initiaded by keystore containing single private key with matching
    * certificate chain.
    */
-  public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] privateKeyChainPem)
+  public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] certificatePem)
       throws SSLException {
     requireNonNull(privateKeyPem, "privateKeyPem");
-    requireNonNull(privateKeyChainPem, "privateKeyChainPem");
+    requireNonNull(certificatePem, "certificatePem");
     try {
       KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
       ks.load(null);
@@ -90,7 +90,7 @@ public final class TlsUtil {
 
       List<Certificate> chain = new ArrayList<>();
 
-      ByteArrayInputStream is = new ByteArrayInputStream(privateKeyChainPem);
+      ByteArrayInputStream is = new ByteArrayInputStream(certificatePem);
       while (is.available() > 0) {
         chain.add(cf.generateCertificate(is));
       }

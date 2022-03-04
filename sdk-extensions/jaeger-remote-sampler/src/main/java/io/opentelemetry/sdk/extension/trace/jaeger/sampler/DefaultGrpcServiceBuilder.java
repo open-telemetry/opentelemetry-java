@@ -42,7 +42,7 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
   @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] privateKeyChainPem;
+  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
 
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
@@ -109,9 +109,9 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
 
   @Override
   public GrpcServiceBuilder<ReqT, ResT> setClientTls(
-      byte[] privateKeyPem, byte[] privateKeyChainPem) {
+      byte[] privateKeyPem, byte[] certificatePem) {
     this.privateKeyPem = privateKeyPem;
-    this.privateKeyChainPem = privateKeyChainPem;
+    this.certificatePem = certificatePem;
     return this;
   }
 
@@ -153,7 +153,7 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
       if (trustedCertificatesPem != null) {
         try {
           ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
-              managedChannelBuilder, privateKeyPem, privateKeyChainPem, trustedCertificatesPem);
+              managedChannelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
         } catch (SSLException e) {
           throw new IllegalStateException(
               "Could not set trusted certificates for gRPC TLS connection, are they valid "
