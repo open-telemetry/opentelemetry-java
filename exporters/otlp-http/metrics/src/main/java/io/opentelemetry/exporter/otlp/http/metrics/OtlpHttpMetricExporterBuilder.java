@@ -91,8 +91,7 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
    */
-  public OtlpHttpMetricExporterBuilder setClientTls(
-      byte[] privateKeyPem, byte[] certificatePem) {
+  public OtlpHttpMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);
     return this;
   }

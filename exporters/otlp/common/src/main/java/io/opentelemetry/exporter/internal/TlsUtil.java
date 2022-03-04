@@ -5,14 +5,10 @@
 
 package io.opentelemetry.exporter.internal;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.security.KeyFactory;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -27,7 +23,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
@@ -135,5 +130,4 @@ public final class TlsUtil {
       throw new SSLException("Could not build TrustManagerFactory from trustedCertificatesPem.", e);
     }
   }
-
 }

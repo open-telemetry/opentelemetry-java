@@ -83,8 +83,8 @@ class OtlpGrpcNettyShadedMetricExporterTest
       }
 
       @Override
-      public TelemetryExporterBuilder<MetricData> setClientTls(byte[] privateKeyPem,
-          byte[] certificatePem) {
+      public TelemetryExporterBuilder<MetricData> setClientTls(
+          byte[] privateKeyPem, byte[] certificatePem) {
         builder.setClientTls(privateKeyPem, certificatePem);
         return this;
       }

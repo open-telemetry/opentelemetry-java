@@ -101,7 +101,8 @@ final class OkHttpGrpcServiceBuilder<
   }
 
   @Override
-  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+  public GrpcServiceBuilder<ReqMarshalerT, ResUnMarshalerT> setClientTls(
+      byte[] privateKeyPem, byte[] certificatePem) {
     requireNonNull(privateKeyPem, "privateKeyPem");
     requireNonNull(certificatePem, "certificatePem");
     this.privateKeyPem = privateKeyPem;

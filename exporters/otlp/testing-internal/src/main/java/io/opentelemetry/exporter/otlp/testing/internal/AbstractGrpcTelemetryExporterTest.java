@@ -79,7 +79,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @RegisterExtension
   @Order(2)
-  static final SelfSignedCertificateExtension clientCertificate = new SelfSignedCertificateExtension();
+  static final SelfSignedCertificateExtension clientCertificate =
+      new SelfSignedCertificateExtension();
 
   @RegisterExtension
   @Order(3)
@@ -260,7 +261,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         exporterBuilder()
             .setEndpoint(server.httpsUri().toString())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
-            .setClientTls(clientCertificate.privateKey().getEncoded(),
+            .setClientTls(
+                clientCertificate.privateKey().getEncoded(),
                 clientCertificate.certificate().getEncoded())
             .build();
     try {

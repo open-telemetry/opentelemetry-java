@@ -86,8 +86,8 @@ class OtlpGrpcNettyShadedSpanExporterTest
       }
 
       @Override
-      public TelemetryExporterBuilder<SpanData> setClientTls(byte[] privateKeyPem,
-          byte[] certificatePem) {
+      public TelemetryExporterBuilder<SpanData> setClientTls(
+          byte[] privateKeyPem, byte[] certificatePem) {
         builder.setClientTls(privateKeyPem, certificatePem);
         return this;
       }
