@@ -6,13 +6,11 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -23,7 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -37,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,22 +50,14 @@ public class AsynchronousMetricStorageTest {
   LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
   @Mock private MetricReader reader;
-  @Spy private AttributesProcessor spyAttributesProcessor = AttributesProcessor.noop();
 
   @BeforeEach
   void setup() {
-    view =
-        View.builder()
-            .setAggregation(Aggregation.lastValue())
-            .setAttributesProcessor(spyAttributesProcessor)
-            .build();
+    view = View.builder().setAggregation(Aggregation.lastValue()).build();
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
-                    .build(),
-                view)
+                InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_GAUGE).build(), view)
             .build();
 
     meterProviderSharedState =
@@ -79,50 +67,6 @@ public class AsynchronousMetricStorageTest {
     handle = CollectionHandle.createSupplier().get();
     all = CollectionHandle.mutableSet();
     all.add(handle);
-  }
-
-  @Test
-  void doubleAsynchronousAccumulator_AttributesProcessor_used() {
-    AsynchronousMetricStorage<?, ObservableDoubleMeasurement> doubleAsyncStorage =
-        AsynchronousMetricStorage.createDoubleAsyncStorage(
-            view,
-            InstrumentDescriptor.create(
-                "name",
-                "description",
-                "unit",
-                InstrumentType.OBSERVABLE_GAUGE,
-                InstrumentValueType.DOUBLE));
-    doubleAsyncStorage.addCallback(value -> value.record(1.0, Attributes.empty()));
-    doubleAsyncStorage.collectAndReset(
-        CollectionInfo.create(handle, all, reader),
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        0,
-        testClock.now(),
-        /* suppressSynchronousCollection= */ false);
-    verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
-  }
-
-  @Test
-  void longAsynchronousAccumulator_AttributesProcessor_used() {
-    AsynchronousMetricStorage<?, ObservableLongMeasurement> longAsyncStorage =
-        AsynchronousMetricStorage.createLongAsyncStorage(
-            view,
-            InstrumentDescriptor.create(
-                "name",
-                "description",
-                "unit",
-                InstrumentType.OBSERVABLE_GAUGE,
-                InstrumentValueType.LONG));
-    longAsyncStorage.addCallback(value -> value.record(1, Attributes.empty()));
-    longAsyncStorage.collectAndReset(
-        CollectionInfo.create(handle, all, reader),
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        0,
-        testClock.nanoTime(),
-        /* suppressSynchronousCollection= */ false);
-    verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test

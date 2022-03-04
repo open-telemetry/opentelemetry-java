@@ -7,27 +7,22 @@ package io.opentelemetry.sdk.metrics.view;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 class InstrumentSelectorTest {
 
   @Test
   void invalidArgs() {
-    assertThatThrownBy(() -> InstrumentSelector.builder().setInstrumentType(null))
+    assertThatThrownBy(() -> InstrumentSelector.builder().setType(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("instrumentType");
-    assertThatThrownBy(() -> InstrumentSelector.builder().setInstrumentNameFilter(null))
+    assertThatThrownBy(() -> InstrumentSelector.builder().setName((Predicate<String>) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("instrumentNameFilter");
-    assertThatThrownBy(() -> InstrumentSelector.builder().setInstrumentNamePattern(null))
+        .hasMessage("nameFilter");
+    assertThatThrownBy(() -> InstrumentSelector.builder().setName((String) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("instrumentNamePattern");
-    assertThatThrownBy(() -> InstrumentSelector.builder().setInstrumentName(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("instrumentName");
-    assertThatThrownBy(() -> InstrumentSelector.builder().setInstrumentNameRegex(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("instrumentNameRegex");
+        .hasMessage("name");
     assertThatThrownBy(() -> InstrumentSelector.builder().setMeterSelector(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("meterSelector");

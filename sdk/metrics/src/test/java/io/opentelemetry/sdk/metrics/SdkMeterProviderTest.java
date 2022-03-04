@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -194,7 +194,7 @@ class SdkMeterProviderTest {
   @Test
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
-        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+        InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
         View.builder()
             .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
             .build());
@@ -516,6 +516,42 @@ class SdkMeterProviderTest {
   }
 
   @Test
+  void viewSdk_filterAttributes() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder()
+                    // TODO: Make instrument type optional.
+                    .setType(InstrumentType.OBSERVABLE_GAUGE)
+                    .setName("test")
+                    .build(),
+                View.builder().setAttributeFilter(name -> name.equals("allowed")).build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    meter
+        .gaugeBuilder("test")
+        .setDescription("desc")
+        .setUnit("unit")
+        .buildWithCallback(
+            o ->
+                o.record(
+                    1,
+                    Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build()));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasDoubleGauge()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point.getAttributes().asMap())
+                                .containsOnly(entry(AttributeKey.stringKey("allowed"), "bear"))));
+  }
+
+  @Test
   void viewSdk_AllowRenames() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -524,8 +560,8 @@ class SdkMeterProviderTest {
             .registerView(
                 InstrumentSelector.builder()
                     // TODO: Make instrument type optional.
-                    .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
-                    .setInstrumentName("test")
+                    .setType(InstrumentType.OBSERVABLE_GAUGE)
+                    .setName("test")
                     .build(),
                 View.builder()
                     .setName("not_test")
@@ -554,8 +590,8 @@ class SdkMeterProviderTest {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
-            .setInstrumentType(InstrumentType.HISTOGRAM)
-            .setInstrumentName("test")
+            .setType(InstrumentType.HISTOGRAM)
+            .setName("test")
             .build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -601,8 +637,8 @@ class SdkMeterProviderTest {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
-            .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
-            .setInstrumentName("test")
+            .setType(InstrumentType.OBSERVABLE_GAUGE)
+            .setName("test")
             .build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -648,10 +684,7 @@ class SdkMeterProviderTest {
   @Test
   void viewSdk_capturesBaggageFromContext() {
     InstrumentSelector selector =
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentName("test")
-            .build();
+        InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
@@ -865,8 +898,8 @@ class SdkMeterProviderTest {
             .registerMetricReader(collector2)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentName("testSum")
+                    .setType(InstrumentType.COUNTER)
+                    .setName("testSum")
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
@@ -938,7 +971,7 @@ class SdkMeterProviderTest {
     Meter meter =
         sdkMeterProviderBuilder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setAggregation(Aggregation.drop()).build())
             .registerMetricReader(collector)
             .build()
@@ -969,7 +1002,7 @@ class SdkMeterProviderTest {
       SdkMeterProviderBuilder meterProviderBuilder, Aggregation aggregation) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
-          InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
+          InstrumentSelector.builder().setType(instrumentType).build(),
           View.builder().setAggregation(aggregation).build());
     }
   }
