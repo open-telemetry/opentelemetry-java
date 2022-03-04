@@ -7,6 +7,12 @@ package io.opentelemetry.sdk.metrics.data;
 
 import java.util.Collection;
 
+/**
+ * A histogram metric recording.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
+ */
 public interface HistogramData extends Data<HistogramPointData> {
   /**
    * Returns the {@code AggregationTemporality} of this metric,

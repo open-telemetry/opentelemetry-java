@@ -7,6 +7,12 @@ package io.opentelemetry.sdk.metrics.data;
 
 import java.util.List;
 
+/**
+ * A histogram metric point.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
+ */
 public interface HistogramPointData extends PointData {
   /**
    * The sum of all measurements recorded.
