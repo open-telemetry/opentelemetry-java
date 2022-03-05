@@ -13,19 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: java
-
       - name: Setup Java 17
         uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: java
+
+      - uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
