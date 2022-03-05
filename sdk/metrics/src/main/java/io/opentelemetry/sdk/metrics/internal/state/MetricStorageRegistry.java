@@ -10,9 +10,9 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,13 +35,9 @@ public class MetricStorageRegistry {
   private final Object lock = new Object();
 
   @GuardedBy("lock")
-  private final ConcurrentMap<MetricDescriptor, MetricStorage> registry = new ConcurrentHashMap<>();
+  private final Map<MetricDescriptor, MetricStorage> registry = new HashMap<>();
 
-  /**
-   * Returns a {@code Collection} view of the registered {@link MetricStorage}.
-   *
-   * @return a {@code Collection} view of the registered {@link MetricStorage}.
-   */
+  /** Returns a {@link Collection} of the registered {@link MetricStorage}. */
   public Collection<MetricStorage> getMetrics() {
     synchronized (lock) {
       return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
@@ -82,7 +78,8 @@ public class MetricStorageRegistry {
       // Check compatibility of metrics which share the same case-insensitive name
       if (existing.getName().equalsIgnoreCase(descriptor.getName())
           && !existing.isCompatibleWith(descriptor)) {
-        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
+        logger.log(
+            Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
         break; // Only log information about the first conflict found to reduce noise
       }
     }

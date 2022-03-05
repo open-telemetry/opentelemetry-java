@@ -9,8 +9,8 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -65,9 +65,9 @@ public abstract class MetricDescriptor {
   /** The instrument which lead to the creation of this metric. */
   public abstract InstrumentDescriptor getSourceInstrument();
 
-  /** The FQCN of the view aggregation. */
+  /** The {@link Aggregation#aggregationName(Aggregation)} of the view aggregation. */
   public String getAggregationName() {
-    return getSourceView().getAggregation().getClass().getName();
+    return Aggregation.aggregationName(getSourceView().getAggregation());
   }
 
   @Memoized
@@ -91,15 +91,15 @@ public abstract class MetricDescriptor {
    * </ul>
    */
   public boolean isCompatibleWith(MetricDescriptor other) {
-    return Objects.equals(getName(), other.getName())
-        && Objects.equals(getDescription(), other.getDescription())
-        && Objects.equals(getAggregationName(), other.getAggregationName())
-        && Objects.equals(getSourceInstrument().getName(), other.getSourceInstrument().getName())
-        && Objects.equals(
-            getSourceInstrument().getDescription(), other.getSourceInstrument().getDescription())
-        && Objects.equals(getSourceInstrument().getUnit(), other.getSourceInstrument().getUnit())
-        && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
-        && Objects.equals(
-            getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
+    return getName().equals(other.getName())
+        && getDescription().equals(other.getDescription())
+        && getAggregationName().equals(other.getAggregationName())
+        && getSourceInstrument().getName().equals(other.getSourceInstrument().getName())
+        && getSourceInstrument()
+            .getDescription()
+            .equals(other.getSourceInstrument().getDescription())
+        && getSourceInstrument().getUnit().equals(other.getSourceInstrument().getUnit())
+        && getSourceInstrument().getType().equals(other.getSourceInstrument().getType())
+        && getSourceInstrument().getValueType().equals(other.getSourceInstrument().getValueType());
   }
 }

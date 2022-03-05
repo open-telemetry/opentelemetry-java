@@ -184,17 +184,10 @@ public final class ViewConfig {
 
   // Visible for testing
   static Aggregation toAggregation(String aggregation) {
-    switch (aggregation) {
-      case "sum":
-        return Aggregation.sum();
-      case "last_value":
-        return Aggregation.lastValue();
-      case "drop":
-        return Aggregation.drop();
-      case "histogram":
-        return Aggregation.explicitBucketHistogram();
-      default:
-        throw new ConfigurationException("Unrecognized aggregation " + aggregation);
+    try {
+      return Aggregation.forName(aggregation);
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Error creating aggregation", e);
     }
   }
 

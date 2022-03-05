@@ -131,14 +131,9 @@ class ViewConfigTest {
 
   @Test
   void toAggregation() {
-    assertThat(ViewConfig.toAggregation("sum")).isEqualTo(Aggregation.sum());
-    assertThat(ViewConfig.toAggregation("last_value")).isEqualTo(Aggregation.lastValue());
-    assertThat(ViewConfig.toAggregation("histogram"))
-        .isEqualTo(Aggregation.explicitBucketHistogram());
-    assertThat(ViewConfig.toAggregation("drop")).isEqualTo(Aggregation.drop());
     assertThatThrownBy(() -> ViewConfig.toAggregation("foo"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Unrecognized aggregation foo");
+        .hasMessageContaining("Error creating aggregation");
   }
 
   @Test
