@@ -7,6 +7,10 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -72,7 +76,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleSumData data) {
+      SumData<DoublePointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -94,7 +98,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      LongSumData data) {
+      SumData<LongPointData> data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -116,7 +120,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleSummaryData data) {
+      SummaryData data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -138,7 +142,7 @@ public interface MetricData {
       String name,
       String description,
       String unit,
-      DoubleHistogramData data) {
+      HistogramData data) {
     return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
@@ -262,11 +266,12 @@ public interface MetricData {
    * @return the {@code DoubleSumData} if type is {@link MetricDataType#DOUBLE_SUM}, otherwise a
    *     default empty data.
    */
-  default DoubleSumData getDoubleSumData() {
+  @SuppressWarnings("unchecked")
+  default SumData<DoublePointData> getDoubleSumData() {
     if (getType() == MetricDataType.DOUBLE_SUM) {
-      return (DoubleSumData) getData();
+      return (ImmutableSumData<DoublePointData>) getData();
     }
-    return DoubleSumData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
@@ -276,11 +281,12 @@ public interface MetricData {
    * @return the {@code LongSumData} if type is {@link MetricDataType#LONG_SUM}, otherwise a default
    *     empty data.
    */
-  default LongSumData getLongSumData() {
+  @SuppressWarnings("unchecked")
+  default SumData<LongPointData> getLongSumData() {
     if (getType() == MetricDataType.LONG_SUM) {
-      return (LongSumData) getData();
+      return (SumData<LongPointData>) getData();
     }
-    return LongSumData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
@@ -290,11 +296,11 @@ public interface MetricData {
    * @return the {@code DoubleSummaryData} if type is {@link MetricDataType#SUMMARY}, otherwise a
    *     default * empty data.
    */
-  default DoubleSummaryData getDoubleSummaryData() {
+  default SummaryData getSummaryData() {
     if (getType() == MetricDataType.SUMMARY) {
-      return (DoubleSummaryData) getData();
+      return (SummaryData) getData();
     }
-    return DoubleSummaryData.EMPTY;
+    return ImmutableSummaryData.empty();
   }
 
   /**
@@ -304,24 +310,10 @@ public interface MetricData {
    * @return the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
    *     a default empty data.
    */
-  default DoubleHistogramData getDoubleHistogramData() {
+  default HistogramData getHistogramData() {
     if (getType() == MetricDataType.HISTOGRAM) {
-      return (DoubleHistogramData) getData();
+      return (HistogramData) getData();
     }
-    return DoubleHistogramData.EMPTY;
-  }
-
-  /**
-   * Returns the {@link ExponentialHistogramData} if type is {@link
-   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
-   *
-   * @return the {@link ExponentialHistogramData} if type is {@link
-   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
-   */
-  default ExponentialHistogramData getExponentialHistogramData() {
-    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
-      return (ExponentialHistogramData) getData();
-    }
-    return DoubleExponentialHistogramData.EMPTY;
+    return ImmutableHistogramData.empty();
   }
 }

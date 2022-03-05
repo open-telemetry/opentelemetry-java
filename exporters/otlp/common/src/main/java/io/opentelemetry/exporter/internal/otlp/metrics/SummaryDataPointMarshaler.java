@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.SummaryDataPoint;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -22,16 +22,16 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
   private final ValueAtQuantileMarshaler[] quantileValues;
   private final KeyValueMarshaler[] attributes;
 
-  static SummaryDataPointMarshaler[] createRepeated(Collection<DoubleSummaryPointData> points) {
+  static SummaryDataPointMarshaler[] createRepeated(Collection<SummaryPointData> points) {
     SummaryDataPointMarshaler[] marshalers = new SummaryDataPointMarshaler[points.size()];
     int index = 0;
-    for (DoubleSummaryPointData point : points) {
+    for (SummaryPointData point : points) {
       marshalers[index++] = SummaryDataPointMarshaler.create(point);
     }
     return marshalers;
   }
 
-  static SummaryDataPointMarshaler create(DoubleSummaryPointData point) {
+  static SummaryDataPointMarshaler create(SummaryPointData point) {
     ValueAtQuantileMarshaler[] quantileMarshalers =
         ValueAtQuantileMarshaler.createRepeated(point.getPercentileValues());
     KeyValueMarshaler[] attributeMarshalers =

@@ -13,6 +13,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,26 +33,26 @@ class MetricDataImplTest {
   private static final double DOUBLE_VALUE = 1.234;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
   private static final ValueAtPercentile MINIMUM_VALUE =
-      ValueAtPercentile.create(0.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE);
   private static final ValueAtPercentile MAXIMUM_VALUE =
-      ValueAtPercentile.create(100.0, DOUBLE_VALUE);
+      ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
       LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
   private static final DoublePointData DOUBLE_POINT =
       DoublePointData.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), DOUBLE_VALUE);
-  private static final DoubleSummaryPointData SUMMARY_POINT =
-      DoubleSummaryPointData.create(
+  private static final SummaryPointData SUMMARY_POINT =
+      ImmutableSummaryPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
-              ValueAtPercentile.create(0.0, DOUBLE_VALUE),
-              ValueAtPercentile.create(100, DOUBLE_VALUE)));
-  private static final DoubleHistogramPointData HISTOGRAM_POINT =
-      DoubleHistogramPointData.create(
+              ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE),
+              ImmutableValueAtPercentile.create(100, DOUBLE_VALUE)));
+  private static final ImmutableHistogramPointData HISTOGRAM_POINT =
+      ImmutableHistogramPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
@@ -98,7 +104,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            LongSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(LONG_POINT)));
@@ -130,7 +136,7 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(DOUBLE_POINT)));
@@ -155,8 +161,8 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
-    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
+            ImmutableSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+    assertThat(metricData.getSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
   }
 
   @Test
@@ -177,18 +183,18 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleHistogramData.create(
+            ImmutableHistogramData.create(
                 AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
-    assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
+    assertThat(metricData.getHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
 
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0, 0, Attributes.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0,
                     0,
                     Attributes.empty(),
@@ -198,7 +204,7 @@ class MetricDataImplTest {
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
-                DoubleHistogramPointData.create(
+                ImmutableHistogramPointData.create(
                     0,
                     0,
                     Attributes.empty(),
@@ -217,13 +223,13 @@ class MetricDataImplTest {
             "metric_name",
             "metric_description",
             "ms",
-            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+            ImmutableSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
     assertThat(metricData.getDoubleGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
+    assertThat(metricData.getSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
+    assertThat(metricData.getHistogramData().getPoints()).isEmpty();
 
     metricData =
         MetricData.createDoubleGauge(
@@ -237,7 +243,7 @@ class MetricDataImplTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
-    assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
+    assertThat(metricData.getSummaryData().getPoints()).isEmpty();
+    assertThat(metricData.getHistogramData().getPoints()).isEmpty();
   }
 }

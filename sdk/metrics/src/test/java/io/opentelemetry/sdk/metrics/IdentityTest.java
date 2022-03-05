@@ -379,7 +379,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -405,7 +405,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -439,7 +439,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -473,7 +473,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentName("counter1").build(),
+                InstrumentSelector.builder().setName("counter1").build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -508,7 +508,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -686,7 +686,7 @@ class IdentityTest {
             .registerView(
                 InstrumentSelector.builder()
                     .setMeterSelector(MeterSelector.builder().setName("meter1").build())
-                    .setInstrumentName("counter1")
+                    .setName("counter1")
                     .build(),
                 View.builder().setDescription("description1").build())
             .build();
@@ -735,10 +735,10 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description2").build())
             .build();
 
@@ -779,10 +779,10 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setAggregation(Aggregation.defaultAggregation()).build())
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setAggregation(Aggregation.lastValue()).build())
             .build();
 
@@ -821,7 +821,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setName("counter-new").build())
             .build();
 
@@ -859,7 +859,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setName("counter-new").build())
             .build();
 
@@ -895,10 +895,10 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setDescription("description1").build())
             .registerView(
-                InstrumentSelector.builder().setInstrumentName("counter1").build(),
+                InstrumentSelector.builder().setName("counter1").build(),
                 View.builder()
                     .setName("counter1-gauge")
                     .setAggregation(Aggregation.lastValue())

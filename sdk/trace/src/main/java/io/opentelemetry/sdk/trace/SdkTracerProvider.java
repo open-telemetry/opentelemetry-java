@@ -49,29 +49,29 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
+            instrumentationScopeInfo -> new SdkTracer(sharedState, instrumentationScopeInfo));
   }
 
   @Override
-  public Tracer get(String instrumentationName) {
-    return tracerBuilder(instrumentationName).build();
+  public Tracer get(String instrumentationScopeName) {
+    return tracerBuilder(instrumentationScopeName).build();
   }
 
   @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return tracerBuilder(instrumentationName)
-        .setInstrumentationVersion(instrumentationVersion)
+  public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
+    return tracerBuilder(instrumentationScopeName)
+        .setInstrumentationVersion(instrumentationScopeVersion)
         .build();
   }
 
   @Override
-  public TracerBuilder tracerBuilder(@Nullable String instrumentationName) {
+  public TracerBuilder tracerBuilder(@Nullable String instrumentationScopeName) {
     // Per the spec, both null and empty are "invalid" and a default value should be used.
-    if (instrumentationName == null || instrumentationName.isEmpty()) {
-      logger.fine("Tracer requested without instrumentation name.");
-      instrumentationName = DEFAULT_TRACER_NAME;
+    if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
+      logger.fine("Tracer requested without instrumentation scope name.");
+      instrumentationScopeName = DEFAULT_TRACER_NAME;
     }
-    return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationName);
+    return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationScopeName);
   }
 
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */

@@ -133,7 +133,8 @@ class ViewConfigTest {
   void toAggregation() {
     assertThat(ViewConfig.toAggregation("sum")).isEqualTo(Aggregation.sum());
     assertThat(ViewConfig.toAggregation("last_value")).isEqualTo(Aggregation.lastValue());
-    assertThat(ViewConfig.toAggregation("histogram")).isEqualTo(Aggregation.histogram());
+    assertThat(ViewConfig.toAggregation("histogram"))
+        .isEqualTo(Aggregation.explicitBucketHistogram());
     assertThat(ViewConfig.toAggregation("drop")).isEqualTo(Aggregation.drop());
     assertThatThrownBy(() -> ViewConfig.toAggregation("foo"))
         .isInstanceOf(ConfigurationException.class)

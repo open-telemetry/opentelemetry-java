@@ -1,6 +1,38 @@
 # Changelog
 
-## Version 1.12.0 (unreleased):
+## Version 1.13.0 (unreleased):
+
+## Version 1.12.0 2022-03-03:
+
+This release includes many breaking changes to the metrics SDK as we move towards marking its first stable release.
+Notably, if you configure metric `View`s or have written a custom metric exporter, many of the classes and methods will
+have been moved or renamed. There are still a few remaining cleanups targeted for the next release after which there
+should not be many. Thanks for bearing with us on this.
+
+### API
+
+- New methods have been added to `Context` to propagate context for common Java 8 callback types
+- `AttributesBuilder.put` now supports vararg versions for lists with `AttributeKey`
+- Multiple metric async callbacks can be registered for the same instrument, and callbacks can be removed
+
+### SDK
+
+- An issue with Android desugaring of the SDK has been worked around
+- EXPERIMENTAL: Support for disabling resource keys with `OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS`
+- Fixed handling of `schemaUrl` in `Resource.toBuilder()`
+- BREAKING: Many changes to `Data` classes used during export
+- BREAKING: Many view configuration methods have been removed
+
+#### Metrics
+
+- APIs deprecated in the previous release have been removed
+- DEPRECATION: `PrometheusCollector` for exporting OpenTelemetry metrics with the prometheus client library has been deprecated
+- EXPERIMENTAL: File-based configuration of views
+- Prometheus exporter now supports JPMS modules
+
+#### Logs
+
+- DEPRECATION: `LogData.getName` has been deprecated for removal
 
 ## Version 1.11.0 2022-02-04:
 

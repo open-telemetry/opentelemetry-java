@@ -21,11 +21,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterAll;
@@ -176,7 +175,7 @@ class PrometheusHttpServerTest {
             "grpc.name",
             "long_description",
             "1",
-            LongSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
@@ -187,7 +186,7 @@ class PrometheusHttpServerTest {
             "http.name",
             "double_description",
             "1",
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(

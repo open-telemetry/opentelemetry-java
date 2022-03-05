@@ -11,18 +11,18 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -78,14 +78,14 @@ final class MetricAdapter {
       case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
       case LONG_SUM:
-        LongSumData longSumData = metricData.getLongSumData();
+        SumData<LongPointData> longSumData = metricData.getLongSumData();
         if (longSumData.isMonotonic()
             && longSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
       case DOUBLE_SUM:
-        DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
         if (doubleSumData.isMonotonic()
             && doubleSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
@@ -149,12 +149,11 @@ final class MetricAdapter {
                   longPoint.getEpochNanos()));
           break;
         case SUMMARY:
-          addSummarySamples(
-              (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
+          addSummarySamples((SummaryPointData) pointData, name, labelNames, labelValues, samples);
           break;
         case HISTOGRAM:
           addHistogramSamples(
-              (DoubleHistogramPointData) pointData, name, labelNames, labelValues, samples);
+              (HistogramPointData) pointData, name, labelNames, labelValues, samples);
           break;
         case EXPONENTIAL_HISTOGRAM:
           break; // todo
@@ -164,7 +163,7 @@ final class MetricAdapter {
   }
 
   private static void addSummarySamples(
-      DoubleSummaryPointData doubleSummaryPoint,
+      SummaryPointData doubleSummaryPoint,
       String name,
       List<String> labelNames,
       List<String> labelValues,
@@ -207,7 +206,7 @@ final class MetricAdapter {
   }
 
   private static void addHistogramSamples(
-      DoubleHistogramPointData doubleHistogramPointData,
+      HistogramPointData histogramPointData,
       String name,
       List<String> labelNames,
       List<String> labelValues,
@@ -217,30 +216,30 @@ final class MetricAdapter {
             name + SAMPLE_SUFFIX_COUNT,
             labelNames,
             labelValues,
-            doubleHistogramPointData.getCount(),
+            histogramPointData.getCount(),
             null,
-            doubleHistogramPointData.getEpochNanos()));
+            histogramPointData.getEpochNanos()));
 
     samples.add(
         createSample(
             name + SAMPLE_SUFFIX_SUM,
             labelNames,
             labelValues,
-            doubleHistogramPointData.getSum(),
+            histogramPointData.getSum(),
             null,
-            doubleHistogramPointData.getEpochNanos()));
+            histogramPointData.getEpochNanos()));
 
     List<String> labelNamesWithLe = new ArrayList<>(labelNames.size() + 1);
     labelNamesWithLe.addAll(labelNames);
     labelNamesWithLe.add(LABEL_NAME_LE);
 
     long cumulativeCount = 0;
-    List<Long> counts = doubleHistogramPointData.getCounts();
+    List<Long> counts = histogramPointData.getCounts();
     for (int i = 0; i < counts.size(); i++) {
       List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
       // This is the upper boundary (inclusive). I.e. all values should be < this value (LE -
       // Less-then-or-Equal).
-      double boundary = doubleHistogramPointData.getBucketUpperBound(i);
+      double boundary = histogramPointData.getBucketUpperBound(i);
       labelValuesWithLe.addAll(labelValues);
       labelValuesWithLe.add(doubleToGoString(boundary));
 
@@ -252,10 +251,10 @@ final class MetricAdapter {
               labelValuesWithLe,
               cumulativeCount,
               filterExemplars(
-                  doubleHistogramPointData.getExemplars(),
-                  doubleHistogramPointData.getBucketLowerBound(i),
+                  histogramPointData.getExemplars(),
+                  histogramPointData.getBucketLowerBound(i),
                   boundary),
-              doubleHistogramPointData.getEpochNanos()));
+              histogramPointData.getEpochNanos()));
     }
   }
 
@@ -291,11 +290,11 @@ final class MetricAdapter {
       case LONG_SUM:
         return metricData.getLongSumData().getPoints();
       case SUMMARY:
-        return metricData.getDoubleSummaryData().getPoints();
+        return metricData.getSummaryData().getPoints();
       case HISTOGRAM:
-        return metricData.getDoubleHistogramData().getPoints();
+        return metricData.getHistogramData().getPoints();
       case EXPONENTIAL_HISTOGRAM:
-        return metricData.getExponentialHistogramData().getPoints();
+        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
     }
     return Collections.emptyList();
   }

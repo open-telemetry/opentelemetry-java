@@ -18,7 +18,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ class SdkLogEmitterTest {
   @Test
   void logBuilder() {
     LogEmitterSharedState state = mock(LogEmitterSharedState.class);
-    InstrumentationLibraryInfo info = InstrumentationLibraryInfo.create("foo", "bar");
+    InstrumentationScopeInfo info = InstrumentationScopeInfo.create("foo");
     AtomicReference<LogData> seenLog = new AtomicReference<>();
     LogProcessor logProcessor = seenLog::set;
     Clock clock = mock(Clock.class);

@@ -16,11 +16,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -83,7 +82,7 @@ class PrometheusCollectorTest {
             "grpc.name",
             "long_description",
             "1",
-            LongSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
@@ -98,7 +97,7 @@ class PrometheusCollectorTest {
             "http.name",
             "double_description",
             "1",
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(

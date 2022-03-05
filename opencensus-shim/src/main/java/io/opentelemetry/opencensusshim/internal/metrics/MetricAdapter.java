@@ -23,19 +23,24 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -145,28 +150,28 @@ public final class MetricAdapter {
     return ImmutableGaugeData.create(convertDoublePoints(censusMetric));
   }
 
-  static LongSumData convertLongSum(Metric censusMetric) {
-    return LongSumData.create(
+  static SumData<LongPointData> convertLongSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertLongPoints(censusMetric));
   }
 
-  static DoubleSumData convertDoubleSum(Metric censusMetric) {
-    return DoubleSumData.create(
+  static SumData<DoublePointData> convertDoubleSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertDoublePoints(censusMetric));
   }
 
-  static DoubleHistogramData convertHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.CUMULATIVE, convertHistogramPoints(censusMetric));
   }
 
-  static DoubleHistogramData convertGaugeHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertGaugeHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.DELTA, convertHistogramPoints(censusMetric));
   }
 
-  static DoubleSummaryData convertSummary(Metric censusMetric) {
-    return DoubleSummaryData.create(convertSummaryPoints(censusMetric));
+  static SummaryData convertSummary(Metric censusMetric) {
+    return ImmutableSummaryData.create(convertSummaryPoints(censusMetric));
   }
 
   static Collection<LongPointData> convertLongPoints(Metric censusMetric) {
@@ -204,25 +209,25 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleHistogramPointData> convertHistogramPoints(Metric censusMetric) {
+  static Collection<HistogramPointData> convertHistogramPoints(Metric censusMetric) {
     boolean isGauge =
         censusMetric.getMetricDescriptor().getType() == MetricDescriptor.Type.GAUGE_DISTRIBUTION;
     // TODO - preallocate array to correct size.
-    List<DoubleHistogramPointData> result = new ArrayList<>();
+    List<HistogramPointData> result = new ArrayList<>();
     for (TimeSeries ts : censusMetric.getTimeSeriesList()) {
       long startTimestamp = mapTimestamp(ts.getStartTimestamp());
       Attributes attributes =
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         long endTimestamp = mapTimestamp(point.getTimestamp());
-        DoubleHistogramPointData otelPoint =
+        HistogramPointData otelPoint =
             point
                 .getValue()
                 .match(
                     doubleValue -> null,
                     longValue -> null,
                     distribution ->
-                        DoubleHistogramPointData.create(
+                        ImmutableHistogramPointData.create(
                             // Report Gauge histograms as DELTA with "instantaneous" time window.
                             isGauge ? endTimestamp : startTimestamp,
                             endTimestamp,
@@ -241,14 +246,14 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleSummaryPointData> convertSummaryPoints(Metric censusMetric) {
-    List<DoubleSummaryPointData> result = new ArrayList<>();
+  static Collection<SummaryPointData> convertSummaryPoints(Metric censusMetric) {
+    List<SummaryPointData> result = new ArrayList<>();
     for (TimeSeries ts : censusMetric.getTimeSeriesList()) {
       long startTimestamp = mapTimestamp(ts.getStartTimestamp());
       Attributes attributes =
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
-        DoubleSummaryPointData otelPoint =
+        SummaryPointData otelPoint =
             point
                 .getValue()
                 .match(
@@ -256,7 +261,7 @@ public final class MetricAdapter {
                     lv -> null,
                     distribution -> null,
                     summary ->
-                        DoubleSummaryPointData.create(
+                        ImmutableSummaryPointData.create(
                             startTimestamp,
                             mapTimestamp(point.getTimestamp()),
                             attributes,
@@ -367,7 +372,8 @@ public final class MetricAdapter {
       List<Summary.Snapshot.ValueAtPercentile> valueAtPercentiles) {
     List<ValueAtPercentile> result = new ArrayList<>(valueAtPercentiles.size());
     for (Summary.Snapshot.ValueAtPercentile censusValue : valueAtPercentiles) {
-      result.add(ValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
+      result.add(
+          ImmutableValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
     }
     return result;
   }

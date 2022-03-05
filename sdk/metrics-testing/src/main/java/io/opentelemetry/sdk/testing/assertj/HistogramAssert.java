@@ -6,22 +6,21 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link DoubleHistogramData}. */
-public class DoubleHistogramAssert
-    extends AbstractAssert<DoubleHistogramAssert, DoubleHistogramData> {
+/** Test assertions for {@link HistogramData}. */
+public class HistogramAssert extends AbstractAssert<HistogramAssert, HistogramData> {
 
-  protected DoubleHistogramAssert(DoubleHistogramData actual) {
-    super(actual, DoubleHistogramAssert.class);
+  protected HistogramAssert(HistogramData actual) {
+    super(actual, HistogramAssert.class);
   }
 
   /** Ensures that {@code aggregation_temporality} field is {@code CUMULATIVE}. */
-  public DoubleHistogramAssert isCumulative() {
+  public HistogramAssert isCumulative() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.CUMULATIVE) {
       failWithActualExpectedAndMessage(
@@ -35,7 +34,7 @@ public class DoubleHistogramAssert
   }
 
   /** Ensures that {@code aggregation_temporality} field is {@code DELTA}. */
-  public DoubleHistogramAssert isDelta() {
+  public HistogramAssert isDelta() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.DELTA) {
       failWithActualExpectedAndMessage(
@@ -50,7 +49,7 @@ public class DoubleHistogramAssert
 
   /** Returns convenience API to assert against the {@code points} field. */
   public AbstractIterableAssert<
-          ?, ? extends Iterable<? extends DoubleHistogramPointData>, DoubleHistogramPointData, ?>
+          ?, ? extends Iterable<? extends HistogramPointData>, HistogramPointData, ?>
       points() {
     isNotNull();
     return Assertions.assertThat(actual.getPoints());

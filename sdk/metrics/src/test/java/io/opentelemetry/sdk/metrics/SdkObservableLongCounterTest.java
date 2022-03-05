@@ -126,9 +126,7 @@ class SdkObservableLongCounterTest {
         sdkMeterProviderBuilder
             .registerMetricReader(sdkMeterReader)
             .registerView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_COUNTER)
-                    .build(),
+                InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_COUNTER).build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
     sdkMeterProvider

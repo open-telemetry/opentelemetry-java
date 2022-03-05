@@ -27,9 +27,7 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-                view)
+            .addView(InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(), view)
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -56,7 +54,7 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(InstrumentSelector.builder().setInstrumentName("overridden").build(), view)
+            .addView(InstrumentSelector.builder().setName("overridden").build(), view)
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -80,13 +78,14 @@ class ViewRegistryTest {
   @Test
   void selection_FirstAddedViewWins() {
     View view1 = View.builder().setAggregation(Aggregation.lastValue()).build();
-    View view2 = View.builder().setAggregation(Aggregation.histogram()).build();
+    View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder().setInstrumentNameRegex("overridden").build(), view2)
-            .addView(InstrumentSelector.builder().setInstrumentNameRegex(".*").build(), view1)
+                InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
+                view2)
+            .addView(InstrumentSelector.builder().setName(name -> true).build(), view1)
             .build();
 
     assertThat(
@@ -108,44 +107,6 @@ class ViewRegistryTest {
   }
 
   @Test
-  void selection_regex() {
-    View view = View.builder().setAggregation(Aggregation.lastValue()).build();
-
-    ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setInstrumentNameRegex("overrid(es|den)").build(),
-                view)
-            .build();
-
-    assertThat(
-            viewRegistry.findViews(
-                InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
-        .hasSize(1)
-        .element(0)
-        .isEqualTo(view);
-    assertThat(
-            viewRegistry.findViews(
-                InstrumentDescriptor.create(
-                    "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
-        .hasSize(1)
-        .element(0)
-        .isEqualTo(view);
-    // this one hasn't been configured, so it gets the default still..
-    assertThat(
-            viewRegistry.findViews(
-                InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
-  }
-
-  @Test
   void selection_typeAndName() {
     View view = View.builder().setAggregation(Aggregation.lastValue()).build();
 
@@ -153,8 +114,8 @@ class ViewRegistryTest {
         ViewRegistry.builder()
             .addView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentName("overrides")
+                    .setType(InstrumentType.COUNTER)
+                    .setName("overrides")
                     .build(),
                 view)
             .build();

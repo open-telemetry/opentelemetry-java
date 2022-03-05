@@ -5,15 +5,11 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -30,11 +26,9 @@ public class MetricCustomizer implements AutoConfigurationCustomizerProvider {
 
   private static SdkMeterProviderBuilder sdkMeterProviderCustomizer(
       SdkMeterProviderBuilder meterProviderBuilder, ConfigProperties configProperties) {
-    for (InstrumentType instrumentType : InstrumentType.values()) {
-      meterProviderBuilder.registerView(
-          InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-          View.builder().appendAttributes(Attributes.of(booleanKey("configured"), true)).build());
-    }
+    meterProviderBuilder.registerView(
+        InstrumentSelector.builder().setName("my-metric").build(),
+        View.builder().setAttributeFilter(name -> name.equals("allowed")).build());
     return meterProviderBuilder;
   }
 

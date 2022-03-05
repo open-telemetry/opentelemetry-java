@@ -9,10 +9,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -104,7 +104,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
         metricDescriptor.getSourceInstrument().getUnit(),
-        DoubleHistogramData.create(
+        ImmutableHistogramData.create(
             temporality,
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulationByLabels,
