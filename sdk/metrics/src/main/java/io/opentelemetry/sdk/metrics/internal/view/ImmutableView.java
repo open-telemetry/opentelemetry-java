@@ -12,7 +12,12 @@ import io.opentelemetry.sdk.metrics.view.View;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** TODO: javadoc. */
+/**
+ * A configuration for a metric stream transformation.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @AutoValue
 @Immutable
 public abstract class ImmutableView implements View {

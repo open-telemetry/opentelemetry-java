@@ -11,7 +11,12 @@ import io.opentelemetry.sdk.metrics.view.ViewBuilder;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
-/** Builder of metric {@link View}s. */
+/**
+ * Builder of metric {@link View}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class ViewBuilderImpl implements ViewBuilder {
   @Nullable private String name = null;
   @Nullable private String description = null;
