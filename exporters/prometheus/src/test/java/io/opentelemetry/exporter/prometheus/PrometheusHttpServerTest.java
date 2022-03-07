@@ -20,10 +20,10 @@ import com.linecorp.armeria.common.RequestHeaders;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -179,7 +179,8 @@ class PrometheusHttpServerTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    LongPointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+                    ImmutableLongPointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
         MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
@@ -190,6 +191,7 @@ class PrometheusHttpServerTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
+                    ImmutableDoublePointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
   }
 }
