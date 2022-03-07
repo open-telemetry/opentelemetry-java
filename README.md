@@ -2,6 +2,7 @@
 [![Continuous Build][ci-image]][ci-url]
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
+[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.opentelemetry.io/scans)
 
 ## Getting Started
 
