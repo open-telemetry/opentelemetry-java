@@ -34,10 +34,4 @@ public abstract class DoubleExemplarData implements ExemplarData {
 
   /** Numerical value of the measurement that was recorded. */
   public abstract double getValue();
-
-  @Override
-  @Deprecated
-  public final double getValueAsDouble() {
-    return getValue();
-  }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,44 +33,4 @@ public interface ExemplarData {
    * invalid}.
    */
   SpanContext getSpanContext();
-
-  /**
-   * (Optional) Span ID of the exemplar trace.
-   *
-   * <p>Span ID may be {@code null} if the measurement is not recorded inside a trace or the trace
-   * was not sampled.
-   *
-   * @deprecated Use {@link ExemplarData#getSpanContext()}.
-   */
-  @Nullable
-  @Deprecated
-  default String getSpanId() {
-    SpanContext spanContext = getSpanContext();
-    return spanContext != null ? spanContext.getSpanId() : null;
-  }
-  /**
-   * (Optional) Trace ID of the exemplar trace.
-   *
-   * <p>Trace ID may be {@code null} if the measurement is not recorded inside a trace or if the
-   * trace is not sampled.
-   *
-   * @deprecated Use {@link ExemplarData#getSpanContext()}.
-   */
-  @Nullable
-  @Deprecated
-  default String getTraceId() {
-    SpanContext spanContext = getSpanContext();
-    return spanContext != null ? spanContext.getTraceId() : null;
-  }
-
-  /**
-   * Coerces this exemplar to a double value.
-   *
-   * <p>Note: This could create a loss of precision from {@code long} measurements.
-   *
-   * @deprecated Cast to {@link LongExemplarData} or {@link DoubleExemplarData} and call {@code
-   *     getValue()}.
-   */
-  @Deprecated
-  double getValueAsDouble();
 }

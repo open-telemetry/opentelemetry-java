@@ -51,14 +51,4 @@ public abstract class Aggregation {
   public static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
     return new ExplicitBucketHistogramAggregation(bucketBoundaries);
   }
-
-  /**
-   * Aggregates measurements using the best available Histogram.
-   *
-   * @deprecated Use {@link #explicitBucketHistogram()}.
-   */
-  @Deprecated
-  public static Aggregation histogram() {
-    return explicitBucketHistogram();
-  }
 }
