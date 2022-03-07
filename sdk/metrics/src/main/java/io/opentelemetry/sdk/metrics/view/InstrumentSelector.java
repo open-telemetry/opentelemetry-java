@@ -27,8 +27,15 @@ public abstract class InstrumentSelector {
   static InstrumentSelector create(
       @Nullable InstrumentType instrumentType,
       Predicate<String> instrumentNameFilter,
-      MeterSelector meterSelector) {
-    return new AutoValue_InstrumentSelector(instrumentType, instrumentNameFilter, meterSelector);
+      Predicate<String> meterNameFilter,
+      Predicate<String> meterVersionFilter,
+      Predicate<String> meterSchemaUrlFilter) {
+    return new AutoValue_InstrumentSelector(
+        instrumentType,
+        instrumentNameFilter,
+        meterNameFilter,
+        meterVersionFilter,
+        meterSchemaUrlFilter);
   }
 
   /**
@@ -43,6 +50,32 @@ public abstract class InstrumentSelector {
    */
   public abstract Predicate<String> getInstrumentNameFilter();
 
-  /** Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s. */
-  public abstract MeterSelector getMeterSelector();
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterNameFilter();
+
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the version of their associated
+   * {@link io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterVersionFilter();
+
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the schema URL of their associated
+   * {@link io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterSchemaUrlFilter();
+
+  /**
+   * Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s.
+   *
+   * @deprecated Use {@link #getMeterNameFilter()} and similar.
+   */
+  @Deprecated
+  public final MeterSelector getMeterSelector() {
+    return MeterSelector.create(
+        getMeterNameFilter(), getMeterVersionFilter(), getMeterSchemaUrlFilter());
+  }
 }
