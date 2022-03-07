@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 /** Builder class for {@link BatchSpanProcessor}. */
 public final class BatchSpanProcessorBuilder {
@@ -23,12 +23,15 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  // Visible for testing
+  static final int DEFAULT_MAX_CONCURRENT_EXPORTS = 1;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private int maxConcurrentExports = DEFAULT_MAX_CONCURRENT_EXPORTS;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
@@ -123,6 +126,18 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
+   * Sets the maximum number of concurrent exports. If this is configured, and the {@link
+   * BatchSpanProcessor} finds multiple batches of the configured batch size available, it will send
+   * this many of them and then wait up to the configured timeout for completion. If unset, defaults
+   * to {@value DEFAULT_MAX_CONCURRENT_EXPORTS}.
+   */
+  public BatchSpanProcessorBuilder setMaxConcurrentExports(int maxConcurrentExports) {
+    checkArgument(maxConcurrentExports > 0, "maxConcurrentExports must be positive.");
+    this.maxConcurrentExports = maxConcurrentExports;
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
    */
@@ -150,6 +165,7 @@ public final class BatchSpanProcessorBuilder {
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,
-        exporterTimeoutNanos);
+        exporterTimeoutNanos,
+        maxConcurrentExports);
   }
 }
