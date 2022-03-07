@@ -1,0 +1,28 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributesBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder put(io.opentelemetry.api.common.AttributeKey, java.lang.Object[])
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableDoubleCounter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableDoubleGauge  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableLongCounter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableLongGauge  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableLongUpDownCounter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++! NEW METHOD: PUBLIC(+) void close()

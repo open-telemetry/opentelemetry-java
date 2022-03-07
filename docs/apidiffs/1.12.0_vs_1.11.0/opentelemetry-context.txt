@@ -1,0 +1,8 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.context.Context  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) java.util.function.Consumer wrapConsumer(java.util.function.Consumer)
+	+++! NEW METHOD: PUBLIC(+) java.util.function.BiConsumer wrapConsumer(java.util.function.BiConsumer)
+	+++! NEW METHOD: PUBLIC(+) java.util.function.Function wrapFunction(java.util.function.Function)
+	+++! NEW METHOD: PUBLIC(+) java.util.function.BiFunction wrapFunction(java.util.function.BiFunction)
+	+++! NEW METHOD: PUBLIC(+) java.util.function.Supplier wrapSupplier(java.util.function.Supplier)
