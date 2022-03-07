@@ -71,7 +71,7 @@ class ResourceConfigurationTest {
 
   @Test
   void settingEnabledAndDisabledConfiguration() {
-    Map<String, String> customConfigs = new HashMap<>(1);
+    Map<String, String> customConfigs = new HashMap<>(2);
     customConfigs.put(
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer,io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider");
@@ -92,6 +92,23 @@ class ResourceConfigurationTest {
     assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNotNull();
 
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+  }
+
+  @Test
+  void onlySettingEnabledConfiguration() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put(
+        "otel.java.enabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer");
+    Attributes attributes =
+        ResourceConfiguration.configureResource(
+                DefaultConfigProperties.get(customConfigs),
+                ResourceConfigurationTest.class.getClassLoader(),
+                (r, c) -> r)
+            .getAttributes();
+
+    assertProcessAttributeIsNull(attributes);
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
   }
 
