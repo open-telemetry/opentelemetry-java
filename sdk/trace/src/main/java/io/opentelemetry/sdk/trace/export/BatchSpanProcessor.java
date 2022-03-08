@@ -332,13 +332,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       try {
         CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
-        result.whenComplete(() -> {
-          if (result.isSuccess()) {
-            processedSpansCounter.add(batch.size(), exportedAttrs);
-          } else {
-            logger.log(Level.FINE, "Exporter failed");
-          }
-        });
+        result.whenComplete(
+            () -> {
+              if (result.isSuccess()) {
+                processedSpansCounter.add(batch.size(), exportedAttrs);
+              } else {
+                logger.log(Level.FINE, "Exporter failed");
+              }
+            });
         return result;
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);

@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
 
 /** Builder class for {@link BatchSpanProcessor}. */
 public final class BatchSpanProcessorBuilder {
