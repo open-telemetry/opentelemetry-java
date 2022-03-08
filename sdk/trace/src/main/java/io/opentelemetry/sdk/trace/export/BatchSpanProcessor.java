@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -152,7 +153,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
-    private final int maxConcurrentExports;
+    private final Semaphore concurrentExportPermits;
 
     private long nextExportTime;
 
@@ -181,7 +182,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
-      this.maxConcurrentExports = maxConcurrentExports;
+      this.concurrentExportPermits = new Semaphore(maxConcurrentExports);
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
       Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.trace").build();
@@ -237,19 +238,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        List<CompletableResultCode> concurrentExports = new ArrayList<>();
-        while (!queue.isEmpty() && concurrentExports.size() < maxConcurrentExports) {
+        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
           batch.add(queue.poll().toSpanData());
-          if (batch.size() >= maxExportBatchSize) {
-            concurrentExports.add(exportCurrentBatch());
-          }
         }
-        if (concurrentExports.isEmpty() && System.nanoTime() >= nextExportTime) {
-          concurrentExports.add(exportCurrentBatch());
-        }
-        if (!concurrentExports.isEmpty()) {
-          CompletableResultCode.ofAll(concurrentExports)
-              .join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
+          exportCurrentBatchUsingPermit();
           updateNextExportTime();
         }
         if (queue.isEmpty()) {
@@ -270,16 +263,18 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private void flush() {
       int spansToFlush = queue.size();
+      List<CompletableResultCode> results = new ArrayList<>();
       while (spansToFlush > 0) {
         ReadableSpan span = queue.poll();
         assert span != null;
         batch.add(span.toSpanData());
         spansToFlush--;
         if (batch.size() >= maxExportBatchSize) {
-          exportCurrentBatch().join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+          results.add(exportCurrentBatchUsingPermit());
         }
       }
-      exportCurrentBatch().join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+      results.add(exportCurrentBatchUsingPermit());
+      CompletableResultCode.ofAll(results).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       CompletableResultCode flushResult = flushRequested.get();
       if (flushResult != null) {
         flushResult.succeed();
@@ -325,20 +320,37 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
 
-    private CompletableResultCode exportCurrentBatch() {
+    private CompletableResultCode exportCurrentBatchUsingPermit() {
       if (batch.isEmpty()) {
         return CompletableResultCode.ofSuccess();
       }
 
       try {
+        concurrentExportPermits.acquire();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return CompletableResultCode.ofFailure();
+      }
+      try {
+        exportCurrentBatch().whenComplete(concurrentExportPermits::release);
+        return CompletableResultCode.ofSuccess();
+      } catch (Throwable t) {
+        concurrentExportPermits.release();
+        return CompletableResultCode.ofFailure();
+      }
+    }
+
+    private CompletableResultCode exportCurrentBatch() {
+      try {
         CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
-        result.whenComplete(() -> {
-          if (result.isSuccess()) {
-            processedSpansCounter.add(batch.size(), exportedAttrs);
-          } else {
-            logger.log(Level.FINE, "Exporter failed");
-          }
-        });
+        result.whenComplete(
+            () -> {
+              if (result.isSuccess()) {
+                processedSpansCounter.add(batch.size(), exportedAttrs);
+              } else {
+                logger.log(Level.FINE, "Exporter failed");
+              }
+            });
         return result;
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);

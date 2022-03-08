@@ -350,6 +350,7 @@ class BatchSpanProcessorTest {
             .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
             .setScheduleDelay(1, TimeUnit.MILLISECONDS)
             .setMaxQueueSize(1)
+            .setMaxConcurrentExports(2)
             .build();
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(bsp).build();
 
