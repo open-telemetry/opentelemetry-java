@@ -200,6 +200,14 @@ public final class OpenTelemetryAssertions extends Assertions {
     return AttributeAssertion.create(key, val -> val.isEqualTo(value));
   }
 
+  /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with the
+   * given {@code value}.
+   */
+  public static AttributeAssertion equalTo(AttributeKey<Long> key, int value) {
+    return equalTo(key, (long) value);
+  }
+
   // Unique interfaces to prevent generic functional interface clash. These are not interesting at
   // all but are required to be able to use the same method name in methods like satisfies above.
 
