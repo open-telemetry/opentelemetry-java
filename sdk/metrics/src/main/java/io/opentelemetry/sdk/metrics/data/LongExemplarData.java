@@ -33,10 +33,4 @@ public abstract class LongExemplarData implements ExemplarData {
 
   /** Numerical value of the measurement that was recorded. */
   public abstract long getValue();
-
-  @Override
-  @Deprecated
-  public final double getValueAsDouble() {
-    return (double) getValue();
-  }
 }
