@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 /** Last-value aggregation configuration. */
-final class LastValueAggregation extends Aggregation implements AggregatorFactory {
+final class LastValueAggregation implements Aggregation, AggregatorFactory {
 
   static final Aggregation INSTANCE = new LastValueAggregation();
 

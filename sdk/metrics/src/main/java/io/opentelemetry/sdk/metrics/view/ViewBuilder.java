@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
@@ -49,6 +50,11 @@ public final class ViewBuilder {
    * @return this Builder.
    */
   public ViewBuilder setAggregation(Aggregation aggregation) {
+    if (!(aggregation instanceof AggregatorFactory)) {
+      throw new IllegalArgumentException(
+          "Custom Aggregation implementations are currently not supported. "
+              + "Use one of the standard implementations returned by the static factories in the Aggregation class.");
+    }
     this.aggregation = aggregation;
     return this;
   }

@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.function.Supplier;
 
 /** A sum aggregation configuration. */
-final class SumAggregation extends Aggregation implements AggregatorFactory {
+final class SumAggregation implements Aggregation, AggregatorFactory {
   static final SumAggregation DEFAULT = new SumAggregation();
 
   private SumAggregation() {}

@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.List;
 
 /** Explicit bucket histogram aggregation configuration. */
-final class ExplicitBucketHistogramAggregation extends Aggregation implements AggregatorFactory {
+final class ExplicitBucketHistogramAggregation implements Aggregation, AggregatorFactory {
 
   static final Aggregation DEFAULT =
       new ExplicitBucketHistogramAggregation(

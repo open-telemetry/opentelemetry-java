@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 /** Configuration representing no aggregation. */
-final class DropAggregation extends Aggregation implements AggregatorFactory {
+final class DropAggregation implements Aggregation, AggregatorFactory {
 
   static final Aggregation INSTANCE = new DropAggregation();
 
