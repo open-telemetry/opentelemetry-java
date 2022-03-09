@@ -10,7 +10,12 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
 
-/** Builder for {@link MeterSelector}. */
+/**
+ * Builder for {@link MeterSelector}.
+ *
+ * @deprecated Use {@link InstrumentSelectorBuilder}.
+ */
+@Deprecated
 public final class MeterSelectorBuilder {
 
   private Predicate<String> nameFilter = StringPredicates.ALL;

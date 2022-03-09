@@ -17,7 +17,10 @@ public final class InstrumentSelectorBuilder {
 
   @Nullable private InstrumentType instrumentType;
   private Predicate<String> instrumentNameFilter = StringPredicates.ALL;
-  private MeterSelector meterSelector = MeterSelector.builder().build();
+
+  private Predicate<String> meterNameFilter = StringPredicates.ALL;
+  private Predicate<String> meterVersionFilter = StringPredicates.ALL;
+  private Predicate<String> meterSchemaUrlFilter = StringPredicates.ALL;
 
   /** Sets a specifier for {@link InstrumentType}. */
   public InstrumentSelectorBuilder setType(InstrumentType instrumentType) {
@@ -43,17 +46,84 @@ public final class InstrumentSelectorBuilder {
   }
 
   /**
+   * Sets a specifier for selecting instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterName(String meterName) {
+    requireNonNull(meterName, "meterName");
+    return setMeterName(StringPredicates.exact(meterName));
+  }
+
+  /**
+   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterName(Predicate<String> meterNameFilter) {
+    requireNonNull(meterNameFilter, "meterNameFilter");
+    this.meterNameFilter = meterNameFilter;
+    return this;
+  }
+
+  /**
+   * Sets a specifier for selecting instruments by the version of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterVersion(String meterVersion) {
+    requireNonNull(meterVersion, "meterVersion");
+    return setMeterVersion(StringPredicates.exact(meterVersion));
+  }
+
+  /**
+   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterVersion(Predicate<String> meterVersionFilter) {
+    requireNonNull(meterVersionFilter, "meterVersionFilter");
+    this.meterVersionFilter = meterVersionFilter;
+    return this;
+  }
+
+  /**
+   * Sets a specifier for selecting instruments by the schema URL of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterSchemaUrl(String meterSchemaUrl) {
+    requireNonNull(meterSchemaUrl, "meterSchemaUrl");
+    return setMeterSchemaUrl(StringPredicates.exact(meterSchemaUrl));
+  }
+
+  /**
+   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public InstrumentSelectorBuilder setMeterSchemaUrl(Predicate<String> meterSchemaUrlFilter) {
+    requireNonNull(meterSchemaUrlFilter, "meterSchemaUrlFilter");
+    this.meterSchemaUrlFilter = meterSchemaUrlFilter;
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.Meter}s will be
    * included.
+   *
+   * @deprecated Use {@link #setMeterName(String)} and similar.
    */
+  @Deprecated
   public InstrumentSelectorBuilder setMeterSelector(MeterSelector meterSelector) {
     requireNonNull(meterSelector, "meterSelector");
-    this.meterSelector = meterSelector;
+    meterNameFilter = meterSelector.getNameFilter();
+    meterVersionFilter = meterSelector.getVersionFilter();
+    meterSchemaUrlFilter = meterSelector.getSchemaUrlFilter();
     return this;
   }
 
   /** Returns an InstrumentSelector instance with the content of this builder. */
   public InstrumentSelector build() {
-    return InstrumentSelector.create(instrumentType, instrumentNameFilter, meterSelector);
+    return InstrumentSelector.create(
+        instrumentType,
+        instrumentNameFilter,
+        meterNameFilter,
+        meterVersionFilter,
+        meterSchemaUrlFilter);
   }
 }
