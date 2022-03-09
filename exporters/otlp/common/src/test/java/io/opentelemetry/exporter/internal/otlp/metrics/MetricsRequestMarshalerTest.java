@@ -42,16 +42,16 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -86,7 +86,7 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    LongPointData.create(
+                    ImmutableLongPointData.create(
                         123,
                         456,
                         KV_ATTR,
@@ -128,7 +128,7 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    DoublePointData.create(
+                    ImmutableDoublePointData.create(
                         123,
                         456,
                         KV_ATTR,
@@ -174,7 +174,7 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    LongPointData.create(
+                    ImmutableLongPointData.create(
                         123,
                         456,
                         KV_ATTR,
@@ -215,8 +215,8 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Attributes.empty(), 5),
-                    LongPointData.create(321, 654, KV_ATTR, 7))))
+                    ImmutableLongPointData.create(123, 456, Attributes.empty(), 5),
+                    ImmutableLongPointData.create(321, 654, KV_ATTR, 7))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -236,7 +236,9 @@ class MetricsRequestMarshalerTest {
   @Test
   void doubleDataPoints() {
     assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
-    assertThat(toNumberDataPoints(singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
+    assertThat(
+            toNumberDataPoints(
+                singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -249,8 +251,8 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 ImmutableList.of(
-                    DoublePointData.create(123, 456, Attributes.empty(), 5.1),
-                    DoublePointData.create(321, 654, KV_ATTR, 7.1))))
+                    ImmutableDoublePointData.create(123, 456, Attributes.empty(), 5.1),
+                    ImmutableDoublePointData.create(321, 654, KV_ATTR, 7.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -469,7 +471,7 @@ class MetricsRequestMarshalerTest {
                     ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -504,7 +506,7 @@ class MetricsRequestMarshalerTest {
                     ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -543,7 +545,7 @@ class MetricsRequestMarshalerTest {
                     ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -578,7 +580,7 @@ class MetricsRequestMarshalerTest {
                     ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -615,7 +617,7 @@ class MetricsRequestMarshalerTest {
                     "description",
                     "1",
                     ImmutableGaugeData.create(
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -646,7 +648,7 @@ class MetricsRequestMarshalerTest {
                     "description",
                     "1",
                     ImmutableGaugeData.create(
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -890,7 +892,7 @@ class MetricsRequestMarshalerTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         resource,
                         instrumentationScopeInfo,
@@ -901,7 +903,7 @@ class MetricsRequestMarshalerTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         instrumentationScopeInfo,
@@ -912,7 +914,7 @@ class MetricsRequestMarshalerTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         InstrumentationScopeInfo.empty(),
@@ -923,7 +925,7 @@ class MetricsRequestMarshalerTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
         .satisfiesExactlyInAnyOrder(
             resourceMetrics -> {
               assertThat(resourceMetrics.getResource()).isEqualTo(resourceProto);

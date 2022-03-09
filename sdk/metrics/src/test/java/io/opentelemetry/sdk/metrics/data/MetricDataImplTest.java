@@ -12,9 +12,11 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -37,9 +39,10 @@ class MetricDataImplTest {
   private static final ValueAtPercentile MAXIMUM_VALUE =
       ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
-      LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
+      ImmutableLongPointData.create(
+          START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
   private static final DoublePointData DOUBLE_POINT =
-      DoublePointData.create(
+      ImmutableDoublePointData.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), DOUBLE_VALUE);
   private static final SummaryPointData SUMMARY_POINT =
       ImmutableSummaryPointData.create(

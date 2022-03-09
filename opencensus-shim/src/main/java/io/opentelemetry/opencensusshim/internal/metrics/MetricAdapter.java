@@ -34,9 +34,11 @@ import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -183,7 +185,7 @@ public final class MetricAdapter {
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         result.add(
-            LongPointData.create(
+            ImmutableLongPointData.create(
                 startTimestamp, mapTimestamp(point.getTimestamp()), attributes, longValue(point)));
       }
     }
@@ -199,7 +201,7 @@ public final class MetricAdapter {
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         result.add(
-            DoublePointData.create(
+            ImmutableDoublePointData.create(
                 startTimestamp,
                 mapTimestamp(point.getTimestamp()),
                 attributes,

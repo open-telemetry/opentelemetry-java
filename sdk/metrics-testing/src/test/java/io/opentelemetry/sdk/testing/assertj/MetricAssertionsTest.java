@@ -23,9 +23,11 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -149,10 +151,10 @@ public class MetricAssertionsTest {
           1.0);
 
   private static final DoublePointData DOUBLE_POINT_DATA =
-      DoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
+      ImmutableDoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
 
   private static final DoublePointData DOUBLE_POINT_DATA_WITH_EXEMPLAR =
-      DoublePointData.create(
+      ImmutableDoublePointData.create(
           1, 2, Attributes.empty(), 3.0, Collections.singletonList(DOUBLE_EXEMPLAR));
 
   private static final MetricData LONG_GAUGE_METRIC =
@@ -204,10 +206,11 @@ public class MetricAssertionsTest {
           1);
 
   private static final LongPointData LONG_POINT_DATA =
-      LongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
+      ImmutableLongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
 
   private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
-      LongPointData.create(1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
+      ImmutableLongPointData.create(
+          1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
   private static final ValueAtPercentile PERCENTILE_VALUE = ImmutableValueAtPercentile.create(0, 1);
 

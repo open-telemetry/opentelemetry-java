@@ -118,6 +118,7 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 
+  @SuppressWarnings("deprecation") // name field has been deprecated
   @Test
   void toProtoLogRecord_MinimalFields() {
     LogRecord logRecord =

@@ -32,8 +32,8 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -333,6 +333,7 @@ class OtlpHttpMetricExporterTest {
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
+                ImmutableLongPointData.create(
+                    startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
   }
 }

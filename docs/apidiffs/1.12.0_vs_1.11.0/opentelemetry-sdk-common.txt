@@ -1,0 +1,12 @@
+Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo create(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo create(java.lang.String, java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo empty()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSchemaUrl()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getVersion()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
