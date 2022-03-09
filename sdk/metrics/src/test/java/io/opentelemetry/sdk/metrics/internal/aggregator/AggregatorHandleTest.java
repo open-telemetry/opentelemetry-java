@@ -13,9 +13,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -131,7 +131,7 @@ class AggregatorHandleTest {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData result =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(

@@ -15,11 +15,11 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -69,7 +69,7 @@ class DoubleHistogramAggregatorTest {
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -116,7 +116,7 @@ class DoubleHistogramAggregatorTest {
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -128,7 +128,7 @@ class DoubleHistogramAggregatorTest {
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 attributes,
                 1L,
                 SpanContext.create(
@@ -150,7 +150,7 @@ class DoubleHistogramAggregatorTest {
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -162,7 +162,7 @@ class DoubleHistogramAggregatorTest {
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 attributes,
                 1L,
                 SpanContext.create(
@@ -206,7 +206,7 @@ class DoubleHistogramAggregatorTest {
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(

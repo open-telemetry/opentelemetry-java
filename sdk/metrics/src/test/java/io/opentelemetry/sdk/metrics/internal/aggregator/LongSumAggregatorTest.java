@@ -16,10 +16,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -102,7 +102,7 @@ class LongSumAggregatorTest {
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -131,7 +131,7 @@ class LongSumAggregatorTest {
   @Test
   void mergeAndDiff() {
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             Attributes.empty(),
             2L,
             SpanContext.create(
@@ -207,7 +207,7 @@ class LongSumAggregatorTest {
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
