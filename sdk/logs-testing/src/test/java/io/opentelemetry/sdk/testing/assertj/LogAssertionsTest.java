@@ -15,7 +15,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 public class LogAssertionsTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("instrumentation_library", null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("instrumentation_library");
   private static final String TRACE_ID = "00000000000000010000000000000002";
   private static final String SPAN_ID = "0000000000000003";
   private static final Attributes ATTRIBUTES =
@@ -45,7 +45,7 @@ public class LogAssertionsTest {
 
   @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG_DATA =
-      LogDataBuilder.create(RESOURCE, INSTRUMENTATION_LIBRARY_INFO)
+      LogDataBuilder.create(RESOURCE, INSTRUMENTATION_SCOPE_INFO)
           .setEpoch(100, TimeUnit.NANOSECONDS)
           .setSpanContext(
               SpanContext.create(
@@ -62,7 +62,7 @@ public class LogAssertionsTest {
   void passing() {
     assertThat(LOG_DATA)
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasEpochNanos(100)
         .hasSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
@@ -119,7 +119,7 @@ public class LogAssertionsTest {
   void failure() {
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasResource(Resource.empty()));
     assertThatThrownBy(
-        () -> assertThat(LOG_DATA).hasInstrumentationLibrary(InstrumentationLibraryInfo.empty()));
+        () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasEpochNanos(200));
     assertThatThrownBy(
         () ->

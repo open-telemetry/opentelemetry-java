@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -18,13 +18,13 @@ abstract class MetricDataImpl implements MetricData {
 
   static MetricDataImpl create(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       MetricDataType type,
       Data<?> data) {
     return new AutoValue_MetricDataImpl(
-        resource, instrumentationLibraryInfo, name, description, unit, type, data);
+        resource, instrumentationScopeInfo, name, description, unit, type, data);
   }
 }

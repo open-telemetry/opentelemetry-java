@@ -73,7 +73,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -105,7 +105,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -137,7 +137,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -171,7 +171,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -229,7 +229,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -287,7 +287,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -344,7 +344,7 @@ class MetricAdapterTest {
                 Timestamp.fromMillis(1000)));
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")

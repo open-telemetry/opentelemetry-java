@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -97,7 +97,7 @@ class MetricStorageRegistryTest {
     public MetricData collectAndReset(
         CollectionInfo collectionInfo,
         Resource resource,
-        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        InstrumentationScopeInfo instrumentationScopeInfo,
         long startEpochNanos,
         long epochNanos,
         boolean suppressSynchronousCollection) {

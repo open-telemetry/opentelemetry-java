@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -38,7 +38,7 @@ class DoubleSumAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
-  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
 
@@ -192,7 +192,7 @@ class DoubleSumAggregatorTest {
     MetricData metricData =
         aggregator.toMetricData(
             resource,
-            library,
+            scope,
             metricDescriptor,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
@@ -235,7 +235,7 @@ class DoubleSumAggregatorTest {
     assertThat(
             aggregator.toMetricData(
                 resource,
-                library,
+                scope,
                 metricDescriptor,
                 Collections.singletonMap(Attributes.empty(), accumulation),
                 AggregationTemporality.CUMULATIVE,

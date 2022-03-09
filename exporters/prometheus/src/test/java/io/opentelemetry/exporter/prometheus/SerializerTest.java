@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -41,7 +41,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -54,7 +54,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -67,7 +67,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -80,7 +80,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -93,7 +93,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -106,7 +106,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -119,7 +119,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -132,7 +132,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -146,7 +146,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE =
       MetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -157,7 +157,7 @@ class SerializerTest {
   private static final MetricData LONG_GAUGE =
       MetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -168,7 +168,7 @@ class SerializerTest {
   private static final MetricData SUMMARY =
       MetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -186,7 +186,7 @@ class SerializerTest {
   private static final MetricData HISTOGRAM =
       MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -213,7 +213,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
       MetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
@@ -224,7 +224,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
       MetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",

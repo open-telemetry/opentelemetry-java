@@ -22,7 +22,7 @@ class EmptyMetricDataTest {
   void unsupportedOperation() {
     MetricData instance = EmptyMetricData.getInstance();
     assertThatThrownBy(instance::getResource).isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(instance::getInstrumentationLibraryInfo)
+    assertThatThrownBy(instance::getInstrumentationScopeInfo)
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(instance::getName).isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(instance::getDescription).isInstanceOf(UnsupportedOperationException.class);

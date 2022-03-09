@@ -19,7 +19,7 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -112,7 +112,7 @@ class OtlpGrpcMetricExporterTest
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "name",
         "description",
         "1",

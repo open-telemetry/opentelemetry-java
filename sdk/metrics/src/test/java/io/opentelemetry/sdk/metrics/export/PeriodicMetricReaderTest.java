@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -53,7 +53,7 @@ class PeriodicMetricReaderTest {
   private static final MetricData METRIC_DATA =
       MetricData.createLongSum(
           Resource.empty(),
-          InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
+          InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
           "my metric",
           "my metric description",
           "us",

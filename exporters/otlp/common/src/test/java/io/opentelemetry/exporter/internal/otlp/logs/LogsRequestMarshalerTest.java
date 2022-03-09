@@ -26,7 +26,7 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
@@ -57,7 +57,7 @@ class LogsRequestMarshalerTest {
             Collections.singleton(
                 LogDataBuilder.create(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
@@ -92,7 +92,7 @@ class LogsRequestMarshalerTest {
             LogMarshaler.create(
                 LogDataBuilder.create(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
+                        InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setName(NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
@@ -126,7 +126,7 @@ class LogsRequestMarshalerTest {
             LogMarshaler.create(
                 LogDataBuilder.create(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
+                        InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 

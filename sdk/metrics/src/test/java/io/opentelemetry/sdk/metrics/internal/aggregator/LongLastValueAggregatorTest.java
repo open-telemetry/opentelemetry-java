@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongLastValueAggregator aggregator =
@@ -104,7 +104,7 @@ class LongLastValueAggregatorTest {
     MetricData metricData =
         aggregator.toMetricData(
             RESOURCE,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
@@ -116,7 +116,7 @@ class LongLastValueAggregatorTest {
         .isEqualTo(
             MetricData.createLongGauge(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 "name",
                 "description",
                 "unit",

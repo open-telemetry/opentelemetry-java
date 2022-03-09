@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -59,13 +59,13 @@ class LoggingMetricExporterTest {
   void testExport() {
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
+    InstrumentationScopeInfo instrumentationScopeInfo =
+        InstrumentationScopeInfo.create("manualInstrumentation", "1.0", null);
     exporter.export(
         Arrays.asList(
             MetricData.createDoubleSummary(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "measureOne",
                 "A summarized test measure",
                 "ms",
@@ -82,7 +82,7 @@ class LoggingMetricExporterTest {
                                 ImmutableValueAtPercentile.create(100.0, 433)))))),
             MetricData.createLongSum(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "counterOne",
                 "A simple counter",
                 "one",
@@ -97,7 +97,7 @@ class LoggingMetricExporterTest {
                             1010)))),
             MetricData.createDoubleSum(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "observedValue",
                 "an observer gauge",
                 "kb",

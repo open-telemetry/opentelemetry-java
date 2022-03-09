@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -58,7 +58,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -69,7 +69,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
     // for identifying resets.
     return MetricData.createDoubleGauge(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),

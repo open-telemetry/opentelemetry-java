@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -35,7 +35,7 @@ class TemporalMetricStorage<T> {
    *
    * @param collector The handle of the metric reader.
    * @param resource The resource to attach these metrics against.
-   * @param instrumentationLibraryInfo The instrumentation library that generated these metrics.
+   * @param instrumentationScopeInfo The instrumentation scope that generated these metrics.
    * @param temporality The aggregation temporality requested by the reader.
    * @param currentAccumulation THe current accumulation of metric data from instruments. This might
    *     be delta (for synchronous) or cumulative (for asynchronous).
@@ -46,7 +46,7 @@ class TemporalMetricStorage<T> {
   synchronized MetricData buildMetricFor(
       CollectionHandle collector,
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       // Temporality is requested by the collector.
       AggregationTemporality temporality,
@@ -101,7 +101,7 @@ class TemporalMetricStorage<T> {
     }
     return aggregator.toMetricData(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor,
         result,
         temporality,

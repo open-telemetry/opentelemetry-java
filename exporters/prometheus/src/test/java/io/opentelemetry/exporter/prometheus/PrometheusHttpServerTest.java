@@ -18,7 +18,7 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -171,7 +171,7 @@ class PrometheusHttpServerTest {
     return ImmutableList.of(
         MetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("grpc", "version"),
+            InstrumentationScopeInfo.create("grpc", "version", null),
             "grpc.name",
             "long_description",
             "1",
@@ -182,7 +182,7 @@ class PrometheusHttpServerTest {
                     LongPointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
         MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("http", "version"),
+            InstrumentationScopeInfo.create("http", "version", null),
             "http.name",
             "double_description",
             "1",

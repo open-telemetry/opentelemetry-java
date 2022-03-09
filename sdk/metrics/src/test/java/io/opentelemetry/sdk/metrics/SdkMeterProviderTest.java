@@ -24,7 +24,7 @@ import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -48,8 +48,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SdkMeterProviderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(AttributeKey.stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkMeterProviderTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkMeterProviderTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -101,7 +101,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1"))
         .satisfiesExactlyInAnyOrder(
@@ -212,7 +212,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testLongCounter")
                     .hasDoubleHistogram()
                     .isDelta()
@@ -233,7 +233,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDoubleHistogram()
                     .isDelta()
                     .points()
@@ -278,7 +278,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -314,7 +314,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -371,7 +371,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1"))
         .satisfiesExactlyInAnyOrder(
@@ -762,7 +762,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -793,7 +793,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()

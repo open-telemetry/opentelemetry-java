@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.logs.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -23,7 +23,7 @@ abstract class LogDataImpl implements LogData {
 
   static LogDataImpl create(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
       SpanContext spanContext,
       Severity severity,
@@ -33,7 +33,7 @@ abstract class LogDataImpl implements LogData {
       Attributes attributes) {
     return new AutoValue_LogDataImpl(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         epochNanos,
         spanContext,
         severity,

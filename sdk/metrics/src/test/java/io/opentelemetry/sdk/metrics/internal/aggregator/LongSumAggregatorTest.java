@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -38,7 +38,7 @@ class LongSumAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
-  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongSumAggregator aggregator =

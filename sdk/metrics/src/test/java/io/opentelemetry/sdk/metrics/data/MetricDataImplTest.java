@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
@@ -65,7 +65,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createDoubleGauge(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -75,8 +75,8 @@ class MetricDataImplTest {
     assertThat(metricData.getUnit()).isEqualTo("ms");
     assertThat(metricData.getType()).isEqualTo(MetricDataType.DOUBLE_GAUGE);
     assertThat(metricData.getResource()).isEqualTo(Resource.empty());
-    assertThat(metricData.getInstrumentationLibraryInfo())
-        .isEqualTo(InstrumentationLibraryInfo.empty());
+    assertThat(metricData.getInstrumentationScopeInfo())
+        .isEqualTo(InstrumentationScopeInfo.empty());
     assertThat(metricData.isEmpty()).isTrue();
   }
 
@@ -90,7 +90,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createLongGauge(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -100,7 +100,7 @@ class MetricDataImplTest {
     metricData =
         MetricData.createLongSum(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -122,7 +122,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createDoubleGauge(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -132,7 +132,7 @@ class MetricDataImplTest {
     metricData =
         MetricData.createDoubleSum(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -157,7 +157,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createDoubleSummary(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -179,7 +179,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createDoubleHistogram(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -219,7 +219,7 @@ class MetricDataImplTest {
     MetricData metricData =
         MetricData.createDoubleSummary(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -234,7 +234,7 @@ class MetricDataImplTest {
     metricData =
         MetricData.createDoubleGauge(
             Resource.empty(),
-            InstrumentationLibraryInfo.empty(),
+            InstrumentationScopeInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",

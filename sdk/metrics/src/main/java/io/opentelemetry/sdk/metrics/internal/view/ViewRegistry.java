@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -44,10 +44,11 @@ public final class ViewRegistry {
    * @return The list of {@link View}s for this instrument in registered order, or a default
    *     aggregation view.
    */
-  public List<View> findViews(InstrumentDescriptor descriptor, InstrumentationLibraryInfo meter) {
+  public List<View> findViews(
+      InstrumentDescriptor descriptor, InstrumentationScopeInfo meterScope) {
     List<View> result = new ArrayList<>();
     for (RegisteredView entry : reverseRegistration) {
-      if (matchesSelector(entry.getInstrumentSelector(), descriptor, meter)) {
+      if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
         result.add(entry.getView());
       }
     }
@@ -61,17 +62,17 @@ public final class ViewRegistry {
   private static boolean matchesSelector(
       InstrumentSelector selector,
       InstrumentDescriptor descriptor,
-      InstrumentationLibraryInfo meter) {
+      InstrumentationScopeInfo meterScope) {
     return (selector.getInstrumentType() == null
             || selector.getInstrumentType() == descriptor.getType())
         && selector.getInstrumentNameFilter().test(descriptor.getName())
-        && matchesMeter(selector.getMeterSelector(), meter);
+        && matchesMeter(selector.getMeterSelector(), meterScope);
   }
 
   // Matches a meter selector against a meter.
-  private static boolean matchesMeter(MeterSelector selector, InstrumentationLibraryInfo meter) {
-    return selector.getNameFilter().test(meter.getName())
-        && selector.getVersionFilter().test(meter.getVersion())
-        && selector.getSchemaUrlFilter().test(meter.getSchemaUrl());
+  private static boolean matchesMeter(MeterSelector selector, InstrumentationScopeInfo meterScope) {
+    return selector.getNameFilter().test(meterScope.getName())
+        && selector.getVersionFilter().test(meterScope.getVersion())
+        && selector.getSchemaUrlFilter().test(meterScope.getSchemaUrl());
   }
 }

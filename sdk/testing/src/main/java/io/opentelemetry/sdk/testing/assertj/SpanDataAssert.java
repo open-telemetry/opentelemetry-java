@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -160,9 +160,14 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has the given {@link InstrumentationLibraryInfo}. */
+  /**
+   * Asserts the span has the given {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}.
+   *
+   * @deprecated Use {@link #hasInstrumentationScopeInfo(InstrumentationScopeInfo)}.
+   */
+  @Deprecated
   public SpanDataAssert hasInstrumentationLibraryInfo(
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
     isNotNull();
     if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibraryInfo)) {
       failWithActualExpectedAndMessage(
@@ -172,6 +177,22 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           actual.getName(),
           instrumentationLibraryInfo,
           actual.getInstrumentationLibraryInfo());
+    }
+    return this;
+  }
+
+  /** Asserts the span has the given {@link InstrumentationScopeInfo}. */
+  public SpanDataAssert hasInstrumentationScopeInfo(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
+    isNotNull();
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
+      failWithActualExpectedAndMessage(
+          actual.getInstrumentationScopeInfo(),
+          instrumentationScopeInfo,
+          "Expected span [%s] to have instrumentation scope info <%s> but was <%s>",
+          actual.getName(),
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }

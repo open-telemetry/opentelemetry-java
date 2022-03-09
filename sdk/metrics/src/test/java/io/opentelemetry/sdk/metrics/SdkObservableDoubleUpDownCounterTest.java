@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -27,8 +27,8 @@ class SdkObservableDoubleUpDownCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkObservableDoubleUpDownCounterTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkObservableDoubleUpDownCounterTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -86,7 +86,7 @@ class SdkObservableDoubleUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDoubleSum()
                     .isCumulative()
@@ -107,7 +107,7 @@ class SdkObservableDoubleUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDoubleSum()
                     .isCumulative()
@@ -148,7 +148,7 @@ class SdkObservableDoubleUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDoubleSum()
                     .isDelta()
@@ -169,7 +169,7 @@ class SdkObservableDoubleUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDoubleSum()
                     .isDelta()

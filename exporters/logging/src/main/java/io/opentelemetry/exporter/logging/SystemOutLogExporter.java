@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.logging;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.time.Instant;
@@ -59,7 +59,7 @@ public class SystemOutLogExporter implements LogExporter {
 
   // VisibleForTesting
   static void formatLog(StringBuilder stringBuilder, LogData log) {
-    InstrumentationLibraryInfo instrumentationLibraryInfo = log.getInstrumentationLibraryInfo();
+    InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
     stringBuilder
         .append(
             ISO_FORMAT.format(
@@ -73,13 +73,13 @@ public class SystemOutLogExporter implements LogExporter {
         .append(log.getSpanContext().getTraceId())
         .append(" ")
         .append(log.getSpanContext().getSpanId())
-        .append(" [libraryInfo: ")
-        .append(instrumentationLibraryInfo.getName())
+        .append(" [scopeInfo: ")
+        .append(instrumentationScopeInfo.getName())
         .append(":")
         .append(
-            instrumentationLibraryInfo.getVersion() == null
+            instrumentationScopeInfo.getVersion() == null
                 ? ""
-                : instrumentationLibraryInfo.getVersion())
+                : instrumentationScopeInfo.getVersion())
         .append("] ")
         .append(log.getAttributes());
   }

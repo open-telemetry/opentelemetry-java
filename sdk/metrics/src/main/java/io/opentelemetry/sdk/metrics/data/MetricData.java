@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -25,17 +26,42 @@ public interface MetricData {
    * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
    *
    * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   * @deprecated Use {@link #createDoubleGauge(Resource, InstrumentationScopeInfo, String, String,
+   *     String, GaugeData)}.
    */
+  @Deprecated
   static MetricData createDoubleGauge(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
       String name,
       String description,
       String unit,
       GaugeData<DoublePointData> data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
+        name,
+        description,
+        unit,
+        MetricDataType.DOUBLE_GAUGE,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   */
+  static MetricData createDoubleGauge(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      String description,
+      String unit,
+      GaugeData<DoublePointData> data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -47,17 +73,42 @@ public interface MetricData {
    * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
    *
    * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   * @deprecated Use {@link #createLongGauge(Resource, InstrumentationScopeInfo, String, String,
+   *     String, GaugeData)}.
    */
+  @Deprecated
   static MetricData createLongGauge(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
       String name,
       String description,
       String unit,
       GaugeData<LongPointData> data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
+        name,
+        description,
+        unit,
+        MetricDataType.LONG_GAUGE,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   */
+  static MetricData createLongGauge(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      String description,
+      String unit,
+      GaugeData<LongPointData> data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -69,17 +120,42 @@ public interface MetricData {
    * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
    *
    * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   * @deprecated Use {@link #createDoubleSum(Resource, InstrumentationScopeInfo, String, String,
+   *     String, SumData)}.
    */
+  @Deprecated
   static MetricData createDoubleSum(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
       String name,
       String description,
       String unit,
       SumData<DoublePointData> data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
+        name,
+        description,
+        unit,
+        MetricDataType.DOUBLE_SUM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   */
+  static MetricData createDoubleSum(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      String description,
+      String unit,
+      SumData<DoublePointData> data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -91,21 +167,65 @@ public interface MetricData {
    * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
    *
    * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   * @deprecated Use {@link #createLongSum(Resource, InstrumentationScopeInfo, String, String,
+   *     String, SumData)}.
    */
+  @Deprecated
   static MetricData createLongSum(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
       String name,
       String description,
       String unit,
       SumData<LongPointData> data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
         name,
         description,
         unit,
         MetricDataType.LONG_SUM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   */
+  static MetricData createLongSum(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      String description,
+      String unit,
+      SumData<LongPointData> data) {
+    return MetricDataImpl.create(
+        resource, instrumentationScopeInfo, name, description, unit, MetricDataType.LONG_SUM, data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   * @deprecated Use {@link #createDoubleSummary(Resource, InstrumentationScopeInfo, String, String,
+   *     String, SummaryData)}.
+   */
+  @Deprecated
+  static MetricData createDoubleSummary(
+      Resource resource,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      SummaryData data) {
+    return MetricDataImpl.create(
+        resource,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
+        name,
+        description,
+        unit,
+        MetricDataType.SUMMARY,
         data);
   }
 
@@ -116,18 +236,37 @@ public interface MetricData {
    */
   static MetricData createDoubleSummary(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       SummaryData data) {
     return MetricDataImpl.create(
+        resource, instrumentationScopeInfo, name, description, unit, MetricDataType.SUMMARY, data);
+  }
+
+  /**
+   * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
+   * @deprecated Use {@link #createDoubleHistogram(Resource, InstrumentationScopeInfo, String,
+   *     String, String, HistogramData)}.
+   */
+  @Deprecated
+  static MetricData createDoubleHistogram(
+      Resource resource,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      HistogramData data) {
+    return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
         name,
         description,
         unit,
-        MetricDataType.SUMMARY,
+        MetricDataType.HISTOGRAM,
         data);
   }
 
@@ -138,14 +277,14 @@ public interface MetricData {
    */
   static MetricData createDoubleHistogram(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       HistogramData data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -157,17 +296,42 @@ public interface MetricData {
    * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
    *
    * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   * @deprecated Use {@link #createExponentialHistogram(Resource, InstrumentationScopeInfo, String,
+   *     String, String, ExponentialHistogramData)}.
    */
+  @Deprecated
   static MetricData createExponentialHistogram(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
       String name,
       String description,
       String unit,
       ExponentialHistogramData data) {
     return MetricDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
+        name,
+        description,
+        unit,
+        MetricDataType.EXPONENTIAL_HISTOGRAM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   */
+  static MetricData createExponentialHistogram(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      String description,
+      String unit,
+      ExponentialHistogramData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -186,9 +350,21 @@ public interface MetricData {
    * Returns the instrumentation library specified when creating the {@code Meter} which created the
    * {@code Instrument} that produces {@code MetricData}.
    *
-   * @return an instance of {@link InstrumentationLibraryInfo}
+   * @return an instance of {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}
+   * @deprecated Use {@link #getInstrumentationScopeInfo()}.
    */
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  @Deprecated
+  default io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
+  }
+
+  /**
+   * Returns the instrumentation scope specified when creating the {@code Meter} which created the
+   * {@code Instrument} that produces {@code MetricData}.
+   *
+   * @return an instance of {@link InstrumentationScopeInfo}
+   */
+  InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /**
    * Returns the metric name.

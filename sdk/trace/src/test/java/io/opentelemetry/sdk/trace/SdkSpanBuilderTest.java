@@ -992,7 +992,7 @@ class SdkSpanBuilderTest {
                 + "attributes=\\{service.name=\"unknown_service:java\", "
                 + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-rc.\\d+)?(-SNAPSHOT)?\"}}, "
-                + "instrumentationLibraryInfo=InstrumentationLibraryInfo\\{"
+                + "instrumentationScopeInfo=InstrumentationScopeInfo\\{"
                 + "name=SpanBuilderSdkTest, version=null, schemaUrl=null}, "
                 + "name=span_name, "
                 + "kind=INTERNAL, "

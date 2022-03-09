@@ -14,7 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
@@ -30,8 +30,8 @@ class SdkLongCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkLongCounterTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkLongCounterTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
@@ -83,7 +83,7 @@ class SdkLongCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testCounter")
                     .hasDescription("description")
                     .hasUnit("By")
@@ -120,7 +120,7 @@ class SdkLongCounterTest {
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
-                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testCounter")
                       .hasLongSum()
                       .isMonotonic()
@@ -147,7 +147,7 @@ class SdkLongCounterTest {
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
-                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testCounter")
                       .hasLongSum()
                       .isMonotonic()
@@ -222,7 +222,7 @@ class SdkLongCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testCounter")
                     .hasLongSum()
                     .isCumulative()
@@ -270,7 +270,7 @@ class SdkLongCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testCounter")
                     .hasLongSum()
                     .isCumulative()
