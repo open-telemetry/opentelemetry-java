@@ -155,7 +155,7 @@ class OpenTelemetryAssertionsTest {
         .hasAttributesSatisfyingExactly(
             equalTo(BEAR, "mya"),
             equalTo(WARM, true),
-            equalTo(TEMPERATURE, 30L),
+            equalTo(TEMPERATURE, 30),
             equalTo(LENGTH, 1.2),
             equalTo(COLORS, Arrays.asList("red", "blue")),
             equalTo(CONDITIONS, Arrays.asList(false, true)),

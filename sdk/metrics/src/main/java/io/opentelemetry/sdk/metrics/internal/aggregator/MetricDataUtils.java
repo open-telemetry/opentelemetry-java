@@ -11,7 +11,9 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ final class MetricDataUtils {
     accumulationMap.forEach(
         (labels, accumulation) ->
             points.add(
-                LongPointData.create(
+                ImmutableLongPointData.create(
                     startEpochNanos,
                     epochNanos,
                     labels,
@@ -51,7 +53,7 @@ final class MetricDataUtils {
     accumulationMap.forEach(
         (labels, accumulation) ->
             points.add(
-                DoublePointData.create(
+                ImmutableDoublePointData.create(
                     startEpochNanos,
                     epochNanos,
                     labels,

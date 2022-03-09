@@ -31,6 +31,8 @@ final class ResourceConfiguration {
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
+    Set<String> enabledProviders =
+        new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
     // TODO(anuraaga): We use a hyphen only once in this artifact, for
     // otel.java.disabled.resource-providers. But fetching by the dot version is the simplest way
     // to implement it for now.
@@ -38,6 +40,10 @@ final class ResourceConfiguration {
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
     for (ResourceProvider resourceProvider :
         ServiceLoader.load(ResourceProvider.class, serviceClassLoader)) {
+      if (!enabledProviders.isEmpty()
+          && !enabledProviders.contains(resourceProvider.getClass().getName())) {
+        continue;
+      }
       if (disabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;
       }

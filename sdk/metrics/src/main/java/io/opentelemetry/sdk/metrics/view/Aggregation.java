@@ -108,13 +108,4 @@ public abstract class Aggregation {
     throw new IllegalStateException("Unrecognized aggregation " + aggregation.getClass().getName());
   }
 
-  /**
-   * Aggregates measurements using the best available Histogram.
-   *
-   * @deprecated Use {@link #explicitBucketHistogram()}.
-   */
-  @Deprecated
-  public static Aggregation histogram() {
-    return explicitBucketHistogram();
-  }
 }

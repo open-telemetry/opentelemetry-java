@@ -13,9 +13,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -42,7 +42,8 @@ class OtlpJsonLoggingMetricExporterTest {
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(
-                  DoublePointData.create(1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   private static final MetricData METRIC2 =
       MetricData.createDoubleSum(
@@ -55,7 +56,8 @@ class OtlpJsonLoggingMetricExporterTest {
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(
-                  DoublePointData.create(1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingMetricExporter.class);
