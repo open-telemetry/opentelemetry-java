@@ -26,8 +26,7 @@ class MetricDescriptorTest {
     assertThat(simple.getDescription()).isEqualTo("description");
     assertThat(simple.getSourceView()).isEqualTo(view);
     assertThat(simple.getSourceInstrument()).isEqualTo(instrument);
-    assertThat(simple.getAggregationName())
-        .isEqualTo("io.opentelemetry.sdk.metrics.view.DefaultAggregation");
+    assertThat(simple.getAggregationName()).isEqualTo("default");
   }
 
   @Test
@@ -41,8 +40,7 @@ class MetricDescriptorTest {
     assertThat(simple.getDescription()).isEqualTo("new_description");
     assertThat(simple.getSourceInstrument()).isEqualTo(instrument);
     assertThat(simple.getSourceView()).isEqualTo(view);
-    assertThat(simple.getAggregationName())
-        .isEqualTo("io.opentelemetry.sdk.metrics.view.DefaultAggregation");
+    assertThat(simple.getAggregationName()).isEqualTo("default");
   }
 
   @Test

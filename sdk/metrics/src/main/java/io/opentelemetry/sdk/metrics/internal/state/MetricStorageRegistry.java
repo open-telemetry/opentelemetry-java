@@ -78,8 +78,7 @@ public class MetricStorageRegistry {
       // Check compatibility of metrics which share the same case-insensitive name
       if (existing.getName().equalsIgnoreCase(descriptor.getName())
           && !existing.isCompatibleWith(descriptor)) {
-        logger.log(
-            Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
+        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
         break; // Only log information about the first conflict found to reduce noise
       }
     }

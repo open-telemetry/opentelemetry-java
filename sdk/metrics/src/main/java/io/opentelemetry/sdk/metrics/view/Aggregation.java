@@ -107,5 +107,4 @@ public abstract class Aggregation {
     // This should not happen
     throw new IllegalStateException("Unrecognized aggregation " + aggregation.getClass().getName());
   }
-
 }

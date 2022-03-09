@@ -40,7 +40,8 @@ class AggregationTest {
   void forName() {
     assertThat(Aggregation.forName("sum")).isEqualTo(Aggregation.sum());
     assertThat(Aggregation.forName("last_value")).isEqualTo(Aggregation.lastValue());
-    assertThat(Aggregation.forName("histogram")).isEqualTo(Aggregation.explicitBucketHistogram());
+    assertThat(Aggregation.forName("explicit_bucket_histogram"))
+        .isEqualTo(Aggregation.explicitBucketHistogram());
     assertThat(Aggregation.forName("drop")).isEqualTo(Aggregation.drop());
     assertThatThrownBy(() -> Aggregation.forName("foo"))
         .isInstanceOf(IllegalArgumentException.class)
