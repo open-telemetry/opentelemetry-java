@@ -13,20 +13,21 @@ import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.DebugUtils;
+import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
 import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 // Note: This class MUST be outside the io.opentelemetry.metrics package to work correctly.
-class TestSourceInfo {
+class SourceInfoTest {
   // Note: The line numbers for these statics are used as part of the test.
   private static final SourceInfo info = SourceInfo.fromCurrentStack();
 
   @Test
   void sourceInfoFindsStackTrace() {
-    assertThat(info.shortDebugString()).isEqualTo("TestSourceInfo.java:22");
+    assertThat(info.shortDebugString()).isEqualTo("SourceInfoTest.java:23");
     assertThat(info.multiLineDebugString())
         .startsWith(
-            "\tat io.opentelemetry.testing.TestSourceInfo.<clinit>(TestSourceInfo.java:22)\n");
+            "\tat io.opentelemetry.testing.SourceInfoTest.<clinit>(SourceInfoTest.java:23)\n");
   }
 
   @Test
@@ -83,7 +84,7 @@ class TestSourceInfo {
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- Description [description2] does not match [description]")
         .contains("Conflicting view registered")
-        .contains(problemView.getSourceInfo().multiLineDebugString())
+        .contains(ImmutableView.getSourceInfo(problemView).multiLineDebugString())
         .contains("FROM instrument name")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
@@ -113,7 +114,7 @@ class TestSourceInfo {
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
         .contains("VIEW defined")
-        .contains(problemView.getSourceInfo().multiLineDebugString())
+        .contains(ImmutableView.getSourceInfo(problemView).multiLineDebugString())
         .contains("FROM instrument name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- Unit [unit] does not match [unit2]")

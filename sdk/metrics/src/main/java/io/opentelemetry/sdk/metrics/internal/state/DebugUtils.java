@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
 
 /**
  * Utilities for logging metric diagnostic issues.
@@ -45,7 +46,7 @@ public final class DebugUtils {
       result.append("\tVIEW defined\n");
       conflict
           .getSourceView()
-          .ifPresent(v -> result.append(v.getSourceInfo().multiLineDebugString()));
+          .ifPresent(v -> result.append(ImmutableView.getSourceInfo(v).multiLineDebugString()));
       result
           .append("\tFROM instrument ")
           .append(conflict.getSourceInstrument().getName())
@@ -109,7 +110,8 @@ public final class DebugUtils {
       result.append("Conflicting view registered.\n");
       existing
           .getSourceView()
-          .ifPresent(view -> result.append(view.getSourceInfo().multiLineDebugString()));
+          .ifPresent(
+              view -> result.append(ImmutableView.getSourceInfo(view).multiLineDebugString()));
       result
           .append("FROM instrument ")
           .append(existing.getSourceInstrument().getName())
