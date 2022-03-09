@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -191,8 +191,8 @@ class MetricAdapterTest {
                       5,
                       7,
                       Arrays.asList(
-                          ImmutableValueAtPercentile.create(0.9, 0.1),
-                          ImmutableValueAtPercentile.create(0.99, 0.3))))));
+                          ImmutableValueAtQuantile.create(0.9, 0.1),
+                          ImmutableValueAtQuantile.create(0.99, 0.3))))));
   private static final MetricData HISTOGRAM =
       MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -436,7 +436,7 @@ class MetricAdapterTest {
                         KP_VP_ATTR,
                         9,
                         18.3,
-                        ImmutableList.of(ImmutableValueAtPercentile.create(0.9, 1.1))))))
+                        ImmutableList.of(ImmutableValueAtQuantile.create(0.9, 1.1))))))
         .containsExactly(
             new Sample(
                 "full_name_count",
@@ -479,8 +479,8 @@ class MetricAdapterTest {
                         9,
                         18.3,
                         ImmutableList.of(
-                            ImmutableValueAtPercentile.create(0.9, 1.1),
-                            ImmutableValueAtPercentile.create(0.99, 12.3))))))
+                            ImmutableValueAtQuantile.create(0.9, 1.1),
+                            ImmutableValueAtQuantile.create(0.99, 12.3))))))
         .containsExactly(
             new Sample(
                 "full_name_count",

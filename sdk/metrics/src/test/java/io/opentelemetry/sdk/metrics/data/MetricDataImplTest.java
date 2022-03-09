@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,10 +34,10 @@ class MetricDataImplTest {
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
-  private static final ValueAtPercentile MINIMUM_VALUE =
-      ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE);
-  private static final ValueAtPercentile MAXIMUM_VALUE =
-      ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
+  private static final ValueAtQuantile MINIMUM_VALUE =
+      ImmutableValueAtQuantile.create(0.0, DOUBLE_VALUE);
+  private static final ValueAtQuantile MAXIMUM_VALUE =
+      ImmutableValueAtQuantile.create(1.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
       ImmutableLongPointData.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
@@ -52,8 +52,8 @@ class MetricDataImplTest {
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
-              ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE),
-              ImmutableValueAtPercentile.create(100, DOUBLE_VALUE)));
+              ImmutableValueAtQuantile.create(0.0, DOUBLE_VALUE),
+              ImmutableValueAtQuantile.create(1.0, DOUBLE_VALUE)));
   private static final ImmutableHistogramPointData HISTOGRAM_POINT =
       ImmutableHistogramPointData.create(
           START_EPOCH_NANOS,
@@ -155,8 +155,7 @@ class MetricDataImplTest {
     assertThat(SUMMARY_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(SUMMARY_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(SUMMARY_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
-    assertThat(SUMMARY_POINT.getPercentileValues())
-        .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
+    assertThat(SUMMARY_POINT.getValues()).isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
         MetricData.createDoubleSummary(
             Resource.empty(),
