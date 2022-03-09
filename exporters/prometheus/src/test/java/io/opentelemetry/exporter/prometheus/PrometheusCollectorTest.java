@@ -15,10 +15,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -86,7 +86,7 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    LongPointData.create(
+                    ImmutableLongPointData.create(
                         1633947011000000000L,
                         1633950672000000000L,
                         Attributes.of(stringKey("kp"), "vp"),
@@ -101,7 +101,7 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePointData.create(
+                    ImmutableDoublePointData.create(
                         1633947011000000000L,
                         1633950672000000000L,
                         Attributes.of(stringKey("kp"), "vp"),

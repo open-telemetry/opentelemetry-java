@@ -12,9 +12,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -90,7 +90,7 @@ class LoggingMetricExporterTest {
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPointData.create(
+                        ImmutableLongPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
@@ -105,7 +105,7 @@ class LoggingMetricExporterTest {
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePointData.create(
+                        ImmutableDoublePointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("1"), "2", stringKey("3"), "4"),

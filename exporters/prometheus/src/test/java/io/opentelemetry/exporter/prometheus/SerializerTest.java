@@ -14,13 +14,13 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -49,7 +49,7 @@ class SerializerTest {
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
@@ -62,7 +62,7 @@ class SerializerTest {
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
@@ -75,7 +75,7 @@ class SerializerTest {
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
@@ -88,7 +88,7 @@ class SerializerTest {
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
@@ -101,7 +101,7 @@ class SerializerTest {
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
@@ -114,7 +114,7 @@ class SerializerTest {
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
@@ -127,7 +127,7 @@ class SerializerTest {
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
@@ -140,7 +140,7 @@ class SerializerTest {
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
 
   private static final MetricData DOUBLE_GAUGE =
@@ -152,7 +152,7 @@ class SerializerTest {
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData LONG_GAUGE =
       MetricData.createLongGauge(
@@ -163,7 +163,7 @@ class SerializerTest {
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData SUMMARY =
       MetricData.createDoubleSummary(
@@ -219,7 +219,7 @@ class SerializerTest {
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, Attributes.empty(), 7))));
   private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
       MetricData.createDoubleGauge(
@@ -230,7 +230,7 @@ class SerializerTest {
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR.toBuilder().put("animal", "bear").build(),
