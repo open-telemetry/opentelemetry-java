@@ -41,16 +41,16 @@ import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
@@ -92,7 +92,7 @@ class MetricsRequestMarshalerTest {
                         KV_ATTR,
                         0,
                         singletonList(
-                            LongExemplarData.create(
+                            ImmutableLongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 SpanContext.create(
@@ -134,7 +134,7 @@ class MetricsRequestMarshalerTest {
                         KV_ATTR,
                         0,
                         singletonList(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 SpanContext.create(
@@ -180,7 +180,7 @@ class MetricsRequestMarshalerTest {
                         KV_ATTR,
                         5,
                         singletonList(
-                            LongExemplarData.create(
+                            ImmutableLongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 SpanContext.create(
@@ -353,7 +353,7 @@ class MetricsRequestMarshalerTest {
                         ImmutableList.of(),
                         ImmutableList.of(7L),
                         ImmutableList.of(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 SpanContext.create(
@@ -413,7 +413,7 @@ class MetricsRequestMarshalerTest {
                         456,
                         Attributes.of(stringKey("key"), "value"),
                         ImmutableList.of(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 SpanContext.create(

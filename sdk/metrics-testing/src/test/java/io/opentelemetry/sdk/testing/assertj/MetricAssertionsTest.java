@@ -23,10 +23,12 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
@@ -140,7 +142,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final DoubleExemplarData DOUBLE_EXEMPLAR =
-      DoubleExemplarData.create(
+      ImmutableDoubleExemplarData.create(
           Attributes.empty(),
           0,
           SpanContext.create(
@@ -195,7 +197,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final LongExemplarData LONG_EXEMPLAR =
-      LongExemplarData.create(
+      ImmutableLongExemplarData.create(
           Attributes.empty(),
           0,
           SpanContext.create(
@@ -369,7 +371,7 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_POINT_DATA)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             0,
                             SpanContext.create(
@@ -412,7 +414,7 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(LONG_POINT_DATA)
                     .hasExemplars(
-                        LongExemplarData.create(
+                        ImmutableLongExemplarData.create(
                             Attributes.empty(),
                             0,
                             SpanContext.create(

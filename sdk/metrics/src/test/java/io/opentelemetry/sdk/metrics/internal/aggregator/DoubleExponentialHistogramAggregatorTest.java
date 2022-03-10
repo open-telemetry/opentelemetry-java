@@ -15,10 +15,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -187,7 +187,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -234,7 +234,7 @@ class DoubleExponentialHistogramAggregatorTest {
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -246,7 +246,7 @@ class DoubleExponentialHistogramAggregatorTest {
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 attributes,
                 1L,
                 SpanContext.create(
@@ -273,7 +273,7 @@ class DoubleExponentialHistogramAggregatorTest {
   void diffDownScaledAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -285,7 +285,7 @@ class DoubleExponentialHistogramAggregatorTest {
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 attributes,
                 1L,
                 SpanContext.create(
@@ -309,7 +309,7 @@ class DoubleExponentialHistogramAggregatorTest {
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -321,7 +321,7 @@ class DoubleExponentialHistogramAggregatorTest {
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 attributes,
                 1L,
                 SpanContext.create(
@@ -434,7 +434,7 @@ class DoubleExponentialHistogramAggregatorTest {
   void testToMetricData() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(

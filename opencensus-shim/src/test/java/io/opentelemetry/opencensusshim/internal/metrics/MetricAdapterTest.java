@@ -24,7 +24,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -246,9 +246,9 @@ class MetricAdapterTest {
                     .hasBucketBoundaries(2.0, 5.0)
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             1000000,
                             SpanContext.create(
@@ -361,9 +361,9 @@ class MetricAdapterTest {
                     .hasBucketBoundaries(2.0, 5.0)
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             1000000,
                             SpanContext.create(
