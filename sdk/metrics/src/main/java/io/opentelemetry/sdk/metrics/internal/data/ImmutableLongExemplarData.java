@@ -13,7 +13,12 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import javax.annotation.concurrent.Immutable;
 
-/** An {@link ExemplarData} with {@code long} measurements. */
+/**
+ * An {@link ExemplarData} with {@code long} measurements.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableLongExemplarData implements LongExemplarData {
