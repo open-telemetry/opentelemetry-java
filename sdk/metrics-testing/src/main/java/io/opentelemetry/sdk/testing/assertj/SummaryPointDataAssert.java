@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import org.assertj.core.api.Assertions;
 
 /** Asserts for (deprecated) Summary points. */
@@ -31,9 +31,9 @@ public class SummaryPointDataAssert
   }
 
   /** Ensure the summary has exactly, in any order, the given percentile values. */
-  public SummaryPointDataAssert hasPercentileValues(ValueAtPercentile... percentiles) {
+  public SummaryPointDataAssert hasValues(ValueAtQuantile... values) {
     isNotNull();
-    Assertions.assertThat(actual.getPercentileValues()).containsExactlyInAnyOrder(percentiles);
+    Assertions.assertThat(actual.getValues()).containsExactlyInAnyOrder(values);
     return this;
   }
 }

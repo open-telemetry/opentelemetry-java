@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -212,7 +212,7 @@ public class MetricAssertionsTest {
       ImmutableLongPointData.create(
           1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
-  private static final ValueAtPercentile PERCENTILE_VALUE = ImmutableValueAtPercentile.create(0, 1);
+  private static final ValueAtQuantile PERCENTILE_VALUE = ImmutableValueAtQuantile.create(0, 1);
 
   private static final SummaryPointData DOUBLE_SUMMARY_POINT_DATA =
       ImmutableSummaryPointData.create(
@@ -467,7 +467,7 @@ public class MetricAssertionsTest {
         .hasEpochNanos(2)
         .hasStartEpochNanos(1)
         .hasAttributes(Attributes.empty())
-        .hasPercentileValues(PERCENTILE_VALUE);
+        .hasValues(PERCENTILE_VALUE);
   }
 
   @Test
@@ -481,7 +481,7 @@ public class MetricAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(DOUBLE_SUMMARY_POINT_DATA)
-                    .hasPercentileValues(ImmutableValueAtPercentile.create(1, 1)))
+                    .hasValues(ImmutableValueAtQuantile.create(1, 1)))
         .isInstanceOf(AssertionError.class);
   }
 

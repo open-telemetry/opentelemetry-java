@@ -33,7 +33,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
@@ -42,7 +42,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -370,12 +370,13 @@ public final class MetricAdapter {
     return TimeUnit.SECONDS.toNanos(time.getSeconds()) + time.getNanos();
   }
 
-  private static List<ValueAtPercentile> mapValueAtPercentiles(
+  private static List<ValueAtQuantile> mapValueAtPercentiles(
       List<Summary.Snapshot.ValueAtPercentile> valueAtPercentiles) {
-    List<ValueAtPercentile> result = new ArrayList<>(valueAtPercentiles.size());
+    List<ValueAtQuantile> result = new ArrayList<>(valueAtPercentiles.size());
     for (Summary.Snapshot.ValueAtPercentile censusValue : valueAtPercentiles) {
       result.add(
-          ImmutableValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
+          ImmutableValueAtQuantile.create(
+              censusValue.getPercentile() / 100.0, censusValue.getValue()));
     }
     return result;
   }

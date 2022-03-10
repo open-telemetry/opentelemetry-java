@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -39,7 +39,7 @@ public abstract class ImmutableSummaryPointData implements SummaryPointData {
       Attributes attributes,
       long count,
       double sum,
-      List<ValueAtPercentile> percentileValues) {
+      List<ValueAtQuantile> percentileValues) {
     return new AutoValue_ImmutableSummaryPointData(
         startEpochNanos,
         epochNanos,

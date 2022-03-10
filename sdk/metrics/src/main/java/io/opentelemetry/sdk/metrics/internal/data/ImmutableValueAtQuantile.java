@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -17,10 +17,10 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class ImmutableValueAtPercentile implements ValueAtPercentile {
-  public static ValueAtPercentile create(double percentile, double value) {
-    return new AutoValue_ImmutableValueAtPercentile(percentile, value);
+public abstract class ImmutableValueAtQuantile implements ValueAtQuantile {
+  public static ValueAtQuantile create(double quantile, double value) {
+    return new AutoValue_ImmutableValueAtQuantile(quantile, value);
   }
 
-  ImmutableValueAtPercentile() {}
+  ImmutableValueAtQuantile() {}
 }
