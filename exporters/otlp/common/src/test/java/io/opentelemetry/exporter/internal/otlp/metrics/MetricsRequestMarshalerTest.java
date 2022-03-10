@@ -55,7 +55,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
@@ -280,7 +280,7 @@ class MetricsRequestMarshalerTest {
                         KV_ATTR,
                         5,
                         14.2,
-                        singletonList(ImmutableValueAtPercentile.create(0.0, 1.1))))))
+                        singletonList(ImmutableValueAtQuantile.create(0.0, 1.1))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -308,8 +308,8 @@ class MetricsRequestMarshalerTest {
                         9,
                         18.3,
                         ImmutableList.of(
-                            ImmutableValueAtPercentile.create(0.0, 1.1),
-                            ImmutableValueAtPercentile.create(100.0, 20.3))))))
+                            ImmutableValueAtQuantile.create(0.0, 1.1),
+                            ImmutableValueAtQuantile.create(1.0, 20.3))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -691,8 +691,8 @@ class MetricsRequestMarshalerTest {
                                 5,
                                 33d,
                                 ImmutableList.of(
-                                    ImmutableValueAtPercentile.create(0, 1.1),
-                                    ImmutableValueAtPercentile.create(100.0, 20.3))))))))
+                                    ImmutableValueAtQuantile.create(0, 1.1),
+                                    ImmutableValueAtQuantile.create(1.0, 20.3))))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")

@@ -33,7 +33,7 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
 
   static SummaryDataPointMarshaler create(SummaryPointData point) {
     ValueAtQuantileMarshaler[] quantileMarshalers =
-        ValueAtQuantileMarshaler.createRepeated(point.getPercentileValues());
+        ValueAtQuantileMarshaler.createRepeated(point.getValues());
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(point.getAttributes());
 

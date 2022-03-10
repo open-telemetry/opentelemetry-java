@@ -25,7 +25,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -281,7 +281,7 @@ class MetricAdapterTest {
                                     10L,
                                     5d,
                                     Arrays.asList(
-                                        Summary.Snapshot.ValueAtPercentile.create(1.0, 200))))),
+                                        Summary.Snapshot.ValueAtPercentile.create(100.0, 200))))),
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
@@ -301,7 +301,7 @@ class MetricAdapterTest {
                     .hasAttributes(Attributes.of(AttributeKey.stringKey("key1"), "value1"))
                     .hasCount(10)
                     .hasSum(5)
-                    .hasPercentileValues(ImmutableValueAtPercentile.create(1.0, 200)));
+                    .hasValues(ImmutableValueAtQuantile.create(1.0, 200)));
   }
 
   @Test
