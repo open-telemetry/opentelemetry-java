@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -46,7 +47,7 @@ public class MetricAssertionsTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("instrumentation_library", null);
   private static final MetricData HISTOGRAM_METRIC =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "histogram",
@@ -58,7 +59,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData HISTOGRAM_DELTA_METRIC =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "histogram_delta",
@@ -70,7 +71,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData EXPONENTIAL_HISTOGRAM_METRIC =
-      MetricData.createExponentialHistogram(
+      ImmutableMetricData.createExponentialHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "exponential_histogram",
@@ -82,7 +83,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData EXPONENTIAL_HISTOGRAM_DELTA_METRIC =
-      MetricData.createExponentialHistogram(
+      ImmutableMetricData.createExponentialHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "exponential_histogram_delta",
@@ -94,7 +95,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUMMARY_METRIC =
-      MetricData.createDoubleSummary(
+      ImmutableMetricData.createDoubleSummary(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "summary",
@@ -105,7 +106,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_GAUGE_METRIC =
-      MetricData.createDoubleGauge(
+      ImmutableMetricData.createDoubleGauge(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "gauge",
@@ -116,7 +117,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUM_METRIC =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum",
@@ -129,7 +130,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_DELTA_SUM_METRIC =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum_delta",
@@ -160,7 +161,7 @@ public class MetricAssertionsTest {
           1, 2, Attributes.empty(), 3.0, Collections.singletonList(DOUBLE_EXEMPLAR));
 
   private static final MetricData LONG_GAUGE_METRIC =
-      MetricData.createLongGauge(
+      ImmutableMetricData.createLongGauge(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "gauge",
@@ -171,7 +172,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_SUM_METRIC =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum",
@@ -184,7 +185,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_DELTA_SUM_METRIC =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum_delta",

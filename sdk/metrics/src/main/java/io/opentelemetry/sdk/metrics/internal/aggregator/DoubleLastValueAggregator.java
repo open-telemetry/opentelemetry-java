@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -67,7 +68,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
       long epochNanos) {
     // Gauge does not need a start time, but we send one as advised by the data model
     // for identifying resets.
-    return MetricData.createDoubleGauge(
+    return ImmutableMetricData.createDoubleGauge(
         resource,
         instrumentationLibraryInfo,
         descriptor.getName(),
