@@ -34,7 +34,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -193,16 +193,16 @@ abstract class Serializer {
         writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
     writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
 
-    List<ValueAtPercentile> valueAtPercentiles = point.getPercentileValues();
-    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+    List<ValueAtQuantile> valueAtQuantiles = point.getValues();
+    for (ValueAtQuantile valueAtQuantile : valueAtQuantiles) {
       writePoint(
           writer,
           name,
-          valueAtPercentile.getValue(),
+          valueAtQuantile.getValue(),
           point.getAttributes(),
           point.getEpochNanos(),
           "quantile",
-          valueAtPercentile.getPercentile(),
+          valueAtQuantile.getQuantile(),
           Collections.emptyList(),
           0,
           0);

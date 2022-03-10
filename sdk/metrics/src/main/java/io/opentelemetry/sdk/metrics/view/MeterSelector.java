@@ -13,9 +13,13 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Provides means for selecting one or more Meters. Used for selecting instruments when constructing
  * views.
+ *
+ * @deprecated Use {@link InstrumentSelector}.
  */
 @AutoValue
 @Immutable
+@Deprecated
+@AutoValue.CopyAnnotations
 public abstract class MeterSelector {
 
   /** Returns a new {@link MeterSelectorBuilder} for {@link InstrumentSelector}. */

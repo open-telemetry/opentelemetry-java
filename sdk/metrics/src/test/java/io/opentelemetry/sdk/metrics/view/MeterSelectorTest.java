@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
+// Testing deprecated class.
+@SuppressWarnings("deprecation")
 public class MeterSelectorTest {
 
   @Test

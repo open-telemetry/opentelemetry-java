@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewBuilderImpl;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -691,8 +692,7 @@ class SdkMeterProviderTest {
             .registerMetricReader(reader)
             .registerView(
                 selector,
-                View.builder()
-                    .setAggregation(Aggregation.sum())
+                ((ViewBuilderImpl) View.builder().setAggregation(Aggregation.sum()))
                     .appendAllBaggageAttributes()
                     .build())
             .build();

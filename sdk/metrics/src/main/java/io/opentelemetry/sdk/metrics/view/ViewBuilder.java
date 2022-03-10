@@ -5,20 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
-/** Builder of metric {@link View}s. */
-public final class ViewBuilder {
-  @Nullable private String name = null;
-  @Nullable private String description = null;
-  private Aggregation aggregation = Aggregation.defaultAggregation();
-  private AttributesProcessor processor = AttributesProcessor.noop();
-
-  ViewBuilder() {}
+/** A builder for {@link View}. */
+public interface ViewBuilder {
 
   /**
    * sets the name of the resulting metric.
@@ -26,10 +16,7 @@ public final class ViewBuilder {
    * @param name metric name or {@code null} if the underlying instrument name should be used.
    * @return this Builder.
    */
-  public ViewBuilder setName(String name) {
-    this.name = name;
-    return this;
-  }
+  ViewBuilder setName(String name);
 
   /**
    * sets the name of the resulting metric.
@@ -38,10 +25,7 @@ public final class ViewBuilder {
    *     should be used.
    * @return this Builder.
    */
-  public ViewBuilder setDescription(String description) {
-    this.description = description;
-    return this;
-  }
+  ViewBuilder setDescription(String description);
 
   /**
    * sets {@link Aggregation}.
@@ -49,15 +33,7 @@ public final class ViewBuilder {
    * @param aggregation aggregation to use.
    * @return this Builder.
    */
-  public ViewBuilder setAggregation(Aggregation aggregation) {
-    if (!(aggregation instanceof AggregatorFactory)) {
-      throw new IllegalArgumentException(
-          "Custom Aggregation implementations are currently not supported. "
-              + "Use one of the standard implementations returned by the static factories in the Aggregation class.");
-    }
-    this.aggregation = aggregation;
-    return this;
-  }
+  ViewBuilder setAggregation(Aggregation aggregation);
 
   /**
    * Sets a filter for attributes, where only attribute names that pass the supplied {@link
@@ -68,38 +44,8 @@ public final class ViewBuilder {
    * @param keyFilter filter for key names to include.
    * @return this Builder.
    */
-  public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
-    this.processor = this.processor.then(AttributesProcessor.filterByKeyName(keyFilter));
-    return this;
-  }
+  ViewBuilder setAttributeFilter(Predicate<String> keyFilter);
 
-  /**
-   * Appends key-values from baggage to all measurements.
-   *
-   * <p>Note: This runs after all other attribute processing added so far.
-   *
-   * @param keyFilter Only baggage key values pairs where the key matches this predicate will be
-   *     appended.
-   * @return this Builder.
-   */
-  public ViewBuilder appendFilteredBaggageAttributes(Predicate<String> keyFilter) {
-    this.processor = this.processor.then(AttributesProcessor.appendBaggageByKeyName(keyFilter));
-    return this;
-  }
-
-  /**
-   * Appends all key-values from baggage to all measurements.
-   *
-   * <p>Note: This runs after all other attribute processing added so far.
-   *
-   * @return this Builder.
-   */
-  public ViewBuilder appendAllBaggageAttributes() {
-    return appendFilteredBaggageAttributes(StringPredicates.ALL);
-  }
-
-  /** Returns the resulting {@link View}. */
-  public View build() {
-    return View.create(this.name, this.description, this.aggregation, this.processor);
-  }
+  /** Returns a {@link View} with the configuration of this builder. */
+  View build();
 }
