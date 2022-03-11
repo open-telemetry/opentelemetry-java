@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
@@ -53,7 +54,7 @@ class PeriodicMetricReaderTest {
           ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.empty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           "my metric",

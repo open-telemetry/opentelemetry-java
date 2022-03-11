@@ -12,9 +12,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -63,7 +63,7 @@ class LoggingMetricExporterTest {
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(
         Arrays.asList(
-            MetricData.createDoubleSummary(
+            ImmutableMetricData.createDoubleSummary(
                 resource,
                 instrumentationLibraryInfo,
                 "measureOne",
@@ -80,7 +80,7 @@ class LoggingMetricExporterTest {
                             Arrays.asList(
                                 ImmutableValueAtQuantile.create(0.0, 25),
                                 ImmutableValueAtQuantile.create(1.0, 433)))))),
-            MetricData.createLongSum(
+            ImmutableMetricData.createLongSum(
                 resource,
                 instrumentationLibraryInfo,
                 "counterOne",
@@ -95,7 +95,7 @@ class LoggingMetricExporterTest {
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
                             1010)))),
-            MetricData.createDoubleSum(
+            ImmutableMetricData.createDoubleSum(
                 resource,
                 instrumentationLibraryInfo,
                 "observedValue",

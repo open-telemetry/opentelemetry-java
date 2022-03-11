@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createDoubleHistogram(
+    return ImmutableMetricData.createDoubleHistogram(
         resource,
         instrumentationLibraryInfo,
         metricDescriptor.getName(),

@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
@@ -83,7 +84,7 @@ public final class MetricAdapter {
     // auto-value vs. pure interfaces.
     switch (censusMetric.getMetricDescriptor().getType()) {
       case GAUGE_INT64:
-        return MetricData.createLongGauge(
+        return ImmutableMetricData.createLongGauge(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -91,7 +92,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongGauge(censusMetric));
       case GAUGE_DOUBLE:
-        return MetricData.createDoubleGauge(
+        return ImmutableMetricData.createDoubleGauge(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -99,7 +100,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleGauge(censusMetric));
       case CUMULATIVE_INT64:
-        return MetricData.createLongSum(
+        return ImmutableMetricData.createLongSum(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -107,7 +108,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongSum(censusMetric));
       case CUMULATIVE_DOUBLE:
-        return MetricData.createDoubleSum(
+        return ImmutableMetricData.createDoubleSum(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -115,7 +116,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleSum(censusMetric));
       case CUMULATIVE_DISTRIBUTION:
-        return MetricData.createDoubleHistogram(
+        return ImmutableMetricData.createDoubleHistogram(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -123,7 +124,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertHistogram(censusMetric));
       case SUMMARY:
-        return MetricData.createDoubleSummary(
+        return ImmutableMetricData.createDoubleSummary(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),
@@ -131,7 +132,7 @@ public final class MetricAdapter {
             censusMetric.getMetricDescriptor().getUnit(),
             convertSummary(censusMetric));
       case GAUGE_DISTRIBUTION:
-        return MetricData.createDoubleHistogram(
+        return ImmutableMetricData.createDoubleHistogram(
             otelResource,
             INSTRUMENTATION_LIBRARY_INFO,
             censusMetric.getMetricDescriptor().getName(),

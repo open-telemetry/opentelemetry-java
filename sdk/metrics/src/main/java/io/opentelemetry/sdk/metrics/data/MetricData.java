@@ -8,172 +8,18 @@ package io.opentelemetry.sdk.metrics.data;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
+ * A {@link ImmutableMetricData} represents the data exported as part of aggregating one {@code
  * Instrument}.
  */
 @Immutable
 public interface MetricData {
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
-   */
-  static MetricData createDoubleGauge(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      GaugeData<DoublePointData> data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.DOUBLE_GAUGE,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
-   */
-  static MetricData createLongGauge(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      GaugeData<LongPointData> data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.LONG_GAUGE,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
-   */
-  static MetricData createDoubleSum(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      SumData<DoublePointData> data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.DOUBLE_SUM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
-   */
-  static MetricData createLongSum(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      SumData<LongPointData> data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.LONG_SUM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#SUMMARY} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#SUMMARY} type.
-   */
-  static MetricData createDoubleSummary(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      SummaryData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.SUMMARY,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
-   */
-  static MetricData createDoubleHistogram(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      HistogramData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.HISTOGRAM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
-   */
-  static MetricData createExponentialHistogram(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      ExponentialHistogramData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.EXPONENTIAL_HISTOGRAM,
-        data);
-  }
 
   /**
    * Returns the resource of this {@code MetricData}.
