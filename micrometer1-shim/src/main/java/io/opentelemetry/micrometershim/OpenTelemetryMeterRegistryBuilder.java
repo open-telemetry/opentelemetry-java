@@ -7,7 +7,6 @@ package io.opentelemetry.micrometershim;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.config.NamingConvention;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +19,6 @@ public final class OpenTelemetryMeterRegistryBuilder {
   private final OpenTelemetry openTelemetry;
   private Clock clock = Clock.SYSTEM;
   private TimeUnit baseTimeUnit = TimeUnit.MILLISECONDS;
-  private NamingConvention namingConvention = NamingConvention.identity;
 
   OpenTelemetryMeterRegistryBuilder(OpenTelemetry openTelemetry) {
     this.openTelemetry = openTelemetry;
@@ -44,9 +42,6 @@ public final class OpenTelemetryMeterRegistryBuilder {
    */
   public MeterRegistry build() {
     return new OpenTelemetryMeterRegistry(
-        clock,
-        baseTimeUnit,
-        namingConvention,
-        openTelemetry.getMeterProvider().get(INSTRUMENTATION_NAME));
+        clock, baseTimeUnit, openTelemetry.getMeterProvider().get(INSTRUMENTATION_NAME));
   }
 }

@@ -42,6 +42,7 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
                 OpenTelemetryMeterRegistry.builder(
                     OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build()))
             .build();
+    configureMeterRegistry(otelMeterRegistry);
 
     store.put(SdkMeterProvider.class, meterProvider);
     store.put(MeterRegistry.class, otelMeterRegistry);

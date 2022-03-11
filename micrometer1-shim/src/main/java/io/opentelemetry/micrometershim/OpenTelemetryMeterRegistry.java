@@ -53,16 +53,13 @@ public final class OpenTelemetryMeterRegistry extends MeterRegistry {
   private final io.opentelemetry.api.metrics.Meter otelMeter;
 
   OpenTelemetryMeterRegistry(
-      Clock clock,
-      TimeUnit baseTimeUnit,
-      NamingConvention namingConvention,
-      io.opentelemetry.api.metrics.Meter otelMeter) {
+      Clock clock, TimeUnit baseTimeUnit, io.opentelemetry.api.metrics.Meter otelMeter) {
     super(clock);
     this.baseTimeUnit = baseTimeUnit;
     this.otelMeter = otelMeter;
 
     this.config()
-        .namingConvention(namingConvention)
+        .namingConvention(NamingConvention.identity)
         .onMeterRemoved(OpenTelemetryMeterRegistry::onMeterRemoved);
   }
 
