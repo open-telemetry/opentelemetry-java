@@ -13,6 +13,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
@@ -29,27 +30,28 @@ class NamingConventionTest {
   @RegisterExtension
   static final MicrometerTestingExtension testing =
       new MicrometerTestingExtension() {
-
         @Override
-        OpenTelemetryMeterRegistryBuilder configureRegistry(
-            OpenTelemetryMeterRegistryBuilder registry) {
-          return registry.setNamingConvention(
-              new NamingConvention() {
-                @Override
-                public String name(String name, Meter.Type type, String baseUnit) {
-                  return "test." + name;
-                }
+        MeterRegistry configureMeterRegistry(MeterRegistry registry) {
+          registry
+              .config()
+              .namingConvention(
+                  new NamingConvention() {
+                    @Override
+                    public String name(String name, Meter.Type type, String baseUnit) {
+                      return "test." + name;
+                    }
 
-                @Override
-                public String tagKey(String key) {
-                  return "test." + key;
-                }
+                    @Override
+                    public String tagKey(String key) {
+                      return "test." + key;
+                    }
 
-                @Override
-                public String tagValue(String value) {
-                  return "test." + value;
-                }
-              });
+                    @Override
+                    public String tagValue(String value) {
+                      return "test." + value;
+                    }
+                  });
+          return registry;
         }
       };
 

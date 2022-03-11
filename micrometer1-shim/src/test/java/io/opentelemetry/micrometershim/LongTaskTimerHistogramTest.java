@@ -25,7 +25,7 @@ class LongTaskTimerHistogramTest {
   static final MicrometerTestingExtension testing =
       new MicrometerTestingExtension() {
         @Override
-        OpenTelemetryMeterRegistryBuilder configureRegistry(
+        OpenTelemetryMeterRegistryBuilder configureOtelRegistry(
             OpenTelemetryMeterRegistryBuilder registry) {
           return registry.setClock(clock);
         }

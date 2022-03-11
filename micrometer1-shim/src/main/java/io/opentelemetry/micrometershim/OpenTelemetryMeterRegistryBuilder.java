@@ -38,12 +38,6 @@ public final class OpenTelemetryMeterRegistryBuilder {
     return this;
   }
 
-  /** Sets the {@link NamingConvention} for this registry. */
-  public OpenTelemetryMeterRegistryBuilder setNamingConvention(NamingConvention namingConvention) {
-    this.namingConvention = namingConvention;
-    return this;
-  }
-
   /**
    * Returns a new {@link OpenTelemetryMeterRegistry} with the settings of this {@link
    * OpenTelemetryMeterRegistryBuilder}.

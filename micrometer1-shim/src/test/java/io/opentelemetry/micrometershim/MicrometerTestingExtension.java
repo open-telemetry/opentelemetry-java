@@ -38,7 +38,7 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
             .setMinimumCollectionInterval(Duration.ZERO)
             .build();
     MeterRegistry otelMeterRegistry =
-        configureRegistry(
+        configureOtelRegistry(
                 OpenTelemetryMeterRegistry.builder(
                     OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build()))
             .build();
@@ -61,7 +61,12 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
     Metrics.globalRegistry.forEachMeter(Metrics.globalRegistry::remove);
   }
 
-  OpenTelemetryMeterRegistryBuilder configureRegistry(OpenTelemetryMeterRegistryBuilder registry) {
+  OpenTelemetryMeterRegistryBuilder configureOtelRegistry(
+      OpenTelemetryMeterRegistryBuilder registry) {
+    return registry;
+  }
+
+  MeterRegistry configureMeterRegistry(MeterRegistry registry) {
     return registry;
   }
 }

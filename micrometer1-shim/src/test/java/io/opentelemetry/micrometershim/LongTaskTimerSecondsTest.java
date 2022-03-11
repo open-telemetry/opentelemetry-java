@@ -23,7 +23,7 @@ class LongTaskTimerSecondsTest {
       new MicrometerTestingExtension() {
 
         @Override
-        OpenTelemetryMeterRegistryBuilder configureRegistry(
+        OpenTelemetryMeterRegistryBuilder configureOtelRegistry(
             OpenTelemetryMeterRegistryBuilder registry) {
           return registry.setBaseTimeUnit(TimeUnit.SECONDS);
         }
