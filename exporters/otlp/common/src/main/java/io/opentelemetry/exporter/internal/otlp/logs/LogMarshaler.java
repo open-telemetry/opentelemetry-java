@@ -28,7 +28,6 @@ final class LogMarshaler extends MarshalerWithSize {
   private final long timeUnixNano;
   private final ProtoEnumInfo severityNumber;
   private final byte[] severityText;
-  private final byte[] nameUtf8;
   private final MarshalerWithSize anyValueMarshaler;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
@@ -36,7 +35,6 @@ final class LogMarshaler extends MarshalerWithSize {
   @Nullable private final String traceId;
   @Nullable private final String spanId;
 
-  @SuppressWarnings("deprecation") // name field to be removed
   static LogMarshaler create(io.opentelemetry.sdk.logs.data.LogData logData) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(logData.getAttributes());
@@ -50,7 +48,6 @@ final class LogMarshaler extends MarshalerWithSize {
         logData.getEpochNanos(),
         toProtoSeverityNumber(logData.getSeverity()),
         MarshalerUtil.toBytes(logData.getSeverityText()),
-        MarshalerUtil.toBytes(logData.getName()),
         anyValueMarshaler,
         attributeMarshalers,
         // TODO (trask) implement droppedAttributesCount in LogRecord
@@ -64,7 +61,6 @@ final class LogMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
-      byte[] nameUtf8,
       MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
@@ -76,7 +72,6 @@ final class LogMarshaler extends MarshalerWithSize {
             timeUnixNano,
             severityNumber,
             severityText,
-            nameUtf8,
             anyValueMarshaler,
             attributeMarshalers,
             droppedAttributesCount,
@@ -89,7 +84,6 @@ final class LogMarshaler extends MarshalerWithSize {
     this.traceFlags = traceFlags;
     this.severityNumber = severityNumber;
     this.severityText = severityText;
-    this.nameUtf8 = nameUtf8;
     this.anyValueMarshaler = anyValueMarshaler;
     this.attributeMarshalers = attributeMarshalers;
     this.droppedAttributesCount = droppedAttributesCount;
@@ -102,8 +96,6 @@ final class LogMarshaler extends MarshalerWithSize {
     output.serializeEnum(LogRecord.SEVERITY_NUMBER, severityNumber);
 
     output.serializeString(LogRecord.SEVERITY_TEXT, severityText);
-
-    output.serializeString(LogRecord.NAME, nameUtf8);
 
     output.serializeMessage(LogRecord.BODY, anyValueMarshaler);
 
@@ -119,7 +111,6 @@ final class LogMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
-      byte[] nameUtf8,
       MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
@@ -132,8 +123,6 @@ final class LogMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeEnum(LogRecord.SEVERITY_NUMBER, severityNumber);
 
     size += MarshalerUtil.sizeBytes(LogRecord.SEVERITY_TEXT, severityText);
-
-    size += MarshalerUtil.sizeBytes(LogRecord.NAME, nameUtf8);
 
     size += MarshalerUtil.sizeMessage(LogRecord.BODY, anyValueMarshaler);
 

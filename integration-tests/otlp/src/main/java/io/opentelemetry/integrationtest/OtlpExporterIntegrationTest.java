@@ -373,13 +373,11 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpHttpLogExporter);
   }
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static void testLogExporter(LogExporter logExporter) {
     LogData logData =
         LogDataBuilder.create(
                 RESOURCE,
                 InstrumentationScopeInfo.create(OtlpExporterIntegrationTest.class.getName()))
-            .setName("log-name")
             .setBody("log body")
             .setAttributes(Attributes.builder().put("key", "value").build())
             .setSeverity(Severity.DEBUG)
@@ -417,7 +415,6 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
     io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);
-    assertThat(protoLog.getName()).isEqualTo("log-name");
     assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
     assertThat(protoLog.getAttributesList())
         .isEqualTo(

@@ -111,21 +111,6 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
     return this;
   }
 
-  /** Asserts the log has the given name. */
-  @Deprecated
-  public LogDataAssert hasName(String name) {
-    isNotNull();
-    if (!name.equals(actual.getName())) {
-      failWithActualExpectedAndMessage(
-          actual.getName(),
-          name,
-          "Expected log to have name <%s> but was <%s>",
-          name,
-          actual.getName());
-    }
-    return this;
-  }
-
   /** Asserts the log has the given body. */
   public LogDataAssert hasBody(String body) {
     isNotNull();

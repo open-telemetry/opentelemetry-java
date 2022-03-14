@@ -50,15 +50,6 @@ public interface LogData {
   @Nullable
   String getSeverityText();
 
-  /**
-   * Returns the name for this log, or null if unset.
-   *
-   * @deprecated will be removed without replacement.
-   */
-  @Deprecated
-  @Nullable
-  String getName();
-
   /** Returns the body for this log, or {@link Body#empty()} if unset. */
   Body getBody();
 

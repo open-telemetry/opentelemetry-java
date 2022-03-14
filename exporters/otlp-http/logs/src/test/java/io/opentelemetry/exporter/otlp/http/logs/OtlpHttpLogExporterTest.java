@@ -330,11 +330,9 @@ class OtlpHttpLogExporterTest {
     return HttpResponse.of(httpStatus, APPLICATION_PROTOBUF, message.toByteArray());
   }
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static LogData generateFakeLog() {
     return LogDataBuilder.create(
             Resource.getDefault(), InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
-        .setName("log-name")
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)

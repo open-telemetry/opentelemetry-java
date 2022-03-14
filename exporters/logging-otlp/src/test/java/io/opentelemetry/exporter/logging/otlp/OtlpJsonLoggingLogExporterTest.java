@@ -36,10 +36,8 @@ class OtlpJsonLoggingLogExporterTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG1 =
       LogDataBuilder.create(RESOURCE, InstrumentationScopeInfo.create("instrumentation", "1", null))
-          .setName("testLog1")
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -53,11 +51,9 @@ class OtlpJsonLoggingLogExporterTest {
                   TraceState.getDefault()))
           .build();
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG2 =
       LogDataBuilder.create(
               RESOURCE, InstrumentationScopeInfo.create("instrumentation2", "2", null))
-          .setName("testLog2")
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -112,7 +108,6 @@ class OtlpJsonLoggingLogExporterTest {
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
             + "               \"severityText\":\"INFO\",\n"
-            + "               \"name\":\"testLog2\",\n"
             + "               \"body\":{\n"
             + "                  \"stringValue\":\"body2\"\n"
             + "               },\n"
@@ -139,7 +134,6 @@ class OtlpJsonLoggingLogExporterTest {
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
             + "               \"severityText\":\"INFO\",\n"
-            + "               \"name\":\"testLog1\",\n"
             + "               \"body\":{\n"
             + "                  \"stringValue\":\"body1\"\n"
             + "               },\n"
