@@ -46,11 +46,9 @@ class LogsRequestMarshalerTest {
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
-  private static final String NAME = "GET /api/endpoint";
   private static final String BODY = "Hello world from this log...";
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoResourceLogs() {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
@@ -58,7 +56,6 @@ class LogsRequestMarshalerTest {
                 LogDataBuilder.create(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
                         InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
-                    .setName(NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -84,7 +81,6 @@ class LogsRequestMarshalerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoLogRecord() {
     LogRecord logRecord =
         parse(
@@ -93,7 +89,6 @@ class LogsRequestMarshalerTest {
                 LogDataBuilder.create(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationScopeInfo.create("instrumentation", "1", null))
-                    .setName(NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -106,7 +101,6 @@ class LogsRequestMarshalerTest {
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(logRecord.getName()).isEqualTo(NAME);
     assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
@@ -118,7 +112,6 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 
-  @SuppressWarnings("deprecation") // name field has been deprecated
   @Test
   void toProtoLogRecord_MinimalFields() {
     LogRecord logRecord =
@@ -133,7 +126,6 @@ class LogsRequestMarshalerTest {
 
     assertThat(logRecord.getTraceId()).isEmpty();
     assertThat(logRecord.getSpanId()).isEmpty();
-    assertThat(logRecord.getName()).isBlank();
     assertThat(logRecord.getSeverityText()).isBlank();
     assertThat(logRecord.getSeverityNumber().getNumber())
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());

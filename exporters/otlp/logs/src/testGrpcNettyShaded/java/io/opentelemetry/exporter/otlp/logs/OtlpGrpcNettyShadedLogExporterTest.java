@@ -94,7 +94,6 @@ class OtlpGrpcNettyShadedLogExporterTest
   }
 
   @Override
-  @SuppressWarnings("deprecation") // test deprecated setName method
   protected LogData generateFakeTelemetry() {
     return LogDataBuilder.create(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
@@ -102,7 +101,6 @@ class OtlpGrpcNettyShadedLogExporterTest
         .setEpoch(Instant.now())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
-        .setName("log1")
         .setBody("message")
         .setAttributes(Attributes.builder().put("animal", "cat").build())
         .build();

@@ -27,7 +27,6 @@ public final class LogDataBuilder {
   private SpanContext spanContext = SpanContext.getInvalid();
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
-  @Nullable private String name;
   private Body body = Body.empty();
   private final Clock clock;
   private Attributes attributes = Attributes.empty();
@@ -117,17 +116,6 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /**
-   * Set the name.
-   *
-   * @deprecated will be removed without replacement.
-   */
-  @Deprecated
-  public LogDataBuilder setName(String name) {
-    this.name = name;
-    return this;
-  }
-
   /** Set the body string. */
   public LogDataBuilder setBody(String body) {
     this.body = Body.string(body);
@@ -152,7 +140,6 @@ public final class LogDataBuilder {
         spanContext,
         severity,
         severityText,
-        name,
         body,
         attributes);
   }

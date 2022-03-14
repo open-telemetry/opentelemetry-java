@@ -43,7 +43,6 @@ public class LogAssertionsTest {
           .put("coins", 0.01, 0.05, 0.1)
           .build();
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG_DATA =
       LogDataBuilder.create(RESOURCE, INSTRUMENTATION_SCOPE_INFO)
           .setEpoch(100, TimeUnit.NANOSECONDS)
@@ -52,13 +51,11 @@ public class LogAssertionsTest {
                   TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
           .setSeverity(Severity.INFO)
           .setSeverityText("info")
-          .setName("name")
           .setBody("message")
           .setAttributes(ATTRIBUTES)
           .build();
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated hasName method
   void passing() {
     assertThat(LOG_DATA)
         .hasResource(RESOURCE)
@@ -68,7 +65,6 @@ public class LogAssertionsTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .hasSeverity(Severity.INFO)
         .hasSeverityText("info")
-        .hasName("name")
         .hasBody("message")
         .hasAttributes(ATTRIBUTES)
         .hasAttributes(
@@ -115,7 +111,6 @@ public class LogAssertionsTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated hasName method
   void failure() {
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasResource(Resource.empty()));
     assertThatThrownBy(
@@ -132,7 +127,6 @@ public class LogAssertionsTest {
                         TraceState.getDefault())));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasSeverity(Severity.DEBUG));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasSeverityText("warning"));
-    assertThatThrownBy(() -> assertThat(LOG_DATA).hasName("foo"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasBody("bar"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasAttributes(Attributes.empty()))
         .isInstanceOf(AssertionError.class);
