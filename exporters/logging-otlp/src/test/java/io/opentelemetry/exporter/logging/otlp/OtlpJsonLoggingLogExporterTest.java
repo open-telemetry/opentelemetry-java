@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -38,7 +38,7 @@ class OtlpJsonLoggingLogExporterTest {
 
   @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG1 =
-      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
+      LogDataBuilder.create(RESOURCE, InstrumentationScopeInfo.create("instrumentation", "1", null))
           .setName("testLog1")
           .setBody("body1")
           .setSeverity(Severity.INFO)
@@ -55,7 +55,8 @@ class OtlpJsonLoggingLogExporterTest {
 
   @SuppressWarnings("deprecation") // test deprecated setName method
   private static final LogData LOG2 =
-      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
+      LogDataBuilder.create(
+              RESOURCE, InstrumentationScopeInfo.create("instrumentation2", "2", null))
           .setName("testLog2")
           .setBody("body2")
           .setSeverity(Severity.INFO)

@@ -100,13 +100,13 @@ final class SpanMarshaler extends MarshalerWithSize {
 
     tags.add(
         KeyValueMarshaler.create(
-            KEY_INSTRUMENTATION_LIBRARY_NAME, span.getInstrumentationLibraryInfo().getName()));
+            KEY_INSTRUMENTATION_LIBRARY_NAME, span.getInstrumentationScopeInfo().getName()));
 
-    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+    if (span.getInstrumentationScopeInfo().getVersion() != null) {
       tags.add(
           KeyValueMarshaler.create(
               KEY_INSTRUMENTATION_LIBRARY_VERSION,
-              span.getInstrumentationLibraryInfo().getVersion()));
+              span.getInstrumentationScopeInfo().getVersion()));
     }
 
     if (span.getStatus().getStatusCode() == StatusCode.ERROR) {

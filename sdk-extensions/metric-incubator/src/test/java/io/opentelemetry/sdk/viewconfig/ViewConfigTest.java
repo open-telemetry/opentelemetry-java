@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -114,7 +115,7 @@ class ViewConfigTest {
     assertThat(view.getDescription()).isEqualTo("description");
     assertThat(view.getAggregation()).isEqualTo(Aggregation.sum());
     assertThat(
-            view.getAttributesProcessor()
+            ImmutableView.getAttributesProcessor(view)
                 .process(
                     Attributes.builder()
                         .put("foo", "val")
@@ -158,14 +159,12 @@ class ViewConfigTest {
     assertThat(selector.getInstrumentNameFilter().test("name")).isTrue();
     assertThat(selector.getInstrumentNameFilter().test("name1")).isFalse();
     assertThat(selector.getInstrumentType()).isEqualTo(InstrumentType.COUNTER);
-    assertThat(selector.getMeterSelector().getNameFilter().test("meterName")).isTrue();
-    assertThat(selector.getMeterSelector().getNameFilter().test("meterName1")).isFalse();
-    assertThat(selector.getMeterSelector().getVersionFilter().test("meterVersion")).isTrue();
-    assertThat(selector.getMeterSelector().getVersionFilter().test("meterVersion1")).isFalse();
-    assertThat(selector.getMeterSelector().getSchemaUrlFilter().test("http://example.com"))
-        .isTrue();
-    assertThat(selector.getMeterSelector().getSchemaUrlFilter().test("http://example1.com"))
-        .isFalse();
+    assertThat(selector.getMeterNameFilter().test("meterName")).isTrue();
+    assertThat(selector.getMeterNameFilter().test("meterName1")).isFalse();
+    assertThat(selector.getMeterVersionFilter().test("meterVersion")).isTrue();
+    assertThat(selector.getMeterVersionFilter().test("meterVersion1")).isFalse();
+    assertThat(selector.getMeterSchemaUrlFilter().test("http://example.com")).isTrue();
+    assertThat(selector.getMeterSchemaUrlFilter().test("http://example1.com")).isFalse();
   }
 
   private static InputStream resourceFileInputStream(String resourceFileName) {

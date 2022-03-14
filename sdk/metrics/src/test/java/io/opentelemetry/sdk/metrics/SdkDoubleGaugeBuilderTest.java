@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 class SdkDoubleGaugeBuilderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkDoubleGaugeBuilderTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkDoubleGaugeBuilderTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
@@ -72,7 +72,7 @@ class SdkDoubleGaugeBuilderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDescription("My own DoubleValueObserver")
                     .hasUnit("ms")
@@ -91,7 +91,7 @@ class SdkDoubleGaugeBuilderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
                     .hasDescription("My own DoubleValueObserver")
                     .hasUnit("ms")

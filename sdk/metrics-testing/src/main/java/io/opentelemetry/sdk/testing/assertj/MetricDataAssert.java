@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,19 +35,19 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   }
 
   /**
-   * Ensures the {@link InstrumentationLibraryInfo} associated with a metric matches the expected
+   * Ensures the {@link InstrumentationScopeInfo} associated with a metric matches the expected
    * value.
    */
-  public MetricDataAssert hasInstrumentationLibrary(
-      InstrumentationLibraryInfo instrumentationLibrary) {
+  public MetricDataAssert hasInstrumentationScope(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
-    if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibrary)) {
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
       failWithActualExpectedAndMessage(
           actual,
-          "instrumentation library: " + instrumentationLibrary,
+          "instrumentation scope: " + instrumentationScopeInfo,
           "Expected MetricData to have resource <%s> but found <%s>",
-          instrumentationLibrary,
-          actual.getInstrumentationLibraryInfo());
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }

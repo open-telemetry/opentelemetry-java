@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.internal.InstrumentationScopeUtil.toInstrumentationLibraryInfo;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -127,10 +126,10 @@ class SdkMeterRegistryTest {
                                 .hasValue(10)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())))
-        .extracting(MetricData::getInstrumentationLibraryInfo)
+        .extracting(MetricData::getInstrumentationScopeInfo)
         .containsExactlyInAnyOrder(
-            toInstrumentationLibraryInfo(((SdkMeter) sdkMeter1).getInstrumentationScopeInfo()),
-            toInstrumentationLibraryInfo(((SdkMeter) sdkMeter2).getInstrumentationScopeInfo()));
+            ((SdkMeter) sdkMeter1).getInstrumentationScopeInfo(),
+            ((SdkMeter) sdkMeter2).getInstrumentationScopeInfo());
   }
 
   @Test

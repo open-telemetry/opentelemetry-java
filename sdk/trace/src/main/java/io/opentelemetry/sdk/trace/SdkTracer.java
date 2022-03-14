@@ -8,9 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
 final class SdkTracer implements Tracer {
@@ -18,13 +16,10 @@ final class SdkTracer implements Tracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   SdkTracer(TracerSharedState sharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.sharedState = sharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.instrumentationLibraryInfo =
-        InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo);
   }
 
   @Override
@@ -37,7 +32,7 @@ final class SdkTracer implements Tracer {
       return tracer.spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
-        spanName, instrumentationLibraryInfo, sharedState, sharedState.getSpanLimits());
+        spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
   }
 
   // Visible for testing

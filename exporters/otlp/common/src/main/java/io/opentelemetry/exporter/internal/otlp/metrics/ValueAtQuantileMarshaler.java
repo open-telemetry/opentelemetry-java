@@ -9,7 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.SummaryDataPoint;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,7 +17,7 @@ final class ValueAtQuantileMarshaler extends MarshalerWithSize {
   private final double quantile;
   private final double value;
 
-  static ValueAtQuantileMarshaler[] createRepeated(List<ValueAtPercentile> values) {
+  static ValueAtQuantileMarshaler[] createRepeated(List<ValueAtQuantile> values) {
     int numValues = values.size();
     ValueAtQuantileMarshaler[] marshalers = new ValueAtQuantileMarshaler[numValues];
     for (int i = 0; i < numValues; i++) {
@@ -26,8 +26,8 @@ final class ValueAtQuantileMarshaler extends MarshalerWithSize {
     return marshalers;
   }
 
-  private static ValueAtQuantileMarshaler create(ValueAtPercentile value) {
-    return new ValueAtQuantileMarshaler(value.getPercentile() / 100.0, value.getValue());
+  private static ValueAtQuantileMarshaler create(ValueAtQuantile value) {
+    return new ValueAtQuantileMarshaler(value.getQuantile(), value.getValue());
   }
 
   private ValueAtQuantileMarshaler(double quantile, double value) {

@@ -11,11 +11,10 @@ import static java.util.stream.Collectors.toList;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelectorBuilder;
-import io.opentelemetry.sdk.metrics.view.MeterSelector;
-import io.opentelemetry.sdk.metrics.view.MeterSelectorBuilder;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
 import java.io.InputStream;
@@ -185,7 +184,7 @@ public final class ViewConfig {
   // Visible for testing
   static Aggregation toAggregation(String aggregation) {
     try {
-      return Aggregation.forName(aggregation);
+      return AggregationUtil.forName(aggregation);
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException("Error creating aggregation", e);
     }
@@ -203,20 +202,18 @@ public final class ViewConfig {
       builder.setType(instrumentType);
     }
 
-    MeterSelectorBuilder meterBuilder = MeterSelector.builder();
     String meterName = selectorSpec.getMeterName();
     if (meterName != null) {
-      meterBuilder.setName(meterName);
+      builder.setMeterName(meterName);
     }
     String meterVersion = selectorSpec.getMeterVersion();
     if (meterVersion != null) {
-      meterBuilder.setVersion(meterVersion);
+      builder.setMeterVersion(meterVersion);
     }
     String meterSchemaUrl = selectorSpec.getMeterSchemaUrl();
     if (meterSchemaUrl != null) {
-      meterBuilder.setSchemaUrl(meterSchemaUrl);
+      builder.setMeterSchemaUrl(meterSchemaUrl);
     }
-    builder.setMeterSelector(meterBuilder.build());
 
     return builder.build();
   }

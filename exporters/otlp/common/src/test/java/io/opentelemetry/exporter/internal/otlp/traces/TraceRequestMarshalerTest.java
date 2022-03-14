@@ -35,7 +35,7 @@ import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -79,8 +79,8 @@ class TraceRequestMarshalerTest {
                     .setStartEpochNanos(12345)
                     .setEndEpochNanos(12349)
                     .setStatus(StatusData.unset())
-                    .setInstrumentationLibraryInfo(
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .setInstrumentationScopeInfo(
+                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .build()));

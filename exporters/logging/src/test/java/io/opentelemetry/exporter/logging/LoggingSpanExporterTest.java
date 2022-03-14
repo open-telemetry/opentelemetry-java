@@ -19,7 +19,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -65,7 +65,7 @@ class LoggingSpanExporterTest {
                       Attributes.of(booleanKey("important"), true))))
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
-          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer1", null))
+          .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("tracer1"))
           .build();
 
   private static final SpanData SPAN2 =
@@ -82,7 +82,7 @@ class LoggingSpanExporterTest {
           .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(SpanKind.CLIENT)
-          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer2", "1.0"))
+          .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("tracer2", "1.0", null))
           .build();
 
   @RegisterExtension

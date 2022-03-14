@@ -12,14 +12,14 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -38,7 +38,7 @@ class LongSumAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
-  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongSumAggregator aggregator =
@@ -102,7 +102,7 @@ class LongSumAggregatorTest {
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -131,7 +131,7 @@ class LongSumAggregatorTest {
   @Test
   void mergeAndDiff() {
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             Attributes.empty(),
             2L,
             SpanContext.create(
@@ -207,7 +207,7 @@ class LongSumAggregatorTest {
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =
-        DoubleExemplarData.create(
+        ImmutableDoubleExemplarData.create(
             attributes,
             2L,
             SpanContext.create(

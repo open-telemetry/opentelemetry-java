@@ -10,37 +10,36 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.common.v1.internal.InstrumentationLibrary;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
 /**
- * A Marshaler of {@link InstrumentationLibraryInfo}.
+ * A Marshaler of {@link InstrumentationScopeInfo}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
+public final class InstrumentationScopeMarshaller extends MarshalerWithSize {
 
-  private static final WeakConcurrentMap<
-          InstrumentationLibraryInfo, InstrumentationLibraryMarshaler>
-      LIBRARY_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
+  private static final WeakConcurrentMap<InstrumentationScopeInfo, InstrumentationScopeMarshaller>
+      SCOPE_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
 
   private final byte[] serializedBinary;
   private final String serializedJson;
 
-  /** Returns a Marshaler for InstrumentationLibraryInfo. */
-  public static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
-    InstrumentationLibraryMarshaler cached = LIBRARY_MARSHALER_CACHE.get(libraryInfo);
+  /** Returns a Marshaler for InstrumentationScopeInfo. */
+  public static InstrumentationScopeMarshaller create(InstrumentationScopeInfo scopeInfo) {
+    InstrumentationScopeMarshaller cached = SCOPE_MARSHALER_CACHE.get(scopeInfo);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
-      byte[] name = MarshalerUtil.toBytes(libraryInfo.getName());
-      byte[] version = MarshalerUtil.toBytes(libraryInfo.getVersion());
+      byte[] name = MarshalerUtil.toBytes(scopeInfo.getName());
+      byte[] version = MarshalerUtil.toBytes(scopeInfo.getVersion());
 
-      RealInstrumentationLibraryMarshaler realMarshaler =
-          new RealInstrumentationLibraryMarshaler(name, version);
+      RealInstrumentationScopeMarshaler realMarshaler =
+          new RealInstrumentationScopeMarshaler(name, version);
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
@@ -54,13 +53,13 @@ public final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
 
       String json = MarshalerUtil.preserializeJsonFields(realMarshaler);
 
-      cached = new InstrumentationLibraryMarshaler(binaryBos.toByteArray(), json);
-      LIBRARY_MARSHALER_CACHE.put(libraryInfo, cached);
+      cached = new InstrumentationScopeMarshaller(binaryBos.toByteArray(), json);
+      SCOPE_MARSHALER_CACHE.put(scopeInfo, cached);
     }
     return cached;
   }
 
-  private InstrumentationLibraryMarshaler(byte[] binary, String json) {
+  private InstrumentationScopeMarshaller(byte[] binary, String json) {
     super(binary.length);
     serializedBinary = binary;
     serializedJson = json;
@@ -71,12 +70,12 @@ public final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
     output.writeSerializedMessage(serializedBinary, serializedJson);
   }
 
-  private static final class RealInstrumentationLibraryMarshaler extends MarshalerWithSize {
+  private static final class RealInstrumentationScopeMarshaler extends MarshalerWithSize {
 
     private final byte[] name;
     private final byte[] version;
 
-    RealInstrumentationLibraryMarshaler(byte[] name, byte[] version) {
+    RealInstrumentationScopeMarshaler(byte[] name, byte[] version) {
       super(computeSize(name, version));
       this.name = name;
       this.version = version;

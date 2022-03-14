@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongUpDownCounter;
@@ -27,8 +27,8 @@ class SdkLongUpDownCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkLongUpDownCounterTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkLongUpDownCounterTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
@@ -86,7 +86,7 @@ class SdkLongUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testUpDownCounter")
                     .hasDescription("description")
                     .hasUnit("By")
@@ -124,7 +124,7 @@ class SdkLongUpDownCounterTest {
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
-                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testUpDownCounter")
                       .hasLongSum()
                       .isNotMonotonic()
@@ -151,7 +151,7 @@ class SdkLongUpDownCounterTest {
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
-                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testUpDownCounter")
                       .hasLongSum()
                       .isNotMonotonic()
@@ -202,7 +202,7 @@ class SdkLongUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testUpDownCounter")
                     .hasLongSum()
                     .isCumulative()
@@ -251,7 +251,7 @@ class SdkLongUpDownCounterTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testUpDownCounter")
                     .hasLongSum()
                     .isCumulative()

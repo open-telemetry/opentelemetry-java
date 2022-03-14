@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -186,20 +186,20 @@ final class MetricAdapter {
             null,
             doubleSummaryPoint.getEpochNanos()));
 
-    List<ValueAtPercentile> valueAtPercentiles = doubleSummaryPoint.getPercentileValues();
+    List<ValueAtQuantile> valueAtQuantiles = doubleSummaryPoint.getValues();
     List<String> labelNamesWithQuantile = new ArrayList<>(labelNames.size());
     labelNamesWithQuantile.addAll(labelNames);
     labelNamesWithQuantile.add(LABEL_NAME_QUANTILE);
-    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+    for (ValueAtQuantile valueAtQuantile : valueAtQuantiles) {
       List<String> labelValuesWithQuantile = new ArrayList<>(labelValues.size());
       labelValuesWithQuantile.addAll(labelValues);
-      labelValuesWithQuantile.add(doubleToGoString(valueAtPercentile.getPercentile()));
+      labelValuesWithQuantile.add(doubleToGoString(valueAtQuantile.getQuantile()));
       samples.add(
           createSample(
               name,
               labelNamesWithQuantile,
               labelValuesWithQuantile,
-              valueAtPercentile.getValue(),
+              valueAtQuantile.getValue(),
               null,
               doubleSummaryPoint.getEpochNanos()));
     }

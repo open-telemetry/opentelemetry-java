@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
@@ -34,30 +33,5 @@ class AggregationTest {
     assertThat(Aggregation.explicitBucketHistogram())
         .asString()
         .contains("ExplicitBucketHistogram");
-  }
-
-  @Test
-  void forName() {
-    assertThat(Aggregation.forName("sum")).isEqualTo(Aggregation.sum());
-    assertThat(Aggregation.forName("last_value")).isEqualTo(Aggregation.lastValue());
-    assertThat(Aggregation.forName("explicit_bucket_histogram"))
-        .isEqualTo(Aggregation.explicitBucketHistogram());
-    assertThat(Aggregation.forName("drop")).isEqualTo(Aggregation.drop());
-    assertThatThrownBy(() -> Aggregation.forName("foo"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Unrecognized aggregation name foo");
-  }
-
-  @Test
-  void aggregationName() {
-    assertThat(Aggregation.aggregationName(Aggregation.defaultAggregation())).isEqualTo("default");
-    assertThat(Aggregation.aggregationName(Aggregation.sum())).isEqualTo("sum");
-    assertThat(Aggregation.aggregationName(Aggregation.lastValue())).isEqualTo("last_value");
-    assertThat(Aggregation.aggregationName(Aggregation.drop())).isEqualTo("drop");
-    assertThat(Aggregation.aggregationName(Aggregation.explicitBucketHistogram()))
-        .isEqualTo("explicit_bucket_histogram");
-    assertThatThrownBy(() -> Aggregation.aggregationName(new Aggregation() {}))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Unrecognized aggregation");
   }
 }

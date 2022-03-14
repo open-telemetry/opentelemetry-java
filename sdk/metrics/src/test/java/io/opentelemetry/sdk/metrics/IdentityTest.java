@@ -9,12 +9,11 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
@@ -52,7 +51,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
@@ -65,7 +64,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter2"))
+                    .hasInstrumentationScope(forMeter("meter2"))
                     .hasName("counter2")
                     .hasDoubleSum()
                     .points()
@@ -88,7 +87,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter3"))
+                    .hasInstrumentationScope(forMeter("meter3"))
                     .hasName("counter3")
                     .hasDescription("description3")
                     .hasLongSum()
@@ -102,7 +101,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter4"))
+                    .hasInstrumentationScope(forMeter("meter4"))
                     .hasName("counter4")
                     .hasUnit("unit4")
                     .hasLongSum()
@@ -123,14 +122,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter2")
                     .hasLongSum()
                     .points()
@@ -151,14 +150,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter2"))
+                    .hasInstrumentationScope(forMeter("meter2"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
@@ -177,15 +176,15 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create("meter1", "version1"))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("meter1", "version1", null))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
@@ -211,16 +210,16 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create("meter1", "version1"))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("meter1", "version1", null))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create("meter1", "version1", "schema1"))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("meter1", "version1", "schema1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
@@ -247,7 +246,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -255,7 +254,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter1"))
+                  .hasInstrumentationScope(forMeter("meter1"))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -283,7 +282,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasUnit("unit1")
                     .hasLongSum()
@@ -291,7 +290,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter1"))
+                  .hasInstrumentationScope(forMeter("meter1"))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -319,7 +318,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .isNotMonotonic()
@@ -327,7 +326,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .isMonotonic()
@@ -354,14 +353,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDoubleSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
@@ -390,7 +389,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -416,7 +415,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -424,7 +423,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter2"))
+                    .hasInstrumentationScope(forMeter("meter2"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -450,7 +449,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -458,7 +457,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter2")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -484,7 +483,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -492,7 +491,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter1"))
+                  .hasInstrumentationScope(forMeter("meter1"))
                   .hasName("counter2")
                   .hasLongSum()
                   .points()
@@ -519,7 +518,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -527,7 +526,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter1"))
+                  .hasInstrumentationScope(forMeter("meter1"))
                   .hasName("counter2")
                   .hasLongSum()
                   .points()
@@ -543,9 +542,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder()
-                    .setMeterSelector(MeterSelector.builder().setName("meter1").build())
-                    .build(),
+                InstrumentSelector.builder().setMeterName("meter1").build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -556,7 +553,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -564,7 +561,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter2"))
+                  .hasInstrumentationScope(forMeter("meter2"))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -580,9 +577,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder()
-                    .setMeterSelector(MeterSelector.builder().setVersion("version1").build())
-                    .build(),
+                InstrumentSelector.builder().setMeterVersion("version1").build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -605,8 +600,8 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create("meter1", "version1"))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("meter1", "version1", null))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -614,8 +609,8 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(
-                      InstrumentationLibraryInfo.create("meter1", "version2"))
+                  .hasInstrumentationScope(
+                      InstrumentationScopeInfo.create("meter1", "version2", null))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -631,9 +626,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder()
-                    .setMeterSelector(MeterSelector.builder().setSchemaUrl("schema1").build())
-                    .build(),
+                InstrumentSelector.builder().setMeterSchemaUrl("schema1").build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -656,8 +649,8 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create("meter1", null, "schema1"))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("meter1", null, "schema1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -665,8 +658,8 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(
-                      InstrumentationLibraryInfo.create("meter1", null, "schema2"))
+                  .hasInstrumentationScope(
+                      InstrumentationScopeInfo.create("meter1", null, "schema2"))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -684,10 +677,7 @@ class IdentityTest {
     SdkMeterProvider meterProvider =
         builder
             .registerView(
-                InstrumentSelector.builder()
-                    .setMeterSelector(MeterSelector.builder().setName("meter1").build())
-                    .setName("counter1")
-                    .build(),
+                InstrumentSelector.builder().setMeterName("meter1").setName("counter1").build(),
                 View.builder().setDescription("description1").build())
             .build();
 
@@ -699,7 +689,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -707,7 +697,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter1"))
+                  .hasInstrumentationScope(forMeter("meter1"))
                   .hasName("counter2")
                   .hasLongSum()
                   .points()
@@ -716,7 +706,7 @@ class IdentityTest {
             },
             metricData -> {
               assertThat(metricData)
-                  .hasInstrumentationLibrary(forMeter("meter2"))
+                  .hasInstrumentationScope(forMeter("meter2"))
                   .hasName("counter1")
                   .hasLongSum()
                   .points()
@@ -749,7 +739,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -757,7 +747,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(20)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description2")
                     .hasLongSum()
@@ -793,14 +783,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(20)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasLongGauge()
                     .points()
@@ -832,14 +822,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter-new")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter-new")
                     .hasLongSum()
                     .points()
@@ -870,14 +860,14 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter-new")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter2"))
+                    .hasInstrumentationScope(forMeter("meter2"))
                     .hasName("counter-new")
                     .hasLongSum()
                     .points()
@@ -912,7 +902,7 @@ class IdentityTest {
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSum()
@@ -920,7 +910,7 @@ class IdentityTest {
                     .satisfiesExactly(point -> assertThat(point).hasValue(20)),
             metricData ->
                 assertThat(metricData)
-                    .hasInstrumentationLibrary(forMeter("meter1"))
+                    .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1-gauge")
                     .hasLongGauge()
                     .points()
@@ -929,7 +919,7 @@ class IdentityTest {
     assertThat(logs.getEvents()).hasSize(0);
   }
 
-  private static InstrumentationLibraryInfo forMeter(String meterName) {
-    return InstrumentationLibraryInfo.create(meterName, null);
+  private static InstrumentationScopeInfo forMeter(String meterName) {
+    return InstrumentationScopeInfo.create(meterName);
   }
 }

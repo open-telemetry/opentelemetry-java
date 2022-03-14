@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
@@ -38,9 +38,9 @@ public final class EmptyMetricData implements MetricData {
   }
 
   @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
     throw new UnsupportedOperationException(
-        "EmptyMetricData does not support getInstrumentationLibraryInfo().");
+        "EmptyMetricData does not support getInstrumentationScopeInfo().");
   }
 
   @Override

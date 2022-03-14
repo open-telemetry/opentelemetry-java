@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -56,8 +56,8 @@ public class RequestMarshalState {
               .put(KEY_BOOLEAN_ARRAY, Arrays.asList(true, false))
               .build());
 
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("name", null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("name");
   private static final String TRACE_ID = "7b2e170db4df2d593ddb4ddf2ddf2d59";
   private static final String SPAN_ID = "170d3ddb4d23e81f";
   private static final SpanContext SPAN_CONTEXT =
@@ -79,7 +79,7 @@ public class RequestMarshalState {
   private static SpanData createSpanData() {
     return TestSpanData.builder()
         .setResource(RESOURCE)
-        .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
+        .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
         .setHasEnded(true)
         .setSpanContext(SPAN_CONTEXT)
         .setParentSpanContext(SpanContext.getInvalid())

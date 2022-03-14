@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Aggregation that selects the specified default based on instrument. */
-final class DefaultAggregation extends Aggregation implements AggregatorFactory {
+final class DefaultAggregation implements Aggregation, AggregatorFactory {
 
   static final Aggregation INSTANCE = new DefaultAggregation();
 

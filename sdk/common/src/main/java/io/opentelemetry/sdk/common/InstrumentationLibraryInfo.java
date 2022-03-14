@@ -15,9 +15,14 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Holds information about the instrumentation library specified when creating an instance of {@link
  * Tracer} using the Tracer Provider.
+ *
+ * @deprecated Use {@link InstrumentationScopeInfo}.
  */
 @AutoValue
+@AutoValue.CopyAnnotations
 @Immutable
+@Deprecated
+@SuppressWarnings("deprecation") // Retain for compatibility
 public abstract class InstrumentationLibraryInfo {
   private static final InstrumentationLibraryInfo EMPTY = create("", null);
 

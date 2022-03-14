@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -47,12 +47,12 @@ class SystemOutLogExporterTest {
     assertThat(output.toString())
         .isEqualTo(
             "1970-08-07T10:00:00Z ERROR3 'message' : 00000000000000010000000000000002 0000000000000003 "
-                + "[libraryInfo: logTest:1.0] {amount=1, cheese=\"cheddar\"}");
+                + "[scopeInfo: logTest:1.0] {amount=1, cheese=\"cheddar\"}");
   }
 
   private static LogData sampleLog(long timestamp) {
     return LogDataBuilder.create(
-            Resource.empty(), InstrumentationLibraryInfo.create("logTest", "1.0"))
+            Resource.empty(), InstrumentationScopeInfo.create("logTest", "1.0", null))
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)

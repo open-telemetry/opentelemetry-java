@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -101,7 +101,7 @@ class MetricStorageRegistryTest {
     public MetricData collectAndReset(
         CollectionInfo collectionInfo,
         Resource resource,
-        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        InstrumentationScopeInfo instrumentationScopeInfo,
         long startEpochNanos,
         long epochNanos,
         boolean suppressSynchronousCollection) {

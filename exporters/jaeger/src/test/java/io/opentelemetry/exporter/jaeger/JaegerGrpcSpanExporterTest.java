@@ -26,7 +26,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -120,8 +120,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -171,8 +171,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -196,8 +196,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(

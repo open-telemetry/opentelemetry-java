@@ -10,15 +10,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -59,13 +59,13 @@ class LoggingMetricExporterTest {
   void testExport() {
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
+    InstrumentationScopeInfo instrumentationScopeInfo =
+        InstrumentationScopeInfo.create("manualInstrumentation", "1.0", null);
     exporter.export(
         Arrays.asList(
-            MetricData.createDoubleSummary(
+            ImmutableMetricData.createDoubleSummary(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "measureOne",
                 "A summarized test measure",
                 "ms",
@@ -78,11 +78,11 @@ class LoggingMetricExporterTest {
                             1010,
                             50000,
                             Arrays.asList(
-                                ImmutableValueAtPercentile.create(0.0, 25),
-                                ImmutableValueAtPercentile.create(100.0, 433)))))),
-            MetricData.createLongSum(
+                                ImmutableValueAtQuantile.create(0.0, 25),
+                                ImmutableValueAtQuantile.create(1.0, 433)))))),
+            ImmutableMetricData.createLongSum(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "counterOne",
                 "A simple counter",
                 "one",
@@ -95,9 +95,9 @@ class LoggingMetricExporterTest {
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
                             1010)))),
-            MetricData.createDoubleSum(
+            ImmutableMetricData.createDoubleSum(
                 resource,
-                instrumentationLibraryInfo,
+                instrumentationScopeInfo,
                 "observedValue",
                 "an observer gauge",
                 "kb",

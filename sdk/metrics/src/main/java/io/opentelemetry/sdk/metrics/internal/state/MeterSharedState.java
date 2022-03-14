@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.toList;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -30,13 +30,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterSharedState {
 
-  public static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new MetricStorageRegistry());
+  public static MeterSharedState create(InstrumentationScopeInfo instrumentationScopeInfo) {
+    return new AutoValue_MeterSharedState(instrumentationScopeInfo, new MetricStorageRegistry());
   }
 
   // only visible for testing.
-  /** Returns the {@link InstrumentationLibraryInfo} for this {@code Meter}. */
-  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  /** Returns the {@link InstrumentationScopeInfo} for this {@code Meter}. */
+  public abstract InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /** Returns the metric storage for metrics in this {@code Meter}. */
   abstract MetricStorageRegistry getMetricStorageRegistry();
@@ -54,7 +54,7 @@ public abstract class MeterSharedState {
           metric.collectAndReset(
               collectionInfo,
               meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
+              getInstrumentationScopeInfo(),
               meterProviderSharedState.getStartEpochNanos(),
               epochNanos,
               suppressSynchronousCollection);
@@ -74,7 +74,7 @@ public abstract class MeterSharedState {
     List<SynchronousMetricStorage> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo())
+            .findViews(instrument, getInstrumentationScopeInfo())
             .stream()
             .map(
                 view ->
@@ -104,7 +104,7 @@ public abstract class MeterSharedState {
     List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo())
+            .findViews(instrument, getInstrumentationScopeInfo())
             .stream()
             .map(view -> AsynchronousMetricStorage.createLongAsyncStorage(view, instrument))
             .filter(storage -> !storage.isEmpty())
@@ -131,7 +131,7 @@ public abstract class MeterSharedState {
     List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo())
+            .findViews(instrument, getInstrumentationScopeInfo())
             .stream()
             .map(view -> AsynchronousMetricStorage.createDoubleAsyncStorage(view, instrument))
             .filter(storage -> !storage.isEmpty())
