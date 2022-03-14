@@ -17,10 +17,11 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,16 +29,16 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
-class MetricDataImplTest {
+class ImmutableMetricDataTest {
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
-  private static final ValueAtPercentile MINIMUM_VALUE =
-      ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE);
-  private static final ValueAtPercentile MAXIMUM_VALUE =
-      ImmutableValueAtPercentile.create(100.0, DOUBLE_VALUE);
+  private static final ValueAtQuantile MINIMUM_VALUE =
+      ImmutableValueAtQuantile.create(0.0, DOUBLE_VALUE);
+  private static final ValueAtQuantile MAXIMUM_VALUE =
+      ImmutableValueAtQuantile.create(1.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
       ImmutableLongPointData.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
@@ -52,8 +53,8 @@ class MetricDataImplTest {
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
-              ImmutableValueAtPercentile.create(0.0, DOUBLE_VALUE),
-              ImmutableValueAtPercentile.create(100, DOUBLE_VALUE)));
+              ImmutableValueAtQuantile.create(0.0, DOUBLE_VALUE),
+              ImmutableValueAtQuantile.create(1.0, DOUBLE_VALUE)));
   private static final ImmutableHistogramPointData HISTOGRAM_POINT =
       ImmutableHistogramPointData.create(
           START_EPOCH_NANOS,
@@ -66,7 +67,7 @@ class MetricDataImplTest {
   @Test
   void metricData_Getters() {
     MetricData metricData =
-        MetricData.createDoubleGauge(
+        ImmutableMetricData.createDoubleGauge(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -91,7 +92,7 @@ class MetricDataImplTest {
     assertThat(LONG_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
-        MetricData.createLongGauge(
+        ImmutableMetricData.createLongGauge(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -101,7 +102,7 @@ class MetricDataImplTest {
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
     metricData =
-        MetricData.createLongSum(
+        ImmutableMetricData.createLongSum(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -123,7 +124,7 @@ class MetricDataImplTest {
     assertThat(DOUBLE_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
-        MetricData.createDoubleGauge(
+        ImmutableMetricData.createDoubleGauge(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -133,7 +134,7 @@ class MetricDataImplTest {
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     metricData =
-        MetricData.createDoubleSum(
+        ImmutableMetricData.createDoubleSum(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -155,10 +156,9 @@ class MetricDataImplTest {
     assertThat(SUMMARY_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(SUMMARY_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(SUMMARY_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
-    assertThat(SUMMARY_POINT.getPercentileValues())
-        .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
+    assertThat(SUMMARY_POINT.getValues()).isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
-        MetricData.createDoubleSummary(
+        ImmutableMetricData.createDoubleSummary(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -180,7 +180,7 @@ class MetricDataImplTest {
     assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
 
     MetricData metricData =
-        MetricData.createDoubleHistogram(
+        ImmutableMetricData.createDoubleHistogram(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -220,7 +220,7 @@ class MetricDataImplTest {
   @Test
   void metricData_GetDefault() {
     MetricData metricData =
-        MetricData.createDoubleSummary(
+        ImmutableMetricData.createDoubleSummary(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",
@@ -235,7 +235,7 @@ class MetricDataImplTest {
     assertThat(metricData.getHistogramData().getPoints()).isEmpty();
 
     metricData =
-        MetricData.createDoubleGauge(
+        ImmutableMetricData.createDoubleGauge(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
             "metric_name",

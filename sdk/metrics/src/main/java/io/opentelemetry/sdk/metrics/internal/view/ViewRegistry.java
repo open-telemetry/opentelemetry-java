@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,13 +65,14 @@ public final class ViewRegistry {
     return (selector.getInstrumentType() == null
             || selector.getInstrumentType() == descriptor.getType())
         && selector.getInstrumentNameFilter().test(descriptor.getName())
-        && matchesMeter(selector.getMeterSelector(), meterScope);
+        && matchesMeter(selector, meterScope);
   }
 
   // Matches a meter selector against a meter.
-  private static boolean matchesMeter(MeterSelector selector, InstrumentationScopeInfo meterScope) {
-    return selector.getNameFilter().test(meterScope.getName())
-        && selector.getVersionFilter().test(meterScope.getVersion())
-        && selector.getSchemaUrlFilter().test(meterScope.getSchemaUrl());
+  private static boolean matchesMeter(
+      InstrumentSelector selector, InstrumentationScopeInfo meterScope) {
+    return selector.getMeterNameFilter().test(meterScope.getName())
+        && selector.getMeterVersionFilter().test(meterScope.getVersion())
+        && selector.getMeterSchemaUrlFilter().test(meterScope.getSchemaUrl());
   }
 }

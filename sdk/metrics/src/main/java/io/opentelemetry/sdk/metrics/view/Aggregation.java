@@ -12,33 +12,34 @@ import java.util.List;
  *
  * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
-public abstract class Aggregation {
-  Aggregation() {}
+// TODO(anuraaga): Have methods when custom aggregations are supported.
+@SuppressWarnings("InterfaceWithOnlyStatics")
+public interface Aggregation {
 
   /** The drop Aggregation will ignore/drop all Instrument Measurements. */
-  public static Aggregation drop() {
+  static Aggregation drop() {
     return DropAggregation.INSTANCE;
   }
 
   /** The default aggregation for an instrument will be chosen. */
-  public static Aggregation defaultAggregation() {
+  static Aggregation defaultAggregation() {
     return DefaultAggregation.INSTANCE;
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
-  public static Aggregation sum() {
+  static Aggregation sum() {
     return SumAggregation.DEFAULT;
   }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
-  public static Aggregation lastValue() {
+  static Aggregation lastValue() {
     return LastValueAggregation.INSTANCE;
   }
 
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
-  public static Aggregation explicitBucketHistogram() {
+  static Aggregation explicitBucketHistogram() {
     return ExplicitBucketHistogramAggregation.DEFAULT;
   }
 
@@ -48,7 +49,7 @@ public abstract class Aggregation {
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
    */
-  public static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
+  static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
     return new ExplicitBucketHistogramAggregation(bucketBoundaries);
   }
 }

@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -64,7 +65,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
       long lastCollectionEpoch,
       long epochNanos) {
     // Last-Value ignores temporality generally, but we can set a start time on the gauge.
-    return MetricData.createLongGauge(
+    return ImmutableMetricData.createLongGauge(
         resource,
         instrumentationScopeInfo,
         descriptor.getName(),

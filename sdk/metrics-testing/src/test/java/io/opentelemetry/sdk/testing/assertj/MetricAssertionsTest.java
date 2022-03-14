@@ -22,16 +22,19 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -44,7 +47,7 @@ public class MetricAssertionsTest {
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create("instrumentation_library");
   private static final MetricData HISTOGRAM_METRIC =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "histogram",
@@ -56,7 +59,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData HISTOGRAM_DELTA_METRIC =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "histogram_delta",
@@ -68,7 +71,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData EXPONENTIAL_HISTOGRAM_METRIC =
-      MetricData.createExponentialHistogram(
+      ImmutableMetricData.createExponentialHistogram(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "exponential_histogram",
@@ -80,7 +83,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData EXPONENTIAL_HISTOGRAM_DELTA_METRIC =
-      MetricData.createExponentialHistogram(
+      ImmutableMetricData.createExponentialHistogram(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "exponential_histogram_delta",
@@ -92,7 +95,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUMMARY_METRIC =
-      MetricData.createDoubleSummary(
+      ImmutableMetricData.createDoubleSummary(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "summary",
@@ -103,7 +106,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_GAUGE_METRIC =
-      MetricData.createDoubleGauge(
+      ImmutableMetricData.createDoubleGauge(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "gauge",
@@ -114,7 +117,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUM_METRIC =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "sum",
@@ -127,7 +130,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_DELTA_SUM_METRIC =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "sum_delta",
@@ -140,7 +143,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final DoubleExemplarData DOUBLE_EXEMPLAR =
-      DoubleExemplarData.create(
+      ImmutableDoubleExemplarData.create(
           Attributes.empty(),
           0,
           SpanContext.create(
@@ -158,7 +161,7 @@ public class MetricAssertionsTest {
           1, 2, Attributes.empty(), 3.0, Collections.singletonList(DOUBLE_EXEMPLAR));
 
   private static final MetricData LONG_GAUGE_METRIC =
-      MetricData.createLongGauge(
+      ImmutableMetricData.createLongGauge(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "gauge",
@@ -169,7 +172,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_SUM_METRIC =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "sum",
@@ -182,7 +185,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_DELTA_SUM_METRIC =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           RESOURCE,
           INSTRUMENTATION_SCOPE_INFO,
           /* name= */ "sum_delta",
@@ -195,7 +198,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final LongExemplarData LONG_EXEMPLAR =
-      LongExemplarData.create(
+      ImmutableLongExemplarData.create(
           Attributes.empty(),
           0,
           SpanContext.create(
@@ -212,7 +215,7 @@ public class MetricAssertionsTest {
       ImmutableLongPointData.create(
           1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
-  private static final ValueAtPercentile PERCENTILE_VALUE = ImmutableValueAtPercentile.create(0, 1);
+  private static final ValueAtQuantile PERCENTILE_VALUE = ImmutableValueAtQuantile.create(0, 1);
 
   private static final SummaryPointData DOUBLE_SUMMARY_POINT_DATA =
       ImmutableSummaryPointData.create(
@@ -368,7 +371,7 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_POINT_DATA)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             0,
                             SpanContext.create(
@@ -411,7 +414,7 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(LONG_POINT_DATA)
                     .hasExemplars(
-                        LongExemplarData.create(
+                        ImmutableLongExemplarData.create(
                             Attributes.empty(),
                             0,
                             SpanContext.create(
@@ -466,7 +469,7 @@ public class MetricAssertionsTest {
         .hasEpochNanos(2)
         .hasStartEpochNanos(1)
         .hasAttributes(Attributes.empty())
-        .hasPercentileValues(PERCENTILE_VALUE);
+        .hasValues(PERCENTILE_VALUE);
   }
 
   @Test
@@ -480,7 +483,7 @@ public class MetricAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(DOUBLE_SUMMARY_POINT_DATA)
-                    .hasPercentileValues(ImmutableValueAtPercentile.create(1, 1)))
+                    .hasValues(ImmutableValueAtQuantile.create(1, 1)))
         .isInstanceOf(AssertionError.class);
   }
 

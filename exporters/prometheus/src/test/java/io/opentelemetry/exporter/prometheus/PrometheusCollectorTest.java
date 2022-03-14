@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -76,7 +77,7 @@ class PrometheusCollectorTest {
 
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
-        MetricData.createLongSum(
+        ImmutableMetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationScopeInfo.create("grpc", "version", null),
             "grpc.name",
@@ -91,7 +92,7 @@ class PrometheusCollectorTest {
                         1633950672000000000L,
                         Attributes.of(stringKey("kp"), "vp"),
                         5)))),
-        MetricData.createDoubleSum(
+        ImmutableMetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationScopeInfo.create("http", "version", null),
             "http.name",

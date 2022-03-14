@@ -7,7 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
@@ -184,5 +185,12 @@ class SdkObservableDoubleUpDownCounterTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
+  }
+
+  @Test
+  void customAggregationThrows() {
+    assertThatThrownBy(() -> View.builder().setAggregation(mock(Aggregation.class)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Custom Aggregation implementations are currently not supported.");
   }
 }

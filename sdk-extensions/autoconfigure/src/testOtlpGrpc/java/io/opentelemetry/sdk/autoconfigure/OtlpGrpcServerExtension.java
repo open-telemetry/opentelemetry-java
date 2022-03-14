@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -145,7 +146,7 @@ class OtlpGrpcServerExtension extends ServerExtension {
   }
 
   static MetricData generateFakeMetric() {
-    return MetricData.createLongSum(
+    return ImmutableMetricData.createLongSum(
         Resource.empty(),
         InstrumentationScopeInfo.empty(),
         "metric_name",

@@ -11,8 +11,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -118,7 +118,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
       Attributes attributes = this.attributes;
       if (attributes != null) {
         ExemplarData result =
-            DoubleExemplarData.create(
+            ImmutableDoubleExemplarData.create(
                 filtered(attributes, pointAttributes), recordTime, spanContext, value);
         this.attributes = null;
         this.value = 0;
