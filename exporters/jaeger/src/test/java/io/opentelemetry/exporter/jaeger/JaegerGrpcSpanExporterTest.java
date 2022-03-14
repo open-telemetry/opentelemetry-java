@@ -250,6 +250,12 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.scope.name")
+                .orElseThrow(() -> new AssertionError("otel.scope.name not found"))
+                .getVStr())
+        .isEqualTo("io.opentelemetry.auto");
+
+    assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.name")
                 .orElseThrow(() -> new AssertionError("otel.library.name not found"))
                 .getVStr())
@@ -258,6 +264,12 @@ class JaegerGrpcSpanExporterTest {
     assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.version")
                 .orElseThrow(() -> new AssertionError("otel.library.version not found"))
+                .getVStr())
+        .isEqualTo("1.0.0");
+
+    assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.scope.version")
+                .orElseThrow(() -> new AssertionError("otel.scope.version not found"))
                 .getVStr())
         .isEqualTo("1.0.0");
 

@@ -52,6 +52,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
+  static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
+  static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
@@ -130,9 +132,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
     InstrumentationScopeInfo instrumentationScopeInfo = spanData.getInstrumentationScopeInfo();
 
     if (!instrumentationScopeInfo.getName().isEmpty()) {
+      spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_NAME, instrumentationScopeInfo.getName());
+      // Include instrumentation library name for backwards compatibility
       spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationScopeInfo.getName());
     }
     if (instrumentationScopeInfo.getVersion() != null) {
+      spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_VERSION, instrumentationScopeInfo.getVersion());
+      // Include instrumentation library name for backwards compatibility
       spanBuilder.putTag(
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationScopeInfo.getVersion());
     }
