@@ -23,7 +23,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -82,8 +82,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -154,8 +154,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -177,8 +177,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(

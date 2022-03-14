@@ -9,7 +9,8 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -37,7 +38,7 @@ public abstract class TestSpanData implements SpanData {
     return new AutoValue_TestSpanData.Builder()
         .setSpanContext(SpanContext.getInvalid())
         .setParentSpanContext(SpanContext.getInvalid())
-        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty())
+        .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Attributes.empty())
@@ -54,6 +55,12 @@ public abstract class TestSpanData implements SpanData {
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
+  }
+
+  @Override
+  @Deprecated
+  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
   }
 
   /** A {@code Builder} class for {@link TestSpanData}. */
@@ -108,9 +115,24 @@ public abstract class TestSpanData implements SpanData {
      * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
      *     this span.
      * @return this
+     * @deprecated use {@link #setInstrumentationScopeInfo(InstrumentationScopeInfo)} instead.
      */
-    public abstract Builder setInstrumentationLibraryInfo(
-        InstrumentationLibraryInfo instrumentationLibraryInfo);
+    @Deprecated
+    public Builder setInstrumentationLibraryInfo(
+        io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      return setInstrumentationScopeInfo(
+          InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo));
+    }
+
+    /**
+     * Sets the instrumentation scope of the tracer which created this span. Must not be null.
+     *
+     * @param instrumentationScopeInfo the instrumentation scope of the tracer which created this
+     *     span.
+     * @return this
+     */
+    public abstract Builder setInstrumentationScopeInfo(
+        InstrumentationScopeInfo instrumentationScopeInfo);
 
     /**
      * Set the name of the span. Must not be null.

@@ -31,7 +31,7 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -333,8 +333,7 @@ class OtlpHttpLogExporterTest {
   @SuppressWarnings("deprecation") // test deprecated setName method
   private static LogData generateFakeLog() {
     return LogDataBuilder.create(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+            Resource.getDefault(), InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
         .setName("log-name")
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())

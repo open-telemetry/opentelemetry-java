@@ -19,7 +19,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -41,8 +41,8 @@ class OpenTelemetryAssertionsTest {
   private static final TraceState TRACE_STATE = TraceState.builder().put("cat", "meow").build();
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("opentelemetry", "1.0");
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("opentelemetry", "1.0", null);
 
   private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
   private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
@@ -99,7 +99,7 @@ class OpenTelemetryAssertionsTest {
                 SpanContext.create(
                     TRACE_ID, SPAN_ID2, TraceFlags.getDefault(), TraceState.getDefault()))
             .setResource(RESOURCE)
-            .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
+            .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
             .setName("span")
             .setKind(SpanKind.CLIENT)
             .setStartEpochNanos(100)
@@ -136,7 +136,7 @@ class OpenTelemetryAssertionsTest {
         .hasTraceState(TRACE_STATE)
         .hasParentSpanId(SPAN_ID2)
         .hasResource(RESOURCE)
-        .hasInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
         .hasName("span")
         .hasKind(SpanKind.CLIENT)
         .startsAt(100)
@@ -261,8 +261,7 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
-            () ->
-                assertThat(SPAN1).hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty()))
+            () -> assertThat(SPAN1).hasInstrumentationScopeInfo(InstrumentationScopeInfo.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasName("foo")).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasKind(SpanKind.SERVER))

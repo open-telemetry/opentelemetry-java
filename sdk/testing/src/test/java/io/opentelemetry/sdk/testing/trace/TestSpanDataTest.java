@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -35,8 +35,7 @@ class TestSpanDataTest {
     assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
-    assertThat(spanData.getInstrumentationLibraryInfo())
-        .isSameAs(InstrumentationLibraryInfo.empty());
+    assertThat(spanData.getInstrumentationScopeInfo()).isSameAs(InstrumentationScopeInfo.empty());
   }
 
   @Test

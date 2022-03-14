@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -79,7 +79,7 @@ class PrometheusCollectorTest {
     return ImmutableList.of(
         ImmutableMetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("grpc", "version"),
+            InstrumentationScopeInfo.create("grpc", "version", null),
             "grpc.name",
             "long_description",
             "1",
@@ -94,7 +94,7 @@ class PrometheusCollectorTest {
                         5)))),
         ImmutableMetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("http", "version"),
+            InstrumentationScopeInfo.create("http", "version", null),
             "http.name",
             "double_description",
             "1",

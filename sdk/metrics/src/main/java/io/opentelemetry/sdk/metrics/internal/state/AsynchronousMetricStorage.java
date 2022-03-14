@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -103,7 +103,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   public MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
@@ -133,7 +133,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
       return storage.buildMetricFor(
           collectionInfo.getCollector(),
           resource,
-          instrumentationLibraryInfo,
+          instrumentationScopeInfo,
           getMetricDescriptor(),
           temporality,
           accumulator.collectAndReset(),

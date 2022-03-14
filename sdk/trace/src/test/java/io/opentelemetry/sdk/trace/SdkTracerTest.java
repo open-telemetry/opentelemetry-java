@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -52,9 +51,9 @@ class SdkTracerTest {
   @Test
   void propagatesInstrumentationScopeInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
-    assertThat(readableSpan.getInstrumentationLibraryInfo())
+    assertThat(readableSpan.getInstrumentationScopeInfo())
         .isEqualTo(
-            InstrumentationLibraryInfo.create(
+            InstrumentationScopeInfo.create(
                 instrumentationScopeInfo.getName(),
                 instrumentationScopeInfo.getVersion(),
                 instrumentationScopeInfo.getSchemaUrl()));

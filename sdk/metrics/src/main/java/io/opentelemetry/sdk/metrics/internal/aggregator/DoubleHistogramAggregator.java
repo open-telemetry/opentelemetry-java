@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -92,7 +92,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor metricDescriptor,
       Map<Attributes, HistogramAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -101,7 +101,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       long epochNanos) {
     return ImmutableMetricData.createDoubleHistogram(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
         metricDescriptor.getUnit(),

@@ -20,7 +20,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -65,8 +65,8 @@ public final class MetricAdapter {
   private MetricAdapter() {}
   // All OpenCensus metrics come from this shim.
   // VisibleForTesting.
-  static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.opencensusshim", null);
+  static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("io.opentelemetry.opencensusshim");
 
   // Parser for string value of `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
   // // SpanContext{traceId=TraceId{traceId=(id))}, spanId=SpanId{spanId=(id), ...}
@@ -86,7 +86,7 @@ public final class MetricAdapter {
       case GAUGE_INT64:
         return ImmutableMetricData.createLongGauge(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -94,7 +94,7 @@ public final class MetricAdapter {
       case GAUGE_DOUBLE:
         return ImmutableMetricData.createDoubleGauge(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -102,7 +102,7 @@ public final class MetricAdapter {
       case CUMULATIVE_INT64:
         return ImmutableMetricData.createLongSum(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -110,7 +110,7 @@ public final class MetricAdapter {
       case CUMULATIVE_DOUBLE:
         return ImmutableMetricData.createDoubleSum(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -118,7 +118,7 @@ public final class MetricAdapter {
       case CUMULATIVE_DISTRIBUTION:
         return ImmutableMetricData.createDoubleHistogram(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -126,7 +126,7 @@ public final class MetricAdapter {
       case SUMMARY:
         return ImmutableMetricData.createDoubleSummary(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -134,7 +134,7 @@ public final class MetricAdapter {
       case GAUGE_DISTRIBUTION:
         return ImmutableMetricData.createDoubleHistogram(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),

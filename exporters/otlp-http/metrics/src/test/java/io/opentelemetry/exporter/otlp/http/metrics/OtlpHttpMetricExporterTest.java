@@ -30,7 +30,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -326,7 +326,7 @@ class OtlpHttpMetricExporterTest {
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "name",
         "description",
         "1",

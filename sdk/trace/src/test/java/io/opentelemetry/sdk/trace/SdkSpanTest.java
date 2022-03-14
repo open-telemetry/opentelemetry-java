@@ -28,7 +28,8 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -74,8 +75,8 @@ class SdkSpanTest {
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.empty();
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo =
-      InstrumentationLibraryInfo.create("theName", null);
+  private final InstrumentationScopeInfo instrumentationScopeInfo =
+      InstrumentationScopeInfo.create("theName");
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
   private final LinkData link = LinkData.create(spanContext);
@@ -328,10 +329,23 @@ class SdkSpanTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
-      assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+      assertThat(span.getInstrumentationLibraryInfo())
+          .isEqualTo(
+              InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getInstrumentationScopeInfo() {
+    SdkSpan span = createTestSpan(SpanKind.CLIENT);
+    try {
+      assertThat(span.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
     } finally {
       span.end();
     }
@@ -1035,7 +1049,7 @@ class SdkSpanTest {
         SdkSpan.startSpan(
             spanContext,
             SPAN_NAME,
-            instrumentationLibraryInfo,
+            instrumentationScopeInfo,
             kind,
             parentSpanId != null
                 ? Span.wrap(
@@ -1083,7 +1097,7 @@ class SdkSpanTest {
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getSpanContext().getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
-    assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+    assertThat(spanData.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
     assertThat(spanData.getEvents()).isEqualTo(eventData);
     assertThat(spanData.getLinks()).isEqualTo(links);
@@ -1122,7 +1136,7 @@ class SdkSpanTest {
         SdkSpan.startSpan(
             context,
             name,
-            instrumentationLibraryInfo,
+            instrumentationScopeInfo,
             kind,
             parentSpanId != null
                 ? Span.wrap(

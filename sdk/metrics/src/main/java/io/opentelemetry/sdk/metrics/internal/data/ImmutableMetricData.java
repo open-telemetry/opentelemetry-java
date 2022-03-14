@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
@@ -37,14 +37,14 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createDoubleGauge(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       GaugeData<DoublePointData> data) {
-    return create(
+    return ImmutableMetricData.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -59,14 +59,14 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createLongGauge(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       GaugeData<LongPointData> data) {
-    return create(
+    return ImmutableMetricData.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -81,14 +81,14 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createDoubleSum(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       SumData<DoublePointData> data) {
-    return create(
+    return ImmutableMetricData.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -103,19 +103,13 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createLongSum(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       SumData<LongPointData> data) {
-    return create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.LONG_SUM,
-        data);
+    return ImmutableMetricData.create(
+        resource, instrumentationScopeInfo, name, description, unit, MetricDataType.LONG_SUM, data);
   }
 
   /**
@@ -125,19 +119,13 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createDoubleSummary(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       SummaryData data) {
-    return create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.SUMMARY,
-        data);
+    return ImmutableMetricData.create(
+        resource, instrumentationScopeInfo, name, description, unit, MetricDataType.SUMMARY, data);
   }
 
   /**
@@ -147,14 +135,14 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createDoubleHistogram(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       HistogramData data) {
-    return create(
+    return ImmutableMetricData.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -169,14 +157,14 @@ public abstract class ImmutableMetricData implements MetricData {
    */
   public static MetricData createExponentialHistogram(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       ExponentialHistogramData data) {
-    return create(
+    return ImmutableMetricData.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         name,
         description,
         unit,
@@ -187,14 +175,14 @@ public abstract class ImmutableMetricData implements MetricData {
   // Visible for testing
   static ImmutableMetricData create(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       String description,
       String unit,
       MetricDataType type,
       Data<?> data) {
     return new AutoValue_ImmutableMetricData(
-        resource, instrumentationLibraryInfo, name, description, unit, type, data);
+        resource, instrumentationScopeInfo, name, description, unit, type, data);
   }
 
   ImmutableMetricData() {}

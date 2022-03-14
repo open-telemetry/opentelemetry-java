@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
 
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("name", "version", "schema_url");
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("name", "version", "schema_url");
 
   @Test
   void selection_onType() {
@@ -33,7 +33,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isEqualTo(view);
@@ -42,7 +42,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -60,7 +60,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(view);
@@ -69,7 +69,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -92,7 +92,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(2)
         .element(0)
         .isEqualTo(view2);
@@ -100,7 +100,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isEqualTo(view1);
@@ -124,7 +124,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isEqualTo(view);
@@ -133,7 +133,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isEqualTo(ViewRegistry.DEFAULT_VIEW);
@@ -142,7 +142,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isEqualTo(ViewRegistry.DEFAULT_VIEW);
@@ -155,7 +155,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -163,7 +163,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -171,7 +171,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -179,7 +179,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -187,7 +187,7 @@ class ViewRegistryTest {
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
@@ -199,7 +199,7 @@ class ViewRegistryTest {
                     "",
                     InstrumentType.OBSERVABLE_UP_DOWN_COUNTER,
                     InstrumentValueType.LONG),
-                INSTRUMENTATION_LIBRARY_INFO))
+                INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);

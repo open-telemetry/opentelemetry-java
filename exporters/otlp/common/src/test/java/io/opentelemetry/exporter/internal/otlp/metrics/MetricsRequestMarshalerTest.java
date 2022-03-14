@@ -39,7 +39,7 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -465,7 +465,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createLongSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -500,7 +500,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -539,7 +539,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createLongSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -574,7 +574,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -613,7 +613,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createLongGauge(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -644,7 +644,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createDoubleGauge(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -679,7 +679,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createDoubleSummary(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -734,7 +734,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createDoubleHistogram(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -780,7 +780,7 @@ class MetricsRequestMarshalerTest {
             toProtoMetric(
                 ImmutableMetricData.createExponentialHistogram(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -850,8 +850,8 @@ class MetricsRequestMarshalerTest {
             .build();
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("name", "version", "http://url");
+    InstrumentationScopeInfo instrumentationScopeInfo =
+        InstrumentationScopeInfo.create("name", "version", "http://url");
     InstrumentationLibrary instrumentationLibraryProto =
         InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
     InstrumentationLibrary emptyInstrumentationLibraryProto =
@@ -885,7 +885,7 @@ class MetricsRequestMarshalerTest {
                 ImmutableList.of(
                     ImmutableMetricData.createDoubleSum(
                         resource,
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
@@ -896,7 +896,7 @@ class MetricsRequestMarshalerTest {
                                 ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     ImmutableMetricData.createDoubleSum(
                         resource,
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
@@ -907,7 +907,7 @@ class MetricsRequestMarshalerTest {
                                 ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     ImmutableMetricData.createDoubleSum(
                         Resource.empty(),
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
@@ -918,7 +918,7 @@ class MetricsRequestMarshalerTest {
                                 ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     ImmutableMetricData.createDoubleSum(
                         Resource.empty(),
-                        InstrumentationLibraryInfo.empty(),
+                        InstrumentationScopeInfo.empty(),
                         "name",
                         "description",
                         "1",

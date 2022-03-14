@@ -11,7 +11,6 @@ import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -29,9 +28,7 @@ final class SdkMeter implements Meter {
       InstrumentationScopeInfo instrumentationScopeInfo) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState =
-        MeterSharedState.create(
-            InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo));
+    this.meterSharedState = MeterSharedState.create(instrumentationScopeInfo);
   }
 
   // Visible for testing

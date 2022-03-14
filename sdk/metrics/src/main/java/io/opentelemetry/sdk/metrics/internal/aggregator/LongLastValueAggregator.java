@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -57,7 +57,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -67,7 +67,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
     // Last-Value ignores temporality generally, but we can set a start time on the gauge.
     return ImmutableMetricData.createLongGauge(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),

@@ -122,12 +122,12 @@ final class Adapter {
 
     tags.add(
         new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
-            .setVStr(span.getInstrumentationLibraryInfo().getName()));
+            .setVStr(span.getInstrumentationScopeInfo().getName()));
 
-    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+    if (span.getInstrumentationScopeInfo().getVersion() != null) {
       tags.add(
           new Tag(KEY_INSTRUMENTATION_LIBRARY_VERSION, TagType.STRING)
-              .setVStr(span.getInstrumentationLibraryInfo().getVersion()));
+              .setVStr(span.getInstrumentationScopeInfo().getVersion()));
     }
 
     if (span.getStatus().getStatusCode() == StatusCode.ERROR) {

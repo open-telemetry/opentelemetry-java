@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -37,8 +37,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class SynchronousMetricStorageTest {
   private static final Resource RESOURCE = Resource.empty();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("test", "1.0");
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("test", "1.0", null);
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
@@ -85,7 +85,7 @@ public class SynchronousMetricStorageTest {
         accumulator.collectAndReset(
             CollectionInfo.create(collector, allCollectors, reader),
             RESOURCE,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             0,
             testClock.now(),
             false);
@@ -113,7 +113,7 @@ public class SynchronousMetricStorageTest {
       accumulator.collectAndReset(
           CollectionInfo.create(collector, allCollectors, reader),
           RESOURCE,
-          INSTRUMENTATION_LIBRARY_INFO,
+          INSTRUMENTATION_SCOPE_INFO,
           0,
           testClock.now(),
           false);
@@ -135,7 +135,7 @@ public class SynchronousMetricStorageTest {
             accumulator.collectAndReset(
                 CollectionInfo.create(collector, allCollectors, reader),
                 RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
+                INSTRUMENTATION_SCOPE_INFO,
                 0,
                 testClock.now(),
                 false))

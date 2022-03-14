@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.exporter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -31,7 +31,7 @@ class InMemoryMetricExporterTest {
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "name",
         "description",
         "1",

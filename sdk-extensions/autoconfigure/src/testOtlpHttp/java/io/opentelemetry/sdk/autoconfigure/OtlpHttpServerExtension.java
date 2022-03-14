@@ -21,7 +21,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -131,7 +131,7 @@ class OtlpHttpServerExtension extends ServerExtension {
   static MetricData generateFakeMetric() {
     return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "metric_name",
         "metric_description",
         "ms",
@@ -147,7 +147,7 @@ class OtlpHttpServerExtension extends ServerExtension {
   }
 
   static LogData generateFakeLog() {
-    return LogDataBuilder.create(Resource.empty(), InstrumentationLibraryInfo.empty())
+    return LogDataBuilder.create(Resource.empty(), InstrumentationScopeInfo.empty())
         .setEpoch(Instant.now())
         .setBody("log body")
         .build();
