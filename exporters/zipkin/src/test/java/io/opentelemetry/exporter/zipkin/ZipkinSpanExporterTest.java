@@ -239,6 +239,8 @@ class ZipkinSpanExporterTest {
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
+                .putTag("otel.scope.name", "io.opentelemetry.auto")
+                .putTag("otel.scope.version", "1.0.0")
                 .putTag("otel.library.name", "io.opentelemetry.auto")
                 .putTag("otel.library.version", "1.0.0")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
