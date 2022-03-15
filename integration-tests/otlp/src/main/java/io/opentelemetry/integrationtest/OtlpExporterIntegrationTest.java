@@ -57,7 +57,7 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -283,10 +283,8 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testMetricExport(MetricExporter metricExporter) {
-    MetricReaderFactory reader =
-        PeriodicMetricReader.builder(metricExporter)
-            .setInterval(Duration.ofSeconds(5))
-            .newMetricReaderFactory();
+    MetricReader reader =
+        PeriodicMetricReader.builder(metricExporter).setInterval(Duration.ofSeconds(5)).build();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().setResource(RESOURCE).registerMetricReader(reader).build();
 

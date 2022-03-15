@@ -135,11 +135,9 @@ abstract class AbstractPrometheusIntegrationTest {
 
   static class PrometheusHttpServerIntegrationTest extends AbstractPrometheusIntegrationTest {
     PrometheusHttpServerIntegrationTest() {
-      PrometheusHttpServerFactory factory =
-          (PrometheusHttpServerFactory)
-              PrometheusHttpServer.builder().setPort(0).newMetricReaderFactory();
-      meterProvider = SdkMeterProvider.builder().registerMetricReader(factory).build();
-      port = factory.getAddress().getPort();
+      PrometheusHttpServer prometheusHttpServer = PrometheusHttpServer.builder().setPort(0).build();
+      meterProvider = SdkMeterProvider.builder().registerMetricReader(prometheusHttpServer).build();
+      port = prometheusHttpServer.getAddress().getPort();
     }
   }
 

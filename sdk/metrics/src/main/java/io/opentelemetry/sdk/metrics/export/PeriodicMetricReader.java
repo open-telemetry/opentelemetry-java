@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -20,10 +21,9 @@ import javax.annotation.Nullable;
  * interval. Metrics may also be dropped when it becomes time to export again, and there is an
  * export in progress.
  */
-public final class PeriodicMetricReader implements MetricReader {
+public final class PeriodicMetricReader extends AbstractMetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
-  private final MetricProducer producer;
   private final MetricExporter exporter;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
@@ -32,12 +32,12 @@ public final class PeriodicMetricReader implements MetricReader {
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Returns a new {@link MetricReaderFactory} which can be registered to a {@link
+   * Returns a new {@link PeriodicMetricReader} which can be registered to a {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link PeriodicMetricReader}
    * exporting once every minute on a new daemon thread.
    */
-  public static MetricReaderFactory newMetricReaderFactory(MetricExporter exporter) {
-    return builder(exporter).newMetricReaderFactory();
+  public static PeriodicMetricReader create(MetricExporter exporter) {
+    return builder(exporter).build();
   }
 
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */
@@ -45,9 +45,7 @@ public final class PeriodicMetricReader implements MetricReader {
     return new PeriodicMetricReaderBuilder(exporter);
   }
 
-  PeriodicMetricReader(
-      MetricProducer producer, MetricExporter exporter, ScheduledExecutorService scheduler) {
-    this.producer = producer;
+  PeriodicMetricReader(MetricExporter exporter, ScheduledExecutorService scheduler) {
     this.exporter = exporter;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
@@ -122,7 +120,7 @@ public final class PeriodicMetricReader implements MetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          CompletableResultCode result = exporter.export(producer.collectAllMetrics());
+          CompletableResultCode result = exporter.export(getMetricProducer().collectAllMetrics());
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {

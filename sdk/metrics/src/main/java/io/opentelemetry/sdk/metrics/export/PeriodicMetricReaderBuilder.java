@@ -56,15 +56,17 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Returns a new {@link MetricReaderFactory} with the configuration of this builder which can be
+   * Returns a new {@link PeriodicMetricReader} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
-  public MetricReaderFactory newMetricReaderFactory() {
+  public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
     if (executor == null) {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReaderFactory(metricExporter, intervalNanos, executor);
+    PeriodicMetricReader periodicMetricReader = new PeriodicMetricReader(metricExporter, executor);
+    periodicMetricReader.start(intervalNanos);
+    return periodicMetricReader;
   }
 }
