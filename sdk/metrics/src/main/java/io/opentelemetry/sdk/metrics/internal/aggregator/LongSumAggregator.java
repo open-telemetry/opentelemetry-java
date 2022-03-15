@@ -72,7 +72,7 @@ public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulat
         instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
+        descriptor.getSourceInstrument().getUnit(),
         ImmutableSumData.create(
             isMonotonic(),
             temporality,

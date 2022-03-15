@@ -45,11 +45,16 @@ class SourceInfoTest {
         MetricDescriptor.create(
             View.builder().build(),
             InstrumentDescriptor.create(
-                "name", "description2", "unit2", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name2",
+                "description2",
+                "unit2",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG));
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
-        .contains("- Unit [unit2] does not match [unit]")
-        .contains("- Description [description2] does not match [description]")
+        .contains("- InstrumentDescription [description2] does not match [description]")
+        .contains("- InstrumentName [name2] does not match [name]")
+        .contains("- InstrumentUnit [unit2] does not match [unit]")
         .contains("- InstrumentType [COUNTER] does not match [OBSERVABLE_COUNTER]")
         .contains("- InstrumentValueType [LONG] does not match [DOUBLE]")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
@@ -60,10 +65,9 @@ class SourceInfoTest {
 
   @Test
   void testDuplicateExceptionMessage_viewBasedConflict() {
-    View problemView = View.builder().setName("name2").build();
     MetricDescriptor simple =
         MetricDescriptor.create(
-            problemView,
+            View.builder().setName("name2").build(),
             InstrumentDescriptor.create(
                 "name",
                 "description",
@@ -82,9 +86,9 @@ class SourceInfoTest {
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
-        .contains("- Description [description2] does not match [description]")
+        .contains("- InstrumentDescription [description2] does not match [description]")
         .contains("Conflicting view registered")
-        .contains(ImmutableView.getSourceInfo(problemView).multiLineDebugString())
+        .contains(ImmutableView.getSourceInfo(simple.getSourceView()).multiLineDebugString())
         .contains("FROM instrument name")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
@@ -117,7 +121,7 @@ class SourceInfoTest {
         .contains(ImmutableView.getSourceInfo(problemView).multiLineDebugString())
         .contains("FROM instrument name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
-        .contains("- Unit [unit] does not match [unit2]")
+        .contains("- InstrumentUnit [unit] does not match [unit2]")
         .contains("Original instrument registered with same name but is incompatible.")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());

@@ -73,7 +73,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
         instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
+        descriptor.getSourceInstrument().getUnit(),
         ImmutableGaugeData.create(
             MetricDataUtils.toDoublePointList(
                 accumulationByLabels,

@@ -85,7 +85,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
         instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
+        descriptor.getSourceInstrument().getUnit(),
         ImmutableSumData.create(
             isMonotonic(),
             temporality,

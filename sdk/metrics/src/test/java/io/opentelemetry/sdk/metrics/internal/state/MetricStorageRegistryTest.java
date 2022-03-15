@@ -6,9 +6,10 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -19,8 +20,10 @@ import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /** Unit tests for {@link MetricStorageRegistry}. */
+@SuppressLogger(MetricStorageRegistry.class)
 class MetricStorageRegistryTest {
   private static final MetricDescriptor SYNC_DESCRIPTOR =
       descriptor("sync", "description", InstrumentType.COUNTER);
@@ -30,6 +33,9 @@ class MetricStorageRegistryTest {
       descriptor("async", "description", InstrumentType.OBSERVABLE_GAUGE);
   private static final MetricDescriptor OTHER_ASYNC_DESCRIPTOR =
       descriptor("async", "other_description", InstrumentType.OBSERVABLE_GAUGE);
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
   private final MetricStorageRegistry metricStorageRegistry = new MetricStorageRegistry();
 
@@ -46,11 +52,10 @@ class MetricStorageRegistryTest {
   void register_SyncIncompatibleDescriptor() {
     TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
-
-    assertThatThrownBy(
-            () -> metricStorageRegistry.register(new TestMetricStorage(OTHER_SYNC_DESCRIPTOR)))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(OTHER_SYNC_DESCRIPTOR)))
+        .isNotSameAs(storage);
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -66,11 +71,10 @@ class MetricStorageRegistryTest {
   void register_AsyncIncompatibleDescriptor() {
     TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
-
-    assertThatThrownBy(
-            () -> metricStorageRegistry.register(new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR)))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR)))
+        .isNotSameAs(storage);
+    logs.assertContains("Found duplicate metric definition");
   }
 
   private static MetricDescriptor descriptor(
