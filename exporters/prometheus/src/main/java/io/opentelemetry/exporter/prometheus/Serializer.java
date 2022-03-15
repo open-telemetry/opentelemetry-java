@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -128,7 +129,7 @@ abstract class Serializer {
     writeHelp(writer, metric.getDescription());
     writer.write('\n');
 
-    for (PointData point : MetricAdapter.getPoints(metric)) {
+    for (PointData point : getPoints(metric)) {
       switch (metric.getType()) {
         case DOUBLE_SUM:
         case DOUBLE_GAUGE:
@@ -444,6 +445,26 @@ abstract class Serializer {
     void writeEof(Writer writer) throws IOException {
       writer.write("# EOF\n");
     }
+  }
+
+  static Collection<? extends PointData> getPoints(MetricData metricData) {
+    switch (metricData.getType()) {
+      case DOUBLE_GAUGE:
+        return metricData.getDoubleGaugeData().getPoints();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().getPoints();
+      case LONG_GAUGE:
+        return metricData.getLongGaugeData().getPoints();
+      case LONG_SUM:
+        return metricData.getLongSumData().getPoints();
+      case SUMMARY:
+        return metricData.getSummaryData().getPoints();
+      case HISTOGRAM:
+        return metricData.getHistogramData().getPoints();
+      case EXPONENTIAL_HISTOGRAM:
+        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
+    }
+    return Collections.emptyList();
   }
 
   private static double getExemplarValue(ExemplarData exemplar) {
