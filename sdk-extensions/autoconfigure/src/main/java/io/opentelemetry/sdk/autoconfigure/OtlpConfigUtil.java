@@ -186,7 +186,7 @@ final class OtlpConfigUtil {
     Path path = Paths.get(filePath);
     if (!Files.exists(path)) {
       throw new ConfigurationException(
-          "Invalid file: " + path + " (configured in property: " + propertyToRead + ")");
+          "Invalid OTLP certificate/key path: " + path + " (configured in property: " + propertyToRead + ")");
     }
     try {
       return Files.readAllBytes(path);
