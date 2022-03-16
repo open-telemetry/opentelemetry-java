@@ -22,13 +22,11 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -65,7 +63,7 @@ final class MetricAdapter {
         cleanMetricName,
         type,
         metricData.getDescription(),
-        toSamples(cleanMetricName, metricData.getType(), getPoints(metricData)));
+        toSamples(cleanMetricName, metricData.getType(), Serializer.getPoints(metricData)));
   }
 
   private static String cleanMetricName(String descriptorMetricName) {
@@ -277,26 +275,6 @@ final class MetricAdapter {
       return numPoints * 4;
     }
     return numPoints;
-  }
-
-  static Collection<? extends PointData> getPoints(MetricData metricData) {
-    switch (metricData.getType()) {
-      case DOUBLE_GAUGE:
-        return metricData.getDoubleGaugeData().getPoints();
-      case DOUBLE_SUM:
-        return metricData.getDoubleSumData().getPoints();
-      case LONG_GAUGE:
-        return metricData.getLongGaugeData().getPoints();
-      case LONG_SUM:
-        return metricData.getLongSumData().getPoints();
-      case SUMMARY:
-        return metricData.getSummaryData().getPoints();
-      case HISTOGRAM:
-        return metricData.getHistogramData().getPoints();
-      case EXPONENTIAL_HISTOGRAM:
-        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
-    }
-    return Collections.emptyList();
   }
 
   private static Sample createSample(
