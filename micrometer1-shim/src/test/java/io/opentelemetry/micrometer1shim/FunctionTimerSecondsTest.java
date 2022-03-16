@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.FunctionTimer;
 import io.micrometer.core.instrument.Metrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,8 +57,8 @@ class FunctionTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionTimerSeconds.count")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("1")
                     .hasLongSum()
@@ -73,8 +73,8 @@ class FunctionTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionTimerSeconds.sum")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("s")
                     .hasDoubleSum()

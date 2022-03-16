@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.MockClock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.time.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -53,8 +53,8 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.active")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
                     .hasLongSum()
@@ -65,8 +65,8 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleSum()
@@ -81,8 +81,8 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.histogram")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDoubleGauge()
                     .points()
                     .anySatisfy(
@@ -105,8 +105,8 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.active")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
                     .hasLongSum()
@@ -117,8 +117,8 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleSum()

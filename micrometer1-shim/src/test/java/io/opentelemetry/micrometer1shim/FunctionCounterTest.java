@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Metrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,8 @@ class FunctionCounterTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionCounter")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function counter")
                     .hasUnit("items")
                     .hasDoubleSum()

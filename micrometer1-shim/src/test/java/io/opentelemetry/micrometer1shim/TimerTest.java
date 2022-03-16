@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -38,8 +38,8 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleHistogram()
@@ -135,8 +135,8 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleHistogram()
@@ -200,8 +200,8 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleHistogram()

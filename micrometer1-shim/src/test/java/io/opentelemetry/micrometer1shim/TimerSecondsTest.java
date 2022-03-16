@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -47,8 +47,8 @@ class TimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimerSeconds")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
                     .hasDoubleHistogram()

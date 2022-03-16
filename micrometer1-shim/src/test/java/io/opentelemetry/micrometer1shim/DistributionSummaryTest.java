@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Metrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -38,8 +38,8 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasDoubleHistogram()
@@ -105,8 +105,8 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasDoubleHistogram()
@@ -163,12 +163,12 @@ class DistributionSummaryTest {
     summary.record(100);
 
     assertThat(testing.collectAllMetrics())
-        .satisfiesExactly(
+        .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasDoubleHistogram()

@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Metrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -47,8 +47,8 @@ class LongTaskTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.active")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("tasks")
                     .hasLongSum()
@@ -63,8 +63,8 @@ class LongTaskTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.duration")
-                    .hasInstrumentationLibrary(
-                        InstrumentationLibraryInfo.create(INSTRUMENTATION_NAME, null))
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("s")
                     .hasDoubleSum()
