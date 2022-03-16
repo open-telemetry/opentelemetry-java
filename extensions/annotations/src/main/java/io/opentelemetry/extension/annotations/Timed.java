@@ -18,11 +18,11 @@ import java.util.concurrent.TimeUnit;
  * <p>By default, the Histogram instrument will have the following attributes:
  *
  * <ul>
- *   <li><b>class:</b> The fully qualified name of the class whose method is invoked.
- *   <li><b>method:</b> The name of the annotated method, or "new" of the annotation is on a
+ *   <li><b>code.namespace:</b> The fully qualified name of the class whose method is invoked.
+ *   <li><b>code.function:</b> The name of the annotated method, or "new" of the annotation is on a
  *       constructor.
- *   <li><b>exception:</b> The {@link Class#getSimpleName() simple name} of the Exception if an
- *       Exception is thrown, or "None" if the method did not throw an Exception.
+ *   <li><b>exception.type:</b> The {@link Class#getCanonicalName()} () canonical name} of the
+ *       Exception if an Exception is thrown, or "None" if the method did not throw an Exception.
  * </ul>
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
@@ -85,17 +85,4 @@ public @interface Timed {
    * <p>By default, the instrument will not have an attribute with the return value.
    */
   String returnValueAttribute() default "";
-
-  /**
-   * Disable the {@code exception} attribute.
-   *
-   * <p>By default, the instrument will have an attribute named {@code exception}. If an Exception
-   * is thrown by the annotated method, the value of the {@code exception} attribute is the {@link
-   * Class#getSimpleName() simple name} of that Exception. If the annotated method terminates
-   * without throwing an Exception, the value will be {@code None}.
-   *
-   * <p>Setting {@code disableExceptionAttribute = true} will disable the {@code exception}
-   * attribute.
-   */
-  boolean disableExceptionAttribute() default false;
 }

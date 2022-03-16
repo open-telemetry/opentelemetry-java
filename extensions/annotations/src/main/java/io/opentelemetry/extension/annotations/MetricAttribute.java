@@ -11,8 +11,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks that a parameter of a method or constructor annotated by the {@link
- * Counted} annotation should be added as an attribute to the instrument.
+ * This annotation marks that a parameter of a method or constructor annotated with {@link Timed} or
+ * {@link Counted} should be added as an attribute to the instrument.
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
  * that the attribute should be created.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CounterAttribute {
+public @interface MetricAttribute {
 
   /**
    * Optional name of the attribute.
