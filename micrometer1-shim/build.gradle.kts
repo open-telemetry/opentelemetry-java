@@ -7,9 +7,9 @@ description = "OpenTelemetry Micrometer Bridge"
 otelJava.moduleName.set("io.opentelemetry.micrometer1shim")
 
 dependencies {
-  api("io.micrometer:micrometer-core")
+  api(project(":api:all"))
 
-  implementation(project(":api:all"))
+  api("io.micrometer:micrometer-core")
 
   testImplementation(project(":sdk:metrics-testing"))
   testImplementation(project(":sdk:testing"))
