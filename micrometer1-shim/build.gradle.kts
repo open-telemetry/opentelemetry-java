@@ -4,7 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry Micrometer Bridge"
-otelJava.moduleName.set("io.opentelemetry.micrometershim")
+otelJava.moduleName.set("io.opentelemetry.micrometer1shim")
 
 dependencies {
   api("io.micrometer:micrometer-core")
