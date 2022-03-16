@@ -17,7 +17,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -62,7 +62,8 @@ class OtlpJsonLoggingSpanExporterTest {
           .setTotalAttributeCount(2)
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
-          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("instrumentation", "1"))
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.create("instrumentation", "1", null))
           .setResource(RESOURCE)
           .build();
 
@@ -81,7 +82,8 @@ class OtlpJsonLoggingSpanExporterTest {
           .setName("testSpan2")
           .setKind(SpanKind.CLIENT)
           .setResource(RESOURCE)
-          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("instrumentation2", "2"))
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.create("instrumentation2", "2", null))
           .build();
 
   @RegisterExtension

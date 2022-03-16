@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
@@ -41,7 +41,7 @@ public class AsynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
-      MeterSharedState.create(InstrumentationLibraryInfo.empty());
+      MeterSharedState.create(InstrumentationScopeInfo.empty());
   private View view;
   private CollectionHandle handle;
   private Set<CollectionHandle> all;
@@ -95,7 +95,7 @@ public class AsynchronousMetricStorageTest {
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
                 meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
+                meterSharedState.getInstrumentationScopeInfo(),
                 0,
                 testClock.nanoTime(),
                 /* suppressSynchronousCollection= */ false))
@@ -122,7 +122,7 @@ public class AsynchronousMetricStorageTest {
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
                 meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
+                meterSharedState.getInstrumentationScopeInfo(),
                 0,
                 testClock.nanoTime(),
                 /* suppressSynchronousCollection= */ false))
@@ -158,7 +158,7 @@ public class AsynchronousMetricStorageTest {
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
                 meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
+                meterSharedState.getInstrumentationScopeInfo(),
                 0,
                 testClock.nanoTime(),
                 /* suppressSynchronousCollection= */ false))
@@ -200,7 +200,7 @@ public class AsynchronousMetricStorageTest {
             metricStorage.collectAndReset(
                 CollectionInfo.create(handle, all, reader),
                 meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
+                meterSharedState.getInstrumentationScopeInfo(),
                 0,
                 testClock.nanoTime(),
                 /* suppressSynchronousCollection= */ false))

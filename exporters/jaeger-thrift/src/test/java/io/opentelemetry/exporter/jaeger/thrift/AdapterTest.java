@@ -85,7 +85,7 @@ class AdapterTest {
     assertThat(jaegerSpan.getStartTime()).isEqualTo(MILLISECONDS.toMicros(startMs));
     assertThat(jaegerSpan.getDuration()).isEqualTo(MILLISECONDS.toMicros(duration));
 
-    assertThat(jaegerSpan.getTagsSize()).isEqualTo(7);
+    assertThat(jaegerSpan.getTagsSize()).isEqualTo(8);
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_KIND).getVStr()).isEqualTo("server");
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_STATUS_CODE).getVLong())
         .isEqualTo(0);
@@ -119,7 +119,7 @@ class AdapterTest {
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
 
-    assertThat(jaegerSpan.getTagsSize()).isEqualTo(4);
+    assertThat(jaegerSpan.getTagsSize()).isEqualTo(5);
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_KIND)).isNull();
   }
 

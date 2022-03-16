@@ -50,7 +50,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -373,14 +373,11 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpHttpLogExporter);
   }
 
-  @SuppressWarnings("deprecation") // test deprecated setName method
   private static void testLogExporter(LogExporter logExporter) {
     LogData logData =
         LogDataBuilder.create(
                 RESOURCE,
-                InstrumentationLibraryInfo.create(
-                    OtlpExporterIntegrationTest.class.getName(), null))
-            .setName("log-name")
+                InstrumentationScopeInfo.create(OtlpExporterIntegrationTest.class.getName()))
             .setBody("log body")
             .setAttributes(Attributes.builder().put("key", "value").build())
             .setSeverity(Severity.DEBUG)
@@ -418,7 +415,6 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
     io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);
-    assertThat(protoLog.getName()).isEqualTo("log-name");
     assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
     assertThat(protoLog.getAttributesList())
         .isEqualTo(

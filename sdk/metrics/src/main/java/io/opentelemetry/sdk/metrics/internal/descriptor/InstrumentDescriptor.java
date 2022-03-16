@@ -21,14 +21,16 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class InstrumentDescriptor {
+
+  private final SourceInfo sourceInfo = SourceInfo.fromCurrentStack();
+
   public static InstrumentDescriptor create(
       String name,
       String description,
       String unit,
       InstrumentType type,
       InstrumentValueType valueType) {
-    return new AutoValue_InstrumentDescriptor(
-        name, description, unit, type, valueType, SourceInfo.fromCurrentStack());
+    return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType);
   }
 
   public abstract String getName();
@@ -41,8 +43,13 @@ public abstract class InstrumentDescriptor {
 
   public abstract InstrumentValueType getValueType();
 
-  /** Debugging information for this instrument. */
-  public abstract SourceInfo getSourceInfo();
+  /**
+   * Debugging information for this instrument. Ignored from {@link #equals(Object)} and {@link
+   * #toString()}
+   */
+  public final SourceInfo getSourceInfo() {
+    return sourceInfo;
+  }
 
   @Memoized
   @Override

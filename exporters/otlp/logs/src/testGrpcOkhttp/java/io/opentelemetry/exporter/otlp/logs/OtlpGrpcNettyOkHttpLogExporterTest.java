@@ -16,7 +16,7 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -94,15 +94,13 @@ class OtlpGrpcNettyOkHttpLogExporterTest
   }
 
   @Override
-  @SuppressWarnings("deprecation") // test deprecated setName method
   protected LogData generateFakeTelemetry() {
     return LogDataBuilder.create(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-            InstrumentationLibraryInfo.create("instrumentation", "1"))
+            InstrumentationScopeInfo.create("instrumentation", "1", null))
         .setEpoch(Instant.now())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
-        .setName("log1")
         .setBody("message")
         .setAttributes(Attributes.builder().put("animal", "cat").build())
         .build();

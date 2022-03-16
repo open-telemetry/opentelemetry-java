@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 class MultiWritableMetricStorage implements WriteableMetricStorage {
-  private final List<WriteableMetricStorage> underlyingMetrics;
+  private final List<? extends WriteableMetricStorage> underlyingMetrics;
 
-  MultiWritableMetricStorage(List<WriteableMetricStorage> metrics) {
+  MultiWritableMetricStorage(List<? extends WriteableMetricStorage> metrics) {
     this.underlyingMetrics = metrics;
   }
 

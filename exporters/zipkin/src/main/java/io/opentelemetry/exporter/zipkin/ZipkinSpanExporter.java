@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -52,6 +52,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
+  static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
+  static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
@@ -127,15 +129,18 @@ public final class ZipkinSpanExporter implements SpanExporter {
       }
     }
 
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        spanData.getInstrumentationLibraryInfo();
+    InstrumentationScopeInfo instrumentationScopeInfo = spanData.getInstrumentationScopeInfo();
 
-    if (!instrumentationLibraryInfo.getName().isEmpty()) {
-      spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationLibraryInfo.getName());
+    if (!instrumentationScopeInfo.getName().isEmpty()) {
+      spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_NAME, instrumentationScopeInfo.getName());
+      // Include instrumentation library name for backwards compatibility
+      spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationScopeInfo.getName());
     }
-    if (instrumentationLibraryInfo.getVersion() != null) {
+    if (instrumentationScopeInfo.getVersion() != null) {
+      spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_VERSION, instrumentationScopeInfo.getVersion());
+      // Include instrumentation library name for backwards compatibility
       spanBuilder.putTag(
-          KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
+          KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationScopeInfo.getVersion());
     }
 
     for (EventData annotation : spanData.getEvents()) {
