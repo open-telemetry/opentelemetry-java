@@ -80,9 +80,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
     for (AbstractMetricReader metricReader : metricReaders) {
       CollectionHandle handle = handleSupplier.get();
-      // TODO: handle failure in creation or just crash?
-      AbstractMetricReader.registerMetricProducer(metricReader, new LeasedMetricProducer(handle));
       collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, metricReader));
+      AbstractMetricReader.registerMetricProducer(new LeasedMetricProducer(handle), metricReader);
       collectors.add(handle);
     }
   }

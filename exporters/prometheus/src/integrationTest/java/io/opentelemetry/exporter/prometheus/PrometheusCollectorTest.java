@@ -46,7 +46,7 @@ class PrometheusCollectorTest {
   void setUp() {
     // Apply the SDK metric producer registers with prometheus.
     prometheusCollector = new PrometheusCollector();
-    AbstractMetricReader.registerMetricProducer(prometheusCollector, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, prometheusCollector);
   }
 
   @Test

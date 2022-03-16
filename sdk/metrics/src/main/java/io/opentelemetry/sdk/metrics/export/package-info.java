@@ -10,7 +10,6 @@
  *
  * <ul>
  *   <li>{@link io.opentelemetry.sdk.metrics.export.MetricExporter}
- *   <li>{@link io.opentelemetry.sdk.metrics.internal.export.MetricProducer}
  *   <li>{@link io.opentelemetry.sdk.metrics.export.MetricReader}
  *   <li>{@link io.opentelemetry.sdk.metrics.export.PeriodicMetricReader}
  * </ul>

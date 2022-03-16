@@ -92,12 +92,12 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReader reader =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(reader, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -113,12 +113,12 @@ class PeriodicMetricReaderTest {
   @Test
   void flush() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReader reader =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofNanos(Long.MAX_VALUE))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(reader, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
@@ -134,12 +134,12 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
-    MetricReader reader =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(reader, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
@@ -152,11 +152,11 @@ class PeriodicMetricReaderTest {
   @Test
   void oneLastExportAfterShutdown() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReader reader =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofSeconds(100))
             .build();
-    AbstractMetricReader.registerMetricProducer(reader, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     // Assume that this will be called in less than 100 seconds.
     reader.shutdown();
 

@@ -34,19 +34,18 @@ import java.util.function.Supplier;
 @Deprecated
 public final class PrometheusCollector extends AbstractMetricReader implements MetricReader {
 
-  private final OpenTelemetryCollector openTelemetryCollector;
+  private final Collector collector;
 
   PrometheusCollector() {
-    this.openTelemetryCollector =
-        new OpenTelemetryCollector(() -> getMetricProducer().collectAllMetrics());
-    this.openTelemetryCollector.register();
+    this.collector = new CollectorImpl(() -> getMetricProducer().collectAllMetrics());
+    this.collector.register();
   }
 
   /**
-   * Returns a new collector to be registered with a {@link
+   * Returns a new {@link PrometheusCollector} to be registered with a {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder}.
    */
-  public static MetricReader create() {
+  public static PrometheusCollector create() {
     return new PrometheusCollector();
   }
 
@@ -63,15 +62,15 @@ public final class PrometheusCollector extends AbstractMetricReader implements M
 
   @Override
   public CompletableResultCode shutdown() {
-    CollectorRegistry.defaultRegistry.unregister(openTelemetryCollector);
+    CollectorRegistry.defaultRegistry.unregister(collector);
     return CompletableResultCode.ofSuccess();
   }
 
-  private static class OpenTelemetryCollector extends Collector {
+  private static class CollectorImpl extends Collector {
 
     private final Supplier<Collection<MetricData>> metricSupplier;
 
-    private OpenTelemetryCollector(Supplier<Collection<MetricData>> metricSupplier) {
+    private CollectorImpl(Supplier<Collection<MetricData>> metricSupplier) {
       this.metricSupplier = metricSupplier;
     }
 

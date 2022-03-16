@@ -43,10 +43,9 @@ class PrometheusHttpServerTest {
 
   @BeforeAll
   static void setUp() {
-    // Apply the SDK metric producer registers with prometheus.
+    // Register the SDK metric producer with the prometheus reader.
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
-
-    AbstractMetricReader.registerMetricProducer(prometheusServer, metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, prometheusServer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
   }

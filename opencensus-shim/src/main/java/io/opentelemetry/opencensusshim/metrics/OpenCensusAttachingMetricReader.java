@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 
-/** MetricReaderFactory that appends OpenCensus metrics to anything read. */
+/** {@link MetricReader} that appends OpenCensus metrics to anything read. */
 final class OpenCensusAttachingMetricReader extends AbstractMetricReader {
   private final AbstractMetricReader adapted;
 
@@ -26,9 +26,9 @@ final class OpenCensusAttachingMetricReader extends AbstractMetricReader {
   protected void registerMetricProducer(MetricProducer metricProducer) {
     // TODO: Find a way to pull the resource off of the SDK.
     AbstractMetricReader.registerMetricProducer(
-        adapted,
         new MultiMetricProducer(
-            Arrays.asList(metricProducer, OpenCensusMetricProducer.create(Resource.getDefault()))));
+            Arrays.asList(metricProducer, OpenCensusMetricProducer.create(Resource.getDefault()))),
+        adapted);
   }
 
   @Nullable

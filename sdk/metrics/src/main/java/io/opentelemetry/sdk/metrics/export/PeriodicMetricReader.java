@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,9 +18,9 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
- * Wraps a {@link MetricExporter} and automatically reads and exports the metrics every export
- * interval. Metrics may also be dropped when it becomes time to export again, and there is an
- * export in progress.
+ * A {@link MetricReader} which wraps a {@link MetricExporter} and automatically reads and exports
+ * the metrics every export interval. Metrics may also be dropped when it becomes time to export
+ * again, and there is an export in progress.
  */
 public final class PeriodicMetricReader extends AbstractMetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
@@ -33,8 +34,8 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
 
   /**
    * Returns a new {@link PeriodicMetricReader} which can be registered to a {@link
-   * io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link PeriodicMetricReader}
-   * exporting once every minute on a new daemon thread.
+   * SdkMeterProvider} to start a {@link PeriodicMetricReader} exporting once every minute on a new
+   * daemon thread.
    */
   public static PeriodicMetricReader create(MetricExporter exporter) {
     return builder(exporter).build();

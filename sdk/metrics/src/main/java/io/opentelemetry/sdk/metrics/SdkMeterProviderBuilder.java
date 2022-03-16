@@ -106,6 +106,8 @@ public final class SdkMeterProviderBuilder {
   /**
    * Registers a {@link MetricReader} for this SDK.
    *
+   * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
+   *
    * @param reader The factory for a reader of metrics.
    * @return this
    */
