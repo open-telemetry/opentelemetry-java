@@ -18,6 +18,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.linecorp.armeria:armeria-bom:1.14.0",
   "com.squareup.okhttp3:okhttp-bom:4.9.3",
   "io.grpc:grpc-bom:1.44.0",
+  "io.micrometer:micrometer-bom:1.8.3",
   "io.zipkin.brave:brave-bom:5.13.7",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.8.2",
