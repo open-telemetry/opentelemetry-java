@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
 
 /**
  * Utilities for logging metric diagnostic issues.
@@ -18,12 +19,11 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 public final class DebugUtils {
   private DebugUtils() {}
 
-  static String duplicateMetricErrorMessage(DuplicateMetricStorageException ex) {
-    return duplicateMetricErrorMessage(ex.getExisting(), ex.getConflict());
-  }
-
   /**
-   * Creates a detailed error message comparing two MetricDescriptors.
+   * Creates a detailed error message comparing two {@link MetricDescriptor}s.
+   *
+   * <p>Called when the metrics with the descriptors have the same name, but {@link
+   * MetricDescriptor#isCompatibleWith(MetricDescriptor)} is {@code false}.
    *
    * <p>This should identify all issues between the descriptor and log information on where they are
    * defined. Users should be able to find/fix issues based on this error.
@@ -42,11 +42,9 @@ public final class DebugUtils {
     // or a view on a raw instrument.
     if (!conflict.getName().equals(conflict.getSourceInstrument().getName())) {
       // Record the source view.
-      result.append("\tVIEW defined\n");
-      conflict
-          .getSourceView()
-          .ifPresent(v -> result.append(v.getSourceInfo().multiLineDebugString()));
       result
+          .append("\tVIEW defined\n")
+          .append(ImmutableView.getSourceInfo(conflict.getSourceView()).multiLineDebugString())
           .append("\tFROM instrument ")
           .append(conflict.getSourceInstrument().getName())
           .append("\n")
@@ -58,6 +56,14 @@ public final class DebugUtils {
     }
     // Add information on what's at conflict.
     result.append("Causes\n");
+    if (!existing.getName().equals(conflict.getName())) {
+      result
+          .append("- Name [")
+          .append(conflict.getName())
+          .append("] does not match [")
+          .append(existing.getName())
+          .append("]\n");
+    }
     if (!existing.getDescription().equals(conflict.getDescription())) {
       result
           .append("- Description [")
@@ -66,12 +72,45 @@ public final class DebugUtils {
           .append(existing.getDescription())
           .append("]\n");
     }
-    if (!existing.getUnit().equals(conflict.getUnit())) {
+    if (!existing.getAggregationName().equals(conflict.getAggregationName())) {
       result
-          .append("- Unit [")
-          .append(conflict.getUnit())
+          .append("- Aggregation [")
+          .append(conflict.getAggregationName())
           .append("] does not match [")
-          .append(existing.getUnit())
+          .append(existing.getAggregationName())
+          .append("]\n");
+    }
+    if (!existing
+        .getSourceInstrument()
+        .getName()
+        .equals(conflict.getSourceInstrument().getName())) {
+      result
+          .append("- InstrumentName [")
+          .append(conflict.getSourceInstrument().getName())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getName())
+          .append("]\n");
+    }
+    if (!existing
+        .getSourceInstrument()
+        .getDescription()
+        .equals(conflict.getSourceInstrument().getDescription())) {
+      result
+          .append("- InstrumentDescription [")
+          .append(conflict.getSourceInstrument().getDescription())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getDescription())
+          .append("]\n");
+    }
+    if (!existing
+        .getSourceInstrument()
+        .getUnit()
+        .equals(conflict.getSourceInstrument().getUnit())) {
+      result
+          .append("- InstrumentUnit [")
+          .append(conflict.getSourceInstrument().getUnit())
+          .append("] does not match [")
+          .append(existing.getSourceInstrument().getUnit())
           .append("]\n");
     }
     if (!existing
@@ -96,12 +135,6 @@ public final class DebugUtils {
           .append(existing.getSourceInstrument().getValueType())
           .append("]\n");
     }
-    if (existing.isAsync()) {
-      result
-          .append("- InstrumentType [")
-          .append(existing.getSourceInstrument().getType())
-          .append("] is async and already registered\n");
-    }
 
     // Next we write out where the existing metric descriptor came from, either a raw instrument
     // or a view on a raw instrument.
@@ -112,11 +145,9 @@ public final class DebugUtils {
           .append("\n");
     } else {
       // Log that the view changed the name.
-      result.append("Conflicting view registered.\n");
-      existing
-          .getSourceView()
-          .ifPresent(view -> result.append(view.getSourceInfo().multiLineDebugString()));
       result
+          .append("Conflicting view registered.\n")
+          .append(ImmutableView.getSourceInfo(existing.getSourceView()).multiLineDebugString())
           .append("FROM instrument ")
           .append(existing.getSourceInstrument().getName())
           .append("\n")

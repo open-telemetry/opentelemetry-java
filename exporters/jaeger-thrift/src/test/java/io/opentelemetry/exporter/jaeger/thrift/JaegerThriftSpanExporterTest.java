@@ -23,7 +23,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -82,8 +82,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -130,7 +130,10 @@ class JaegerThriftSpanExporterTest {
     expectedSpan.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
     expectedSpan.addToTags(
+        new Tag("otel.scope.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan.addToTags(new Tag("otel.scope.version", TagType.STRING).setVStr("1.0.0"));
     expectedSpan.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
     List<Span> expectedSpans = Collections.singletonList(expectedSpan);
@@ -154,8 +157,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -177,8 +180,8 @@ class JaegerThriftSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -229,7 +232,10 @@ class JaegerThriftSpanExporterTest {
     expectedSpan1.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan1.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
     expectedSpan1.addToTags(
+        new Tag("otel.scope.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan1.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan1.addToTags(new Tag("otel.scope.version", TagType.STRING).setVStr("1.0.0"));
     expectedSpan1.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
     Span expectedSpan2 =
@@ -245,7 +251,10 @@ class JaegerThriftSpanExporterTest {
     expectedSpan2.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan2.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
     expectedSpan2.addToTags(
+        new Tag("otel.scope.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan2.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan2.addToTags(new Tag("otel.scope.version", TagType.STRING).setVStr("1.0.0"));
     expectedSpan2.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
     verify(thriftSender).send(expectedProcess2, Collections.singletonList(expectedSpan2));

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -14,7 +13,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -89,9 +89,9 @@ class SdkMeterRegistryTest {
   }
 
   @Test
-  void propagatesInstrumentationLibraryInfoToMeter() {
-    InstrumentationLibraryInfo expected =
-        InstrumentationLibraryInfo.create("theName", "theVersion", "http://theschema");
+  void propagatesInstrumentationScopeInfoToMeter() {
+    InstrumentationScopeInfo expected =
+        InstrumentationScopeInfo.create("theName", "theVersion", "http://theschema");
     SdkMeter meter =
         (SdkMeter)
             meterProvider
@@ -99,11 +99,10 @@ class SdkMeterRegistryTest {
                 .setInstrumentationVersion(expected.getVersion())
                 .setSchemaUrl(expected.getSchemaUrl())
                 .build();
-    assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
+    assertThat(meter.getInstrumentationScopeInfo()).isEqualTo(expected);
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void metricProducer_GetAllMetrics() {
     Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounter longCounter1 = sdkMeter1.counterBuilder("testLongCounter").build();
@@ -127,31 +126,31 @@ class SdkMeterRegistryTest {
                                 .hasValue(10)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())))
-        .extracting(metric -> metric.getInstrumentationLibraryInfo())
+        .extracting(MetricData::getInstrumentationScopeInfo)
         .containsExactlyInAnyOrder(
-            ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
-            ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo());
+            ((SdkMeter) sdkMeter1).getInstrumentationScopeInfo(),
+            ((SdkMeter) sdkMeter2).getInstrumentationScopeInfo());
   }
 
   @Test
   void suppliesDefaultMeterForNullName() {
     SdkMeter meter = (SdkMeter) meterProvider.get(null);
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
+    assertThat(meter.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder(null).build();
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
+    assertThat(meter.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
   void suppliesDefaultMeterForEmptyName() {
     SdkMeter meter = (SdkMeter) meterProvider.get("");
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
+    assertThat(meter.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder("").build();
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
+    assertThat(meter.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 }

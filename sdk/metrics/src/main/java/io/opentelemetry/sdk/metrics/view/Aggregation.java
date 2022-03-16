@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.List;
 
 /**
@@ -15,45 +12,34 @@ import java.util.List;
  *
  * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
-public abstract class Aggregation {
-  Aggregation() {}
-
-  /**
-   * Returns a new {@link Aggregator}.
-   *
-   * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
-   *     measurements.
-   * @param exemplarFilter the filter on which measurements should turn into exemplars
-   * @return a new {@link Aggregator}. {@link Aggregator#drop()} indicates no measurements should be
-   *     recorded.
-   */
-  public abstract <T> Aggregator<T> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
+// TODO(anuraaga): Have methods when custom aggregations are supported.
+@SuppressWarnings("InterfaceWithOnlyStatics")
+public interface Aggregation {
 
   /** The drop Aggregation will ignore/drop all Instrument Measurements. */
-  public static Aggregation drop() {
+  static Aggregation drop() {
     return DropAggregation.INSTANCE;
   }
 
   /** The default aggregation for an instrument will be chosen. */
-  public static Aggregation defaultAggregation() {
+  static Aggregation defaultAggregation() {
     return DefaultAggregation.INSTANCE;
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
-  public static Aggregation sum() {
+  static Aggregation sum() {
     return SumAggregation.DEFAULT;
   }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
-  public static Aggregation lastValue() {
+  static Aggregation lastValue() {
     return LastValueAggregation.INSTANCE;
   }
 
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
-  public static Aggregation explicitBucketHistogram() {
+  static Aggregation explicitBucketHistogram() {
     return ExplicitBucketHistogramAggregation.DEFAULT;
   }
 
@@ -63,12 +49,7 @@ public abstract class Aggregation {
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
    */
-  public static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
+  static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
     return new ExplicitBucketHistogramAggregation(bucketBoundaries);
-  }
-
-  /** Aggregates measurements using the best available Histogram. */
-  public static Aggregation histogram() {
-    return explicitBucketHistogram();
   }
 }

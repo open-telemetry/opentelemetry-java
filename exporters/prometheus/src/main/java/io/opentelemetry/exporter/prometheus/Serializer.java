@@ -23,15 +23,19 @@ package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,15 +48,35 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
 // Adapted from
 // https://github.com/prometheus/client_java/blob/master/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java
 abstract class Serializer {
 
-  private static final Pattern SANITIZE_PREFIX_PATTERN = Pattern.compile("^[^a-zA-Z_:]");
-  private static final Pattern SANITIZE_BODY_PATTERN = Pattern.compile("[^a-zA-Z0-9_:]");
+  static Serializer create(@Nullable String acceptHeader, Predicate<String> filter) {
+    if (acceptHeader == null) {
+      return new Prometheus004Serializer(filter);
+    }
+
+    for (String accepts : acceptHeader.split(",")) {
+      if ("application/openmetrics-text".equals(accepts.split(";")[0].trim())) {
+        return new OpenMetrics100Serializer(filter);
+      }
+    }
+
+    return new Prometheus004Serializer(filter);
+  }
+
+  private final Predicate<String> metricNameFilter;
+
+  Serializer(Predicate<String> metricNameFilter) {
+    this.metricNameFilter = metricNameFilter;
+  }
+
+  abstract String contentType();
 
   abstract String headerName(String name, PrometheusType type);
 
@@ -83,10 +107,14 @@ abstract class Serializer {
     }
 
     PrometheusType type = PrometheusType.forMetric(metric);
-    String name = sanitizeMetricName(metric.getName());
+    String name = NameSanitizer.INSTANCE.apply(metric.getName());
     String headerName = headerName(name, type);
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
+    }
+
+    if (!metricNameFilter.test(name)) {
+      return;
     }
 
     writer.write("# TYPE ");
@@ -101,7 +129,7 @@ abstract class Serializer {
     writeHelp(writer, metric.getDescription());
     writer.write('\n');
 
-    for (PointData point : MetricAdapter.getPoints(metric)) {
+    for (PointData point : getPoints(metric)) {
       switch (metric.getType()) {
         case DOUBLE_SUM:
         case DOUBLE_GAUGE:
@@ -122,10 +150,10 @@ abstract class Serializer {
               point.getEpochNanos());
           break;
         case HISTOGRAM:
-          writeHistogram(writer, name, (DoubleHistogramPointData) point);
+          writeHistogram(writer, name, (HistogramPointData) point);
           break;
         case SUMMARY:
-          writeSummary(writer, name, (DoubleSummaryPointData) point);
+          writeSummary(writer, name, (SummaryPointData) point);
           break;
         case EXPONENTIAL_HISTOGRAM:
           throw new IllegalArgumentException("Can't happen");
@@ -133,7 +161,7 @@ abstract class Serializer {
     }
   }
 
-  private void writeHistogram(Writer writer, String name, DoubleHistogramPointData point)
+  private void writeHistogram(Writer writer, String name, HistogramPointData point)
       throws IOException {
     writePoint(
         writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
@@ -161,22 +189,21 @@ abstract class Serializer {
     }
   }
 
-  private void writeSummary(Writer writer, String name, DoubleSummaryPointData point)
-      throws IOException {
+  private void writeSummary(Writer writer, String name, SummaryPointData point) throws IOException {
     writePoint(
         writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
     writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
 
-    List<ValueAtPercentile> valueAtPercentiles = point.getPercentileValues();
-    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+    List<ValueAtQuantile> valueAtQuantiles = point.getValues();
+    for (ValueAtQuantile valueAtQuantile : valueAtQuantiles) {
       writePoint(
           writer,
           name,
-          valueAtPercentile.getValue(),
+          valueAtQuantile.getValue(),
           point.getAttributes(),
           point.getEpochNanos(),
           "quantile",
-          valueAtPercentile.getPercentile(),
+          valueAtQuantile.getQuantile(),
           Collections.emptyList(),
           0,
           0);
@@ -253,7 +280,7 @@ abstract class Serializer {
                 } else {
                   wroteOne = true;
                 }
-                writer.write(MetricAdapter.sanitizer.apply(key.getKey()));
+                writer.write(NameSanitizer.INSTANCE.apply(key.getKey()));
                 writer.write("=\"");
                 writeEscapedLabelValue(writer, value.toString());
                 writer.write('"');
@@ -296,16 +323,16 @@ abstract class Serializer {
     }
   }
 
-  // TODO(anuraaga): Can likely be optimized especially for the already-sanitized case.
-  private static String sanitizeMetricName(String metricName) {
-    return SANITIZE_BODY_PATTERN
-        .matcher(SANITIZE_PREFIX_PATTERN.matcher(metricName).replaceFirst("_"))
-        .replaceAll("_");
-  }
-
   static class Prometheus004Serializer extends Serializer {
 
-    static final Serializer INSTANCE = new Prometheus004Serializer();
+    Prometheus004Serializer(Predicate<String> metricNameFilter) {
+      super(metricNameFilter);
+    }
+
+    @Override
+    String contentType() {
+      return "text/plain; version=0.0.4; charset=utf-8";
+    }
 
     @Override
     String headerName(String name, PrometheusType type) {
@@ -351,7 +378,14 @@ abstract class Serializer {
 
   static class OpenMetrics100Serializer extends Serializer {
 
-    static final Serializer INSTANCE = new OpenMetrics100Serializer();
+    OpenMetrics100Serializer(Predicate<String> metricNameFilter) {
+      super(metricNameFilter);
+    }
+
+    @Override
+    String contentType() {
+      return "application/openmetrics-text; version=1.0.0; charset=utf-8";
+    }
 
     @Override
     String headerName(String name, PrometheusType type) {
@@ -383,19 +417,18 @@ abstract class Serializer {
         Writer writer, Collection<ExemplarData> exemplars, double minExemplar, double maxExemplar)
         throws IOException {
       for (ExemplarData exemplar : exemplars) {
-        double value = exemplar.getValueAsDouble();
+        double value = getExemplarValue(exemplar);
         if (value > minExemplar && value <= maxExemplar) {
           writer.write(" # {");
-          String traceId = exemplar.getTraceId();
-          String spanId = exemplar.getSpanId();
-          if (traceId != null && spanId != null) {
+          SpanContext spanContext = exemplar.getSpanContext();
+          if (spanContext.isValid()) {
             // NB: Output sorted to match prometheus client library even though it shouldn't matter.
             // OTel generally outputs in trace_id span_id order though so we can consider breaking
             // from reference implementation if it makes sense.
             writer.write("span_id=\"");
-            writer.write(spanId);
+            writer.write(spanContext.getSpanId());
             writer.write("\",trace_id=\"");
-            writer.write(traceId);
+            writer.write(spanContext.getTraceId());
             writer.write('"');
           }
           writer.write("} ");
@@ -412,5 +445,31 @@ abstract class Serializer {
     void writeEof(Writer writer) throws IOException {
       writer.write("# EOF\n");
     }
+  }
+
+  static Collection<? extends PointData> getPoints(MetricData metricData) {
+    switch (metricData.getType()) {
+      case DOUBLE_GAUGE:
+        return metricData.getDoubleGaugeData().getPoints();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().getPoints();
+      case LONG_GAUGE:
+        return metricData.getLongGaugeData().getPoints();
+      case LONG_SUM:
+        return metricData.getLongSumData().getPoints();
+      case SUMMARY:
+        return metricData.getSummaryData().getPoints();
+      case HISTOGRAM:
+        return metricData.getHistogramData().getPoints();
+      case EXPONENTIAL_HISTOGRAM:
+        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
+    }
+    return Collections.emptyList();
+  }
+
+  private static double getExemplarValue(ExemplarData exemplar) {
+    return exemplar instanceof DoubleExemplarData
+        ? ((DoubleExemplarData) exemplar).getValue()
+        : (double) ((LongExemplarData) exemplar).getValue();
   }
 }

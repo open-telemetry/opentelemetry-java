@@ -5,22 +5,19 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,15 +30,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterSharedState {
 
-  private static final Logger logger = Logger.getLogger(MeterSharedState.class.getName());
-
-  public static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new MetricStorageRegistry());
+  public static MeterSharedState create(InstrumentationScopeInfo instrumentationScopeInfo) {
+    return new AutoValue_MeterSharedState(instrumentationScopeInfo, new MetricStorageRegistry());
   }
 
   // only visible for testing.
-  /** Returns the {@link InstrumentationLibraryInfo} for this {@code Meter}. */
-  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  /** Returns the {@link InstrumentationScopeInfo} for this {@code Meter}. */
+  public abstract InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /** Returns the metric storage for metrics in this {@code Meter}. */
   abstract MetricStorageRegistry getMetricStorageRegistry();
@@ -59,7 +54,7 @@ public abstract class MeterSharedState {
           metric.collectAndReset(
               collectionInfo,
               meterProviderSharedState.getResource(),
-              getInstrumentationLibraryInfo(),
+              getInstrumentationScopeInfo(),
               meterProviderSharedState.getStartEpochNanos(),
               epochNanos,
               suppressSynchronousCollection);
@@ -76,72 +71,80 @@ public abstract class MeterSharedState {
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
 
-    List<WriteableMetricStorage> storage =
+    List<SynchronousMetricStorage> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationLibraryInfo())
+            .findViews(instrument, getInstrumentationScopeInfo())
             .stream()
             .map(
                 view ->
                     SynchronousMetricStorage.create(
                         view, instrument, meterProviderSharedState.getExemplarFilter()))
             .filter(m -> !m.isEmpty())
-            .map(this::register)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
 
-    if (storage.size() == 1) {
-      return storage.get(0);
+    List<SynchronousMetricStorage> registeredStorages = new ArrayList<>(storages.size());
+    for (SynchronousMetricStorage storage : storages) {
+      registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
-    // If the size is 0, we return an, effectively, no-op writer.
-    return new MultiWritableMetricStorage(storage);
+
+    if (registeredStorages.size() == 1) {
+      return registeredStorages.get(0);
+    }
+    return new MultiWritableMetricStorage(registeredStorages);
   }
 
   /** Registers new asynchronous storage associated with a given {@code long} instrument. */
-  public final void registerLongAsynchronousInstrument(
-      InstrumentDescriptor instrument,
-      MeterProviderSharedState meterProviderSharedState,
-      Consumer<ObservableLongMeasurement> metricUpdater) {
+  public final List<AsynchronousMetricStorage<?, ObservableLongMeasurement>>
+      registerLongAsynchronousInstrument(
+          InstrumentDescriptor instrument,
+          MeterProviderSharedState meterProviderSharedState,
+          Consumer<ObservableLongMeasurement> callback) {
 
-    meterProviderSharedState
-        .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo())
-        .stream()
-        .map(
-            view ->
-                AsynchronousMetricStorage.longAsynchronousAccumulator(
-                    view, instrument, metricUpdater))
-        .filter(m -> !m.isEmpty())
-        .forEach(this::register);
+    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> storages =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findViews(instrument, getInstrumentationScopeInfo())
+            .stream()
+            .map(view -> AsynchronousMetricStorage.createLongAsyncStorage(view, instrument))
+            .filter(storage -> !storage.isEmpty())
+            .collect(toList());
+
+    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> registeredStorages =
+        new ArrayList<>();
+    for (AsynchronousMetricStorage<?, ObservableLongMeasurement> storage : storages) {
+      AsynchronousMetricStorage<?, ObservableLongMeasurement> registeredStorage =
+          getMetricStorageRegistry().register(storage);
+      registeredStorage.addCallback(callback);
+      registeredStorages.add(registeredStorage);
+    }
+    return registeredStorages;
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
-  public final void registerDoubleAsynchronousInstrument(
-      InstrumentDescriptor instrument,
-      MeterProviderSharedState meterProviderSharedState,
-      Consumer<ObservableDoubleMeasurement> metricUpdater) {
+  public final List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>>
+      registerDoubleAsynchronousInstrument(
+          InstrumentDescriptor instrument,
+          MeterProviderSharedState meterProviderSharedState,
+          Consumer<ObservableDoubleMeasurement> callback) {
 
-    meterProviderSharedState
-        .getViewRegistry()
-        .findViews(instrument, getInstrumentationLibraryInfo())
-        .stream()
-        .map(
-            view ->
-                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                    view, instrument, metricUpdater))
-        .filter(m -> !m.isEmpty())
-        .forEach(this::register);
-  }
+    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> storages =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findViews(instrument, getInstrumentationScopeInfo())
+            .stream()
+            .map(view -> AsynchronousMetricStorage.createDoubleAsyncStorage(view, instrument))
+            .filter(storage -> !storage.isEmpty())
+            .collect(toList());
 
-  @Nullable
-  private <S extends MetricStorage> S register(S storage) {
-    try {
-      return getMetricStorageRegistry().register(storage);
-    } catch (DuplicateMetricStorageException e) {
-      if (logger.isLoggable(Level.WARNING)) {
-        logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(e), e);
-      }
+    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> registeredStorages =
+        new ArrayList<>();
+    for (AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage : storages) {
+      AsynchronousMetricStorage<?, ObservableDoubleMeasurement> registeredStorage =
+          getMetricStorageRegistry().register(storage);
+      registeredStorage.addCallback(callback);
+      registeredStorages.add(registeredStorage);
     }
-    return null;
+    return registeredStorages;
   }
 }

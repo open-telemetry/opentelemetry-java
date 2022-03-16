@@ -7,10 +7,7 @@ package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
-import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -22,15 +19,23 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class InstrumentSelector {
 
-  /**
-   * Returns a new {@link Builder} for {@link InstrumentSelector}.
-   *
-   * @return a new {@link Builder} for {@link InstrumentSelector}.
-   */
-  public static Builder builder() {
-    return new AutoValue_InstrumentSelector.Builder()
-        .setInstrumentNameFilter(StringPredicates.ALL)
-        .setMeterSelector(MeterSelector.builder().build());
+  /** Returns a new {@link InstrumentSelectorBuilder} for {@link InstrumentSelector}. */
+  public static InstrumentSelectorBuilder builder() {
+    return new InstrumentSelectorBuilder();
+  }
+
+  static InstrumentSelector create(
+      @Nullable InstrumentType instrumentType,
+      Predicate<String> instrumentNameFilter,
+      Predicate<String> meterNameFilter,
+      Predicate<String> meterVersionFilter,
+      Predicate<String> meterSchemaUrlFilter) {
+    return new AutoValue_InstrumentSelector(
+        instrumentType,
+        instrumentNameFilter,
+        meterNameFilter,
+        meterVersionFilter,
+        meterSchemaUrlFilter);
   }
 
   /**
@@ -45,64 +50,32 @@ public abstract class InstrumentSelector {
    */
   public abstract Predicate<String> getInstrumentNameFilter();
 
-  /** Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s. */
-  public abstract MeterSelector getMeterSelector();
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the name of their associated {@link
+   * io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterNameFilter();
 
-  /** Builder for {@link InstrumentSelector} instances. */
-  @AutoValue.Builder
-  public abstract static class Builder {
-    /** Sets a specifier for {@link InstrumentType}. */
-    public abstract Builder setInstrumentType(InstrumentType instrumentType);
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the version of their associated
+   * {@link io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterVersionFilter();
 
-    /**
-     * Sets the {@link Pattern} for instrument names that will be selected.
-     *
-     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-     * used.
-     */
-    public abstract Builder setInstrumentNameFilter(Predicate<String> instrumentNameFilter);
+  /**
+   * Returns the {@link Predicate} for filtering instruments by the schema URL of their associated
+   * {@link io.opentelemetry.api.metrics.Meter}.
+   */
+  public abstract Predicate<String> getMeterSchemaUrlFilter();
 
-    /**
-     * Sets the {@link Pattern} for instrument names that will be selected.
-     *
-     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-     * used.
-     */
-    public final Builder setInstrumentNamePattern(Pattern instrumentNamePattern) {
-      return setInstrumentNameFilter(StringPredicates.regex(instrumentNamePattern));
-    }
-
-    /**
-     * Sets the exact instrument name that will be selected.
-     *
-     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-     * used.
-     */
-    public final Builder setInstrumentName(String instrumentName) {
-      return setInstrumentNameFilter(StringPredicates.exact(instrumentName));
-    }
-
-    /**
-     * Sets a specifier for selecting Instruments by name.
-     *
-     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
-     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
-     * used.
-     */
-    public final Builder setInstrumentNameRegex(String regex) {
-      return setInstrumentNamePattern(Pattern.compile(Objects.requireNonNull(regex, "regex")));
-    }
-
-    /**
-     * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.Meter}s will be
-     * included.
-     */
-    public abstract Builder setMeterSelector(MeterSelector meterSelector);
-
-    /** Returns an InstrumentSelector instance with the content of this builder. */
-    public abstract InstrumentSelector build();
+  /**
+   * Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s.
+   *
+   * @deprecated Use {@link #getMeterNameFilter()} and similar.
+   */
+  @Deprecated
+  public final MeterSelector getMeterSelector() {
+    return MeterSelector.create(
+        getMeterNameFilter(), getMeterVersionFilter(), getMeterSchemaUrlFilter());
   }
 }

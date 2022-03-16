@@ -5,9 +5,12 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import org.assertj.core.api.AbstractAssert;
 
@@ -32,19 +35,19 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   }
 
   /**
-   * Ensures the {@link InstrumentationLibraryInfo} associated with a metric matches the expected
+   * Ensures the {@link InstrumentationScopeInfo} associated with a metric matches the expected
    * value.
    */
-  public MetricDataAssert hasInstrumentationLibrary(
-      InstrumentationLibraryInfo instrumentationLibrary) {
+  public MetricDataAssert hasInstrumentationScope(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
-    if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibrary)) {
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
       failWithActualExpectedAndMessage(
           actual,
-          "instrumentation library: " + instrumentationLibrary,
+          "instrumentation scope: " + instrumentationScopeInfo,
           "Expected MetricData to have resource <%s> but found <%s>",
-          instrumentationLibrary,
-          actual.getInstrumentationLibraryInfo());
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }
@@ -96,7 +99,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleHistogram}.
    */
-  public DoubleHistogramAssert hasDoubleHistogram() {
+  public HistogramAssert hasDoubleHistogram() {
     isNotNull();
     if (actual.getType() != MetricDataType.HISTOGRAM) {
       failWithActualExpectedAndMessage(
@@ -106,7 +109,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.HISTOGRAM,
           actual.getType());
     }
-    return new DoubleHistogramAssert(actual.getDoubleHistogramData());
+    return new HistogramAssert(actual.getHistogramData());
   }
 
   /**
@@ -124,7 +127,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.EXPONENTIAL_HISTOGRAM,
           actual.getType());
     }
-    return new ExponentialHistogramAssert(actual.getExponentialHistogramData());
+    return new ExponentialHistogramAssert(ExponentialHistogramData.fromMetricData(actual));
   }
 
   /**
@@ -132,7 +135,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleGauge}.
    */
-  public DoubleGaugeAssert hasDoubleGauge() {
+  public GaugeAssert<DoublePointData> hasDoubleGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -142,7 +145,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.DOUBLE_GAUGE,
           actual.getType());
     }
-    return new DoubleGaugeAssert(actual.getDoubleGaugeData());
+    return new GaugeAssert<>(actual.getDoubleGaugeData());
   }
 
   /**
@@ -150,7 +153,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleSum}.
    */
-  public DoubleSumDataAssert hasDoubleSum() {
+  public SumDataAssert<DoublePointData> hasDoubleSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_SUM) {
       failWithActualExpectedAndMessage(
@@ -160,7 +163,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.DOUBLE_SUM,
           actual.getType());
     }
-    return new DoubleSumDataAssert(actual.getDoubleSumData());
+    return new SumDataAssert<>(actual.getDoubleSumData());
   }
 
   /**
@@ -168,7 +171,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code LongGauge}.
    */
-  public LongGaugeDataAssert hasLongGauge() {
+  public GaugeAssert<LongPointData> hasLongGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -178,7 +181,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.LONG_GAUGE,
           actual.getType());
     }
-    return new LongGaugeDataAssert(actual.getLongGaugeData());
+    return new GaugeAssert<>(actual.getLongGaugeData());
   }
 
   /**
@@ -186,7 +189,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code LongSum}.
    */
-  public LongSumDataAssert hasLongSum() {
+  public SumDataAssert<LongPointData> hasLongSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_SUM) {
       failWithActualExpectedAndMessage(
@@ -196,7 +199,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.LONG_SUM,
           actual.getType());
     }
-    return new LongSumDataAssert(actual.getLongSumData());
+    return new SumDataAssert<>(actual.getLongSumData());
   }
 
   /**
@@ -204,7 +207,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
    *
    * @return convenience API to assert against the {@code DoubleSummaryData}.
    */
-  public DoubleSummaryDataAssert hasDoubleSummary() {
+  public SummaryDataAssert hasDoubleSummary() {
     isNotNull();
     if (actual.getType() != MetricDataType.SUMMARY) {
       failWithActualExpectedAndMessage(
@@ -214,6 +217,6 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.SUMMARY,
           actual.getType());
     }
-    return new DoubleSummaryDataAssert(actual.getDoubleSummaryData());
+    return new SummaryDataAssert(actual.getSummaryData());
   }
 }

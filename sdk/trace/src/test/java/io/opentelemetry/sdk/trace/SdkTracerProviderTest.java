@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -169,16 +169,16 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void propagatesInstrumentationLibraryInfoToTracer() {
-    InstrumentationLibraryInfo expected =
-        InstrumentationLibraryInfo.create("theName", "theVersion", "http://url");
+  void propagatesInstrumentationScopeInfoToTracer() {
+    InstrumentationScopeInfo expected =
+        InstrumentationScopeInfo.create("theName", "theVersion", "http://url");
     Tracer tracer =
         tracerFactory
             .tracerBuilder(expected.getName())
             .setInstrumentationVersion(expected.getVersion())
             .setSchemaUrl(expected.getSchemaUrl())
             .build();
-    assertThat(((SdkTracer) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
+    assertThat(((SdkTracer) tracer).getInstrumentationScopeInfo()).isEqualTo(expected);
   }
 
   @Test
@@ -228,22 +228,22 @@ class SdkTracerProviderTest {
   @Test
   void suppliesDefaultTracerForNullName() {
     SdkTracer tracer = (SdkTracer) tracerFactory.get(null);
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
+    assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
     tracer = (SdkTracer) tracerFactory.get(null, null);
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
+    assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 
   @Test
   void suppliesDefaultTracerForEmptyName() {
     SdkTracer tracer = (SdkTracer) tracerFactory.get("");
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
+    assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
     tracer = (SdkTracer) tracerFactory.get("", "");
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
+    assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 }

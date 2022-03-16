@@ -8,15 +8,16 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -43,10 +44,12 @@ class TemporalMetricStorageTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final Aggregator<DoubleAccumulation> SUM =
-      Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.sum())
+          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
 
   private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
-      Aggregation.sum().createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.sum())
+          .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
 
   private CollectionHandle collector1;
   private CollectionHandle collector2;
@@ -78,7 +81,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -95,7 +98,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -112,7 +115,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(4),
@@ -129,7 +132,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(2),
@@ -158,7 +161,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 measurement1,
@@ -183,7 +186,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 measurement2,
@@ -211,7 +214,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 measurement1,
@@ -222,7 +225,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .contains(DoublePointData.create(0, 10, attr1, 3));
+        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -233,7 +236,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 measurement2,
@@ -244,7 +247,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .containsExactly(DoublePointData.create(10, 20, attr2, 7));
+        .containsExactly(ImmutableDoublePointData.create(10, 20, attr2, 7));
   }
 
   @Test
@@ -257,7 +260,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -274,7 +277,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -291,7 +294,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(4),
@@ -308,7 +311,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(2),
@@ -331,7 +334,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(3),
@@ -348,7 +351,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(3),
@@ -365,7 +368,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 createMeasurement(4),
@@ -382,7 +385,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(2),
@@ -399,7 +402,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 createMeasurement(4),
@@ -423,7 +426,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -440,7 +443,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -457,7 +460,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(4),
@@ -474,7 +477,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(2),
@@ -501,7 +504,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 measurement1,
@@ -512,7 +515,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .contains(DoublePointData.create(0, 10, attr1, 3));
+        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -523,7 +526,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 measurement2,
@@ -534,7 +537,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .containsExactly(DoublePointData.create(0, 20, attr2, 7));
+        .containsExactly(ImmutableDoublePointData.create(0, 20, attr2, 7));
   }
 
   @Test
@@ -550,7 +553,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 measurement1,
@@ -561,7 +564,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .contains(DoublePointData.create(0, 10, attr1, 3));
+        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -572,7 +575,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 measurement2,
@@ -583,7 +586,7 @@ class TemporalMetricStorageTest {
         .points()
         .hasSize(1)
         .isNotEmpty()
-        .containsExactly(DoublePointData.create(10, 20, attr2, 7));
+        .containsExactly(ImmutableDoublePointData.create(10, 20, attr2, 7));
   }
 
   @Test
@@ -596,7 +599,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -613,7 +616,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(3),
@@ -630,7 +633,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(4),
@@ -647,7 +650,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 temporality,
                 createMeasurement(2),
@@ -671,7 +674,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(3),
@@ -688,7 +691,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(3),
@@ -705,7 +708,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 createMeasurement(4),
@@ -722,7 +725,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector1,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.DELTA,
                 createMeasurement(2),
@@ -740,7 +743,7 @@ class TemporalMetricStorageTest {
             storage.buildMetricFor(
                 collector2,
                 Resource.empty(),
-                InstrumentationLibraryInfo.empty(),
+                InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
                 AggregationTemporality.CUMULATIVE,
                 createMeasurement(5),

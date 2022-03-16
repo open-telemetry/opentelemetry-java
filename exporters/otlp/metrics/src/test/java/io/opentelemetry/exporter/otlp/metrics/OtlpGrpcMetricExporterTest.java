@@ -19,11 +19,12 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.Collections;
@@ -117,17 +118,18 @@ class OtlpGrpcMetricExporterTest
   protected MetricData generateFakeTelemetry() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricData.createLongSum(
+    return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "name",
         "description",
         "1",
-        LongSumData.create(
+        ImmutableSumData.create(
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
+                ImmutableLongPointData.create(
+                    startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
   }
 
   @Override

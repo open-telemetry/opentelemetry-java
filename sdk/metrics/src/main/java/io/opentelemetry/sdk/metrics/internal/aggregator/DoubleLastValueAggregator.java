@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -58,7 +59,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -67,13 +68,13 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
       long epochNanos) {
     // Gauge does not need a start time, but we send one as advised by the data model
     // for identifying resets.
-    return MetricData.createDoubleGauge(
+    return ImmutableMetricData.createDoubleGauge(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
-        DoubleGaugeData.create(
+        descriptor.getSourceInstrument().getUnit(),
+        ImmutableGaugeData.create(
             MetricDataUtils.toDoublePointList(
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)

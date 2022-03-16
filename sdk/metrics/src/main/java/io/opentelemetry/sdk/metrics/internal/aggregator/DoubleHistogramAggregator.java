@@ -7,12 +7,13 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -91,20 +92,20 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor metricDescriptor,
       Map<Attributes, HistogramAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createDoubleHistogram(
+    return ImmutableMetricData.createDoubleHistogram(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
-        metricDescriptor.getUnit(),
-        DoubleHistogramData.create(
+        metricDescriptor.getSourceInstrument().getUnit(),
+        ImmutableHistogramData.create(
             temporality,
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulationByLabels,

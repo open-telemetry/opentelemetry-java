@@ -17,8 +17,6 @@ import java.util.function.Consumer;
 final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGaugeBuilder>
     implements DoubleGaugeBuilder {
 
-  private static final ObservableDoubleGauge NOOP = new ObservableDoubleGauge() {};
-
   SdkDoubleGaugeBuilder(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -47,7 +45,9 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
 
   @Override
   public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
-    return NOOP;
+    return new SdkObservableInstrument<>(
+        instrumentName,
+        registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback),
+        callback);
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -30,7 +30,7 @@ public interface MetricStorage {
    *
    * @param collectionInfo The identity of the current reader of metrics and other information.
    * @param resource The resource associated with the metrics.
-   * @param instrumentationLibraryInfo The instrumentation library generating the metrics.
+   * @param instrumentationScopeInfo The instrumentation scope generating the metrics.
    * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
    * @param suppressSynchronousCollection Whether or not to suppress active (blocking) collection of
@@ -40,7 +40,7 @@ public interface MetricStorage {
   MetricData collectAndReset(
       CollectionInfo collectionInfo,
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection);

@@ -6,7 +6,6 @@
 package io.opentelemetry.opencensusshim.internal.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opencensus.common.Timestamp;
 import io.opencensus.metrics.LabelKey;
@@ -22,8 +21,11 @@ import io.opencensus.metrics.export.TimeSeries;
 import io.opencensus.metrics.export.Value;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,7 +73,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -103,7 +105,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -135,7 +137,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -169,7 +171,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -193,7 +195,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
+            "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
@@ -227,7 +229,7 @@ class MetricAdapterTest {
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -244,14 +246,17 @@ class MetricAdapterTest {
                     .hasBucketBoundaries(2.0, 5.0)
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
+                            Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
-                            2000000,
-                            /* spanId= */ null,
-                            /* traceId= */ null,
-                            1.0),
-                        DoubleExemplarData.create(
-                            Attributes.empty(), 1000000, "5678", "1234", 4.0)));
+                            1000000,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            4.0)));
   }
 
   @Test
@@ -276,13 +281,13 @@ class MetricAdapterTest {
                                     10L,
                                     5d,
                                     Arrays.asList(
-                                        Summary.Snapshot.ValueAtPercentile.create(1.0, 200))))),
+                                        Summary.Snapshot.ValueAtPercentile.create(100.0, 200))))),
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -296,7 +301,7 @@ class MetricAdapterTest {
                     .hasAttributes(Attributes.of(AttributeKey.stringKey("key1"), "value1"))
                     .hasCount(10)
                     .hasSum(5)
-                    .hasPercentileValues(ValueAtPercentile.create(1.0, 200)));
+                    .hasValues(ImmutableValueAtQuantile.create(1.0, 200)));
   }
 
   @Test
@@ -306,7 +311,7 @@ class MetricAdapterTest {
     exemplarAttachements.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
-            "SpanContext{traceId=TraceId{traceId=1234}, spanId=SpanId{spanId=5678}, others=stuff}"));
+            "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
     Metric censusMetric =
         Metric.createWithOneTimeSeries(
             MetricDescriptor.create(
@@ -339,7 +344,7 @@ class MetricAdapterTest {
                 Timestamp.fromMillis(1000)));
     assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
         .hasResource(RESOURCE)
-        .hasInstrumentationLibrary(MetricAdapter.INSTRUMENTATION_LIBRARY_INFO)
+        .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
@@ -356,13 +361,16 @@ class MetricAdapterTest {
                     .hasBucketBoundaries(2.0, 5.0)
                     .hasBucketCounts(2, 6, 2)
                     .hasExemplars(
-                        DoubleExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
+                            Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
-                            2000000,
-                            /* spanId= */ null,
-                            /* traceId= */ null,
-                            1.0),
-                        DoubleExemplarData.create(
-                            Attributes.empty(), 1000000, "5678", "1234", 4.0)));
+                            1000000,
+                            SpanContext.create(
+                                "00000000000000000000000000000001",
+                                "0000000000000002",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            4.0)));
   }
 }

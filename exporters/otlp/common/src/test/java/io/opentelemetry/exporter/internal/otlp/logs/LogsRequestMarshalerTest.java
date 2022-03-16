@@ -26,7 +26,7 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
@@ -46,19 +46,16 @@ class LogsRequestMarshalerTest {
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
-  private static final String NAME = "GET /api/endpoint";
   private static final String BODY = "Hello world from this log...";
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoResourceLogs() {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
                 LogDataBuilder.create(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
-                    .setName(NAME)
+                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -84,7 +81,6 @@ class LogsRequestMarshalerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // test deprecated setName method
   void toProtoLogRecord() {
     LogRecord logRecord =
         parse(
@@ -92,8 +88,7 @@ class LogsRequestMarshalerTest {
             LogMarshaler.create(
                 LogDataBuilder.create(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
-                    .setName(NAME)
+                        InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -106,7 +101,6 @@ class LogsRequestMarshalerTest {
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(logRecord.getName()).isEqualTo(NAME);
     assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
@@ -126,13 +120,12 @@ class LogsRequestMarshalerTest {
             LogMarshaler.create(
                 LogDataBuilder.create(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
+                        InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId()).isEmpty();
     assertThat(logRecord.getSpanId()).isEmpty();
-    assertThat(logRecord.getName()).isBlank();
     assertThat(logRecord.getSeverityText()).isBlank();
     assertThat(logRecord.getSeverityNumber().getNumber())
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());

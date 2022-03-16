@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
@@ -15,7 +16,6 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import java.io.IOException;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class ExemplarMarshaler extends MarshalerWithSize {
 
@@ -24,8 +24,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
   private final ExemplarData value;
   private final ProtoFieldInfo valueField;
 
-  @Nullable private final String spanId;
-  @Nullable private final String traceId;
+  private final SpanContext spanContext;
 
   private final KeyValueMarshaler[] filteredAttributeMarshalers;
 
@@ -54,8 +53,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
         exemplar.getEpochNanos(),
         exemplar,
         valueField,
-        exemplar.getSpanId(),
-        exemplar.getTraceId(),
+        exemplar.getSpanContext(),
         attributeMarshalers);
   }
 
@@ -63,17 +61,13 @@ final class ExemplarMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       ExemplarData value,
       ProtoFieldInfo valueField,
-      @Nullable String spanId,
-      @Nullable String traceId,
+      SpanContext spanContext,
       KeyValueMarshaler[] filteredAttributeMarshalers) {
-    super(
-        calculateSize(
-            timeUnixNano, valueField, value, spanId, traceId, filteredAttributeMarshalers));
+    super(calculateSize(timeUnixNano, valueField, value, spanContext, filteredAttributeMarshalers));
     this.timeUnixNano = timeUnixNano;
     this.value = value;
     this.valueField = valueField;
-    this.spanId = spanId;
-    this.traceId = traceId;
+    this.spanContext = spanContext;
     this.filteredAttributeMarshalers = filteredAttributeMarshalers;
   }
 
@@ -86,8 +80,12 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     } else {
       output.serializeDoubleOptional(valueField, ((DoubleExemplarData) value).getValue());
     }
-    output.serializeSpanId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
-    output.serializeTraceId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
+    if (spanContext.isValid()) {
+      output.serializeSpanId(
+          io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanContext.getSpanId());
+      output.serializeTraceId(
+          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, spanContext.getTraceId());
+    }
     output.serializeRepeatedMessage(
         io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
         filteredAttributeMarshalers);
@@ -97,8 +95,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       ProtoFieldInfo valueField,
       ExemplarData value,
-      @Nullable String spanId,
-      @Nullable String traceId,
+      SpanContext spanContext,
       KeyValueMarshaler[] filteredAttributeMarshalers) {
     int size = 0;
     size +=
@@ -109,12 +106,15 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     } else {
       size += MarshalerUtil.sizeDoubleOptional(valueField, ((DoubleExemplarData) value).getValue());
     }
-    size +=
-        MarshalerUtil.sizeSpanId(
-            io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
-    size +=
-        MarshalerUtil.sizeTraceId(
-            io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
+    if (spanContext.isValid()) {
+      size +=
+          MarshalerUtil.sizeSpanId(
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanContext.getSpanId());
+      size +=
+          MarshalerUtil.sizeTraceId(
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID,
+              spanContext.getTraceId());
+    }
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,

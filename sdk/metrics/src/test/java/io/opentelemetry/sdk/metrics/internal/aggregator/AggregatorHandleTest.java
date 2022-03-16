@@ -9,10 +9,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -127,7 +130,16 @@ class AggregatorHandleTest {
   void testGenerateExemplarsOnCollect() {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData result = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData result =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     // We need to first record a value so that collect and reset does something.
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(reservoir.collectAndReset(attributes))

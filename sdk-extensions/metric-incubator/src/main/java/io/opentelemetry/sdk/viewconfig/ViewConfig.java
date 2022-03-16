@@ -11,9 +11,10 @@ import static java.util.stream.Collectors.toList;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.MeterSelector;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.metrics.view.ViewBuilder;
 import java.io.InputStream;
@@ -175,53 +176,44 @@ public final class ViewConfig {
     List<String> attributeKeys = viewSpec.getAttributeKeys();
     if (attributeKeys != null) {
       Set<String> keySet = new HashSet<>(attributeKeys);
-      builder.filterAttributes(keySet::contains);
+      builder.setAttributeFilter(keySet::contains);
     }
     return builder.build();
   }
 
   // Visible for testing
   static Aggregation toAggregation(String aggregation) {
-    switch (aggregation) {
-      case "sum":
-        return Aggregation.sum();
-      case "last_value":
-        return Aggregation.lastValue();
-      case "drop":
-        return Aggregation.drop();
-      case "histogram":
-        return Aggregation.explicitBucketHistogram();
-      default:
-        throw new ConfigurationException("Unrecognized aggregation " + aggregation);
+    try {
+      return AggregationUtil.forName(aggregation);
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Error creating aggregation", e);
     }
   }
 
   // Visible for testing
   static InstrumentSelector toInstrumentSelector(SelectorSpecification selectorSpec) {
-    InstrumentSelector.Builder builder = InstrumentSelector.builder();
+    InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     String instrumentName = selectorSpec.getInstrumentName();
     if (instrumentName != null) {
-      builder.setInstrumentName(instrumentName);
+      builder.setName(instrumentName);
     }
     InstrumentType instrumentType = selectorSpec.getInstrumentType();
     if (instrumentType != null) {
-      builder.setInstrumentType(instrumentType);
+      builder.setType(instrumentType);
     }
 
-    MeterSelector.Builder meterBuilder = MeterSelector.builder();
     String meterName = selectorSpec.getMeterName();
     if (meterName != null) {
-      meterBuilder.setName(meterName);
+      builder.setMeterName(meterName);
     }
     String meterVersion = selectorSpec.getMeterVersion();
     if (meterVersion != null) {
-      meterBuilder.setVersion(meterVersion);
+      builder.setMeterVersion(meterVersion);
     }
     String meterSchemaUrl = selectorSpec.getMeterSchemaUrl();
     if (meterSchemaUrl != null) {
-      meterBuilder.setSchemaUrl(meterSchemaUrl);
+      builder.setMeterSchemaUrl(meterSchemaUrl);
     }
-    builder.setMeterSelector(meterBuilder.build());
 
     return builder.build();
   }

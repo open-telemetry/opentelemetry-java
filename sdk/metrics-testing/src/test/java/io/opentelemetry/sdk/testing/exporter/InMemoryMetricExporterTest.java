@@ -8,11 +8,12 @@ package io.opentelemetry.sdk.testing.exporter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,17 +29,17 @@ class InMemoryMetricExporterTest {
   private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricData.createLongSum(
+    return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationLibraryInfo.empty(),
+        InstrumentationScopeInfo.empty(),
         "name",
         "description",
         "1",
-        LongSumData.create(
+        ImmutableSumData.create(
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(
+                ImmutableLongPointData.create(
                     startNs, endNs, Attributes.builder().put("k", "v").build(), 5))));
   }
 

@@ -6,14 +6,15 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -59,20 +60,20 @@ public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulat
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createLongSum(
+    return ImmutableMetricData.createLongSum(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
-        LongSumData.create(
+        descriptor.getSourceInstrument().getUnit(),
+        ImmutableSumData.create(
             isMonotonic(),
             temporality,
             MetricDataUtils.toLongPointList(

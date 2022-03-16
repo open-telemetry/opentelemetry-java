@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
@@ -99,7 +99,7 @@ public interface Aggregator<T> {
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
    * @param resource the resource producing the metric.
-   * @param instrumentationLibrary the library that instrumented the metric.
+   * @param instrumentationScopeInfo the scope that instrumented the metric.
    * @param metricDescriptor the name, description and unit of the metric.
    * @param accumulationByLabels the map of Labels to Accumulation.
    * @param temporality the temporality of the accumulation.
@@ -109,7 +109,7 @@ public interface Aggregator<T> {
    */
   MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibrary,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor metricDescriptor,
       Map<Attributes, T> accumulationByLabels,
       AggregationTemporality temporality,

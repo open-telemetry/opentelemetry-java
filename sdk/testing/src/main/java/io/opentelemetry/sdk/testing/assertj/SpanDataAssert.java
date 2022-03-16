@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -22,16 +22,19 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
 public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
 
-  SpanDataAssert(SpanData actual) {
+  SpanDataAssert(@Nullable SpanData actual) {
     super(actual, SpanDataAssert.class);
   }
 
@@ -157,9 +160,14 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has the given {@link InstrumentationLibraryInfo}. */
+  /**
+   * Asserts the span has the given {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}.
+   *
+   * @deprecated Use {@link #hasInstrumentationScopeInfo(InstrumentationScopeInfo)}.
+   */
+  @Deprecated
   public SpanDataAssert hasInstrumentationLibraryInfo(
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
     isNotNull();
     if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibraryInfo)) {
       failWithActualExpectedAndMessage(
@@ -169,6 +177,22 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           actual.getName(),
           instrumentationLibraryInfo,
           actual.getInstrumentationLibraryInfo());
+    }
+    return this;
+  }
+
+  /** Asserts the span has the given {@link InstrumentationScopeInfo}. */
+  public SpanDataAssert hasInstrumentationScopeInfo(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
+    isNotNull();
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
+      failWithActualExpectedAndMessage(
+          actual.getInstrumentationScopeInfo(),
+          instrumentationScopeInfo,
+          "Expected span [%s] to have instrumentation scope info <%s> but was <%s>",
+          actual.getName(),
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }
@@ -266,6 +290,62 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return this;
+  }
+
+  /** Asserts the span has attributes matching all {@code assertions} and no more. */
+  public SpanDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the span has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public SpanDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
+    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
+    Set<AttributeKey<?>> checkedKeys = new HashSet<>();
+    for (AttributeAssertion attributeAssertion : assertions) {
+      AttributeKey<?> key = attributeAssertion.getKey();
+      Object value = actual.getAttributes().get(key);
+      if (value != null) {
+        checkedKeys.add(key);
+      }
+      AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
+      attributeAssertion.getAssertion().accept(assertion);
+    }
+
+    assertThat(actualKeys)
+        .as("span [%s] attribute keys", actual.getName())
+        .containsExactlyInAnyOrderElementsOf(checkedKeys);
+
+    return this;
+  }
+
+  // The return type of these assertions must match the parameters in methods like
+  // OpenTelemetryAssertions.satisfies.
+  // Our code is nullness annotated but assertj is not. NullAway seems to still treat the base class
+  // of OpenTelemetryAssertions as annotated though, so there seems to be no way to avoid
+  // suppressing here.
+  @SuppressWarnings("NullAway")
+  private static AbstractAssert<?, ?> attributeValueAssertion(
+      AttributeKey<?> key, @Nullable Object value) {
+    switch (key.getType()) {
+      case STRING:
+        return assertThat((String) value);
+      case BOOLEAN:
+        return assertThat((Boolean) value);
+      case LONG:
+        return assertThat((Long) value);
+      case DOUBLE:
+        return assertThat((Double) value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return assertThat((List<?>) value);
+    }
+    throw new IllegalArgumentException("Unknown type for key " + key);
   }
 
   /**

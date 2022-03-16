@@ -9,14 +9,18 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
@@ -48,8 +52,8 @@ class DoubleExponentialHistogramAggregatorTest {
   private static final DoubleExponentialHistogramAggregator aggregator =
       new DoubleExponentialHistogramAggregator(ExemplarReservoir::noSamples);
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
 
@@ -151,6 +155,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(bucketCounts.get(bucketCounts.size() - 1)).isEqualTo(1);
     assertThat(bucketCounts.stream().filter(i -> i == 0).count())
         .isEqualTo(bucketCounts.size() - 2);
+    assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(2);
 
     // With 320 buckets allowed, minimum scale is -3
     assertThat(acc.getScale()).isEqualTo(-3);
@@ -181,7 +186,16 @@ class DoubleExponentialHistogramAggregatorTest {
         new DoubleExponentialHistogramAggregator(() -> reservoir);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
 
@@ -219,11 +233,28 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+            ImmutableDoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
 
     ExponentialHistogramAccumulation nextAccumulation =
         getTestAccumulation(exemplars, 0, 0, 1, 1, -1);
@@ -234,18 +265,35 @@ class DoubleExponentialHistogramAggregatorTest {
     // Note: This test relies on implementation details of ExponentialCounter, specifically it
     // assumes that an Array of all zeros is the same as an empty counter array for negative
     // buckets.
-    assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
-        .isEqualTo(getTestAccumulation(exemplars, 0, 1));
+    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
+    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 0, 1));
   }
 
   @Test
   void diffDownScaledAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+            ImmutableDoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
 
     ExponentialHistogramAccumulation nextAccumulation =
         getTestAccumulation(exemplars, 1, 1, 100, -1, -100);
@@ -260,11 +308,28 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     List<ExemplarData> previousExemplars =
         Collections.singletonList(
-            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+            ImmutableDoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     ExponentialHistogramAccumulation previousAccumulation =
         getTestAccumulation(previousExemplars, 0, 4.1, 100, 100, 10000, 1000000);
     ExponentialHistogramAccumulation nextAccumulation =
@@ -340,6 +405,7 @@ class DoubleExponentialHistogramAggregatorTest {
     ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
     assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(4);
     assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(320);
+    assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(n);
   }
 
   @Test
@@ -361,12 +427,22 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getSum()).isEqualTo(23.5);
     assertThat(buckets.getOffset()).isEqualTo(-1);
     assertThat(buckets.getBucketCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L, 0L, 1L));
+    assertThat(buckets.getTotalCount()).isEqualTo(5);
   }
 
   @Test
   void testToMetricData() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     @SuppressWarnings("unchecked")
     Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
     Mockito.when(reservoir.collectAndReset(Attributes.empty()))
@@ -386,7 +462,7 @@ class DoubleExponentialHistogramAggregatorTest {
     MetricData metricDataCumulative =
         cumulativeAggregator.toMetricData(
             RESOURCE,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
             Collections.singletonMap(Attributes.empty(), acc),
             AggregationTemporality.CUMULATIVE,
@@ -424,14 +500,14 @@ class DoubleExponentialHistogramAggregatorTest {
     MetricData metricDataDelta =
         cumulativeAggregator.toMetricData(
             RESOURCE,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
             Collections.singletonMap(Attributes.empty(), acc),
             AggregationTemporality.DELTA,
             0,
             10,
             100);
-    assertThat(metricDataDelta.getExponentialHistogramData().getAggregationTemporality())
+    assertThat(ExponentialHistogramData.fromMetricData(metricDataDelta).getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
   }
 

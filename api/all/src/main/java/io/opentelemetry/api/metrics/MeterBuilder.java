@@ -18,19 +18,18 @@ public interface MeterBuilder {
    * <p>Schemas are used to identify expected metrics (semantic conventions) and allow backends to
    * "automatically migrate" to supported versions.
    *
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
    * @return this
    */
   MeterBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assigns a version to the instrumentation library that is using the resulting Meter.
+   * Assigns a version to the instrumentation scope that is using the resulting Meter.
    *
-   * @param instrumentationVersion The version of the instrumentation library.
+   * @param instrumentationScopeVersion The version of the instrumentation scope.
    * @return this
    */
-  MeterBuilder setInstrumentationVersion(String instrumentationVersion);
+  MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
    * Gets or creates a {@link Meter} instance.

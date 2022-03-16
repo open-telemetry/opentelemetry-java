@@ -18,7 +18,7 @@ class DefaultTracerBuilder implements TracerBuilder {
   }
 
   @Override
-  public TracerBuilder setInstrumentationVersion(String instrumentationVersion) {
+  public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     return this;
   }
 

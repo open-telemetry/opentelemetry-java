@@ -32,6 +32,10 @@ final class SpanMarshaler extends MarshalerWithSize {
       AttributeKey.stringKey("otel.status_description");
   private static final AttributeKey<String> KEY_SPAN_STATUS_CODE =
       AttributeKey.stringKey("otel.status_code");
+  private static final AttributeKey<String> KEY_INSTRUMENTATION_SCOPE_NAME =
+      AttributeKey.stringKey("otel.scope.name");
+  private static final AttributeKey<String> KEY_INSTRUMENTATION_SCOPE_VERSION =
+      AttributeKey.stringKey("otel.scope.version");
   private static final AttributeKey<String> KEY_INSTRUMENTATION_LIBRARY_NAME =
       AttributeKey.stringKey("otel.library.name");
   private static final AttributeKey<String> KEY_INSTRUMENTATION_LIBRARY_VERSION =
@@ -100,13 +104,21 @@ final class SpanMarshaler extends MarshalerWithSize {
 
     tags.add(
         KeyValueMarshaler.create(
-            KEY_INSTRUMENTATION_LIBRARY_NAME, span.getInstrumentationLibraryInfo().getName()));
+            KEY_INSTRUMENTATION_SCOPE_NAME, span.getInstrumentationScopeInfo().getName()));
+    // Include instrumentation library name for backwards compatibility
+    tags.add(
+        KeyValueMarshaler.create(
+            KEY_INSTRUMENTATION_LIBRARY_NAME, span.getInstrumentationScopeInfo().getName()));
 
-    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+    if (span.getInstrumentationScopeInfo().getVersion() != null) {
+      tags.add(
+          KeyValueMarshaler.create(
+              KEY_INSTRUMENTATION_SCOPE_VERSION, span.getInstrumentationScopeInfo().getVersion()));
+      // Include instrumentation library name for backwards compatibility
       tags.add(
           KeyValueMarshaler.create(
               KEY_INSTRUMENTATION_LIBRARY_VERSION,
-              span.getInstrumentationLibraryInfo().getVersion()));
+              span.getInstrumentationScopeInfo().getVersion()));
     }
 
     if (span.getStatus().getStatusCode() == StatusCode.ERROR) {

@@ -6,18 +6,20 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -36,7 +38,7 @@ class LongSumAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
-  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongSumAggregator aggregator =
@@ -99,7 +101,16 @@ class LongSumAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
@@ -120,7 +131,15 @@ class LongSumAggregatorTest {
   @Test
   void mergeAndDiff() {
     ExemplarData exemplar =
-        DoubleExemplarData.create(Attributes.empty(), 2L, "spanid", "traceid", 1);
+        ImmutableDoubleExemplarData.create(
+            Attributes.empty(),
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
@@ -187,7 +206,16 @@ class LongSumAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar =
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(

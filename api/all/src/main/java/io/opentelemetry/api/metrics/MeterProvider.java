@@ -23,23 +23,23 @@ public interface MeterProvider {
   /**
    * Gets or creates a named and versioned meter instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a meter instance.
    */
-  default Meter get(String instrumentationName) {
-    return meterBuilder(instrumentationName).build();
+  default Meter get(String instrumentationScopeName) {
+    return meterBuilder(instrumentationScopeName).build();
   }
 
   /**
    * Creates a MeterBuilder for a named meter instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a MeterBuilder instance.
    * @since 1.4.0
    */
-  MeterBuilder meterBuilder(String instrumentationName);
+  MeterBuilder meterBuilder(String instrumentationScopeName);
 
   /** Returns a no-op {@link MeterProvider} which provides meters which do not record or emit. */
   static MeterProvider noop() {

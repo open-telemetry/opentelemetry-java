@@ -8,10 +8,13 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +38,7 @@ final class MetricDataUtils {
     accumulationMap.forEach(
         (labels, accumulation) ->
             points.add(
-                LongPointData.create(
+                ImmutableLongPointData.create(
                     startEpochNanos,
                     epochNanos,
                     labels,
@@ -50,7 +53,7 @@ final class MetricDataUtils {
     accumulationMap.forEach(
         (labels, accumulation) ->
             points.add(
-                DoublePointData.create(
+                ImmutableDoublePointData.create(
                     startEpochNanos,
                     epochNanos,
                     labels,
@@ -59,17 +62,17 @@ final class MetricDataUtils {
     return points;
   }
 
-  static List<DoubleHistogramPointData> toDoubleHistogramPointList(
+  static List<HistogramPointData> toDoubleHistogramPointList(
       Map<Attributes, HistogramAccumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos,
       List<Double> boundaries) {
-    List<DoubleHistogramPointData> points = new ArrayList<>(accumulationMap.size());
+    List<HistogramPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, aggregator) -> {
           List<Long> counts = PrimitiveLongList.wrap(aggregator.getCounts().clone());
           points.add(
-              DoubleHistogramPointData.create(
+              ImmutableHistogramPointData.create(
                   startEpochNanos,
                   epochNanos,
                   labels,

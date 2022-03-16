@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -56,7 +57,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -64,13 +65,13 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
       long lastCollectionEpoch,
       long epochNanos) {
     // Last-Value ignores temporality generally, but we can set a start time on the gauge.
-    return MetricData.createLongGauge(
+    return ImmutableMetricData.createLongGauge(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
-        LongGaugeData.create(
+        descriptor.getSourceInstrument().getUnit(),
+        ImmutableGaugeData.create(
             MetricDataUtils.toLongPointList(
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)

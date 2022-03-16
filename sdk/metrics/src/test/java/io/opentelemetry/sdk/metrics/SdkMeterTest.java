@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -17,19 +16,20 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@SuppressLogger(MeterSharedState.class)
+@SuppressLogger(MetricStorageRegistry.class)
 class SdkMeterTest {
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
   private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
   @Test
   void testLongCounter() {
@@ -51,12 +51,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongCounter").build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -69,12 +64,7 @@ class SdkMeterTest {
             .build();
     assertThat(longCounter).isNotNull();
     sdkMeter.counterBuilder("testLongCounter".toUpperCase()).build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -98,12 +88,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testLongUpDownCounter").build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -117,12 +102,7 @@ class SdkMeterTest {
     assertThat(longUpDownCounter).isNotNull();
     assertThat(logs.getEvents()).isEmpty();
     sdkMeter.upDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -148,12 +128,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testLongValueRecorder").ofLongs().build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -169,12 +144,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testLongValueRecorder".toUpperCase()).ofLongs().build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -188,12 +158,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("longValueObserver").ofLongs().buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -207,12 +172,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("longValueObserver".toUpperCase()).ofLongs().buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -225,12 +185,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongSumObserver").buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -243,12 +198,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongSumObserver".toUpperCase()).buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -261,12 +211,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testLongUpDownSumObserver").buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -281,12 +226,7 @@ class SdkMeterTest {
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver".toUpperCase())
         .buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -311,12 +251,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testDoubleCounter").ofDoubles().build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -341,12 +276,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testDoubleUpDownCounter").ofDoubles().build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -369,12 +299,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -388,12 +313,7 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
     sdkMeter.counterBuilder("testDoubleSumObserver").ofDoubles().buildWithCallback(x -> {});
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -411,12 +331,7 @@ class SdkMeterTest {
         .ofDoubles()
         .buildWithCallback(x -> {});
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -429,11 +344,6 @@ class SdkMeterTest {
     assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("doubleValueObserver").buildWithCallback(x -> {});
-    assertThat(
-            logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(WARN),
-                    "Failed to register metric.")
-                .getThrowable())
-        .hasMessageContaining("Metric with same name and different descriptor already created.");
+    logs.assertContains("Found duplicate metric definition");
   }
 }

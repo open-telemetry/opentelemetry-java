@@ -17,6 +17,7 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.aws.AwsXrayPropagator;
@@ -187,7 +188,10 @@ class FullConfigTest {
         .end();
 
     Meter meter = GlobalOpenTelemetry.get().getMeter("test");
-    meter.counterBuilder("my-metric").build().add(1);
+    meter
+        .counterBuilder("my-metric")
+        .build()
+        .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
     LogEmitter logEmitter = logEmitterProvider.get("test");
@@ -255,13 +259,14 @@ class FullConfigTest {
                     // SPI was loaded
                     // MetricExporterCustomizer filters metrics not named my-metric
                     assertThat(metric.getName()).isEqualTo("my-metric");
-                    // TestMeterProviderConfigurer configures a view that adds the "configured=true"
-                    // attribute
+                    // TestMeterProviderConfigurer configures a view that only passes on attribute
+                    // named allowed
+                    // configured-test
                     assertThat(getFirstDataPointLabels(metric))
                         .contains(
                             KeyValue.newBuilder()
-                                .setKey("configured")
-                                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                                .setKey("allowed")
+                                .setValue(AnyValue.newBuilder().setStringValue("bear").build())
                                 .build());
                   }
                 }

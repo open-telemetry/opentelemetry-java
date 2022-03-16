@@ -7,10 +7,11 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 /** Configuration representing no aggregation. */
-class DropAggregation extends Aggregation {
+final class DropAggregation implements Aggregation, AggregatorFactory {
 
   static final Aggregation INSTANCE = new DropAggregation();
 

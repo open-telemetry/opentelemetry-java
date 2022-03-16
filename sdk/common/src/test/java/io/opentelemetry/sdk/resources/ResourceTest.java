@@ -148,10 +148,10 @@ class ResourceTest {
     assertThat(resource.getAttributes().size()).isEqualTo(8);
 
     // Null arrays should be dropped
-    attributes.put(stringArrayKey("NullArrayStringKey"), null);
-    attributes.put(longArrayKey("NullArrayLongKey"), null);
-    attributes.put(doubleArrayKey("NullArrayDoubleKey"), null);
-    attributes.put(booleanArrayKey("NullArrayBooleanKey"), null);
+    attributes.put(stringArrayKey("NullArrayStringKey"), (String[]) null);
+    attributes.put(longArrayKey("NullArrayLongKey"), (Long[]) null);
+    attributes.put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null);
+    attributes.put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
@@ -316,5 +316,18 @@ class ResourceTest {
     assertThat(attributes.get(longKey("int in disguise"))).isEqualTo(21);
     assertThat(attributes.get(stringKey("hello"))).isEqualTo("world");
     assertThat(attributes.get(stringKey("OpenTelemetry"))).isEqualTo("Java");
+  }
+
+  @Test
+  public void toBuilder() {
+
+    Resource resource =
+        Resource.builder().setSchemaUrl("http://example.com").put("foo", "val").build();
+
+    Resource newResource = resource.toBuilder().build();
+
+    assertThat(newResource).isNotSameAs(Resource.getDefault());
+    assertThat(newResource.getAttribute(stringKey("foo"))).isEqualTo("val");
+    assertThat(newResource.getSchemaUrl()).isEqualTo("http://example.com");
   }
 }

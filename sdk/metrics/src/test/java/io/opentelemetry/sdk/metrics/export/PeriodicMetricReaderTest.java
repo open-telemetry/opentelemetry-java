@@ -17,11 +17,13 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -48,16 +50,17 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PeriodicMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
-      Collections.singletonList(LongPointData.create(1000, 3000, Attributes.empty(), 1234567));
+      Collections.singletonList(
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.empty(),
-          InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
+          InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
           "my metric",
           "my metric description",
           "us",
-          LongSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;

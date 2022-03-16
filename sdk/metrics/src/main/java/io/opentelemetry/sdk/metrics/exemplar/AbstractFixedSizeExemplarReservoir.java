@@ -8,10 +8,11 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -94,8 +95,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
   private class ReservoirCell {
     private double value;
     @Nullable private Attributes attributes;
-    @Nullable private String spanId;
-    @Nullable private String traceId;
+    private SpanContext spanContext = SpanContext.getInvalid();
     private long recordTime;
 
     synchronized void offerMeasurement(double value, Attributes attributes, Context context) {
@@ -109,8 +109,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
     private void updateFromContext(Context context) {
       Span current = Span.fromContext(context);
       if (current.getSpanContext().isValid()) {
-        this.spanId = current.getSpanContext().getSpanId();
-        this.traceId = current.getSpanContext().getTraceId();
+        this.spanContext = current.getSpanContext();
       }
     }
 
@@ -119,12 +118,11 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
       Attributes attributes = this.attributes;
       if (attributes != null) {
         ExemplarData result =
-            DoubleExemplarData.create(
-                filtered(attributes, pointAttributes), recordTime, spanId, traceId, value);
+            ImmutableDoubleExemplarData.create(
+                filtered(attributes, pointAttributes), recordTime, spanContext, value);
         this.attributes = null;
         this.value = 0;
-        this.spanId = null;
-        this.traceId = null;
+        this.spanContext = SpanContext.getInvalid();
         this.recordTime = 0;
         return result;
       }

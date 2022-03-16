@@ -9,13 +9,14 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -36,8 +37,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class SynchronousMetricStorageTest {
   private static final Resource RESOURCE = Resource.empty();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("test", "1.0");
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("test", "1.0", null);
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
@@ -45,7 +46,8 @@ public class SynchronousMetricStorageTest {
       MetricDescriptor.create("name", "description", "unit");
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
-      Aggregation.lastValue().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+      ((AggregatorFactory) Aggregation.lastValue())
+          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;
@@ -83,7 +85,7 @@ public class SynchronousMetricStorageTest {
         accumulator.collectAndReset(
             CollectionInfo.create(collector, allCollectors, reader),
             RESOURCE,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             0,
             testClock.now(),
             false);
@@ -111,7 +113,7 @@ public class SynchronousMetricStorageTest {
       accumulator.collectAndReset(
           CollectionInfo.create(collector, allCollectors, reader),
           RESOURCE,
-          INSTRUMENTATION_LIBRARY_INFO,
+          INSTRUMENTATION_SCOPE_INFO,
           0,
           testClock.now(),
           false);
@@ -133,7 +135,7 @@ public class SynchronousMetricStorageTest {
             accumulator.collectAndReset(
                 CollectionInfo.create(collector, allCollectors, reader),
                 RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
+                INSTRUMENTATION_SCOPE_INFO,
                 0,
                 testClock.now(),
                 false))

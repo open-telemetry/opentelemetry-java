@@ -26,8 +26,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull and push
+      - name: Copy image
+        # Non-debug image doesn't seem to support reading the .docker creds.
         run: |
-          docker pull ${{ matrix.source }}
-          docker tag ${{ matrix.source }} ghcr.io/open-telemetry/opentelemetry-java/${{ matrix.target_image }}
-          docker push ghcr.io/open-telemetry/opentelemetry-java/${{ matrix.target_image }}
+          docker run --rm -v $HOME/.docker:/root/.docker gcr.io/go-containerregistry/crane:debug \
+          cp ${{ matrix.source }} ghcr.io/open-telemetry/opentelemetry-java/${{ matrix.target_image }}

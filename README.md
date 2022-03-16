@@ -46,7 +46,7 @@ This project contains the following top level components:
 
 This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
 [`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
-the [`opentelemetry-alpha-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
+the [`opentelemetry-bom-alpha`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
 
 We would love to hear from the larger community: please provide feedback proactively.
 
@@ -84,7 +84,7 @@ dependency versions in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.11.0</version>
+        <version>1.12.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -103,7 +103,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.11.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.12.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -112,8 +112,8 @@ Note that if you want to use any artifacts that have not fully stabilized yet (s
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.11.0")
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.11.0-alpha')
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.12.0")
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.12.0-alpha')
 
   implementation('io.opentelemetry:opentelemetry-api')
   implementation('io.opentelemetry:opentelemetry-api-metrics')
@@ -140,7 +140,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -163,7 +163,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.12.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.13.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -189,21 +189,21 @@ This is a **current** feature status list:
 
 | Component                   | Version                                                      |
 |-----------------------------|--------------------------------------------------------------|
-| Trace API                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Trace SDK                   | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Context                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Baggage                     | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| Metrics API                 | v<!--VERSION_STABLE-->1.11.0<!--/VERSION_STABLE-->           |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| OTLP Exporter (Logs)        | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.11.0-alpha<!--/VERSION_UNSTABLE--> |
+| Trace API                   | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Context                     | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Baggage                     | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| Metrics API                 | v<!--VERSION_STABLE-->1.12.0<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| OTLP Exporter (Logs)        | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.12.0-alpha<!--/VERSION_UNSTABLE--> |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues
@@ -216,7 +216,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
-- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 
@@ -228,10 +227,10 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Splunk
 
-Maintainer Emeritus:
+Maintainers Emeritus:
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-
+- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

@@ -9,21 +9,23 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,161 +40,161 @@ class SerializerTest {
   private static final Attributes KP_VP_ATTR = Attributes.of(stringKey("kp"), "vp");
 
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          LongSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          LongSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          LongSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          LongSumData.create(
+          ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
 
   private static final MetricData DOUBLE_GAUGE =
-      MetricData.createDoubleGauge(
+      ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData LONG_GAUGE =
-      MetricData.createLongGauge(
+      ImmutableMetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          LongGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
-                  LongPointData.create(
+                  ImmutableLongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData SUMMARY =
-      MetricData.createDoubleSummary(
+      ImmutableMetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleSummaryData.create(
+          ImmutableSummaryData.create(
               Collections.singletonList(
-                  DoubleSummaryPointData.create(
+                  ImmutableSummaryPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR,
                       5,
                       7,
                       Arrays.asList(
-                          ValueAtPercentile.create(0.9, 0.1),
-                          ValueAtPercentile.create(0.99, 0.3))))));
+                          ImmutableValueAtQuantile.create(0.9, 0.1),
+                          ImmutableValueAtQuantile.create(0.99, 0.3))))));
   private static final MetricData HISTOGRAM =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleHistogramData.create(
+          ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               Collections.singletonList(
-                  DoubleHistogramPointData.create(
+                  ImmutableHistogramPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR,
@@ -200,33 +202,36 @@ class SerializerTest {
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
-                          LongExemplarData.create(
+                          ImmutableLongExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
-                              /* spanId= */ "span_id",
-                              /* traceId= */ "trace_id",
+                              SpanContext.create(
+                                  "00000000000000000000000000000001",
+                                  "0000000000000002",
+                                  TraceFlags.getDefault(),
+                                  TraceState.getDefault()),
                               /* value= */ 4))))));
   private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
-      MetricData.createDoubleGauge(
+      ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, Attributes.empty(), 7))));
   private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
-      MetricData.createDoubleGauge(
+      ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationLibraryInfo.create("full", "version"),
+          InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
           "description",
           "1",
-          DoubleGaugeData.create(
+          ImmutableGaugeData.create(
               Collections.singletonList(
-                  DoublePointData.create(
+                  ImmutableDoublePointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       KP_VP_ATTR.toBuilder().put("animal", "bear").build(),
@@ -363,7 +368,7 @@ class SerializerTest {
                 + "# HELP instrument_name description\n"
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"span_id\",trace_id=\"trace_id\"} 4.0 0.001\n"
+                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "# TYPE instrument_name gauge\n"
                 + "# HELP instrument_name description\n"
                 + "instrument_name 7.0 1633950672.000\n"
@@ -376,7 +381,7 @@ class SerializerTest {
   private static String serialize004(MetricData... metrics) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
-      Serializer.Prometheus004Serializer.INSTANCE.write(Arrays.asList(metrics), bos);
+      new Serializer.Prometheus004Serializer(unused -> true).write(Arrays.asList(metrics), bos);
       return bos.toString("UTF-8");
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -386,7 +391,7 @@ class SerializerTest {
   private static String serializeOpenMetrics(MetricData... metrics) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
-      Serializer.OpenMetrics100Serializer.INSTANCE.write(Arrays.asList(metrics), bos);
+      new Serializer.OpenMetrics100Serializer(unused -> true).write(Arrays.asList(metrics), bos);
       return bos.toString("UTF-8");
     } catch (IOException e) {
       throw new UncheckedIOException(e);

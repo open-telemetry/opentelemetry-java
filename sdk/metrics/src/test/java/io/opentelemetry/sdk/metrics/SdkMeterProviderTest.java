@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -19,13 +20,16 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewBuilderImpl;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -35,6 +39,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -44,8 +49,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SdkMeterProviderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(AttributeKey.stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(SdkMeterProviderTest.class.getName(), null);
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create(SdkMeterProviderTest.class.getName());
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -97,7 +102,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1"))
         .satisfiesExactlyInAnyOrder(
@@ -190,7 +195,7 @@ class SdkMeterProviderTest {
   @Test
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
-        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+        InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
         View.builder()
             .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
             .build());
@@ -208,7 +213,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testLongCounter")
                     .hasDoubleHistogram()
                     .isDelta()
@@ -229,7 +234,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDoubleHistogram()
                     .isDelta()
                     .points()
@@ -274,7 +279,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -310,7 +315,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -367,7 +372,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1"))
         .satisfiesExactlyInAnyOrder(
@@ -454,6 +459,100 @@ class SdkMeterProviderTest {
   }
 
   @Test
+  void removeAsyncInstrument() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    Meter meter =
+        sdkMeterProviderBuilder.registerMetricReader(reader).build().get(getClass().getName());
+
+    ObservableLongCounter observableCounter1 =
+        meter
+            .counterBuilder("foo")
+            .buildWithCallback(
+                measurement ->
+                    measurement.record(10, Attributes.builder().put("callback", "one").build()));
+    ObservableLongCounter observableCounter2 =
+        meter
+            .counterBuilder("foo")
+            .buildWithCallback(
+                measurement ->
+                    measurement.record(10, Attributes.builder().put("callback", "two").build()));
+
+    assertThat(reader.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSum()
+                    .points()
+                    .hasSize(2)
+                    .satisfiesExactlyInAnyOrder(
+                        pointData ->
+                            assertThat(pointData)
+                                .hasAttributes(Attributes.builder().put("callback", "one").build()),
+                        (Consumer<LongPointData>)
+                            longPointData ->
+                                assertThat(longPointData)
+                                    .hasAttributes(
+                                        Attributes.builder().put("callback", "two").build())));
+
+    observableCounter1.close();
+
+    assertThat(reader.collectAllMetrics())
+        .hasSize(1)
+        .satisfiesExactly(
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSum()
+                    .points()
+                    .hasSize(1)
+                    .satisfiesExactlyInAnyOrder(
+                        (Consumer<LongPointData>)
+                            longPointData ->
+                                assertThat(longPointData)
+                                    .hasAttributes(
+                                        Attributes.builder().put("callback", "two").build())));
+
+    observableCounter2.close();
+    assertThat(reader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  void viewSdk_filterAttributes() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder()
+                    // TODO: Make instrument type optional.
+                    .setType(InstrumentType.OBSERVABLE_GAUGE)
+                    .setName("test")
+                    .build(),
+                View.builder().setAttributeFilter(name -> name.equals("allowed")).build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    meter
+        .gaugeBuilder("test")
+        .setDescription("desc")
+        .setUnit("unit")
+        .buildWithCallback(
+            o ->
+                o.record(
+                    1,
+                    Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build()));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasDoubleGauge()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point.getAttributes().asMap())
+                                .containsOnly(entry(AttributeKey.stringKey("allowed"), "bear"))));
+  }
+
+  @Test
   void viewSdk_AllowRenames() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -462,8 +561,8 @@ class SdkMeterProviderTest {
             .registerView(
                 InstrumentSelector.builder()
                     // TODO: Make instrument type optional.
-                    .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
-                    .setInstrumentName("test")
+                    .setType(InstrumentType.OBSERVABLE_GAUGE)
+                    .setName("test")
                     .build(),
                 View.builder()
                     .setName("not_test")
@@ -492,8 +591,8 @@ class SdkMeterProviderTest {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
-            .setInstrumentType(InstrumentType.HISTOGRAM)
-            .setInstrumentName("test")
+            .setType(InstrumentType.HISTOGRAM)
+            .setName("test")
             .build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -539,8 +638,8 @@ class SdkMeterProviderTest {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             // TODO: Make instrument type optional.
-            .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
-            .setInstrumentName("test")
+            .setType(InstrumentType.OBSERVABLE_GAUGE)
+            .setName("test")
             .build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -586,18 +685,14 @@ class SdkMeterProviderTest {
   @Test
   void viewSdk_capturesBaggageFromContext() {
     InstrumentSelector selector =
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentName("test")
-            .build();
+        InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
             .registerView(
                 selector,
-                View.builder()
-                    .setAggregation(Aggregation.sum())
+                ((ViewBuilderImpl) View.builder().setAggregation(Aggregation.sum()))
                     .appendAllBaggageAttributes()
                     .build())
             .build();
@@ -667,7 +762,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -698,7 +793,7 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
-                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
                     .hasUnit("1")
                     .hasDoubleHistogram()
@@ -803,8 +898,8 @@ class SdkMeterProviderTest {
             .registerMetricReader(collector2)
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentName("testSum")
+                    .setType(InstrumentType.COUNTER)
+                    .setName("testSum")
                     .build(),
                 View.builder().setAggregation(Aggregation.sum()).build())
             .build();
@@ -876,7 +971,7 @@ class SdkMeterProviderTest {
     Meter meter =
         sdkMeterProviderBuilder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 View.builder().setAggregation(Aggregation.drop()).build())
             .registerMetricReader(collector)
             .build()
@@ -907,7 +1002,7 @@ class SdkMeterProviderTest {
       SdkMeterProviderBuilder meterProviderBuilder, Aggregation aggregation) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
-          InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
+          InstrumentSelector.builder().setType(instrumentType).build(),
           View.builder().setAggregation(aggregation).build());
     }
   }
