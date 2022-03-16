@@ -64,6 +64,18 @@ public final class PrometheusHttpServer extends AbstractMetricReader
     return builder().build();
   }
 
+  /**
+   * Returns a new {@link io.opentelemetry.sdk.metrics.export.MetricReaderFactory} which can be
+   * registered to an {@link io.opentelemetry.sdk.metrics.SdkMeterProvider} to expose Prometheus
+   * metrics on port {@value PrometheusHttpServerBuilder#DEFAULT_PORT}.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
+  public static PrometheusHttpServer newMetricReaderFactory() {
+    return create();
+  }
+
   /** Returns a new {@link PrometheusHttpServerBuilder}. */
   public static PrometheusHttpServerBuilder builder() {
     return new PrometheusHttpServerBuilder();

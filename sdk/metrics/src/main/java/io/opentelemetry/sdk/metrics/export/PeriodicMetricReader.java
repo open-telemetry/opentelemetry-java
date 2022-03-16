@@ -41,6 +41,18 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
     return builder(exporter).build();
   }
 
+  /**
+   * Returns a new {@link io.opentelemetry.sdk.metrics.export.MetricReaderFactory} which can be
+   * registered to a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link
+   * PeriodicMetricReader} exporting once every minute on a new daemon thread.
+   *
+   * @deprecated Use {@link #create(MetricExporter)}.
+   */
+  @Deprecated
+  public static PeriodicMetricReader newMetricReaderFactory(MetricExporter exporter) {
+    return builder(exporter).build();
+  }
+
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */
   public static PeriodicMetricReaderBuilder builder(MetricExporter exporter) {
     return new PeriodicMetricReaderBuilder(exporter);

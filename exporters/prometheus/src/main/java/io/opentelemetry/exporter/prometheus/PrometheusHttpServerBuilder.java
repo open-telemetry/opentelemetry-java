@@ -40,5 +40,17 @@ public final class PrometheusHttpServerBuilder {
     return new PrometheusHttpServer(host, port);
   }
 
+  /**
+   * Returns a new {@link io.opentelemetry.sdk.metrics.export.MetricReaderFactory} with the
+   * configuration of this builder which can be registered with a {@link
+   * io.opentelemetry.sdk.metrics.SdkMeterProvider}.
+   *
+   * @deprecated Use {@link #build()}.
+   */
+  @Deprecated
+  public PrometheusHttpServer newMetricReaderFactory() {
+    return build();
+  }
+
   PrometheusHttpServerBuilder() {}
 }
