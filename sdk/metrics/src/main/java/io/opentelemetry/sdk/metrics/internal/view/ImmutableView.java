@@ -22,6 +22,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class ImmutableView implements View {
 
+  ImmutableView() {}
+
   /** Returns the {@link AttributesProcessor} for the {@link View}. */
   public static AttributesProcessor getAttributesProcessor(View view) {
     if (view instanceof ImmutableView) {
@@ -29,8 +31,6 @@ public abstract class ImmutableView implements View {
     }
     return AttributesProcessor.NOOP;
   }
-
-  ImmutableView() {}
 
   /** Processor of attributes before performing aggregation. */
   abstract AttributesProcessor getAttributesProcessor();
