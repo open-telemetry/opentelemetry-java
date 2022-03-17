@@ -255,6 +255,52 @@ class OtlpGrpcConfigTest {
   }
 
   @Test
+  void configureTlsMissingClientCertificatePath() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.client.key", Paths.get("foo", "bar", "baz").toString());
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
+
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key provided but certification chain is missing");
+
+    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key provided but certification chain is missing");
+
+    assertThatThrownBy(
+            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key provided but certification chain is missing");
+  }
+
+  @Test
+  void configureTlsMissingClientKeyPath() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.client.certificate", Paths.get("foo", "bar", "baz").toString());
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
+
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key chain provided but key is missing");
+
+    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key chain provided but key is missing");
+
+    assertThatThrownBy(
+            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key chain provided but key is missing");
+  }
+
+  @Test
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(
