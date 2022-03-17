@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 public interface ViewBuilder {
 
   /**
-   * sets the name of the resulting metric.
+   * Sets the name of the resulting metric.
    *
    * @param name metric name or {@code null} if the underlying instrument name should be used.
    * @return this Builder.
@@ -19,7 +19,7 @@ public interface ViewBuilder {
   ViewBuilder setName(String name);
 
   /**
-   * sets the name of the resulting metric.
+   * Sets the description of the resulting metric.
    *
    * @param description metric description or {@code null} if the underlying instrument description
    *     should be used.
@@ -28,7 +28,7 @@ public interface ViewBuilder {
   ViewBuilder setDescription(String description);
 
   /**
-   * sets {@link Aggregation}.
+   * Sets {@link Aggregation}.
    *
    * @param aggregation aggregation to use.
    * @return this Builder.

@@ -22,6 +22,8 @@ public final class InstrumentSelectorBuilder {
   private Predicate<String> meterVersionFilter = StringPredicates.ALL;
   private Predicate<String> meterSchemaUrlFilter = StringPredicates.ALL;
 
+  InstrumentSelectorBuilder() {}
+
   /** Sets a specifier for {@link InstrumentType}. */
   public InstrumentSelectorBuilder setType(InstrumentType instrumentType) {
     requireNonNull(instrumentType, "instrumentType");
