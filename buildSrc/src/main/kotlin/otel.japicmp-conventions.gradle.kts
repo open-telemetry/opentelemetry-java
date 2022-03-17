@@ -80,22 +80,24 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         val apiNewVersion: String? by project
         val newArtifact = apiNewVersion?.let { findArtifact(it) }
           ?: file(getByName<Jar>("jar").archiveFile)
-        newClasspath = files(newArtifact)
+        newClasspath.from(files(newArtifact))
 
         // only output changes, not everything
-        isOnlyModified = true
+        onlyModified.set(true)
 
         // the japicmp "old" version is either the user-specified one, or the latest release.
         val apiBaseVersion: String? by project
         val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-        oldClasspath = try {
-          files(findArtifact(baselineVersion))
-        } catch (e: Exception) {
-          // if we can't find the baseline artifact, this is probably one that's never been published before,
-          // so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
-          isOnlyModified = false
-          files()
-        }
+        oldClasspath.from(
+          try {
+            files(findArtifact(baselineVersion))
+          } catch (e: Exception) {
+            // if we can't find the baseline artifact, this is probably one that's never been published before,
+            // so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
+            onlyModified.set(false)
+            files()
+          }
+        )
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
         // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
@@ -110,11 +112,13 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         }
 
         // this is needed so that we only consider the current artifact, and not dependencies
-        isIgnoreMissingClasses = true
-        packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
+        ignoreMissingClasses.set(true)
+        packageExcludes.addAll("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
-        txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
-          ?: file("$rootDir/docs/apidiffs/current_vs_$baseVersionString/${base.archivesName.get()}.txt")
+        txtOutputFile.set(
+          apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
+            ?: file("$rootDir/docs/apidiffs/current_vs_$baseVersionString/${base.archivesName.get()}.txt")
+        )
       }
       // have the check task depend on the api comparison task, to make it more likely it will get used.
       named("check") {
