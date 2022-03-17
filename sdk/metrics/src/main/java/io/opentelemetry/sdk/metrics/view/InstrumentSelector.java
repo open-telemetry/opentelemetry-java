@@ -38,6 +38,8 @@ public abstract class InstrumentSelector {
         meterSchemaUrlFilter);
   }
 
+  InstrumentSelector() {}
+
   /**
    * Returns {@link InstrumentType} that should be selected. If null, then this specifier will not
    * be used.

@@ -27,6 +27,8 @@ public abstract class MeterProviderSharedState {
         clock, resource, viewRegistry, clock.now(), exemplarFilter);
   }
 
+  MeterProviderSharedState() {}
+
   /** Returns the clock used for measurements. */
   public abstract Clock getClock();
 

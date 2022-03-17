@@ -30,6 +30,8 @@ public abstract class ImmutableView implements View {
     return AttributesProcessor.NOOP;
   }
 
+  ImmutableView() {}
+
   /** Processor of attributes before performing aggregation. */
   abstract AttributesProcessor getAttributesProcessor();
 

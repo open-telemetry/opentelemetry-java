@@ -48,6 +48,8 @@ public abstract class MetricDescriptor {
     return new AutoValue_MetricDescriptor(name, description, view, instrument);
   }
 
+  MetricDescriptor() {}
+
   /**
    * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link
    * InstrumentDescriptor#getName()}.

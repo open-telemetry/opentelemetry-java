@@ -29,7 +29,7 @@ public final class SdkMeterProviderBuilder {
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
   private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
-  // Default the sampling strategy.
+  // Set the default exemplar filter strategy.
   private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
   private long minimumCollectionIntervalNanos = TimeUnit.MILLISECONDS.toNanos(100);
 
