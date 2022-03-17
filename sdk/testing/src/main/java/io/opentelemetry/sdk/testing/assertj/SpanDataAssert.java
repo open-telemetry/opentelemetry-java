@@ -252,6 +252,13 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return startsAt(toNanos(timestamp));
   }
 
+  /** Asserts the span attributes. */
+  public SpanDataAssert assertAttributes(Consumer<AttributesAssert> attributesAssert) {
+    isNotNull();
+    attributesAssert.accept(assertThat(actual.getAttributes()));
+    return this;
+  }
+
   /** Asserts the span has the given attributes. */
   public SpanDataAssert hasAttributes(Attributes attributes) {
     isNotNull();

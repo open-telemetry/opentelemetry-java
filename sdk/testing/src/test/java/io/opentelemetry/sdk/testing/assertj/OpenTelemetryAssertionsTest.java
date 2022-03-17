@@ -142,6 +142,7 @@ class OpenTelemetryAssertionsTest {
         .startsAt(100)
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
+        .assertAttributes(attributesAssert -> attributesAssert.containsKey("bear"))
         .hasAttributes(ATTRIBUTES)
         .hasAttributes(
             attributeEntry("bear", "mya"),
