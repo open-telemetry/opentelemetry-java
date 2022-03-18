@@ -27,14 +27,14 @@ final class MeterProviderConfiguration {
     }
     switch (exemplarFilter) {
       case "none":
-        meterProviderBuilder.setExemplarFilter(ExemplarFilter.neverSample());
+        ExemplarFilter.setExemplarFilter(meterProviderBuilder, ExemplarFilter.neverSample());
         break;
       case "all":
-        meterProviderBuilder.setExemplarFilter(ExemplarFilter.alwaysSample());
+        ExemplarFilter.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysSample());
         break;
       case "with_sampled_trace":
       default:
-        meterProviderBuilder.setExemplarFilter(ExemplarFilter.sampleWithTraces());
+        ExemplarFilter.setExemplarFilter(meterProviderBuilder, ExemplarFilter.sampleWithTraces());
         break;
     }
 

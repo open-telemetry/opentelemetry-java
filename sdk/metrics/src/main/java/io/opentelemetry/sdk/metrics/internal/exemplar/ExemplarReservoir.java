@@ -17,6 +17,9 @@ import java.util.function.Supplier;
  * An interface for an exemplar reservoir of samples.
  *
  * <p>This represents a reservoir for a specific "point" of metric data.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface ExemplarReservoir {
 

@@ -64,7 +64,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @return this
    */
-  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+  SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = filter;
     return this;
   }
