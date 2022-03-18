@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -25,6 +26,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class ViewRegistry {
   static final View DEFAULT_VIEW = View.builder().build();
+  static final RegisteredView DEFAULT_REGISTERED_VIEW =
+      RegisteredView.create(
+          InstrumentSelector.builder().build(), DEFAULT_VIEW, SourceInfo.noSourceInfo());
   private final List<RegisteredView> reverseRegistration;
 
   ViewRegistry(List<RegisteredView> reverseRegistration) {
@@ -43,16 +47,16 @@ public final class ViewRegistry {
    * @return The list of {@link View}s for this instrument in registered order, or a default
    *     aggregation view.
    */
-  public List<View> findViews(
+  public List<RegisteredView> findViews(
       InstrumentDescriptor descriptor, InstrumentationScopeInfo meterScope) {
-    List<View> result = new ArrayList<>();
+    List<RegisteredView> result = new ArrayList<>();
     for (RegisteredView entry : reverseRegistration) {
       if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
-        result.add(entry.getView());
+        result.add(entry);
       }
     }
     if (result.isEmpty()) {
-      return Collections.singletonList(DEFAULT_VIEW);
+      return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
     }
     return Collections.unmodifiableList(result);
   }

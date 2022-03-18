@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -27,7 +28,10 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(), view)
+            .addView(
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+                view,
+                SourceInfo.fromCurrentStack())
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -54,7 +58,10 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(InstrumentSelector.builder().setName("overridden").build(), view)
+            .addView(
+                InstrumentSelector.builder().setName("overridden").build(),
+                view,
+                SourceInfo.fromCurrentStack())
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -84,8 +91,12 @@ class ViewRegistryTest {
         ViewRegistry.builder()
             .addView(
                 InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
-                view2)
-            .addView(InstrumentSelector.builder().setName(name -> true).build(), view1)
+                view2,
+                SourceInfo.fromCurrentStack())
+            .addView(
+                InstrumentSelector.builder().setName(name -> true).build(),
+                view1,
+                SourceInfo.fromCurrentStack())
             .build();
 
     assertThat(
@@ -117,7 +128,8 @@ class ViewRegistryTest {
                     .setType(InstrumentType.COUNTER)
                     .setName("overrides")
                     .build(),
-                view)
+                view,
+                SourceInfo.fromCurrentStack())
             .build();
 
     assertThat(

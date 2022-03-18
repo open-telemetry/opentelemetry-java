@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import javax.annotation.concurrent.Immutable;
@@ -18,13 +19,17 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-abstract class RegisteredView {
-  /** Instrument fitler for applying this view. */
-  abstract InstrumentSelector getInstrumentSelector();
+public abstract class RegisteredView {
+  /** Instrument filter for applying this view. */
+  public abstract InstrumentSelector getInstrumentSelector();
   /** The view to apply. */
-  abstract View getView();
+  public abstract View getView();
 
-  static RegisteredView create(InstrumentSelector selector, View view) {
-    return new AutoValue_RegisteredView(selector, view);
+  /** The {@link SourceInfo} from where the view was registered. */
+  public abstract SourceInfo getViewSourceInfo();
+
+  public static RegisteredView create(
+      InstrumentSelector selector, View view, SourceInfo viewSourceInfo) {
+    return new AutoValue_RegisteredView(selector, view, viewSourceInfo);
   }
 }

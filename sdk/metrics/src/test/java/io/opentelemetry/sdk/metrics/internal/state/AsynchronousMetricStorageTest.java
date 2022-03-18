@@ -18,9 +18,11 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -42,7 +44,7 @@ public class AsynchronousMetricStorageTest {
   private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
       MeterSharedState.create(InstrumentationScopeInfo.empty());
-  private View view;
+  private RegisteredView registeredView;
   private CollectionHandle handle;
   private Set<CollectionHandle> all;
 
@@ -53,11 +55,17 @@ public class AsynchronousMetricStorageTest {
 
   @BeforeEach
   void setup() {
-    view = View.builder().setAggregation(Aggregation.lastValue()).build();
+    registeredView =
+        RegisteredView.create(
+            InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_GAUGE).build(),
+            View.builder().setAggregation(Aggregation.lastValue()).build(),
+            SourceInfo.fromCurrentStack());
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_GAUGE).build(), view)
+                registeredView.getInstrumentSelector(),
+                registeredView.getView(),
+                registeredView.getViewSourceInfo())
             .build();
 
     meterProviderSharedState =
@@ -73,7 +81,7 @@ public class AsynchronousMetricStorageTest {
   void collectAndReset_CallsMultipleCallbacks() {
     AsynchronousMetricStorage<?, ObservableLongMeasurement> metricStorage =
         AsynchronousMetricStorage.createLongAsyncStorage(
-            view,
+            registeredView,
             InstrumentDescriptor.create(
                 "my-instrument",
                 "description",
@@ -141,7 +149,7 @@ public class AsynchronousMetricStorageTest {
   void collectAndReset_IgnoresDuplicates() {
     AsynchronousMetricStorage<?, ObservableLongMeasurement> metricStorage =
         AsynchronousMetricStorage.createLongAsyncStorage(
-            view,
+            registeredView,
             InstrumentDescriptor.create(
                 "my-instrument",
                 "description",
@@ -185,7 +193,7 @@ public class AsynchronousMetricStorageTest {
   void collectAndReset_CallbackException() {
     AsynchronousMetricStorage<?, ObservableDoubleMeasurement> metricStorage =
         AsynchronousMetricStorage.createDoubleAsyncStorage(
-            view,
+            registeredView,
             InstrumentDescriptor.create(
                 "my-instrument",
                 "description",

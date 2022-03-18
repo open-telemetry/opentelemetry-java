@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
@@ -81,6 +82,7 @@ class MetricStorageRegistryTest {
       String name, String description, InstrumentType instrumentType) {
     return MetricDescriptor.create(
         View.builder().build(),
+        SourceInfo.fromCurrentStack(),
         InstrumentDescriptor.create(
             name, description, "1", instrumentType, InstrumentValueType.DOUBLE));
   }
