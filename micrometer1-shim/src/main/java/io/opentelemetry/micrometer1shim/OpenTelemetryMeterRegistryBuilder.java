@@ -19,6 +19,7 @@ public final class OpenTelemetryMeterRegistryBuilder {
   private final OpenTelemetry openTelemetry;
   private Clock clock = Clock.SYSTEM;
   private TimeUnit baseTimeUnit = TimeUnit.MILLISECONDS;
+  private boolean prometheusMode = false;
 
   OpenTelemetryMeterRegistryBuilder(OpenTelemetry openTelemetry) {
     this.openTelemetry = openTelemetry;
@@ -37,11 +38,27 @@ public final class OpenTelemetryMeterRegistryBuilder {
   }
 
   /**
+   * Enables the "Prometheus mode" - this will simulate the behavior of Micrometer's {@code
+   * PrometheusMeterRegistry}. The instruments will be renamed to match Micrometer instrument
+   * naming, and the base time unit will be set to seconds.
+   *
+   * <p>Set this to {@code true} if you are using the Prometheus metrics exporter.
+   */
+  public OpenTelemetryMeterRegistryBuilder setPrometheusMode(boolean prometheusMode) {
+    this.prometheusMode = prometheusMode;
+    return this;
+  }
+
+  /**
    * Returns a new {@link OpenTelemetryMeterRegistry} with the settings of this {@link
    * OpenTelemetryMeterRegistryBuilder}.
    */
   public MeterRegistry build() {
     return new OpenTelemetryMeterRegistry(
-        clock, baseTimeUnit, openTelemetry.getMeterProvider().get(INSTRUMENTATION_NAME));
+        clock,
+        // prometheus mode overrides any unit settings with SECONDS
+        prometheusMode ? TimeUnit.SECONDS : baseTimeUnit,
+        prometheusMode,
+        openTelemetry.getMeterProvider().get(INSTRUMENTATION_NAME));
   }
 }
