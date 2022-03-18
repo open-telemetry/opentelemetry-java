@@ -252,10 +252,24 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return startsAt(toNanos(timestamp));
   }
 
-  /** Asserts the span attributes. */
-  public SpanDataAssert assertAttributes(Consumer<AttributesAssert> attributesAssert) {
+  /** Asserts a single span attributes. */
+  public <T> SpanDataAssert hasAttribute(AttributeKey<T> key, T value) {
+    return hasAttribute(OpenTelemetryAssertions.equalTo(key, value));
+  }
+
+  /** Asserts a single span attributes. */
+  public SpanDataAssert hasAttribute(AttributeAssertion attributeAssertion) {
     isNotNull();
-    attributesAssert.accept(assertThat(actual.getAttributes()));
+
+    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
+    AttributeKey<?> key = attributeAssertion.getKey();
+
+    assertThat(actualKeys).as("span [%s] attribute keys", actual.getName()).contains(key);
+
+    Object value = actual.getAttributes().get(key);
+    AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
+    attributeAssertion.getAssertion().accept(assertion);
+
     return this;
   }
 
