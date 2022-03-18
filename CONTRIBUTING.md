@@ -163,16 +163,6 @@ of libraries with the old version number.
 To update it, you must fetch the tags, via `git fetch --all --tags` - which should work, even if you
 have forked the repo, as long as the trunk repo is set as an upstream remote.
 
-### Updating OTLP proto dependency version
-
-The OTLP proto dependency version is defined [here](proto/build.gradle). To bump the version,
-
-1. Find the latest release
-   version [here](https://github.com/open-telemetry/opentelemetry-proto/releases/latest)
-2. Download the zip source code archive
-3. Run `shasum -a 256 ~/path/to/downloaded.zip` to compute its checksum
-4. Update `protoVersion` and `protoChecksum` in the build file with the new version and checksum
-
 ### Composing builds
 
 Beware that this section is only meant for developers of opentelemetry-java, or closely related

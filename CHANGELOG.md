@@ -745,8 +745,8 @@ in the `opentelemetry-sdk-extension-autoconfigure` module, where it is actually 
 Note: In an effort to accelerate our work toward a 1.0.0 release, we have skipped the deprecation phase
 on a number of breaking changes. We apologize for the inconvenience this may have caused. We are very
 aware that these changes will impact users. If you need assistance in migrating from previous releases,
-please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at
-[https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
+please open a [discussion topic](https://github.com/open-telemetry/opentelemetry-java/discussions) at
+[https://github.com/open-telemetry/opentelemetry-java/discussions](https://github.com/open-telemetry/opentelemetry-java/discussions).
 
 Many classes have been made final that previously were not. Please reach out if you have a need to
 provide extended functionality, and we can figure out how best to solve your use-case.
@@ -813,8 +813,8 @@ the `http://` or `https://` in front of your endpoint.
 Note: In an effort to accelerate our work toward a 1.0.0 release, we have skipped the deprecation phase
 on a number of breaking changes. We apologize for the inconvenience this may have caused. We are very
 aware that these changes will impact users. If you need assistance in migrating from previous releases,
-please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at
-[https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
+please open a [discussion topic](https://github.com/open-telemetry/opentelemetry-java/discussions) at
+[https://github.com/open-telemetry/opentelemetry-java/discussions](https://github.com/open-telemetry/opentelemetry-java/discussions).
 
 #### Breaking Changes
 
@@ -1385,7 +1385,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 - `DefaultSpan` was removed from the public API. Instead, use `Span.wrap(spanContext)` if you need a non-functional span that propagates the trace context.
 - `DefaultMeter`, `DefaultMeterProvider`, `DefaultTracer` and `DefaultTracerProvider` were removed from the public API. You can access the same functionality with `getDefault()` methods on the `Meter`, `MeterProvider, `Tracer`, and `TracerProvider` classes, respectively.
 - Some functionality from the `Tracer` interface is now available either on the `Span` interface or `Context` interface.
-- The `OpenTelemetry` class is now an interface, with implementations. Methods on this interface have changed their names to reflect this change. For more information, see [OpenTelemetry.java](/api/src/main/java/io/opentelemetry/api/OpenTelemetry.java).
+- The `OpenTelemetry` class is now an interface, with implementations. Methods on this interface have changed their names to reflect this change. For more information, see [OpenTelemetry.java](api/all/src/main/java/io/opentelemetry/api/OpenTelemetry.java).
 - All builder-creation methods have been renamed to `.builder()`.
 - `StatusCanonicalCode` has been renamed to `StatusCode`.
 - `Span.getContext()` has been renamed to `Span.getSpanContext()`.
