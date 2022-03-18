@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.view;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;

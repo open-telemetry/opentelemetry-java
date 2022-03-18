@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.viewconfig;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import javax.annotation.Nullable;
 
 @AutoValue
