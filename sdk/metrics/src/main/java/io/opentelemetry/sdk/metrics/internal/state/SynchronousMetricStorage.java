@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.view.View;
 
@@ -48,6 +49,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, view.getAttributesProcessor());
+        metricDescriptor, aggregator, (AbstractAttributesProcessor) view.getAttributesProcessor());
   }
 }

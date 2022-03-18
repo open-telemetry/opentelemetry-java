@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -24,7 +24,7 @@ public abstract class View {
       @Nullable String name,
       @Nullable String description,
       Aggregation aggregation,
-      AttributesProcessor attributesProcessor) {
+      AbstractAttributesProcessor attributesProcessor) {
     return new AutoValue_View(name, description, aggregation, attributesProcessor);
   }
 

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -17,7 +17,7 @@ public final class ViewBuilder {
   @Nullable private String name;
   @Nullable private String description;
   private Aggregation aggregation = Aggregation.defaultAggregation();
-  private AttributesProcessor processor = AttributesProcessor.noop();
+  private AbstractAttributesProcessor processor = AbstractAttributesProcessor.noop();
 
   ViewBuilder() {}
 
@@ -71,10 +71,10 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
-    return addAttributesProcessor(AttributesProcessor.filterByKeyName(keyFilter));
+    return addAttributesProcessor(AbstractAttributesProcessor.filterByKeyName(keyFilter));
   }
 
-  ViewBuilder addAttributesProcessor(AttributesProcessor attributesProcessor) {
+  ViewBuilder addAttributesProcessor(AbstractAttributesProcessor attributesProcessor) {
     this.processor = this.processor.then(attributesProcessor);
     return this;
   }

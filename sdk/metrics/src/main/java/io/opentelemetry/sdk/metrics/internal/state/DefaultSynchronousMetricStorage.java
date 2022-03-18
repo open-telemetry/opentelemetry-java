@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
@@ -28,12 +28,12 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   private final MetricDescriptor metricDescriptor;
   private final DeltaMetricStorage<T> deltaMetricStorage;
   private final TemporalMetricStorage<T> temporalMetricStorage;
-  private final AttributesProcessor attributesProcessor;
+  private final AbstractAttributesProcessor attributesProcessor;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AbstractAttributesProcessor attributesProcessor) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
     this.deltaMetricStorage =

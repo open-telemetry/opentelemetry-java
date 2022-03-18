@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -77,7 +77,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
     ObservableDoubleMeasurement measurement =
         new ObservableDoubleMeasurementImpl<>(
-            aggregator, accumulator, view.getAttributesProcessor());
+            aggregator, accumulator, (AbstractAttributesProcessor) view.getAttributesProcessor());
     return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 
@@ -93,7 +93,8 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
             .createAggregator(instrument, ExemplarFilter.neverSample());
     AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
     ObservableLongMeasurement measurement =
-        new ObservableLongMeasurementImpl<>(aggregator, accumulator, view.getAttributesProcessor());
+        new ObservableLongMeasurementImpl<>(
+            aggregator, accumulator, (AbstractAttributesProcessor) view.getAttributesProcessor());
     return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 
@@ -208,12 +209,12 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
 
     private final Aggregator<T> aggregator;
     private final AsyncAccumulator<T> asyncAccumulator;
-    private final AttributesProcessor attributesProcessor;
+    private final AbstractAttributesProcessor attributesProcessor;
 
     private ObservableLongMeasurementImpl(
         Aggregator<T> aggregator,
         AsyncAccumulator<T> asyncAccumulator,
-        AttributesProcessor attributesProcessor) {
+        AbstractAttributesProcessor attributesProcessor) {
       this.aggregator = aggregator;
       this.asyncAccumulator = asyncAccumulator;
       this.attributesProcessor = attributesProcessor;
@@ -238,12 +239,12 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
 
     private final Aggregator<T> aggregator;
     private final AsyncAccumulator<T> asyncAccumulator;
-    private final AttributesProcessor attributesProcessor;
+    private final AbstractAttributesProcessor attributesProcessor;
 
     private ObservableDoubleMeasurementImpl(
         Aggregator<T> aggregator,
         AsyncAccumulator<T> asyncAccumulator,
-        AttributesProcessor attributesProcessor) {
+        AbstractAttributesProcessor attributesProcessor) {
       this.aggregator = aggregator;
       this.asyncAccumulator = asyncAccumulator;
       this.attributesProcessor = attributesProcessor;

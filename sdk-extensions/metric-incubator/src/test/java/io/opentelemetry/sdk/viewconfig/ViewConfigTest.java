@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -114,7 +115,7 @@ class ViewConfigTest {
     assertThat(view.getDescription()).isEqualTo("description");
     assertThat(view.getAggregation()).isEqualTo(Aggregation.sum());
     assertThat(
-            view.getAttributesProcessor()
+            ((AbstractAttributesProcessor) view.getAttributesProcessor())
                 .process(
                     Attributes.builder()
                         .put("foo", "val")

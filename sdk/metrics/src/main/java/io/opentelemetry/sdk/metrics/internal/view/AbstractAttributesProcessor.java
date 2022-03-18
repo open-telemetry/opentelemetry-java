@@ -9,6 +9,7 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,18 +20,15 @@ import java.util.function.UnaryOperator;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An {@code AttributesProcessor} is used by {@code View}s to define the actual recorded set of
- * attributes.
- *
- * <p>An AttributesProcessor is used to define the actual set of attributes that will be used in a
+ * An AttributesProcessor is used to define the actual set of attributes that will be used in a
  * Metric vs. the inbound set of attributes from a measurement.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 @Immutable
-public abstract class AttributesProcessor {
-  private AttributesProcessor() {}
+public abstract class AbstractAttributesProcessor implements AttributesProcessor {
+  private AbstractAttributesProcessor() {}
 
   /**
    * Manipulates a set of attributes, returning the desired set.
@@ -48,7 +46,7 @@ public abstract class AttributesProcessor {
   public abstract boolean usesContext();
 
   /** Joins this attribute processor with another that operates after this one. */
-  public AttributesProcessor then(AttributesProcessor other) {
+  public AbstractAttributesProcessor then(AbstractAttributesProcessor other) {
     if (other == NOOP) {
       return this;
     }
@@ -63,7 +61,7 @@ public abstract class AttributesProcessor {
   }
 
   /** No-op version of attributes processor, returns what it gets. */
-  public static AttributesProcessor noop() {
+  public static AbstractAttributesProcessor noop() {
     return NOOP;
   }
 
@@ -72,7 +70,7 @@ public abstract class AttributesProcessor {
    *
    * @param nameFilter a filter for which attribute keys to preserve.
    */
-  public static AttributesProcessor filterByKeyName(Predicate<String> nameFilter) {
+  public static AbstractAttributesProcessor filterByKeyName(Predicate<String> nameFilter) {
     return simple(
         incoming ->
             incoming.toBuilder()
@@ -87,7 +85,7 @@ public abstract class AttributesProcessor {
    *
    * @param nameFilter a filter for which baggage keys to select.
    */
-  public static AttributesProcessor appendBaggageByKeyName(Predicate<String> nameFilter) {
+  public static AbstractAttributesProcessor appendBaggageByKeyName(Predicate<String> nameFilter) {
     return onBaggage(
         (incoming, baggage) -> {
           AttributesBuilder result = Attributes.builder();
@@ -110,13 +108,13 @@ public abstract class AttributesProcessor {
    *
    * @param attributes Attributes to append to measurements.
    */
-  public static AttributesProcessor append(Attributes attributes) {
+  public static AbstractAttributesProcessor append(Attributes attributes) {
     return simple(incoming -> attributes.toBuilder().putAll(incoming).build());
   }
 
   /** Creates a simple attributes processor with no access to context. */
-  static AttributesProcessor simple(UnaryOperator<Attributes> processor) {
-    return new AttributesProcessor() {
+  static AbstractAttributesProcessor simple(UnaryOperator<Attributes> processor) {
+    return new AbstractAttributesProcessor() {
 
       @Override
       public Attributes process(Attributes incoming, Context context) {
@@ -131,8 +129,9 @@ public abstract class AttributesProcessor {
   }
 
   /** Creates an Attributes processor that has access to baggage. */
-  static AttributesProcessor onBaggage(BiFunction<Attributes, Baggage, Attributes> processor) {
-    return new AttributesProcessor() {
+  static AbstractAttributesProcessor onBaggage(
+      BiFunction<Attributes, Baggage, Attributes> processor) {
+    return new AbstractAttributesProcessor() {
       @Override
       public Attributes process(Attributes incoming, Context context) {
         return processor.apply(incoming, Baggage.fromContext(context));
@@ -145,24 +144,26 @@ public abstract class AttributesProcessor {
     };
   }
 
-  static final AttributesProcessor NOOP = simple(incoming -> incoming);
+  static final AbstractAttributesProcessor NOOP = simple(incoming -> incoming);
 
-  /** A {@link AttributesProcessor} that runs a sequence of processors. */
+  /** A {@link AbstractAttributesProcessor} that runs a sequence of processors. */
   @Immutable
-  static final class JoinedAttributesProcessor extends AttributesProcessor {
-    private final Collection<AttributesProcessor> processors;
+  static final class JoinedAttributesProcessor extends AbstractAttributesProcessor {
+    private final Collection<AbstractAttributesProcessor> processors;
     private final boolean usesContextCache;
 
-    JoinedAttributesProcessor(Collection<AttributesProcessor> processors) {
+    JoinedAttributesProcessor(Collection<AbstractAttributesProcessor> processors) {
       this.processors = processors;
       this.usesContextCache =
-          processors.stream().map(AttributesProcessor::usesContext).reduce(false, (l, r) -> l || r);
+          processors.stream()
+              .map(AbstractAttributesProcessor::usesContext)
+              .reduce(false, (l, r) -> l || r);
     }
 
     @Override
     public Attributes process(Attributes incoming, Context context) {
       Attributes result = incoming;
-      for (AttributesProcessor processor : processors) {
+      for (AbstractAttributesProcessor processor : processors) {
         result = processor.process(result, context);
       }
       return result;
@@ -174,8 +175,8 @@ public abstract class AttributesProcessor {
     }
 
     @Override
-    public AttributesProcessor then(AttributesProcessor other) {
-      List<AttributesProcessor> newList = new ArrayList<>(processors);
+    public AbstractAttributesProcessor then(AbstractAttributesProcessor other) {
+      List<AbstractAttributesProcessor> newList = new ArrayList<>(processors);
       if (other instanceof JoinedAttributesProcessor) {
         newList.addAll(((JoinedAttributesProcessor) other).processors);
       } else {
@@ -184,8 +185,8 @@ public abstract class AttributesProcessor {
       return new JoinedAttributesProcessor(newList);
     }
 
-    AttributesProcessor prepend(AttributesProcessor other) {
-      List<AttributesProcessor> newList = new ArrayList<>(processors.size() + 1);
+    AbstractAttributesProcessor prepend(AbstractAttributesProcessor other) {
+      List<AbstractAttributesProcessor> newList = new ArrayList<>(processors.size() + 1);
       newList.add(other);
       newList.addAll(processors);
       return new JoinedAttributesProcessor(newList);

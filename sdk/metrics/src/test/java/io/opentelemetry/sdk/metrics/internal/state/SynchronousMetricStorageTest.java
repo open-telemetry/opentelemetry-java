@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -48,7 +48,8 @@ public class SynchronousMetricStorageTest {
   private final Aggregator<Long> aggregator =
       ((AggregatorFactory) Aggregation.lastValue())
           .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
-  private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
+  private final AbstractAttributesProcessor attributesProcessor =
+      AbstractAttributesProcessor.noop();
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;
 
@@ -63,7 +64,7 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void attributesProcessor_used() {
-    AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
+    AbstractAttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(
             METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
@@ -74,9 +75,10 @@ public class SynchronousMetricStorageTest {
   @Test
   void attributesProcessor_applied() {
     Attributes labels = Attributes.builder().put("K", "V").build();
-    AttributesProcessor attributesProcessor =
-        AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
-    AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
+    AbstractAttributesProcessor attributesProcessor =
+        AbstractAttributesProcessor.append(
+            Attributes.builder().put("modifiedK", "modifiedV").build());
+    AbstractAttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
