@@ -69,16 +69,4 @@ public final class PeriodicMetricReaderBuilder {
     periodicMetricReader.start(intervalNanos);
     return periodicMetricReader;
   }
-
-  /**
-   * Returns a new {@link io.opentelemetry.sdk.metrics.export.MetricReaderFactory} with the
-   * configuration of this builder which can be registered with a {@link
-   * io.opentelemetry.sdk.metrics.SdkMeterProvider}.
-   *
-   * @deprecated Use {@link #build()}.
-   */
-  @Deprecated
-  public PeriodicMetricReader newMetricReaderFactory() {
-    return build();
-  }
 }

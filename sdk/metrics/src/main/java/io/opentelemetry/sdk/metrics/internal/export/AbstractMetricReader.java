@@ -19,20 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@SuppressWarnings("deprecation") // Stop implementing MetricReaderFactory when removed
-public abstract class AbstractMetricReader
-    implements MetricReader, io.opentelemetry.sdk.metrics.export.MetricReaderFactory {
+public abstract class AbstractMetricReader implements MetricReader {
 
   private static final MetricProducer EMPTY_METRIC_PRODUCER = Collections::emptyList;
 
   private final AtomicReference<MetricProducer> metricProducerRef = new AtomicReference<>();
-
-  @Override
-  @Deprecated
-  public MetricReader apply(MetricProducer producer) {
-    registerMetricProducer(producer);
-    return this;
-  }
 
   /**
    * Called exactly once by {@link SdkMeterProvider} during initialization to register the {@link
