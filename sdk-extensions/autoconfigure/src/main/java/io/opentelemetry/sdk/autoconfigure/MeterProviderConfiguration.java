@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.util.function.BiFunction;
 
 final class MeterProviderConfiguration {

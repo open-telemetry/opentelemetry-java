@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 
 /** Configuration representing no aggregation. */
 final class DropAggregation implements Aggregation, AggregatorFactory {

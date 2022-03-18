@@ -3,23 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.exemplar;
+package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 
-class NeverSampleFilter implements ExemplarFilter {
-  static final ExemplarFilter INSTANCE = new NeverSampleFilter();
+class AlwaysSampleFilter implements ExemplarFilter {
+  static final ExemplarFilter INSTANCE = new AlwaysSampleFilter();
 
-  private NeverSampleFilter() {}
+  private AlwaysSampleFilter() {}
 
   @Override
   public boolean shouldSampleMeasurement(long value, Attributes attributes, Context context) {
-    return false;
+    return true;
   }
 
   @Override
   public boolean shouldSampleMeasurement(double value, Attributes attributes, Context context) {
-    return false;
+    return true;
   }
 }

@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;

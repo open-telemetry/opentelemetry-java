@@ -5,6 +5,6 @@
 
 /** Metric exemplar extension points. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.metrics.exemplar;
+package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import javax.annotation.ParametersAreNonnullByDefault;

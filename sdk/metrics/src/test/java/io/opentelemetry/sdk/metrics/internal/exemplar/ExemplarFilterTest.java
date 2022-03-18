@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.exemplar;
+package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
