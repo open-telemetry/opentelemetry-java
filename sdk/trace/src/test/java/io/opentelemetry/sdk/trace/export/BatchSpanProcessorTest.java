@@ -31,8 +31,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,6 +95,8 @@ class BatchSpanProcessorTest {
     assertThat(builder.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
+    assertThat(builder.getMaxActiveExports())
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_ACTIVE_EXPORTS);
   }
 
   @Test
@@ -189,7 +194,7 @@ class BatchSpanProcessorTest {
   @Test
   void forceExport() {
     WaitingSpanExporter waitingSpanExporter =
-        new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1);
+        new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1000);
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.builder(waitingSpanExporter)
             .setMaxQueueSize(10_000)
@@ -218,6 +223,69 @@ class BatchSpanProcessorTest {
     exported = waitingSpanExporter.getExported();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(2);
+  }
+
+  @Test
+  void forceFlushWithConcurrentExports() {
+    AtomicInteger maxActiveCount = new AtomicInteger();
+    // asyncDelayMillis is large enough so that two serial exports would exceed the timeoutMillis
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1000, CompletableResultCode.ofSuccess(), 1000, 600) {
+
+          private final AtomicInteger activeCount = new AtomicInteger();
+
+          @Override
+          public CompletableResultCode export(Collection<SpanData> spans) {
+            int current = activeCount.incrementAndGet();
+            if (current > maxActiveCount.get()) {
+              maxActiveCount.set(current);
+            }
+            CompletableResultCode result = super.export(spans);
+            result.whenComplete(
+                () -> {
+                  activeCount.decrementAndGet();
+                  if (result.isSuccess()) {
+                    result.succeed();
+                  } else {
+                    result.fail();
+                  }
+                });
+            return result;
+          }
+        };
+
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(waitingSpanExporter)
+            .setMaxQueueSize(10_000)
+            // Force flush should send all spans, make sure the number of spans we check here is
+            // not divisible by the batch size.
+            .setMaxExportBatchSize(49)
+            .setMaxActiveExports(10)
+            // scheduled export could give false positive that flush occurred
+            .setScheduleDelay(10, TimeUnit.MINUTES)
+            .build();
+
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    for (int i = 0; i < 500; i++) {
+      createEndedSpan("notExported");
+    }
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(490);
+
+    for (int i = 0; i < 500; i++) {
+      createEndedSpan("notExported");
+    }
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(490);
+
+    batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
+    exported = waitingSpanExporter.getExported();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(20);
+
+    assertThat(maxActiveCount.get()).isEqualTo(10);
   }
 
   @Test
@@ -610,28 +678,48 @@ class BatchSpanProcessorTest {
 
   static class WaitingSpanExporter implements SpanExporter {
 
+    private static final ScheduledExecutorService scheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor();
+
+    private final Object lock = new Object();
+
+    @GuardedBy("lock")
     private final List<SpanData> spanDataList = new ArrayList<>();
+
     private final int numberToWaitFor;
     private final CompletableResultCode exportResultCode;
     private CountDownLatch countDownLatch;
-    private int timeout = 10;
+    private final int timeoutMillis;
+    private final int asyncDelayMillis;
     private final AtomicBoolean shutDownCalled = new AtomicBoolean(false);
 
     WaitingSpanExporter(int numberToWaitFor, CompletableResultCode exportResultCode) {
+      this(numberToWaitFor, exportResultCode, 10_000);
+    }
+
+    WaitingSpanExporter(
+        int numberToWaitFor, CompletableResultCode exportResultCode, int timeoutMillis) {
+      this(numberToWaitFor, exportResultCode, timeoutMillis, 0);
+    }
+
+    WaitingSpanExporter(
+        int numberToWaitFor,
+        CompletableResultCode exportResultCode,
+        int timeoutMillis,
+        int asyncDelayMillis) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
       this.exportResultCode = exportResultCode;
-    }
-
-    WaitingSpanExporter(int numberToWaitFor, CompletableResultCode exportResultCode, int timeout) {
-      this(numberToWaitFor, exportResultCode);
-      this.timeout = timeout;
+      this.timeoutMillis = timeoutMillis;
+      this.asyncDelayMillis = asyncDelayMillis;
     }
 
     List<SpanData> getExported() {
-      List<SpanData> result = new ArrayList<>(spanDataList);
-      spanDataList.clear();
-      return result;
+      synchronized (lock) {
+        List<SpanData> result = new ArrayList<>(spanDataList);
+        spanDataList.clear();
+        return result;
+      }
     }
 
     /**
@@ -644,7 +732,7 @@ class BatchSpanProcessorTest {
     @Nullable
     List<SpanData> waitForExport() {
       try {
-        countDownLatch.await(timeout, TimeUnit.SECONDS);
+        countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         // Preserve the interruption status as per guidance.
         Thread.currentThread().interrupt();
@@ -655,11 +743,40 @@ class BatchSpanProcessorTest {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-      this.spanDataList.addAll(spans);
+      if (asyncDelayMillis != 0) {
+        return storeAfterDelay(spans);
+      } else {
+        store(spans);
+        return exportResultCode;
+      }
+    }
+
+    @SuppressWarnings("FutureReturnValueIgnored")
+    private CompletableResultCode storeAfterDelay(Collection<SpanData> spans) {
+      // batch span processor clears the underlying collection immediately after calling export
+      List<SpanData> copy = new ArrayList<>(spans);
+      CompletableResultCode resultCode = new CompletableResultCode();
+      scheduledExecutorService.schedule(
+          () -> {
+            store(copy);
+            if (exportResultCode.isSuccess()) {
+              resultCode.succeed();
+            } else {
+              resultCode.fail();
+            }
+          },
+          asyncDelayMillis,
+          TimeUnit.MILLISECONDS);
+      return resultCode;
+    }
+
+    private void store(Collection<SpanData> spans) {
+      synchronized (lock) {
+        this.spanDataList.addAll(spans);
+      }
       for (int i = 0; i < spans.size(); i++) {
         countDownLatch.countDown();
       }
-      return exportResultCode;
     }
 
     @Override

@@ -23,12 +23,15 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  // Visible for testing
+  static final int DEFAULT_MAX_ACTIVE_EXPORTS = 1;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private int maxActiveExports = DEFAULT_MAX_ACTIVE_EXPORTS;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
@@ -123,6 +126,31 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
+   * The maximum number of exports that can be active at any time.
+   *
+   * <p>The {@link BatchSpanProcessor}'s single worker thread will keep processing as many batches
+   * as it can without blocking on the {@link io.opentelemetry.sdk.common.CompletableResultCode}s
+   * that are returned from the {@code spanExporter}, but it will limit the total number of
+   * active exports in flight to this number.
+   *
+   * <p>Default value is {@code 1}.
+   *
+   * @param maxActiveExports the maximum number of exports that can be active at any time.
+   * @return this.
+   * @see BatchSpanProcessorBuilder#DEFAULT_MAX_ACTIVE_EXPORTS
+   */
+  public BatchSpanProcessorBuilder setMaxActiveExports(int maxActiveExports) {
+    checkArgument(maxActiveExports > 0, "maxActiveExports must be positive.");
+    this.maxActiveExports = maxActiveExports;
+    return this;
+  }
+
+  // Visible for testing
+  int getMaxActiveExports() {
+    return maxActiveExports;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
    */
@@ -150,6 +178,7 @@ public final class BatchSpanProcessorBuilder {
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,
-        exporterTimeoutNanos);
+        exporterTimeoutNanos,
+        maxActiveExports);
   }
 }
