@@ -62,10 +62,16 @@ public final class CompletableResultCode {
     return result;
   }
 
-  private static final CompletableResultCode SUCCESS = new CompletableResultCode().succeed();
-  private static final CompletableResultCode FAILURE = new CompletableResultCode().fail();
+  private static final CompletableResultCode SUCCESS = new CompletableResultCode(/* succeeded= */ true);
+  private static final CompletableResultCode FAILURE = new CompletableResultCode(/* succeeded= */ false);
 
-  public CompletableResultCode() {}
+  public CompletableResultCode() {
+    succeededAtInitialization = null;
+  }
+
+  private CompletableResultCode(boolean succeeded) {
+    succeededAtInitialization = succeeded;
+  }
 
   @Nullable
   @GuardedBy("lock")
@@ -76,8 +82,15 @@ public final class CompletableResultCode {
 
   private final Object lock = new Object();
 
+  // this field makes it possible to avoid locking in the shared SUCCESS and FAILURE instances
+  @Nullable
+  private final Boolean succeededAtInitialization;
+
   /** Complete this {@link CompletableResultCode} successfully if it is not already completed. */
   public CompletableResultCode succeed() {
+    if (succeededAtInitialization != null) {
+      return this;
+    }
     synchronized (lock) {
       if (succeeded == null) {
         succeeded = true;
@@ -91,6 +104,9 @@ public final class CompletableResultCode {
 
   /** Complete this {@link CompletableResultCode} unsuccessfully if it is not already completed. */
   public CompletableResultCode fail() {
+    if (succeededAtInitialization != null) {
+      return this;
+    }
     synchronized (lock) {
       if (succeeded == null) {
         succeeded = false;
@@ -109,6 +125,9 @@ public final class CompletableResultCode {
    * @return the current state of completion
    */
   public boolean isSuccess() {
+    if (succeededAtInitialization != null) {
+      return succeededAtInitialization;
+    }
     synchronized (lock) {
       return succeeded != null && succeeded;
     }
@@ -121,6 +140,10 @@ public final class CompletableResultCode {
    * @return this completable result so that it may be further composed
    */
   public CompletableResultCode whenComplete(Runnable action) {
+    if (succeededAtInitialization != null) {
+      action.run();
+      return this;
+    }
     synchronized (lock) {
       if (succeeded != null) {
         action.run();
@@ -133,6 +156,9 @@ public final class CompletableResultCode {
 
   /** Returns whether this {@link CompletableResultCode} has completed. */
   public boolean isDone() {
+    if (succeededAtInitialization != null) {
+      return true;
+    }
     synchronized (lock) {
       return succeeded != null;
     }
