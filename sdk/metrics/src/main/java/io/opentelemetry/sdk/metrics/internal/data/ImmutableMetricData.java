@@ -31,9 +31,9 @@ import javax.annotation.concurrent.Immutable;
 public abstract class ImmutableMetricData implements MetricData {
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   * Returns a new MetricData with a {@link MetricDataType#DOUBLE_GAUGE} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   * @return a new MetricData with a {@link MetricDataType#DOUBLE_GAUGE} type.
    */
   public static MetricData createDoubleGauge(
       Resource resource,
@@ -53,9 +53,9 @@ public abstract class ImmutableMetricData implements MetricData {
   }
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   * Returns a new MetricData with a {@link MetricDataType#LONG_GAUGE} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   * @return a new MetricData with a {@link MetricDataType#LONG_GAUGE} type.
    */
   public static MetricData createLongGauge(
       Resource resource,
@@ -75,9 +75,9 @@ public abstract class ImmutableMetricData implements MetricData {
   }
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   * Returns a new MetricData with a {@link MetricDataType#DOUBLE_SUM} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   * @return a new MetricData with a {@link MetricDataType#DOUBLE_SUM} type.
    */
   public static MetricData createDoubleSum(
       Resource resource,
@@ -97,9 +97,9 @@ public abstract class ImmutableMetricData implements MetricData {
   }
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   * Returns a new MetricData with a {@link MetricDataType#LONG_SUM} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   * @return a new MetricData with a {@link MetricDataType#LONG_SUM} type.
    */
   public static MetricData createLongSum(
       Resource resource,
@@ -113,9 +113,9 @@ public abstract class ImmutableMetricData implements MetricData {
   }
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   * Returns a new MetricData with a {@link MetricDataType#SUMMARY} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   * @return a new MetricData with a {@link MetricDataType#SUMMARY} type.
    */
   public static MetricData createDoubleSummary(
       Resource resource,
@@ -131,7 +131,7 @@ public abstract class ImmutableMetricData implements MetricData {
   /**
    * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
+   * @return a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
    */
   public static MetricData createDoubleHistogram(
       Resource resource,
@@ -153,7 +153,7 @@ public abstract class ImmutableMetricData implements MetricData {
   /**
    * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
    *
-   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   * @return a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
    */
   public static MetricData createExponentialHistogram(
       Resource resource,
