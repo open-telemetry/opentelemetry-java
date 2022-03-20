@@ -62,8 +62,10 @@ public final class CompletableResultCode {
     return result;
   }
 
-  private static final CompletableResultCode SUCCESS = new CompletableResultCode(/* succeeded= */ true);
-  private static final CompletableResultCode FAILURE = new CompletableResultCode(/* succeeded= */ false);
+  private static final CompletableResultCode SUCCESS =
+      new CompletableResultCode(/* succeeded= */ true);
+  private static final CompletableResultCode FAILURE =
+      new CompletableResultCode(/* succeeded= */ false);
 
   public CompletableResultCode() {
     succeededAtInitialization = null;
@@ -83,8 +85,7 @@ public final class CompletableResultCode {
   private final Object lock = new Object();
 
   // this field makes it possible to avoid locking in the shared SUCCESS and FAILURE instances
-  @Nullable
-  private final Boolean succeededAtInitialization;
+  @Nullable private final Boolean succeededAtInitialization;
 
   /** Complete this {@link CompletableResultCode} successfully if it is not already completed. */
   public CompletableResultCode succeed() {
