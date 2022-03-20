@@ -130,8 +130,8 @@ public final class BatchSpanProcessorBuilder {
    *
    * <p>The {@link BatchSpanProcessor}'s single worker thread will keep processing as many batches
    * as it can without blocking on the {@link io.opentelemetry.sdk.common.CompletableResultCode}s
-   * that are returned from the {@code spanExporter}, but it will limit the total number of
-   * active exports in flight to this number.
+   * that are returned from the {@code spanExporter}, but it will limit the total number of active
+   * exports in flight to this number.
    *
    * <p>Default value is {@code 1}.
    *
