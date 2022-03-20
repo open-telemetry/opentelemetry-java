@@ -20,8 +20,8 @@ import java.lang.annotation.Target;
  *   <li><b>code.namespace:</b> The fully qualified name of the class whose method is invoked.
  *   <li><b>code.function:</b> The name of the annotated method, or "new" of the annotation is on a
  *       constructor.
- *   <li><b>exception.type:</b> The {@link Class#getCanonicalName()} () canonical name} of the
- *       Exception if an Exception is thrown, or "None" if the method did not throw an Exception.
+ *   <li><b>exception.type:</b> This is only present if an Exception is thrown, and contains the
+ *       {@link Class#getCanonicalName canonical name} of the Exception.
  * </ul>
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
