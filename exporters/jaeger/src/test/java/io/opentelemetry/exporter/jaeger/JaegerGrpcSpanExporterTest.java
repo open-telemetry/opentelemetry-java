@@ -301,12 +301,22 @@ class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
-  void validConfig() {
+  void validTrustedConfig() {
     assertThatCode(
             () ->
                 JaegerGrpcSpanExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validClientKeyConfig() {
+    assertThatCode(
+            () ->
+                JaegerGrpcSpanExporter.builder()
+                    .setClientTls(
+                        "foobar".getBytes(StandardCharsets.UTF_8),
+                        "foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
   }
 

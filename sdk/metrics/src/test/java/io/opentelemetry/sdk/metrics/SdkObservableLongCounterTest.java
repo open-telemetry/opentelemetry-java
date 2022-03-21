@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;

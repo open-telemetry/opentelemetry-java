@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
