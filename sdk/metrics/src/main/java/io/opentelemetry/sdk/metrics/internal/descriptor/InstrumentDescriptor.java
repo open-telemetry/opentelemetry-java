@@ -33,6 +33,8 @@ public abstract class InstrumentDescriptor {
     return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType);
   }
 
+  InstrumentDescriptor() {}
+
   public abstract String getName();
 
   public abstract String getDescription();

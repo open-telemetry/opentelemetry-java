@@ -20,16 +20,20 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class RegisteredView {
-  /** Instrument filter for applying this view. */
-  public abstract InstrumentSelector getInstrumentSelector();
-  /** The view to apply. */
-  public abstract View getView();
-
-  /** The {@link SourceInfo} from where the view was registered. */
-  public abstract SourceInfo getViewSourceInfo();
 
   public static RegisteredView create(
       InstrumentSelector selector, View view, SourceInfo viewSourceInfo) {
     return new AutoValue_RegisteredView(selector, view, viewSourceInfo);
   }
+
+  RegisteredView() {}
+
+  /** Instrument filter for applying this view. */
+  public abstract InstrumentSelector getInstrumentSelector();
+
+  /** The view to apply. */
+  public abstract View getView();
+
+  /** The {@link SourceInfo} from where the view was registered. */
+  public abstract SourceInfo getViewSourceInfo();
 }

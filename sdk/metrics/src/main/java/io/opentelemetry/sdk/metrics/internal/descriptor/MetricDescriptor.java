@@ -55,6 +55,8 @@ public abstract class MetricDescriptor {
     return metricDescriptor;
   }
 
+  MetricDescriptor() {}
+
   /**
    * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link
    * InstrumentDescriptor#getName()}.
