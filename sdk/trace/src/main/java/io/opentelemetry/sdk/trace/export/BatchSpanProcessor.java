@@ -170,8 +170,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
 
-    private final Set<CompletableResultCode> activeExports =
-        Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<CompletableResultCode> activeExports = ConcurrentHashMap.newKeySet();
 
     private Worker(
         SpanExporter spanExporter,
