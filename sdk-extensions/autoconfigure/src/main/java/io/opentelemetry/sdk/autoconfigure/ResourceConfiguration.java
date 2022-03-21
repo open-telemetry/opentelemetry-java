@@ -76,12 +76,8 @@ final class ResourceConfiguration {
   static Resource filterAttributes(Resource resource, ConfigProperties configProperties) {
     Set<String> disabledKeys = new HashSet<>(configProperties.getList(DISABLED_ATTRIBUTE_KEYS));
 
-    Attributes filteredAttributes =
-        resource.toBuilder()
-            .removeIf(attributeKey -> disabledKeys.contains(attributeKey.getKey()))
-            .buildAttributes();
-
-    ResourceBuilder builder = Resource.builder().putAll(filteredAttributes);
+    ResourceBuilder builder = resource.toBuilder()
+        .removeIf(attributeKey -> disabledKeys.contains(attributeKey.getKey()));
 
     if (resource.getSchemaUrl() != null) {
       builder.setSchemaUrl(resource.getSchemaUrl());

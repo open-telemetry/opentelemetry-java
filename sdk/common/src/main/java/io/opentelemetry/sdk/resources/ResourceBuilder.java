@@ -192,11 +192,6 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Create the {@link Attributes} from {@link Resource}. */
-  public Attributes buildAttributes() {
-    return attributesBuilder.build();
-  }
-
   /** Create the {@link Resource} from this. */
   public Resource build() {
     return Resource.create(attributesBuilder.build(), schemaUrl);
