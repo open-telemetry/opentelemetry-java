@@ -136,6 +136,14 @@ class OtlpHttpSpanExporterTest {
                 OtlpHttpSpanExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpHttpSpanExporter.builder()
+                    .setClientTls(
+                        "foobar".getBytes(StandardCharsets.UTF_8),
+                        "foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test

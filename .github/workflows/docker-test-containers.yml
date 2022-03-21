@@ -26,6 +26,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Copy image
         # Non-debug image doesn't seem to support reading the .docker creds.
         run: |

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.view;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -21,6 +21,8 @@ public final class InstrumentSelectorBuilder {
   private Predicate<String> meterNameFilter = StringPredicates.ALL;
   private Predicate<String> meterVersionFilter = StringPredicates.ALL;
   private Predicate<String> meterSchemaUrlFilter = StringPredicates.ALL;
+
+  InstrumentSelectorBuilder() {}
 
   /** Sets a specifier for {@link InstrumentType}. */
   public InstrumentSelectorBuilder setType(InstrumentType instrumentType) {

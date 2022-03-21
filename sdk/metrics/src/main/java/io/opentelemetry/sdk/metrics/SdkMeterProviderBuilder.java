@@ -25,13 +25,27 @@ import java.util.concurrent.TimeUnit;
 /** Builder class for the {@link SdkMeterProvider}. */
 public final class SdkMeterProviderBuilder {
 
+  /**
+   * By default, the exemplar filter is set to sample with traces.
+   *
+   * @see #setExemplarFilter(ExemplarFilter)
+   */
+  private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.sampleWithTraces();
+
+  /**
+   * By default, the minimum collection interval is 100ns.
+   *
+   * @see #setMinimumCollectionInterval(Duration)
+   */
+  private static final long DEFAULT_MIN_COLLECTION_INTERVAL_NANOS =
+      TimeUnit.MILLISECONDS.toNanos(100);
+
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
   private final List<AbstractMetricReader> metricReaders = new ArrayList<>();
-  // Default the sampling strategy.
-  private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
-  private long minimumCollectionIntervalNanos = TimeUnit.MILLISECONDS.toNanos(100);
+  private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
+  private long minimumCollectionIntervalNanos = DEFAULT_MIN_COLLECTION_INTERVAL_NANOS;
 
   SdkMeterProviderBuilder() {}
 

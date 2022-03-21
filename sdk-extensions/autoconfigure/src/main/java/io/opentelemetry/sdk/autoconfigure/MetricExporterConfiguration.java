@@ -114,6 +114,7 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
@@ -140,6 +141,7 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 

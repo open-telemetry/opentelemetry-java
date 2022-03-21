@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -47,6 +47,8 @@ public abstract class MetricDescriptor {
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
     return new AutoValue_MetricDescriptor(name, description, view, instrument);
   }
+
+  MetricDescriptor() {}
 
   /**
    * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link

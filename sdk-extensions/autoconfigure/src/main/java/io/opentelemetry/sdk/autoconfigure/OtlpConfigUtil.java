@@ -46,6 +46,7 @@ final class OtlpConfigUtil {
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
+      BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
@@ -93,22 +94,32 @@ final class OtlpConfigUtil {
       setTimeout.accept(timeout);
     }
 
-    String certificate = config.getString("otel.exporter.otlp." + dataType + ".certificate");
-    if (certificate == null) {
-      certificate = config.getString("otel.exporter.otlp.certificate");
+    String certificatePath =
+        config.getString(
+            determinePropertyByType(config, "otel.exporter.otlp", dataType, "certificate"));
+    String clientKeyPath =
+        config.getString(
+            determinePropertyByType(config, "otel.exporter.otlp", dataType, "client.key"));
+    String clientKeyChainPath =
+        config.getString(
+            determinePropertyByType(config, "otel.exporter.otlp", dataType, "client.certificate"));
+
+    if (clientKeyPath != null && clientKeyChainPath == null) {
+      throw new ConfigurationException("Client key provided but certification chain is missing");
+    } else if (clientKeyPath == null && clientKeyChainPath != null) {
+      throw new ConfigurationException("Client key chain provided but key is missing");
     }
-    if (certificate != null) {
-      Path path = Paths.get(certificate);
-      if (!Files.exists(path)) {
-        throw new ConfigurationException("Invalid OTLP certificate path: " + path);
-      }
-      byte[] certificateBytes;
-      try {
-        certificateBytes = Files.readAllBytes(path);
-      } catch (IOException e) {
-        throw new ConfigurationException("Error reading OTLP certificate.", e);
-      }
+
+    byte[] certificateBytes = readFileBytes(certificatePath);
+    if (certificateBytes != null) {
       setTrustedCertificates.accept(certificateBytes);
+    }
+
+    byte[] clientKeyBytes = readFileBytes(clientKeyPath);
+    byte[] clientKeyChainBytes = readFileBytes(clientKeyChainPath);
+
+    if (clientKeyBytes != null && clientKeyChainBytes != null) {
+      setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
     Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
@@ -169,6 +180,33 @@ final class OtlpConfigUtil {
           "OTLP endpoint must not have a path: " + endpointUrl.getPath());
     }
     return endpointUrl;
+  }
+
+  @Nullable
+  private static byte[] readFileBytes(@Nullable String filePath) {
+    if (filePath == null) {
+      return null;
+    }
+    Path path = Paths.get(filePath);
+    if (!Files.exists(path)) {
+      throw new ConfigurationException("Invalid OTLP certificate/key path: " + path);
+    }
+    try {
+      return Files.readAllBytes(path);
+    } catch (IOException e) {
+      throw new ConfigurationException("Error reading content of file (" + path + ")", e);
+    }
+  }
+
+  private static String determinePropertyByType(
+      ConfigProperties config, String prefix, String dataType, String suffix) {
+    String propertyToRead = prefix + "." + dataType + "." + suffix;
+    String value = config.getString(propertyToRead);
+    if (value == null) {
+      return prefix + "." + suffix;
+    } else {
+      return propertyToRead;
+    }
   }
 
   private static String signalPath(String dataType) {
