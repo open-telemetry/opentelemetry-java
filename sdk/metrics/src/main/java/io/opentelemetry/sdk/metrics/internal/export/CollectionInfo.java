@@ -21,6 +21,15 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class CollectionInfo {
+
+  /** Construct a new collection info object storing information for collection against a reader. */
+  public static CollectionInfo create(
+      CollectionHandle handle, Set<CollectionHandle> allCollectors, MetricReader reader) {
+    return new AutoValue_CollectionInfo(handle, allCollectors, reader);
+  }
+
+  CollectionInfo() {}
+
   /** The current collection. */
   public abstract CollectionHandle getCollector();
   /** The set of all possible collectors. */
@@ -32,11 +41,5 @@ public abstract class CollectionInfo {
   @Nullable
   public final AggregationTemporality getPreferredAggregation() {
     return getReader().getPreferredTemporality();
-  }
-
-  /** Construct a new collection info object storing information for collection against a reader. */
-  public static CollectionInfo create(
-      CollectionHandle handle, Set<CollectionHandle> allCollectors, MetricReader reader) {
-    return new AutoValue_CollectionInfo(handle, allCollectors, reader);
   }
 }

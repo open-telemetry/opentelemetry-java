@@ -61,10 +61,10 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
-      ExemplarFilter exemplarSampler,
+      ExemplarFilter exemplarFilter,
       long minimumCollectionIntervalNanos) {
     this.sharedState =
-        MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarSampler);
+        MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarFilter);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
