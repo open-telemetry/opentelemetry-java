@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -42,19 +44,27 @@ public final class ManagedChannelUtil {
    *
    * @throws SSLException if error occur processing the certificates
    */
-  public static void setTrustedCertificatesPem(
-      ManagedChannelBuilder<?> managedChannelBuilder, byte[] trustedCertificatesPem)
+  public static void setClientKeysAndTrustedCertificatesPem(
+      ManagedChannelBuilder<?> managedChannelBuilder,
+      @Nullable byte[] privateKeyPem,
+      @Nullable byte[] certificatePem,
+      byte[] trustedCertificatesPem)
       throws SSLException {
     requireNonNull(managedChannelBuilder, "managedChannelBuilder");
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
 
     X509TrustManager tmf = TlsUtil.trustManager(trustedCertificatesPem);
+    X509KeyManager kmf = null;
+    if (privateKeyPem != null && certificatePem != null) {
+      kmf = TlsUtil.keyManager(privateKeyPem, certificatePem);
+    }
 
     // gRPC does not abstract TLS configuration so we need to check the implementation and act
     // accordingly.
     if (managedChannelBuilder.getClass().getName().equals("io.grpc.netty.NettyChannelBuilder")) {
       NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
-      nettyBuilder.sslContext(GrpcSslContexts.forClient().trustManager(tmf).build());
+      nettyBuilder.sslContext(
+          GrpcSslContexts.forClient().keyManager(kmf).trustManager(tmf).build());
     } else if (managedChannelBuilder
         .getClass()
         .getName()
@@ -62,14 +72,17 @@ public final class ManagedChannelUtil {
       io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
           (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
       nettyBuilder.sslContext(
-          io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient().trustManager(tmf).build());
+          io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
+              .trustManager(tmf)
+              .keyManager(kmf)
+              .build());
     } else if (managedChannelBuilder
         .getClass()
         .getName()
         .equals("io.grpc.okhttp.OkHttpChannelBuilder")) {
       io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
           (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
-      okHttpBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(tmf));
+      okHttpBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(kmf, tmf));
     } else {
       throw new SSLException(
           "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "

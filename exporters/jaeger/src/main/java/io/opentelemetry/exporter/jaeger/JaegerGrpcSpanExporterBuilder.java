@@ -96,6 +96,12 @@ public final class JaegerGrpcSpanExporterBuilder {
     return this;
   }
 
+  /** Sets the client key and chain to use for verifying servers when mTLS is enabled. */
+  public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *

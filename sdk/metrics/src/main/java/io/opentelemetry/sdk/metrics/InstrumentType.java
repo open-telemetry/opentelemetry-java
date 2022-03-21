@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.common;
+package io.opentelemetry.sdk.metrics;
 
 /** All instrument types available in the metric package. */
 public enum InstrumentType {
