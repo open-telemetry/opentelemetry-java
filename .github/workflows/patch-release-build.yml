@@ -24,23 +24,27 @@ jobs:
           echo "::set-output name=release-branch-name::$(echo '${{ github.event.inputs.version }}' | sed -E 's/([^.]+)\.([^.]+)\.([^.]+)/v\1.\2.x/')"
           # Sets the release-tag-name output to the version number with the last non-period element replace with a '0' and prepended with v
           echo "::set-output name=release-tag-name::$(echo '${{ github.event.inputs.version }}' | sed -E 's/([^.]+)\.([^.]+)\.([^.]+)/v\1.\2.0/')"
+
       - id: checkout-release-branch
         name: Check out release branch
         continue-on-error: true
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.parse-release-branch.outputs.release-branch-name }}
+
       - id: checkout-release-tag
         name: Check out release tag
         if: ${{ steps.checkout-release-branch.outcome == 'failure' }}
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.parse-release-branch.outputs.release-tag-name }}
+
       - name: Create release branch
         if: ${{ steps.checkout-release-tag.outcome == 'success' }}
         run: |
           git checkout -b ${{ steps.parse-release-branch.outputs.release-branch-name }}
           git push --set-upstream origin ${{ steps.parse-release-branch.outputs.release-branch-name }}
+
   build:
     runs-on: ubuntu-20.04
     needs: prepare-release-branch
@@ -49,14 +53,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+
       - uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 17
+
       - name: Setup git name
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+
       - name: Cherrypicks
         if: ${{ github.event.inputs.commits != '' }}
         run: |
@@ -65,12 +72,14 @@ jobs:
               # Trim whitespaces and cherrypick
               echo $word | sed 's/ *$//g' | sed 's/^ *//g' | git cherry-pick --stdin
           done
+
       - uses: gradle/gradle-build-action@v2
         with:
           arguments: |
             build
             --stacktrace
             -Prelease.version=${{ github.event.inputs.version }}
+
       - uses: gradle/gradle-build-action@v2
         name: Publish artifacts
         with:
@@ -86,4 +95,5 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
       - run: git push
