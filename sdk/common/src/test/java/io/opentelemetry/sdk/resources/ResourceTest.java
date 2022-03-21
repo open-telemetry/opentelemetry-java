@@ -334,17 +334,16 @@ class ResourceTest {
 
   @Test
   public void removeIf() {
-    ResourceBuilder builder = Resource.builder();
-    assertThat(builder.removeIf(unused -> true)).isEqualTo(builder);
+    assertThat(Resource.builder().removeIf(unused -> true).build()).isEqualTo(Resource.empty());
     assertThat(Resource.builder().removeIf(key -> key.getKey().equals("key1")).build())
-        .isEqualTo(builder.build());
+        .isEqualTo(Resource.empty());
     assertThat(
             Resource.builder()
                 .put("key1", "value1")
                 .removeIf(key -> key.getKey().equals("key1"))
                 .removeIf(key -> key.getKey().equals("key1"))
                 .build())
-        .isEqualTo(Resource.builder().build());
+        .isEqualTo(Resource.empty());
     assertThat(
             Resource.builder()
                 .put("key1", "value1")
