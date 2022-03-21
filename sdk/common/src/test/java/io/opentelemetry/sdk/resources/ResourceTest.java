@@ -334,42 +334,42 @@ class ResourceTest {
 
   @Test
   public void removeIf() {
-    ResourceBuilder builder = Resource.getDefault().toBuilder();
+    ResourceBuilder builder = Resource.builder();
     assertThat(builder.removeIf(unused -> true)).isEqualTo(builder);
-
-    assertThat(builder.removeIf(key -> key.getKey().equals("key1"))).isEqualTo(builder);
-
+    assertThat(Resource.builder().removeIf(key -> key.getKey().equals("key1")).build())
+        .isEqualTo(builder.build());
     assertThat(
-            builder
+            Resource.builder()
                 .put("key1", "value1")
                 .removeIf(key -> key.getKey().equals("key1"))
-                .removeIf(key -> key.getKey().equals("key1")))
-        .isEqualTo(builder);
-
+                .removeIf(key -> key.getKey().equals("key1"))
+                .build())
+        .isEqualTo(Resource.builder().build());
     assertThat(
-            builder
+            Resource.builder()
                 .put("key1", "value1")
                 .put("key1", "value2")
                 .put("key2", "value2")
                 .put("key3", "value3")
-                .removeIf(key -> key.getKey().equals("key1")))
-        .isEqualTo(builder.put("key2", "value2").put("key3", "value3"));
-
+                .removeIf(key -> key.getKey().equals("key1"))
+                .build())
+        .isEqualTo(Resource.builder().put("key2", "value2").put("key3", "value3").build());
     assertThat(
-            builder
+            Resource.builder()
                 .put("key1", "value1A")
                 .put("key1", true)
                 .removeIf(
                     key ->
-                        key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING)))
-        .isEqualTo(builder.put("key1", true));
-
+                        key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
+                .build())
+        .isEqualTo(Resource.builder().put("key1", true).build());
     assertThat(
-            builder
+            Resource.builder()
                 .put("key1", "value1")
                 .put("key2", "value2")
                 .put("foo", "bar")
-                .removeIf(key -> key.getKey().matches("key.*")))
-        .isEqualTo(builder.put("foo", "bar"));
+                .removeIf(key -> key.getKey().matches("key.*"))
+                .build())
+        .isEqualTo(Resource.builder().put("foo", "bar").build());
   }
 }
