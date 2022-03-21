@@ -353,9 +353,7 @@ class ResourceTest {
             .put("key2", "value2")
             .put("key3", "value3")
             .removeIf(key -> key.getKey().equals("key1"));
-    assertThat(builder)
-        .isEqualTo(
-            Resource.builder().put("key2", "value2").put("key3", "value3"));
+    assertThat(builder).isEqualTo(Resource.builder().put("key2", "value2").put("key3", "value3"));
 
     builder =
         Resource.builder()
