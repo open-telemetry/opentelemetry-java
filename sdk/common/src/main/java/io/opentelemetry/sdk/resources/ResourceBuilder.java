@@ -174,7 +174,7 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Remove all attributes that satisfy the given predicate from {@link Resource} */
+  /** Remove all attributes that satisfy the given predicate from {@link Resource}. */
   public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
     attributesBuilder.removeIf(filter);
     return this;
