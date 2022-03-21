@@ -97,8 +97,8 @@ jobs:
   publish-snapshots:
     name: Publish snapshots
     if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
-    # not blocking snapshot publishing on markdown-link-check because links to external urls can
-    # break at any time
+    # snapshot publishing is not dependent on markdown-link-check success, because links to external
+    # urls can break at any time
     needs: build
     runs-on: ubuntu-20.04
     steps:
