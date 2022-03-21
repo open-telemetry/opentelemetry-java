@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 /**
  * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
@@ -173,6 +174,12 @@ public class ResourceBuilder {
     return this;
   }
 
+  /** Remove all attributes that satisfy the given predicate from {@link Resource} **/
+  public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
+    attributesBuilder.removeIf(filter);
+    return this;
+  }
+
   /**
    * Assign an OpenTelemetry schema URL to the resulting Resource.
    *
@@ -183,6 +190,11 @@ public class ResourceBuilder {
   public ResourceBuilder setSchemaUrl(String schemaUrl) {
     this.schemaUrl = schemaUrl;
     return this;
+  }
+
+  /** Create the {@link Attributes} from {@link Resource}. */
+  public Attributes buildAttributes() {
+    return attributesBuilder.build();
   }
 
   /** Create the {@link Resource} from this. */
