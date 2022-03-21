@@ -113,6 +113,14 @@ public final class OtlpGrpcLogExporterBuilder {
   }
 
   /**
+   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   */
+  public OtlpGrpcLogExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcLogExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    *

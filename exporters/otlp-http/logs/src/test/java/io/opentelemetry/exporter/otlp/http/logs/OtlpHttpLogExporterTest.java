@@ -143,6 +143,14 @@ class OtlpHttpLogExporterTest {
                 OtlpHttpLogExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpHttpLogExporter.builder()
+                    .setClientTls(
+                        "foobar".getBytes(StandardCharsets.UTF_8),
+                        "foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test
