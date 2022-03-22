@@ -257,7 +257,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return hasAttribute(OpenTelemetryAssertions.equalTo(key, value));
   }
 
-  /** Asserts a single span attributes. */
+  /** Asserts the span has an attribute matching the {@code attributeAssertion}. */
   public SpanDataAssert hasAttribute(AttributeAssertion attributeAssertion) {
     isNotNull();
 
