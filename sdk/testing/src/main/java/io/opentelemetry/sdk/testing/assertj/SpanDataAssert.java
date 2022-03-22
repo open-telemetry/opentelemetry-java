@@ -252,7 +252,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return startsAt(toNanos(timestamp));
   }
 
-  /** Asserts a single span attributes. */
+  /** Asserts the span has the given attribute. */
   public <T> SpanDataAssert hasAttribute(AttributeKey<T> key, T value) {
     return hasAttribute(OpenTelemetryAssertions.equalTo(key, value));
   }
