@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -55,24 +56,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
-  private final AggregationTemporality preferredTemporality;
+  private final AggregationTemporality aggregationTemporality;
   private boolean isStopped = false;
 
-  private InMemoryMetricExporter(AggregationTemporality preferredTemporality) {
-    this.preferredTemporality = preferredTemporality;
+  private InMemoryMetricExporter(AggregationTemporality aggregationTemporality) {
+    this.aggregationTemporality = aggregationTemporality;
   }
 
   /**
-   * Returns a new {@link InMemoryMetricExporter} with a preferred temporality of {@link
+   * Returns a new {@link InMemoryMetricExporter} with a aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static InMemoryMetricExporter create() {
     return create(AggregationTemporality.CUMULATIVE);
   }
 
-  /** Returns a new {@link InMemoryMetricExporter} with the given {@code preferredTemporality}. */
-  public static InMemoryMetricExporter create(AggregationTemporality preferredTemporality) {
-    return new InMemoryMetricExporter(preferredTemporality);
+  /** Returns a new {@link InMemoryMetricExporter} with the given {@code aggregationTemporality}. */
+  public static InMemoryMetricExporter create(AggregationTemporality aggregationTemporality) {
+    return new InMemoryMetricExporter(aggregationTemporality);
   }
 
   /**
@@ -94,8 +95,8 @@ public final class InMemoryMetricExporter implements MetricExporter {
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return preferredTemporality;
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporality;
   }
 
   /**

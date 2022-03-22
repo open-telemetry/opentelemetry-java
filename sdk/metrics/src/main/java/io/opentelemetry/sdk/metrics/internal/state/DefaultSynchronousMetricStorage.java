@@ -103,7 +103,8 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
+        collectionInfo.getAggregationTemporality(
+            getMetricDescriptor().getSourceInstrument().getType());
     Map<Attributes, T> result =
         deltaMetricStorage.collectFor(
             collectionInfo.getCollector(),

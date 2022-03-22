@@ -31,6 +31,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -154,9 +155,12 @@ class OtlpHttpMetricExporterTest {
             OtlpHttpMetricExporter.builder()
                 .setPreferredTemporality(AggregationTemporality.DELTA)
                 .build()
-                .getPreferredTemporality())
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
-    assertThat(OtlpHttpMetricExporter.builder().build().getPreferredTemporality())
+    assertThat(
+            OtlpHttpMetricExporter.builder()
+                .build()
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 

@@ -6,9 +6,9 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
-import javax.annotation.Nullable;
 
 /**
  * A registered reader of metrics.
@@ -18,9 +18,8 @@ import javax.annotation.Nullable;
  */
 public interface MetricReader {
 
-  /** Return The preferred temporality for metrics. */
-  @Nullable
-  AggregationTemporality getPreferredTemporality();
+  /** Return the default aggregation temporality for the {@link InstrumentType}. */
+  AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
 
   /**
    * Flushes metrics read by this reader.

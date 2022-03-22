@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -44,11 +45,12 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void preferredTemporality() {
-    assertThat(InMemoryMetricExporter.create().getPreferredTemporality())
+  void getAggregationTemporality() {
+    assertThat(InMemoryMetricExporter.create().getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
-            InMemoryMetricExporter.create(AggregationTemporality.DELTA).getPreferredTemporality())
+            InMemoryMetricExporter.create(AggregationTemporality.DELTA)
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 

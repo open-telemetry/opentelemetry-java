@@ -9,13 +9,16 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcMetricExporterBuilder {
@@ -28,13 +31,14 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
-  private static final AggregationTemporality DEFAULT_TEMPORALITY =
-      AggregationTemporality.CUMULATIVE;
+  private static final Function<InstrumentType, AggregationTemporality>
+      DEFAULT_AGGREGATION_TEMPORALITY_FUNCTION = ExporterBuilderUtil::cumulativePreferred;
 
   // Visible for testing
   final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
 
-  private AggregationTemporality preferredTemporality = DEFAULT_TEMPORALITY;
+  private Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction =
+      DEFAULT_AGGREGATION_TEMPORALITY_FUNCTION;
 
   OtlpGrpcMetricExporterBuilder() {
     delegate =
@@ -138,13 +142,21 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Set the preferred aggregation temporality. If unset, defaults to {@link
-   * AggregationTemporality#CUMULATIVE}.
+   * Set the preferred aggregation temporality.
+   *
+   * <p>If unset, defaults to {@link AggregationTemporality#CUMULATIVE} and returns {@link
+   * AggregationTemporality#CUMULATIVE} for all instruments. If {@link
+   * AggregationTemporality#DELTA}, returns {@link AggregationTemporality#DELTA} for counter (sync
+   * and async) and histogram instruments, {@link AggregationTemporality#CUMULATIVE} for up down
+   * counter (sync and async) instruments.
    */
   public OtlpGrpcMetricExporterBuilder setPreferredTemporality(
       AggregationTemporality preferredTemporality) {
     requireNonNull(preferredTemporality, "preferredTemporality");
-    this.preferredTemporality = preferredTemporality;
+    this.aggregationTemporalityFunction =
+        preferredTemporality == AggregationTemporality.CUMULATIVE
+            ? ExporterBuilderUtil::cumulativePreferred
+            : ExporterBuilderUtil::deltaPreferred;
     return this;
   }
 
@@ -154,6 +166,6 @@ public final class OtlpGrpcMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcMetricExporter build() {
-    return new OtlpGrpcMetricExporter(delegate.build(), preferredTemporality);
+    return new OtlpGrpcMetricExporter(delegate.build(), aggregationTemporalityFunction);
   }
 }

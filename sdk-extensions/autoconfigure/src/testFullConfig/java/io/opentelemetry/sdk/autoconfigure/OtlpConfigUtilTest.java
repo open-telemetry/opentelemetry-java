@@ -330,26 +330,38 @@ class OtlpConfigUtilTest {
     assertThatThrownBy(
             () ->
                 configureAggregationTemporality(
-                    ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "foo")))
+                    ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "foo")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized aggregation temporality:");
 
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "CUMULATIVE")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "CUMULATIVE")))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "cumulative")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "cumulative")))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(
+            configureAggregationTemporality(
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "DELTA")))
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(
+            configureAggregationTemporality(
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "delta")))
+        .isEqualTo(AggregationTemporality.DELTA);
     assertThat(
             configureAggregationTemporality(
                 ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "DELTA")))
         .isEqualTo(AggregationTemporality.DELTA);
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "delta")))
-        .isEqualTo(AggregationTemporality.DELTA);
+                ImmutableMap.of(
+                    "otel.exporter.otlp.metrics.temporality",
+                    "DELTA",
+                    "otel.exporter.otlp.metrics.temporality.preference",
+                    "CUMULATIVE")))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 
   /** Configure and return the aggregation temporality using the given properties. */
