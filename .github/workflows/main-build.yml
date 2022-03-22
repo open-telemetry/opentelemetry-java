@@ -68,9 +68,37 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
+  markdown-link-check:
+    # release branches are excluded because links to external urls can break at any time which
+    # requires unnecessary release branch maintenance
+    if: ${{ !startsWith(github.ref_name, 'v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check markdown links
+        # using retry because of sporadic external site failures
+        uses: nick-invision/retry@v2.6.0
+        with:
+          # timing out has not been a problem
+          timeout_minutes: 15
+          # give external site some time to hopefully recover
+          retry_wait_seconds: 120
+          max_attempts: 5
+          command: |
+            npm install -g markdown-link-check
+            find . -type f \
+                   -name '*.md' \
+                   -not -path './.github/*' \
+                   -not -path './node_modules/*' \
+                   -print0 \
+              | xargs -0 -n1 markdown-link-check --config .github/scripts/markdown_link_check_config.json
+
   publish-snapshots:
     name: Publish snapshots
     if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
+    # snapshot publishing is not dependent on markdown-link-check success, because links to external
+    # urls can break at any time
     needs: build
     runs-on: ubuntu-20.04
     steps:

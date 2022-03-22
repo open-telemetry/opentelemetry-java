@@ -12,7 +12,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 
 * [General notes](#general-notes)
 * [Exporters](#exporters)
-  + [OTLP exporter (both span and metric exporters)](#otlp-exporter-both-span-and-metric-exporters)
+  + [OTLP exporter (span, metric, and log exporters)](#otlp-exporter-span-metric-and-log-exporters)
   + [Jaeger exporter](#jaeger-exporter)
   + [Zipkin exporter](#zipkin-exporter)
   + [Prometheus exporter](#prometheus-exporter)
@@ -24,7 +24,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 * [Batch span processor](#batch-span-processor)
 * [Sampler](#sampler)
 * [Span limits](#span-limits)
-* [Interval metric reader](#interval-metric-reader)
+* [Periodic Metric Reader](#periodic-metric-reader)
 * [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
 
 ## General notes
