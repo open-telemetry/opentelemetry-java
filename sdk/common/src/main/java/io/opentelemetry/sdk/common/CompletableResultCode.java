@@ -121,12 +121,16 @@ public final class CompletableResultCode {
    * @return this completable result so that it may be further composed
    */
   public CompletableResultCode whenComplete(Runnable action) {
+    boolean runNow = false;
     synchronized (lock) {
       if (succeeded != null) {
-        action.run();
+        runNow = true;
       } else {
         this.completionActions.add(action);
       }
+    }
+    if (runNow) {
+      action.run();
     }
     return this;
   }

@@ -8,15 +8,15 @@ package io.opentelemetry.exporter.prometheus;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * A reader of OpenTelemetry metrics that exports into Prometheus as a Collector.
@@ -32,47 +32,21 @@ import java.util.List;
  *     case is not handled by these, please file an issue to let us know.
  */
 @Deprecated
-public final class PrometheusCollector extends Collector implements MetricReader {
-  private final MetricProducer metricProducer;
-  private volatile boolean registered = false;
+public final class PrometheusCollector extends AbstractMetricReader implements MetricReader {
 
-  PrometheusCollector(MetricProducer metricProducer) {
-    this.metricProducer = metricProducer;
+  private final Collector collector;
+
+  PrometheusCollector() {
+    this.collector = new CollectorImpl(() -> getMetricProducer().collectAllMetrics());
+    this.collector.register();
   }
 
   /**
-   * This method is called in {@link Factory#apply(MetricProducer)}. {@link Collector#register()}
-   * triggers a call to {@link #collect()}, which throws an error because {@link
-   * MetricProducer#collectAllMetrics()} is not yet read to accept calls. To get around this, we
-   * have {@link #collect()} exit early until registration is complete.
-   */
-  @SuppressWarnings("TypeParameterUnusedInFormals")
-  @Override
-  public <T extends Collector> T register() {
-    T result = super.register();
-    this.registered = true;
-    return result;
-  }
-
-  @Override
-  public List<MetricFamilySamples> collect() {
-    if (!registered) {
-      return Collections.emptyList();
-    }
-    Collection<MetricData> allMetrics = metricProducer.collectAllMetrics();
-    List<MetricFamilySamples> allSamples = new ArrayList<>(allMetrics.size());
-    for (MetricData metricData : allMetrics) {
-      allSamples.add(MetricAdapter.toMetricFamilySamples(metricData));
-    }
-    return Collections.unmodifiableList(allSamples);
-  }
-
-  /**
-   * Returns a new collector to be registered with a {@link
+   * Returns a new {@link PrometheusCollector} to be registered with a {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder}.
    */
-  public static MetricReaderFactory create() {
-    return new Factory();
+  public static PrometheusCollector create() {
+    return new PrometheusCollector();
   }
 
   @Override
@@ -88,20 +62,26 @@ public final class PrometheusCollector extends Collector implements MetricReader
 
   @Override
   public CompletableResultCode shutdown() {
-    CollectorRegistry.defaultRegistry.unregister(this);
+    CollectorRegistry.defaultRegistry.unregister(collector);
     return CompletableResultCode.ofSuccess();
   }
 
-  /** Our implementation of the metric reader factory. */
-  // NOTE: This should be updated to (optionally) start the simple Http server exposing the metrics
-  // path.
-  private static class Factory implements MetricReaderFactory {
+  private static class CollectorImpl extends Collector {
+
+    private final Supplier<Collection<MetricData>> metricSupplier;
+
+    private CollectorImpl(Supplier<Collection<MetricData>> metricSupplier) {
+      this.metricSupplier = metricSupplier;
+    }
+
     @Override
-    public MetricReader apply(MetricProducer producer) {
-      PrometheusCollector collector = new PrometheusCollector(producer);
-      // When SdkMeterProvider constructs us, we register with prometheus.
-      collector.register();
-      return collector;
+    public List<MetricFamilySamples> collect() {
+      Collection<MetricData> allMetrics = metricSupplier.get();
+      List<MetricFamilySamples> allSamples = new ArrayList<>(allMetrics.size());
+      for (MetricData metricData : allMetrics) {
+        allSamples.add(MetricAdapter.toMetricFamilySamples(metricData));
+      }
+      return Collections.unmodifiableList(allSamples);
     }
   }
 }

@@ -34,6 +34,8 @@ public abstract class MeterSharedState {
     return new AutoValue_MeterSharedState(instrumentationScopeInfo, new MetricStorageRegistry());
   }
 
+  MeterSharedState() {}
+
   // only visible for testing.
   /** Returns the {@link InstrumentationScopeInfo} for this {@code Meter}. */
   public abstract InstrumentationScopeInfo getInstrumentationScopeInfo();

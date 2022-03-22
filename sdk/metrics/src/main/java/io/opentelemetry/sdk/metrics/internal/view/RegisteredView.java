@@ -19,12 +19,15 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 abstract class RegisteredView {
-  /** Instrument fitler for applying this view. */
-  abstract InstrumentSelector getInstrumentSelector();
-  /** The view to apply. */
-  abstract View getView();
 
   static RegisteredView create(InstrumentSelector selector, View view) {
     return new AutoValue_RegisteredView(selector, view);
   }
+
+  RegisteredView() {}
+
+  /** Instrument fitler for applying this view. */
+  abstract InstrumentSelector getInstrumentSelector();
+  /** The view to apply. */
+  abstract View getView();
 }

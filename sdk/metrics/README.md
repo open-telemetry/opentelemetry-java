@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-The code in this directory is currently the legacy impelmentation of the previous experimental metrics SDK specification.
+The code in this directory is currently the legacy implementation of the previous experimental metrics SDK specification.
 
 
 The following set of known issues will be fixed aas the new SDK specification stabilizes:

@@ -8,8 +8,6 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
-
 /** A builder for {@link PrometheusHttpServer}. */
 public final class PrometheusHttpServerBuilder {
 
@@ -35,11 +33,11 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
-   * Returns a new {@link MetricReaderFactory} with the configuration of this builder which can be
+   * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
-  public MetricReaderFactory newMetricReaderFactory() {
-    return new PrometheusHttpServerFactory(host, port);
+  public PrometheusHttpServer build() {
+    return new PrometheusHttpServer(host, port);
   }
 
   PrometheusHttpServerBuilder() {}

@@ -21,11 +21,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterAll;
@@ -42,14 +43,9 @@ class PrometheusHttpServerTest {
 
   @BeforeAll
   static void setUp() {
-    // Apply the SDK metric producer registers with prometheus.
-    prometheusServer =
-        (PrometheusHttpServer)
-            PrometheusHttpServer.builder()
-                .setHost("localhost")
-                .setPort(0)
-                .newMetricReaderFactory()
-                .apply(metricProducer);
+    // Register the SDK metric producer with the prometheus reader.
+    prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
+    AbstractMetricReader.registerMetricProducer(metricProducer, prometheusServer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
   }

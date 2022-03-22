@@ -22,7 +22,7 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
   private static final ExtensionContext.Namespace NAMESPACE =
       ExtensionContext.Namespace.create(MicrometerTestingExtension.class);
 
-  private final InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+  private InMemoryMetricReader metricReader;
 
   Collection<MetricData> collectAllMetrics() {
     return metricReader.collectAllMetrics();
@@ -32,6 +32,7 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
   public void beforeEach(ExtensionContext context) {
     ExtensionContext.Store store = context.getStore(NAMESPACE);
 
+    metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .registerMetricReader(metricReader)

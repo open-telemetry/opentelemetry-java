@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 /**
  * A Reservoir sampler with fixed size that stores the given number of exemplars.
  *
- * <p>This implementation uses a un-unweighted/naive algorithm for sampler where the probability of
+ * <p>This implementation uses an un-unweighted/naive algorithm for sampler where the probability of
  * sampling decrease as the number of observations continue. The collectAndReset method resets the
  * count of observations, making the probability of sampling effectively 1.0.
  *
@@ -33,7 +33,7 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
    * @param size The number of exemplars to preserve.
    * @param randomSupplier The random number generator to use for sampling.
    */
-  public FixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
+  FixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
     super(clock, size);
     this.randomSupplier = randomSupplier;
   }
