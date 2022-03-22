@@ -24,6 +24,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -79,14 +81,10 @@ class PeriodicMetricReaderTest {
     ScheduledFuture mock = mock(ScheduledFuture.class);
     when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
 
-    MetricReaderFactory factory =
-        PeriodicMetricReader.builder(metricExporter)
-            .setInterval(Duration.ofMillis(1))
-            .setExecutor(scheduler)
-            .newMetricReaderFactory();
-
-    // Starts the interval reader.
-    factory.apply(metricProducer);
+    PeriodicMetricReader.builder(metricExporter)
+        .setInterval(Duration.ofMillis(1))
+        .setExecutor(scheduler)
+        .build();
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
@@ -94,12 +92,12 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReaderFactory factory =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
-            .newMetricReaderFactory();
+            .build();
 
-    MetricReader reader = factory.apply(metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -115,12 +113,12 @@ class PeriodicMetricReaderTest {
   @Test
   void flush() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReaderFactory factory =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofNanos(Long.MAX_VALUE))
-            .newMetricReaderFactory();
+            .build();
 
-    MetricReader reader = factory.apply(metricProducer);
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
@@ -136,11 +134,12 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
-    MetricReaderFactory factory =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
-            .newMetricReaderFactory();
-    MetricReader reader = factory.apply(metricProducer);
+            .build();
+
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
@@ -153,11 +152,11 @@ class PeriodicMetricReaderTest {
   @Test
   void oneLastExportAfterShutdown() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    MetricReaderFactory factory =
+    PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofSeconds(100))
-            .newMetricReaderFactory();
-    MetricReader reader = factory.apply(metricProducer);
+            .build();
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
     // Assume that this will be called in less than 100 seconds.
     reader.shutdown();
 
