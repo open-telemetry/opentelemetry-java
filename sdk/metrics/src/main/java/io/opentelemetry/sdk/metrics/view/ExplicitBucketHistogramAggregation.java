@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.List;
 
 /** Explicit bucket histogram aggregation configuration. */

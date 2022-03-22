@@ -17,10 +17,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,16 +36,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
 /**
- * A {@link MetricExporter} that starts an HTTP server that will collect metrics and serialize to
+ * A {@link MetricReader} that starts an HTTP server that will collect metrics and serialize to
  * Prometheus text format on request.
  */
 // Very similar to
 // https://github.com/prometheus/client_java/blob/master/simpleclient_httpserver/src/main/java/io/prometheus/client/exporter/HTTPServer.java
-public final class PrometheusHttpServer implements Closeable, MetricReader {
+public final class PrometheusHttpServer extends AbstractMetricReader
+    implements Closeable, MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");
@@ -56,12 +56,12 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
   private final ExecutorService executor;
 
   /**
-   * Returns a new {@link MetricReaderFactory} which can be registered to an {@link
+   * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProvider} to expose Prometheus metrics on port {@value
    * PrometheusHttpServerBuilder#DEFAULT_PORT}.
    */
-  public static MetricReaderFactory newMetricReaderFactory() {
-    return builder().newMetricReaderFactory();
+  public static PrometheusHttpServer create() {
+    return builder().build();
   }
 
   /** Returns a new {@link PrometheusHttpServerBuilder}. */
@@ -69,14 +69,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     return new PrometheusHttpServerBuilder();
   }
 
-  PrometheusHttpServer(String host, int port, MetricProducer producer) {
+  PrometheusHttpServer(String host, int port) {
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    server.createContext("/", new MetricsHandler(producer));
-    server.createContext("/metrics", new MetricsHandler(producer));
+    server.createContext("/", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
+    server.createContext(
+        "/metrics", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
 
     executor = Executors.newFixedThreadPool(5, THREAD_FACTORY);
@@ -142,15 +143,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static class MetricsHandler implements HttpHandler {
 
-    private final MetricProducer producer;
+    private final Supplier<Collection<MetricData>> metricsSupplier;
 
-    private MetricsHandler(MetricProducer producer) {
-      this.producer = producer;
+    private MetricsHandler(Supplier<Collection<MetricData>> metricsSupplier) {
+      this.metricsSupplier = metricsSupplier;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-      Collection<MetricData> metrics = producer.collectAllMetrics();
+      Collection<MetricData> metrics = metricsSupplier.get();
       Set<String> requestedNames = parseQuery(exchange.getRequestURI().getRawQuery());
       Predicate<String> filter =
           requestedNames.isEmpty() ? unused -> true : requestedNames::contains;

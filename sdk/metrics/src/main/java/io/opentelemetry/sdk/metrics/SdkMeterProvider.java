@@ -11,12 +11,12 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -57,7 +57,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   SdkMeterProvider(
-      List<MetricReaderFactory> readerFactories,
+      List<AbstractMetricReader> metricReaders,
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
@@ -78,11 +78,10 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
     collectionInfoMap = new HashMap<>();
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
-    for (MetricReaderFactory readerFactory : readerFactories) {
+    for (AbstractMetricReader metricReader : metricReaders) {
       CollectionHandle handle = handleSupplier.get();
-      // TODO: handle failure in creation or just crash?
-      MetricReader reader = readerFactory.apply(new LeasedMetricProducer(handle));
-      collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, reader));
+      collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, metricReader));
+      AbstractMetricReader.registerMetricProducer(new LeasedMetricProducer(handle), metricReader);
       collectors.add(handle);
     }
   }

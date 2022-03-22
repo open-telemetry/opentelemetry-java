@@ -27,7 +27,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewUtil;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -55,7 +55,7 @@ class SdkMeterProviderTest {
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
-  @Mock MetricReader metricReader;
+  @Mock AbstractMetricReader metricReader;
 
   @Test
   void noopImplementationWithNoReaders() {
@@ -988,7 +988,7 @@ class SdkMeterProviderTest {
 
     CompletableResultCode result =
         SdkMeterProvider.builder()
-            .registerMetricReader(unused -> metricReader)
+            .registerMetricReader(metricReader)
             .build()
             .shutdown()
             .join(10, TimeUnit.SECONDS);

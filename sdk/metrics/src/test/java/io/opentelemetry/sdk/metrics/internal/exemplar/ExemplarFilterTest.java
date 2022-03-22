@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.exemplar;
+package io.opentelemetry.sdk.metrics.internal.exemplar;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -13,6 +14,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
 class ExemplarFilterTest {
@@ -69,5 +73,14 @@ class ExemplarFilterTest {
             ExemplarFilter.sampleWithTraces()
                 .shouldSampleMeasurement(1, Attributes.empty(), context))
         .isFalse();
+  }
+
+  @Test
+  void setExemplarFilter() {
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+    ExemplarFilter.setExemplarFilter(builder, ExemplarFilter.alwaysSample());
+    assertThat(builder)
+        .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)))
+        .isEqualTo(ExemplarFilter.alwaysSample());
   }
 }

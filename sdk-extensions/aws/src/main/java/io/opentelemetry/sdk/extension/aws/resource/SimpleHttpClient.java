@@ -73,7 +73,7 @@ final class SimpleHttpClient {
       if (responseCode != 200) {
         logger.log(
             Level.FINE,
-            "Error reponse from "
+            "Error response from "
                 + urlStr
                 + " code ("
                 + responseCode

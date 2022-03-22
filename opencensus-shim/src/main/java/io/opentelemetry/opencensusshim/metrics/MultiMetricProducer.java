@@ -6,7 +6,7 @@
 package io.opentelemetry.opencensusshim.metrics;
 
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -67,3 +67,14 @@ jobs:
         with:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
+
+  markdown-misspell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check markdown for common misspellings
+        run: |
+          curl -L -o ./install-misspell.sh https://git.io/misspell
+          sh ./install-misspell.sh
+          ./bin/misspell -error ./**/*

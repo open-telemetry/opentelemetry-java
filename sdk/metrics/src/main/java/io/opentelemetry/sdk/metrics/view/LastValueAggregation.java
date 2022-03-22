@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 
 /** Last-value aggregation configuration. */
 final class LastValueAggregation implements Aggregation, AggregatorFactory {
