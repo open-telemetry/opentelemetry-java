@@ -13,8 +13,11 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
@@ -22,11 +25,9 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
@@ -59,12 +60,14 @@ public class AsynchronousMetricStorageTest {
         RegisteredView.create(
             InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_GAUGE).build(),
             View.builder().setAggregation(Aggregation.lastValue()).build(),
+            AttributesProcessor.noop(),
             SourceInfo.fromCurrentStack());
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
                 registeredView.getInstrumentSelector(),
                 registeredView.getView(),
+                AttributesProcessor.noop(),
                 registeredView.getViewSourceInfo())
             .build();
 

@@ -8,13 +8,13 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
@@ -31,6 +31,7 @@ class ViewRegistryTest {
             .addView(
                 InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                 view,
+                AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .build();
     assertThat(
@@ -62,6 +63,7 @@ class ViewRegistryTest {
             .addView(
                 InstrumentSelector.builder().setName("overridden").build(),
                 view,
+                AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .build();
     assertThat(
@@ -94,10 +96,12 @@ class ViewRegistryTest {
             .addView(
                 InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
                 view2,
+                AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .addView(
                 InstrumentSelector.builder().setName(name -> true).build(),
                 view1,
+                AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .build();
 
@@ -133,6 +137,7 @@ class ViewRegistryTest {
                     .setName("overrides")
                     .build(),
                 view,
+                AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .build();
 

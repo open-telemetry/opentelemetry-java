@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -24,7 +24,7 @@ public abstract class View {
       @Nullable String name,
       @Nullable String description,
       Aggregation aggregation,
-      AbstractAttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor) {
     return new AutoValue_View(name, description, aggregation, attributesProcessor);
   }
 
@@ -46,5 +46,5 @@ public abstract class View {
   public abstract Aggregation getAggregation();
 
   /** The attribute processor used for this view. */
-  public abstract AttributesProcessor getAttributesProcessor();
+  abstract AttributesProcessor getAttributesProcessor();
 }

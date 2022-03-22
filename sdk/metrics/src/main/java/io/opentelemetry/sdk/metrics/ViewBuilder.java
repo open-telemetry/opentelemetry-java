@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -17,7 +17,7 @@ public final class ViewBuilder {
   @Nullable private String name;
   @Nullable private String description;
   private Aggregation aggregation = Aggregation.defaultAggregation();
-  private AbstractAttributesProcessor processor = AbstractAttributesProcessor.noop();
+  private AttributesProcessor processor = AttributesProcessor.noop();
 
   ViewBuilder() {}
 
@@ -71,10 +71,10 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
-    return addAttributesProcessor(AbstractAttributesProcessor.filterByKeyName(keyFilter));
+    return addAttributesProcessor(AttributesProcessor.filterByKeyName(keyFilter));
   }
 
-  ViewBuilder addAttributesProcessor(AbstractAttributesProcessor attributesProcessor) {
+  ViewBuilder addAttributesProcessor(AttributesProcessor attributesProcessor) {
     this.processor = this.processor.then(attributesProcessor);
     return this;
   }

@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +28,10 @@ public final class ViewRegistry {
   static final View DEFAULT_VIEW = View.builder().build();
   static final RegisteredView DEFAULT_REGISTERED_VIEW =
       RegisteredView.create(
-          InstrumentSelector.builder().build(), DEFAULT_VIEW, SourceInfo.noSourceInfo());
+          InstrumentSelector.builder().build(),
+          DEFAULT_VIEW,
+          AttributesProcessor.NOOP,
+          SourceInfo.noSourceInfo());
   private final List<RegisteredView> reverseRegistration;
 
   ViewRegistry(List<RegisteredView> reverseRegistration) {

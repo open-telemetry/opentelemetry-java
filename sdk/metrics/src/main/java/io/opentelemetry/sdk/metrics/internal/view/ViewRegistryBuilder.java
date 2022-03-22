@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +37,11 @@ public class ViewRegistryBuilder {
    * @return this
    */
   public ViewRegistryBuilder addView(
-      InstrumentSelector selector, View view, SourceInfo viewSourceInfo) {
-    orderedViews.add(RegisteredView.create(selector, view, viewSourceInfo));
+      InstrumentSelector selector,
+      View view,
+      AttributesProcessor viewAttributeProcessor,
+      SourceInfo viewSourceInfo) {
+    orderedViews.add(RegisteredView.create(selector, view, viewAttributeProcessor, viewSourceInfo));
     return this;
   }
 }

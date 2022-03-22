@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.DebugUtils;
-import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 // Note: This class MUST be outside the io.opentelemetry.metrics package to work correctly.

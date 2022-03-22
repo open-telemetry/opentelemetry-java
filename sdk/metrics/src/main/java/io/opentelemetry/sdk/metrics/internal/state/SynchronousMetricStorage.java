@@ -5,15 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.view.AbstractAttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
-import io.opentelemetry.sdk.metrics.view.View;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -49,6 +48,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, (AbstractAttributesProcessor) view.getAttributesProcessor());
+        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
   }
 }

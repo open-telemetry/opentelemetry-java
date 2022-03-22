@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.view.ViewBuilder;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -31,8 +30,7 @@ public class ViewUtil {
    */
   public static void appendFilteredBaggageAttributes(
       ViewBuilder viewBuilder, Predicate<String> keyFilter) {
-    addAttributesProcessor(
-        viewBuilder, AbstractAttributesProcessor.appendBaggageByKeyName(keyFilter));
+    addAttributesProcessor(viewBuilder, AttributesProcessor.appendBaggageByKeyName(keyFilter));
   }
 
   /**
@@ -48,11 +46,10 @@ public class ViewUtil {
   }
 
   private static void addAttributesProcessor(
-      ViewBuilder viewBuilder, AbstractAttributesProcessor attributesProcessor) {
+      ViewBuilder viewBuilder, AttributesProcessor attributesProcessor) {
     try {
       Method method =
-          ViewBuilder.class.getDeclaredMethod(
-              "addAttributesProcessor", AbstractAttributesProcessor.class);
+          ViewBuilder.class.getDeclaredMethod("addAttributesProcessor", AttributesProcessor.class);
       method.setAccessible(true);
       method.invoke(viewBuilder, attributesProcessor);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

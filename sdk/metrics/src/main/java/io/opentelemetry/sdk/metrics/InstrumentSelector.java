@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.InstrumentType;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
