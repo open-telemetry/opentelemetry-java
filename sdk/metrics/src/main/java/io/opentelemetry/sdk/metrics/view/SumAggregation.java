@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RandomSupplier;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.function.Supplier;
 
 /** A sum aggregation configuration. */

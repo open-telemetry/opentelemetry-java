@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
@@ -78,7 +78,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @return this
    */
-  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+  SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = filter;
     return this;
   }
