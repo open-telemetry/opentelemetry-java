@@ -56,8 +56,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits CSS styles to the {@link PrintStream} {@code out}. Content emited by this function should
-   * be enclosed by <head></head> tag.
+   * Emits CSS styles to the {@link PrintStream} {@code out}. Content emitted by this function
+   * should be enclosed by <head></head> tag.
    *
    * @param out the {@link PrintStream} {@code out}.
    */
@@ -277,7 +277,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
 
   @Override
   public void emitHtml(Map<String, String> queryMap, OutputStream outputStream) {
-    // PrintStream for emiting HTML contents
+    // PrintStream for emitting HTML contents
     try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
       out.print("<!DOCTYPE html>");
       out.print("<html lang=\"en\">");

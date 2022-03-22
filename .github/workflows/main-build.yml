@@ -94,6 +94,17 @@ jobs:
                    -print0 \
               | xargs -0 -n1 markdown-link-check --config .github/scripts/markdown_link_check_config.json
 
+  markdown-misspell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check markdown for common misspellings
+        run: |
+          curl -L -o ./install-misspell.sh https://git.io/misspell
+          sh ./install-misspell.sh
+          ./bin/misspell -error ./**/*
+
   publish-snapshots:
     name: Publish snapshots
     if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
