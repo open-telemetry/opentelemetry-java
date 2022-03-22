@@ -56,8 +56,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits CSS styles to the {@link PrintStream} {@code out}. Content emitted by this function should
-   * be enclosed by <head></head> tag.
+   * Emits CSS styles to the {@link PrintStream} {@code out}. Content emitted by this function
+   * should be enclosed by <head></head> tag.
    *
    * @param out the {@link PrintStream} {@code out}.
    */
