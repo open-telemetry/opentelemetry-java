@@ -7,6 +7,7 @@ package io.opentelemetry.micrometer1shim;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.NamingConvention;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.concurrent.TimeUnit;
 
@@ -54,11 +55,15 @@ public final class OpenTelemetryMeterRegistryBuilder {
    * OpenTelemetryMeterRegistryBuilder}.
    */
   public MeterRegistry build() {
+    // prometheus mode overrides any unit settings with SECONDS
+    TimeUnit baseTimeUnit = prometheusMode ? TimeUnit.SECONDS : this.baseTimeUnit;
+    NamingConvention namingConvention =
+        prometheusMode ? PrometheusModeNamingConvention.INSTANCE : NamingConvention.identity;
+
     return new OpenTelemetryMeterRegistry(
         clock,
-        // prometheus mode overrides any unit settings with SECONDS
-        prometheusMode ? TimeUnit.SECONDS : baseTimeUnit,
-        prometheusMode,
+        baseTimeUnit,
+        namingConvention,
         openTelemetry.getMeterProvider().get(INSTRUMENTATION_NAME));
   }
 }

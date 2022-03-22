@@ -55,14 +55,12 @@ public final class OpenTelemetryMeterRegistry extends MeterRegistry {
   OpenTelemetryMeterRegistry(
       Clock clock,
       TimeUnit baseTimeUnit,
-      boolean prometheusMode,
+      NamingConvention namingConvention,
       io.opentelemetry.api.metrics.Meter otelMeter) {
     super(clock);
     this.baseTimeUnit = baseTimeUnit;
     this.otelMeter = otelMeter;
 
-    NamingConvention namingConvention =
-        prometheusMode ? PrometheusModeNamingConvention.INSTANCE : NamingConvention.identity;
     this.config()
         .namingConvention(namingConvention)
         .onMeterRemoved(OpenTelemetryMeterRegistry::onMeterRemoved);
