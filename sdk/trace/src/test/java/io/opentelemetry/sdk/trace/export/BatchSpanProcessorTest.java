@@ -95,8 +95,8 @@ class BatchSpanProcessorTest {
     assertThat(builder.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
-    assertThat(builder.getMaxActiveExports())
-        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_ACTIVE_EXPORTS);
+    assertThat(builder.getMaxPendingExports())
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_PENDING_EXPORTS);
   }
 
   @Test
@@ -227,23 +227,23 @@ class BatchSpanProcessorTest {
 
   @Test
   void forceFlushWithConcurrentExports() {
-    AtomicInteger maxActiveCount = new AtomicInteger();
+    AtomicInteger maxPendingCount = new AtomicInteger();
     // asyncDelayMillis is large enough so that two serial exports would exceed the timeoutMillis
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1000, CompletableResultCode.ofSuccess(), 1000, 600) {
 
-          private final AtomicInteger activeCount = new AtomicInteger();
+          private final AtomicInteger pendingCount = new AtomicInteger();
 
           @Override
           public CompletableResultCode export(Collection<SpanData> spans) {
-            int current = activeCount.incrementAndGet();
-            if (current > maxActiveCount.get()) {
-              maxActiveCount.set(current);
+            int current = pendingCount.incrementAndGet();
+            if (current > maxPendingCount.get()) {
+              maxPendingCount.set(current);
             }
             CompletableResultCode result = super.export(spans);
             result.whenComplete(
                 () -> {
-                  activeCount.decrementAndGet();
+                  pendingCount.decrementAndGet();
                   if (result.isSuccess()) {
                     result.succeed();
                   } else {
@@ -260,7 +260,7 @@ class BatchSpanProcessorTest {
             // Force flush should send all spans, make sure the number of spans we check here is
             // not divisible by the batch size.
             .setMaxExportBatchSize(49)
-            .setMaxActiveExports(10)
+            .setMaxPendingExports(10)
             // scheduled export could give false positive that flush occurred
             .setScheduleDelay(10, TimeUnit.MINUTES)
             .build();
@@ -285,7 +285,7 @@ class BatchSpanProcessorTest {
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(20);
 
-    assertThat(maxActiveCount.get()).isEqualTo(10);
+    assertThat(maxPendingCount.get()).isEqualTo(10);
   }
 
   @Test

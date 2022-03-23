@@ -24,14 +24,14 @@ public final class BatchSpanProcessorBuilder {
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
   // Visible for testing
-  static final int DEFAULT_MAX_ACTIVE_EXPORTS = 1;
+  static final int DEFAULT_MAX_PENDING_EXPORTS = 1;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private int maxActiveExports = DEFAULT_MAX_ACTIVE_EXPORTS;
+  private int maxPendingExports = DEFAULT_MAX_PENDING_EXPORTS;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
@@ -126,28 +126,28 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
-   * The maximum number of exports that can be active at any time.
+   * The maximum number of exports that can be pending at any time.
    *
    * <p>The {@link BatchSpanProcessor}'s single worker thread will keep processing as many batches
    * as it can without blocking on the {@link io.opentelemetry.sdk.common.CompletableResultCode}s
-   * that are returned from the {@code spanExporter}, but it will limit the total number of active
+   * that are returned from the {@code spanExporter}, but it will limit the total number of pending
    * exports in flight to this number.
    *
    * <p>Default value is {@code 1}.
    *
-   * @param maxActiveExports the maximum number of exports that can be active at any time.
+   * @param maxPendingExports the maximum number of exports that can be pending at any time.
    * @return this.
-   * @see BatchSpanProcessorBuilder#DEFAULT_MAX_ACTIVE_EXPORTS
+   * @see BatchSpanProcessorBuilder#DEFAULT_MAX_PENDING_EXPORTS
    */
-  public BatchSpanProcessorBuilder setMaxActiveExports(int maxActiveExports) {
-    checkArgument(maxActiveExports > 0, "maxActiveExports must be positive.");
-    this.maxActiveExports = maxActiveExports;
+  public BatchSpanProcessorBuilder setMaxPendingExports(int maxPendingExports) {
+    checkArgument(maxPendingExports > 0, "maxPendingExports must be positive.");
+    this.maxPendingExports = maxPendingExports;
     return this;
   }
 
   // Visible for testing
-  int getMaxActiveExports() {
-    return maxActiveExports;
+  int getMaxPendingExports() {
+    return maxPendingExports;
   }
 
   /**
@@ -179,6 +179,6 @@ public final class BatchSpanProcessorBuilder {
         maxQueueSize,
         maxExportBatchSize,
         exporterTimeoutNanos,
-        maxActiveExports);
+            maxPendingExports);
   }
 }

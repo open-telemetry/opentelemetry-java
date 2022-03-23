@@ -72,7 +72,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos,
-      int maxActiveExports) {
+      int maxPendingExports) {
     this.worker =
         new Worker(
             spanExporter,
@@ -80,7 +80,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            maxActiveExports,
+            maxPendingExports,
             JcTools.newFixedSizeQueue(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
@@ -153,7 +153,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
-    private final int maxActiveExports;
+    private final int maxPendingExports;
 
     private long nextExportTime;
 
@@ -170,7 +170,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
 
-    private final Set<CompletableResultCode> activeExports =
+    private final Set<CompletableResultCode> pendingExports =
         Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private Worker(
@@ -179,13 +179,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        int maxActiveExports,
+        int maxPendingExports,
         Queue<ReadableSpan> queue) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
-      this.maxActiveExports = maxActiveExports;
+      this.maxPendingExports = maxPendingExports;
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
       Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.trace").build();
@@ -276,7 +276,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       }
       exportCurrentBatch();
-      CompletableResultCode.ofAll(activeExports).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+      CompletableResultCode.ofAll(pendingExports).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       CompletableResultCode flushResult = flushRequested.get();
       if (flushResult != null) {
         flushResult.succeed();
@@ -337,11 +337,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
                 logger.log(Level.FINE, "Exporter failed");
               }
             });
-        if (activeExports.size() < maxActiveExports - 1) {
-          activeExports.add(result);
+        if (pendingExports.size() < maxPendingExports - 1) {
+          pendingExports.add(result);
           result.whenComplete(
               () -> {
-                activeExports.remove(result);
+                pendingExports.remove(result);
               });
         } else {
           result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
