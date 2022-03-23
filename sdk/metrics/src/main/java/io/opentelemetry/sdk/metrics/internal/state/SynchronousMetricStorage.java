@@ -5,14 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -34,8 +34,12 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    *     recorded.
    */
   static <T> SynchronousMetricStorage create(
-      View view, InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter) {
+    View view = registeredView.getView();
+    MetricDescriptor metricDescriptor =
+        MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, exemplarFilter);
@@ -44,6 +48,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, ImmutableView.getAttributesProcessor(view));
+        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
   }
 }

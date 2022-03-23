@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
-/** Tests for the {@link AttributesProcessors} DSL-ish library. */
+/** Tests for the {@link AttributesProcessor} DSL-ish library. */
 public class AttributesProcessorTest {
   @Test
   public void filterKeyName_removesKeys() {
