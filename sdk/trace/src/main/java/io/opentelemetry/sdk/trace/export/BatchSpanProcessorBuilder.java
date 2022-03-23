@@ -179,6 +179,6 @@ public final class BatchSpanProcessorBuilder {
         maxQueueSize,
         maxExportBatchSize,
         exporterTimeoutNanos,
-            maxPendingExports);
+        maxPendingExports);
   }
 }
