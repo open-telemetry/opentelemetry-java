@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -20,8 +21,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,13 +58,15 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   static <T> AsynchronousMetricStorage<T> create(
-      View view, InstrumentDescriptor instrumentDescriptor) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
+      RegisteredView registeredView, InstrumentDescriptor instrumentDescriptor) {
+    View view = registeredView.getView();
+    MetricDescriptor metricDescriptor =
+        MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, ExemplarFilter.neverSample());
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, ImmutableView.getAttributesProcessor(view));
+        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
   }
 
   /** Record callback long measurements from {@link ObservableLongMeasurement}. */

@@ -11,13 +11,17 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
@@ -40,6 +44,12 @@ class AsynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private final Resource resource = Resource.empty();
   private final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
+  private final RegisteredView registeredView =
+      RegisteredView.create(
+          InstrumentSelector.builder().build(),
+          View.builder().build(),
+          AttributesProcessor.noop(),
+          SourceInfo.noSourceInfo());
   private CollectionInfo collectionInfo;
 
   @BeforeEach
@@ -54,7 +64,7 @@ class AsynchronousMetricStorageTest {
   void recordLong() {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
-            View.builder().build(),
+            registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 
@@ -93,7 +103,7 @@ class AsynchronousMetricStorageTest {
   void recordDouble() {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
-            View.builder().build(),
+            registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
 
@@ -132,7 +142,11 @@ class AsynchronousMetricStorageTest {
   void record_ProcessesAttributes() {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
-            View.builder().setAttributeFilter(key -> key.equals("key1")).build(),
+            RegisteredView.create(
+                InstrumentSelector.builder().build(),
+                View.builder().build(),
+                AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
+                SourceInfo.noSourceInfo()),
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 
@@ -161,7 +175,7 @@ class AsynchronousMetricStorageTest {
   void record_MaxAccumulations() {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
-            View.builder().build(),
+            registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 
@@ -188,7 +202,7 @@ class AsynchronousMetricStorageTest {
   void record_DuplicateAttributes() {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
-            View.builder().build(),
+            registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 

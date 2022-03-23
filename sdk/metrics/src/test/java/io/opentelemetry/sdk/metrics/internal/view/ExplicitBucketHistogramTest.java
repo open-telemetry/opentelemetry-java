@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;

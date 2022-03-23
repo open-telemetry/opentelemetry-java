@@ -8,12 +8,13 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
@@ -27,7 +28,11 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(), view)
+            .addView(
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+                view,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -36,6 +41,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
+        .extracting(RegisteredView::getView)
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
@@ -45,7 +51,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
   }
 
   @Test
@@ -54,7 +60,11 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
-            .addView(InstrumentSelector.builder().setName("overridden").build(), view)
+            .addView(
+                InstrumentSelector.builder().setName("overridden").build(),
+                view,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
             .build();
     assertThat(
             viewRegistry.findViews(
@@ -63,6 +73,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
+        .extracting(RegisteredView::getView)
         .isSameAs(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
@@ -72,7 +83,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
   }
 
   @Test
@@ -84,8 +95,14 @@ class ViewRegistryTest {
         ViewRegistry.builder()
             .addView(
                 InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
-                view2)
-            .addView(InstrumentSelector.builder().setName(name -> true).build(), view1)
+                view2,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
+            .addView(
+                InstrumentSelector.builder().setName(name -> true).build(),
+                view1,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
             .build();
 
     assertThat(
@@ -95,6 +112,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(2)
         .element(0)
+        .extracting(RegisteredView::getView)
         .isEqualTo(view2);
     assertThat(
             viewRegistry.findViews(
@@ -103,6 +121,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
+        .extracting(RegisteredView::getView)
         .isEqualTo(view1);
   }
 
@@ -117,7 +136,9 @@ class ViewRegistryTest {
                     .setType(InstrumentType.COUNTER)
                     .setName("overrides")
                     .build(),
-                view)
+                view,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
             .build();
 
     assertThat(
@@ -127,6 +148,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
+        .extracting(RegisteredView::getView)
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
@@ -136,7 +158,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isEqualTo(ViewRegistry.DEFAULT_VIEW);
+        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findViews(
@@ -145,7 +167,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isEqualTo(ViewRegistry.DEFAULT_VIEW);
+        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
   }
 
   @Test
@@ -158,7 +180,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -166,7 +188,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -174,7 +196,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -182,7 +204,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -190,7 +212,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -202,6 +224,6 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_VIEW);
+        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
   }
 }

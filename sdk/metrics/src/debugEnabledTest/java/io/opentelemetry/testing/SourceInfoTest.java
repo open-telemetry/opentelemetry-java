@@ -9,12 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.DebugUtils;
-import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
-import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 // Note: This class MUST be outside the io.opentelemetry.metrics package to work correctly.
@@ -24,10 +23,10 @@ class SourceInfoTest {
 
   @Test
   void sourceInfoFindsStackTrace() {
-    assertThat(info.shortDebugString()).isEqualTo("SourceInfoTest.java:23");
+    assertThat(info.shortDebugString()).isEqualTo("SourceInfoTest.java:22");
     assertThat(info.multiLineDebugString())
         .startsWith(
-            "\tat io.opentelemetry.testing.SourceInfoTest.<clinit>(SourceInfoTest.java:23)\n");
+            "\tat io.opentelemetry.testing.SourceInfoTest.<clinit>(SourceInfoTest.java:22)\n");
   }
 
   @Test
@@ -35,6 +34,7 @@ class SourceInfoTest {
     MetricDescriptor simple =
         MetricDescriptor.create(
             View.builder().build(),
+            SourceInfo.fromCurrentStack(),
             InstrumentDescriptor.create(
                 "name",
                 "description",
@@ -44,6 +44,7 @@ class SourceInfoTest {
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             View.builder().build(),
+            SourceInfo.fromCurrentStack(),
             InstrumentDescriptor.create(
                 "name2",
                 "description2",
@@ -65,9 +66,11 @@ class SourceInfoTest {
 
   @Test
   void testDuplicateExceptionMessage_viewBasedConflict() {
+    SourceInfo simpleSourceInfo = SourceInfo.fromCurrentStack();
     MetricDescriptor simple =
         MetricDescriptor.create(
             View.builder().setName("name2").build(),
+            simpleSourceInfo,
             InstrumentDescriptor.create(
                 "name",
                 "description",
@@ -77,6 +80,7 @@ class SourceInfoTest {
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             View.builder().build(),
+            SourceInfo.fromCurrentStack(),
             InstrumentDescriptor.create(
                 "name2",
                 "description2",
@@ -88,7 +92,7 @@ class SourceInfoTest {
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- InstrumentDescription [description2] does not match [description]")
         .contains("Conflicting view registered")
-        .contains(ImmutableView.getSourceInfo(simple.getSourceView()).multiLineDebugString())
+        .contains(simpleSourceInfo.multiLineDebugString())
         .contains("FROM instrument name")
         .contains(
             simpleWithNewDescription.getSourceInstrument().getSourceInfo().multiLineDebugString());
@@ -96,10 +100,12 @@ class SourceInfoTest {
 
   @Test
   void testDuplicateExceptionMessage_viewBasedConflict2() {
+    SourceInfo problemViewSourceInfo = SourceInfo.fromCurrentStack();
     View problemView = View.builder().setName("name").build();
     MetricDescriptor simple =
         MetricDescriptor.create(
             View.builder().build(),
+            SourceInfo.fromCurrentStack(),
             InstrumentDescriptor.create(
                 "name",
                 "description",
@@ -109,6 +115,7 @@ class SourceInfoTest {
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             problemView,
+            problemViewSourceInfo,
             InstrumentDescriptor.create(
                 "name2",
                 "description",
@@ -118,7 +125,7 @@ class SourceInfoTest {
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
         .contains("VIEW defined")
-        .contains(ImmutableView.getSourceInfo(problemView).multiLineDebugString())
+        .contains(problemViewSourceInfo.multiLineDebugString())
         .contains("FROM instrument name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
         .contains("- InstrumentUnit [unit] does not match [unit2]")
