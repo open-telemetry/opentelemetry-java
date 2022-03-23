@@ -7,11 +7,13 @@ package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -26,27 +28,34 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricDescriptor {
 
+  private final AtomicReference<SourceInfo> viewSourceInfo = new AtomicReference<>();
+
   /**
    * Constructs a metric descriptor with no instrument and default view.
    *
    * <p>Used for testing + empty-storage only.
    */
   public static MetricDescriptor create(String name, String description, String unit) {
-    return new AutoValue_MetricDescriptor(
-        name,
-        description,
+    return create(
         View.builder().build(),
+        SourceInfo.fromCurrentStack(),
         InstrumentDescriptor.create(
             name, description, unit, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE));
   }
 
   /** Constructs a metric descriptor for a given View + instrument. */
-  public static MetricDescriptor create(View view, InstrumentDescriptor instrument) {
+  public static MetricDescriptor create(
+      View view, SourceInfo viewSourceInfo, InstrumentDescriptor instrument) {
     String name = (view.getName() == null) ? instrument.getName() : view.getName();
     String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
-    return new AutoValue_MetricDescriptor(name, description, view, instrument);
+    MetricDescriptor metricDescriptor =
+        new AutoValue_MetricDescriptor(name, description, view, instrument);
+    metricDescriptor.viewSourceInfo.set(viewSourceInfo);
+    return metricDescriptor;
   }
+
+  MetricDescriptor() {}
 
   /**
    * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link
@@ -61,14 +70,23 @@ public abstract class MetricDescriptor {
   public abstract String getDescription();
 
   /** The view that lead to the creation of this metric. */
-  public abstract View getSourceView();
+  public abstract View getView();
+
+  /**
+   * The {@link SourceInfo} from where the view was registered. Ignored from {@link #equals(Object)}
+   * and {@link #toString()}.
+   */
+  public final SourceInfo getViewSourceInfo() {
+    SourceInfo sourceInfo = viewSourceInfo.get();
+    return sourceInfo == null ? SourceInfo.noSourceInfo() : sourceInfo;
+  }
 
   /** The instrument which lead to the creation of this metric. */
   public abstract InstrumentDescriptor getSourceInstrument();
 
   /** The {@link AggregationUtil#aggregationName(Aggregation)} of the view aggregation. */
   public String getAggregationName() {
-    return AggregationUtil.aggregationName(getSourceView().getAggregation());
+    return AggregationUtil.aggregationName(getView().getAggregation());
   }
 
   @Memoized

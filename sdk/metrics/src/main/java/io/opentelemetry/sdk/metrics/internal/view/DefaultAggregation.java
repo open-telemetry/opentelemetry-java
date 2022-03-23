@@ -1,0 +1,63 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.metrics.internal.view;
+
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Aggregation that selects the specified default based on instrument.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class DefaultAggregation implements Aggregation, AggregatorFactory {
+
+  private static final Aggregation INSTANCE = new DefaultAggregation();
+
+  public static Aggregation getInstance() {
+    return INSTANCE;
+  }
+
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(DefaultAggregation.class.getName()));
+
+  private DefaultAggregation() {}
+
+  private static Aggregation resolve(InstrumentDescriptor instrument) {
+    switch (instrument.getType()) {
+      case COUNTER:
+      case UP_DOWN_COUNTER:
+      case OBSERVABLE_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+        return SumAggregation.getInstance();
+      case HISTOGRAM:
+        return ExplicitBucketHistogramAggregation.getDefault();
+      case OBSERVABLE_GAUGE:
+        return LastValueAggregation.getInstance();
+    }
+    logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + instrument);
+    return DropAggregation.getInstance();
+  }
+
+  @Override
+  public <T> Aggregator<T> createAggregator(
+      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+    return ((AggregatorFactory) resolve(instrumentDescriptor))
+        .createAggregator(instrumentDescriptor, exemplarFilter);
+  }
+
+  @Override
+  public String toString() {
+    return "DefaultAggregation";
+  }
+}

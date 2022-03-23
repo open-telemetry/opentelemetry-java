@@ -106,6 +106,7 @@ class LogExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
@@ -131,6 +132,7 @@ class LogExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       builder.setMeterProvider(meterProvider);
 

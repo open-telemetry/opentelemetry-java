@@ -26,7 +26,7 @@ public interface LongGaugeBuilder {
   LongGaugeBuilder setUnit(String unit);
 
   /**
-   * Builds this asynchronous insturment with the given callback.
+   * Builds this asynchronous instrument with the given callback.
    *
    * <p>The callback will only be called when the {@link Meter} is being observed.
    *

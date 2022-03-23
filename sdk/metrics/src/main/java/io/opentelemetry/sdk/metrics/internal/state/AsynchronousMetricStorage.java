@@ -13,18 +13,18 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.List;
@@ -66,8 +66,10 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
   /** Create an asynchronous storage instance for double measurements. */
   public static <T>
       AsynchronousMetricStorage<?, ObservableDoubleMeasurement> createDoubleAsyncStorage(
-          View view, InstrumentDescriptor instrument) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+          RegisteredView registeredView, InstrumentDescriptor instrument) {
+    View view = registeredView.getView();
+    MetricDescriptor metricDescriptor =
+        MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrument);
     // TODO: optimize when aggregator is Aggregator.drop()
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
@@ -75,14 +77,16 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
     ObservableDoubleMeasurement measurement =
         new ObservableDoubleMeasurementImpl<>(
-            aggregator, accumulator, ImmutableView.getAttributesProcessor(view));
+            aggregator, accumulator, registeredView.getViewAttributesProcessor());
     return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 
   /** Create an asynchronous storage instance for long measurements. */
   public static <T> AsynchronousMetricStorage<?, ObservableLongMeasurement> createLongAsyncStorage(
-      View view, InstrumentDescriptor instrument) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+      RegisteredView registeredView, InstrumentDescriptor instrument) {
+    View view = registeredView.getView();
+    MetricDescriptor metricDescriptor =
+        MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrument);
     // TODO: optimize when aggregator is Aggregator.drop()
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
@@ -90,7 +94,7 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
     AsyncAccumulator<T> accumulator = new AsyncAccumulator<>(instrument);
     ObservableLongMeasurement measurement =
         new ObservableLongMeasurementImpl<>(
-            aggregator, accumulator, ImmutableView.getAttributesProcessor(view));
+            aggregator, accumulator, registeredView.getViewAttributesProcessor());
     return new AsynchronousMetricStorage<>(metricDescriptor, aggregator, accumulator, measurement);
   }
 

@@ -8,13 +8,12 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -25,13 +24,27 @@ import java.util.concurrent.TimeUnit;
 /** Builder class for the {@link SdkMeterProvider}. */
 public final class SdkMeterProviderBuilder {
 
+  /**
+   * By default, the exemplar filter is set to sample with traces.
+   *
+   * @see #setExemplarFilter(ExemplarFilter)
+   */
+  private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.sampleWithTraces();
+
+  /**
+   * By default, the minimum collection interval is 100ns.
+   *
+   * @see #setMinimumCollectionInterval(Duration)
+   */
+  private static final long DEFAULT_MIN_COLLECTION_INTERVAL_NANOS =
+      TimeUnit.MILLISECONDS.toNanos(100);
+
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
-  // Default the sampling strategy.
-  private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
-  private long minimumCollectionIntervalNanos = TimeUnit.MILLISECONDS.toNanos(100);
+  private final List<AbstractMetricReader> metricReaders = new ArrayList<>();
+  private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
+  private long minimumCollectionIntervalNanos = DEFAULT_MIN_COLLECTION_INTERVAL_NANOS;
 
   SdkMeterProviderBuilder() {}
 
@@ -64,7 +77,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @return this
    */
-  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+  SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = filter;
     return this;
   }
@@ -80,7 +93,7 @@ public final class SdkMeterProviderBuilder {
    *
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
-   *   .setInstrumentType(InstrumentType.COUNTER)
+   *   .setType(InstrumentType.COUNTER)
    *   .build();
    *
    * // register the view with the SdkMeterProviderBuilder
@@ -99,18 +112,21 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
     Objects.requireNonNull(view, "view");
-    viewRegistryBuilder.addView(selector, view);
+    viewRegistryBuilder.addView(
+        selector, view, view.getAttributesProcessor(), SourceInfo.fromCurrentStack());
     return this;
   }
 
   /**
    * Registers a {@link MetricReader} for this SDK.
    *
+   * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
+   *
    * @param reader The factory for a reader of metrics.
    * @return this
    */
-  public SdkMeterProviderBuilder registerMetricReader(MetricReaderFactory reader) {
-    metricReaders.add(reader);
+  public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
+    metricReaders.add(AbstractMetricReader.asAbstractMetricReader(reader));
     return this;
   }
 

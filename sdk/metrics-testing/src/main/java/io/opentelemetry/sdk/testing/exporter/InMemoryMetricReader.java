@@ -8,12 +8,11 @@ package io.opentelemetry.sdk.testing.exporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import java.util.Collection;
 import java.util.Collections;
-import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
@@ -41,9 +40,9 @@ import javax.annotation.Nullable;
  * }
  * </code></pre>
  */
-public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
+public class InMemoryMetricReader extends AbstractMetricReader {
   private final AggregationTemporality preferred;
-  @Nullable private volatile MetricProducer metricProducer;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
@@ -61,11 +60,10 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   /** Returns all metrics accumulated since the last call. */
   public Collection<MetricData> collectAllMetrics() {
-    MetricProducer metricProducer = this.metricProducer;
-    if (metricProducer != null) {
-      return metricProducer.collectAllMetrics();
+    if (isShutdown.get()) {
+      return Collections.emptyList();
     }
-    return Collections.emptyList();
+    return getMetricProducer().collectAllMetrics();
   }
 
   @Override
@@ -75,22 +73,13 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public CompletableResultCode flush() {
-    MetricProducer metricProducer = this.metricProducer;
-    if (metricProducer != null) {
-      metricProducer.collectAllMetrics();
-    }
+    collectAllMetrics();
     return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    metricProducer = null;
+    isShutdown.set(true);
     return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public MetricReader apply(MetricProducer producer) {
-    this.metricProducer = producer;
-    return this;
   }
 }

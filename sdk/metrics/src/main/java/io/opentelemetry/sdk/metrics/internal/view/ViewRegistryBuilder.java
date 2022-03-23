@@ -5,8 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +33,15 @@ public class ViewRegistryBuilder {
    *
    * @param selector The instruments that should have their defaults altered.
    * @param view The {@link View} metric definition.
+   * @param viewSourceInfo The {@link SourceInfo} from where the source was registered.
    * @return this
    */
-  public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
-    orderedViews.add(RegisteredView.create(selector, view));
+  public ViewRegistryBuilder addView(
+      InstrumentSelector selector,
+      View view,
+      AttributesProcessor viewAttributeProcessor,
+      SourceInfo viewSourceInfo) {
+    orderedViews.add(RegisteredView.create(selector, view, viewAttributeProcessor, viewSourceInfo));
     return this;
   }
 }

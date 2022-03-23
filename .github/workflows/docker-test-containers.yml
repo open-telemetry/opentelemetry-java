@@ -10,14 +10,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - source: jaegertracing/all-in-one:1.17
-            target_image: jaeger
+          - source: jaegertracing/all-in-one:1.32
+            target_image: jaeger:1.32
           - source: otel/opentelemetry-collector-contrib:latest
             target_image: otel-collector
           - source: shopify/toxiproxy:latest
             target_image: toxiproxy
           - source: eclipse-temurin:8-jdk
             target_image: openjdk8
+          - source: eclipse-temurin:17-jre-alpine
+            target_image: openjdk17
     runs-on: ubuntu-latest
     steps:
       - name: Docker login
@@ -26,6 +28,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Copy image
         # Non-debug image doesn't seem to support reading the .docker creds.
         run: |

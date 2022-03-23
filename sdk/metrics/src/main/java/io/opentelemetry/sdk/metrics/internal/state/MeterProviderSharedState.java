@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
@@ -26,6 +26,8 @@ public abstract class MeterProviderSharedState {
     return new AutoValue_MeterProviderSharedState(
         clock, resource, viewRegistry, clock.now(), exemplarFilter);
   }
+
+  MeterProviderSharedState() {}
 
   /** Returns the clock used for measurements. */
   public abstract Clock getClock();

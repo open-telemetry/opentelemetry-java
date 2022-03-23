@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
 import java.util.function.BiFunction;
@@ -115,6 +114,7 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
@@ -141,6 +141,7 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
@@ -152,7 +153,7 @@ final class MetricExporterConfiguration {
     return exporter;
   }
 
-  private static MetricReaderFactory configurePeriodicMetricReader(
+  private static PeriodicMetricReader configurePeriodicMetricReader(
       ConfigProperties config, MetricExporter exporter) {
 
     Duration exportInterval = config.getDuration("otel.metric.export.interval");
@@ -160,12 +161,10 @@ final class MetricExporterConfiguration {
       exportInterval = Duration.ofMinutes(1);
     }
 
-    return PeriodicMetricReader.builder(exporter)
-        .setInterval(exportInterval)
-        .newMetricReaderFactory();
+    return PeriodicMetricReader.builder(exporter).setInterval(exportInterval).build();
   }
 
-  private static MetricReaderFactory configurePrometheusMetricReader(ConfigProperties config) {
+  private static PrometheusHttpServer configurePrometheusMetricReader(ConfigProperties config) {
     ClasspathUtil.checkClassExists(
         "io.opentelemetry.exporter.prometheus.PrometheusHttpServer",
         "Prometheus Metrics Server",
@@ -180,7 +179,7 @@ final class MetricExporterConfiguration {
     if (host != null) {
       prom.setHost(host);
     }
-    return prom.newMetricReaderFactory();
+    return prom.build();
   }
 
   private MetricExporterConfiguration() {}

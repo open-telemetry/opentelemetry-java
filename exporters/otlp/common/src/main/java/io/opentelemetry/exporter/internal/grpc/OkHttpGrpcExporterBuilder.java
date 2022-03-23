@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -42,6 +43,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   private final Headers.Builder headers = new Headers.Builder();
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
@@ -90,6 +93,13 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   }
 
   @Override
+  public GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    this.privateKeyPem = privateKeyPem;
+    this.certificatePem = certificatePem;
+    return this;
+  }
+
+  @Override
   public OkHttpGrpcExporterBuilder<T> addHeader(String key, String value) {
     headers.add(key, value);
     return this;
@@ -117,7 +127,12 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     if (trustedCertificatesPem != null) {
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
-        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(trustManager), trustManager);
+        X509KeyManager keyManager = null;
+        if (privateKeyPem != null && certificatePem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
+        }
+        clientBuilder.sslSocketFactory(
+            TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificates, are they valid X.509 in PEM format?", e);

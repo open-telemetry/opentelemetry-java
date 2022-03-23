@@ -25,14 +25,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.view.ViewBuilderImpl;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -55,7 +51,7 @@ class SdkMeterProviderTest {
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
-  @Mock MetricReader metricReader;
+  @Mock AbstractMetricReader metricReader;
 
   @Test
   void noopImplementationWithNoReaders() {
@@ -687,14 +683,12 @@ class SdkMeterProviderTest {
     InstrumentSelector selector =
         InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
+    ViewBuilder viewBuilder = View.builder().setAggregation(Aggregation.sum());
+    ViewUtil.appendAllBaggageAttributes(viewBuilder);
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
-            .registerView(
-                selector,
-                ((ViewBuilderImpl) View.builder().setAggregation(Aggregation.sum()))
-                    .appendAllBaggageAttributes()
-                    .build())
+            .registerView(selector, viewBuilder.build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
     Baggage baggage = Baggage.builder().put("baggage", "value").build();
@@ -990,7 +984,7 @@ class SdkMeterProviderTest {
 
     CompletableResultCode result =
         SdkMeterProvider.builder()
-            .registerMetricReader(unused -> metricReader)
+            .registerMetricReader(metricReader)
             .build()
             .shutdown()
             .join(10, TimeUnit.SECONDS);
