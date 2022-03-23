@@ -9,12 +9,11 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -94,7 +93,7 @@ public final class SdkMeterProviderBuilder {
    *
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
-   *   .setInstrumentType(InstrumentType.COUNTER)
+   *   .setType(InstrumentType.COUNTER)
    *   .build();
    *
    * // register the view with the SdkMeterProviderBuilder
@@ -113,7 +112,8 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
     Objects.requireNonNull(view, "view");
-    viewRegistryBuilder.addView(selector, view);
+    viewRegistryBuilder.addView(
+        selector, view, view.getAttributesProcessor(), SourceInfo.fromCurrentStack());
     return this;
   }
 

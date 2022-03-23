@@ -47,7 +47,7 @@ public abstract class InstrumentDescriptor {
 
   /**
    * Debugging information for this instrument. Ignored from {@link #equals(Object)} and {@link
-   * #toString()}
+   * #toString()}.
    */
   public final SourceInfo getSourceInfo() {
     return sourceInfo;

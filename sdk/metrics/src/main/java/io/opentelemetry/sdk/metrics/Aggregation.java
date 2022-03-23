@@ -3,12 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.internal.view.DefaultAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.DropAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.LastValueAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.SumAggregation;
 import java.util.List;
 
 /**
- * Configures how measurements are combined into metrics for {@link View}s.
+ * Configures how measurements are combined into metrics.
  *
  * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
@@ -18,29 +23,29 @@ public interface Aggregation {
 
   /** The drop Aggregation will ignore/drop all Instrument Measurements. */
   static Aggregation drop() {
-    return DropAggregation.INSTANCE;
+    return DropAggregation.getInstance();
   }
 
   /** The default aggregation for an instrument will be chosen. */
   static Aggregation defaultAggregation() {
-    return DefaultAggregation.INSTANCE;
+    return DefaultAggregation.getInstance();
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
   static Aggregation sum() {
-    return SumAggregation.DEFAULT;
+    return SumAggregation.getInstance();
   }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
   static Aggregation lastValue() {
-    return LastValueAggregation.INSTANCE;
+    return LastValueAggregation.getInstance();
   }
 
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
   static Aggregation explicitBucketHistogram() {
-    return ExplicitBucketHistogramAggregation.DEFAULT;
+    return ExplicitBucketHistogramAggregation.getDefault();
   }
 
   /**
@@ -50,6 +55,6 @@ public interface Aggregation {
    *     order from lowest to highest.
    */
   static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
-    return new ExplicitBucketHistogramAggregation(bucketBoundaries);
+    return ExplicitBucketHistogramAggregation.create(bucketBoundaries);
   }
 }

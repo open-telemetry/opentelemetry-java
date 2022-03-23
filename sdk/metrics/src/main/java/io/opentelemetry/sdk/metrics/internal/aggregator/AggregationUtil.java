@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import java.util.HashMap;
 import java.util.Map;
 

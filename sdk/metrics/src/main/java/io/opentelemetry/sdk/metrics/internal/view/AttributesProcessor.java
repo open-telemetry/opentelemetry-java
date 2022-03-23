@@ -19,10 +19,7 @@ import java.util.function.UnaryOperator;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An {@code AttributesProcessor} is used by {@code View}s to define the actual recorded set of
- * attributes.
- *
- * <p>An AttributesProcessor is used to define the actual set of attributes that will be used in a
+ * An AttributesProcessor is used to define the actual set of attributes that will be used in a
  * Metric vs. the inbound set of attributes from a measurement.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change

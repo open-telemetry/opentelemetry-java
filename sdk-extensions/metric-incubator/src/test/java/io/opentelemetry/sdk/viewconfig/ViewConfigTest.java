@@ -13,14 +13,14 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.internal.view.ImmutableView;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -114,20 +114,26 @@ class ViewConfigTest {
     assertThat(view.getName()).isEqualTo("name");
     assertThat(view.getDescription()).isEqualTo("description");
     assertThat(view.getAggregation()).isEqualTo(Aggregation.sum());
-    assertThat(
-            ImmutableView.getAttributesProcessor(view)
-                .process(
-                    Attributes.builder()
-                        .put("foo", "val")
-                        .put("bar", "val")
-                        .put("baz", "val")
-                        .build(),
-                    Context.current()))
-        .containsEntry("foo", "val")
-        .containsEntry("bar", "val")
+    assertThat(view)
+        .extracting(
+            "attributesProcessor", as(InstanceOfAssertFactories.type(AttributesProcessor.class)))
         .satisfies(
-            (Consumer<Attributes>)
-                attributes -> assertThat(attributes.get(AttributeKey.stringKey("baz"))).isBlank());
+            attributesProcessor -> {
+              assertThat(
+                      attributesProcessor.process(
+                          Attributes.builder()
+                              .put("foo", "val")
+                              .put("bar", "val")
+                              .put("baz", "val")
+                              .build(),
+                          Context.current()))
+                  .containsEntry("foo", "val")
+                  .containsEntry("bar", "val")
+                  .satisfies(
+                      (Consumer<Attributes>)
+                          attributes ->
+                              assertThat(attributes.get(AttributeKey.stringKey("baz"))).isBlank());
+            });
   }
 
   @Test

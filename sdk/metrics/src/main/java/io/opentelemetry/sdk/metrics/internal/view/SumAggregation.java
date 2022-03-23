@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RandomSupplier;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
@@ -16,9 +17,18 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.function.Supplier;
 
-/** A sum aggregation configuration. */
-final class SumAggregation implements Aggregation, AggregatorFactory {
-  static final SumAggregation DEFAULT = new SumAggregation();
+/**
+ * A sum aggregation configuration.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class SumAggregation implements Aggregation, AggregatorFactory {
+  private static final SumAggregation INSTANCE = new SumAggregation();
+
+  public static Aggregation getInstance() {
+    return INSTANCE;
+  }
 
   private SumAggregation() {}
 
