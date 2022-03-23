@@ -12,14 +12,13 @@ import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
-import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
-import java.util.List;
+import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class SdkObservableInstrument<O>
+class SdkObservableInstrument
     implements ObservableDoubleCounter,
         ObservableLongCounter,
         ObservableDoubleGauge,
@@ -30,25 +29,26 @@ class SdkObservableInstrument<O>
   private static final Logger logger = Logger.getLogger(SdkObservableInstrument.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final String instrumentName;
-  private final List<AsynchronousMetricStorage<?, O>> storages;
-  private final Consumer<O> callback;
+  private final MeterSharedState meterSharedState;
+  private final CallbackRegistration<?> callbackRegistration;
   private final AtomicBoolean removed = new AtomicBoolean(false);
 
   SdkObservableInstrument(
-      String instrumentName, List<AsynchronousMetricStorage<?, O>> storages, Consumer<O> callback) {
-    this.instrumentName = instrumentName;
-    this.storages = storages;
-    this.callback = callback;
+      MeterSharedState meterSharedState, CallbackRegistration<?> callbackRegistration) {
+    this.meterSharedState = meterSharedState;
+    this.callbackRegistration = callbackRegistration;
   }
 
   @Override
   public void close() {
     if (!removed.compareAndSet(false, true)) {
       throttlingLogger.log(
-          Level.WARNING, "Instrument " + instrumentName + " has called close() multiple times.");
+          Level.WARNING,
+          "Instrument "
+              + callbackRegistration.getInstrumentDescriptor().getName()
+              + " has called close() multiple times.");
       return;
     }
-    storages.forEach(storage -> storage.removeCallback(callback));
+    meterSharedState.removeCallback(callbackRegistration);
   }
 }

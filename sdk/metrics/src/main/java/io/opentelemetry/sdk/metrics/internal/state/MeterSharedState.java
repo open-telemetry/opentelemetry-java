@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static java.util.stream.Collectors.toList;
 
-import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * State for a {@code Meter}.
@@ -26,22 +25,51 @@ import javax.annotation.concurrent.Immutable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@AutoValue
-@Immutable
-public abstract class MeterSharedState {
+public class MeterSharedState {
 
-  public static MeterSharedState create(InstrumentationScopeInfo instrumentationScopeInfo) {
-    return new AutoValue_MeterSharedState(instrumentationScopeInfo, new MetricStorageRegistry());
+  private final Object callbackLock = new Object();
+
+  @GuardedBy("callbackLock")
+  private final List<CallbackRegistration<?>> callbackRegistrations = new ArrayList<>();
+
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final MetricStorageRegistry metricStorageRegistry;
+
+  private MeterSharedState(
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      MetricStorageRegistry metricStorageRegistry) {
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.metricStorageRegistry = metricStorageRegistry;
   }
 
-  MeterSharedState() {}
+  public static MeterSharedState create(InstrumentationScopeInfo instrumentationScopeInfo) {
+    return new MeterSharedState(instrumentationScopeInfo, new MetricStorageRegistry());
+  }
+
+  /**
+   * Unregister the callback.
+   *
+   * <p>Callbacks are originally registered via {@link
+   * #registerDoubleAsynchronousInstrument(InstrumentDescriptor, MeterProviderSharedState,
+   * Consumer)} or {@link #registerLongAsynchronousInstrument(InstrumentDescriptor,
+   * MeterProviderSharedState, Consumer)}.
+   */
+  public void removeCallback(CallbackRegistration<?> callbackRegistration) {
+    synchronized (callbackLock) {
+      this.callbackRegistrations.remove(callbackRegistration);
+    }
+  }
 
   // only visible for testing.
   /** Returns the {@link InstrumentationScopeInfo} for this {@code Meter}. */
-  public abstract InstrumentationScopeInfo getInstrumentationScopeInfo();
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
+  }
 
   /** Returns the metric storage for metrics in this {@code Meter}. */
-  abstract MetricStorageRegistry getMetricStorageRegistry();
+  MetricStorageRegistry getMetricStorageRegistry() {
+    return metricStorageRegistry;
+  }
 
   /** Collects all accumulated metric stream points. */
   public List<MetricData> collectAll(
@@ -49,6 +77,14 @@ public abstract class MeterSharedState {
       MeterProviderSharedState meterProviderSharedState,
       long epochNanos,
       boolean suppressSynchronousCollection) {
+    List<CallbackRegistration<?>> currentRegisteredCallbacks;
+    synchronized (callbackLock) {
+      currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
+    }
+    for (CallbackRegistration<?> callbackRegistration : currentRegisteredCallbacks) {
+      callbackRegistration.invokeCallback();
+    }
+
     Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
     List<MetricData> result = new ArrayList<>(metrics.size());
     for (MetricStorage metric : metrics) {
@@ -96,57 +132,68 @@ public abstract class MeterSharedState {
     return new MultiWritableMetricStorage(registeredStorages);
   }
 
-  /** Registers new asynchronous storage associated with a given {@code long} instrument. */
-  public final List<AsynchronousMetricStorage<?, ObservableLongMeasurement>>
-      registerLongAsynchronousInstrument(
-          InstrumentDescriptor instrument,
-          MeterProviderSharedState meterProviderSharedState,
-          Consumer<ObservableLongMeasurement> callback) {
+  /**
+   * Register the {@code long} callback for the {@code instrument} and establishes required
+   * asynchronous storage.
+   *
+   * <p>The callback will be invoked once per collection until unregistered via {@link
+   * #removeCallback(CallbackRegistration)}.
+   */
+  public final CallbackRegistration<ObservableLongMeasurement> registerLongAsynchronousInstrument(
+      InstrumentDescriptor instrument,
+      MeterProviderSharedState meterProviderSharedState,
+      Consumer<ObservableLongMeasurement> callback) {
+    List<AsynchronousMetricStorage<?>> registeredStorages =
+        registerAsynchronousInstrument(instrument, meterProviderSharedState);
 
-    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> storages =
-        meterProviderSharedState
-            .getViewRegistry()
-            .findViews(instrument, getInstrumentationScopeInfo())
-            .stream()
-            .map(view -> AsynchronousMetricStorage.createLongAsyncStorage(view, instrument))
-            .filter(storage -> !storage.isEmpty())
-            .collect(toList());
-
-    List<AsynchronousMetricStorage<?, ObservableLongMeasurement>> registeredStorages =
-        new ArrayList<>();
-    for (AsynchronousMetricStorage<?, ObservableLongMeasurement> storage : storages) {
-      AsynchronousMetricStorage<?, ObservableLongMeasurement> registeredStorage =
-          getMetricStorageRegistry().register(storage);
-      registeredStorage.addCallback(callback);
-      registeredStorages.add(registeredStorage);
+    CallbackRegistration<ObservableLongMeasurement> registration =
+        CallbackRegistration.createLong(instrument, callback, registeredStorages);
+    synchronized (callbackLock) {
+      callbackRegistrations.add(registration);
     }
-    return registeredStorages;
+    return registration;
   }
 
-  /** Registers new asynchronous storage associated with a given {@code double} instrument. */
-  public final List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>>
+  /**
+   * Register the {@code double} callback for the {@code instrument} and establishes required
+   * asynchronous storage.
+   *
+   * <p>The callback will be invoked once per collection until unregistered via {@link
+   * #removeCallback(CallbackRegistration)}.
+   */
+  public final CallbackRegistration<ObservableDoubleMeasurement>
       registerDoubleAsynchronousInstrument(
           InstrumentDescriptor instrument,
           MeterProviderSharedState meterProviderSharedState,
           Consumer<ObservableDoubleMeasurement> callback) {
+    List<AsynchronousMetricStorage<?>> registeredStorages =
+        registerAsynchronousInstrument(instrument, meterProviderSharedState);
 
-    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> storages =
+    CallbackRegistration<ObservableDoubleMeasurement> registration =
+        CallbackRegistration.createDouble(instrument, callback, registeredStorages);
+    synchronized (callbackLock) {
+      callbackRegistrations.add(registration);
+    }
+    return registration;
+  }
+
+  private List<AsynchronousMetricStorage<?>> registerAsynchronousInstrument(
+      InstrumentDescriptor instrumentDescriptor,
+      MeterProviderSharedState meterProviderSharedState) {
+    List<AsynchronousMetricStorage<?>> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrument, getInstrumentationScopeInfo())
+            .findViews(instrumentDescriptor, getInstrumentationScopeInfo())
             .stream()
-            .map(view -> AsynchronousMetricStorage.createDoubleAsyncStorage(view, instrument))
+            .map(view -> AsynchronousMetricStorage.create(view, instrumentDescriptor))
             .filter(storage -> !storage.isEmpty())
             .collect(toList());
 
-    List<AsynchronousMetricStorage<?, ObservableDoubleMeasurement>> registeredStorages =
-        new ArrayList<>();
-    for (AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage : storages) {
-      AsynchronousMetricStorage<?, ObservableDoubleMeasurement> registeredStorage =
-          getMetricStorageRegistry().register(storage);
-      registeredStorage.addCallback(callback);
-      registeredStorages.add(registeredStorage);
+    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>(storages.size());
+    for (AsynchronousMetricStorage<?> storage : storages) {
+      registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
+
     return registeredStorages;
   }
 }
