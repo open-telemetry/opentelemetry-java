@@ -144,13 +144,6 @@ class ViewConfigTest {
   }
 
   @Test
-  void toInstrumentSelector_Empty() {
-    InstrumentSelector selector =
-        ViewConfig.toInstrumentSelector(SelectorSpecification.builder().build());
-    assertThat(selector).isEqualTo(InstrumentSelector.builder().build());
-  }
-
-  @Test
   void toInstrumentSelector() {
     InstrumentSelector selector =
         ViewConfig.toInstrumentSelector(
