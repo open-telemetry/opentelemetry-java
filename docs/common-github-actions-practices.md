@@ -25,8 +25,8 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Workflows that generate PRs](#workflows-that-generate-prs)
   - [Prepare release branch](#prepare-release-branch)
   - [Prepare patch](#prepare-patch)
-  - [Generate release notes from change log](#generate-release-notes-from-change-log)
   - [Backporting PRs to a release branch](#backporting-prs-to-a-release-branch)
+  - [Release](#release)
 - [Naming conventions](#naming-conventions)
 - [YAML style guide](#yaml-style-guide)
 
@@ -142,11 +142,12 @@ jobs:
 
 https://github.com/tcort/markdown-link-check checks markdown files for valid links and anchors.
 
-You may wish to not make this a required check for PRs to avoid unnecessarily blocking of PRs if external links break.
+You may wish to not make this a required check for PRs to avoid unnecessary blocking of PRs if
+external links break.
 
 ```
   markdown-link-check:
-    # release branches are excluded to avoid unnecessary maintenance when external links break
+    # release branches are excluded to avoid unnecessary maintenance if external links break
     if: ${{ !startsWith(github.ref_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
@@ -157,10 +158,11 @@ You may wish to not make this a required check for PRs to avoid unnecessarily bl
 
       - name: Run markdown-link-check
         run: |
+          # --quiet displays errors only, making them easier to find in the log
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-                 -exec markdown-link-check --config .github/scripts/markdown-link-check-config.json {} \;
+                 | xargs markdown-link-check --quiet --config .github/scripts/markdown-link-check-config.json
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
@@ -179,13 +181,13 @@ https://github.com/client9/misspell only checks against known misspellings,
 so while it's not a comprehensive spell checker, it doesn't produce false positives,
 and so doesn't get in your way.
 
-You may wish to not make this a required check for PRs to avoid unnecessarily blocking of PRs if
+You may wish to not make this a required check for PRs to avoid unnecessary blocking of PRs if
 new misspellings are added to the misspell dictionary.
 
 ```
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance when
-    # new misspellings are added to the misspell dictionary
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
+    # added to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
@@ -219,9 +221,9 @@ to break a link in an unchanged file)
 Here's an example of doing this with the above `misspell-check` workflow:
 
 ```
-  file-check:
-    # release branches are excluded to avoid unnecessary maintenance when
-    # new misspellings are added to the misspell dictionary
+  misspell-check:
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
+    # added to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
@@ -239,8 +241,6 @@ Here's an example of doing this with the above `misspell-check` workflow:
           sh ./install-misspell.sh
 
       - name: Run misspell (diff)
-        # only changed files are checked on PRs to avoid unnecessarily blocking PRs when
-        # new misspellings are added to the misspell dictionary
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           git diff --name-only --diff-filter=ACMRTUXB origin/$GITHUB_BASE_REF \
