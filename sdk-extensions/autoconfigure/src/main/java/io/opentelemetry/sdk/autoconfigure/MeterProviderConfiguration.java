@@ -39,7 +39,10 @@ final class MeterProviderConfiguration {
     }
 
     String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName != null && !exporterName.equals("none")) {
+    if (exporterName == null) {
+      exporterName = "otlp";
+    }
+    if (!exporterName.equals("none")) {
       MetricExporterConfiguration.configureExporter(
           exporterName, config, serviceClassLoader, meterProviderBuilder, metricExporterCustomizer);
     }

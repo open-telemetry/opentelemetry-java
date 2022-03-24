@@ -56,11 +56,6 @@ final class MetricExporterConfiguration {
         metricExporter = spiExporter;
     }
 
-    // exporter may be null in otlp case
-    if (metricExporter == null) {
-      return;
-    }
-
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
     sdkMeterProviderBuilder.registerMetricReader(
         configurePeriodicMetricReader(config, metricExporter));
@@ -89,21 +84,14 @@ final class MetricExporterConfiguration {
   }
 
   // Visible for testing
-  @Nullable
   static MetricExporter configureOtlpMetrics(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
-    MetricExporter exporter;
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      try {
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
-            "OTLP HTTP Metrics Exporter",
-            "opentelemetry-exporter-otlp-http-metrics");
-      } catch (ConfigurationException e) {
-        // Squash this for now, until metrics are stable
-        return null;
-      }
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
+          "OTLP HTTP Metrics Exporter",
+          "opentelemetry-exporter-otlp-http-metrics");
       OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
@@ -118,19 +106,12 @@ final class MetricExporterConfiguration {
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
-      exporter = builder.build();
+      return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      try {
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-            "OTLP gRPC Metrics Exporter",
-            "opentelemetry-exporter-otlp-metrics");
-      } catch (ConfigurationException e) {
-        // Squash this for now, until metrics are stable and included in the `exporter-otlp`
-        // artifact
-        // by default,
-        return null;
-      }
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+          "OTLP gRPC Metrics Exporter",
+          "opentelemetry-exporter-otlp");
       OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
@@ -145,12 +126,10 @@ final class MetricExporterConfiguration {
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
 
-      exporter = builder.build();
+      return builder.build();
     } else {
       throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
-
-    return exporter;
   }
 
   private static PeriodicMetricReader configurePeriodicMetricReader(
