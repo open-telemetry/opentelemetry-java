@@ -37,6 +37,7 @@ public final class PrometheusCollector extends AbstractMetricReader implements M
   private final Collector collector;
 
   PrometheusCollector() {
+    super(unused -> AggregationTemporality.CUMULATIVE);
     this.collector = new CollectorImpl(() -> getMetricProducer().collectAllMetrics());
     this.collector.register();
   }
@@ -47,11 +48,6 @@ public final class PrometheusCollector extends AbstractMetricReader implements M
    */
   public static PrometheusCollector create() {
     return new PrometheusCollector();
-  }
-
-  @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return AggregationTemporality.CUMULATIVE;
   }
 
   // Prometheus cannot flush.

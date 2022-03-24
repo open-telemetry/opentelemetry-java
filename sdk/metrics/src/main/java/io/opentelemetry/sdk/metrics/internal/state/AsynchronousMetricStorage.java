@@ -112,7 +112,8 @@ public class AsynchronousMetricStorage<T, O> implements MetricStorage {
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
+        collectionInfo.getAggregationTemporality(
+            getMetricDescriptor().getSourceInstrument().getType());
     collectLock.lock();
     try {
       try {

@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </code></pre>
  */
 public class InMemoryMetricReader extends AbstractMetricReader {
-  private final AggregationTemporality preferred;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /** Returns a new {@link InMemoryMetricReader}. */
@@ -54,8 +53,8 @@ public class InMemoryMetricReader extends AbstractMetricReader {
     return new InMemoryMetricReader(AggregationTemporality.DELTA);
   }
 
-  private InMemoryMetricReader(AggregationTemporality preferred) {
-    this.preferred = preferred;
+  private InMemoryMetricReader(AggregationTemporality aggregationTemporality) {
+    super(unused -> aggregationTemporality);
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -64,11 +63,6 @@ public class InMemoryMetricReader extends AbstractMetricReader {
       return Collections.emptyList();
     }
     return getMetricProducer().collectAllMetrics();
-  }
-
-  @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return preferred;
   }
 
   @Override

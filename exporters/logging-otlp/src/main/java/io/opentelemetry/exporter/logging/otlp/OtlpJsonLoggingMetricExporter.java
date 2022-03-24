@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -28,10 +29,10 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());
 
-  private final AggregationTemporality preferredTemporality;
+  private final AggregationTemporality aggregationTemporality;
 
   /**
-   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a preferred temporality of {@link
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static MetricExporter create() {
@@ -40,19 +41,29 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   /**
    * Returns a new {@link OtlpJsonLoggingMetricExporter} with the given {@code
-   * preferredTemporality}.
+   * aggregationTemporality}.
    */
-  public static MetricExporter create(AggregationTemporality preferredTemporality) {
-    return new OtlpJsonLoggingMetricExporter(preferredTemporality);
+  public static MetricExporter create(AggregationTemporality aggregationTemporality) {
+    return new OtlpJsonLoggingMetricExporter(aggregationTemporality);
   }
 
-  private OtlpJsonLoggingMetricExporter(AggregationTemporality preferredTemporality) {
-    this.preferredTemporality = preferredTemporality;
+  private OtlpJsonLoggingMetricExporter(AggregationTemporality aggregationTemporality) {
+    this.aggregationTemporality = aggregationTemporality;
+  }
+
+  /**
+   * Return the aggregation temporality.
+   *
+   * @deprecated Use {@link #getAggregationTemporality(InstrumentType)}.
+   */
+  @Deprecated
+  public AggregationTemporality getPreferredTemporality() {
+    return aggregationTemporality;
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return preferredTemporality;
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporality;
   }
 
   @Override

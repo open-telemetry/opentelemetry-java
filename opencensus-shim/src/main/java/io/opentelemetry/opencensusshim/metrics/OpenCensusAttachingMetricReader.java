@@ -6,19 +6,18 @@
 package io.opentelemetry.opencensusshim.metrics;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
-import javax.annotation.Nullable;
 
 /** {@link MetricReader} that appends OpenCensus metrics to anything read. */
 final class OpenCensusAttachingMetricReader extends AbstractMetricReader {
   private final AbstractMetricReader adapted;
 
   OpenCensusAttachingMetricReader(MetricReader adapted) {
+    super(adapted::getAggregationTemporality);
     this.adapted = AbstractMetricReader.asAbstractMetricReader(adapted);
   }
 
@@ -29,12 +28,6 @@ final class OpenCensusAttachingMetricReader extends AbstractMetricReader {
         new MultiMetricProducer(
             Arrays.asList(metricProducer, OpenCensusMetricProducer.create(Resource.getDefault()))),
         adapted);
-  }
-
-  @Nullable
-  @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return adapted.getPreferredTemporality();
   }
 
   @Override

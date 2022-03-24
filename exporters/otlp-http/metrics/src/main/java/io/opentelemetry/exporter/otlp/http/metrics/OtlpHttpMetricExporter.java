@@ -8,10 +8,12 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.function.Function;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model. */
@@ -19,13 +21,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private final OkHttpExporter<MetricsRequestMarshaler> delegate;
-  private final AggregationTemporality preferredTemporality;
+  private final Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction;
 
   OtlpHttpMetricExporter(
       OkHttpExporter<MetricsRequestMarshaler> delegate,
-      AggregationTemporality preferredTemporality) {
+      Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction) {
     this.delegate = delegate;
-    this.preferredTemporality = preferredTemporality;
+    this.aggregationTemporalityFunction = aggregationTemporalityFunction;
   }
 
   /**
@@ -47,8 +49,8 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return preferredTemporality;
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporalityFunction.apply(instrumentType);
   }
 
   /**

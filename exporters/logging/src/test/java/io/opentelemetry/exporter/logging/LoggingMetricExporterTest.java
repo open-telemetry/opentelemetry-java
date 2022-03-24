@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -49,9 +50,11 @@ class LoggingMetricExporterTest {
 
   @Test
   void preferredTemporality() {
-    assertThat(LoggingMetricExporter.create().getPreferredTemporality())
+    assertThat(LoggingMetricExporter.create().getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
-    assertThat(LoggingMetricExporter.create(AggregationTemporality.DELTA).getPreferredTemporality())
+    assertThat(
+            LoggingMetricExporter.create(AggregationTemporality.DELTA)
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 

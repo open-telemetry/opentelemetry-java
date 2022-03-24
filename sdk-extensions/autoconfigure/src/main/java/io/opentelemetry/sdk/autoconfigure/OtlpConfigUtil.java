@@ -130,7 +130,11 @@ final class OtlpConfigUtil {
 
   static void configureOtlpAggregationTemporality(
       ConfigProperties config, Consumer<AggregationTemporality> setAggregationTemporality) {
-    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality");
+    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
+    if (temporalityStr == null) {
+      // TODO(jack-berg): remove support after 1.13.0
+      temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality");
+    }
     if (temporalityStr == null) {
       return;
     }
