@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
@@ -28,18 +27,6 @@ public interface MetricData {
    * @return the resource of this {@code MetricData}.
    */
   Resource getResource();
-
-  /**
-   * Returns the instrumentation library specified when creating the {@code Meter} which created the
-   * {@code Instrument} that produces {@code MetricData}.
-   *
-   * @return an instance of {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}
-   * @deprecated Use {@link #getInstrumentationScopeInfo()}.
-   */
-  @Deprecated
-  default io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
-  }
 
   /**
    * Returns the instrumentation scope specified when creating the {@code Meter} which created the

@@ -4,6 +4,8 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion equalTo(io.opentelemetry.api.common.AttributeKey, int)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttribute(io.opentelemetry.sdk.testing.assertj.AttributeAssertion)
 	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasInstrumentationLibraryInfo(io.opentelemetry.sdk.common.InstrumentationLibraryInfo)
 		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasInstrumentationScopeInfo(io.opentelemetry.sdk.common.InstrumentationScopeInfo)

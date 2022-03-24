@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
@@ -49,21 +48,6 @@ public final class OtlpGrpcMetricExporterBuilder {
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
-  }
-
-  /**
-   * Sets the managed chanel to use when communicating with the backend. Takes precedence over
-   * {@link #setEndpoint(String)} if both are called.
-   *
-   * @param channel the channel to use
-   * @return this builder's instance
-   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
-   *     methods on this builder, please file an issue to let us know what it is.
-   */
-  @Deprecated
-  public OtlpGrpcMetricExporterBuilder setChannel(ManagedChannel channel) {
-    delegate.setChannel(channel);
-    return this;
   }
 
   /**
@@ -129,8 +113,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Add header to request.
    *
    * @param key header key
    * @param value header value
