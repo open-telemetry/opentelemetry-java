@@ -33,6 +33,8 @@ class ViewConfigCustomizerTest {
               return ImmutableMap.of(
                   "otel.traces.exporter",
                   "none",
+                  "otel.metrics.exporter",
+                  "none",
                   "otel.experimental.metrics.view.config",
                   "classpath:/view-config-customizer-test.yaml");
             })
