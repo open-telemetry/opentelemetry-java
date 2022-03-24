@@ -355,14 +355,19 @@ against the release branch to bump the version (e.g. from `1.2.0` to `1.2.1`).
 
 See also [workflows that generate PRs](#workflows-that-generate-prs).
 
-### Generate release notes from change log
-
-TODO
-
 ### Backporting PRs to a release branch
 
 Having a workflow generate the backport PR is nice because you know that it was a clean cherry-pick
 and does not require re-review.
+
+See also [workflows that generate PRs](#workflows-that-generate-prs).
+
+### Release
+
+Create and publish the GitHub release, generating the release notes from change log.
+
+After the release completes, generate a PR against the `main` branch to merge back any change log
+updates.
 
 See also [workflows that generate PRs](#workflows-that-generate-prs).
 
