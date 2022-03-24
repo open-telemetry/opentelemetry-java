@@ -5,11 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.internal.export;
 
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
  * Abstract superclass for {@link MetricReader} implementations. {@link
@@ -24,6 +27,12 @@ public abstract class AbstractMetricReader implements MetricReader {
   private static final MetricProducer EMPTY_METRIC_PRODUCER = Collections::emptyList;
 
   private final AtomicReference<MetricProducer> metricProducerRef = new AtomicReference<>();
+  private final Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction;
+
+  protected AbstractMetricReader(
+      Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction) {
+    this.aggregationTemporalityFunction = aggregationTemporalityFunction;
+  }
 
   /**
    * Called exactly once by {@link SdkMeterProvider} during initialization to register the {@link
@@ -68,5 +77,10 @@ public abstract class AbstractMetricReader implements MetricReader {
           "unrecognized MetricReader, custom MetricReader implementations are not currently supported");
     }
     return (AbstractMetricReader) metricReader;
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporalityFunction.apply(instrumentType);
   }
 }

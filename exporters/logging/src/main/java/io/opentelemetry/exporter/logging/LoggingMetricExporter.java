@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.logging;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -17,23 +18,23 @@ import java.util.logging.Logger;
 public final class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
-  private final AggregationTemporality preferredTemporality;
+  private final AggregationTemporality aggregationTemporality;
 
   /**
-   * Returns a new {@link LoggingMetricExporter} with a preferred temporality of {@link
+   * Returns a new {@link LoggingMetricExporter} with an aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static LoggingMetricExporter create() {
     return create(AggregationTemporality.CUMULATIVE);
   }
 
-  /** Returns a new {@link LoggingMetricExporter} with the given {@code preferredTemporality}. */
-  public static LoggingMetricExporter create(AggregationTemporality preferredTemporality) {
-    return new LoggingMetricExporter(preferredTemporality);
+  /** Returns a new {@link LoggingMetricExporter} with the given {@code aggregationTemporality}. */
+  public static LoggingMetricExporter create(AggregationTemporality aggregationTemporality) {
+    return new LoggingMetricExporter(aggregationTemporality);
   }
 
   /**
-   * Class constructor with a preferred temporality of {@link AggregationTemporality#CUMULATIVE}.
+   * Class constructor with an aggregation temporality of {@link AggregationTemporality#CUMULATIVE}.
    *
    * @deprecated Use {@link #create()}.
    */
@@ -42,13 +43,23 @@ public final class LoggingMetricExporter implements MetricExporter {
     this(AggregationTemporality.CUMULATIVE);
   }
 
-  private LoggingMetricExporter(AggregationTemporality preferredTemporality) {
-    this.preferredTemporality = preferredTemporality;
+  private LoggingMetricExporter(AggregationTemporality aggregationTemporality) {
+    this.aggregationTemporality = aggregationTemporality;
+  }
+
+  /**
+   * Return the aggregation temporality.
+   *
+   * @deprecated Use {@link #getAggregationTemporality(InstrumentType)}.
+   */
+  @Deprecated
+  public AggregationTemporality getPreferredTemporality() {
+    return aggregationTemporality;
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return preferredTemporality;
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporality;
   }
 
   @Override

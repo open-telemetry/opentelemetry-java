@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -47,15 +46,10 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
   }
 
   PeriodicMetricReader(MetricExporter exporter, ScheduledExecutorService scheduler) {
+    super(exporter::getAggregationTemporality);
     this.exporter = exporter;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
-  }
-
-  @Override
-  @Nullable
-  public AggregationTemporality getPreferredTemporality() {
-    return exporter.getPreferredTemporality();
   }
 
   @Override

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -181,7 +182,10 @@ class OtlpGrpcConfigTest {
       assertThat(metricExporter)
           .extracting("delegate.timeoutNanos")
           .isEqualTo(TimeUnit.SECONDS.toNanos(15));
-      assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
+      assertThat(metricExporter.getAggregationTemporality(InstrumentType.COUNTER))
+          .isEqualTo(AggregationTemporality.DELTA);
+      assertThat(metricExporter.getAggregationTemporality(InstrumentType.UP_DOWN_COUNTER))
+          .isEqualTo(AggregationTemporality.CUMULATIVE);
       assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess())
           .isTrue();
       assertThat(server.metricRequests).hasSize(1);

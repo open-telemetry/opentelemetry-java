@@ -19,6 +19,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -199,7 +200,8 @@ class OtlpHttpConfigTest {
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
-    assertThat(metricExporter.getPreferredTemporality()).isEqualTo(AggregationTemporality.DELTA);
+    assertThat(metricExporter.getAggregationTemporality(InstrumentType.COUNTER))
+        .isEqualTo(AggregationTemporality.DELTA);
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))

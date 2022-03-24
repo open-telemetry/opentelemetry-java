@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * {@code MetricExporter} is the interface that all "push based" metric libraries should use to
@@ -21,11 +21,8 @@ import javax.annotation.Nullable;
  */
 public interface MetricExporter extends Closeable {
 
-  /** Returns the preferred temporality for metrics. */
-  @Nullable
-  default AggregationTemporality getPreferredTemporality() {
-    return null;
-  }
+  /** Return the default aggregation temporality for the {@link InstrumentType}. */
+  AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
 
   /**
    * Exports the collection of given {@link MetricData}. Note that export operations can be

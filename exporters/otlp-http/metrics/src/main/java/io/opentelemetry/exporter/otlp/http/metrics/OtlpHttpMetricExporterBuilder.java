@@ -8,22 +8,26 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /** Builder utility for {@link OtlpHttpMetricExporter}. */
 public final class OtlpHttpMetricExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/metrics";
 
-  private static final AggregationTemporality DEFAULT_TEMPORALITY =
-      AggregationTemporality.CUMULATIVE;
+  private static final Function<InstrumentType, AggregationTemporality>
+      DEFAULT_AGGREGATION_TEMPORALITY_FUNCTION = ExporterBuilderUtil::cumulativePreferred;
 
   private final OkHttpExporterBuilder<MetricsRequestMarshaler> delegate;
-  private AggregationTemporality preferredTemporality = DEFAULT_TEMPORALITY;
+  private Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction =
+      DEFAULT_AGGREGATION_TEMPORALITY_FUNCTION;
 
   OtlpHttpMetricExporterBuilder() {
     delegate = new OkHttpExporterBuilder<>("metric", DEFAULT_ENDPOINT);
@@ -97,13 +101,21 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Set the preferred aggregation temporality. If unset, defaults to {@link
-   * AggregationTemporality#CUMULATIVE}.
+   * Set the preferred aggregation temporality.
+   *
+   * <p>If unset, defaults to {@link AggregationTemporality#CUMULATIVE} and returns {@link
+   * AggregationTemporality#CUMULATIVE} for all instruments. If {@link
+   * AggregationTemporality#DELTA}, returns {@link AggregationTemporality#DELTA} for counter (sync
+   * and async) and histogram instruments, {@link AggregationTemporality#CUMULATIVE} for up down
+   * counter (sync and async) instruments.
    */
   public OtlpHttpMetricExporterBuilder setPreferredTemporality(
       AggregationTemporality preferredTemporality) {
     requireNonNull(preferredTemporality, "preferredTemporality");
-    this.preferredTemporality = preferredTemporality;
+    this.aggregationTemporalityFunction =
+        preferredTemporality == AggregationTemporality.CUMULATIVE
+            ? ExporterBuilderUtil::cumulativePreferred
+            : ExporterBuilderUtil::deltaPreferred;
     return this;
   }
 
@@ -113,6 +125,6 @@ public final class OtlpHttpMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpMetricExporter build() {
-    return new OtlpHttpMetricExporter(delegate.build(), preferredTemporality);
+    return new OtlpHttpMetricExporter(delegate.build(), aggregationTemporalityFunction);
   }
 }

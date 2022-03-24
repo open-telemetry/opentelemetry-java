@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -15,6 +17,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -58,6 +61,7 @@ class AsynchronousMetricStorageTest {
     Set<CollectionHandle> all = CollectionHandle.mutableSet();
     all.add(handle);
     collectionInfo = CollectionInfo.create(handle, all, reader);
+    when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
   }
 
   @Test

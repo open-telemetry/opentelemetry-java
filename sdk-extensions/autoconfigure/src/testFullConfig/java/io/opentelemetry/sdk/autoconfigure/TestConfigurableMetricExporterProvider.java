@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -29,6 +31,11 @@ public class TestConfigurableMetricExporterProvider implements ConfigurableMetri
 
     public TestMetricExporter(ConfigProperties config) {
       this.config = config;
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.CUMULATIVE;
     }
 
     @Override

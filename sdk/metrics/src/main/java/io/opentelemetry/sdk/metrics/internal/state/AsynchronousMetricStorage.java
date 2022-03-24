@@ -126,7 +126,7 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(collectionInfo.getPreferredAggregation());
+        collectionInfo.getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     Map<Attributes, T> currentAccumulations = accumulations;
     accumulations = new HashMap<>();
     return metricStorage.buildMetricFor(

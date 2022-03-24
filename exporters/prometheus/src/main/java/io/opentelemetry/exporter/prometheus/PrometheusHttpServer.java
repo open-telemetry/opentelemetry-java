@@ -70,6 +70,7 @@ public final class PrometheusHttpServer extends AbstractMetricReader
   }
 
   PrometheusHttpServer(String host, int port) {
+    super(unused -> AggregationTemporality.CUMULATIVE);
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
@@ -100,11 +101,6 @@ public final class PrometheusHttpServer extends AbstractMetricReader
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-  }
-
-  @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return AggregationTemporality.CUMULATIVE;
   }
 
   @Override

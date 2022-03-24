@@ -12,6 +12,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -71,12 +72,14 @@ class OtlpJsonLoggingMetricExporterTest {
   }
 
   @Test
-  void preferredTemporality() {
-    assertThat(OtlpJsonLoggingMetricExporter.create().getPreferredTemporality())
+  void getAggregationTemporality() {
+    assertThat(
+            OtlpJsonLoggingMetricExporter.create()
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA)
-                .getPreferredTemporality())
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
