@@ -647,7 +647,7 @@ See `io.opentelemetry.opentracingshim.OpenTracingPropagators` for details.
 - The `CompletableResultCode.join(long timeout, TimeUnit unit)` method will no longer `fail` the result
 when the timeout happens. Nor will `whenComplete` actions be executed in that case.
 - The `SimpleSpanProcessor` now keeps track of pending export calls and will wait for them to complete
-via a CompletableResultCode when `forceFlush()` is called. Similiarly, this is also done on `shutdown()`.
+via a CompletableResultCode when `forceFlush()` is called. Similarly, this is also done on `shutdown()`.
 - The Jaeger Thrift exporter now correctly populates the parent span id into the exporter span.
 
 #### Enhancements
