@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.testing.exporter;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,12 @@ class InMemoryMetricReaderTest {
   void setup() {
     cumulativeReader = InMemoryMetricReader.create();
     deltaReader = InMemoryMetricReader.createDelta();
-    provider =
+    SdkMeterProviderBuilder builder =
         SdkMeterProvider.builder()
-            .setMinimumCollectionInterval(Duration.ofSeconds(0))
             .registerMetricReader(cumulativeReader)
-            .registerMetricReader(deltaReader)
-            .build();
+            .registerMetricReader(deltaReader);
+    SdkMeterProviderUtil.setMinimumCollectionInterval(builder, Duration.ZERO);
+    provider = builder.build();
   }
 
   private void generateFakeMetric(int index) {

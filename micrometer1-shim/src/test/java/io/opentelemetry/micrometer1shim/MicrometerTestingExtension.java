@@ -9,7 +9,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
 import java.util.Collection;
@@ -33,11 +35,9 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
     ExtensionContext.Store store = context.getStore(NAMESPACE);
 
     metricReader = InMemoryMetricReader.create();
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(metricReader)
-            .setMinimumCollectionInterval(Duration.ZERO)
-            .build();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(metricReader);
+    SdkMeterProviderUtil.setMinimumCollectionInterval(builder, Duration.ZERO);
+    SdkMeterProvider meterProvider = builder.build();
     MeterRegistry otelMeterRegistry =
         configureOtelRegistry(
                 OpenTelemetryMeterRegistry.builder(

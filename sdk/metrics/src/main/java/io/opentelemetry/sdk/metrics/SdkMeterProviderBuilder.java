@@ -137,7 +137,7 @@ public final class SdkMeterProviderBuilder {
    * @param duration The duration.
    * @return this
    */
-  public SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
+  SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
     Objects.requireNonNull(duration, "duration");
     checkArgument(!duration.isNegative(), "duration must not be negative");
     minimumCollectionIntervalNanos = duration.toNanos();
