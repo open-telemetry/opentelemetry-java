@@ -68,13 +68,11 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
-  markdown-misspell-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # this is not a required check to avoid unnecessary blocking of PRs if external links break
+  markdown-link-check:
+    uses: ./.github/workflows/reusable-markdown-link-check.yml
 
-      - name: Check markdown for common misspellings
-        run: |
-          curl -L -o ./install-misspell.sh https://git.io/misspell
-          sh ./install-misspell.sh
-          ./bin/misspell -error ./**/*
+  # this is not a required check to avoid unnecessary blocking of PRs if new misspellings are
+  # added to the misspell dictionary
+  markdown-misspell-check:
+    uses: ./.github/workflows/reusable-misspell-check.yml
