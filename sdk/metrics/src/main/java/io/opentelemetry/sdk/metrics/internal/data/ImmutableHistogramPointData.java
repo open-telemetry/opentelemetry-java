@@ -90,18 +90,6 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
 
   ImmutableHistogramPointData() {}
 
-  @Override
-  public double getBucketLowerBound(int bucketIndex) {
-    return bucketIndex > 0 ? getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
-  }
-
-  @Override
-  public double getBucketUpperBound(int bucketIndex) {
-    return (bucketIndex < getBoundaries().size())
-        ? getBoundaries().get(bucketIndex)
-        : Double.POSITIVE_INFINITY;
-  }
-
   private static boolean isStrictlyIncreasing(List<Double> xs) {
     for (int i = 0; i < xs.size() - 1; i++) {
       if (xs.get(i).compareTo(xs.get(i + 1)) >= 0) {

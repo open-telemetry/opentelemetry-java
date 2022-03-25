@@ -237,7 +237,7 @@ final class MetricAdapter {
       List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
       // This is the upper boundary (inclusive). I.e. all values should be < this value (LE -
       // Less-then-or-Equal).
-      double boundary = histogramPointData.getBucketUpperBound(i);
+      double boundary = Serializer.getBucketUpperBound(histogramPointData, i);
       labelValuesWithLe.addAll(labelValues);
       labelValuesWithLe.add(doubleToGoString(boundary));
 
@@ -250,7 +250,7 @@ final class MetricAdapter {
               cumulativeCount,
               filterExemplars(
                   histogramPointData.getExemplars(),
-                  histogramPointData.getBucketLowerBound(i),
+                  Serializer.getBucketLowerBound(histogramPointData, i),
                   boundary),
               histogramPointData.getEpochNanos()));
     }
