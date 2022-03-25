@@ -39,16 +39,16 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
+import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -220,11 +220,10 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
+    assertThat(resourceSpans.getScopeSpansCount()).isEqualTo(1);
 
-    InstrumentationLibrarySpans ilSpans = resourceSpans.getInstrumentationLibrarySpans(0);
-    assertThat(ilSpans.getInstrumentationLibrary().getName())
-        .isEqualTo(OtlpExporterIntegrationTest.class.getName());
+    ScopeSpans ilSpans = resourceSpans.getScopeSpans(0);
+    assertThat(ilSpans.getScope().getName()).isEqualTo(OtlpExporterIntegrationTest.class.getName());
     assertThat(ilSpans.getSpansCount()).isEqualTo(1);
 
     io.opentelemetry.proto.trace.v1.Span protoSpan = ilSpans.getSpans(0);
@@ -314,10 +313,10 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceMetrics.getInstrumentationLibraryMetricsCount()).isEqualTo(1);
+    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
 
-    InstrumentationLibraryMetrics ilMetrics = resourceMetrics.getInstrumentationLibraryMetrics(0);
-    assertThat(ilMetrics.getInstrumentationLibrary().getName())
+    ScopeMetrics ilMetrics = resourceMetrics.getScopeMetrics(0);
+    assertThat(ilMetrics.getScope().getName())
         .isEqualTo(OtlpExporterIntegrationTest.class.getName());
     assertThat(ilMetrics.getMetricsCount()).isEqualTo(1);
 
@@ -408,11 +407,10 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceLogs.getInstrumentationLibraryLogsCount()).isEqualTo(1);
+    assertThat(resourceLogs.getScopeLogsCount()).isEqualTo(1);
 
-    InstrumentationLibraryLogs ilLogs = resourceLogs.getInstrumentationLibraryLogs(0);
-    assertThat(ilLogs.getInstrumentationLibrary().getName())
-        .isEqualTo(OtlpExporterIntegrationTest.class.getName());
+    ScopeLogs ilLogs = resourceLogs.getScopeLogs(0);
+    assertThat(ilLogs.getScope().getName()).isEqualTo(OtlpExporterIntegrationTest.class.getName());
     assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
     io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);

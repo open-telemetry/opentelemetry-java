@@ -76,7 +76,7 @@ public final class ResourceMetricsMarshaler extends MarshalerWithSize {
   public void writeTo(Serializer output) throws IOException {
     output.serializeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
     output.serializeRepeatedMessage(
-        ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS, instrumentationScopeMetricsMarshalers);
+        ResourceMetrics.SCOPE_METRICS, instrumentationScopeMetricsMarshalers);
     output.serializeString(ResourceMetrics.SCHEMA_URL, schemaUrl);
   }
 
@@ -89,7 +89,7 @@ public final class ResourceMetricsMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(ResourceMetrics.SCHEMA_URL, schemaUrl);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS, instrumentationScopeMetricsMarshalers);
+            ResourceMetrics.SCOPE_METRICS, instrumentationScopeMetricsMarshalers);
     return size;
   }
 

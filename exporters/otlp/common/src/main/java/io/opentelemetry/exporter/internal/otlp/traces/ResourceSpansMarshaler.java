@@ -73,8 +73,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
   @Override
   public void writeTo(Serializer output) throws IOException {
     output.serializeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
-    output.serializeRepeatedMessage(
-        ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS, instrumentationScopeSpansMarshalers);
+    output.serializeRepeatedMessage(ResourceSpans.SCOPE_SPANS, instrumentationScopeSpansMarshalers);
     output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
@@ -87,7 +86,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS, instrumentationScopeSpansMarshalers);
+            ResourceSpans.SCOPE_SPANS, instrumentationScopeSpansMarshalers);
     return size;
   }
 

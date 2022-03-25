@@ -36,9 +36,9 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.LogRecord;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.logs.LogEmitter;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -212,7 +212,7 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
     io.opentelemetry.proto.trace.v1.Span span =
-        traceRequest.getResourceSpans(0).getInstrumentationLibrarySpans(0).getSpans(0);
+        traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
     // Dog dropped by attribute limit.
     assertThat(span.getAttributesList())
         .containsExactlyInAnyOrder(
@@ -248,13 +248,10 @@ class FullConfigTest {
                           .build());
 
               for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
-                assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
-                    .anySatisfy(
-                        ilm ->
-                            assertThat(ilm.getInstrumentationLibrary().getName())
-                                .isEqualTo("test"));
-                for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
-                    resourceMetrics.getInstrumentationLibraryMetricsList()) {
+                assertThat(resourceMetrics.getScopeMetricsList())
+                    .anySatisfy(ilm -> assertThat(ilm.getScope().getName()).isEqualTo("test"));
+                for (ScopeMetrics instrumentationLibraryMetrics :
+                    resourceMetrics.getScopeMetricsList()) {
                   for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
                     // SPI was loaded
                     // MetricExporterCustomizer filters metrics not named my-metric
@@ -286,7 +283,7 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
     // MetricExporterCustomizer filters logs not whose level is less than Severity.INFO
-    LogRecord log = logRequest.getResourceLogs(0).getInstrumentationLibraryLogs(0).getLogRecords(0);
+    LogRecord log = logRequest.getResourceLogs(0).getScopeLogs(0).getLogRecords(0);
     assertThat(log.getBody().getStringValue()).isEqualTo("info log message");
     assertThat(log.getSeverityNumberValue()).isEqualTo(Severity.INFO.getSeverityNumber());
   }

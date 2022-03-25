@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaller;
-import io.opentelemetry.proto.logs.v1.internal.InstrumentationLibraryLogs;
+import io.opentelemetry.proto.logs.v1.internal.ScopeLogs;
 import java.io.IOException;
 import java.util.List;
 
@@ -31,10 +31,9 @@ final class InstrumentationScopeLogsMarshaler extends MarshalerWithSize {
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    output.serializeMessage(
-        InstrumentationLibraryLogs.INSTRUMENTATION_LIBRARY, instrumentationScope);
-    output.serializeRepeatedMessage(InstrumentationLibraryLogs.LOG_RECORDS, logMarshalers);
-    output.serializeString(InstrumentationLibraryLogs.SCHEMA_URL, schemaUrlUtf8);
+    output.serializeMessage(ScopeLogs.SCOPE, instrumentationScope);
+    output.serializeRepeatedMessage(ScopeLogs.LOG_RECORDS, logMarshalers);
+    output.serializeString(ScopeLogs.SCHEMA_URL, schemaUrlUtf8);
   }
 
   private static int calculateSize(
@@ -42,12 +41,9 @@ final class InstrumentationScopeLogsMarshaler extends MarshalerWithSize {
       byte[] schemaUrlUtf8,
       List<Marshaler> logMarshalers) {
     int size = 0;
-    size +=
-        MarshalerUtil.sizeMessage(
-            InstrumentationLibraryLogs.INSTRUMENTATION_LIBRARY, instrumentationScope);
-    size += MarshalerUtil.sizeBytes(InstrumentationLibraryLogs.SCHEMA_URL, schemaUrlUtf8);
-    size +=
-        MarshalerUtil.sizeRepeatedMessage(InstrumentationLibraryLogs.LOG_RECORDS, logMarshalers);
+    size += MarshalerUtil.sizeMessage(ScopeLogs.SCOPE, instrumentationScope);
+    size += MarshalerUtil.sizeBytes(ScopeLogs.SCHEMA_URL, schemaUrlUtf8);
+    size += MarshalerUtil.sizeRepeatedMessage(ScopeLogs.LOG_RECORDS, logMarshalers);
     return size;
   }
 }
