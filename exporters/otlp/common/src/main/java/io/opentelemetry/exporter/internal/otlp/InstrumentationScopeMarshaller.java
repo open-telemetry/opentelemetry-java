@@ -9,7 +9,7 @@ import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.common.v1.internal.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.internal.InstrumentationScope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,13 +83,13 @@ public final class InstrumentationScopeMarshaller extends MarshalerWithSize {
 
     @Override
     protected void writeTo(Serializer output) throws IOException {
-      output.serializeString(InstrumentationLibrary.NAME, name);
-      output.serializeString(InstrumentationLibrary.VERSION, version);
+      output.serializeString(InstrumentationScope.NAME, name);
+      output.serializeString(InstrumentationScope.VERSION, version);
     }
 
     private static int computeSize(byte[] name, byte[] version) {
-      return MarshalerUtil.sizeBytes(InstrumentationLibrary.NAME, name)
-          + MarshalerUtil.sizeBytes(InstrumentationLibrary.VERSION, version);
+      return MarshalerUtil.sizeBytes(InstrumentationScope.NAME, name)
+          + MarshalerUtil.sizeBytes(InstrumentationScope.VERSION, version);
     }
   }
 }

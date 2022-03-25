@@ -41,7 +41,7 @@ class JaegerThriftIntegrationTest {
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger")
+      new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger:1.32")
           .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
           .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("jaeger")))
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));

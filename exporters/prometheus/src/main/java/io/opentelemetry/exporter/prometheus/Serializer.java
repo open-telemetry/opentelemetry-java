@@ -172,7 +172,7 @@ abstract class Serializer {
     for (int i = 0; i < counts.size(); i++) {
       // This is the upper boundary (inclusive). I.e. all values should be < this value (LE -
       // Less-then-or-Equal).
-      double boundary = point.getBucketUpperBound(i);
+      double boundary = getBucketUpperBound(point, i);
 
       cumulativeCount += counts.get(i);
       writePoint(
@@ -184,9 +184,30 @@ abstract class Serializer {
           "le",
           boundary,
           point.getExemplars(),
-          point.getBucketLowerBound(i),
+          getBucketLowerBound(point, i),
           boundary);
     }
+  }
+
+  /**
+   * Returns the lower bound of a bucket (all values would have been greater than).
+   *
+   * @param bucketIndex The bucket index, should match {@link HistogramPointData#getCounts()} index.
+   */
+  static double getBucketLowerBound(HistogramPointData point, int bucketIndex) {
+    return bucketIndex > 0 ? point.getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
+  }
+
+  /**
+   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
+   *
+   * @param bucketIndex The bucket index, should match {@link HistogramPointData#getCounts()} index.
+   */
+  static double getBucketUpperBound(HistogramPointData point, int bucketIndex) {
+    List<Double> boundaries = point.getBoundaries();
+    return (bucketIndex < boundaries.size())
+        ? boundaries.get(bucketIndex)
+        : Double.POSITIVE_INFINITY;
   }
 
   private void writeSummary(Writer writer, String name, SummaryPointData point) throws IOException {

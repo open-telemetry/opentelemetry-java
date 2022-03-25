@@ -5,16 +5,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
-import java.util.Arrays;
-import java.util.function.Consumer;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
@@ -25,28 +25,32 @@ class SdkObservableInstrumentTest {
   LogCapturer logs = LogCapturer.create().captureForType(SdkObservableInstrument.class);
 
   @Test
-  @SuppressWarnings("unchecked")
   void close() {
-    AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage1 =
-        mock(AsynchronousMetricStorage.class);
-    AsynchronousMetricStorage<?, ObservableDoubleMeasurement> storage2 =
-        mock(AsynchronousMetricStorage.class);
+    MeterSharedState meterSharedState =
+        spy(MeterSharedState.create(InstrumentationScopeInfo.empty()));
+    CallbackRegistration<?> callbackRegistration =
+        CallbackRegistration.createDouble(
+            InstrumentDescriptor.create(
+                "my-instrument",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.DOUBLE),
+            unused -> {},
+            Collections.emptyList());
 
-    Consumer<ObservableDoubleMeasurement> callback = unused -> {};
-    SdkObservableInstrument<ObservableDoubleMeasurement> observableInstrument =
-        new SdkObservableInstrument<>("my-instrument", Arrays.asList(storage1, storage2), callback);
+    SdkObservableInstrument observableInstrument =
+        new SdkObservableInstrument(meterSharedState, callbackRegistration);
 
-    // First call to close should trigger remove from storage
+    // First call to close should trigger remove from meter shared state
     observableInstrument.close();
-    verify(storage1).removeCallback(callback);
-    verify(storage2).removeCallback(callback);
+    verify(meterSharedState).removeCallback(callbackRegistration);
     logs.assertDoesNotContain("Instrument my-instrument has called close() multiple times.");
 
-    // Close a second time should not trigger remove from storage and should log a warning
-    Mockito.reset(storage1, storage2);
+    // Close a second time should not trigger remove from meter shared state
+    Mockito.reset(meterSharedState);
     observableInstrument.close();
-    verify(storage1, never()).removeCallback(any());
-    verify(storage2, never()).removeCallback(any());
+    verify(meterSharedState, never()).removeCallback(callbackRegistration);
     logs.assertContains("Instrument my-instrument has called close() multiple times.");
   }
 }

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - v[0-9]+.[0-9]+.x
 
 jobs:
   build:
@@ -69,41 +70,15 @@ jobs:
           path: all/build/reports/jacoco/test/html
 
   markdown-link-check:
-    # release branches are excluded because links to external urls can break at any time which
-    # requires unnecessary release branch maintenance
+    # release branches are excluded to avoid unnecessary maintenance if external links break
     if: ${{ !startsWith(github.ref_name, 'v') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Check markdown links
-        # using retry because of sporadic external site failures
-        uses: nick-invision/retry@v2.6.0
-        with:
-          # timing out has not been a problem
-          timeout_minutes: 15
-          # give external site some time to hopefully recover
-          retry_wait_seconds: 120
-          max_attempts: 5
-          command: |
-            npm install -g markdown-link-check
-            find . -type f \
-                   -name '*.md' \
-                   -not -path './.github/*' \
-                   -not -path './node_modules/*' \
-                   -print0 \
-              | xargs -0 -n1 markdown-link-check --config .github/scripts/markdown_link_check_config.json
+    uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   markdown-misspell-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Check markdown for common misspellings
-        run: |
-          curl -L -o ./install-misspell.sh https://git.io/misspell
-          sh ./install-misspell.sh
-          ./bin/misspell -error ./**/*
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
+    # added to the misspell dictionary
+    if: ${{ !startsWith(github.ref_name, 'v') }}
+    uses: ./.github/workflows/reusable-misspell-check.yml
 
   publish-snapshots:
     name: Publish snapshots

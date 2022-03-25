@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
@@ -105,6 +106,13 @@ public final class InstrumentSelectorBuilder {
 
   /** Returns an InstrumentSelector instance with the content of this builder. */
   public InstrumentSelector build() {
+    checkArgument(
+        instrumentType != null
+            || instrumentNameFilter != StringPredicates.ALL
+            || meterNameFilter != StringPredicates.ALL
+            || meterVersionFilter != StringPredicates.ALL
+            || meterSchemaUrlFilter != StringPredicates.ALL,
+        "Instrument selector must contain selection criteria");
     return InstrumentSelector.create(
         instrumentType,
         instrumentNameFilter,
