@@ -24,7 +24,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Exemplar;
 import io.opentelemetry.proto.metrics.v1.ExponentialHistogram;
@@ -32,10 +32,10 @@ import io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
@@ -852,10 +852,10 @@ class MetricsRequestMarshalerTest {
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
     InstrumentationScopeInfo instrumentationScopeInfo =
         InstrumentationScopeInfo.create("name", "version", "http://url");
-    InstrumentationLibrary instrumentationLibraryProto =
-        InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
-    InstrumentationLibrary emptyInstrumentationLibraryProto =
-        InstrumentationLibrary.newBuilder().setName("").setVersion("").build();
+    InstrumentationScope scopeProto =
+        InstrumentationScope.newBuilder().setName("name").setVersion("version").build();
+    InstrumentationScope emptyScopeProto =
+        InstrumentationScope.newBuilder().setName("").setVersion("").build();
     Metric metricDoubleSum =
         Metric.newBuilder()
             .setName("name")
@@ -931,24 +931,24 @@ class MetricsRequestMarshalerTest {
             resourceMetrics -> {
               assertThat(resourceMetrics.getResource()).isEqualTo(resourceProto);
               assertThat(resourceMetrics.getSchemaUrl()).isEqualTo("http://resource.url");
-              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+              assertThat(resourceMetrics.getScopeMetricsList())
                   .containsExactlyInAnyOrder(
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(scopeProto)
                           .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
                           .setSchemaUrl("http://url")
                           .build());
             },
             resourceMetrics -> {
               assertThat(resourceMetrics.getResource()).isEqualTo(emptyResourceProto);
-              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+              assertThat(resourceMetrics.getScopeMetricsList())
                   .containsExactlyInAnyOrder(
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(emptyScopeProto)
                           .addAllMetrics(singletonList(metricDoubleSum))
                           .build(),
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(scopeProto)
                           .addAllMetrics(singletonList(metricDoubleSum))
                           .setSchemaUrl("http://url")
                           .build());
