@@ -10,10 +10,10 @@ Once we agree and implement, will share more broadly across OpenTelemetry
 
 <!-- toc -->
 
-- [Have a single required status check for PRs](#have-a-single-required-status-check-for-prs)
-- [Configure "cancel-in-progress" on PR workflows](#configure-cancel-in-progress-on-pr-workflows)
-- [Prefer `gh` cli over third-party github actions for simple tasks](#prefer-gh-cli-over-third-party-github-actions-for-simple-tasks)
-- [Use github action cache to make builds faster and less flaky](#use-github-action-cache-to-make-builds-faster-and-less-flaky)
+- [Have a single required status check for pull requests](#have-a-single-required-status-check-for-prs)
+- [Configure "cancel-in-progress" on pull request workflows](#configure-cancel-in-progress-on-pr-workflows)
+- [Prefer `gh` cli over third-party GitHub actions for simple tasks](#prefer-gh-cli-over-third-party-github-actions-for-simple-tasks)
+- [Use GitHub action cache to make builds faster and less flaky](#use-github-action-cache-to-make-builds-faster-and-less-flaky)
 - [Run CodeQL daily](#run-codeql-daily)
 - [Additional checks](#additional-checks)
   - [Automated check for markdown links](#automated-check-for-markdown-links)
@@ -25,7 +25,7 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Workflows that generate PRs](#workflows-that-generate-prs)
   - [Prepare release branch](#prepare-release-branch)
   - [Prepare patch](#prepare-patch)
-  - [Backporting PRs to a release branch](#backporting-prs-to-a-release-branch)
+  - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
   - [Release](#release)
 - [Naming conventions](#naming-conventions)
 - [YAML style guide](#yaml-style-guide)
@@ -58,14 +58,14 @@ If you have multiple workflows that run on pull requests, there are a couple of 
 * Otherwise turn all but one of them into
   [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows),
   remove the `pull_request` trigger from the reusable workflows,
-  and call the reusable workflows from the single PR workflow.
+  and call the reusable workflows from the single pull request workflow.
 
-## Configure "cancel-in-progress" on PR workflows
+## Configure "cancel-in-progress" on pull request workflows
 
-If the PR build takes some time, and the PR author submits several revisions in a short period of time,
-this can end up consuming a lot of GitHub Actions runners.
+If the pull request build takes some time, and the author submits several revisions in a short
+period of time, this can end up consuming a lot of GitHub Actions runners.
 
-If your PR workflow only runs on `pull_request`:
+If your pull request workflow only runs on `pull_request`:
 
 ```
 concurrency:
@@ -73,7 +73,7 @@ concurrency:
   cancel-in-progress: true
 ```
 
-If your PR workflow is shared and also runs on CI (i.e. on merge to `main` or release branch):
+If your pull request workflow is shared and also runs on CI (i.e. on merge to `main` or release branch):
 
 ```
 concurrency:
@@ -81,13 +81,13 @@ concurrency:
   cancel-in-progress: true
 ```
 
-## Prefer `gh` cli over third-party github actions for simple tasks
+## Prefer `gh` cli over third-party GitHub actions for simple tasks
 
-For example, creating an issue or creating a PR is just as easy using `gh` cli as using a third-party github action.
+For example, creating an issue or creating a pull request is just as easy using `gh` cli as using a third-party GitHub action.
 
 This preference is because `gh` cli is generally more secure and has less breaking changes.
 
-## Use github action cache to make builds faster and less flaky
+## Use GitHub action cache to make builds faster and less flaky
 
 This is very build tool specific so no specific tips here on how to implement.
 
@@ -111,7 +111,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
-          languages: python <-- your language here
+          languages: python  <-- your language here
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
@@ -142,7 +142,7 @@ jobs:
 
 https://github.com/tcort/markdown-link-check checks markdown files for valid links and anchors.
 
-You may wish to not make this a required check for PRs to avoid unnecessary blocking of PRs if
+It is recommended to not make this a required check for PRs to avoid unnecessary blocking of PRs if
 external links break.
 
 ```
@@ -181,7 +181,7 @@ https://github.com/client9/misspell only checks against known misspellings,
 so while it's not a comprehensive spell checker, it doesn't produce false positives,
 and so doesn't get in your way.
 
-You may wish to not make this a required check for PRs to avoid unnecessary blocking of PRs if
+It is recommended to not make this a required check for PRs to avoid unnecessary blocking of PRs if
 new misspellings are added to the misspell dictionary.
 
 ```
@@ -298,7 +298,7 @@ can assign the labels and triage issues for their component(s).
 # in the associated README.md and the associated `comp:*` labels as needed
 components:
   dir1:
-    - owner1 <-- github username
+    - owner1  <-- GitHub username
     - owner2
 ```
 
@@ -315,15 +315,53 @@ components:
 
 Learn more about component owners in [component-owners.yml].
 
-[component-owners.yml]: https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/.github/workflows/component-owners.yml
+[component-owners.yml]: ../.github/workflows/component-owners.yml
 ```
 
 ## Release automation
 
-### Workflows that generate PRs
+Here's some sample `RELEASING.md` documentation that goes with the automation below.
+
+```
+## Preparing a new major or minor release
+
+* Close the release milestone if there is one.
+* Merge a pull request to `main` updating the `CHANGELOG.md`.
+* Run the [Prepare release branch workflow](actions/workflows/prepare-release-branch.yml).
+* Review and merge the two pull requests that it creates
+  (one is targeted to the release branch and one is targeted to the `main` branch).
+
+## Preparing a new patch release
+
+* Backport pull request(s) to the release branch
+  * Run the [Backport pull request workflow](actions/workflows/backport-pull-request.yml).
+  * Press the "Run workflow" button, then select the release branch from the dropdown list,
+    e.g. `v1.9.x`, then enter the pull request number that you want to backport,
+    then click the "Run workflow" button below that.
+  * Review and merge the backport pull request that it generates
+* Merge a pull request to the release branch updating the `CHANGELOG.md`
+* Run the [Prepare patch release workflow](actions/workflows/prepare-patch-release.yml).
+  * Press the "Run workflow" button, then select the release branch from the dropdown list,
+    e.g. `v1.9.x`, and click the "Run workflow" button below that.
+* Review and merge the pull request that it creates
+
+## Making the release
+
+Run the [Release workflow](actions/workflows/release.yml).
+
+* Press the "Run workflow" button, then select the release branch from the dropdown list,
+  e.g. `v1.9.x`, and click the "Run workflow" button below that.
+* This workflow will publish the artifacts to maven central and will publish a GitHub release with
+  release notes based on the change log.
+* Lastly, if there were any change log updates in the release branch that need to be merged back to
+  the main branch, the workflow will create a pull request if the updates can be cleanly applied,
+  or it will fail this last step if the updates cannot be cleanly applied.
+```
+
+### Workflows that generate pull requests
 
 Since you can't push directly to `main` or to release branches from workflows due to branch protections,
-the next best thing is to generate a PR from the workflow and use a bot which has signed the CLA as commit author.
+the next best thing is to generate a pull request from the workflow and use a bot which has signed the CLA as commit author.
 
 This is what we use in the OpenTelemetry Java repositories:
 
@@ -336,40 +374,321 @@ This is what we use in the OpenTelemetry Java repositories:
 
 ### Prepare release branch
 
-The specifics depend a lot on the build tool and your version bumping needs.
+The specifics depend a lot on your specific version bumping needs.
 
-For OpenTelemetry Java repositories, we have a workflow which
+For OpenTelemetry Java repositories, the version in the `main` branch always ends with `-SNAPSHOT`,
+so preparing the release branch involves
 
-* Creates the release branch
-* Generates a PR against the release branch to bump the version (e.g. from `1.2.0-SNAPSHOT` to `1.2.0`)
-* Generates a PR against the `main` branch to bump the version (e.g. from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
+* removing `-SNAPSHOT` from the version in the release branch
+  (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
+* bumping the version to the next `-SNAPSHOT` in the main branch
+  (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
-See also [workflows that generate PRs](#workflows-that-generate-prs).
+```
+name: Prepare release branch
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-release-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      release-branch-name: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set release branch name
+        id: set-release-branch-name
+        run: |
+          version=$(...)  <-- get the minor version that is planning to be released
+          release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/v\1.\2.x/')
+          echo "::set-output name=release-branch-name::$release_branch_name"
+
+      - name: Create release branch
+        env:
+          RELEASE_BRANCH_NAME: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
+        run: |
+          git checkout -b $RELEASE_BRANCH_NAME
+          git push origin $RELEASE_BRANCH_NAME
+
+  create-pull-request-against-release-branch:
+    needs: prepare-release-branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+
+      - name: Bump version on release branch
+        run: |
+          v=$(...)  <-- get the minor version that is planning to be released
+          .github/scripts/update-versions.sh $version-SNAPSHOT $version
+
+      - name: Set up git name
+        run: |
+          git config user.name opentelemetry-java-bot                                     <-- your bot account here
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+
+      - name: Create pull request against the release branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH_NAME: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+        run: |
+          msg="Prepare release branch $RELEASE_BRANCH_NAME"
+          git commit -a -m "$msg"
+          git push origin HEAD:prepare-release-branch-$RELEASE_BRANCH_NAME
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head prepare-release-branch-$RELEASE_BRANCH_NAME \
+                       --base $RELEASE_BRANCH_NAME
+
+  create-pull-request-against-main:
+    needs: prepare-release-branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Bump version on the main branch
+        run: |
+          version=$(...)  <-- get the minor version that is planning to be released
+          if [[ $version =~ ([0-9]+).([0-9]+).0 ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+          else
+            echo "unexpected version: $version"
+            exit 1
+          fi
+          next_version="$major.$((minor + 1)).0"
+          .github/scripts/update-versions.sh $version-SNAPSHOT $next_version-SNAPSHOT
+
+      - name: Set up git name
+        run: |
+          git config user.name opentelemetry-java-bot                                     <-- your bot account here
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+
+      - name: Create pull request against the main branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          msg="Bump version"
+          git commit -a -m "$msg"
+          git push origin HEAD:bump-snapshot-version
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head bump-snapshot-version \
+                       --base main
+```
 
 ### Prepare patch
 
 The specifics depend a lot on the build tool and your version bumping needs.
 
-For OpenTelemetry Java repositories, we have a workflow which generates a PR
+For OpenTelemetry Java repositories, we have a workflow which generates a pull request
 against the release branch to bump the version (e.g. from `1.2.0` to `1.2.1`).
 
-See also [workflows that generate PRs](#workflows-that-generate-prs).
+```
+name: Prepare patch release
+on:
+  workflow_dispatch:
 
-### Backporting PRs to a release branch
+jobs:
+  prepare-patch-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-Having a workflow generate the backport PR is nice because you know that it was a clean cherry-pick
-and does not require re-review.
+      - name: Set versions
+        id: set-versions
+        run: |
+          prior_version=$(...)  <-- get the prior release version
+          if [[ $prior_version =~ ([0-9]+.[0-9]+).([0-9]+) ]]; then
+            major_minor="${BASH_REMATCH[1]}"
+            patch="${BASH_REMATCH[2]}"
+          else
+            echo "unexpected version: $prior_version"
+            exit 1
+          fi
+          echo "::set-output name=release-version::$major_minor.$((patch + 1))"
+          echo "::set-output name=prior-release-version::$prior_version"
 
-See also [workflows that generate PRs](#workflows-that-generate-prs).
+      - name: Bump version
+        env:
+          VERSION: ${{ needs.set-versions.outputs.release-version }}
+          PRIOR_VERSION: ${{ needs.set-versions.outputs.prior-release-version }}
+        run: |
+          .github/scripts/update-versions.sh $PRIOR_VERSION $VERSION
+
+      - name: Set up git name
+        run: |
+          git config user.name opentelemetry-java-bot                                     <-- your bot account here
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.set-versions.outputs.release-version }}
+        run: |
+          msg="Prepare patch release $VERSION"
+          git commit -a -m "$msg"
+          git push origin HEAD:prepare-patch-release-$VERSION
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head prepare-patch-release-$VERSION \
+                       --base $GITHUB_REF_NAME
+```
+
+### Backporting pull requests to a release branch
+
+Having a workflow generate the backport pull request is nice because you know that it was a clean
+cherry-pick and does not require re-review.
+
+```
+name: Backport a pull request
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "The pull request # to backport"
+        required: true
+
+jobs:
+  backport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # history is needed in order to do cherry-pick
+          fetch-depth: 0
+
+      - name: Set up git name
+        run: |
+          git config user.name opentelemetry-java-bot                                     <-- your bot account here
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.inputs.pr }}
+        run: |
+          commit=$(gh pr view $PR --json mergeCommit --jq .mergeCommit.oid)
+          title=$(gh pr view $PR --json title --jq .title)
+          url=$(gh pr view $PR --json url --jq .url)
+
+          git cherry-pick $commit
+          git push origin HEAD:backport-$PR-to-$GITHUB_REF_NAME
+
+          gh pr create --title "[$GITHUB_REF_NAME] $title" \
+                       --body "Clean cherry-pick of #$PR to the $GITHUB_REF_NAME branch." \
+                       --head backport-$PR-to-$GITHUB_REF_NAME \
+                       --base $GITHUB_REF_NAME
+```
 
 ### Release
 
-Create and publish the GitHub release, generating the release notes from change log.
+#### Calculating the prior release version
 
-After the release completes, generate a PR against the `main` branch to merge back any change log
+```
+      - name: Set versions
+        id: set-versions
+        run: |
+          v=$(...)  <-- get the current version (the one that is being released)
+          if [[ $v =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            patch="${BASH_REMATCH[3]}"
+          else
+            echo "unexpected version: $v"
+            exit 1
+          fi
+          if [[ $patch == 0 ]]; then
+            if [[ $minor == 0 ]]; then
+              prior_major=$((major - 1))
+              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md  | head -1)
+              prior_version="$prior_major.$prior_minor"
+            else
+              prior_version="$major.$((minor - 1)).0"
+            fi
+          else
+              prior_version="$major.$minor.$((patch - 1))"
+          fi
+          echo "::set-output name=release-version::$v"
+          echo "::set-output name=prior-release-version::$prior_version"
+```
+
+#### Autogenerating the release notes
+
+This is heavily dependent on what conventions you follow in your CHANGELOG.md.
+
+```
+      - name: Generate release notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+          PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
+        run: |
+          sed -n '/^## Version $VERSION/,/^## Version /p' CHANGELOG.md \
+            | tail -n +2 \
+            | head -n -1 \
+            | perl -0pe 's/^\n+//g' \
+            | perl -0pe 's/\n+$/\n/g' \
+            | sed -r 's,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1,' \
+            | perl -0pe 's/\n +/ /g' \
+            >> release-notes.txt
+```
+
+#### Create the GitHub release
+
+Add `--draft` to the `gh release create` command if you want to review the release before hitting
+the "Publish release" button yourself.
+
+```
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+        run: |
+          gh release create --target $GITHUB_REF_NAME \
+                            --title "Version $VERSION" \
+                            --notes-file release-notes.txt \
+                            --discussion-category announcements \  <-- if you want to generate a discussion for the release
+                            v$VERSION
+```
+
+#### Merge back any change log updates to the `main` branch
+
+After the release completes, generate a pull request against the `main` branch to merge back any change log
 updates.
 
-See also [workflows that generate PRs](#workflows-that-generate-prs).
+```
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          # history is needed in order to generate the patch
+          fetch-depth: 0
+
+      - name: Setup git name
+        run: |
+          git config user.name opentelemetry-java-bot                                     <-- your bot account here
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+
+        # this step should be last since it will fail if conflicting change log updates on main
+      - name: Create pull request to merge any change log updates to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md > patch
+          if [ -s patch ]
+          then
+            git apply patch
+            msg="Merge change log updates from $GITHUB_REF_NAME to main"
+            git commit -a -m "$msg"
+            git push origin HEAD:opentelemetry-java-bot/merge-change-log-updates
+            gh pr create --title "$msg" \
+                         --body "$msg" \
+                         --head opentelemetry-java-bot/merge-change-log-updates \
+                         --base main
+          fi
+```
 
 ## Naming conventions
 
@@ -379,10 +698,10 @@ but I think worth having this level of consistency across the Java repos.
 Use `.yml` extension instead of `.yaml`.
 
 * `.github/workflows/ci.yml` - CI workflow
-* `.github/workflows/pr.yml` - PR workflow (if `ci.yml` isn't used for PRs also)
+* `.github/workflows/pr.yml` - PR workflow (if `ci.yml` isn't used also for pull requests)
 * `.github/workflows/daily-*.yml` - workflows that run once a day
 * `.github/workflows/reusable-*.yml` - reusable workflows, unfortunately these cannot be located in subdirectories (yet?)
-
+* `.github/workflows/backport-pull-request.yml`
 * `.github/workflows/daily-codeql-analysis.yml`
 
 TODO other common names?
