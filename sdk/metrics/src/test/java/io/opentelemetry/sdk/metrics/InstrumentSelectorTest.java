@@ -43,6 +43,9 @@ class InstrumentSelectorTest {
             () -> InstrumentSelector.builder().setMeterSchemaUrl((Predicate<String>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("meterSchemaUrlFilter");
+    assertThatThrownBy(() -> InstrumentSelector.builder().build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument selector must contain selection criteria");
   }
 
   @Test
