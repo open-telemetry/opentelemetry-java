@@ -47,12 +47,11 @@ class AsynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private final Resource resource = Resource.empty();
   private final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
+  private final InstrumentSelector selector =
+      InstrumentSelector.builder().setName(unused -> true).build();
   private final RegisteredView registeredView =
       RegisteredView.create(
-          InstrumentSelector.builder().build(),
-          View.builder().build(),
-          AttributesProcessor.noop(),
-          SourceInfo.noSourceInfo());
+          selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());
   private CollectionInfo collectionInfo;
 
   @BeforeEach
@@ -147,7 +146,7 @@ class AsynchronousMetricStorageTest {
     AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
             RegisteredView.create(
-                InstrumentSelector.builder().build(),
+                selector,
                 View.builder().build(),
                 AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
                 SourceInfo.noSourceInfo()),
