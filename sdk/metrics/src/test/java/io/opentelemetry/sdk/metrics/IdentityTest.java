@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -911,6 +912,46 @@ class IdentityTest {
                     .hasLongGauge()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)));
+
+    assertThat(logs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  void sameMeterSameAsyncInstrumentCompatibleViews() {
+    SdkMeterProvider meterProvider =
+        builder
+            .registerView(
+                InstrumentSelector.builder().setName("counter").build(),
+                View.builder().setName("counter1").build())
+            .registerView(
+                InstrumentSelector.builder().setName("counter").build(),
+                View.builder().setName("counter2").build())
+            .build();
+
+    AtomicLong counter = new AtomicLong();
+    meterProvider
+        .get("meter1")
+        .counterBuilder("counter")
+        .buildWithCallback(measurement -> measurement.record(counter.incrementAndGet()));
+
+    // Both counter1 and counter2 should have a value of 1, indicating the callback was only invoked
+    // once
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasLongSum()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter2")
+                    .hasLongSum()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
 
     assertThat(logs.getEvents()).hasSize(0);
   }

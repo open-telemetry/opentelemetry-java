@@ -111,10 +111,9 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      return new SdkObservableInstrument<>(
-          instrumentName,
-          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback),
-          callback);
+      return new SdkObservableInstrument(
+          meterSharedState,
+          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback));
     }
   }
 }
