@@ -1,10 +1,11 @@
-name: "Continuous Build"
+name: Build
 
 on:
   push:
     branches:
       - main
       - v[0-9]+.[0-9]+.x
+  workflow_dispatch:
 
 jobs:
   build:
@@ -74,18 +75,16 @@ jobs:
     if: ${{ !startsWith(github.ref_name, 'v') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
-  markdown-misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
+  misspell-check:
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
+    # to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
   publish-snapshots:
-    name: Publish snapshots
-    if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
-    # snapshot publishing is not dependent on markdown-link-check success, because links to external
-    # urls can break at any time
+    # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
+    if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3

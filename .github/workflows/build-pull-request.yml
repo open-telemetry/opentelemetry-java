@@ -1,10 +1,7 @@
-name: "PR Build"
+name: Build pull request
 
 on:
   pull_request:
-    branches:
-      - main
-      - v*
 
 jobs:
   build:
@@ -68,11 +65,20 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
-  # this is not a required check to avoid unnecessary blocking of PRs if external links break
+  # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
-  # this is not a required check to avoid unnecessary blocking of PRs if new misspellings are
-  # added to the misspell dictionary
-  markdown-misspell-check:
+  # this is not a required check to avoid blocking pull requests if new misspellings are added
+  # to the misspell dictionary
+  misspell-check:
     uses: ./.github/workflows/reusable-misspell-check.yml
+
+  required-status-check:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: needs.build.result != 'success'
+        run: exit 1

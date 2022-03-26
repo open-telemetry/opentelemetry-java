@@ -10,8 +10,8 @@ Once we agree and implement, will share more broadly across OpenTelemetry
 
 <!-- toc -->
 
-- [Have a single required status check for pull requests](#have-a-single-required-status-check-for-prs)
-- [Configure "cancel-in-progress" on pull request workflows](#configure-cancel-in-progress-on-pr-workflows)
+- [Have a single required status check for pull requests](#have-a-single-required-status-check-for-pull-requests)
+- [Configure "cancel-in-progress" on pull request workflows](#configure-cancel-in-progress-on-pull-request-workflows)
 - [Prefer `gh` cli over third-party GitHub actions for simple tasks](#prefer-gh-cli-over-third-party-github-actions-for-simple-tasks)
 - [Use GitHub action cache to make builds faster and less flaky](#use-github-action-cache-to-make-builds-faster-and-less-flaky)
 - [Run CodeQL daily](#run-codeql-daily)
@@ -22,7 +22,7 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Running checks against changed files only](#running-checks-against-changed-files-only)
 - [Configure component owners in contrib repositories](#configure-component-owners-in-contrib-repositories)
 - [Release automation](#release-automation)
-  - [Workflows that generate PRs](#workflows-that-generate-prs)
+  - [Workflows that generate pull requests](#workflows-that-generate-pull-requests)
   - [Prepare release branch](#prepare-release-branch)
   - [Prepare patch](#prepare-patch)
   - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
@@ -34,21 +34,23 @@ Once we agree and implement, will share more broadly across OpenTelemetry
 
 </details>
 
-## Have a single required status check for PRs
+## Have a single required status check for pull requests
 
 This avoids needing to modify branch protection required status checks as individual jobs come and go.
 
 ```
   required-status-check:
-    needs: [ aaa, bbb, ccc, ... ]
+    needs:
+      - aaa
+      - bbb
+      - ccc
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
           needs.aaa.result != 'success' ||
           needs.bbb.result != 'success' ||
-          needs.ccc.result != 'success' ||
-          ...
+          needs.ccc.result != 'success'
         run: exit 1
 ```
 
@@ -94,12 +96,12 @@ This is very build tool specific so no specific tips here on how to implement.
 ## Run CodeQL daily
 
 ```
-name: Daily CodeQL analysis
+name: Daily CodeQL
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: '30 1 * * *'
+  workflow_dispatch:
 
 jobs:
   analyze:
@@ -119,9 +121,8 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
 
-  issue:
+  open-issue-on-failure:
     # open an issue on failure because it can be easy to miss CI failure notifications
-    name: Open issue on failure
     needs: analyze
     if: failure()
     steps:
@@ -142,10 +143,11 @@ jobs:
 
 https://github.com/tcort/markdown-link-check checks markdown files for valid links and anchors.
 
-It is recommended to not make this a required check for PRs to avoid unnecessary blocking of PRs if
-external links break.
+It is recommended to not make this a required check for pull requests to avoid blocking pull
+requests if external links break.
 
 ```
+  # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance if external links break
     if: ${{ !startsWith(github.ref_name, 'v') }}
@@ -181,13 +183,15 @@ https://github.com/client9/misspell only checks against known misspellings,
 so while it's not a comprehensive spell checker, it doesn't produce false positives,
 and so doesn't get in your way.
 
-It is recommended to not make this a required check for PRs to avoid unnecessary blocking of PRs if
-new misspellings are added to the misspell dictionary.
+It is recommended to not make this a required check for pull requests to avoid blocking pull
+requests if new misspellings are added to the misspell dictionary.
 
 ```
+  # this is not a required check to avoid blocking pull requests if new misspellings are added
+  # to the misspell dictionary
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
+    # to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
@@ -212,8 +216,8 @@ TODO
 
 ### Running checks against changed files only
 
-If for some reason some check is running slow, or generates failures on PRs unrelated to changed files,
-an option is to run it only against changed files on PRs.
+If for some reason some check is running slow, or generates failures on pull requests unrelated to changed files,
+an option is to run it only against changed files on pull requests.
 
 (note, it probably doesn't make sense to do this for link checks, since it's possible for changes in one file
 to break a link in an unchanged file)
@@ -261,13 +265,13 @@ which brings along a lot of [additional permissions][].
 @dyladan's [component owners action](https://github.com/dyladan/component-owners#component-owners)
 works similarly, but does not require granting write access.
 
-### `.github/workflows/component-owners.yml`
+### `.github/workflows/assign-reviewers.yml`
 
 ```
-# assigns reviewers to PRs in a similar way as CODEOWNERS, but doesn't require reviewers
+# assigns reviewers to pull requests in a similar way as CODEOWNERS, but doesn't require reviewers
 # to have write access to the repository
 # see .github/component_owners.yaml for the list of components and their owners
-name: Assign component owners
+name: Assign reviewers
 
 on:
   # pull_request_target is needed instead of just pull_request
@@ -275,27 +279,27 @@ on:
   pull_request_target:
 
 jobs:
-  assign-component-owners:
+  assign-reviewers:
     runs-on: ubuntu-latest
-    name: Assign component owners
     steps:
       - uses: dyladan/component-owners@main
 ```
 
 ### `.github/component_owners.yaml`
 
-In the [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib) repository
-we have created labels for each component, and have given all component owners triager rights so that they
-can assign the labels and triage issues for their component(s).
+In the [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
+repository we have created labels for each component, and have given all component owners triager
+rights so that they can assign the labels and triage issues for their component(s).
 
 ```
-# this file is used by .github/workflows/component-codeowners.yml
+# this file is used by .github/workflows/assign-reviewers.yml to assign component owners as
+# reviewers to pull requests that touch files in their component(s)
 #
 # component owners must be members of the GitHub OpenTelemetry organization
 # so that they can be assigned as reviewers
 #
 # when updating this file, don't forget to update the component owners sections
-# in the associated README.md and the associated `comp:*` labels as needed
+# in the associated README.md and update the associated `comp:*` labels if needed
 components:
   dir1:
     - owner1  <-- GitHub username
@@ -313,9 +317,9 @@ components:
 - [Person One](https://github.com/owner1), Company1
 - [Person Two](https://github.com/owner2), Company2
 
-Learn more about component owners in [component-owners.yml].
+Learn more about component owners in [component_owners.yml].
 
-[component-owners.yml]: ../.github/workflows/component-owners.yml
+[component_owners.yml]: ../.github/component_owners.yml
 ```
 
 ## Release automation
@@ -354,7 +358,7 @@ Run the [Release workflow](actions/workflows/release.yml).
 * This workflow will publish the artifacts to maven central and will publish a GitHub release with
   release notes based on the change log.
 * Lastly, if there were any change log updates in the release branch that need to be merged back to
-  the main branch, the workflow will create a pull request if the updates can be cleanly applied,
+  main, the workflow will create a pull request if the updates can be cleanly applied,
   or it will fail this last step if the updates cannot be cleanly applied.
 ```
 
@@ -379,9 +383,9 @@ The specifics depend a lot on your specific version bumping needs.
 For OpenTelemetry Java repositories, the version in the `main` branch always ends with `-SNAPSHOT`,
 so preparing the release branch involves
 
-* removing `-SNAPSHOT` from the version in the release branch
+* removing `-SNAPSHOT` from the version on the release branch
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
-* bumping the version to the next `-SNAPSHOT` in the main branch
+* bumping the version to the next `-SNAPSHOT` on main
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
 ```
@@ -421,7 +425,7 @@ jobs:
 
       - name: Bump version on release branch
         run: |
-          v=$(...)  <-- get the minor version that is planning to be released
+          version=$(...)  <-- get the minor version that is planning to be released
           .github/scripts/update-versions.sh $version-SNAPSHOT $version
 
       - name: Set up git name
@@ -429,7 +433,7 @@ jobs:
           git config user.name opentelemetry-java-bot                                     <-- your bot account here
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
 
-      - name: Create pull request against the release branch
+      - name: Create pull request against release branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_BRANCH_NAME: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
@@ -443,12 +447,14 @@ jobs:
                        --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
-    needs: prepare-release-branch
+    needs:
+      - prepare-release-branch
+      - create-pull-request-against-release-branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Bump version on the main branch
+      - name: Bump version on main
         run: |
           version=$(...)  <-- get the minor version that is planning to be released
           if [[ $version =~ ([0-9]+).([0-9]+).0 ]]; then
@@ -466,7 +472,7 @@ jobs:
           git config user.name opentelemetry-java-bot                                     <-- your bot account here
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
 
-      - name: Create pull request against the main branch
+      - name: Create pull request against main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -525,8 +531,8 @@ jobs:
 
       - name: Create pull request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.set-versions.outputs.release-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           msg="Prepare patch release $VERSION"
           git commit -a -m "$msg"
@@ -547,7 +553,7 @@ name: Backport a pull request
 on:
   workflow_dispatch:
     inputs:
-      pr:
+      number:
         description: "The pull request # to backport"
         required: true
 
@@ -567,19 +573,19 @@ jobs:
 
       - name: Create pull request
         env:
+          NUMBER: ${{ github.event.inputs.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR: ${{ github.event.inputs.pr }}
         run: |
-          commit=$(gh pr view $PR --json mergeCommit --jq .mergeCommit.oid)
-          title=$(gh pr view $PR --json title --jq .title)
-          url=$(gh pr view $PR --json url --jq .url)
+          commit=$(gh pr view $NUMBER --json mergeCommit --jq .mergeCommit.oid)
+          title=$(gh pr view $NUMBER --json title --jq .title)
+          url=$(gh pr view $NUMBER --json url --jq .url)
 
           git cherry-pick $commit
-          git push origin HEAD:backport-$PR-to-$GITHUB_REF_NAME
+          git push origin HEAD:backport-$NUMBER-to-$GITHUB_REF_NAME
 
           gh pr create --title "[$GITHUB_REF_NAME] $title" \
-                       --body "Clean cherry-pick of #$PR to the $GITHUB_REF_NAME branch." \
-                       --head backport-$PR-to-$GITHUB_REF_NAME \
+                       --body "Clean cherry-pick of #$NUMBER to the $GITHUB_REF_NAME branch." \
+                       --head backport-$NUMBER-to-$GITHUB_REF_NAME \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -591,13 +597,13 @@ jobs:
       - name: Set versions
         id: set-versions
         run: |
-          v=$(...)  <-- get the current version (the one that is being released)
-          if [[ $v =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
+          version=$(...)  <-- get the current version (the one that is being released)
+          if [[ $version =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
             major="${BASH_REMATCH[1]}"
             minor="${BASH_REMATCH[2]}"
             patch="${BASH_REMATCH[3]}"
           else
-            echo "unexpected version: $v"
+            echo "unexpected version: $version"
             exit 1
           fi
           if [[ $patch == 0 ]]; then
@@ -611,7 +617,7 @@ jobs:
           else
               prior_version="$major.$minor.$((patch - 1))"
           fi
-          echo "::set-output name=release-version::$v"
+          echo "::set-output name=release-version::$version"
           echo "::set-output name=prior-release-version::$prior_version"
 ```
 
@@ -622,9 +628,9 @@ This is heavily dependent on what conventions you follow in your CHANGELOG.md.
 ```
       - name: Generate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.set-versions.outputs.release-version }}
           PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           sed -n '/^## Version $VERSION/,/^## Version /p' CHANGELOG.md \
             | tail -n +2 \
@@ -644,8 +650,8 @@ the "Publish release" button yourself.
 ```
       - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.set-versions.outputs.release-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
@@ -677,8 +683,7 @@ updates.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md > patch
-          if [ -s patch ]
-          then
+          if [ -s patch ]; then
             git apply patch
             msg="Merge change log updates from $GITHUB_REF_NAME to main"
             git commit -a -m "$msg"
@@ -697,12 +702,12 @@ but I think worth having this level of consistency across the Java repos.
 
 Use `.yml` extension instead of `.yaml`.
 
-* `.github/workflows/ci.yml` - CI workflow
-* `.github/workflows/pr.yml` - PR workflow (if `ci.yml` isn't used also for pull requests)
-* `.github/workflows/daily-*.yml` - workflows that run once a day
+* `.github/workflows/build.yml` - primary build workflow (CI)
+* `.github/workflows/build-pull-request.yml` - pull request workflow (if `build.yml` isn't used also for pull requests)
+* `.github/workflows/build-daily.yml` - if you have a daily build in addition to normal CI builds
 * `.github/workflows/reusable-*.yml` - reusable workflows, unfortunately these cannot be located in subdirectories (yet?)
 * `.github/workflows/backport-pull-request.yml`
-* `.github/workflows/daily-codeql-analysis.yml`
+* `.github/workflows/codeql-daily.yml`
 
 TODO other common names?
 
