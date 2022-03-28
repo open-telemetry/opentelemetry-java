@@ -27,8 +27,8 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Prepare patch](#prepare-patch)
   - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
   - [Release](#release)
-- [Naming conventions](#naming-conventions)
-- [YAML style guide](#yaml-style-guide)
+- [Workflow file naming conventions](#workflow-file-naming-conventions)
+- [Workflow YAML style guide](#workflow-yaml-style-guide)
 
 <!-- tocstop -->
 
@@ -716,7 +716,7 @@ Use `.yml` extension instead of `.yaml`.
 * `.github/workflows/backport-pull-request.yml`
 * `.github/workflows/codeql-daily.yml`
 
-## YAML style guide
+## Workflow YAML style guide
 
 Workflow names - [Sentence case](https://en.wikipedia.org/wiki/Letter_case#Sentence_case)
 
