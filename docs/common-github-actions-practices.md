@@ -38,7 +38,7 @@ Once we agree and implement, will share more broadly across OpenTelemetry
 
 This avoids needing to modify branch protection required status checks as individual jobs come and go.
 
-```
+```yaml
   required-status-check:
     needs:
       - aaa
@@ -69,7 +69,7 @@ period of time, this can end up consuming a lot of GitHub Actions runners.
 
 If your pull request workflow only runs on `pull_request`:
 
-```
+```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -77,7 +77,7 @@ concurrency:
 
 If your pull request workflow is shared and also runs on CI (i.e. on merge to `main` or release branch):
 
-```
+```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -95,7 +95,7 @@ This is very build tool specific so no specific tips here on how to implement.
 
 ## Run CodeQL daily
 
-```
+```yaml
 name: Daily CodeQL
 
 on:
@@ -118,7 +118,7 @@ jobs:
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
 
-      - name: Perform CodeQL Analysis
+      - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
 
   open-issue-on-failure:
@@ -146,7 +146,7 @@ https://github.com/tcort/markdown-link-check checks markdown files for valid lin
 It is recommended to not make this a required check for pull requests to avoid blocking pull
 requests if external links break.
 
-```
+```yaml
   # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance if external links break
@@ -169,7 +169,7 @@ requests if external links break.
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
 
-```
+```json
 {
   "retryOn429": true
 }
@@ -186,7 +186,7 @@ and so doesn't get in your way.
 It is recommended to not make this a required check for pull requests to avoid blocking pull
 requests if new misspellings are added to the misspell dictionary.
 
-```
+```yaml
   # this is not a required check to avoid blocking pull requests if new misspellings are added
   # to the misspell dictionary
   misspell-check:
@@ -224,7 +224,7 @@ to break a link in an unchanged file)
 
 Here's an example of doing this with the above `misspell-check` workflow:
 
-```
+```yaml
   misspell-check:
     # release branches are excluded to avoid unnecessary maintenance if new misspellings are
     # added to the misspell dictionary
@@ -267,7 +267,7 @@ works similarly, but does not require granting write access.
 
 ### `.github/workflows/assign-reviewers.yml`
 
-```
+```yaml
 # assigns reviewers to pull requests in a similar way as CODEOWNERS, but doesn't require reviewers
 # to have write access to the repository
 # see .github/component_owners.yaml for the list of components and their owners
@@ -291,7 +291,7 @@ In the [opentelemetry-java-contrib](https://github.com/open-telemetry/openteleme
 repository we have created labels for each component, and have given all component owners triager
 rights so that they can assign the labels and triage issues for their component(s).
 
-```
+```yaml
 # this file is used by .github/workflows/assign-reviewers.yml to assign component owners as
 # reviewers to pull requests that touch files in their component(s)
 #
@@ -308,7 +308,7 @@ components:
 
 ### `dir1/README.md`
 
-```
+```markdown
 
 ...
 
@@ -326,32 +326,32 @@ Learn more about component owners in [component_owners.yml].
 
 Here's some sample `RELEASING.md` documentation that goes with the automation below.
 
-```
+```markdown
 ## Preparing a new major or minor release
 
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
-* Run the [Prepare release branch workflow](actions/workflows/prepare-release-branch.yml).
+* Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
   (one is targeted to the release branch and one is targeted to the `main` branch).
 
 ## Preparing a new patch release
 
 * Backport pull request(s) to the release branch
-  * Run the [Backport pull request workflow](actions/workflows/backport-pull-request.yml).
+  * Run the [Backport pull request workflow](.github/workflows/backport-pull-request.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates
 * Merge a pull request to the release branch updating the `CHANGELOG.md`
-* Run the [Prepare patch release workflow](actions/workflows/prepare-patch-release.yml).
+* Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `v1.9.x`, and click the "Run workflow" button below that.
 * Review and merge the pull request that it creates
 
 ## Making the release
 
-Run the [Release workflow](actions/workflows/release.yml).
+Run the [Release workflow](.github/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `v1.9.x`, and click the "Run workflow" button below that.
@@ -369,7 +369,7 @@ the next best thing is to generate a pull request from the workflow and use a bo
 
 This is what we use in the OpenTelemetry Java repositories:
 
-```
+```yaml
       - name: Set git user
         run: |
           git config user.name opentelemetry-java-bot
@@ -388,7 +388,7 @@ so preparing the release branch involves
 * bumping the version to the next `-SNAPSHOT` on main
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
-```
+```yaml
 name: Prepare release branch
 on:
   workflow_dispatch:
@@ -492,7 +492,7 @@ The specifics depend a lot on the build tool and your version bumping needs.
 For OpenTelemetry Java repositories, we have a workflow which generates a pull request
 against the release branch to bump the version (e.g. from `1.2.0` to `1.2.1`).
 
-```
+```yaml
 name: Prepare patch release
 on:
   workflow_dispatch:
@@ -548,7 +548,7 @@ jobs:
 Having a workflow generate the backport pull request is nice because you know that it was a clean
 cherry-pick and does not require re-review.
 
-```
+```yaml
 name: Backport a pull request
 on:
   workflow_dispatch:
@@ -593,7 +593,7 @@ jobs:
 
 #### Calculating the prior release version
 
-```
+```yaml
       - name: Set versions
         id: set-versions
         run: |
@@ -625,13 +625,20 @@ jobs:
 
 This is heavily dependent on what conventions you follow in your CHANGELOG.md.
 
-```
+```yaml
       - name: Generate release notes
         env:
           VERSION: ${{ steps.set-versions.outputs.release-version }}
           PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [[ $version != *.0 ]]; then
+            cat > release-notes.txt << EOF
+            This is a patch release on the previous $PRIOR_VERSION release, fixing the issue(s) below.
+
+            EOF
+          fi
+
           sed -n '/^## Version $VERSION/,/^## Version /p' CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
@@ -647,7 +654,7 @@ This is heavily dependent on what conventions you follow in your CHANGELOG.md.
 Add `--draft` to the `gh release create` command if you want to review the release before hitting
 the "Publish release" button yourself.
 
-```
+```yaml
       - name: Create GitHub release
         env:
           VERSION: ${{ steps.set-versions.outputs.release-version }}
@@ -665,14 +672,14 @@ the "Publish release" button yourself.
 After the release completes, generate a pull request against the `main` branch to merge back any change log
 updates.
 
-```
+```yaml
       - uses: actions/checkout@v3
         with:
           ref: main
           # history is needed in order to generate the patch
           fetch-depth: 0
 
-      - name: Setup git name
+      - name: Set up git name
         run: |
           git config user.name opentelemetry-java-bot                                     <-- your bot account here
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
@@ -695,7 +702,7 @@ updates.
           fi
 ```
 
-## Naming conventions
+## Workflow file naming conventions
 
 Not sure if it's worth sharing these last two sections across all of OpenTelemetry,
 but I think worth having this level of consistency across the Java repos.
@@ -709,8 +716,10 @@ Use `.yml` extension instead of `.yaml`.
 * `.github/workflows/backport-pull-request.yml`
 * `.github/workflows/codeql-daily.yml`
 
-TODO other common names?
-
 ## YAML style guide
 
-TODO
+Workflow names - [Sentence case](https://en.wikipedia.org/wiki/Letter_case#Sentence_case)
+
+Job names - [kebab-case(https://en.wikipedia.org/wiki/Letter_case#Kebab_case)
+
+Step names - [Sentence case](https://en.wikipedia.org/wiki/Letter_case#Sentence_case)
