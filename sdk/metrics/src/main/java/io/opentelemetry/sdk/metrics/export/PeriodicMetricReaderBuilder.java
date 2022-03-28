@@ -65,8 +65,6 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    PeriodicMetricReader periodicMetricReader = new PeriodicMetricReader(metricExporter, executor);
-    periodicMetricReader.start(intervalNanos);
-    return periodicMetricReader;
+    return new PeriodicMetricReader(metricExporter, intervalNanos, executor);
   }
 }
