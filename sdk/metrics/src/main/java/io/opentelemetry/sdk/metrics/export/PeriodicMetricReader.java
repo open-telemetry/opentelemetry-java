@@ -131,6 +131,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
           if (metricData.size() == 0) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();
+            exportAvailable.set(true);
           } else {
             CompletableResultCode result = exporter.export(metricData);
             result.whenComplete(
