@@ -128,7 +128,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
       if (exportAvailable.compareAndSet(true, false)) {
         try {
           Collection<MetricData> metricData = getMetricProducer().collectAllMetrics();
-          if (metricData.size() == 0) {
+          if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();
             exportAvailable.set(true);
