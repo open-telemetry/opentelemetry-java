@@ -7,7 +7,10 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +28,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
   private final MetricExporter exporter;
+  private final long intervalNanos;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
@@ -45,11 +49,19 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
     return new PeriodicMetricReaderBuilder(exporter);
   }
 
-  PeriodicMetricReader(MetricExporter exporter, ScheduledExecutorService scheduler) {
+  PeriodicMetricReader(
+      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
     super(exporter::getAggregationTemporality);
     this.exporter = exporter;
+    this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
+  }
+
+  @Override
+  protected void registerMetricProducer(MetricProducer metricProducer) {
+    super.registerMetricProducer(metricProducer);
+    start();
   }
 
   @Override
@@ -88,7 +100,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
     return result;
   }
 
-  void start(long intervalNanos) {
+  void start() {
     synchronized (lock) {
       if (scheduledFuture != null) {
         return;
@@ -115,15 +127,22 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          CompletableResultCode result = exporter.export(getMetricProducer().collectAllMetrics());
-          result.whenComplete(
-              () -> {
-                if (!result.isSuccess()) {
-                  logger.log(Level.FINE, "Exporter failed");
-                }
-                flushResult.succeed();
-                exportAvailable.set(true);
-              });
+          Collection<MetricData> metricData = getMetricProducer().collectAllMetrics();
+          if (metricData.isEmpty()) {
+            logger.log(Level.FINE, "No metric data to export - skipping export.");
+            flushResult.succeed();
+            exportAvailable.set(true);
+          } else {
+            CompletableResultCode result = exporter.export(metricData);
+            result.whenComplete(
+                () -> {
+                  if (!result.isSuccess()) {
+                    logger.log(Level.FINE, "Exporter failed");
+                  }
+                  flushResult.succeed();
+                  exportAvailable.set(true);
+                });
+          }
         } catch (Throwable t) {
           exportAvailable.set(true);
           logger.log(Level.WARNING, "Exporter threw an Exception", t);
