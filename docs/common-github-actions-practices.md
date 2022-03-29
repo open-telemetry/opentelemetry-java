@@ -720,6 +720,6 @@ Use `.yml` extension instead of `.yaml`.
 
 Workflow names - [Sentence case](https://en.wikipedia.org/wiki/Letter_case#Sentence_case)
 
-Job names - [kebab-case(https://en.wikipedia.org/wiki/Letter_case#Kebab_case)
+Job names - [kebab-case](https://en.wikipedia.org/wiki/Letter_case#Kebab_case)
 
 Step names - [Sentence case](https://en.wikipedia.org/wiki/Letter_case#Sentence_case)
