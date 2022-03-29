@@ -62,7 +62,7 @@ class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordLong(150);
     aggregatorHandle.recordLong(2000);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(HistogramAccumulation.create(2175, new long[] {1, 1, 1, 1}));
+        .isEqualTo(HistogramAccumulation.create(2175, 5d, 2000d, new long[] {1, 1, 1, 1}));
   }
 
   @Test
@@ -85,7 +85,7 @@ class DoubleHistogramAggregatorTest {
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}, exemplars));
+        .isEqualTo(HistogramAccumulation.create(0, 0d, 0d, new long[] {1, 0, 0, 0}, exemplars));
   }
 
   @Test
@@ -95,21 +95,21 @@ class DoubleHistogramAggregatorTest {
 
     aggregatorHandle.recordLong(100);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(HistogramAccumulation.create(100, new long[] {0, 1, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(100, 100d, 100d, new long[] {0, 1, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(0, 0d, 0d, new long[] {1, 0, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   void accumulateData() {
     assertThat(aggregator.accumulateDoubleMeasurement(11.1, Attributes.empty(), Context.current()))
-        .isEqualTo(HistogramAccumulation.create(11.1, new long[] {0, 1, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(11.1, 11.1, 11.1, new long[] {0, 1, 0, 0}));
     assertThat(aggregator.accumulateLongMeasurement(10, Attributes.empty(), Context.current()))
-        .isEqualTo(HistogramAccumulation.create(10.0, new long[] {1, 0, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(10.0, 10.0, 10.0, new long[] {1, 0, 0, 0}));
   }
 
   @Test
@@ -138,12 +138,12 @@ class DoubleHistogramAggregatorTest {
                     TraceState.getDefault()),
                 2));
     HistogramAccumulation previousAccumulation =
-        HistogramAccumulation.create(2, new long[] {1, 1, 0}, previousExemplars);
+        HistogramAccumulation.create(2, 1d, 2d, new long[] {1, 1, 0}, previousExemplars);
     HistogramAccumulation nextAccumulation =
-        HistogramAccumulation.create(2, new long[] {0, 0, 2}, exemplars);
+        HistogramAccumulation.create(2, 2d, 3d, new long[] {0, 0, 2}, exemplars);
     // Assure most recent exemplars are kept.
     assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(HistogramAccumulation.create(4, new long[] {1, 1, 2}, exemplars));
+        .isEqualTo(HistogramAccumulation.create(4, 1d, 3d, new long[] {1, 1, 2}, exemplars));
   }
 
   @Test
@@ -172,12 +172,12 @@ class DoubleHistogramAggregatorTest {
                     TraceState.getDefault()),
                 2));
     HistogramAccumulation previousAccumulation =
-        HistogramAccumulation.create(2, new long[] {1, 1, 2}, previousExemplars);
+        HistogramAccumulation.create(2, 1d, 2d, new long[] {1, 1, 2}, previousExemplars);
     HistogramAccumulation nextAccumulation =
-        HistogramAccumulation.create(5, new long[] {2, 2, 2}, exemplars);
+        HistogramAccumulation.create(5, 2d, 3d, new long[] {2, 2, 2}, exemplars);
     // Assure most recent exemplars are kept.
     assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
-        .isEqualTo(HistogramAccumulation.create(3, new long[] {1, 1, 0}, exemplars));
+        .isEqualTo(HistogramAccumulation.create(3, null, null, new long[] {1, 1, 0}, exemplars));
   }
 
   @Test
@@ -217,7 +217,7 @@ class DoubleHistogramAggregatorTest {
             1);
     HistogramAccumulation accumulation =
         HistogramAccumulation.create(
-            2, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));
+            2, 2d, 2d, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
                 RESOURCE,
@@ -234,6 +234,8 @@ class DoubleHistogramAggregatorTest {
             point ->
                 assertThat(point)
                     .hasSum(2)
+                    .hasMin(2)
+                    .hasMax(2)
                     .hasBucketCounts(1, 0, 0, 0)
                     .hasCount(1)
                     .hasExemplars(exemplar));
@@ -292,7 +294,7 @@ class DoubleHistogramAggregatorTest {
     summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
 
     assertThat(summarizer.accumulation)
-        .isEqualTo(HistogramAccumulation.create(1010000, new long[] {50000, 50000, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(1010000, 1d, 23d, new long[] {50000, 50000, 0, 0}));
   }
 
   private static final class Histogram {

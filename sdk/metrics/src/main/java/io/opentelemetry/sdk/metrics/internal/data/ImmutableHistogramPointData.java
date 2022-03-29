@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -37,10 +38,20 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
       long epochNanos,
       Attributes attributes,
       double sum,
+      @Nullable Double min,
+      @Nullable Double max,
       List<Double> boundaries,
       List<Long> counts) {
     return create(
-        startEpochNanos, epochNanos, attributes, sum, boundaries, counts, Collections.emptyList());
+        startEpochNanos,
+        epochNanos,
+        attributes,
+        sum,
+        min,
+        max,
+        boundaries,
+        counts,
+        Collections.emptyList());
   }
 
   /**
@@ -55,6 +66,8 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
       long epochNanos,
       Attributes attributes,
       double sum,
+      @Nullable Double min,
+      @Nullable Double max,
       List<Double> boundaries,
       List<Long> counts,
       List<ExemplarData> exemplars) {
@@ -84,6 +97,8 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         exemplars,
         sum,
         totalCount,
+        min,
+        max,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
         Collections.unmodifiableList(new ArrayList<>(counts)));
   }

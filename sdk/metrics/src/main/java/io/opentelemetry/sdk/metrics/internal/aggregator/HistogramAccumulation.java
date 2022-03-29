@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -20,12 +21,18 @@ abstract class HistogramAccumulation {
    *
    * @return a new {@link HistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(double sum, long[] counts) {
-    return create(sum, counts, Collections.emptyList());
+  static HistogramAccumulation create(
+      double sum, @Nullable Double min, @Nullable Double max, long[] counts) {
+    return create(sum, min, max, counts, Collections.emptyList());
   }
 
-  static HistogramAccumulation create(double sum, long[] counts, List<ExemplarData> exemplars) {
-    return new AutoValue_HistogramAccumulation(sum, counts, exemplars);
+  static HistogramAccumulation create(
+      double sum,
+      @Nullable Double min,
+      @Nullable Double max,
+      long[] counts,
+      List<ExemplarData> exemplars) {
+    return new AutoValue_HistogramAccumulation(sum, min, max, counts, exemplars);
   }
 
   HistogramAccumulation() {}
@@ -36,6 +43,22 @@ abstract class HistogramAccumulation {
    * @return the sum of recorded measurements.
    */
   abstract double getSum();
+
+  /**
+   * The min of all measurements recorded.
+   *
+   * @return the min of recorded measurements, or {@code null} if not available.
+   */
+  @Nullable
+  abstract Double getMin();
+
+  /**
+   * The max of all measurements recorded.
+   *
+   * @return the max of recorded measurements, or {@code null} if not available.
+   */
+  @Nullable
+  abstract Double getMax();
 
   /**
    * The counts in each bucket. The returned type is a mutable object, but it should be fine because

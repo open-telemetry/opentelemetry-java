@@ -223,7 +223,14 @@ public class MetricAssertionsTest {
 
   private static final HistogramPointData DOUBLE_HISTOGRAM_POINT_DATA =
       ImmutableHistogramPointData.create(
-          1, 2, Attributes.empty(), 15, Collections.singletonList(10.0), Arrays.asList(1L, 2L));
+          1,
+          2,
+          Attributes.empty(),
+          15,
+          4.0,
+          7.0,
+          Collections.singletonList(10.0),
+          Arrays.asList(1L, 2L));
 
   @Test
   void metric_passing() {
@@ -492,6 +499,8 @@ public class MetricAssertionsTest {
     assertThat(DOUBLE_HISTOGRAM_POINT_DATA)
         .hasCount(3)
         .hasSum(15)
+        .hasMin(4.0)
+        .hasMax(7.0)
         .hasSumGreaterThan(10)
         .hasEpochNanos(2)
         .hasStartEpochNanos(1)

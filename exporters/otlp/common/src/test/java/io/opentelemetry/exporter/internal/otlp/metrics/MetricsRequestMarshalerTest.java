@@ -345,12 +345,21 @@ class MetricsRequestMarshalerTest {
             toHistogramDataPoints(
                 ImmutableList.of(
                     ImmutableHistogramPointData.create(
-                        123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
+                        123,
+                        456,
+                        KV_ATTR,
+                        14.2,
+                        4.1,
+                        10.1,
+                        ImmutableList.of(1.0),
+                        ImmutableList.of(1L, 5L)),
                     ImmutableHistogramPointData.create(
                         123,
                         456,
                         Attributes.empty(),
                         15.3,
+                        3.3,
+                        12.0,
                         ImmutableList.of(),
                         ImmutableList.of(7L),
                         ImmutableList.of(
@@ -746,6 +755,8 @@ class MetricsRequestMarshalerTest {
                                 456,
                                 KV_ATTR,
                                 4.0,
+                                1.0,
+                                3.0,
                                 ImmutableList.of(),
                                 ImmutableList.of(33L)))))))
         .isEqualTo(

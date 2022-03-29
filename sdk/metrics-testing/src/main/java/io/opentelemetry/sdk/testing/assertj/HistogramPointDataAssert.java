@@ -31,6 +31,20 @@ public class HistogramPointDataAssert
     return this;
   }
 
+  /** Ensures the {@code min} field matches the expected value. */
+  public HistogramPointDataAssert hasMin(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMin()).as("min").isEqualTo(expected);
+    return this;
+  }
+
+  /** Ensures the {@code max} field matches the expected value. */
+  public HistogramPointDataAssert hasMax(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMax()).as("max").isEqualTo(expected);
+    return this;
+  }
+
   /** Ensures the {@code count} field matches the expected value. */
   public HistogramPointDataAssert hasCount(long expected) {
     isNotNull();

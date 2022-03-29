@@ -236,6 +236,8 @@ public final class MetricAdapter {
                             endTimestamp,
                             attributes,
                             distribution.getSum(),
+                            null,
+                            null,
                             mapBoundaries(distribution.getBucketOptions()),
                             mapCounts(distribution.getBuckets()),
                             mapExemplars(distribution.getBuckets())),

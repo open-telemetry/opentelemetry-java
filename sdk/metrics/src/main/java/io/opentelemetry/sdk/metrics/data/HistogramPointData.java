@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * A histogram metric point.
@@ -27,6 +28,22 @@ public interface HistogramPointData extends PointData {
    * @return the count of recorded measurements.
    */
   long getCount();
+
+  /**
+   * The min of all measurements recorded.
+   *
+   * @return the min of recorded measurements, or {@code null} if not available.
+   */
+  @Nullable
+  Double getMin();
+
+  /**
+   * The max of all measurements recorded.
+   *
+   * @return the max of recorded measurements, or {@code null} if not available.
+   */
+  @Nullable
+  Double getMax();
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1

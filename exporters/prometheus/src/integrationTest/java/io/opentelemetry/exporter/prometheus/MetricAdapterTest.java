@@ -209,6 +209,8 @@ class MetricAdapterTest {
                       1633950672000000000L,
                       KP_VP_ATTR,
                       1.0,
+                      null,
+                      null,
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
@@ -543,6 +545,8 @@ class MetricAdapterTest {
                     1633943350000000000L,
                     KP_VP_ATTR,
                     18.3,
+                    0.0,
+                    0.0,
                     ImmutableList.of(1.0),
                     ImmutableList.of(4L, 9L),
                     ImmutableList.of(
