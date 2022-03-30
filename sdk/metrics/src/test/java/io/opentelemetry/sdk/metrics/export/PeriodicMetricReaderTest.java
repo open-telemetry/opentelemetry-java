@@ -82,10 +82,13 @@ class PeriodicMetricReaderTest {
     ScheduledFuture mock = mock(ScheduledFuture.class);
     when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
 
-    PeriodicMetricReader.builder(metricExporter)
-        .setInterval(Duration.ofMillis(1))
-        .setExecutor(scheduler)
-        .build();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(metricExporter)
+            .setInterval(Duration.ofMillis(1))
+            .setExecutor(scheduler)
+            .build();
+
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
@@ -106,6 +109,25 @@ class PeriodicMetricReaderTest {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void periodicExport_NoMetricsSkipsExport() {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(waitingMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .build();
+    when(metricProducer.collectAllMetrics()).thenReturn(Collections.emptyList());
+    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+
+    try {
+      assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      verify(metricProducer).collectAllMetrics();
+      assertThat(waitingMetricExporter.exportTimes.size()).isEqualTo(0);
     } finally {
       reader.shutdown();
     }

@@ -16,9 +16,7 @@ jobs:
             target_image: otel-collector
           - source: shopify/toxiproxy:latest
             target_image: toxiproxy
-          - source: eclipse-temurin:8-jdk
-            target_image: openjdk8
-          - source: eclipse-temurin:17-jre-alpine
+          - source: eclipse-temurin:17-jre-focal
             target_image: openjdk17
     runs-on: ubuntu-latest
     steps:

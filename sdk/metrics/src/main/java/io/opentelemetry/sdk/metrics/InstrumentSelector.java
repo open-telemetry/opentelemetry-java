@@ -68,15 +68,4 @@ public abstract class InstrumentSelector {
    * {@link io.opentelemetry.api.metrics.Meter}.
    */
   public abstract Predicate<String> getMeterSchemaUrlFilter();
-
-  /**
-   * Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s.
-   *
-   * @deprecated Use {@link #getMeterNameFilter()} and similar.
-   */
-  @Deprecated
-  public final MeterSelector getMeterSelector() {
-    return MeterSelector.create(
-        getMeterNameFilter(), getMeterVersionFilter(), getMeterSchemaUrlFilter());
-  }
 }
