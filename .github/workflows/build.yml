@@ -1,10 +1,11 @@
-name: "Continuous Build"
+name: Build
 
 on:
   push:
     branches:
       - main
       - v[0-9]+.[0-9]+.x
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - id: setup-java-8
-        name: Setup Java 8 for tests
+        name: Set up Java 8 for tests
         uses: actions/setup-java@v2
         with:
           distribution: temurin
@@ -38,14 +39,14 @@ jobs:
           java-package: jre
 
       - id: setup-java-11
-        name: Setup Java 11 for tests
+        name: Set up Java 11 for tests
         uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 11
 
       - id: setup-java-17
-        name: Setup Java 17
+        name: Set up Java 17
         uses: actions/setup-java@v2
         with:
           distribution: temurin
@@ -74,18 +75,16 @@ jobs:
     if: ${{ !startsWith(github.ref_name, 'v') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
-  markdown-misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
+  misspell-check:
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
+    # to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
   publish-snapshots:
-    name: Publish snapshots
-    if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
-    # snapshot publishing is not dependent on markdown-link-check success, because links to external
-    # urls can break at any time
+    # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
+    if: ${{ github.repository == 'open-telemetry/opentelemetry-java' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -93,7 +92,7 @@ jobs:
           fetch-depth: 0
 
       - id: setup-java-11
-        name: Setup Java 11
+        name: Set up Java 11
         uses: actions/setup-java@v2
         with:
           distribution: temurin
