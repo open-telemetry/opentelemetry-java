@@ -15,10 +15,12 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,14 +48,14 @@ import javax.annotation.Nullable;
  */
 // Very similar to
 // https://github.com/prometheus/client_java/blob/master/simpleclient_httpserver/src/main/java/io/prometheus/client/exporter/HTTPServer.java
-public final class PrometheusHttpServer extends AbstractMetricReader
-    implements Closeable, MetricReader {
+public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");
 
   private final HttpServer server;
   private final ExecutorService executor;
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -70,7 +72,6 @@ public final class PrometheusHttpServer extends AbstractMetricReader
   }
 
   PrometheusHttpServer(String host, int port) {
-    super(unused -> AggregationTemporality.CUMULATIVE);
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
@@ -87,6 +88,10 @@ public final class PrometheusHttpServer extends AbstractMetricReader
     start();
   }
 
+  private MetricProducer getMetricProducer() {
+    return metricProducer;
+  }
+
   private void start() {
     // server.start must be called from a daemon thread for it to be a daemon.
     if (Thread.currentThread().isDaemon()) {
@@ -101,6 +106,16 @@ public final class PrometheusHttpServer extends AbstractMetricReader
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+  }
+
+  @Override
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   @Override

@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -60,7 +60,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private Sampler sampler2;
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
-  @Mock private AbstractMetricReader metricReader;
+  @Mock private MetricReader metricReader;
   @Mock private LogProcessor logProcessor;
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;

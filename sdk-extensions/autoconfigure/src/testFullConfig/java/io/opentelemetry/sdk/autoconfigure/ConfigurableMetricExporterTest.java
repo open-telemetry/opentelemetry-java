@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -100,7 +100,7 @@ public class ConfigurableMetricExporterTest {
     // Should not call customizer or register a metric reader
     verify(metricCustomizer, never()).apply(any(), any());
     assertThat(meterProviderBuilder)
-        .extracting("metricReaders", as(InstanceOfAssertFactories.list(AbstractMetricReader.class)))
+        .extracting("metricReaders", as(InstanceOfAssertFactories.list(MetricReader.class)))
         .hasSize(0);
   }
 }

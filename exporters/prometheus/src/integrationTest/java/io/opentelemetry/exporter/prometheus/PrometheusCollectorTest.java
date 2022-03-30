@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -46,7 +45,7 @@ class PrometheusCollectorTest {
   void setUp() {
     // Apply the SDK metric producer registers with prometheus.
     prometheusCollector = new PrometheusCollector();
-    AbstractMetricReader.registerMetricProducer(metricProducer, prometheusCollector);
+    prometheusCollector.register(metricProducer);
   }
 
   @Test

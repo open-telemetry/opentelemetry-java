@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
@@ -88,7 +87,7 @@ class PeriodicMetricReaderTest {
             .setExecutor(scheduler)
             .build();
 
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
@@ -101,7 +100,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -122,7 +121,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofMillis(100))
             .build();
     when(metricProducer.collectAllMetrics()).thenReturn(Collections.emptyList());
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
 
     try {
       assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
@@ -141,7 +140,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofNanos(Long.MAX_VALUE))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
     assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
@@ -162,7 +161,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
@@ -179,7 +178,7 @@ class PeriodicMetricReaderTest {
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofSeconds(100))
             .build();
-    AbstractMetricReader.registerMetricProducer(metricProducer, reader);
+    reader.register(metricProducer);
     // Assume that this will be called in less than 100 seconds.
     reader.shutdown();
 
