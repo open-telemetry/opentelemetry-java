@@ -77,7 +77,6 @@ jobs:
         with:
           arguments: |
             build
-            --stacktrace
             -Prelease.version=${{ github.event.inputs.version }}
 
       - uses: gradle/gradle-build-action@v2
@@ -86,7 +85,6 @@ jobs:
           arguments: |
             final
             closeAndReleaseSonatypeStagingRepository
-            --stacktrace
             -Prelease.version=${{ github.event.inputs.version }}
         env:
           GRGIT_USER: ${{ github.actor }}
