@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Login to GitHub Package Registry
+      - name: Login to GitHub package registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
