@@ -28,7 +28,9 @@ public final class ViewRegistry {
   static final View DEFAULT_VIEW = View.builder().build();
   static final RegisteredView DEFAULT_REGISTERED_VIEW =
       RegisteredView.create(
-          InstrumentSelector.builder().build(),
+          // InstrumentSelector requires some selection criteria but the default view is a special
+          // case, so we trick it by setting a select all criteria manually.
+          InstrumentSelector.builder().setName((unused) -> true).build(),
           DEFAULT_VIEW,
           AttributesProcessor.NOOP,
           SourceInfo.noSourceInfo());

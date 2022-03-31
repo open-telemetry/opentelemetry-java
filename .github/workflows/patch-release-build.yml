@@ -59,7 +59,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup git name
+      - name: Set up git name
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -77,7 +77,6 @@ jobs:
         with:
           arguments: |
             build
-            --stacktrace
             -Prelease.version=${{ github.event.inputs.version }}
 
       - uses: gradle/gradle-build-action@v2
@@ -86,7 +85,6 @@ jobs:
           arguments: |
             final
             closeAndReleaseSonatypeStagingRepository
-            --stacktrace
             -Prelease.version=${{ github.event.inputs.version }}
         env:
           GRGIT_USER: ${{ github.actor }}

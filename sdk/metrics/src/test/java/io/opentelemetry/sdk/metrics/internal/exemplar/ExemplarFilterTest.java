@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +79,7 @@ class ExemplarFilterTest {
   @Test
   void setExemplarFilter() {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-    ExemplarFilter.setExemplarFilter(builder, ExemplarFilter.alwaysSample());
+    SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysSample());
     assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)))
         .isEqualTo(ExemplarFilter.alwaysSample());

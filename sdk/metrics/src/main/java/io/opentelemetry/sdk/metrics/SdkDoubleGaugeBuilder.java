@@ -44,9 +44,8 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
 
   @Override
   public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    return new SdkObservableInstrument<>(
-        instrumentName,
-        registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback),
-        callback);
+    return new SdkObservableInstrument(
+        meterSharedState,
+        registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback));
   }
 }

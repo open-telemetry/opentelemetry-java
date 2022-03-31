@@ -29,10 +29,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -90,13 +90,11 @@ class TraceRequestMarshalerTest {
     ResourceSpans onlyResourceSpans =
         parse(ResourceSpans.getDefaultInstance(), resourceSpansMarshalers[0]);
     assertThat(onlyResourceSpans.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(onlyResourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
-    InstrumentationLibrarySpans instrumentationLibrarySpans =
-        onlyResourceSpans.getInstrumentationLibrarySpans(0);
+    assertThat(onlyResourceSpans.getScopeSpansCount()).isEqualTo(1);
+    ScopeSpans instrumentationLibrarySpans = onlyResourceSpans.getScopeSpans(0);
     assertThat(instrumentationLibrarySpans.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(instrumentationLibrarySpans.getInstrumentationLibrary())
-        .isEqualTo(
-            InstrumentationLibrary.newBuilder().setName("testLib").setVersion("1.0").build());
+    assertThat(instrumentationLibrarySpans.getScope())
+        .isEqualTo(InstrumentationScope.newBuilder().setName("testLib").setVersion("1.0").build());
   }
 
   @Test
@@ -370,9 +368,8 @@ class TraceRequestMarshalerTest {
 
     if (result instanceof ResourceSpans) {
       ResourceSpans.Builder fixed = (ResourceSpans.Builder) builder;
-      for (InstrumentationLibrarySpans.Builder ils :
-          fixed.getInstrumentationLibrarySpansBuilderList()) {
-        for (Span.Builder span : ils.getSpansBuilderList()) {
+      for (ScopeSpans.Builder ss : fixed.getScopeSpansBuilderList()) {
+        for (Span.Builder span : ss.getSpansBuilderList()) {
           fixSpanJsonIds(span);
         }
       }

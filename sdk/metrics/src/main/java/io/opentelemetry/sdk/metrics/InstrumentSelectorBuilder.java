@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
@@ -103,23 +104,15 @@ public final class InstrumentSelectorBuilder {
     return this;
   }
 
-  /**
-   * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.Meter}s will be
-   * included.
-   *
-   * @deprecated Use {@link #setMeterName(String)} and similar.
-   */
-  @Deprecated
-  public InstrumentSelectorBuilder setMeterSelector(MeterSelector meterSelector) {
-    requireNonNull(meterSelector, "meterSelector");
-    meterNameFilter = meterSelector.getNameFilter();
-    meterVersionFilter = meterSelector.getVersionFilter();
-    meterSchemaUrlFilter = meterSelector.getSchemaUrlFilter();
-    return this;
-  }
-
   /** Returns an InstrumentSelector instance with the content of this builder. */
   public InstrumentSelector build() {
+    checkArgument(
+        instrumentType != null
+            || instrumentNameFilter != StringPredicates.ALL
+            || meterNameFilter != StringPredicates.ALL
+            || meterVersionFilter != StringPredicates.ALL
+            || meterSchemaUrlFilter != StringPredicates.ALL,
+        "Instrument selector must contain selection criteria");
     return InstrumentSelector.create(
         instrumentType,
         instrumentNameFilter,

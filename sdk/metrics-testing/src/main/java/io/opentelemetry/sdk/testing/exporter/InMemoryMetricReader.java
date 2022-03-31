@@ -6,10 +6,12 @@
 package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,8 +42,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * }
  * </code></pre>
  */
-public class InMemoryMetricReader extends AbstractMetricReader {
+public class InMemoryMetricReader implements MetricReader {
+  private final AggregationTemporality aggregationTemporality;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
@@ -54,7 +58,7 @@ public class InMemoryMetricReader extends AbstractMetricReader {
   }
 
   private InMemoryMetricReader(AggregationTemporality aggregationTemporality) {
-    super(unused -> aggregationTemporality);
+    this.aggregationTemporality = aggregationTemporality;
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -62,7 +66,17 @@ public class InMemoryMetricReader extends AbstractMetricReader {
     if (isShutdown.get()) {
       return Collections.emptyList();
     }
-    return getMetricProducer().collectAllMetrics();
+    return metricProducer.collectAllMetrics();
+  }
+
+  @Override
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return aggregationTemporality;
   }
 
   @Override

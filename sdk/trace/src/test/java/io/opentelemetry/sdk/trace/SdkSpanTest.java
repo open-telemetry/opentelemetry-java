@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -908,6 +909,14 @@ class SdkSpanTest {
                 .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
                 .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
+
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
+            });
   }
 
   @Test
@@ -972,6 +981,20 @@ class SdkSpanTest {
                 .put("exception.message", "this is a precedence attribute")
                 .put("exception.stacktrace", stacktrace)
                 .build());
+
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes())
+                  .isEqualTo(
+                      Attributes.of(
+                          stringKey("key1"),
+                          "this is an additional attribute",
+                          stringKey("exception.message"),
+                          "this is a precedence attribute"));
+            });
   }
 
   @Test

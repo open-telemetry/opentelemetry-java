@@ -43,18 +43,4 @@ public interface HistogramPointData extends PointData {
    * @return the read-only counts in each bucket. <b>do not mutate</b> the returned object.
    */
   List<Long> getCounts();
-
-  /**
-   * Returns the lower bound of a bucket (all values would have been greater than).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
-  double getBucketLowerBound(int bucketIndex);
-
-  /**
-   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
-   *
-   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
-   */
-  double getBucketUpperBound(int bucketIndex);
 }

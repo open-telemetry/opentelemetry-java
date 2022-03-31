@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
@@ -57,7 +56,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   SdkMeterProvider(
-      List<AbstractMetricReader> metricReaders,
+      List<MetricReader> metricReaders,
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
@@ -78,10 +77,10 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
     collectionInfoMap = new HashMap<>();
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
-    for (AbstractMetricReader metricReader : metricReaders) {
+    for (MetricReader metricReader : metricReaders) {
       CollectionHandle handle = handleSupplier.get();
       collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, metricReader));
-      AbstractMetricReader.registerMetricProducer(new LeasedMetricProducer(handle), metricReader);
+      metricReader.register(new LeasedMetricProducer(handle));
       collectors.add(handle);
     }
   }

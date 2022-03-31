@@ -27,8 +27,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
-import io.opentelemetry.sdk.metrics.internal.view.ViewUtil;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -51,7 +51,7 @@ class SdkMeterProviderTest {
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
-  @Mock AbstractMetricReader metricReader;
+  @Mock MetricReader metricReader;
 
   @Test
   void noopImplementationWithNoReaders() {
@@ -684,7 +684,7 @@ class SdkMeterProviderTest {
         InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     ViewBuilder viewBuilder = View.builder().setAggregation(Aggregation.sum());
-    ViewUtil.appendAllBaggageAttributes(viewBuilder);
+    SdkMeterProviderUtil.appendAllBaggageAttributes(viewBuilder);
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)

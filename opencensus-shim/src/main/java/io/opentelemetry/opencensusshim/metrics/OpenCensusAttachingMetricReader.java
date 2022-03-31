@@ -6,28 +6,35 @@
 package io.opentelemetry.opencensusshim.metrics;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 
 /** {@link MetricReader} that appends OpenCensus metrics to anything read. */
-final class OpenCensusAttachingMetricReader extends AbstractMetricReader {
-  private final AbstractMetricReader adapted;
+final class OpenCensusAttachingMetricReader implements MetricReader {
+  private final MetricReader adapted;
 
   OpenCensusAttachingMetricReader(MetricReader adapted) {
-    super(adapted::getAggregationTemporality);
-    this.adapted = AbstractMetricReader.asAbstractMetricReader(adapted);
+    this.adapted = adapted;
   }
 
   @Override
-  protected void registerMetricProducer(MetricProducer metricProducer) {
+  public void register(CollectionRegistration registration) {
     // TODO: Find a way to pull the resource off of the SDK.
-    AbstractMetricReader.registerMetricProducer(
+    adapted.register(
         new MultiMetricProducer(
-            Arrays.asList(metricProducer, OpenCensusMetricProducer.create(Resource.getDefault()))),
-        adapted);
+            Arrays.asList(
+                MetricProducer.asMetricProducer(registration),
+                OpenCensusMetricProducer.create(Resource.getDefault()))));
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return adapted.getAggregationTemporality(instrumentType);
   }
 
   @Override

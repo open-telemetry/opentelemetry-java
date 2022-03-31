@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -45,7 +44,7 @@ class PrometheusHttpServerTest {
   static void setUp() {
     // Register the SDK metric producer with the prometheus reader.
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
-    AbstractMetricReader.registerMetricProducer(metricProducer, prometheusServer);
+    prometheusServer.register(metricProducer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
   }
