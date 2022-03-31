@@ -8,7 +8,6 @@ package io.opentelemetry.api.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
@@ -242,11 +241,9 @@ class TraceStateTest {
             firstTraceState.toBuilder()
                 .put(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .put(SECOND_KEY, FIRST_VALUE) // add a new entry
-                .build())
-        .asInstanceOf(type(ArrayBasedTraceState.class))
-        .extracting(ArrayBasedTraceState::getEntries)
-        .asList()
-        .containsExactly(SECOND_KEY, FIRST_VALUE, FIRST_KEY, SECOND_VALUE);
+                .build()
+                .asMap())
+        .containsExactly(entry(SECOND_KEY, FIRST_VALUE), entry(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test
@@ -255,17 +252,38 @@ class TraceStateTest {
             TraceState.builder()
                 .put(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .put(FIRST_KEY, FIRST_VALUE) // add a new entry
-                .build())
-        .asInstanceOf(type(ArrayBasedTraceState.class))
-        .extracting(ArrayBasedTraceState::getEntries)
-        .asList()
-        .containsExactly(FIRST_KEY, FIRST_VALUE);
+                .build()
+                .asMap())
+        .containsExactly(entry(FIRST_KEY, FIRST_VALUE));
+  }
+
+  @Test
+  void tooManyEntries() {
+    TraceStateBuilder stateBuilder = TraceState.builder();
+    for (int i = 0; i < 32; i++) {
+      stateBuilder.put("key" + i, "val");
+      // Make sure removal does actually allow adding more keys up to the limit.
+      stateBuilder.remove("key" + i);
+      stateBuilder.put("key" + i, "val");
+    }
+    stateBuilder.put("key32", "val");
+    TraceState state = stateBuilder.build();
+    assertThat(state.size()).isEqualTo(32);
+    for (int i = 0; i < 32; i++) {
+      assertThat(state.get("key" + i)).isEqualTo("val");
+    }
   }
 
   @Test
   void remove() {
     assertThat(multiValueTraceState.toBuilder().remove(SECOND_KEY).build())
         .isEqualTo(firstTraceState);
+  }
+
+  @Test
+  void removeNotPresent() {
+    assertThat(multiValueTraceState.toBuilder().remove("unknown").build())
+        .isEqualTo(multiValueTraceState);
   }
 
   @Test
@@ -276,6 +294,18 @@ class TraceStateTest {
                 .remove(FIRST_KEY) // add a new entry
                 .build())
         .isEqualTo(TraceState.getDefault());
+  }
+
+  @Test
+  void addRemoveAndAddAgainEntry() {
+    assertThat(
+            TraceState.builder()
+                .put(FIRST_KEY, SECOND_VALUE) // update the existing entry
+                .remove(FIRST_KEY) // add a new entry
+                .put(FIRST_KEY, FIRST_VALUE)
+                .build()
+                .asMap())
+        .containsExactly(entry(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
@@ -308,5 +338,33 @@ class TraceStateTest {
   void doesNotCrash() {
     assertThat(TraceState.getDefault().get(null)).isNull();
     assertThatCode(() -> TraceState.getDefault().forEach(null)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void reuseBuilder() {
+    TraceStateBuilder builder = TraceState.builder();
+    builder.put("animal", "bear");
+    TraceState state1 = builder.build();
+    builder.put("food", "pizza");
+    TraceState state2 = builder.build();
+    assertThat(state1.asMap()).containsExactly(entry("animal", "bear"));
+    assertThat(state2.asMap()).containsExactly(entry("food", "pizza"), entry("animal", "bear"));
+  }
+
+  // Not strictly a necessary test for behavior but it's still good to verify optimizations hold in
+  // case things get refactored.
+  @Test
+  void emptyIsSingleton() {
+    assertThat(TraceState.builder().build()).isSameAs(TraceState.getDefault());
+    assertThat(TraceState.builder().put("animal", "bear").remove("animal").build())
+        .isSameAs(TraceState.getDefault());
+    assertThat(
+            TraceState.builder()
+                .put("animal", "bear")
+                .put("food", "pizza")
+                .remove("animal")
+                .remove("food")
+                .build())
+        .isSameAs(TraceState.getDefault());
   }
 }

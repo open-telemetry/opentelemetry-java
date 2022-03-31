@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ReadOnlyArrayMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -68,7 +67,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   }
 
   static ArrayBasedTraceState create(List<String> entries) {
-    return new AutoValue_ArrayBasedTraceState(Collections.unmodifiableList(entries));
+    return new AutoValue_ArrayBasedTraceState(entries);
   }
 
   ArrayBasedTraceState() {}
