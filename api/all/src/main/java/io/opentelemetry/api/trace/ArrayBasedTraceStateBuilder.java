@@ -20,7 +20,8 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final ArrayBasedTraceState EMPTY =
       ArrayBasedTraceState.create(Collections.emptyList());
 
-  private static final int MAX_KEY_VALUE_PAIRS = 32;
+  // Max pairs per w3c spec is 32, meaning max items in the list of key/values is 64.
+  private static final int MAX_KEY_VALUE_ITEMS = 64;
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
@@ -51,7 +52,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
    */
   @Override
   public TraceStateBuilder put(String key, String value) {
-    if (!isKeyValid(key) || !isValueValid(value) || entries.size() >= MAX_KEY_VALUE_PAIRS) {
+    if (!isKeyValid(key) || !isValueValid(value) || entries.size() >= MAX_KEY_VALUE_ITEMS) {
       return this;
     }
     removeEntry(key);

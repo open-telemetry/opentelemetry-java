@@ -269,6 +269,20 @@ class TraceStateTest {
   }
 
   @Test
+  void tooManyEntries() {
+    TraceStateBuilder stateBuilder = TraceState.builder();
+    for (int i = 0; i < 32; i++) {
+      stateBuilder.put("key" + i, "val");
+    }
+    stateBuilder.put("key32", "val");
+    TraceState state = stateBuilder.build();
+    assertThat(state.size()).isEqualTo(32);
+    for (int i = 0; i < 32; i++) {
+      assertThat(state.get("key" + i)).isEqualTo("val");
+    }
+  }
+
+  @Test
   void addAndRemoveEntry() {
     assertThat(
             TraceState.builder()
