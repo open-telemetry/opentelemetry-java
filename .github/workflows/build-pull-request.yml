@@ -1,10 +1,7 @@
-name: "PR Build"
+name: Build pull request
 
 on:
   pull_request:
-    branches:
-      - main
-      - v*
 
 jobs:
   build:
@@ -30,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - id: setup-java-8
-        name: Setup Java 8 for tests
+        name: Set up Java 8 for tests
         uses: actions/setup-java@v2
         with:
           distribution: temurin
@@ -38,14 +35,14 @@ jobs:
           java-package: jre
 
       - id: setup-java-11
-        name: Setup Java 11 for tests
+        name: Set up Java 11 for tests
         uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 11
 
       - id: setup-java-17
-        name: Setup Java 17
+        name: Set up Java 17
         uses: actions/setup-java@v2
         with:
           distribution: temurin
@@ -55,7 +52,6 @@ jobs:
         with:
           arguments: |
             build 
-            --stacktrace 
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-16.outputs.path }},${{ steps.setup-java-17.outputs.path }}
@@ -68,11 +64,20 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
-  # this is not a required check to avoid unnecessary blocking of PRs if external links break
+  # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
-  # this is not a required check to avoid unnecessary blocking of PRs if new misspellings are
-  # added to the misspell dictionary
-  markdown-misspell-check:
+  # this is not a required check to avoid blocking pull requests if new misspellings are added
+  # to the misspell dictionary
+  misspell-check:
     uses: ./.github/workflows/reusable-misspell-check.yml
+
+  required-status-check:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: needs.build.result != 'success'
+        run: exit 1

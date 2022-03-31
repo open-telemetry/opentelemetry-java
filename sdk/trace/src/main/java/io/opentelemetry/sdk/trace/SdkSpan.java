@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -23,9 +22,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -401,23 +398,8 @@ final class SdkSpan implements ReadWriteSpan {
     if (additionalAttributes == null) {
       additionalAttributes = Attributes.empty();
     }
-    long timestampNanos = clock.now();
 
-    AttributesBuilder attributes = Attributes.builder();
-    attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
-    if (exception.getMessage() != null) {
-      attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
-    }
-    StringWriter writer = new StringWriter();
-    exception.printStackTrace(new PrintWriter(writer));
-    attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
-    attributes.putAll(additionalAttributes);
-
-    addEvent(
-        SemanticAttributes.EXCEPTION_EVENT_NAME,
-        attributes.build(),
-        timestampNanos,
-        TimeUnit.NANOSECONDS);
+    addTimedEvent(ExceptionEventData.create(clock.now(), exception, additionalAttributes));
     return this;
   }
 

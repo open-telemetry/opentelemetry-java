@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.time.Duration;
 import java.util.Collection;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -34,10 +33,7 @@ class MicrometerTestingExtension implements AfterEachCallback, BeforeEachCallbac
 
     metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(metricReader)
-            .setMinimumCollectionInterval(Duration.ZERO)
-            .build();
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
     MeterRegistry otelMeterRegistry =
         configureOtelRegistry(
                 OpenTelemetryMeterRegistry.builder(

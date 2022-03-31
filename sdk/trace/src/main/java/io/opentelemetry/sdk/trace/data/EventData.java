@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import javax.annotation.concurrent.Immutable;
 
-/** Data representation of a event. */
+/** Data representation of an event. */
 @Immutable
 public interface EventData {
 

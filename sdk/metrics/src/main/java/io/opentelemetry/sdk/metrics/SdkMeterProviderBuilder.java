@@ -18,7 +18,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /** Builder class for the {@link SdkMeterProvider}. */
 public final class SdkMeterProviderBuilder {
@@ -31,12 +30,11 @@ public final class SdkMeterProviderBuilder {
   private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.sampleWithTraces();
 
   /**
-   * By default, the minimum collection interval is 100ns.
+   * By default, the minimum collection interval is 0ns.
    *
    * @see #setMinimumCollectionInterval(Duration)
    */
-  private static final long DEFAULT_MIN_COLLECTION_INTERVAL_NANOS =
-      TimeUnit.MILLISECONDS.toNanos(100);
+  private static final long DEFAULT_MIN_COLLECTION_INTERVAL_NANOS = 0;
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
@@ -136,7 +134,7 @@ public final class SdkMeterProviderBuilder {
    * @param duration The duration.
    * @return this
    */
-  public SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
+  SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
     Objects.requireNonNull(duration, "duration");
     checkArgument(!duration.isNegative(), "duration must not be negative");
     minimumCollectionIntervalNanos = duration.toNanos();
