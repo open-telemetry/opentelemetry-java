@@ -1,6 +1,6 @@
 # Common GitHub Actions practices
 
-For now this is documenting desired state across the three Java repositories.
+For now this is documenting the desired state across the three Java repositories.
 
 Once we agree and implement, will share more broadly across OpenTelemetry
 (and surely learn and make more changes).
@@ -36,7 +36,8 @@ Once we agree and implement, will share more broadly across OpenTelemetry
 
 ## Have a single required status check for pull requests
 
-This avoids needing to modify branch protection required status checks as individual jobs come and go.
+This avoids needing to modify branch protection required status checks as individual jobs
+(and job matrix items) come and go.
 
 ```yaml
   required-status-check:
@@ -57,10 +58,9 @@ This avoids needing to modify branch protection required status checks as indivi
 If you have multiple workflows that run on pull requests, there are a couple of options:
 
 * If they have the same `on` triggers, they can be merged into a single workflow.
-* Otherwise turn all but one of them into
+* Otherwise turn them into
   [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows),
-  remove the `pull_request` trigger from the reusable workflows,
-  and call the reusable workflows from the single pull request workflow.
+  and call them from a single workflow.
 
 ## Configure "cancel-in-progress" on pull request workflows
 
@@ -87,7 +87,8 @@ concurrency:
 
 For example, creating an issue or creating a pull request is just as easy using `gh` cli as using a third-party GitHub action.
 
-This preference is because `gh` cli is generally more secure and has less breaking changes.
+This preference is because `gh` cli is generally more secure and has less breaking changes
+compared to third-party GitHub actions.
 
 ## Use GitHub action cache to make builds faster and less flaky
 
@@ -96,7 +97,7 @@ This is very build tool specific so no specific tips here on how to implement.
 ## Run CodeQL daily
 
 ```yaml
-name: Daily CodeQL
+name: CodeQL (daily)
 
 on:
   schedule:
@@ -164,7 +165,9 @@ requests if external links break.
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-                 | xargs markdown-link-check --quiet --config .github/scripts/markdown-link-check-config.json
+                 | xargs markdown-link-check \
+                         --config .github/scripts/markdown-link-check-config.json \
+                         --quiet
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
@@ -190,8 +193,8 @@ requests if new misspellings are added to the misspell dictionary.
   # this is not a required check to avoid blocking pull requests if new misspellings are added
   # to the misspell dictionary
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
-    # to the misspell dictionary
+    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
+    # added to the misspell dictionary
     if: ${{ !startsWith(github.ref_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
@@ -234,7 +237,7 @@ Here's an example of doing this with the above `misspell-check` workflow:
       - uses: actions/checkout@v3
         if: ${{ github.event_name == 'pull_request' }}
         with:
-          # target branch is needed in order to perform a diff and check only the changed files
+          # target branch is needed to perform a diff and check only the changed files
           ref: ${{ github.base_ref }}
 
       - uses: actions/checkout@v3
@@ -262,14 +265,14 @@ which brings along a lot of [additional permissions][].
 
 [additional permissions]: https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-roles-for-an-organization#permissions-for-each-role
 
-@dyladan's [component owners action](https://github.com/dyladan/component-owners#component-owners)
+The [component owners action](https://github.com/dyladan/component-owners#component-owners)
 works similarly, but does not require granting write access.
 
 ### `.github/workflows/assign-reviewers.yml`
 
 ```yaml
-# assigns reviewers to pull requests in a similar way as CODEOWNERS, but doesn't require reviewers
-# to have write access to the repository
+# assigns reviewers to pull requests in a similar way as CODEOWNERS, but doesn't require
+# reviewers to have write access to the repository
 # see .github/component_owners.yaml for the list of components and their owners
 name: Assign reviewers
 
@@ -289,7 +292,7 @@ jobs:
 
 In the [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
 repository we have created labels for each component, and have given all component owners triager
-rights so that they can assign the labels and triage issues for their component(s).
+rights so that they can assign labels and triage issues for their component(s).
 
 ```yaml
 # this file is used by .github/workflows/assign-reviewers.yml to assign component owners as
@@ -338,7 +341,7 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 ## Preparing a new patch release
 
 * Backport pull request(s) to the release branch
-  * Run the [Backport pull request workflow](.github/workflows/backport-pull-request.yml).
+  * Run the [Backport workflow](.github/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
@@ -355,16 +358,16 @@ Run the [Release workflow](.github/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `v1.9.x`, and click the "Run workflow" button below that.
-* This workflow will publish the artifacts to maven central and will publish a GitHub release with
-  release notes based on the change log.
-* Lastly, if there were any change log updates in the release branch that need to be merged back to
-  main, the workflow will create a pull request if the updates can be cleanly applied,
+* This workflow will publish the artifacts to maven central and will publish a GitHub release
+  with release notes based on the change log.
+* Lastly, if there were any change log updates in the release branch that need to be merged back
+  to main, the workflow will create a pull request if the updates can be cleanly applied,
   or it will fail this last step if the updates cannot be cleanly applied.
 ```
 
 ### Workflows that generate pull requests
 
-Since you can't push directly to `main` or to release branches from workflows due to branch protections,
+Since you can't push directly to `main` or to release branches from workflows (due to branch protections),
 the next best thing is to generate a pull request from the workflow and use a bot which has signed the CLA as commit author.
 
 This is what we use in the OpenTelemetry Java repositories:
@@ -404,7 +407,7 @@ jobs:
       - name: Set release branch name
         id: set-release-branch-name
         run: |
-          version=$(...)  <-- get the minor version that is planning to be released
+          version=$(...)  <-- get the version that is planned to be released
           release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/v\1.\2.x/')
           echo "::set-output name=release-branch-name::$release_branch_name"
 
@@ -412,8 +415,7 @@ jobs:
         env:
           RELEASE_BRANCH_NAME: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
         run: |
-          git checkout -b $RELEASE_BRANCH_NAME
-          git push origin $RELEASE_BRANCH_NAME
+          git push origin HEAD:$RELEASE_BRANCH_NAME
 
   create-pull-request-against-release-branch:
     needs: prepare-release-branch
@@ -430,8 +432,9 @@ jobs:
 
       - name: Set up git name
         run: |
-          git config user.name opentelemetry-java-bot                                     <-- your bot account here
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+          # TODO replace opentelemetry-java-bot info with your bot account
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request against release branch
         env:
@@ -469,8 +472,9 @@ jobs:
 
       - name: Set up git name
         run: |
-          git config user.name opentelemetry-java-bot                                     <-- your bot account here
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+          # TODO replace opentelemetry-java-bot info with your bot account
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request against main
         env:
@@ -526,8 +530,9 @@ jobs:
 
       - name: Set up git name
         run: |
-          git config user.name opentelemetry-java-bot                                     <-- your bot account here
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+          # TODO replace opentelemetry-java-bot info with your bot account
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request
         env:
@@ -545,8 +550,8 @@ jobs:
 
 ### Backporting pull requests to a release branch
 
-Having a workflow generate the backport pull request is nice because you know that it was a clean
-cherry-pick and does not require re-review.
+Having a workflow generate backport pull requests is nice because then you know that it was a clean
+cherry-pick and that it does not require re-review.
 
 ```yaml
 name: Backport a pull request
@@ -563,13 +568,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          # history is needed in order to do cherry-pick
+          # history is needed to run git cherry-pick below
           fetch-depth: 0
 
       - name: Set up git name
         run: |
-          git config user.name opentelemetry-java-bot                                     <-- your bot account here
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+          # TODO replace opentelemetry-java-bot info with your bot account
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request
         env:
@@ -591,7 +597,7 @@ jobs:
 
 ### Release
 
-#### Calculating the prior release version
+#### Autogenerating the release notes
 
 ```yaml
       - name: Set versions
@@ -619,13 +625,7 @@ jobs:
           fi
           echo "::set-output name=release-version::$version"
           echo "::set-output name=prior-release-version::$prior_version"
-```
 
-#### Autogenerating the release notes
-
-This is heavily dependent on what conventions you follow in your CHANGELOG.md.
-
-```yaml
       - name: Generate release notes
         env:
           VERSION: ${{ steps.set-versions.outputs.release-version }}
@@ -639,6 +639,7 @@ This is heavily dependent on what conventions you follow in your CHANGELOG.md.
             EOF
           fi
 
+          # TODO this is dependent on the conventions you follow in your CHANGELOG.md
           sed -n '/^## Version $VERSION/,/^## Version /p' CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
@@ -654,6 +655,10 @@ This is heavily dependent on what conventions you follow in your CHANGELOG.md.
 Add `--draft` to the `gh release create` command if you want to review the release before hitting
 the "Publish release" button yourself.
 
+You will need to remove `--discussion-category announcements` if you add `--draft`
+(you can still choose whether to select "Create a discussion for this release" before
+hitting the "Publish release" button).
+
 ```yaml
       - name: Create GitHub release
         env:
@@ -663,7 +668,7 @@ the "Publish release" button yourself.
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file release-notes.txt \
-                            --discussion-category announcements \  <-- if you want to generate a discussion for the release
+                            --discussion-category announcements \
                             v$VERSION
 ```
 
@@ -676,15 +681,17 @@ updates.
       - uses: actions/checkout@v3
         with:
           ref: main
-          # history is needed in order to generate the patch
+          # history is needed to run git format-patch below
           fetch-depth: 0
 
       - name: Set up git name
         run: |
-          git config user.name opentelemetry-java-bot                                     <-- your bot account here
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com  <-- your bot account here
+          # TODO replace opentelemetry-java-bot info with your bot account
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
-        # this step should be last since it will fail if conflicting change log updates on main
+        # this step should be last since it will fail if there have been conflicting
+        # change log updates introduced on the main branch
       - name: Create pull request to merge any change log updates to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -694,10 +701,10 @@ updates.
             git apply patch
             msg="Merge change log updates from $GITHUB_REF_NAME to main"
             git commit -a -m "$msg"
-            git push origin HEAD:opentelemetry-java-bot/merge-change-log-updates
+            git push origin HEAD:merge-change-log-updates-to-main
             gh pr create --title "$msg" \
                          --body "$msg" \
-                         --head opentelemetry-java-bot/merge-change-log-updates \
+                         --head merge-change-log-updates-to-main \
                          --base main
           fi
 ```
@@ -705,7 +712,7 @@ updates.
 ## Workflow file naming conventions
 
 Not sure if it's worth sharing these last two sections across all of OpenTelemetry,
-but I think worth having this level of consistency across the Java repos.
+but I think it's worth having this level of consistency across the Java repos.
 
 Use `.yml` extension instead of `.yaml`.
 
@@ -713,7 +720,7 @@ Use `.yml` extension instead of `.yaml`.
 * `.github/workflows/build-pull-request.yml` - pull request workflow (if `build.yml` isn't used also for pull requests)
 * `.github/workflows/build-daily.yml` - if you have a daily build in addition to normal CI builds
 * `.github/workflows/reusable-*.yml` - reusable workflows, unfortunately these cannot be located in subdirectories (yet?)
-* `.github/workflows/backport-pull-request.yml`
+* `.github/workflows/backport.yml`
 * `.github/workflows/codeql-daily.yml`
 
 ## Workflow YAML style guide
