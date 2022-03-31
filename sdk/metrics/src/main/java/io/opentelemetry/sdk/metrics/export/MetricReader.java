@@ -7,16 +7,26 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import java.util.Collection;
 
 /**
- * A registered reader of metrics.
+ * A reader of metrics from {@link SdkMeterProvider}.
  *
- * <p>This interface provides the {@link io.opentelemetry.sdk.metrics.SdkMeterProvider} a mechanism
- * of global control over metrics during shutdown or memory pressure scenarios.
+ * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
+ * the built-in readers such as {@link PeriodicMetricReader}.
  */
 public interface MetricReader {
+
+  /**
+   * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
+   * collect metrics.
+   *
+   * <p>{@link CollectionRegistration} is currently an empty interface because custom
+   * implementations of {@link MetricReader} are not currently supported.
+   */
+  void register(CollectionRegistration registration);
 
   /** Return the default aggregation temporality for the {@link InstrumentType}. */
   AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
@@ -24,12 +34,12 @@ public interface MetricReader {
   /**
    * Flushes metrics read by this reader.
    *
-   * <p>In all scenarios, the associated {@link MetricProducer} should have its {@link
-   * MetricProducer#collectAllMetrics()} method called.
+   * <p>In all scenarios, the trigger a metrics collection.
    *
-   * <p>For push endpoints, this should collect and report metrics as normal.
+   * <p>For readers associated with push {@link MetricExporter}s, this should {@link
+   * MetricExporter#export(Collection)} the collected metrics.
    *
-   * @return the result of the shutdown.
+   * @return the result of the flush.
    */
   CompletableResultCode flush();
 

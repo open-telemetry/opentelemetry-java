@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,7 +39,7 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<AbstractMetricReader> metricReaders = new ArrayList<>();
+  private final List<MetricReader> metricReaders = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
   private long minimumCollectionIntervalNanos = DEFAULT_MIN_COLLECTION_INTERVAL_NANOS;
 
@@ -120,11 +119,11 @@ public final class SdkMeterProviderBuilder {
    *
    * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
    *
-   * @param reader The factory for a reader of metrics.
+   * @param reader The reader.
    * @return this
    */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
-    metricReaders.add(AbstractMetricReader.asAbstractMetricReader(reader));
+    metricReaders.add(reader);
     return this;
   }
 

@@ -6,9 +6,10 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,7 +25,7 @@ import javax.annotation.Nullable;
  * the metrics every export interval. Metrics may also be dropped when it becomes time to export
  * again, and there is an export in progress.
  */
-public final class PeriodicMetricReader extends AbstractMetricReader {
+public final class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
   private final MetricExporter exporter;
@@ -33,6 +34,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
   private final Scheduled scheduled;
   private final Object lock = new Object();
 
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
@@ -51,7 +53,6 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
 
   PeriodicMetricReader(
       MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
-    super(exporter::getAggregationTemporality);
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
@@ -59,9 +60,8 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
   }
 
   @Override
-  protected void registerMetricProducer(MetricProducer metricProducer) {
-    super.registerMetricProducer(metricProducer);
-    start();
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return exporter.getAggregationTemporality(instrumentType);
   }
 
   @Override
@@ -100,6 +100,12 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
     return result;
   }
 
+  @Override
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+    start();
+  }
+
   void start() {
     synchronized (lock) {
       if (scheduledFuture != null) {
@@ -127,7 +133,7 @@ public final class PeriodicMetricReader extends AbstractMetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          Collection<MetricData> metricData = getMetricProducer().collectAllMetrics();
+          Collection<MetricData> metricData = metricProducer.collectAllMetrics();
           if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();

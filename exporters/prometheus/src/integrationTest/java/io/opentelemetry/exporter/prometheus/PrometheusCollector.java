@@ -6,10 +6,12 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.AbstractMetricReader;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
@@ -32,12 +34,12 @@ import java.util.function.Supplier;
  *     case is not handled by these, please file an issue to let us know.
  */
 @Deprecated
-public final class PrometheusCollector extends AbstractMetricReader implements MetricReader {
+public final class PrometheusCollector implements MetricReader {
 
   private final Collector collector;
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
 
   PrometheusCollector() {
-    super(unused -> AggregationTemporality.CUMULATIVE);
     this.collector = new CollectorImpl(() -> getMetricProducer().collectAllMetrics());
     this.collector.register();
   }
@@ -48,6 +50,20 @@ public final class PrometheusCollector extends AbstractMetricReader implements M
    */
   public static PrometheusCollector create() {
     return new PrometheusCollector();
+  }
+
+  private MetricProducer getMetricProducer() {
+    return metricProducer;
+  }
+
+  @Override
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   // Prometheus cannot flush.
