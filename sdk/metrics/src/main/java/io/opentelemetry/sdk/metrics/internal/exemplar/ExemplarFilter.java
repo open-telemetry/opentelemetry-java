@@ -7,9 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Exemplar filters are used to pre-filter measurements before attempting to store them in a
@@ -41,24 +38,5 @@ public interface ExemplarFilter {
   /** A filter that accepts no measurements. */
   static ExemplarFilter neverSample() {
     return NeverSampleFilter.INSTANCE;
-  }
-
-  /**
-   * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}.
-   *
-   * @param sdkMeterProviderBuilder the
-   */
-  static void setExemplarFilter(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
-    try {
-      Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod(
-              "setExemplarFilter", ExemplarFilter.class);
-      method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, exemplarFilter);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
-    }
   }
 }
