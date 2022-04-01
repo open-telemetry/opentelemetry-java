@@ -87,19 +87,19 @@ class ViewRegistryTest {
   }
 
   @Test
-  void selection_FirstAddedViewWins() {
+  void selection_MultipleMatchingViews() {
     View view1 = View.builder().setAggregation(Aggregation.lastValue()).build();
     View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
+                InstrumentSelector.builder().setName("overridden").build(),
                 view2,
                 AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .addView(
-                InstrumentSelector.builder().setName(name -> true).build(),
+                InstrumentSelector.builder().setName("*").build(),
                 view1,
                 AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
@@ -225,5 +225,26 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+  }
+
+  @Test
+  void matchesName() {
+    assertThat(ViewRegistry.matchesName("foo", "foo")).isTrue();
+    assertThat(ViewRegistry.matchesName("foo", "Foo")).isFalse();
+    assertThat(ViewRegistry.matchesName("fo?", "foo")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo??", "fooo")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo?", "fob")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo?", "fooo")).isFalse();
+    assertThat(ViewRegistry.matchesName("*", "foo")).isTrue();
+    assertThat(ViewRegistry.matchesName("*", "bar")).isTrue();
+    assertThat(ViewRegistry.matchesName("*", "baz")).isTrue();
+    assertThat(ViewRegistry.matchesName("*", "foo.bar.baz")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo*", "fo")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo*", "foo")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo*", "fooo")).isTrue();
+    assertThat(ViewRegistry.matchesName("fo*", "foo.bar.baz")).isTrue();
+    assertThat(ViewRegistry.matchesName("f()[]$^.{}|", "f()[]$^.{}|")).isTrue();
+    assertThat(ViewRegistry.matchesName("f()[]$^.{}|?", "f()[]$^.{}|o")).isTrue();
+    assertThat(ViewRegistry.matchesName("f()[]$^.{}|*", "f()[]$^.{}|ooo")).isTrue();
   }
 }
