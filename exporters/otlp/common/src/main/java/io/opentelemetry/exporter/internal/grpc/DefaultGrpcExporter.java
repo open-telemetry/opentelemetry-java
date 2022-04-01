@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -32,6 +33,9 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       Logger.getLogger(DefaultGrpcExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+  // We only log unavailable once since it's a configuration issue that won't be recovered.
+  private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -78,15 +82,9 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
             Status status = Status.fromThrowable(t);
             switch (status.getCode()) {
               case UNIMPLEMENTED:
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export "
-                        + type
-                        + "s. Server responded with UNIMPLEMENTED. "
-                        + "This usually means that your collector is not configured with an otlp "
-                        + "receiver in the \"pipelines\" section of the configuration. "
-                        + "Full error message: "
-                        + status.getDescription());
+                if (loggedUnimplemented.compareAndSet(false, true)) {
+                  GrpcExporterUtil.logUnimplemented(internalLogger, type, status.getDescription());
+                }
                 break;
               case UNAVAILABLE:
                 logger.log(
