@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -54,8 +55,12 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OkHttpGrpcExporter.class.getName()));
+  private static final Logger internalLogger = Logger.getLogger(OkHttpGrpcExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+  // We only log unavailable once since it's a configuration issue that won't be recovered.
+  private final AtomicBoolean loggedUnavailable = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -148,14 +153,9 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                           + "Full error message: "
                           + errorMessage);
                 } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
-                  logger.log(
-                      Level.SEVERE,
-                      "Failed to export "
-                          + type
-                          + "s. Server is UNAVAILABLE. "
-                          + "Make sure your collector is running and reachable from this network. "
-                          + "Full error message:"
-                          + errorMessage);
+                  if (loggedUnavailable.compareAndSet(false, true)) {
+                    GrpcExporterUtil.logUnavailable(internalLogger, type, errorMessage);
+                  }
                 } else {
                   logger.log(
                       Level.WARNING,

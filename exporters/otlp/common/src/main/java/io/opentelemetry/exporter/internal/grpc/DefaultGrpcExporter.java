@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -32,6 +33,9 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       Logger.getLogger(DefaultGrpcExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+  // We only log unavailable once since it's a configuration issue that won't be recovered.
+  private final AtomicBoolean loggedUnavailable = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -89,14 +93,9 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
                         + status.getDescription());
                 break;
               case UNAVAILABLE:
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export "
-                        + type
-                        + "s. Server is UNAVAILABLE. "
-                        + "Make sure your collector is running and reachable from this network. "
-                        + "Full error message:"
-                        + status.getDescription());
+                if (loggedUnavailable.compareAndSet(false, true)) {
+                  GrpcExporterUtil.logUnavailable(internalLogger, type, status.getDescription());
+                }
                 break;
               default:
                 logger.log(
