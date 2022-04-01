@@ -147,6 +147,35 @@ class DoubleHistogramAggregatorTest {
   }
 
   @Test
+  void mergeAccumulation_MinAndMax() {
+    // If min / max is null for both accumulations set min / max to null
+    assertThat(
+            aggregator.merge(
+                HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()),
+                HistogramAccumulation.create(
+                    0, null, null, new long[] {}, Collections.emptyList())))
+        .isEqualTo(HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()));
+    // If min / max is non-null for only one accumulation set min / max to it
+    assertThat(
+            aggregator.merge(
+                HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()),
+                HistogramAccumulation.create(
+                    0, null, null, new long[] {}, Collections.emptyList())))
+        .isEqualTo(HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()));
+    assertThat(
+            aggregator.merge(
+                HistogramAccumulation.create(0, null, null, new long[] {}, Collections.emptyList()),
+                HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList())))
+        .isEqualTo(HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()));
+    // If both accumulations have min / max compute the min / max
+    assertThat(
+            aggregator.merge(
+                HistogramAccumulation.create(0, 1d, 1d, new long[] {}, Collections.emptyList()),
+                HistogramAccumulation.create(0, 2d, 2d, new long[] {}, Collections.emptyList())))
+        .isEqualTo(HistogramAccumulation.create(0, 1d, 2d, new long[] {}, Collections.emptyList()));
+  }
+
+  @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar =

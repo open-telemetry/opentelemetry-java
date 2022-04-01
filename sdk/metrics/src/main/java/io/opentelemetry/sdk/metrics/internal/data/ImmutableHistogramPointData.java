@@ -97,8 +97,10 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         exemplars,
         sum,
         totalCount,
-        min,
-        max,
+        min != null,
+        min != null ? min : -1,
+        max != null,
+        max != null ? max : -1,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
         Collections.unmodifiableList(new ArrayList<>(counts)));
   }

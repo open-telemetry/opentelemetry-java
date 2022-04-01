@@ -91,19 +91,18 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
    * return it.
    */
   @Nullable
-  private static <T> T applyToNullable(
-      BiFunction<T, T, T> function, @Nullable T val1, @Nullable T val2) {
+  private static Double applyToNullable(
+      BiFunction<Double, Double, Double> function, @Nullable Double val1, @Nullable Double val2) {
     if (val1 != null && val2 != null) {
       return function.apply(val1, val2);
-    }
-    if (val1 == null && val2 == null) {
-      return null;
     }
     if (val1 != null) {
       return val1;
     }
-    // val2 != null
-    return val2;
+    if (val2 != null) {
+      return val2;
+    }
+    return null;
   }
 
   @Override
