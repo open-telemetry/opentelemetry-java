@@ -640,12 +640,12 @@ jobs:
           fi
 
           # TODO this is dependent on the conventions you follow in your CHANGELOG.md
-          sed -n '/^## Version $VERSION/,/^## Version /p' CHANGELOG.md \
+          sed -n "/^## Version $VERSION/,/^## Version /p" CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
             | perl -0pe 's/^\n+//g' \
             | perl -0pe 's/\n+$/\n/g' \
-            | sed -r 's,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1,' \
+            | sed -r "s,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1," \
             | perl -0pe 's/\n +/ /g' \
             >> release-notes.txt
 ```

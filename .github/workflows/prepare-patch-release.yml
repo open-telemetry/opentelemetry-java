@@ -1,0 +1,48 @@
+name: Prepare patch release
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-patch-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set versions
+        id: set-versions
+        run: |
+          prior_version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts | head -1)
+          if [[ $prior_version =~ ([0-9]+.[0-9]+).([0-9]+) ]]; then
+            major_minor="${BASH_REMATCH[1]}"
+            patch="${BASH_REMATCH[2]}"
+          else
+            echo "unexpected version: $prior_version"
+            exit 1
+          fi
+          echo "::set-output name=release-version::$major_minor.$((patch + 1))"
+          echo "::set-output name=prior-release-version::$prior_version"
+
+      - name: Bump version
+        env:
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+          PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
+        run: |
+          sed -ri "s/$PRIOR_VERSION/$VERSION/" version.gradle.kts
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request
+        env:
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          msg="Prepare patch release $VERSION"
+          git commit -a -m "$msg"
+          git push origin HEAD:prepare-patch-release-$VERSION
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head prepare-patch-release-$VERSION \
+                       --base $GITHUB_REF_NAME

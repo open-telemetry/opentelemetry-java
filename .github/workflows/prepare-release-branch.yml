@@ -1,0 +1,95 @@
+name: Prepare release branch
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-release-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      release-branch-name: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set release branch name
+        id: set-release-branch-name
+        run: |
+          version=$(grep -Eo "[0-9.]+-SNAPSHOT" version.gradle.kts)
+          release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/v\1.\2.x/')
+          echo "::set-output name=release-branch-name::$release_branch_name"
+
+      - name: Create release branch
+        env:
+          RELEASE_BRANCH_NAME: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
+        run: |
+          git push origin HEAD:$RELEASE_BRANCH_NAME
+
+  create-pull-request-against-release-branch:
+    needs: prepare-release-branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+
+      - name: Bump version on release branch
+        run: |
+          version=$(grep -Eo "[0-9]+.[0-9]+.0-SNAPSHOT" version.gradle.kts | sed 's/-SNAPSHOT//')
+          sed -ri "s/$version-SNAPSHOT/$version/" version.gradle.kts
+          sed -ri "s/$version-alpha-SNAPSHOT/$version-alpha/" version.gradle.kts
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request against release branch
+        env:
+          RELEASE_BRANCH_NAME: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          msg="Prepare release branch $RELEASE_BRANCH_NAME"
+          git commit -a -m "$msg"
+          git push origin HEAD:prepare-release-branch-$RELEASE_BRANCH_NAME
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head prepare-release-branch-$RELEASE_BRANCH_NAME \
+                       --base $RELEASE_BRANCH_NAME
+
+  create-pull-request-against-main:
+    needs:
+      - prepare-release-branch
+      - create-pull-request-against-release-branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Bump snapshot version
+        run: |
+          version=$(grep -Eo "[0-9]+.[0-9]+.0-SNAPSHOT" version.gradle.kts | sed 's/-SNAPSHOT//')
+          if [[ $version =~ ([0-9]+).([0-9]+).0 ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+          else
+            echo "unexpected version: $version"
+            exit 1
+          fi
+          next_version="$major.$((minor + 1)).0"
+          sed -ri "s/$version-SNAPSHOT/$next_version-SNAPSHOT/" version.gradle.kts
+          sed -ri "s/$version-apha-SNAPSHOT/$next_version-apha-SNAPSHOT/" version.gradle.kts
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request against main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          msg="Bump version"
+          git commit -a -m "$msg"
+          git push origin HEAD:bump-snapshot-version
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head bump-snapshot-version \
+                       --base main

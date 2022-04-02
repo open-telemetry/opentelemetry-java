@@ -1,4 +1,4 @@
-name: Copy test container docker images
+name: Copy test container docker images (daily)
 
 on:
   schedule:
