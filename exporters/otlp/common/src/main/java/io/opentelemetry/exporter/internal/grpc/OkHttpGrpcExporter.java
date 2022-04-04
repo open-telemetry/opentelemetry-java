@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -54,8 +55,12 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OkHttpGrpcExporter.class.getName()));
+  private static final Logger internalLogger = Logger.getLogger(OkHttpGrpcExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+  // We only log unimplemented once since it's a configuration issue that won't be recovered.
+  private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -138,15 +143,9 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                 String errorMessage = grpcMessage(response);
 
                 if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
-                  logger.log(
-                      Level.SEVERE,
-                      "Failed to export "
-                          + type
-                          + "s. Server responded with UNIMPLEMENTED. "
-                          + "This usually means that your collector is not configured with an otlp "
-                          + "receiver in the \"pipelines\" section of the configuration. "
-                          + "Full error message: "
-                          + errorMessage);
+                  if (loggedUnimplemented.compareAndSet(false, true)) {
+                    GrpcExporterUtil.logUnimplemented(internalLogger, type, errorMessage);
+                  }
                 } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
                   logger.log(
                       Level.SEVERE,

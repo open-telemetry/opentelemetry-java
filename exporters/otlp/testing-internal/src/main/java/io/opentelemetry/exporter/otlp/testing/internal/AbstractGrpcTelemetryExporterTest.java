@@ -400,6 +400,20 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 .join(10, TimeUnit.SECONDS)
                 .isSuccess())
         .isFalse();
+    String envVar;
+    switch (type) {
+      case "span":
+        envVar = "OTLP_TRACES_EXPORTER";
+        break;
+      case "metric":
+        envVar = "OTLP_METRICS_EXPORTER";
+        break;
+      case "log":
+        envVar = "OTLP_LOGS_EXPORTER";
+        break;
+      default:
+        throw new AssertionError();
+    }
     LoggingEvent log =
         logs.assertContains(
             "Failed to export "
@@ -407,6 +421,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 + "s. Server responded with UNIMPLEMENTED. "
                 + "This usually means that your collector is not configured with an otlp "
                 + "receiver in the \"pipelines\" section of the configuration. "
+                + "If export is not desired and you are using OpenTelemetry autoconfiguration or the javaagent, "
+                + "disable export by setting "
+                + envVar
+                + "=none. "
                 + "Full error message: UNIMPLEMENTED");
     assertThat(log.getLevel()).isEqualTo(Level.ERROR);
   }
