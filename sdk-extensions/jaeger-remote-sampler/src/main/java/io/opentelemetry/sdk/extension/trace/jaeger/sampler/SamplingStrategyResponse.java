@@ -164,13 +164,13 @@ class SamplingStrategyResponse {
     Builder setRateLimitingSamplingStrategy(
         RateLimitingSamplingStrategy rateLimitingSamplingStrategy) {
       this.rateLimitingSamplingStrategy = rateLimitingSamplingStrategy;
-      return this;
+      return setSamplingStrategyType(SamplingStrategyType.RATE_LIMITING);
     }
 
     Builder setProbabilisticSamplingStrategy(
         ProbabilisticSamplingStrategy probabilisticSamplingStrategy) {
       this.probabilisticSamplingStrategy = probabilisticSamplingStrategy;
-      return this;
+      return setSamplingStrategyType(SamplingStrategyType.PROBABILISTIC);
     }
 
     Builder setPerOperationSamplingStrategies(
