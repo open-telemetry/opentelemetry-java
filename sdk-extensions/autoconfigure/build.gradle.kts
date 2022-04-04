@@ -77,7 +77,6 @@ testing {
       targets {
         all {
           testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
             environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
@@ -97,6 +96,7 @@ testing {
         all {
           testTask {
             environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
       }
@@ -114,6 +114,7 @@ testing {
       targets {
         all {
           testTask {
+            environment("OTEL_METRICS_EXPORTER", "none")
             environment("OTEL_TRACES_EXPORTER", "jaeger")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }
@@ -133,14 +134,6 @@ testing {
         implementation("com.linecorp.armeria:armeria-grpc")
         runtimeOnly("io.grpc:grpc-netty-shaded")
       }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
-          }
-        }
-      }
     }
     val testOtlpHttp by registering(JvmTestSuite::class) {
       dependencies {
@@ -155,14 +148,6 @@ testing {
         implementation("com.squareup.okhttp3:okhttp")
         implementation("com.squareup.okhttp3:okhttp-tls")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
-          }
-        }
       }
     }
     val testPrometheus by registering(JvmTestSuite::class) {
@@ -224,6 +209,7 @@ testing {
       targets {
         all {
           testTask {
+            environment("OTEL_METRICS_EXPORTER", "none")
             environment("OTEL_TRACES_EXPORTER", "zipkin")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }

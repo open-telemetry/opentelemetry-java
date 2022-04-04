@@ -119,7 +119,10 @@ class NotOnClasspathTest {
                     MetricExporterConfiguration.class.getClassLoader(),
                     SdkMeterProvider.builder(),
                     (a, unused) -> a))
-        .doesNotThrowAnyException();
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "OTLP gRPC Metrics Exporter enabled but opentelemetry-exporter-otlp not found on "
+                + "classpath");
   }
 
   @Test
@@ -135,7 +138,8 @@ class NotOnClasspathTest {
                     MetricExporterConfiguration.class.getClassLoader(),
                     SdkMeterProvider.builder(),
                     (a, unused) -> a))
-        .doesNotThrowAnyException();
+        .hasMessageContaining(
+            "OTLP HTTP Metrics Exporter enabled but opentelemetry-exporter-otlp-http-metrics not found on classpath");
   }
 
   @Test
