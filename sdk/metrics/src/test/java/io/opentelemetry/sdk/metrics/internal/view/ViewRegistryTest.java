@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
@@ -229,22 +230,23 @@ class ViewRegistryTest {
 
   @Test
   void matchesName() {
-    assertThat(ViewRegistry.matchesName("foo", "foo")).isTrue();
-    assertThat(ViewRegistry.matchesName("foo", "Foo")).isFalse();
-    assertThat(ViewRegistry.matchesName("fo?", "foo")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo??", "fooo")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo?", "fob")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo?", "fooo")).isFalse();
-    assertThat(ViewRegistry.matchesName("*", "foo")).isTrue();
-    assertThat(ViewRegistry.matchesName("*", "bar")).isTrue();
-    assertThat(ViewRegistry.matchesName("*", "baz")).isTrue();
-    assertThat(ViewRegistry.matchesName("*", "foo.bar.baz")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo*", "fo")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo*", "foo")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo*", "fooo")).isTrue();
-    assertThat(ViewRegistry.matchesName("fo*", "foo.bar.baz")).isTrue();
-    assertThat(ViewRegistry.matchesName("f()[]$^.{}|", "f()[]$^.{}|")).isTrue();
-    assertThat(ViewRegistry.matchesName("f()[]$^.{}|?", "f()[]$^.{}|o")).isTrue();
-    assertThat(ViewRegistry.matchesName("f()[]$^.{}|*", "f()[]$^.{}|ooo")).isTrue();
+    ViewRegistry registry = new ViewRegistry(Collections.emptyList());
+    assertThat(registry.matchesName("foo", "foo")).isTrue();
+    assertThat(registry.matchesName("foo", "Foo")).isFalse();
+    assertThat(registry.matchesName("fo?", "foo")).isTrue();
+    assertThat(registry.matchesName("fo??", "fooo")).isTrue();
+    assertThat(registry.matchesName("fo?", "fob")).isTrue();
+    assertThat(registry.matchesName("fo?", "fooo")).isFalse();
+    assertThat(registry.matchesName("*", "foo")).isTrue();
+    assertThat(registry.matchesName("*", "bar")).isTrue();
+    assertThat(registry.matchesName("*", "baz")).isTrue();
+    assertThat(registry.matchesName("*", "foo.bar.baz")).isTrue();
+    assertThat(registry.matchesName("fo*", "fo")).isTrue();
+    assertThat(registry.matchesName("fo*", "foo")).isTrue();
+    assertThat(registry.matchesName("fo*", "fooo")).isTrue();
+    assertThat(registry.matchesName("fo*", "foo.bar.baz")).isTrue();
+    assertThat(registry.matchesName("f()[]$^.{}|", "f()[]$^.{}|")).isTrue();
+    assertThat(registry.matchesName("f()[]$^.{}|?", "f()[]$^.{}|o")).isTrue();
+    assertThat(registry.matchesName("f()[]$^.{}|*", "f()[]$^.{}|ooo")).isTrue();
   }
 }

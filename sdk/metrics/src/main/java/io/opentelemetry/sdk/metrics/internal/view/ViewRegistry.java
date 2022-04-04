@@ -14,6 +14,8 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
@@ -33,6 +35,10 @@ public final class ViewRegistry {
           DEFAULT_VIEW,
           AttributesProcessor.NOOP,
           SourceInfo.noSourceInfo());
+
+  /** Cache for {@link #matchesName(String, String)} mapping name patterns to regexes. */
+  private final Map<String, String> namePatternCache = new ConcurrentHashMap<>();
+
   private final List<RegisteredView> reverseRegistration;
 
   ViewRegistry(List<RegisteredView> reverseRegistration) {
@@ -66,7 +72,7 @@ public final class ViewRegistry {
   }
 
   // Matches an instrument selector against an instrument + meter.
-  private static boolean matchesSelector(
+  private boolean matchesSelector(
       InstrumentSelector selector,
       InstrumentDescriptor descriptor,
       InstrumentationScopeInfo meterScope) {
@@ -92,15 +98,25 @@ public final class ViewRegistry {
    *   <li>{@code *} matches 0 or more instances of any character
    *   <li>{@code ?} matches exactly one instance of any character
    * </ul>
-   *
-   * <p>Based off implementation from: https://www.rgagnon.com/javadetails/java-0515.html
    */
   // Visible for testing
-  static boolean matchesName(String namePattern, String instrumentName) {
+  boolean matchesName(String namePattern, String instrumentName) {
     if (!namePattern.contains("*") && !namePattern.contains("?")) {
       return namePattern.equals(instrumentName);
     }
 
+    String regex = namePatternCache.computeIfAbsent(namePattern, ViewRegistry::namePatternToRegex);
+
+    return Pattern.matches(regex, instrumentName);
+  }
+
+  /**
+   * Transform the {@code namePattern} to a regex by converting {@code *} to {@code .*}, {@code ?}
+   * to {@code .}, and escaping other regex special characters.
+   *
+   * <p>Based off implementation from: https://www.rgagnon.com/javadetails/java-0515.html
+   */
+  private static String namePatternToRegex(String namePattern) {
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < namePattern.length(); i++) {
       char c = namePattern.charAt(i);
@@ -128,8 +144,7 @@ public final class ViewRegistry {
           break;
       }
     }
-    String regex = builder.append('$').toString();
-    return Pattern.matches(regex, instrumentName);
+    return builder.append('$').toString();
   }
 
   // Matches a meter selector against a meter.
