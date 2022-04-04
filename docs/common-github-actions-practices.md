@@ -27,6 +27,7 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Prepare patch](#prepare-patch)
   - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
   - [Release](#release)
+- [Sending a pull request to another repository](#sending-a-pull-request-to-another-repository)
 - [Workflow file naming conventions](#workflow-file-naming-conventions)
 - [Workflow YAML style guide](#workflow-yaml-style-guide)
 
@@ -707,6 +708,57 @@ updates.
                          --head merge-change-log-updates-to-main \
                          --base main
           fi
+```
+
+## Sending a pull request to another repository
+
+This is an example of how to send a pull request to another repository from a github action.
+
+```yaml
+      - uses: actions/checkout@v3
+        with:
+          repository: opentelemetry-java-bot/opentelemetry-operator
+          # this is the PAT used for "git push" below
+          token: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+
+      - name: Initialize pull request branch
+        env:
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+        run: |
+          git remote add upstream https://github.com/open-telemetry/opentelemetry-operator.git
+          git fetch upstream
+          git checkout -b update-opentelemetry-javaagent-to-$VERSION upstream/main
+
+      - name: Bump version
+        env:
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+        run: |
+          echo $VERSION > autoinstrumentation/java/version.txt
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request against opentelemetry-operator
+        env:
+          VERSION: ${{ steps.set-versions.outputs.release-version }}
+          # this is the PAT used for "gh pr create" below
+          GITHUB_TOKEN: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+        run: |
+          msg="Update opentelemetry-javaagent version to $VERSION"
+          git commit -a -m "$msg"
+
+          # gh pr create doesn't have a way to explicitly specify different head and base
+          # repositories currently, but it will implicitly pick up the head from a different
+          # repository if you set up a tracking branch
+
+          git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
+
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --repo open-telemetry/opentelemetry-operator
+                       --base main
 ```
 
 ## Workflow file naming conventions
