@@ -1,7 +1,7 @@
 {
   "service_strategies": [
     {
-      "service": "E2E-test",
+      "service": "foo",
       "type": "probabilistic",
       "param": 0.33,
       "operation_strategies": [

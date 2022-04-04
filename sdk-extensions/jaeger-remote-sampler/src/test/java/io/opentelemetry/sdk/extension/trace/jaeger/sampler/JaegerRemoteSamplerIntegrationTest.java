@@ -23,9 +23,9 @@ class JaegerRemoteSamplerIntegrationTest {
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
   private static final int HEALTH_PORT = 14269;
-  private static final String SERVICE_NAME_PER_OPERATION = "E2E-test";
+  private static final String SERVICE_NAME_PER_OPERATION = "foo";
   private static final String SERVICE_NAME_RATE_LIMITING = "bar";
-  private static final String SERVICE_NAME_DEFAULT_STRATEGY = "foo";
+  private static final String SERVICE_NAME_DEFAULT_STRATEGY = "foobar";
 
   @Container
   public static GenericContainer<?> jaegerContainer =
