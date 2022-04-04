@@ -77,14 +77,14 @@ public class MeterSharedState {
       MeterProviderSharedState meterProviderSharedState,
       long epochNanos,
       boolean suppressSynchronousCollection) {
-    // Ensure callbacks aren't invoked concurrently by different readers
+    List<CallbackRegistration<?>> currentRegisteredCallbacks;
     synchronized (callbackLock) {
-      List<CallbackRegistration<?>> currentRegisteredCallbacks =
-          new ArrayList<>(callbackRegistrations);
-      for (CallbackRegistration<?> callbackRegistration : currentRegisteredCallbacks) {
-        callbackRegistration.invokeCallback();
-      }
+      currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
     }
+    for (CallbackRegistration<?> callbackRegistration : currentRegisteredCallbacks) {
+      callbackRegistration.invokeCallback();
+    }
+
     Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
     List<MetricData> result = new ArrayList<>(metrics.size());
     for (MetricStorage metric : metrics) {

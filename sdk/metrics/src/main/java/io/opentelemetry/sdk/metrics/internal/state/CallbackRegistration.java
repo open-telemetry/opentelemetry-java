@@ -27,6 +27,7 @@ public class CallbackRegistration<T> {
   private static final Logger logger = Logger.getLogger(CallbackRegistration.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final Object lock = new Object();
   private final InstrumentDescriptor instrumentDescriptor;
   private final Consumer<T> callback;
   private final T measurement;
@@ -69,20 +70,23 @@ public class CallbackRegistration<T> {
   }
 
   void invokeCallback() {
-    // Return early if no storages are registered
-    if (noStoragesRegistered) {
-      return;
-    }
-    try {
-      callback.accept(measurement);
-    } catch (Throwable e) {
-      propagateIfFatal(e);
-      throttlingLogger.log(
-          Level.WARNING,
-          "An exception occurred invoking callback for instrument "
-              + instrumentDescriptor.getName()
-              + ".",
-          e);
+    // A callback MUST not be called concurrently
+    synchronized (lock) {
+      // Return early if no storages are registered
+      if (noStoragesRegistered) {
+        return;
+      }
+      try {
+        callback.accept(measurement);
+      } catch (Throwable e) {
+        propagateIfFatal(e);
+        throttlingLogger.log(
+            Level.WARNING,
+            "An exception occurred invoking callback for instrument "
+                + instrumentDescriptor.getName()
+                + ".",
+            e);
+      }
     }
   }
 
