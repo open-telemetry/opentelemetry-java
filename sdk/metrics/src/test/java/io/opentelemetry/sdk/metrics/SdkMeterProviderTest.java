@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -29,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -36,8 +38,10 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -47,6 +51,9 @@ class SdkMeterProviderTest {
       Resource.create(Attributes.of(AttributeKey.stringKey("resource_key"), "resource_value"));
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create(SdkMeterProviderTest.class.getName());
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);
+
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -253,20 +260,12 @@ class SdkMeterProviderTest {
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
-    LongUpDownCounter longUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testLongUpDownCounter").build();
-    longUpDownCounter.add(10, Attributes.empty());
-    LongHistogram longValueRecorder =
-        sdkMeter.histogramBuilder("testLongValueRecorder").ofLongs().build();
-    longValueRecorder.record(10, Attributes.empty());
+    LongHistogram longHistogram = sdkMeter.histogramBuilder("testLongHistogram").ofLongs().build();
+    longHistogram.record(10, Attributes.empty());
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testDoubleCounter").ofDoubles().build();
     doubleCounter.add(10, Attributes.empty());
-    DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testDoubleUpDownCounter").ofDoubles().build();
-    doubleUpDownCounter.add(10, Attributes.empty());
-    DoubleHistogram doubleValueRecorder =
-        sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    doubleValueRecorder.record(10, Attributes.empty());
+    DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testDoubleHistogram").build();
+    doubleHistogram.record(10, Attributes.empty());
 
     testClock.advance(Duration.ofSeconds(1));
 
@@ -290,21 +289,14 @@ class SdkMeterProviderTest {
                                 .hasBucketCounts(1)))
         .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
-            "testLongCounter",
-            "testDoubleCounter",
-            "testLongUpDownCounter",
-            "testDoubleUpDownCounter",
-            "testLongValueRecorder",
-            "testDoubleValueRecorder");
+            "testLongCounter", "testDoubleCounter", "testLongHistogram", "testDoubleHistogram");
 
     testClock.advance(Duration.ofSeconds(1));
 
     longCounter.add(10, Attributes.empty());
-    longUpDownCounter.add(10, Attributes.empty());
-    longValueRecorder.record(10, Attributes.empty());
+    longHistogram.record(10, Attributes.empty());
     doubleCounter.add(10, Attributes.empty());
-    doubleUpDownCounter.add(10, Attributes.empty());
-    doubleValueRecorder.record(10, Attributes.empty());
+    doubleHistogram.record(10, Attributes.empty());
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
@@ -326,12 +318,7 @@ class SdkMeterProviderTest {
                                 .hasBucketCounts(1)))
         .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
-            "testLongCounter",
-            "testDoubleCounter",
-            "testLongUpDownCounter",
-            "testDoubleUpDownCounter",
-            "testLongValueRecorder",
-            "testDoubleValueRecorder");
+            "testLongCounter", "testDoubleCounter", "testLongHistogram", "testDoubleHistogram");
   }
 
   @Test
@@ -519,11 +506,7 @@ class SdkMeterProviderTest {
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
             .registerView(
-                InstrumentSelector.builder()
-                    // TODO: Make instrument type optional.
-                    .setType(InstrumentType.OBSERVABLE_GAUGE)
-                    .setName("test")
-                    .build(),
+                InstrumentSelector.builder().setName("test").build(),
                 View.builder().setAttributeFilter(name -> name.equals("allowed")).build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -555,11 +538,7 @@ class SdkMeterProviderTest {
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
             .registerView(
-                InstrumentSelector.builder()
-                    // TODO: Make instrument type optional.
-                    .setType(InstrumentType.OBSERVABLE_GAUGE)
-                    .setName("test")
-                    .build(),
+                InstrumentSelector.builder().setName("test").build(),
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
@@ -584,12 +563,7 @@ class SdkMeterProviderTest {
 
   @Test
   void viewSdk_AllowMulitpleViewsPerSynchronousInstrument() {
-    InstrumentSelector selector =
-        InstrumentSelector.builder()
-            // TODO: Make instrument type optional.
-            .setType(InstrumentType.HISTOGRAM)
-            .setName("test")
-            .build();
+    InstrumentSelector selector = InstrumentSelector.builder().setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
@@ -599,7 +573,7 @@ class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregation(Aggregation.lastValue())
+                    .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
                     .build())
             .registerView(
                 selector,
@@ -620,7 +594,7 @@ class SdkMeterProviderTest {
                     .hasName("not_test")
                     .hasDescription("not_desc")
                     .hasUnit("unit")
-                    .hasDoubleGauge(),
+                    .hasDoubleHistogram(),
             metric ->
                 assertThat(metric)
                     .hasName("not_test_2")
@@ -630,13 +604,8 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  void viewSdk_AllowMulitpleViewsPerAsynchronousInstrument() {
-    InstrumentSelector selector =
-        InstrumentSelector.builder()
-            // TODO: Make instrument type optional.
-            .setType(InstrumentType.OBSERVABLE_GAUGE)
-            .setName("test")
-            .build();
+  void viewSdk_AllowMultipleViewsPerAsynchronousInstrument() {
+    InstrumentSelector selector = InstrumentSelector.builder().setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
@@ -653,7 +622,7 @@ class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test_2")
                     .setDescription("not_desc_2")
-                    .setAggregation(Aggregation.sum())
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -675,7 +644,7 @@ class SdkMeterProviderTest {
                     .hasName("not_test_2")
                     .hasDescription("not_desc_2")
                     .hasUnit("unit")
-                    .hasDoubleSum());
+                    .hasDoubleGauge());
   }
 
   @Test
@@ -719,95 +688,41 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  void collectAllAsyncInstruments_CumulativeHistogram() {
-    registerViewForAllTypes(
-        sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
-    SdkMeterProvider sdkMeterProvider =
-        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
-    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
-    sdkMeter
-        .counterBuilder("testLongSumObserver")
-        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
-    sdkMeter
-        .upDownCounterBuilder("testLongUpDownSumObserver")
-        .buildWithCallback(longResult -> longResult.record(-10, Attributes.empty()));
-    sdkMeter
-        .gaugeBuilder("testLongValueObserver")
-        .ofLongs()
-        .buildWithCallback(longResult -> longResult.record(10, Attributes.empty()));
+  void viewSdk_IncompatibleAggregation() {
+    InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
+    SdkMeterProvider meterProvider =
+        sdkMeterProviderBuilder
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder().setName("test").build(),
+                View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
+            .build();
+    Meter meter = meterProvider.get("meter");
+    meter
+        .counterBuilder("test")
+        .buildWithCallback(
+            observableLongMeasurement -> {
+              observableLongMeasurement.record(1);
+            });
+    meter
+        .counterBuilder("test1")
+        .buildWithCallback(
+            observableLongMeasurement -> {
+              observableLongMeasurement.record(1);
+            });
 
-    sdkMeter
-        .counterBuilder("testDoubleSumObserver")
-        .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
-    sdkMeter
-        .upDownCounterBuilder("testDoubleUpDownSumObserver")
-        .ofDoubles()
-        .buildWithCallback(doubleResult -> doubleResult.record(-10.1, Attributes.empty()));
-    sdkMeter
-        .gaugeBuilder("testDoubleValueObserver")
-        .buildWithCallback(doubleResult -> doubleResult.record(10.1, Attributes.empty()));
-
-    testClock.advance(Duration.ofNanos(50));
-
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .allSatisfy(
+    // Ensure we only have metrics for test1, test should be dropped because we've registered a view
+    // with an incompatible aggregation
+    Assertions.assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
             metric ->
                 assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasDescription("")
-                    .hasUnit("1")
-                    .hasDoubleHistogram()
-                    .isCumulative()
+                    .hasName("test1")
+                    .hasLongSum()
                     .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)))
-        .extracting(MetricData::getName)
-        .containsExactlyInAnyOrder(
-            "testLongSumObserver",
-            "testDoubleSumObserver",
-            "testLongUpDownSumObserver",
-            "testDoubleUpDownSumObserver",
-            "testLongValueObserver",
-            "testDoubleValueObserver");
-
-    testClock.advance(Duration.ofNanos(50));
-    // When collecting the next set of async measurements, we still only have 1 count per bucket
-    // because we assume ALL measurements are cumulative and come in the async callback.
-    // Note: We do not support "gauge histogram".
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .allSatisfy(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasDescription("")
-                    .hasUnit("1")
-                    .hasDoubleHistogram()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 100)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)))
-        .extracting(MetricData::getName)
-        .containsExactlyInAnyOrder(
-            "testLongSumObserver",
-            "testDoubleSumObserver",
-            "testLongUpDownSumObserver",
-            "testDoubleUpDownSumObserver",
-            "testLongValueObserver",
-            "testDoubleValueObserver");
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+    logs.assertContains(
+        "View aggregation explicit_bucket_histogram is incompatible with instrument test of type OBSERVABLE_COUNTER");
   }
 
   @Test

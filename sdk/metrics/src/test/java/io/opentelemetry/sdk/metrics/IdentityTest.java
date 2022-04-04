@@ -770,7 +770,7 @@ class IdentityTest {
                 View.builder().setAggregation(Aggregation.defaultAggregation()).build())
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
-                View.builder().setAggregation(Aggregation.lastValue()).build())
+                View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
             .build();
 
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
@@ -789,9 +789,9 @@ class IdentityTest {
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
-                    .hasLongGauge()
+                    .hasDoubleHistogram()
                     .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(10)));
+                    .satisfiesExactly(point -> assertThat(point).hasSum(20)));
 
     assertThat(logs.getEvents())
         .allSatisfy(
@@ -887,8 +887,8 @@ class IdentityTest {
             .registerView(
                 InstrumentSelector.builder().setName("counter1").build(),
                 View.builder()
-                    .setName("counter1-gauge")
-                    .setAggregation(Aggregation.lastValue())
+                    .setName("counter1-histogram")
+                    .setAggregation(Aggregation.explicitBucketHistogram())
                     .build())
             .build();
 
@@ -908,10 +908,10 @@ class IdentityTest {
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
-                    .hasName("counter1-gauge")
-                    .hasLongGauge()
+                    .hasName("counter1-histogram")
+                    .hasDoubleHistogram()
                     .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(10)));
+                    .satisfiesExactly(point -> assertThat(point).hasSum(20)));
 
     assertThat(logs.getEvents()).hasSize(0);
   }

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
@@ -43,6 +44,11 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
         return (Aggregator<T>) new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
+  }
+
+  @Override
+  public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
+    return instrumentDescriptor.getType() == InstrumentType.OBSERVABLE_GAUGE;
   }
 
   @Override

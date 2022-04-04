@@ -29,4 +29,10 @@ public interface AggregatorFactory {
    */
   <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
+
+  /**
+   * Determine if the {@link Aggregator} produced by {@link #createAggregator(InstrumentDescriptor,
+   * ExemplarFilter)} is compatible with the {@code instrumentDescriptor}.
+   */
+  boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor);
 }
