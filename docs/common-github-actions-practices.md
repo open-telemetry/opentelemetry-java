@@ -398,10 +398,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  prepare-release-branch:
+  create-pull-request-against-release-branch:
     runs-on: ubuntu-latest
-    outputs:
-      release-branch-name: ${{ steps.create-release-branch.outputs.release-branch-name }}
     steps:
       - uses: actions/checkout@v3
 
@@ -415,15 +413,11 @@ jobs:
 
           echo "::set-output name=release-branch-name::$release_branch_name"
 
-  create-pull-request-against-release-branch:
-    needs: prepare-release-branch
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+          ref: ${{ steps.create-release-branch.outputs.release-branch-name }}
 
-      - name: Bump version on release branch
+      - name: Bump version
         run: |
           version=$(...)  <-- get the minor version that is planning to be released
           .github/scripts/update-versions.sh $version-SNAPSHOT $version
@@ -437,7 +431,7 @@ jobs:
       - name: Create pull request against release branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCH_NAME: ${{ needs.prepare-release-branch.outputs.release-branch-name }}
+          RELEASE_BRANCH_NAME: ${{ steps.create-release-branch.outputs.release-branch-name }}
         run: |
           msg="Prepare release branch $RELEASE_BRANCH_NAME"
           git commit -a -m "$msg"
@@ -448,9 +442,6 @@ jobs:
                        --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
-    needs:
-      - prepare-release-branch
-      - create-pull-request-against-release-branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
