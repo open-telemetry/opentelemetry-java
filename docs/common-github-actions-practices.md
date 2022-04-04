@@ -344,13 +344,13 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 * Backport pull request(s) to the release branch
   * Run the [Backport workflow](.github/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
-    e.g. `v1.9.x`, then enter the pull request number that you want to backport,
+    e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates
 * Merge a pull request to the release branch updating the `CHANGELOG.md`
 * Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
-    e.g. `v1.9.x`, and click the "Run workflow" button below that.
+    e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * Review and merge the pull request that it creates
 
 ## Making the release
@@ -358,7 +358,7 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 Run the [Release workflow](.github/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
-  e.g. `v1.9.x`, and click the "Run workflow" button below that.
+  e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * This workflow will publish the artifacts to maven central and will publish a GitHub release
   with release notes based on the change log.
 * Lastly, if there were any change log updates in the release branch that need to be merged back
@@ -382,7 +382,9 @@ This is what we use in the OpenTelemetry Java repositories:
 
 ### Prepare release branch
 
-The specifics depend a lot on your specific version bumping needs.
+Uses release branch naming convention `release/v*`.
+
+The specifics below depend a lot on your specific version bumping needs.
 
 For OpenTelemetry Java repositories, the version in the `main` branch always ends with `-SNAPSHOT`,
 so preparing the release branch involves
@@ -407,7 +409,7 @@ jobs:
         id: create-release-branch
         run: |
           version=$(...)  <-- get the version that is planned to be released
-          release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/v\1.\2.x/')
+          release_branch_name=$(echo $version | sed -E 's,([0-9]+)\.([0-9]+)\.0,release/v\1.\2.x,')
 
           git push origin HEAD:$release_branch_name
 
