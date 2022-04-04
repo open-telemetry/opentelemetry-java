@@ -21,6 +21,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -33,8 +34,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -510,6 +519,58 @@ class SdkMeterProviderTest {
 
     observableCounter2.close();
     assertThat(reader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  void collectAllMetrics_NoConcurrentCalls()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    InMemoryMetricReader reader1 = InMemoryMetricReader.create();
+    InMemoryMetricReader reader2 = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(reader1).registerMetricReader(reader2).build();
+    AtomicBoolean inProgress = new AtomicBoolean(false);
+    // Callback records if not called concurrently
+    Consumer<ObservableLongMeasurement> callback =
+        measurement -> {
+          if (inProgress.compareAndSet(false, true)) {
+            measurement.record(1);
+          }
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          inProgress.set(false);
+        };
+    meterProvider.get("meter").counterBuilder("counter").buildWithCallback(callback);
+
+    List<Future<?>> futures = new ArrayList<>();
+    List<MetricData> allMetricData = new ArrayList<>();
+    ExecutorService executorService = Executors.newFixedThreadPool(4);
+    try {
+      futures.add(executorService.submit(() -> allMetricData.addAll(reader1.collectAllMetrics())));
+      futures.add(executorService.submit(() -> allMetricData.addAll(reader1.collectAllMetrics())));
+      futures.add(executorService.submit(() -> allMetricData.addAll(reader2.collectAllMetrics())));
+      futures.add(executorService.submit(() -> allMetricData.addAll(reader2.collectAllMetrics())));
+      for (Future<?> future : futures) {
+        future.get(10, TimeUnit.SECONDS);
+      }
+
+      // If callback is in invoked concurrently, only one metric data will be reported
+      assertThat(allMetricData)
+          .hasSize(4)
+          .allSatisfy(
+              metricData -> {
+                assertThat(metricData)
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter"))
+                    .hasLongSum()
+                    .points()
+                    .hasSize(1)
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1));
+              });
+    } finally {
+      executorService.shutdown();
+    }
   }
 
   @Test
