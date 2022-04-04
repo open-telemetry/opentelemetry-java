@@ -401,22 +401,19 @@ jobs:
   prepare-release-branch:
     runs-on: ubuntu-latest
     outputs:
-      release-branch-name: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
+      release-branch-name: ${{ steps.create-release-branch.outputs.release-branch-name }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set release branch name
-        id: set-release-branch-name
+      - name: Create release branch
+        id: create-release-branch
         run: |
           version=$(...)  <-- get the version that is planned to be released
           release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/v\1.\2.x/')
-          echo "::set-output name=release-branch-name::$release_branch_name"
 
-      - name: Create release branch
-        env:
-          RELEASE_BRANCH_NAME: ${{ steps.set-release-branch-name.outputs.release-branch-name }}
-        run: |
-          git push origin HEAD:$RELEASE_BRANCH_NAME
+          git push origin HEAD:$release_branch_name
+
+          echo "::set-output name=release-branch-name::$release_branch_name"
 
   create-pull-request-against-release-branch:
     needs: prepare-release-branch
@@ -508,8 +505,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set versions
-        id: set-versions
+      - name: Set environment variables
         run: |
           prior_version=$(...)  <-- get the prior release version
           if [[ $prior_version =~ ([0-9]+.[0-9]+).([0-9]+) ]]; then
@@ -519,13 +515,10 @@ jobs:
             echo "unexpected version: $prior_version"
             exit 1
           fi
-          echo "::set-output name=release-version::$major_minor.$((patch + 1))"
-          echo "::set-output name=prior-release-version::$prior_version"
+          echo "VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
+          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
       - name: Bump version
-        env:
-          VERSION: ${{ needs.set-versions.outputs.release-version }}
-          PRIOR_VERSION: ${{ needs.set-versions.outputs.prior-release-version }}
         run: |
           .github/scripts/update-versions.sh $PRIOR_VERSION $VERSION
 
@@ -537,7 +530,6 @@ jobs:
 
       - name: Create pull request
         env:
-          VERSION: ${{ needs.set-versions.outputs.release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           msg="Prepare patch release $VERSION"
@@ -601,8 +593,7 @@ jobs:
 #### Autogenerating the release notes
 
 ```yaml
-      - name: Set versions
-        id: set-versions
+      - name: Set environment variables
         run: |
           version=$(...)  <-- get the current version (the one that is being released)
           if [[ $version =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
@@ -624,13 +615,11 @@ jobs:
           else
               prior_version="$major.$minor.$((patch - 1))"
           fi
-          echo "::set-output name=release-version::$version"
-          echo "::set-output name=prior-release-version::$prior_version"
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
       - name: Generate release notes
         env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-          PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ $version != *.0 ]]; then
@@ -663,7 +652,6 @@ hitting the "Publish release" button).
 ```yaml
       - name: Create GitHub release
         env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \
@@ -671,6 +659,52 @@ hitting the "Publish release" button).
                             --notes-file release-notes.txt \
                             --discussion-category announcements \
                             v$VERSION
+```
+
+#### Sending a pull request to another repository
+
+For example to send a PR to notify/update another repository that a new release is available.
+
+```yaml
+      - uses: actions/checkout@v3
+        with:
+          repository: opentelemetry-java-bot/opentelemetry-operator
+          # this is the PAT used for "git push" below
+          token: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+
+      - name: Initialize pull request branch
+        run: |
+          git remote add upstream https://github.com/open-telemetry/opentelemetry-operator.git
+          git fetch upstream
+          git checkout -b update-opentelemetry-javaagent-to-$VERSION upstream/main
+
+      - name: Bump version
+        run: |
+          echo $VERSION > autoinstrumentation/java/version.txt
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request against opentelemetry-operator
+        env:
+          # this is the PAT used for "gh pr create" below
+          GITHUB_TOKEN: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+        run: |
+          msg="Update opentelemetry-javaagent version to $VERSION"
+          git commit -a -m "$msg"
+
+          # gh pr create doesn't have a way to explicitly specify different head and base
+          # repositories currently, but it will implicitly pick up the head from a different
+          # repository if you set up a tracking branch
+
+          git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
+
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --repo open-telemetry/opentelemetry-operator
+                       --base main
 ```
 
 #### Merge back any change log updates to the `main` branch
@@ -708,57 +742,6 @@ updates.
                          --head merge-change-log-updates-to-main \
                          --base main
           fi
-```
-
-## Sending a pull request to another repository
-
-This is an example of how to send a pull request to another repository from a github action.
-
-```yaml
-      - uses: actions/checkout@v3
-        with:
-          repository: opentelemetry-java-bot/opentelemetry-operator
-          # this is the PAT used for "git push" below
-          token: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
-
-      - name: Initialize pull request branch
-        env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-        run: |
-          git remote add upstream https://github.com/open-telemetry/opentelemetry-operator.git
-          git fetch upstream
-          git checkout -b update-opentelemetry-javaagent-to-$VERSION upstream/main
-
-      - name: Bump version
-        env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-        run: |
-          echo $VERSION > autoinstrumentation/java/version.txt
-
-      - name: Set git user
-        run: |
-          git config user.name opentelemetry-java-bot
-          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
-
-      - name: Create pull request against opentelemetry-operator
-        env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-          # this is the PAT used for "gh pr create" below
-          GITHUB_TOKEN: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
-        run: |
-          msg="Update opentelemetry-javaagent version to $VERSION"
-          git commit -a -m "$msg"
-
-          # gh pr create doesn't have a way to explicitly specify different head and base
-          # repositories currently, but it will implicitly pick up the head from a different
-          # repository if you set up a tracking branch
-
-          git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
-
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --repo open-telemetry/opentelemetry-operator
-                       --base main
 ```
 
 ## Workflow file naming conventions

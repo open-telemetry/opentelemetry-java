@@ -46,13 +46,11 @@ jobs:
           else
               prior_version="$major.$minor.$((patch - 1))"
           fi
-          echo "::set-output name=release-version::$version"
-          echo "::set-output name=prior-release-version::$prior_version"
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
       - name: Generate release notes
         env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-          PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ $version == *.0 ]]; then
@@ -89,7 +87,6 @@ jobs:
 
       - name: Create GitHub release
         env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \

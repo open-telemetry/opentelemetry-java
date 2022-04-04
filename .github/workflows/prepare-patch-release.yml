@@ -8,8 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set versions
-        id: set-versions
+      - name: Set environment variables
         run: |
           prior_version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts | head -1)
           if [[ $prior_version =~ ([0-9]+.[0-9]+).([0-9]+) ]]; then
@@ -19,13 +18,10 @@ jobs:
             echo "unexpected version: $prior_version"
             exit 1
           fi
-          echo "::set-output name=release-version::$major_minor.$((patch + 1))"
-          echo "::set-output name=prior-release-version::$prior_version"
+          echo "VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
+          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
       - name: Bump version
-        env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
-          PRIOR_VERSION: ${{ steps.set-versions.outputs.prior-release-version }}
         run: |
           sed -ri "s/$PRIOR_VERSION/$VERSION/" version.gradle.kts
 
@@ -36,7 +32,6 @@ jobs:
 
       - name: Create pull request
         env:
-          VERSION: ${{ steps.set-versions.outputs.release-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           msg="Prepare patch release $VERSION"
