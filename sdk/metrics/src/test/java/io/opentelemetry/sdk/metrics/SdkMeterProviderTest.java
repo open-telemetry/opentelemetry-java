@@ -24,6 +24,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -688,6 +689,7 @@ class SdkMeterProviderTest {
   }
 
   @Test
+  @SuppressLogger(MeterSharedState.class)
   void viewSdk_IncompatibleAggregation() {
     InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
     SdkMeterProvider meterProvider =
@@ -697,19 +699,22 @@ class SdkMeterProviderTest {
                 InstrumentSelector.builder().setName("test").build(),
                 View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
             .build();
-    Meter meter = meterProvider.get("meter");
-    meter
+    Meter meter1 = meterProvider.get("meter1");
+    meter1
         .counterBuilder("test")
         .buildWithCallback(
             observableLongMeasurement -> {
               observableLongMeasurement.record(1);
             });
-    meter
+    meter1
         .counterBuilder("test1")
         .buildWithCallback(
             observableLongMeasurement -> {
               observableLongMeasurement.record(1);
             });
+    Meter meter2 = meterProvider.get("meter2");
+    meter2.upDownCounterBuilder("test").build().add(-1);
+    meter2.counterBuilder("test1").build().add(1);
 
     // Ensure we only have metrics for test1, test should be dropped because we've registered a view
     // with an incompatible aggregation
@@ -717,12 +722,22 @@ class SdkMeterProviderTest {
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter1"))
+                    .hasName("test1")
+                    .hasLongSum()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)),
+            metric ->
+                assertThat(metric)
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter2"))
                     .hasName("test1")
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(1)));
     logs.assertContains(
         "View aggregation explicit_bucket_histogram is incompatible with instrument test of type OBSERVABLE_COUNTER");
+    logs.assertContains(
+        "View aggregation explicit_bucket_histogram is incompatible with instrument test of type UP_DOWN_COUNTER");
   }
 
   @Test
