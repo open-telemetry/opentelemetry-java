@@ -411,11 +411,7 @@ jobs:
 
           git push origin HEAD:$release_branch_name
 
-          echo "::set-output name=release-branch-name::$release_branch_name"
-
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.create-release-branch.outputs.release-branch-name }}
+          echo "RELEASE_BRANCH_NAME=$release_branch_name" >> $GITHUB_ENV
 
       - name: Bump version
         run: |
@@ -431,7 +427,6 @@ jobs:
       - name: Create pull request against release branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCH_NAME: ${{ steps.create-release-branch.outputs.release-branch-name }}
         run: |
           msg="Prepare release branch $RELEASE_BRANCH_NAME"
           git commit -a -m "$msg"
