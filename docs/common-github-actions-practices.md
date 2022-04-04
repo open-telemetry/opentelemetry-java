@@ -411,12 +411,12 @@ jobs:
 
           git push origin HEAD:$release_branch_name
 
+          echo "VERSION=$version" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_NAME=$release_branch_name" >> $GITHUB_ENV
 
       - name: Bump version
         run: |
-          version=$(...)  <-- get the minor version that is planning to be released
-          .github/scripts/update-versions.sh $version-SNAPSHOT $version
+          .github/scripts/update-versions.sh $VERSION-SNAPSHOT $VERSION
 
       - name: Set up git name
         run: |
@@ -428,12 +428,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          msg="Prepare release branch $RELEASE_BRANCH_NAME"
+          msg="Prepare release $VERSION"
           git commit -a -m "$msg"
-          git push origin HEAD:prepare-release-branch-$RELEASE_BRANCH_NAME
-          gh pr create --title "$msg" \
+          git push origin HEAD:prepare-release-$VERSION
+          gh pr create --title "[$RELEASE_BRANCH_NAME] $msg" \
                        --body "$msg" \
-                       --head prepare-release-branch-$RELEASE_BRANCH_NAME \
+                       --head prepare-release-$VERSION \
                        --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
@@ -518,12 +518,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          msg="Prepare patch release $VERSION"
+          msg="Prepare release $VERSION"
           git commit -a -m "$msg"
-          git push origin HEAD:prepare-patch-release-$VERSION
-          gh pr create --title "$msg" \
+          git push origin HEAD:prepare-release-$VERSION
+          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
                        --body "$msg" \
-                       --head prepare-patch-release-$VERSION \
+                       --head prepare-release-$VERSION \
                        --base $GITHUB_REF_NAME
 ```
 
