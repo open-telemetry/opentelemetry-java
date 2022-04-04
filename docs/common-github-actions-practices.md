@@ -214,7 +214,9 @@ requests if new misspellings are added to the misspell dictionary.
 
 Specification repo uses https://github.com/DavidAnson/markdownlint.
 
-Go repo uses https://github.com/avto-dev/markdown-lint.
+Go, JavaScript repos use https://github.com/avto-dev/markdown-lint github action.
+
+C++ uses markdownlint-cli (which is same that is used by avto-dev/markdown-lint github action).
 
 TODO
 
