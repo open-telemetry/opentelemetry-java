@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,6 +21,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 final class OtlpConfigUtil {
@@ -129,7 +132,8 @@ final class OtlpConfigUtil {
   }
 
   static void configureOtlpAggregationTemporality(
-      ConfigProperties config, Consumer<AggregationTemporality> setAggregationTemporality) {
+      ConfigProperties config,
+      Consumer<Function<InstrumentType, AggregationTemporality>> setAggregationTemporality) {
     String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
     if (temporalityStr == null) {
       // TODO(jack-berg): remove support after 1.13.0
@@ -145,7 +149,11 @@ final class OtlpConfigUtil {
       throw new ConfigurationException(
           "Unrecognized aggregation temporality: " + temporalityStr, e);
     }
-    setAggregationTemporality.accept(temporality);
+    Function<InstrumentType, AggregationTemporality> temporalityFunction =
+        temporality == AggregationTemporality.CUMULATIVE
+            ? MetricExporter::alwaysCumulative
+            : MetricExporter::deltaPreferred;
+    setAggregationTemporality.accept(temporalityFunction);
   }
 
   private static URL createUrl(URL context, String spec) {

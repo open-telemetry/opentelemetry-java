@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -34,37 +31,6 @@ public final class ExporterBuilderUtil {
           "Invalid endpoint, must start with http:// or https://: " + uri);
     }
     return uri;
-  }
-
-  /**
-   * A {@link MetricReader#getAggregationTemporality(InstrumentType)} function that indicates a
-   * cumulative preference.
-   *
-   * <p>{@link AggregationTemporality#CUMULATIVE} is returned for all instrument types.
-   */
-  public static AggregationTemporality cumulativePreferred(InstrumentType unused) {
-    return AggregationTemporality.CUMULATIVE;
-  }
-
-  /**
-   * A {@link MetricReader#getAggregationTemporality(InstrumentType)} function that indicates a
-   * delta preference.
-   *
-   * <p>{@link AggregationTemporality#DELTA} is returned for counter (sync and async) and histogram
-   * instruments. {@link AggregationTemporality#CUMULATIVE} is returned for up down counter (sync
-   * and async) instruments.
-   */
-  public static AggregationTemporality deltaPreferred(InstrumentType instrumentType) {
-    switch (instrumentType) {
-      case UP_DOWN_COUNTER:
-      case OBSERVABLE_UP_DOWN_COUNTER:
-        return AggregationTemporality.CUMULATIVE;
-      case COUNTER:
-      case OBSERVABLE_COUNTER:
-      case HISTOGRAM:
-      default:
-        return AggregationTemporality.DELTA;
-    }
   }
 
   private ExporterBuilderUtil() {}

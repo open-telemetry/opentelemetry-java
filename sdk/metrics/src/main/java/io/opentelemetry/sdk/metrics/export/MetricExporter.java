@@ -21,6 +21,36 @@ import java.util.concurrent.TimeUnit;
  */
 public interface MetricExporter extends Closeable {
 
+  /**
+   * A common implementation of {@link #getAggregationTemporality(InstrumentType)} which returns
+   * {@link AggregationTemporality#CUMULATIVE} for all instruments.
+   */
+  static AggregationTemporality alwaysCumulative(InstrumentType unused) {
+    return AggregationTemporality.CUMULATIVE;
+  }
+
+  /**
+   * A common implementation of {@link #getAggregationTemporality(InstrumentType)} which indicates
+   * delta preference.
+   *
+   * <p>{@link AggregationTemporality#DELTA} is returned for {@link InstrumentType#COUNTER}, {@link
+   * InstrumentType#OBSERVABLE_COUNTER}, and {@link InstrumentType#HISTOGRAM}. {@link
+   * AggregationTemporality#CUMULATIVE} is returned for {@link InstrumentType#UP_DOWN_COUNTER} and
+   * {@link InstrumentType#OBSERVABLE_UP_DOWN_COUNTER}.
+   */
+  static AggregationTemporality deltaPreferred(InstrumentType instrumentType) {
+    switch (instrumentType) {
+      case UP_DOWN_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+        return AggregationTemporality.CUMULATIVE;
+      case COUNTER:
+      case OBSERVABLE_COUNTER:
+      case HISTOGRAM:
+      default:
+        return AggregationTemporality.DELTA;
+    }
+  }
+
   /** Return the default aggregation temporality for the {@link InstrumentType}. */
   AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
 
