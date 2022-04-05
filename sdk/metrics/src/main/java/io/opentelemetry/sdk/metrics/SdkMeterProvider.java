@@ -139,7 +139,6 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   /** Helper class to expose registered metric exports. */
   private class LeasedMetricProducer implements MetricProducer {
-    private final Object lock = new Object();
     private final CollectionHandle handle;
 
     LeasedMetricProducer(CollectionHandle handle) {
@@ -148,34 +147,31 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
     @Override
     public Collection<MetricData> collectAllMetrics() {
-      // Ensure a reader cannot perform multiple collections concurrently
-      synchronized (lock) {
-        Collection<SdkMeter> meters = registry.getComponents();
-        // Suppress too-frequent-collection.
-        long currentNanoTime = sharedState.getClock().nanoTime();
-        long pastNanoTime = lastCollectionTimestamp.get();
-        // It hasn't been long enough since the last collection.
-        boolean disableSynchronousCollection =
-            (currentNanoTime - pastNanoTime) < minimumCollectionIntervalNanos;
-        // If we're not disabling metrics, write the current collection time.
-        // We don't care if this happens in more than one thread, suppression is optimistic, and the
-        // interval is small enough some jitter isn't important.
-        if (!disableSynchronousCollection) {
-          lastCollectionTimestamp.lazySet(currentNanoTime);
-        }
-        CollectionInfo info = collectionInfoMap.get(handle);
-        if (info == null) {
-          throw new IllegalStateException(
-              "No collection info for handle, this is a bug in the OpenTelemetry SDK.");
-        }
-
-        List<MetricData> result = new ArrayList<>();
-        for (SdkMeter meter : meters) {
-          result.addAll(
-              meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
-        }
-        return Collections.unmodifiableCollection(result);
+      Collection<SdkMeter> meters = registry.getComponents();
+      // Suppress too-frequent-collection.
+      long currentNanoTime = sharedState.getClock().nanoTime();
+      long pastNanoTime = lastCollectionTimestamp.get();
+      // It hasn't been long enough since the last collection.
+      boolean disableSynchronousCollection =
+          (currentNanoTime - pastNanoTime) < minimumCollectionIntervalNanos;
+      // If we're not disabling metrics, write the current collection time.
+      // We don't care if this happens in more than one thread, suppression is optimistic, and the
+      // interval is small enough some jitter isn't important.
+      if (!disableSynchronousCollection) {
+        lastCollectionTimestamp.lazySet(currentNanoTime);
       }
+      CollectionInfo info = collectionInfoMap.get(handle);
+      if (info == null) {
+        throw new IllegalStateException(
+            "No collection info for handle, this is a bug in the OpenTelemetry SDK.");
+      }
+
+      List<MetricData> result = new ArrayList<>();
+      for (SdkMeter meter : meters) {
+        result.addAll(
+            meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
+      }
+      return Collections.unmodifiableCollection(result);
     }
   }
 }
