@@ -25,8 +25,7 @@ class ExporterBuilderUtilTest {
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(MetricExporter.alwaysCumulative(InstrumentType.UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
-    assertThat(
-            MetricExporter.alwaysCumulative(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
+    assertThat(MetricExporter.alwaysCumulative(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 
