@@ -14,8 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
@@ -35,9 +34,6 @@ public final class ViewRegistry {
           DEFAULT_VIEW,
           AttributesProcessor.NOOP,
           SourceInfo.noSourceInfo());
-
-  /** Cache for {@link #matchesName(String, String)} mapping name patterns to regexes. */
-  private final Map<String, String> namePatternCache = new ConcurrentHashMap<>();
 
   private final List<RegisteredView> reverseRegistration;
 
@@ -72,7 +68,7 @@ public final class ViewRegistry {
   }
 
   // Matches an instrument selector against an instrument + meter.
-  private boolean matchesSelector(
+  private static boolean matchesSelector(
       InstrumentSelector selector,
       InstrumentDescriptor descriptor,
       InstrumentationScopeInfo meterScope) {
@@ -81,70 +77,10 @@ public final class ViewRegistry {
       return false;
     }
     if (selector.getInstrumentName() != null
-        && !matchesName(selector.getInstrumentName(), descriptor.getName())) {
+        && !toGlobPatternPredicate(selector.getInstrumentName()).test(descriptor.getName())) {
       return false;
     }
     return matchesMeter(selector, meterScope);
-  }
-
-  /**
-   * Determine if the {@code instrumentName} matches the {@code namePattern} from {@link
-   * InstrumentSelector#getInstrumentName()}.
-   *
-   * <p>{@code namePattern} may contain the wildcard characters {@code *} and {@code ?} with the
-   * following matching criteria:
-   *
-   * <ul>
-   *   <li>{@code *} matches 0 or more instances of any character
-   *   <li>{@code ?} matches exactly one instance of any character
-   * </ul>
-   */
-  // Visible for testing
-  boolean matchesName(String namePattern, String instrumentName) {
-    if (!namePattern.contains("*") && !namePattern.contains("?")) {
-      return namePattern.equals(instrumentName);
-    }
-
-    String regex = namePatternCache.computeIfAbsent(namePattern, ViewRegistry::namePatternToRegex);
-
-    return Pattern.matches(regex, instrumentName);
-  }
-
-  /**
-   * Transform the {@code namePattern} to a regex by converting {@code *} to {@code .*}, {@code ?}
-   * to {@code .}, and escaping other regex special characters.
-   *
-   * <p>Based off implementation from: https://www.rgagnon.com/javadetails/java-0515.html
-   */
-  private static String namePatternToRegex(String namePattern) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < namePattern.length(); i++) {
-      char c = namePattern.charAt(i);
-      switch (c) {
-        case '*':
-          builder.append(".*");
-          break;
-        case '?':
-          builder.append('.');
-          break;
-        case '(':
-        case ')':
-        case '[':
-        case ']':
-        case '$':
-        case '^':
-        case '.':
-        case '{':
-        case '}':
-        case '|':
-          builder.append("\\").append(c);
-          break;
-        default:
-          builder.append(c);
-          break;
-      }
-    }
-    return builder.append('$').toString();
   }
 
   // Matches a meter selector against a meter.
@@ -159,5 +95,68 @@ public final class ViewRegistry {
     }
     return selector.getMeterSchemaUrl() == null
         || selector.getMeterSchemaUrl().equals(meterScope.getSchemaUrl());
+  }
+
+  /**
+   * Return a predicate that returns {@code true} if a string matches the {@code globPattern}.
+   *
+   * <p>{@code globPattern} may contain the wildcard characters {@code *} and {@code ?} with the
+   * following matching criteria:
+   *
+   * <ul>
+   *   <li>{@code *} matches 0 or more instances of any character
+   *   <li>{@code ?} matches exactly one instance of any character
+   * </ul>
+   */
+  // Visible for testing
+  static Predicate<String> toGlobPatternPredicate(String globPattern) {
+    // Match all
+    if (globPattern.equals("*")) {
+      return unused -> true;
+    }
+
+    // If globPattern contains '*' or '?', convert it to a regex and return corresponding predicate
+    for (int i = 0; i < globPattern.length(); i++) {
+      char c = globPattern.charAt(i);
+      if (c == '*' || c == '?') {
+        Pattern pattern = toRegexPattern(globPattern);
+        return string -> pattern.matcher(string).matches();
+      }
+    }
+
+    // Exact match, ignoring case
+    return globPattern::equalsIgnoreCase;
+  }
+
+  /**
+   * Transform the {@code globPattern} to a regex by converting {@code *} to {@code .*}, {@code ?}
+   * to {@code .}, and escaping other regex special characters.
+   */
+  private static Pattern toRegexPattern(String globPattern) {
+    int tokenStart = -1;
+    StringBuilder patternBuilder = new StringBuilder();
+    for (int i = 0; i < globPattern.length(); i++) {
+      char c = globPattern.charAt(i);
+      if (c == '*' || c == '?') {
+        if (tokenStart != -1) {
+          patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart, i)));
+          tokenStart = -1;
+        }
+        if (c == '*') {
+          patternBuilder.append(".*");
+        } else {
+          // c == '?'
+          patternBuilder.append(".");
+        }
+      } else {
+        if (tokenStart == -1) {
+          tokenStart = i;
+        }
+      }
+    }
+    if (tokenStart != -1) {
+      patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
+    }
+    return Pattern.compile(patternBuilder.toString());
   }
 }
