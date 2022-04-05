@@ -22,9 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 /**
  * Aggregator that generates histograms.
@@ -76,33 +74,25 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
     for (int i = 0; i < previousCounts.length; ++i) {
       mergedCounts[i] = previousCounts[i] + current.getCounts()[i];
     }
+    double min = -1;
+    double max = -1;
+    if (previous.hasMinMax() && current.hasMinMax()) {
+      min = Math.min(previous.getMin(), current.getMin());
+      max = Math.max(previous.getMax(), current.getMax());
+    } else if (previous.hasMinMax()) {
+      min = previous.getMin();
+      max = previous.getMax();
+    } else if (current.hasMinMax()) {
+      min = current.getMin();
+      max = current.getMax();
+    }
     return HistogramAccumulation.create(
         previous.getSum() + current.getSum(),
-        applyToNullable(Math::min, previous.getMin(), current.getMin()),
-        applyToNullable(Math::max, previous.getMax(), current.getMax()),
+        previous.hasMinMax() || current.hasMinMax(),
+        min,
+        max,
         mergedCounts,
         current.getExemplars());
-  }
-
-  /**
-   * Apply the function to the values if both are not {@code null}.
-   *
-   * <p>If both are {@code null}, return {@code null}. If one of the values is not {@code null},
-   * return it.
-   */
-  @Nullable
-  private static Double applyToNullable(
-      BiFunction<Double, Double, Double> function, @Nullable Double val1, @Nullable Double val2) {
-    if (val1 != null && val2 != null) {
-      return function.apply(val1, val2);
-    }
-    if (val1 != null) {
-      return val1;
-    }
-    if (val2 != null) {
-      return val2;
-    }
-    return null;
   }
 
   @Override
@@ -113,7 +103,12 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       diffedCounts[i] = current.getCounts()[i] - previousCounts[i];
     }
     return HistogramAccumulation.create(
-        current.getSum() - previous.getSum(), null, null, diffedCounts, current.getExemplars());
+        current.getSum() - previous.getSum(),
+        /* hasMinMax= */ false,
+        -1,
+        -1,
+        diffedCounts,
+        current.getExemplars());
   }
 
   @Override
@@ -178,11 +173,14 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
     protected HistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       lock.lock();
       try {
-        Double min = this.count == 0 ? null : this.min;
-        Double max = this.count == 0 ? null : this.max;
         HistogramAccumulation acc =
             HistogramAccumulation.create(
-                sum, min, max, Arrays.copyOf(counts, counts.length), exemplars);
+                sum,
+                this.count > 0,
+                this.count > 0 ? this.min : -1,
+                this.count > 0 ? this.max : -1,
+                Arrays.copyOf(counts, counts.length),
+                exemplars);
         this.sum = 0;
         this.min = Double.MAX_VALUE;
         this.max = -1;

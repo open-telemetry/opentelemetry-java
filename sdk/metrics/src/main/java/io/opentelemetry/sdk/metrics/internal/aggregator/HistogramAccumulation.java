@@ -9,7 +9,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -22,17 +21,18 @@ abstract class HistogramAccumulation {
    * @return a new {@link HistogramAccumulation} with the given values.
    */
   static HistogramAccumulation create(
-      double sum, @Nullable Double min, @Nullable Double max, long[] counts) {
-    return create(sum, min, max, counts, Collections.emptyList());
+      double sum, boolean hasMinMax, double min, double max, long[] counts) {
+    return create(sum, hasMinMax, min, max, counts, Collections.emptyList());
   }
 
   static HistogramAccumulation create(
       double sum,
-      @Nullable Double min,
-      @Nullable Double max,
+      boolean hasMinMax,
+      double min,
+      double max,
       long[] counts,
       List<ExemplarData> exemplars) {
-    return new AutoValue_HistogramAccumulation(sum, min, max, counts, exemplars);
+    return new AutoValue_HistogramAccumulation(sum, hasMinMax, min, max, counts, exemplars);
   }
 
   HistogramAccumulation() {}
@@ -44,21 +44,20 @@ abstract class HistogramAccumulation {
    */
   abstract double getSum();
 
-  /**
-   * The min of all measurements recorded.
-   *
-   * @return the min of recorded measurements, or {@code null} if not available.
-   */
-  @Nullable
-  abstract Double getMin();
+  /** Return {@code true} if {@link #getMin()} and {@link #getMax()} is set. */
+  abstract boolean hasMinMax();
 
   /**
-   * The max of all measurements recorded.
-   *
-   * @return the max of recorded measurements, or {@code null} if not available.
+   * The min of all measurements recorded, if {@link #hasMinMax()} is {@code true}. If {@link
+   * #hasMinMax()} is {@code false}, the response should be ignored.
    */
-  @Nullable
-  abstract Double getMax();
+  abstract double getMin();
+
+  /**
+   * The max of all measurements recorded, if {@link #hasMinMax()} is {@code true}. If {@link
+   * #hasMinMax()} is {@code false}, the response should be ignored.
+   */
+  abstract double getMax();
 
   /**
    * The counts in each bucket. The returned type is a mutable object, but it should be fine because
