@@ -99,7 +99,7 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: snapshot
+          arguments: assemble publishToSonatype
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
