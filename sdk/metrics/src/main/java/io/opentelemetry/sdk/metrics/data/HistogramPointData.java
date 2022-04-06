@@ -28,6 +28,24 @@ public interface HistogramPointData extends PointData {
    */
   long getCount();
 
+  /** Return {@code true} if {@link #getMin()} is set. */
+  boolean hasMin();
+
+  /**
+   * The min of all measurements recorded, if {@link #hasMin()} is {@code true}. If {@link
+   * #hasMin()} is {@code false}, the response should be ignored.
+   */
+  double getMin();
+
+  /** Return {@code true} if {@link #getMax()} is set. */
+  boolean hasMax();
+
+  /**
+   * The max of all measurements recorded, if {@link #hasMax()} is {@code true}. If {@link
+   * #hasMax()} is {@code false}, the response should be ignored.
+   */
+  double getMax();
+
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
    * counts: (-inf, x], (x, y], (y, z], (z, +inf).

@@ -20,12 +20,19 @@ abstract class HistogramAccumulation {
    *
    * @return a new {@link HistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(double sum, long[] counts) {
-    return create(sum, counts, Collections.emptyList());
+  static HistogramAccumulation create(
+      double sum, boolean hasMinMax, double min, double max, long[] counts) {
+    return create(sum, hasMinMax, min, max, counts, Collections.emptyList());
   }
 
-  static HistogramAccumulation create(double sum, long[] counts, List<ExemplarData> exemplars) {
-    return new AutoValue_HistogramAccumulation(sum, counts, exemplars);
+  static HistogramAccumulation create(
+      double sum,
+      boolean hasMinMax,
+      double min,
+      double max,
+      long[] counts,
+      List<ExemplarData> exemplars) {
+    return new AutoValue_HistogramAccumulation(sum, hasMinMax, min, max, counts, exemplars);
   }
 
   HistogramAccumulation() {}
@@ -36,6 +43,21 @@ abstract class HistogramAccumulation {
    * @return the sum of recorded measurements.
    */
   abstract double getSum();
+
+  /** Return {@code true} if {@link #getMin()} and {@link #getMax()} is set. */
+  abstract boolean hasMinMax();
+
+  /**
+   * The min of all measurements recorded, if {@link #hasMinMax()} is {@code true}. If {@link
+   * #hasMinMax()} is {@code false}, the response should be ignored.
+   */
+  abstract double getMin();
+
+  /**
+   * The max of all measurements recorded, if {@link #hasMinMax()} is {@code true}. If {@link
+   * #hasMinMax()} is {@code false}, the response should be ignored.
+   */
+  abstract double getMax();
 
   /**
    * The counts in each bucket. The returned type is a mutable object, but it should be fine because

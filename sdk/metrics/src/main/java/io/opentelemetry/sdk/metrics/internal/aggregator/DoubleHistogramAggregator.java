@@ -74,8 +74,25 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
     for (int i = 0; i < previousCounts.length; ++i) {
       mergedCounts[i] = previousCounts[i] + current.getCounts()[i];
     }
+    double min = -1;
+    double max = -1;
+    if (previous.hasMinMax() && current.hasMinMax()) {
+      min = Math.min(previous.getMin(), current.getMin());
+      max = Math.max(previous.getMax(), current.getMax());
+    } else if (previous.hasMinMax()) {
+      min = previous.getMin();
+      max = previous.getMax();
+    } else if (current.hasMinMax()) {
+      min = current.getMin();
+      max = current.getMax();
+    }
     return HistogramAccumulation.create(
-        previous.getSum() + current.getSum(), mergedCounts, current.getExemplars());
+        previous.getSum() + current.getSum(),
+        previous.hasMinMax() || current.hasMinMax(),
+        min,
+        max,
+        mergedCounts,
+        current.getExemplars());
   }
 
   @Override
@@ -86,7 +103,12 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       diffedCounts[i] = current.getCounts()[i] - previousCounts[i];
     }
     return HistogramAccumulation.create(
-        current.getSum() - previous.getSum(), diffedCounts, current.getExemplars());
+        current.getSum() - previous.getSum(),
+        /* hasMinMax= */ false,
+        -1,
+        -1,
+        diffedCounts,
+        current.getExemplars());
   }
 
   @Override
@@ -124,6 +146,15 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
     private double sum;
 
     @GuardedBy("lock")
+    private double min;
+
+    @GuardedBy("lock")
+    private double max;
+
+    @GuardedBy("lock")
+    private long count;
+
+    @GuardedBy("lock")
     private final long[] counts;
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -133,6 +164,9 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
       this.sum = 0;
+      this.min = Double.MAX_VALUE;
+      this.max = -1;
+      this.count = 0;
     }
 
     @Override
@@ -140,8 +174,17 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       lock.lock();
       try {
         HistogramAccumulation acc =
-            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length), exemplars);
+            HistogramAccumulation.create(
+                sum,
+                this.count > 0,
+                this.count > 0 ? this.min : -1,
+                this.count > 0 ? this.max : -1,
+                Arrays.copyOf(counts, counts.length),
+                exemplars);
         this.sum = 0;
+        this.min = Double.MAX_VALUE;
+        this.max = -1;
+        this.count = 0;
         Arrays.fill(this.counts, 0);
         return acc;
       } finally {
@@ -156,6 +199,9 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
       lock.lock();
       try {
         this.sum += value;
+        this.min = Math.min(this.min, value);
+        this.max = Math.max(this.max, value);
+        this.count++;
         this.counts[bucketIndex]++;
       } finally {
         lock.unlock();

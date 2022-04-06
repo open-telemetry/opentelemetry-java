@@ -199,6 +199,8 @@ class SerializerTest {
                       1633950672000000000L,
                       KP_VP_ATTR,
                       1.0,
+                      null,
+                      null,
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
