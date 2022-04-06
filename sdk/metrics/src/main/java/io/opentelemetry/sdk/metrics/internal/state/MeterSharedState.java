@@ -5,22 +5,19 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static java.util.stream.Collectors.toList;
+
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
-import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * State for a {@code Meter}.
@@ -29,8 +26,6 @@ import java.util.logging.Logger;
  * at any time.
  */
 public class MeterSharedState {
-
-  private static final Logger logger = Logger.getLogger(MeterSharedState.class.getName());
 
   private final Object callbackLock = new Object();
 
@@ -112,24 +107,22 @@ public class MeterSharedState {
 
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
-      InstrumentDescriptor instrumentDescriptor,
-      MeterProviderSharedState meterProviderSharedState) {
+      InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
 
-    List<RegisteredView> registeredViews =
+    List<SynchronousMetricStorage> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrumentDescriptor, getInstrumentationScopeInfo());
-    List<SynchronousMetricStorage> registeredStorages = new ArrayList<>();
-    for (RegisteredView registeredView : registeredViews) {
-      if (!isCompatibleAggregation(registeredView, instrumentDescriptor)) {
-        continue;
-      }
-      SynchronousMetricStorage storage =
-          SynchronousMetricStorage.create(
-              registeredView, instrumentDescriptor, meterProviderSharedState.getExemplarFilter());
-      if (storage.isEmpty()) {
-        continue;
-      }
+            .findViews(instrument, getInstrumentationScopeInfo())
+            .stream()
+            .map(
+                view ->
+                    SynchronousMetricStorage.create(
+                        view, instrument, meterProviderSharedState.getExemplarFilter()))
+            .filter(m -> !m.isEmpty())
+            .collect(toList());
+
+    List<SynchronousMetricStorage> registeredStorages = new ArrayList<>(storages.size());
+    for (SynchronousMetricStorage storage : storages) {
       registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
 
@@ -187,41 +180,20 @@ public class MeterSharedState {
   private List<AsynchronousMetricStorage<?>> registerAsynchronousInstrument(
       InstrumentDescriptor instrumentDescriptor,
       MeterProviderSharedState meterProviderSharedState) {
-
-    List<RegisteredView> registeredViews =
+    List<AsynchronousMetricStorage<?>> storages =
         meterProviderSharedState
             .getViewRegistry()
-            .findViews(instrumentDescriptor, getInstrumentationScopeInfo());
-    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>();
-    for (RegisteredView registeredView : registeredViews) {
-      if (!isCompatibleAggregation(registeredView, instrumentDescriptor)) {
-        continue;
-      }
-      AsynchronousMetricStorage<?> storage =
-          AsynchronousMetricStorage.create(registeredView, instrumentDescriptor);
-      if (storage.isEmpty()) {
-        continue;
-      }
+            .findViews(instrumentDescriptor, getInstrumentationScopeInfo())
+            .stream()
+            .map(view -> AsynchronousMetricStorage.create(view, instrumentDescriptor))
+            .filter(storage -> !storage.isEmpty())
+            .collect(toList());
+
+    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>(storages.size());
+    for (AsynchronousMetricStorage<?> storage : storages) {
       registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
 
     return registeredStorages;
-  }
-
-  private static boolean isCompatibleAggregation(
-      RegisteredView registeredView, InstrumentDescriptor instrumentDescriptor) {
-    AggregatorFactory factory = (AggregatorFactory) registeredView.getView().getAggregation();
-    if (factory.isCompatibleWithInstrument(instrumentDescriptor)) {
-      return true;
-    }
-    logger.log(
-        Level.WARNING,
-        "View aggregation "
-            + AggregationUtil.aggregationName(registeredView.getView().getAggregation())
-            + " is incompatible with instrument "
-            + instrumentDescriptor.getName()
-            + " of type "
-            + instrumentDescriptor.getType());
-    return false;
   }
 }

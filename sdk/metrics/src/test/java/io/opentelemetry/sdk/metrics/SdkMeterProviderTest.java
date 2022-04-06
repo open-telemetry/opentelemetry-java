@@ -24,14 +24,13 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -39,7 +38,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -53,7 +51,7 @@ class SdkMeterProviderTest {
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create(SdkMeterProviderTest.class.getName());
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ViewRegistry.class);
 
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
@@ -686,58 +684,6 @@ class SdkMeterProviderTest {
                             assertThat(point)
                                 .hasAttributes(
                                     Attributes.builder().put("baggage", "value").build())));
-  }
-
-  @Test
-  @SuppressLogger(MeterSharedState.class)
-  void viewSdk_IncompatibleAggregation() {
-    InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
-    SdkMeterProvider meterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(reader)
-            .registerView(
-                InstrumentSelector.builder().setName("test").build(),
-                View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
-            .build();
-    Meter meter1 = meterProvider.get("meter1");
-    meter1
-        .counterBuilder("test")
-        .buildWithCallback(
-            observableLongMeasurement -> {
-              observableLongMeasurement.record(1);
-            });
-    meter1
-        .counterBuilder("test1")
-        .buildWithCallback(
-            observableLongMeasurement -> {
-              observableLongMeasurement.record(1);
-            });
-    Meter meter2 = meterProvider.get("meter2");
-    meter2.upDownCounterBuilder("test").build().add(-1);
-    meter2.counterBuilder("test1").build().add(1);
-
-    // Ensure we only have metrics for test1, test should be dropped because we've registered a view
-    // with an incompatible aggregation
-    Assertions.assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter1"))
-                    .hasName("test1")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1)),
-            metric ->
-                assertThat(metric)
-                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter2"))
-                    .hasName("test1")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
-    logs.assertContains(
-        "View aggregation explicit_bucket_histogram is incompatible with instrument test of type OBSERVABLE_COUNTER");
-    logs.assertContains(
-        "View aggregation explicit_bucket_histogram is incompatible with instrument test of type UP_DOWN_COUNTER");
   }
 
   @Test
