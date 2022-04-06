@@ -8,19 +8,16 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 /** Builder for {@link InstrumentSelector}. */
 public final class InstrumentSelectorBuilder {
 
   @Nullable private InstrumentType instrumentType;
-  private Predicate<String> instrumentNameFilter = StringPredicates.ALL;
-
-  private Predicate<String> meterNameFilter = StringPredicates.ALL;
-  private Predicate<String> meterVersionFilter = StringPredicates.ALL;
-  private Predicate<String> meterSchemaUrlFilter = StringPredicates.ALL;
+  @Nullable private String instrumentName;
+  @Nullable private String meterName;
+  @Nullable private String meterVersion;
+  @Nullable private String meterSchemaUrl;
 
   InstrumentSelectorBuilder() {}
 
@@ -31,19 +28,20 @@ public final class InstrumentSelectorBuilder {
     return this;
   }
 
-  /** Sets the exact instrument name that will be selected. */
+  /**
+   * Sets the exact instrument name that will be selected.
+   *
+   * <p>Instrument name may contain the wildcard characters {@code *} and {@code ?} with the
+   * following matching criteria:
+   *
+   * <ul>
+   *   <li>{@code *} matches 0 or more instances of any character
+   *   <li>{@code ?} matches exactly one instance of any character
+   * </ul>
+   */
   public InstrumentSelectorBuilder setName(String name) {
     requireNonNull(name, "name");
-    return setName(StringPredicates.exact(name));
-  }
-
-  /**
-   * Sets a {@link Predicate} where instrument names matching the {@link Predicate} will be
-   * selected.
-   */
-  public InstrumentSelectorBuilder setName(Predicate<String> nameFilter) {
-    requireNonNull(nameFilter, "nameFilter");
-    this.instrumentNameFilter = nameFilter;
+    this.instrumentName = name;
     return this;
   }
 
@@ -53,16 +51,7 @@ public final class InstrumentSelectorBuilder {
    */
   public InstrumentSelectorBuilder setMeterName(String meterName) {
     requireNonNull(meterName, "meterName");
-    return setMeterName(StringPredicates.exact(meterName));
-  }
-
-  /**
-   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
-  public InstrumentSelectorBuilder setMeterName(Predicate<String> meterNameFilter) {
-    requireNonNull(meterNameFilter, "meterNameFilter");
-    this.meterNameFilter = meterNameFilter;
+    this.meterName = meterName;
     return this;
   }
 
@@ -72,16 +61,7 @@ public final class InstrumentSelectorBuilder {
    */
   public InstrumentSelectorBuilder setMeterVersion(String meterVersion) {
     requireNonNull(meterVersion, "meterVersion");
-    return setMeterVersion(StringPredicates.exact(meterVersion));
-  }
-
-  /**
-   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
-  public InstrumentSelectorBuilder setMeterVersion(Predicate<String> meterVersionFilter) {
-    requireNonNull(meterVersionFilter, "meterVersionFilter");
-    this.meterVersionFilter = meterVersionFilter;
+    this.meterVersion = meterVersion;
     return this;
   }
 
@@ -91,16 +71,7 @@ public final class InstrumentSelectorBuilder {
    */
   public InstrumentSelectorBuilder setMeterSchemaUrl(String meterSchemaUrl) {
     requireNonNull(meterSchemaUrl, "meterSchemaUrl");
-    return setMeterSchemaUrl(StringPredicates.exact(meterSchemaUrl));
-  }
-
-  /**
-   * Sets a {@link Predicate} for selecting instruments by the name of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
-  public InstrumentSelectorBuilder setMeterSchemaUrl(Predicate<String> meterSchemaUrlFilter) {
-    requireNonNull(meterSchemaUrlFilter, "meterSchemaUrlFilter");
-    this.meterSchemaUrlFilter = meterSchemaUrlFilter;
+    this.meterSchemaUrl = meterSchemaUrl;
     return this;
   }
 
@@ -108,16 +79,12 @@ public final class InstrumentSelectorBuilder {
   public InstrumentSelector build() {
     checkArgument(
         instrumentType != null
-            || instrumentNameFilter != StringPredicates.ALL
-            || meterNameFilter != StringPredicates.ALL
-            || meterVersionFilter != StringPredicates.ALL
-            || meterSchemaUrlFilter != StringPredicates.ALL,
+            || instrumentName != null
+            || meterName != null
+            || meterVersion != null
+            || meterSchemaUrl != null,
         "Instrument selector must contain selection criteria");
     return InstrumentSelector.create(
-        instrumentType,
-        instrumentNameFilter,
-        meterNameFilter,
-        meterVersionFilter,
-        meterSchemaUrlFilter);
+        instrumentType, instrumentName, meterName, meterVersion, meterSchemaUrl);
   }
 }

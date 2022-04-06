@@ -47,8 +47,7 @@ class AsynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private final Resource resource = Resource.empty();
   private final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
-  private final InstrumentSelector selector =
-      InstrumentSelector.builder().setName(unused -> true).build();
+  private final InstrumentSelector selector = InstrumentSelector.builder().setName("*").build();
   private final RegisteredView registeredView =
       RegisteredView.create(
           selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());

@@ -155,15 +155,11 @@ class ViewConfigTest {
                 .meterSchemaUrl("http://example.com")
                 .build());
 
-    assertThat(selector.getInstrumentNameFilter().test("name")).isTrue();
-    assertThat(selector.getInstrumentNameFilter().test("name1")).isFalse();
+    assertThat(selector.getInstrumentName()).isEqualTo("name");
     assertThat(selector.getInstrumentType()).isEqualTo(InstrumentType.COUNTER);
-    assertThat(selector.getMeterNameFilter().test("meterName")).isTrue();
-    assertThat(selector.getMeterNameFilter().test("meterName1")).isFalse();
-    assertThat(selector.getMeterVersionFilter().test("meterVersion")).isTrue();
-    assertThat(selector.getMeterVersionFilter().test("meterVersion1")).isFalse();
-    assertThat(selector.getMeterSchemaUrlFilter().test("http://example.com")).isTrue();
-    assertThat(selector.getMeterSchemaUrlFilter().test("http://example1.com")).isFalse();
+    assertThat(selector.getMeterName()).isEqualTo("meterName");
+    assertThat(selector.getMeterVersion()).isEqualTo("meterVersion");
+    assertThat(selector.getMeterSchemaUrl()).isEqualTo("http://example.com");
   }
 
   private static InputStream resourceFileInputStream(String resourceFileName) {
