@@ -34,6 +34,8 @@ class ImmutableMetricDataTest {
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
+  private static final double DOUBLE_VALUE_MIN = 1.02;
+  private static final double DOUBLE_VALUE_MAX = 0.214;
   private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
   private static final ValueAtQuantile MINIMUM_VALUE =
       ImmutableValueAtQuantile.create(0.0, DOUBLE_VALUE);
@@ -61,6 +63,8 @@ class ImmutableMetricDataTest {
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
           DOUBLE_VALUE,
+          DOUBLE_VALUE_MIN,
+          DOUBLE_VALUE_MAX,
           ImmutableList.of(1.0),
           ImmutableList.of(1L, 1L));
 
@@ -176,6 +180,8 @@ class ImmutableMetricDataTest {
     assertThat(HISTOGRAM_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(2L);
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
+    assertThat(HISTOGRAM_POINT.getMin()).isEqualTo(DOUBLE_VALUE_MIN);
+    assertThat(HISTOGRAM_POINT.getMax()).isEqualTo(DOUBLE_VALUE_MAX);
     assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
     assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
 
@@ -193,7 +199,14 @@ class ImmutableMetricDataTest {
     assertThatThrownBy(
             () ->
                 ImmutableHistogramPointData.create(
-                    0, 0, Attributes.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
+                    0,
+                    0,
+                    Attributes.empty(),
+                    0.0,
+                    0.0,
+                    0.0,
+                    ImmutableList.of(),
+                    ImmutableList.of()))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
@@ -201,6 +214,8 @@ class ImmutableMetricDataTest {
                     0,
                     0,
                     Attributes.empty(),
+                    0.0,
+                    0.0,
                     0.0,
                     ImmutableList.of(1.0, 1.0),
                     ImmutableList.of(0L, 0L, 0L)))
@@ -211,6 +226,8 @@ class ImmutableMetricDataTest {
                     0,
                     0,
                     Attributes.empty(),
+                    0.0,
+                    0.0,
                     0.0,
                     ImmutableList.of(Double.NEGATIVE_INFINITY),
                     ImmutableList.of(0L, 0L)))

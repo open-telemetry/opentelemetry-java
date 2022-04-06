@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - v[0-9]+.[0-9]+.x
+      - release/*
   workflow_dispatch:
 
 jobs:
@@ -60,7 +60,7 @@ jobs:
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-17.outputs.path }}
 
-      - uses: codecov/codecov-action@v2.1.0
+      - uses: codecov/codecov-action@v3
         if: ${{ matrix.coverage }}
 
       - uses: actions/upload-artifact@v2
@@ -99,7 +99,7 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: snapshot
+          arguments: assemble publishToSonatype
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}

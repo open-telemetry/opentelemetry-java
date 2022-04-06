@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -96,19 +97,19 @@ class ViewRegistryTest {
   }
 
   @Test
-  void findViews_FirstAddedViewWins() {
+  void findViews_MultipleMatchingViews() {
     View view1 = View.builder().setAggregation(Aggregation.sum()).build();
     View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
-                InstrumentSelector.builder().setName(name -> name.equals("overridden")).build(),
+                InstrumentSelector.builder().setName("overridden").build(),
                 view2,
                 AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
             .addView(
-                InstrumentSelector.builder().setName(name -> true).build(),
+                InstrumentSelector.builder().setName("*").build(),
                 view1,
                 AttributesProcessor.noop(),
                 SourceInfo.fromCurrentStack())
@@ -267,5 +268,27 @@ class ViewRegistryTest {
         .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
 
     assertThat(logs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  void matchesName() {
+    assertThat(toGlobPatternPredicate("foo").test("foo")).isTrue();
+    assertThat(toGlobPatternPredicate("foo").test("Foo")).isTrue();
+    assertThat(toGlobPatternPredicate("foo").test("bar")).isFalse();
+    assertThat(toGlobPatternPredicate("fo?").test("foo")).isTrue();
+    assertThat(toGlobPatternPredicate("fo??").test("fooo")).isTrue();
+    assertThat(toGlobPatternPredicate("fo?").test("fob")).isTrue();
+    assertThat(toGlobPatternPredicate("fo?").test("fooo")).isFalse();
+    assertThat(toGlobPatternPredicate("*").test("foo")).isTrue();
+    assertThat(toGlobPatternPredicate("*").test("bar")).isTrue();
+    assertThat(toGlobPatternPredicate("*").test("baz")).isTrue();
+    assertThat(toGlobPatternPredicate("*").test("foo.bar.baz")).isTrue();
+    assertThat(toGlobPatternPredicate("fo*").test("fo")).isTrue();
+    assertThat(toGlobPatternPredicate("fo*").test("foo")).isTrue();
+    assertThat(toGlobPatternPredicate("fo*").test("fooo")).isTrue();
+    assertThat(toGlobPatternPredicate("fo*").test("foo.bar.baz")).isTrue();
+    assertThat(toGlobPatternPredicate("f()[]$^.{}|").test("f()[]$^.{}|")).isTrue();
+    assertThat(toGlobPatternPredicate("f()[]$^.{}|?").test("f()[]$^.{}|o")).isTrue();
+    assertThat(toGlobPatternPredicate("f()[]$^.{}|*").test("f()[]$^.{}|ooo")).isTrue();
   }
 }

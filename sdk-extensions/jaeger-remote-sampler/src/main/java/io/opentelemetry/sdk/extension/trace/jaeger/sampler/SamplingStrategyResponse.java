@@ -164,13 +164,19 @@ class SamplingStrategyResponse {
     Builder setRateLimitingSamplingStrategy(
         RateLimitingSamplingStrategy rateLimitingSamplingStrategy) {
       this.rateLimitingSamplingStrategy = rateLimitingSamplingStrategy;
-      return this;
+      // https://github.com/open-telemetry/opentelemetry-java/issues/4319
+      // Jaeger does not always return the samplingType (e.g., for the default strategy)
+      // We explicitly assign the correct value to samplingType
+      return setSamplingStrategyType(SamplingStrategyType.RATE_LIMITING);
     }
 
     Builder setProbabilisticSamplingStrategy(
         ProbabilisticSamplingStrategy probabilisticSamplingStrategy) {
       this.probabilisticSamplingStrategy = probabilisticSamplingStrategy;
-      return this;
+      // https://github.com/open-telemetry/opentelemetry-java/issues/4319
+      // Jaeger does not always return the samplingType (e.g., for the default strategy)
+      // We explicitly assign the correct value to samplingType
+      return setSamplingStrategyType(SamplingStrategyType.PROBABILISTIC);
     }
 
     Builder setPerOperationSamplingStrategies(

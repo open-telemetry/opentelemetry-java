@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -25,47 +24,55 @@ public abstract class InstrumentSelector {
 
   static InstrumentSelector create(
       @Nullable InstrumentType instrumentType,
-      Predicate<String> instrumentNameFilter,
-      Predicate<String> meterNameFilter,
-      Predicate<String> meterVersionFilter,
-      Predicate<String> meterSchemaUrlFilter) {
+      @Nullable String instrumentName,
+      @Nullable String meterName,
+      @Nullable String meterVersion,
+      @Nullable String meterSchemaUrl) {
     return new AutoValue_InstrumentSelector(
-        instrumentType,
-        instrumentNameFilter,
-        meterNameFilter,
-        meterVersionFilter,
-        meterSchemaUrlFilter);
+        instrumentType, instrumentName, meterName, meterVersion, meterSchemaUrl);
   }
 
   InstrumentSelector() {}
 
   /**
-   * Returns {@link InstrumentType} that should be selected. If null, then this specifier will not
-   * be used.
+   * Returns selection criteria for {@link InstrumentType}. If null, select instruments with any
+   * type.
    */
   @Nullable
   public abstract InstrumentType getInstrumentType();
 
   /**
-   * Returns the {@link Predicate} for filtering instruments by name. Matches everything by default.
+   * Returns the selection criteria for instrument name. If null, select instruments with any name.
+   *
+   * <p>Instrument name may contain the wildcard characters {@code *} and {@code ?} with the
+   * following matching criteria:
+   *
+   * <ul>
+   *   <li>{@code *} matches 0 or more instances of any character
+   *   <li>{@code ?} matches exactly one instance of any character
+   * </ul>
    */
-  public abstract Predicate<String> getInstrumentNameFilter();
+  @Nullable
+  public abstract String getInstrumentName();
 
   /**
-   * Returns the {@link Predicate} for filtering instruments by the name of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
+   * Returns the selection criteria for meter name. If null, select instruments from meters with any
+   * name.
    */
-  public abstract Predicate<String> getMeterNameFilter();
+  @Nullable
+  public abstract String getMeterName();
 
   /**
-   * Returns the {@link Predicate} for filtering instruments by the version of their associated
-   * {@link io.opentelemetry.api.metrics.Meter}.
+   * Returns the selection criteria for meter version. If null, select instruments from meters with
+   * any version.
    */
-  public abstract Predicate<String> getMeterVersionFilter();
+  @Nullable
+  public abstract String getMeterVersion();
 
   /**
-   * Returns the {@link Predicate} for filtering instruments by the schema URL of their associated
-   * {@link io.opentelemetry.api.metrics.Meter}.
+   * Returns the selection criteria for meter schema url. If null, select instruments from meters
+   * with any schema url.
    */
-  public abstract Predicate<String> getMeterSchemaUrlFilter();
+  @Nullable
+  public abstract String getMeterSchemaUrl();
 }

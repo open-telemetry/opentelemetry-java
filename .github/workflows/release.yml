@@ -1,0 +1,125 @@
+name: Release
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build and publish artifacts
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
+      - name: Set versions
+        id: set-versions
+        run: |
+          version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts | head -1)
+          if [[ $version =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            patch="${BASH_REMATCH[3]}"
+          else
+            echo "unexpected version: $version"
+            exit 1
+          fi
+          if [[ $patch == 0 ]]; then
+            if [[ $minor == 0 ]]; then
+              prior_major=$((major - 1))
+              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md  | head -1)
+              prior_version="$prior_major.$prior_minor"
+            else
+              prior_version="$major.$((minor - 1)).0"
+            fi
+          else
+              prior_version="$major.$minor.$((patch - 1))"
+          fi
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
+
+      - name: Generate release notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ $version == *.0 ]]; then
+            cat > release-notes.txt << EOF
+            This release targets the OpenTelemetry SDK $VERSION.
+
+            EOF
+          else
+            cat > release-notes.txt << EOF
+            This is a patch release on the previous $PRIOR_VERSION release, fixing the issue(s) below.
+
+            EOF
+          fi
+
+          sed -n "/^## Version $VERSION/,/^## Version /p" CHANGELOG.md \
+            | tail -n +2 \
+            | head -n -1 \
+            | perl -0pe 's/^\n+//g' \
+            | perl -0pe 's/\n+$/\n/g' \
+            | sed -r "s,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1," \
+            | perl -0pe 's/\n +/ /g' \
+            >> release-notes.txt
+
+          if [[ $version == *.0 ]]; then
+            cat >> release-notes.txt << EOF
+
+            ### 🙇 Thank you
+            This release was possible thanks to the following contributors who shared their brilliant ideas and awesome pull requests:
+
+            EOF
+
+            .github/scripts/generate-release-contributors.sh v$PRIOR_VERSION v$VERSION >> release-notes.txt
+          fi
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create --target $GITHUB_REF_NAME \
+                            --title "Version $VERSION" \
+                            --notes-file release-notes.txt \
+                            --discussion-category announcements \
+                            v$VERSION
+
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          # history is needed in order to generate the patch
+          fetch-depth: 0
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+        # this step should be last since it will fail if there have been conflicting
+        # change log updates introduced on the main branch
+      - name: Create pull request to merge any change log updates to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md > patch
+          if [ -s patch ]; then
+            git apply patch
+            msg="Merge change log updates from $GITHUB_REF_NAME to main"
+            git commit -a -m "$msg"
+            git push origin HEAD:merge-change-log-updates-to-main
+            gh pr create --title "$msg" \
+                         --body "$msg" \
+                         --head merge-change-log-updates-to-main \
+                         --base main
+          fi

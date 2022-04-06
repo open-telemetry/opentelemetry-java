@@ -27,6 +27,7 @@ import java.util.function.Consumer;
  */
 public class MeterSharedState {
 
+  private final Object collectLock = new Object();
   private final Object callbackLock = new Object();
 
   @GuardedBy("callbackLock")
@@ -81,28 +82,31 @@ public class MeterSharedState {
     synchronized (callbackLock) {
       currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
     }
-    for (CallbackRegistration<?> callbackRegistration : currentRegisteredCallbacks) {
-      callbackRegistration.invokeCallback();
-    }
-
-    Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
-    List<MetricData> result = new ArrayList<>(metrics.size());
-    for (MetricStorage metric : metrics) {
-      MetricData current =
-          metric.collectAndReset(
-              collectionInfo,
-              meterProviderSharedState.getResource(),
-              getInstrumentationScopeInfo(),
-              meterProviderSharedState.getStartEpochNanos(),
-              epochNanos,
-              suppressSynchronousCollection);
-      // Ignore if the metric data doesn't have any data points, for example when aggregation is
-      // Aggregation#drop()
-      if (!current.isEmpty()) {
-        result.add(current);
+    // Collections across all readers are sequential
+    synchronized (collectLock) {
+      for (CallbackRegistration<?> callbackRegistration : currentRegisteredCallbacks) {
+        callbackRegistration.invokeCallback();
       }
+
+      Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
+      List<MetricData> result = new ArrayList<>(metrics.size());
+      for (MetricStorage metric : metrics) {
+        MetricData current =
+            metric.collectAndReset(
+                collectionInfo,
+                meterProviderSharedState.getResource(),
+                getInstrumentationScopeInfo(),
+                meterProviderSharedState.getStartEpochNanos(),
+                epochNanos,
+                suppressSynchronousCollection);
+        // Ignore if the metric data doesn't have any data points, for example when aggregation is
+        // Aggregation#drop()
+        if (!current.isEmpty()) {
+          result.add(current);
+        }
+      }
+      return result;
     }
-    return result;
   }
 
   /** Registers new synchronous storage associated with a given instrument. */
