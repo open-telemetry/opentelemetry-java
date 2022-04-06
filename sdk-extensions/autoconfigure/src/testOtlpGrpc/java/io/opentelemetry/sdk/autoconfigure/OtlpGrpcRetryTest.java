@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressLogger(DefaultGrpcExporter.class)
 class OtlpGrpcRetryTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());

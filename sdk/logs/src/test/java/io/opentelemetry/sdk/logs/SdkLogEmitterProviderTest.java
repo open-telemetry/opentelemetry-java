@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -210,6 +211,7 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
+  @SuppressLogger(SdkLogEmitterProvider.class)
   void shutdown() {
     sdkLogEmitterProvider.shutdown();
     sdkLogEmitterProvider.shutdown();

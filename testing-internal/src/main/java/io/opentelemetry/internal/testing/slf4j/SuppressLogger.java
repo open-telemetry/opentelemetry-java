@@ -17,7 +17,10 @@ import java.lang.annotation.RetentionPolicy;
 @Repeatable(SuppressLogger.SuppressLoggers.class)
 public @interface SuppressLogger {
   /** The class whose {@link java.util.logging.Logger} will be suppressed. */
-  Class<?> value();
+  Class<?> value() default Void.class;
+
+  /** The names of {@link java.util.logging.Logger}s to be suppressed. */
+  String loggerName() default "";
 
   @Retention(RetentionPolicy.RUNTIME)
   @interface SuppressLoggers {
