@@ -35,6 +35,11 @@ public final class DropAggregation implements Aggregation, AggregatorFactory {
   }
 
   @Override
+  public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
+    return true;
+  }
+
+  @Override
   public String toString() {
     return "DropAggregation";
   }

@@ -60,6 +60,17 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
   }
 
   @Override
+  public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
+    switch (instrumentDescriptor.getType()) {
+      case COUNTER:
+      case HISTOGRAM:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @Override
   public String toString() {
     return "ExplicitBucketHistogramAggregation(" + bucketBoundaries.toString() + ")";
   }

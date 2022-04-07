@@ -9,12 +9,16 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
@@ -34,6 +38,7 @@ public final class ViewRegistry {
           DEFAULT_VIEW,
           AttributesProcessor.NOOP,
           SourceInfo.noSourceInfo());
+  private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
   private final List<RegisteredView> reverseRegistration;
 
@@ -58,9 +63,23 @@ public final class ViewRegistry {
     List<RegisteredView> result = new ArrayList<>();
     for (RegisteredView entry : reverseRegistration) {
       if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
-        result.add(entry);
+        AggregatorFactory viewAggregatorFactory =
+            (AggregatorFactory) entry.getView().getAggregation();
+        if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
+          result.add(entry);
+        } else {
+          logger.log(
+              Level.WARNING,
+              "View aggregation "
+                  + AggregationUtil.aggregationName(entry.getView().getAggregation())
+                  + " is incompatible with instrument "
+                  + descriptor.getName()
+                  + " of type "
+                  + descriptor.getType());
+        }
       }
     }
+
     if (result.isEmpty()) {
       return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
     }

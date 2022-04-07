@@ -54,6 +54,20 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
   }
 
   @Override
+  public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
+    switch (instrumentDescriptor.getType()) {
+      case COUNTER:
+      case OBSERVABLE_COUNTER:
+      case UP_DOWN_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+      case HISTOGRAM:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @Override
   public String toString() {
     return "SumAggregation";
   }

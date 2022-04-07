@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -17,14 +19,17 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class ViewRegistryTest {
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ViewRegistry.class);
 
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create("name", "version", "schema_url");
 
   @Test
-  void selection_onType() {
+  void findViews_SelectionOnType() {
     View view = View.builder().build();
 
     ViewRegistry viewRegistry =
@@ -53,10 +58,12 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+
+    assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
-  void selection_onName() {
+  void findViews_SelectionOnName() {
     View view = View.builder().build();
 
     ViewRegistry viewRegistry =
@@ -85,11 +92,13 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+
+    assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
-  void selection_MultipleMatchingViews() {
-    View view1 = View.builder().setAggregation(Aggregation.lastValue()).build();
+  void findViews_MultipleMatchingViews() {
+    View view1 = View.builder().setAggregation(Aggregation.sum()).build();
     View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
@@ -124,11 +133,13 @@ class ViewRegistryTest {
         .element(0)
         .extracting(RegisteredView::getView)
         .isEqualTo(view1);
+
+    assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
-  void selection_typeAndName() {
-    View view = View.builder().setAggregation(Aggregation.lastValue()).build();
+  void findViews_SelectionTypeAndName() {
+    View view = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
@@ -169,6 +180,35 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+
+    assertThat(logs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  @SuppressLogger(ViewRegistry.class)
+  void findViews_IncompatibleViewIgnored() {
+    View view = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
+
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_COUNTER).build(),
+                view,
+                AttributesProcessor.noop(),
+                SourceInfo.fromCurrentStack())
+            .build();
+
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "test", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_SCOPE_INFO))
+        .hasSize(1)
+        .element(0)
+        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+
+    logs.assertContains(
+        "View aggregation explicit_bucket_histogram is incompatible with instrument test of type OBSERVABLE_COUNTER");
   }
 
   @Test
@@ -226,6 +266,8 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+
+    assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test

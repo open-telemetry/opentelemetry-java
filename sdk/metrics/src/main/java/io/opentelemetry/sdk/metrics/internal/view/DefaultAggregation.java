@@ -57,6 +57,13 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
   }
 
   @Override
+  public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
+    // This should always return true
+    return ((AggregatorFactory) resolve(instrumentDescriptor))
+        .isCompatibleWithInstrument(instrumentDescriptor);
+  }
+
+  @Override
   public String toString() {
     return "DefaultAggregation";
   }
