@@ -40,6 +40,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * @see TracerProvider
  * @see ContextPropagators
  */
+// We intentionally assign to be use for error reporting.
+@SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalOpenTelemetry {
 
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());

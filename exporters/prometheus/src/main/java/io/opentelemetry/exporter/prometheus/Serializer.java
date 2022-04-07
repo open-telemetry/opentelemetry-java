@@ -145,7 +145,7 @@ abstract class Serializer {
           writePoint(
               writer,
               name,
-              ((LongPointData) point).getValue(),
+              (double) ((LongPointData) point).getValue(),
               point.getAttributes(),
               point.getEpochNanos());
           break;
@@ -164,7 +164,11 @@ abstract class Serializer {
   private void writeHistogram(Writer writer, String name, HistogramPointData point)
       throws IOException {
     writePoint(
-        writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
+        writer,
+        name + "_count",
+        (double) point.getCount(),
+        point.getAttributes(),
+        point.getEpochNanos());
     writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
 
     long cumulativeCount = 0;
@@ -178,7 +182,7 @@ abstract class Serializer {
       writePoint(
           writer,
           name + "_bucket",
-          cumulativeCount,
+          (double) cumulativeCount,
           point.getAttributes(),
           point.getEpochNanos(),
           "le",
@@ -212,7 +216,11 @@ abstract class Serializer {
 
   private void writeSummary(Writer writer, String name, SummaryPointData point) throws IOException {
     writePoint(
-        writer, name + "_count", point.getCount(), point.getAttributes(), point.getEpochNanos());
+        writer,
+        name + "_count",
+        (double) point.getCount(),
+        point.getAttributes(),
+        point.getEpochNanos());
     writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
 
     List<ValueAtQuantile> valueAtQuantiles = point.getValues();

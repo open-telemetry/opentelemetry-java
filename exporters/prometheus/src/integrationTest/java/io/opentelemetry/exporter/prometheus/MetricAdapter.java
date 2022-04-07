@@ -141,7 +141,7 @@ final class MetricAdapter {
                   name,
                   labelNames,
                   labelValues,
-                  longPoint.getValue(),
+                  (double) longPoint.getValue(),
                   // Prometheus doesn't support exemplars on SUM/GAUGE
                   null,
                   longPoint.getEpochNanos()));
@@ -171,7 +171,7 @@ final class MetricAdapter {
             name + SAMPLE_SUFFIX_COUNT,
             labelNames,
             labelValues,
-            doubleSummaryPoint.getCount(),
+            (double) doubleSummaryPoint.getCount(),
             null,
             doubleSummaryPoint.getEpochNanos()));
 
@@ -214,7 +214,7 @@ final class MetricAdapter {
             name + SAMPLE_SUFFIX_COUNT,
             labelNames,
             labelValues,
-            histogramPointData.getCount(),
+            (double) histogramPointData.getCount(),
             null,
             histogramPointData.getEpochNanos()));
 
@@ -247,7 +247,7 @@ final class MetricAdapter {
               name + SAMPLE_SUFFIX_BUCKET,
               labelNamesWithLe,
               labelValuesWithLe,
-              cumulativeCount,
+              (double) cumulativeCount,
               filterExemplars(
                   histogramPointData.getExemplars(),
                   Serializer.getBucketLowerBound(histogramPointData, i),

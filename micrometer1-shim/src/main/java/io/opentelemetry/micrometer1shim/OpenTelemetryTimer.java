@@ -23,6 +23,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.DoubleAdder;
 import java.util.concurrent.atomic.LongAdder;
 
 final class OpenTelemetryTimer extends AbstractTimer implements RemovableMeter {
@@ -80,7 +81,7 @@ final class OpenTelemetryTimer extends AbstractTimer implements RemovableMeter {
   @Override
   protected void recordNonNegative(long amount, TimeUnit unit) {
     if (!removed) {
-      long nanos = unit.toNanos(amount);
+      double nanos = (double) unit.toNanos(amount);
       double time = TimeUtils.nanosToUnit(nanos, baseTimeUnit);
       otelHistogram.record(time, attributes);
       measurements.record(nanos);
@@ -116,7 +117,7 @@ final class OpenTelemetryTimer extends AbstractTimer implements RemovableMeter {
   }
 
   private interface Measurements {
-    void record(long nanos);
+    void record(double nanos);
 
     long count();
 
@@ -129,7 +130,7 @@ final class OpenTelemetryTimer extends AbstractTimer implements RemovableMeter {
     INSTANCE;
 
     @Override
-    public void record(long nanos) {}
+    public void record(double nanos) {}
 
     @Override
     public long count() {
@@ -149,10 +150,10 @@ final class OpenTelemetryTimer extends AbstractTimer implements RemovableMeter {
   private static final class MicrometerHistogramMeasurements implements Measurements {
 
     private final LongAdder count = new LongAdder();
-    private final LongAdder totalTime = new LongAdder();
+    private final DoubleAdder totalTime = new DoubleAdder();
 
     @Override
-    public void record(long nanos) {
+    public void record(double nanos) {
       count.increment();
       totalTime.add(nanos);
     }
