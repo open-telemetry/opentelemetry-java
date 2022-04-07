@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
  * io.opentelemetry.api.trace.Status#OK} are categorized into one of these buckets om the traceZ
  * zPage.
  */
+// TODO(anuraaga): Consider renaming the enums that don't follow our standard convention for
+// constants.
+@SuppressWarnings("MemberName")
 enum LatencyBoundary {
   /** Stores finished successful requests of duration within the interval [0, 10us). */
   ZERO_MICROSx10(0, TimeUnit.MICROSECONDS.toNanos(10)),

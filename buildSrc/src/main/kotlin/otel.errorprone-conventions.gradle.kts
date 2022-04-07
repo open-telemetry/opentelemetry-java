@@ -21,6 +21,9 @@ tasks {
         disableWarningsInGeneratedCode.set(true)
         allDisabledChecksAsWarnings.set(true)
 
+        // Still Java 8
+        disable("Varifier")
+
         // Doesn't currently use Var annotations.
         disable("Var") // "-Xep:Var:OFF"
 
@@ -49,7 +52,6 @@ tasks {
         disable("StaticOrDefaultInterfaceMethod")
 
         // Limits APIs
-        disable("NoFunctionalReturnType")
         disable("PreferredInterfaceType")
 
         // We don't depend on Guava so use normal splitting

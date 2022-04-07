@@ -63,13 +63,13 @@ public enum TestSdk {
   }
 
   public Tracer getTracer() {
-    return sdkBuilder.buildTracer();
+    return SdkBuilder.buildTracer();
   }
 
   private abstract static class SdkBuilder {
     abstract Meter build();
 
-    protected Tracer buildTracer() {
+    protected static Tracer buildTracer() {
       return SdkTracerProvider.builder()
           .setSampler(Sampler.alwaysOn())
           .build()

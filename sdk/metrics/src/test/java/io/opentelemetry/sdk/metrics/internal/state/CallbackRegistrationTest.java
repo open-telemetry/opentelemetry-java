@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,7 +74,7 @@ class CallbackRegistrationTest {
 
   @Test
   void invokeCallback_Long() {
-    AtomicLong counter = new AtomicLong();
+    AtomicInteger counter = new AtomicInteger();
     Consumer<ObservableDoubleMeasurement> callback =
         measurement ->
             measurement.record(
@@ -92,7 +92,7 @@ class CallbackRegistrationTest {
 
   @Test
   void invokeCallback_NoStorage() {
-    AtomicLong counter = new AtomicLong();
+    AtomicInteger counter = new AtomicInteger();
     Consumer<ObservableDoubleMeasurement> callback =
         measurement ->
             measurement.record(
