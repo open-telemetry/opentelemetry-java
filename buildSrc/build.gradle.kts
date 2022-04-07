@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.2.2"
+  id("com.diffplug.spotless") version "6.4.2"
 }
 
 repositories {
@@ -12,12 +12,13 @@ repositories {
 }
 
 dependencies {
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.3.0")
+  // When updating, update above in plugins too
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.4.2")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
-  implementation("com.squareup.wire:wire-compiler:4.2.0")
-  implementation("com.squareup.wire:wire-gradle-plugin:4.2.0")
+  implementation("com.squareup.wire:wire-compiler:4.3.0")
+  implementation("com.squareup.wire:wire-gradle-plugin:4.3.0")
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.0")
