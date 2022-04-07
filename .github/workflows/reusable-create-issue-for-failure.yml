@@ -21,6 +21,4 @@ jobs:
 
           gh issue create --title "$GITHUB_WORKFLOW #$GITHUB_RUN_NUMBER failed" \
                           --label bug \
-                          --label area:build \
-                          --label priority:p1 \
                           --body-file body.txt
