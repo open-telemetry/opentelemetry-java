@@ -292,6 +292,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
+  @SuppressLogger(DefaultGrpcExporter.class)
   void exportAfterShutdown() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).build();
@@ -431,6 +433,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @ParameterizedTest
   @ValueSource(ints = {1, 4, 8, 10, 11, 14, 15})
+  @SuppressLogger(OkHttpGrpcExporter.class)
+  @SuppressLogger(DefaultGrpcExporter.class)
   void retryableError(int code) {
     addGrpcError(code, null);
 
@@ -451,6 +455,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
+  @SuppressLogger(DefaultGrpcExporter.class)
   void retryableError_tooManyAttempts() {
     addGrpcError(1, null);
     addGrpcError(1, null);

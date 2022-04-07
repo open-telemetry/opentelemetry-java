@@ -38,6 +38,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
+@SuppressLogger(OkHttpGrpcService.class)
 class JaegerRemoteSamplerTest {
 
   private static final String SERVICE_NAME = "my-service";

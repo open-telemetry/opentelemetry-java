@@ -40,13 +40,14 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.logs.LogEmitter;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -142,7 +143,7 @@ class FullConfigTest {
         }
       };
 
-  private SdkLogEmitterProvider logEmitterProvider;
+  private AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk;
 
   @BeforeEach
   void setUp() {
@@ -154,11 +155,27 @@ class FullConfigTest {
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
-    // SdkLogEmitterProvider isn't globally accessible so we initialize here to get a reference
-    logEmitterProvider =
-        AutoConfiguredOpenTelemetrySdk.initialize()
-            .getOpenTelemetrySdk()
-            .getSdkLogEmitterProvider();
+    // Initialize here so we get SdkLogEmitterProvider and shutdown when done
+    autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
+  }
+
+  @AfterEach
+  void afterEach() {
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkMeterProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkLogEmitterProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkTracerProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
   }
 
   @Test
@@ -194,7 +211,8 @@ class FullConfigTest {
         .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    LogEmitter logEmitter = logEmitterProvider.get("test");
+    LogEmitter logEmitter =
+        autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLogEmitterProvider().get("test");
     logEmitter.logBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logEmitter.logBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 

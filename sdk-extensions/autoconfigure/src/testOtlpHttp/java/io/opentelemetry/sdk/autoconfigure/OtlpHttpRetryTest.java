@@ -15,6 +15,7 @@ import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -35,6 +36,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressLogger(OkHttpExporter.class)
 class OtlpHttpRetryTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());

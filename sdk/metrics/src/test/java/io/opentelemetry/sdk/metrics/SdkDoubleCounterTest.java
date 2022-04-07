@@ -13,6 +13,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -179,6 +180,7 @@ class SdkDoubleCounterTest {
   }
 
   @Test
+  @SuppressLogger(SdkDoubleCounter.class)
   void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
     doubleCounter.add(-45.77d);
@@ -188,6 +190,7 @@ class SdkDoubleCounterTest {
   }
 
   @Test
+  @SuppressLogger(SdkDoubleCounter.class)
   void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
     BoundDoubleCounter bound = ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty());

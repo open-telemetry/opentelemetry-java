@@ -450,6 +450,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(10)
+  @SuppressLogger(SdkTracerProvider.class)
   void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
