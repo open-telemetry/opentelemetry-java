@@ -16,10 +16,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
@@ -367,9 +369,12 @@ class OtlpConfigUtilTest {
   /** Configure and return the aggregation temporality using the given properties. */
   private static AggregationTemporality configureAggregationTemporality(
       Map<String, String> properties) {
-    AtomicReference<AggregationTemporality> temporalityRef = new AtomicReference<>();
+    AtomicReference<Function<InstrumentType, AggregationTemporality>> temporalityRef =
+        new AtomicReference<>();
     OtlpConfigUtil.configureOtlpAggregationTemporality(
         DefaultConfigProperties.createForTest(properties), temporalityRef::set);
-    return temporalityRef.get();
+    // configureOtlpAggregationTemporality sets a function, but we can use the
+    // AggregationTemporality of HISTOGRAM instruments to simplify assertions
+    return temporalityRef.get().apply(InstrumentType.HISTOGRAM);
   }
 }

@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -150,11 +151,11 @@ class OtlpHttpMetricExporterTest {
     assertThatCode(
             () ->
                 OtlpHttpMetricExporter.builder()
-                    .setPreferredTemporality(AggregationTemporality.DELTA))
+                    .setAggregationTemporality(MetricExporter::deltaPreferred))
         .doesNotThrowAnyException();
     assertThat(
             OtlpHttpMetricExporter.builder()
-                .setPreferredTemporality(AggregationTemporality.DELTA)
+                .setAggregationTemporality(MetricExporter::deltaPreferred)
                 .build()
                 .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
@@ -199,9 +200,9 @@ class OtlpHttpMetricExporterTest {
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
 
-    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setPreferredTemporality(null))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setAggregationTemporality(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("preferredTemporality");
+        .hasMessage("aggregationTemporalityFunction");
   }
 
   @Test
