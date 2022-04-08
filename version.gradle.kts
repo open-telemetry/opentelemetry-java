@@ -3,6 +3,6 @@ allprojects {
   if (release != null) {
     version = "1.13.0-" + release + "-SNAPSHOT"
   } else {
-    version = "1.13.0-SNAPSHOT"
+    version = "1.13.0"
   }
 }
