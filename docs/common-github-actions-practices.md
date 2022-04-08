@@ -631,7 +631,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ $version != *.0 ]]; then
+          if [[ $VERSION != *.0 ]]; then
             cat > release-notes.txt << EOF
             This is a patch release on the previous $PRIOR_VERSION release, fixing the issue(s) below.
 

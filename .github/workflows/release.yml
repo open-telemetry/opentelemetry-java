@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ $version == *.0 ]]; then
+          if [[ $VERSION == *.0 ]]; then
             cat > release-notes.txt << EOF
             This release targets the OpenTelemetry SDK $VERSION.
 
@@ -74,7 +74,7 @@ jobs:
             | perl -0pe 's/\n +/ /g' \
             >> release-notes.txt
 
-          if [[ $version == *.0 ]]; then
+          if [[ $VERSION == *.0 ]]; then
             cat >> release-notes.txt << EOF
 
             ### 🙇 Thank you
