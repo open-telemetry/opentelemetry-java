@@ -19,10 +19,9 @@ jobs:
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_NAME=$release_branch_name" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Drop SNAPSHOT from version
         run: |
-          sed -ri "s/$VERSION-SNAPSHOT/$VERSION/" version.gradle.kts
-          sed -ri "s/$VERSION-alpha-SNAPSHOT/$VERSION-alpha/" version.gradle.kts
+          sed -ri "s/val snapshot = true/val snapshot = false/" version.gradle.kts
 
       - name: Set git user
         run: |
