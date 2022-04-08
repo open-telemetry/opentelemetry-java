@@ -2,6 +2,119 @@
 
 ## Version 1.13.0 (unreleased):
 
+Although we originally intended 1.13.0 to be the first stable release of the metrics SDK, we've
+downgraded it to be a release candidate (RC) out of caution due to a large number of changes in both
+the metrics SDK specification and java implementation. There are several notable changes mentioned
+in the Metrics section. Additionally, please note that the Auto-configuration module now enables
+metric export by default via OTLP, i.e. by default `otel.metrics.exporter=otlp`.
+
+### API
+
+* Fix `TraceStateBuilder` reuse bug.
+
+### SDK
+
+* `InstrumentationScopeInfo` replaces `InstrumentationLibraryInfo`. Methods
+  returning `InstrumentationLibraryInfo` are deprecated.
+* Add `ResourceBuilder#removeIf(Predicate)` method for symmetry with `AttributesBuilder`.
+
+#### Traces
+
+* Span events that record exceptions are instances of `ExceptionEventData`.
+
+#### Metrics
+
+* BREAKING: Remove `MetricReader` factory pattern:
+  * `MetricReader` instances, rather than `MetricReaderFacotry`, are registered
+    with `SdkMeterProviderBuilder`. For
+    example: `SdkMeterProvider.builder().registerMetricReader(PeriodicMetricReader.builder(exporter).build())`.
+  * `MetricReader` does not support custom implementations. Built-in readers
+    include: `PeriodicMetricReader`, `PrometheusHttpServer`, and for testing, `InMemoryMetricReader`.
+* BREAKING: Several breaking changes metrics to the `Data` classes:
+  * `MetriaData` returns `InstrumentationScopeInfo` instead of `InstrumentationLibraryInfo`.
+  * `MetricData` factories classes have been moved internal.
+  * Exemplar data classes have been migrated to interfaces, and deprecated methods have been
+    removed.
+  * PointData classes have been migrated to interfaces.
+  * `ValueAtPercentile` has been converted to `ValueAtQuantile` to reflect specification.
+  * Drop `HistogramPointData` utility methods for finding bucket bounds.
+* BREAKING: Move `InstrumentType` and `InstrumentValueType` to `io.opentelemetry.sdk.metrics`
+  package.
+* BREAKING: Several breaking changes to the `InstrumentSelector` / `View` APIs:
+  * `InstrumentSelector` / `View` and corresponding builders have been moved
+    to `io.opentelemetry.sdk.metrics` package.
+  * `InstrumentSelector` meter selection criteria has been inlined and `MeterSelector` has been
+    removed.
+  * `InstrumentSelector` criteria has been reduced to reflect specification. All fields are exact
+    match, except instrument name which accepts wildcard `*` and `?` matches.
+  * If `InstrumentSelectorBuilder#build()` is called without any selection criteria, an exception
+    will be thrown.
+  * `View` baggage appending attribute processor has been removed. Available for experimental use
+    via `SdkMeterProviderUtil#appendFilteredBaggageAttributes`.
+  * Concept of `AttributeProcessor` has been moved internal.
+  * If a View configures an aggregation that is not compatible with the instrument type of a
+    selected instrument, a warning is logged and the View is ignored.
+* BREAKING: Remove deprecated `Aggregation#histogram()`. Use `Aggregation#explicitBucketHistogram()`
+  instead.
+* Relax behavior around conflicting instruments. If you register two instruments with the same
+  name but conflicting description, unit, type, or value type, both will be exported and a warning
+  will be logged indicating the metric identity conflict. Previously, the second registered would
+  have produced a noop instrument. Likewise, if two views are registered that produce instruments
+  with conflicting names, or if an instrument conflicts with a registered view's name, both will be
+  exported and a warning will be logged indicating the view conflict.
+* BREAKING: Exemplars have been moved to internal. By default, exemplars are enabled
+  with `with_sampled_trace` filter. This can be adjusted via experimental APIs
+  via `SdkMeterProviderUtil#setExemplarFilter`.
+* BREAKING: `MetricExporter#getPreferredTemporality()` has been removed and replaced
+  with `getAggregationTemporality(InstrumentType)`, which allows exporters to dictate the
+  aggregation temporality on a per-instrument
+  basis. `MetricExporter#alwaysCumulative(InstrumentType)`
+  and `MetricExporter#deltaPreferred(Instrument)` are provided as utilities representing common
+  configurations.
+* Callbacks associated with asynchronous instruments with multiple matching views will only be
+  called once per collection, instead of once per view per collection.
+* `PeriodicMetricReader` will no longer call `MetricExporter#export` if no metrics are available.
+* BREAKING: `SdkMeterProviderBuilder#setMinimumCollectionInterval` has been removed. Available for
+  experimental use via `SdkMeterProviderUtil#setMinimumCollectionInterval`.
+* Introduce lock ensuring that metric collections occur sequentially.
+* Add min and max to `HistogramDataPoint`.
+
+#### Logs
+
+* BREAKING: Deprecated name field has been removed.
+
+#### Exporter
+
+* Upgrade to OTLP protobuf version 0.16.0.
+* Jaeger and Zipkin exporters export `otel.scope.name` and `otel.scope.version`, in addition
+  to `otel.library.name` and `otel.library.version` which are retained for backwards compatibility.
+* BREAKING: Remove deprecated `PrometheusCollector`. Use `PrometheusHttpServer` instead.
+* Add support for mTLS authentication to OTLP and jaeger exporters.
+* Only log once if OTLP gRPC export receives `UNIMPLEMENTED`.
+* Jaeger remote sampler sets appropriate sampling strategy type if not provided in response.
+* BREAKING: The `setPreferredTemporality` method has been removed
+  from `OtlpGrpcMetricExporterBuilder` and `OtlpHttpMetricExporterBuilder`.
+  Use `setAggregationTemporality(Function<InstrumentType, AggregationTemporality>)` instead.
+
+#### SDK Extensions
+
+* IMPORTANT: Auto-configuration sets `otel.metrics.exporter` to `otlp` instead of `none`, enabling
+  metric export by default.
+* Auto-configuration added `otel.java.enabled.resource-providers` property for opting into specific
+  resource providers.
+
+### Micrometer shim
+
+* Bring micrometer shim over from `opentelemetry-java-instrumentation`. Artifact is available at
+  maven coordinates `io.opentelemetry:opentelemetry-micrometer1-shim:1.13.0-alpha`.
+* Add support for "prometheus mode", enabling better naming when exporting micrometer metrics via
+  prometheus.
+
+#### Testing
+
+* Add int overload for equalTo attribute assertion.
+* Add `SpanDataAssert.hasAttribute` methods.
+
 ## Version 1.12.0 2022-03-03:
 
 This release includes many breaking changes to the metrics SDK as we move towards marking its first stable release.
