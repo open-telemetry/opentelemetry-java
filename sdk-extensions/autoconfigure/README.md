@@ -42,7 +42,7 @@ The following configuration properties are common to all exporters:
 | System property       | Environment variable  | Purpose                                                                                                                    |
 |-----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
 | otel.traces.exporter  | OTEL_TRACES_EXPORTER  | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.metrics.exporter | OTEL_METRICS_EXPORTER | The exporter to be used for metrics. Default is `none`.                                                                    |
+| otel.metrics.exporter | OTEL_METRICS_EXPORTER | The exporter to be used for metrics. Default is `otlp`. `none` means no autoconfigured exporter.                           |
 | otel.logs.exporter    | OTEL_LOGS_EXPORTER    | The exporter to be used for logs. Default is `none`.                                                                       |
 
 ### OTLP exporter (span, metric, and log exporters)
@@ -52,7 +52,7 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | System property                                   | Environment variable                              | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
 |---------------------------------------------------|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | otel.traces.exporter=otlp (default)               | OTEL_TRACES_EXPORTER=otlp                         | Select the OpenTelemetry exporter for tracing (default)                                                                                                                                                                                                                                                                                                                                                              |
-| otel.metrics.exporter=otlp                        | OTEL_METRICS_EXPORTER=otlp                        | Select the OpenTelemetry exporter for metrics                                                                                                                                                                                                                                                                                                                                                                        |
+| otel.metrics.exporter=otlp                        | OTEL_METRICS_EXPORTER=otlp                        | Select the OpenTelemetry exporter for metrics (default)                                                                                                                                                                                                                                                                                                                                                              |
 | otel.logs.exporter=otlp                           | OTEL_LOGS_EXPORTER=otlp                           | Select the OpenTelemetry exporter for logs                                                                                                                                                                                                                                                                                                                                                                           |
 | otel.exporter.otlp.endpoint                       | OTEL_EXPORTER_OTLP_ENDPOINT                       | The OTLP traces, metrics, and logs endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. `v1/traces`, `v1/metrics`, or `v1/logs`). Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/{signal}` when protocol is `http/protobuf`. |
 | otel.exporter.otlp.traces.endpoint                | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT                | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/traces` when protocol is `http/protobuf`.                                                                                                                                                         |
@@ -194,13 +194,14 @@ or you can create your own.
 ### Disabling Automatic ResourceProviders
 
 If you are using the `ResourceProvider` SPI (many instrumentation agent distributions include this automatically),
-you can disable one or more of them by using the following configuration item:
+you can enable / disable one or more of them by using the following configuration items:
 
-| System property                       | Environment variable                  | Description                                   |
-|---------------------------------------|---------------------------------------|-----------------------------------------------|
-| otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types |
+| System property                       | Environment variable                  | Description                                                                                 |
+|---------------------------------------|---------------------------------------|---------------------------------------------------------------------------------------------|
+| otel.java.enabled.resource-providers  | OTEL_JAVA_ENABLED_RESOURCE_PROVIDERS  | Enables one or more `ResourceProvider` types. If unset, all resource providers are enabled. |
+| otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types                                               |
 
-The value must be a comma separated list of fully qualified `ResourceProvider` classnames.
+The value for these properties must be a comma separated list of fully qualified `ResourceProvider` classnames.
 For example, if you don't want to expose the name of the operating system through the resource, you
 can pass the following JVM argument:
 
