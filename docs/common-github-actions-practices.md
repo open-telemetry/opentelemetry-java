@@ -764,6 +764,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          # this workflow is run against the release branch (see usage of GITHUB_REF_NAME below)
+          # but it is creating a pull request against main
           ref: main
           # history is needed to run format-patch below
           fetch-depth: 0
@@ -778,7 +780,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md | git apply
+          git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply
           msg="Merge change log updates from $GITHUB_REF_NAME to main"
           git commit -a -m "$msg"
           git push origin HEAD:merge-change-log-updates-to-main
