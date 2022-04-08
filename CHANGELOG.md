@@ -1,8 +1,8 @@
 # Changelog
 
-## Version 1.13.0 (unreleased):
+## Version 1.13.0 (unreleased)
 
-## Version 1.12.0 2022-03-03:
+## Version 1.12.0 (2022-03-03)
 
 This release includes many breaking changes to the metrics SDK as we move towards marking its first stable release.
 Notably, if you configure metric `View`s or have written a custom metric exporter, many of the classes and methods will
@@ -34,7 +34,7 @@ should not be many. Thanks for bearing with us on this.
 
 - DEPRECATION: `LogData.getName` has been deprecated for removal
 
-## Version 1.11.0 2022-02-04:
+## Version 1.11.0 (2022-02-04)
 
 ### General
 
@@ -77,7 +77,7 @@ should not be many. Thanks for bearing with us on this.
 
 ---
 
-## Version 1.10.1 2022-01-21:
+## Version 1.10.1 (2022-01-21)
 
 ### Bugfixes
 
@@ -86,7 +86,7 @@ should not be many. Thanks for bearing with us on this.
 
 ---
 
-## Version 1.10.0 2022-01-07:
+## Version 1.10.0 (2022-01-07)
 
 ### API
 
@@ -161,7 +161,7 @@ should not be many. Thanks for bearing with us on this.
 * Auto-configuration supports the logs signal
 
 ---
-## Version 1.9.1 2021-11-23:
+## Version 1.9.1 (2021-11-23)
 
 ### Bugfixes
 
@@ -170,7 +170,7 @@ should not be many. Thanks for bearing with us on this.
 - Correctly cleanup OkHttp client resources when shutting down exporters
 
 ---
-## Version 1.9.0 2021-11-11:
+## Version 1.9.0 (2021-11-11)
 
 ### General
 
@@ -263,7 +263,7 @@ should not be many. Thanks for bearing with us on this.
 - The SPI classloader can now be specified when using the autoconfigure module programmatically.
 
 ---
-## Version 1.7.1 (2021-11-03):
+## Version 1.7.1 (2021-11-03)
 
 ### Exporters:
 
@@ -273,7 +273,7 @@ should not be many. Thanks for bearing with us on this.
   1.7.1.
 
 ---
-## Version 1.7.0 (2021-10-08):
+## Version 1.7.0 (2021-10-08)
 
 ### General
 
@@ -334,7 +334,7 @@ should not be many. Thanks for bearing with us on this.
   in implementations of log appenders that emit OTLP log entries.
 
 ---
-## Version 1.6.0 (2021-09-13):
+## Version 1.6.0 (2021-09-13)
 
 ### API
 
@@ -414,7 +414,7 @@ should not be many. Thanks for bearing with us on this.
     the future.
 
 ---
-## Version 1.5.0 2021-08-13:
+## Version 1.5.0 (2021-08-13)
 
 ### API
 - The `io.opentelemetry.context.ContextStorage` interface now allows providing a root `Context`.
@@ -458,12 +458,12 @@ or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java
 - A new `opentelemetry-exporter-otlp-http-metrics` module is now available to support OTLP over HTTP exports.
 
 ---
-## Version 1.4.1 - 2021-07-15
+## Version 1.4.1 (2021-07-15)
 
 - Fill labels in addition to attributes during OTLP metrics export to support versions of the
 OpenTelemetry Collector which do not support the new protocol yet.
 
-## Version 1.4.0 - 2021-07-10
+## Version 1.4.0 (2021-07-10)
 
 ### API
 #### Enhancements
@@ -501,7 +501,7 @@ accessed via the `MeterProvider` or any global instances that delegate to one.
 - You can now register an `IntervalMetricReader` as global and `forceFlush` the global reader.
 
 ---
-## Version 1.3.0 - 2021-06-09
+## Version 1.3.0 (2021-06-09)
 
 ### API
 #### Enhancements
@@ -530,7 +530,7 @@ the following environment variables/system properties:
 
 ---
 
-## Version 1.2.0 - 2021-05-07
+## Version 1.2.0 (2021-05-07)
 
 ### General
 
@@ -614,7 +614,7 @@ deprecated and will be removed in the next release.
 
 ---
 
-## Version 1.1.0 - 2021-04-07
+## Version 1.1.0 (2021-04-07)
 
 ### API
 
@@ -696,14 +696,14 @@ to add views have been deprecated. They will be removed in the next release.
 - A new option for aggregation as Histograms is now available.
 
 ---
-## Version 1.0.1 - 2021-03-11
+## Version 1.0.1 (2021-03-11)
 
 ### Bugfixes
 
 - AWS resource extensions have been fixed to not throw NullPointerException in actual AWS environment
 
 ---
-## Version 1.0.0 - 2021-02-26
+## Version 1.0.0 (2021-02-26)
 
 ### General
 
@@ -733,12 +733,12 @@ internal package.
 - `PrometheusCollector.Builder` inner class has been moved to the top level as `PrometheusCollectorBuilder`.
 
 ---
-## Version 0.17.1 - 2021-02-19
+## Version 0.17.1 (2021-02-19)
 
 - Removed the unused `ResourceProvider` interface from the SDK. This interface is still available
 in the `opentelemetry-sdk-extension-autoconfigure` module, where it is actually used.
 
-## Version 0.17.0 - 2021-02-17 - RC#3
+## Version 0.17.0 (2021-02-17) - RC#3
 
 ### General
 
@@ -806,7 +806,7 @@ the `http://` or `https://` in front of your endpoint.
 - `MeterProvider.getDefault()` has been renamed to `MeterProvider.noop()`.
 
 ---
-## Version 0.16.0 - 2021-02-08 - RC#2
+## Version 0.16.0 (2021-02-08) - RC#2
 
 ### General
 
@@ -915,7 +915,7 @@ classpath, it will automatically update the `Resource.getDefault()` instance wit
 `io.opentelemetry.api.metrics.common` package.
 
 ---
-## Version 0.15.0 - 2021-01-29 - RC#1
+## Version 0.15.0 (2021-01-29) - RC#1
 
 ### General
 
@@ -991,7 +991,7 @@ SDK as the instance of `GlobalOpenTelemetry` when used.
 property for specifying a path to a trusted certificate for the OTLP exporters.
 
 ---
-## Version 0.14.1 - 2021-01-14
+## Version 0.14.1 (2021-01-14)
 
 ### General
 
@@ -1108,7 +1108,7 @@ the methods on the Builder have changed to use the same naming patterns as the r
 
 ---
 
-## Version 0.13.0 - 2020-12-17
+## Version 0.13.0 (2020-12-17)
 
 ### General
 
@@ -1209,7 +1209,7 @@ You can still access the `LabelsBuilder` functionality via the `Labels.builder()
   be shared across OTLP exporters.
 
 ---
-## Version 0.12.0 - 2020-12-04
+## Version 0.12.0 (2020-12-04)
 
 ### API
 
@@ -1301,7 +1301,7 @@ This is included in the Resource SPI implementation that the module provides.
 - The `opentelemetry-sdk-extension-aws` extension now will auto-detect AWS Lambda resource attributes.
 
 ---
-## Version 0.11.0 - 2020-11-18
+## Version 0.11.0 (2020-11-18)
 
 ### API
 
@@ -1359,7 +1359,7 @@ have been fixed to properly report the committed memory values.
 See the `opentelemetry-extension-kotlin` module for details.
 
 ---
-## Version 0.10.0 - 2020-11-06
+## Version 0.10.0 (2020-11-06)
 
 ### API
 
