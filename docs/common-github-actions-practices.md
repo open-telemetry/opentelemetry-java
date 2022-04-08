@@ -25,10 +25,10 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Workflows that generate pull requests](#workflows-that-generate-pull-requests)
   - [Prepare release branch](#prepare-release-branch)
   - [Prepare patch](#prepare-patch)
-  - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
+  - [Backport pull requests to a release branch](#backport-pull-requests-to-a-release-branch)
   - [Release](#release)
   - [Update the change log with the release date](#update-the-change-log-with-the-release-date)
-  - [Sending a pull request to another repository](#sending-a-pull-request-to-another-repository)
+  - [Send a pull request to another repository](#send-a-pull-request-to-another-repository)
   - [Merge change log updates back to main](#merge-change-log-updates-back-to-main)
 - [Workflow file naming conventions](#workflow-file-naming-conventions)
 - [Workflow YAML style guide](#workflow-yaml-style-guide)
@@ -546,7 +546,7 @@ jobs:
                        --base $GITHUB_REF_NAME
 ```
 
-### Backporting pull requests to a release branch
+### Backport pull requests to a release branch
 
 Having a workflow generate backport pull requests is nice because then you know that it was a clean
 cherry-pick and that it does not require re-review.
@@ -692,7 +692,7 @@ hitting the "Publish release" button).
                        --base $GITHUB_REF_NAME
 ```
 
-#### Sending a pull request to another repository
+#### Send a pull request to another repository
 
 For example to send a PR to notify/update another repository that a new release is available
 as part of the release workflow.
@@ -761,7 +761,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: main
-          # history is needed in order to generate the patch
+          # history is needed to run format-patch below
           fetch-depth: 0
 
       - name: Set git user
@@ -770,7 +770,7 @@ jobs:
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
         # this will fail if there have been conflicting change log updates introduced in main
-      - name: Create pull request against main to merge back change log updates
+      - name: Create pull request against main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
