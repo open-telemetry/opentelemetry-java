@@ -343,7 +343,7 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
   `## Version 1.9.0 (unreleased)`.
 * Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
-  (one is targeted to the release branch and one is targeted to the `main` branch).
+  (one is targeted to the release branch and one is targeted to `main`).
 
 ## Preparing a new patch release
 
@@ -370,7 +370,7 @@ Run the [Release workflow](.github/workflows/release.yml).
 * This workflow will publish the artifacts to maven central and will publish a GitHub release
   with release notes based on the change log.
 * Lastly, if there were any change log updates in the release branch that need to be merged back
-  to main, the workflow will create a pull request if the updates can be cleanly applied,
+  to `main`, the workflow will create a pull request if the updates can be cleanly applied,
   or it will fail this last step if the updates cannot be cleanly applied.
 
 ## After the release
@@ -380,11 +380,11 @@ Run the [Merge change log to main workflow](.github/workflows/merge-change-log-t
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * This will create a pull request that merges the change log updates from the release branch
-  back to main.
+  back to `main`.
 * Review and merge the pull request that it creates.
-* This workflow will fail if there have been conflicting change log updates introduced in main,
+* This workflow will fail if there have been conflicting change log updates introduced in `main`,
   in which case you will need to merge the change log updates manually and send your own pull
-  request against main.
+  request against `main`.
 ```
 
 ### Workflows that generate pull requests
@@ -407,12 +407,12 @@ Uses release branch naming convention `release/v*`.
 
 The specifics below depend a lot on your specific version bumping needs.
 
-For OpenTelemetry Java repositories, the version in the `main` branch always ends with `-SNAPSHOT`,
+For OpenTelemetry Java repositories, the version in `main` always ends with `-SNAPSHOT`,
 so preparing the release branch involves
 
 * removing `-SNAPSHOT` from the version on the release branch
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
-* bumping the version to the next `-SNAPSHOT` on main
+* bumping the version to the next `-SNAPSHOT` on `main`
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
 ```yaml
@@ -743,15 +743,15 @@ as part of the release workflow.
                        --base main
 ```
 
-#### Merge change log updates back to the `main` branch
+#### Merge change log updates back to `main`
 
 This needs to be a separate workflow from the release workflow, because you will need to merge the
 pull request that the release workflow creates to add the release date to the change log first
 before running this workflow.
 
 Note that this workflow will fail if there have been conflicting change log updates introduced in
-main, in which case you will need to merge the change log updates manually and send your own pull
-request against main.
+`main`, in which case you will need to merge the change log updates manually and send your own pull
+request against `main`.
 
 ```yaml
 name: Merge change log to main
