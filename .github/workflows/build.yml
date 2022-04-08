@@ -83,7 +83,8 @@ jobs:
   publish-snapshots:
     # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
-    if: ${{ github.repository == 'open-telemetry/opentelemetry-java' }}
+    # skipping release branches because the versions in those branches are not snapshots
+    if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
