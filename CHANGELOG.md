@@ -1,8 +1,8 @@
 # Changelog
 
-## Version 1.13.0 (unreleased):
+## Version 1.13.0 (unreleased)
 
-## Version 1.12.0 2022-03-03:
+## Version 1.12.0 (2022-03-03)
 
 This release includes many breaking changes to the metrics SDK as we move towards marking its first stable release.
 Notably, if you configure metric `View`s or have written a custom metric exporter, many of the classes and methods will
@@ -34,7 +34,7 @@ should not be many. Thanks for bearing with us on this.
 
 - DEPRECATION: `LogData.getName` has been deprecated for removal
 
-## Version 1.11.0 2022-02-04:
+## Version 1.11.0 (2022-02-04)
 
 ### General
 
@@ -75,18 +75,14 @@ should not be many. Thanks for bearing with us on this.
 * Auto-configuration deprecated `SdkTracerProviderConfigurer` in favor
   of `AutoConfigurationCustomizer#addTracerProviderCustomizer(..)`
 
----
-
-## Version 1.10.1 2022-01-21:
+## Version 1.10.1 (2022-01-21)
 
 ### Bugfixes
 
 * Fix issue preventing registration of PrometheusCollector with SDK
 * Allow retry policy to be set for OkHttpGrpcExporter
 
----
-
-## Version 1.10.0 2022-01-07:
+## Version 1.10.0 (2022-01-07)
 
 ### API
 
@@ -160,8 +156,7 @@ should not be many. Thanks for bearing with us on this.
 * Auto-configuration prints a debug log with the resolved tracer configuration
 * Auto-configuration supports the logs signal
 
----
-## Version 1.9.1 2021-11-23:
+## Version 1.9.1 (2021-11-23)
 
 ### Bugfixes
 
@@ -169,8 +164,7 @@ should not be many. Thanks for bearing with us on this.
 - Fix proto encoding of oneof values in metrics
 - Correctly cleanup OkHttp client resources when shutting down exporters
 
----
-## Version 1.9.0 2021-11-11:
+## Version 1.9.0 (2021-11-11)
 
 ### General
 
@@ -262,8 +256,7 @@ should not be many. Thanks for bearing with us on this.
   deprecated.
 - The SPI classloader can now be specified when using the autoconfigure module programmatically.
 
----
-## Version 1.7.1 (2021-11-03):
+## Version 1.7.1 (2021-11-03)
 
 ### Exporters:
 
@@ -272,8 +265,7 @@ should not be many. Thanks for bearing with us on this.
   did not properly close the okhttp response and hence would leak connections. This has been fixed in
   1.7.1.
 
----
-## Version 1.7.0 (2021-10-08):
+## Version 1.7.0 (2021-10-08)
 
 ### General
 
@@ -333,8 +325,7 @@ should not be many. Thanks for bearing with us on this.
   implementations for batch log processing and export via OTLP. These classes are intended for usage
   in implementations of log appenders that emit OTLP log entries.
 
----
-## Version 1.6.0 (2021-09-13):
+## Version 1.6.0 (2021-09-13)
 
 ### API
 
@@ -413,8 +404,7 @@ should not be many. Thanks for bearing with us on this.
   - It is no longer possible to provide custom aggregations via a View. This feature will return in
     the future.
 
----
-## Version 1.5.0 2021-08-13:
+## Version 1.5.0 (2021-08-13)
 
 ### API
 - The `io.opentelemetry.context.ContextStorage` interface now allows providing a root `Context`.
@@ -457,13 +447,12 @@ Please reach out on CNCF slack in the [#otel-java](https://cloud-native.slack.co
 or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you need assistance with converting to the new API.
 - A new `opentelemetry-exporter-otlp-http-metrics` module is now available to support OTLP over HTTP exports.
 
----
-## Version 1.4.1 - 2021-07-15
+## Version 1.4.1 (2021-07-15)
 
 - Fill labels in addition to attributes during OTLP metrics export to support versions of the
 OpenTelemetry Collector which do not support the new protocol yet.
 
-## Version 1.4.0 - 2021-07-10
+## Version 1.4.0 (2021-07-10)
 
 ### API
 #### Enhancements
@@ -500,8 +489,7 @@ accessed via the `MeterProvider` or any global instances that delegate to one.
 - The metrics SDK now utilizes `Attributes` rather than `Labels` internally.
 - You can now register an `IntervalMetricReader` as global and `forceFlush` the global reader.
 
----
-## Version 1.3.0 - 2021-06-09
+## Version 1.3.0 (2021-06-09)
 
 ### API
 #### Enhancements
@@ -528,9 +516,7 @@ the following environment variables/system properties:
   - `OTEL_EXPORTER_OTLP_TIMEOUT`/`otel.exporter.otlp.timeout`
   - `OTEL_IMR_EXPORT_INTERVAL`/`otel.imr.export.interval`
 
----
-
-## Version 1.2.0 - 2021-05-07
+## Version 1.2.0 (2021-05-07)
 
 ### General
 
@@ -612,9 +598,7 @@ be changed once the `SdkMeterProvider` has been built.
 See `AggregatorFactory.sum(AggregationTemporality)`. The previous `AggregatorFactory.sum(boolean)` has been
 deprecated and will be removed in the next release.
 
----
-
-## Version 1.1.0 - 2021-04-07
+## Version 1.1.0 (2021-04-07)
 
 ### API
 
@@ -695,15 +679,13 @@ to add views have been deprecated. They will be removed in the next release.
 
 - A new option for aggregation as Histograms is now available.
 
----
-## Version 1.0.1 - 2021-03-11
+## Version 1.0.1 (2021-03-11)
 
 ### Bugfixes
 
 - AWS resource extensions have been fixed to not throw NullPointerException in actual AWS environment
 
----
-## Version 1.0.0 - 2021-02-26
+## Version 1.0.0 (2021-02-26)
 
 ### General
 
@@ -732,13 +714,12 @@ internal package.
 
 - `PrometheusCollector.Builder` inner class has been moved to the top level as `PrometheusCollectorBuilder`.
 
----
-## Version 0.17.1 - 2021-02-19
+## Version 0.17.1 (2021-02-19)
 
 - Removed the unused `ResourceProvider` interface from the SDK. This interface is still available
 in the `opentelemetry-sdk-extension-autoconfigure` module, where it is actually used.
 
-## Version 0.17.0 - 2021-02-17 - RC#3
+## Version 0.17.0 (2021-02-17) - RC#3
 
 ### General
 
@@ -805,8 +786,7 @@ the `http://` or `https://` in front of your endpoint.
 - `Meter.getDefault()` has been removed.
 - `MeterProvider.getDefault()` has been renamed to `MeterProvider.noop()`.
 
----
-## Version 0.16.0 - 2021-02-08 - RC#2
+## Version 0.16.0 (2021-02-08) - RC#2
 
 ### General
 
@@ -914,8 +894,7 @@ classpath, it will automatically update the `Resource.getDefault()` instance wit
 - The `Labels` interface has been moved into the metrics API module and repackaged into the
 `io.opentelemetry.api.metrics.common` package.
 
----
-## Version 0.15.0 - 2021-01-29 - RC#1
+## Version 0.15.0 (2021-01-29) - RC#1
 
 ### General
 
@@ -990,8 +969,7 @@ SDK as the instance of `GlobalOpenTelemetry` when used.
 - The `opentelemetry-sdk-extension-autoconfigure` module now supports the `otel.exporter.otlp.certificate` configuration
 property for specifying a path to a trusted certificate for the OTLP exporters.
 
----
-## Version 0.14.1 - 2021-01-14
+## Version 0.14.1 (2021-01-14)
 
 ### General
 
@@ -1106,9 +1084,7 @@ the methods on the Builder have changed to use the same naming patterns as the r
 - The `SdkMeterProvicer.Builder` has been moved to the top level `SdkMeterProviderBuilder`.
 - The `InstrumentSelector` now requires an instrument type to be provided, and defaults the name regex to `.*`.
 
----
-
-## Version 0.13.0 - 2020-12-17
+## Version 0.13.0 (2020-12-17)
 
 ### General
 
@@ -1208,8 +1184,7 @@ You can still access the `LabelsBuilder` functionality via the `Labels.builder()
 - Some common OTLP adapter utilities have been moved into the `opentelemetry-sdk-extension-otproto` module so they can
   be shared across OTLP exporters.
 
----
-## Version 0.12.0 - 2020-12-04
+## Version 0.12.0 (2020-12-04)
 
 ### API
 
@@ -1300,8 +1275,7 @@ and the classes in it have been repackaged into the `io.opentelemetry.sdk.extens
 This is included in the Resource SPI implementation that the module provides.
 - The `opentelemetry-sdk-extension-aws` extension now will auto-detect AWS Lambda resource attributes.
 
----
-## Version 0.11.0 - 2020-11-18
+## Version 0.11.0 (2020-11-18)
 
 ### API
 
@@ -1358,8 +1332,7 @@ have been fixed to properly report the committed memory values.
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines.
 See the `opentelemetry-extension-kotlin` module for details.
 
----
-## Version 0.10.0 - 2020-11-06
+## Version 0.10.0 (2020-11-06)
 
 ### API
 
@@ -1441,7 +1414,6 @@ Many thanks to everyone who made this release possible!
 
 @anuraaga @bogdandrutu @Oberon00 @thisthat @HaloFour @jkwatson @kenfinnigan @MariusVolkhart @malafeev @trask  @tylerbenson @XiXiaPdx @dengliming @hengyunabc @jarebudev @brianashby-sfx
 
----
 ## 0.9.1 - 2020-10-07
 
 - API
@@ -1494,7 +1466,6 @@ Many thanks to all who made this release possible:
 
 @bogdandrutu @Oberon00 @jkwatson @thisthat @anuraaga @jarebudev @malafeev @quijote @JasonXZLiu @zoercai @eunice98k @dengliming @breedx-nr @iNikem @wangzlei @imavroukakis
 
----
 ## 0.8.0 - 2020-09-01
 
 - Extensions:
@@ -1521,12 +1492,10 @@ Many thanks to all who made this release possible:
 
 - Many thanks for contributions from @anuraaga, @dengliming, @iNikem, @huntc, @jarebudev, @MitchellDumovic, @wtyanan, @williamhu99, @Oberon00, @thisthat, @malafeev, @mateuszrzeszutek, @kenfinnigan
 
----
 ## 0.7.1 - 2020-08-14
 
 - BUGFIX: OTLP Span Exporter: fix splitting metadata key-value substring with more than one '=' sign
 
----
 ## 0.7.0 - 2020-08-02
 
 NOTE: This release contains non-backward-compatible breaking SDK changes
@@ -1554,7 +1523,6 @@ NOTE: This release contains non-backward-compatible breaking SDK changes
 - Added a new configuration option to limit the size of Span attributes
 - Many thanks for contributions from @anuraaga, @dengliming, @iNikem, @wtyanan, @williamhu99, @trask, @Oberon00, @MitchellDumovic, @FrankSpitulski, @heyams, @ptravers, @thisthat, @albertteoh, @evantorrie, @neeraj97,
 
----
 ## 0.6.0 - 2020-07-01
 
 NOTE: This release contains non-backward-compatible breaking API and SDK changes
@@ -1574,14 +1542,12 @@ NOTE: This release contains non-backward-compatible breaking API and SDK changes
 - Changed the MinMaxSumCount aggregations for ValueRecorders to always aggregate deltas, rather than cumulative
 - Updated the OTLP protobuf and exporter to version 0.4.0 of the OTLP protobufs.
 
----
 ## 0.5.0 - 2020-06-04
 
 TODO: fill this out
 
 - Add helper API to get Tracer/Meter
 
----
 ## 0.4.0 - 2020-05-04
 - Initial implementation of the Zipkin exporter.
 - **Breaking change:** Move B3 propagator to a contrib package
@@ -1591,7 +1557,6 @@ TODO: fill this out
 - Mark all threads/pools as daemon.
 - Add support for Jaeger remote sampler.
 
----
 ## 0.3.0 - 2020-03-27
 - Initial Java API and SDK for context, trace, metrics, resource.
 - Initial implementation of the Jaeger exporter.
