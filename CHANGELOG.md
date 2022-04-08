@@ -3,10 +3,11 @@
 ## Version 1.13.0 (unreleased):
 
 Although we originally intended 1.13.0 to be the first stable release of the metrics SDK, we've
-downgraded it to be a release candidate (RC) out of caution due to a large number of changes in both
-the metrics SDK specification and java implementation. There are several notable changes mentioned
-in the Metrics section. Additionally, please note that the Auto-configuration module now enables
-metric export by default via OTLP, i.e. by default `otel.metrics.exporter=otlp`.
+postponed it out of caution due to a large number of changes in both the metrics SDK specification
+and the java implementation. This release should be considered a release candidate for the metrics
+SDK. There are several notable changes mentioned in the Metrics section. Additionally, please note
+that the Auto-configuration module now enables metric export by default via OTLP, i.e. by
+default `otel.metrics.exporter` is set to `otlp` instead of `none`.
 
 ### API
 
