@@ -339,6 +339,8 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
+  * The heading for the release should include the release version but not the release date, e.g.
+  `## Version 1.9.0 (unreleased)`.
 * Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
   (one is targeted to the release branch and one is targeted to the `main` branch).
@@ -351,7 +353,9 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates.
-* Merge a pull request to the release branch updating the `CHANGELOG.md`
+* Merge a pull request to the release branch updating the `CHANGELOG.md`.
+  * The heading for the release should include the release version but not the release date, e.g.
+  `## Version 1.9.0 (unreleased)`.
 * Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
