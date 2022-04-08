@@ -79,4 +79,5 @@ echo $contributors1 $contributors2 \
   | grep -v linux-foundation-easycla \
   | grep -v github-actions \
   | grep -v dependabot \
+  | grep -v codecov \
   | sed 's/^/@/'

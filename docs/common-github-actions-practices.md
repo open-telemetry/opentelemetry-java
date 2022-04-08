@@ -631,11 +631,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # conditional block not indented because of the heredoc
           if [[ $VERSION != *.0 ]]; then
-            cat > release-notes.txt << EOF
-            This is a patch release on the previous $PRIOR_VERSION release, fixing the issue(s) below.
+          cat > release-notes.txt << EOF
+          This is a patch release on the previous $PRIOR_VERSION release, fixing the issue(s) below.
 
-            EOF
+          EOF
           fi
 
           # TODO this is dependent on the conventions you follow in your CHANGELOG.md
