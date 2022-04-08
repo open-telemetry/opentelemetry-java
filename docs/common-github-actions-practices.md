@@ -25,9 +25,11 @@ Once we agree and implement, will share more broadly across OpenTelemetry
   - [Workflows that generate pull requests](#workflows-that-generate-pull-requests)
   - [Prepare release branch](#prepare-release-branch)
   - [Prepare patch](#prepare-patch)
-  - [Backporting pull requests to a release branch](#backporting-pull-requests-to-a-release-branch)
+  - [Backport pull requests to a release branch](#backport-pull-requests-to-a-release-branch)
   - [Release](#release)
-- [Sending a pull request to another repository](#sending-a-pull-request-to-another-repository)
+  - [Update the change log with the release date](#update-the-change-log-with-the-release-date)
+  - [Send a pull request to another repository](#send-a-pull-request-to-another-repository)
+  - [Merge change log updates back to main](#merge-change-log-updates-back-to-main)
 - [Workflow file naming conventions](#workflow-file-naming-conventions)
 - [Workflow YAML style guide](#workflow-yaml-style-guide)
 
@@ -337,23 +339,27 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
+  * The heading for the release should include the release version but not the release date, e.g.
+  `## Version 1.9.0 (unreleased)`.
 * Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
-  (one is targeted to the release branch and one is targeted to the `main` branch).
+  (one is targeted to the release branch and one is targeted to `main`).
 
 ## Preparing a new patch release
 
-* Backport pull request(s) to the release branch
+* Backport pull request(s) to the release branch.
   * Run the [Backport workflow](.github/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
-  * Review and merge the backport pull request that it generates
-* Merge a pull request to the release branch updating the `CHANGELOG.md`
+  * Review and merge the backport pull request that it generates.
+* Merge a pull request to the release branch updating the `CHANGELOG.md`.
+  * The heading for the release should include the release version but not the release date, e.g.
+  `## Version 1.9.0 (unreleased)`.
 * Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
-* Review and merge the pull request that it creates
+* Review and merge the pull request that it creates.
 
 ## Making the release
 
@@ -364,8 +370,21 @@ Run the [Release workflow](.github/workflows/release.yml).
 * This workflow will publish the artifacts to maven central and will publish a GitHub release
   with release notes based on the change log.
 * Lastly, if there were any change log updates in the release branch that need to be merged back
-  to main, the workflow will create a pull request if the updates can be cleanly applied,
+  to `main`, the workflow will create a pull request if the updates can be cleanly applied,
   or it will fail this last step if the updates cannot be cleanly applied.
+
+## After the release
+
+Run the [Merge change log to main workflow](.github/workflows/merge-change-log-to-main.yml).
+
+* Press the "Run workflow" button, then select the release branch from the dropdown list,
+  e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
+* This will create a pull request that merges the change log updates from the release branch
+  back to `main`.
+* Review and merge the pull request that it creates.
+* This workflow will fail if there have been conflicting change log updates introduced in `main`,
+  in which case you will need to merge the change log updates manually and send your own pull
+  request against `main`.
 ```
 
 ### Workflows that generate pull requests
@@ -388,12 +407,12 @@ Uses release branch naming convention `release/v*`.
 
 The specifics below depend a lot on your specific version bumping needs.
 
-For OpenTelemetry Java repositories, the version in the `main` branch always ends with `-SNAPSHOT`,
+For OpenTelemetry Java repositories, the version in `main` always ends with `-SNAPSHOT`,
 so preparing the release branch involves
 
 * removing `-SNAPSHOT` from the version on the release branch
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
-* bumping the version to the next `-SNAPSHOT` on main
+* bumping the version to the next `-SNAPSHOT` on `main`
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
 ```yaml
@@ -531,7 +550,7 @@ jobs:
                        --base $GITHUB_REF_NAME
 ```
 
-### Backporting pull requests to a release branch
+### Backport pull requests to a release branch
 
 Having a workflow generate backport pull requests is nice because then you know that it was a clean
 cherry-pick and that it does not require re-review.
@@ -651,9 +670,36 @@ hitting the "Publish release" button).
                             v$VERSION
 ```
 
-#### Sending a pull request to another repository
+#### Update the change log with the release date
 
-For example to send a PR to notify/update another repository that a new release is available.
+```yaml
+      - name: Update the change log with the release date
+        run: |
+          date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
+          sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md
+
+      - name: Set git user
+        run: |
+          git config user.name opentelemetry-java-bot
+          git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
+
+      - name: Create pull request against the release branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          msg="Add $VERSION release date to the change log"
+          git commit -a -m "$msg"
+          git push origin HEAD:add-$VERSION-release-date
+          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
+                       --body "$msg" \
+                       --head add-$VERSION-release-date \
+                       --base $GITHUB_REF_NAME
+```
+
+#### Send a pull request to another repository
+
+For example to send a PR to notify/update another repository that a new release is available
+as part of the release workflow.
 
 ```yaml
       - uses: actions/checkout@v3
@@ -697,41 +743,49 @@ For example to send a PR to notify/update another repository that a new release 
                        --base main
 ```
 
-#### Merge back any change log updates to the `main` branch
+#### Merge change log updates back to `main`
 
-After the release completes, generate a pull request against the `main` branch to merge back any change log
-updates.
+This needs to be a separate workflow from the release workflow, because you will need to merge the
+pull request that the release workflow creates to add the release date to the change log first
+before running this workflow.
+
+Note that this workflow will fail if there have been conflicting change log updates introduced in
+`main`, in which case you will need to merge the change log updates manually and send your own pull
+request against `main`.
 
 ```yaml
+name: Merge change log to main
+on:
+  workflow_dispatch:
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-20.04
+    steps:
       - uses: actions/checkout@v3
         with:
           ref: main
-          # history is needed to run git format-patch below
+          # history is needed to run format-patch below
           fetch-depth: 0
 
-      - name: Set up git name
+      - name: Set git user
         run: |
-          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
-        # this step should be last since it will fail if there have been conflicting
-        # change log updates introduced on the main branch
-      - name: Create pull request to merge any change log updates to main
+        # this will fail if there have been conflicting change log updates introduced in main
+      - name: Create pull request against main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md > patch
-          if [ -s patch ]; then
-            git apply patch
-            msg="Merge change log updates from $GITHUB_REF_NAME to main"
-            git commit -a -m "$msg"
-            git push origin HEAD:merge-change-log-updates-to-main
-            gh pr create --title "$msg" \
-                         --body "$msg" \
-                         --head merge-change-log-updates-to-main \
-                         --base main
-          fi
+          git format-patch --stdout main..$GITHUB_REF_NAME CHANGELOG.md | git apply
+          msg="Merge change log updates from $GITHUB_REF_NAME to main"
+          git commit -a -m "$msg"
+          git push origin HEAD:merge-change-log-updates-to-main
+          gh pr create --title "$msg" \
+                       --body "$msg" \
+                       --head merge-change-log-updates-to-main \
+                       --base main
 ```
 
 ## Workflow file naming conventions
