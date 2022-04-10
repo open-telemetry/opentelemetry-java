@@ -286,8 +286,10 @@ abstract class Serializer {
       Writer writer, Attributes attributes, String additionalAttrKey, double additionalAttrValue)
       throws IOException {
     writer.write('{');
-    writeAttributePairs(writer, attributes);
-    writer.write(',');
+    if (!attributes.isEmpty()) {
+      writeAttributePairs(writer, attributes);
+      writer.write(',');
+    }
     writer.write(additionalAttrKey);
     writer.write("=\"");
     writeDouble(writer, additionalAttrValue);

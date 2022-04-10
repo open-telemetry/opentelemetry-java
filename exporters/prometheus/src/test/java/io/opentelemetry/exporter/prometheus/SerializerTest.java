@@ -184,7 +184,36 @@ class SerializerTest {
                       Arrays.asList(
                           ImmutableValueAtQuantile.create(0.9, 0.1),
                           ImmutableValueAtQuantile.create(0.99, 0.3))))));
-  private static final MetricData HISTOGRAM =
+  private static final MetricData HISTOGRAM_NO_ATTRIBUTES =
+      ImmutableMetricData.createDoubleHistogram(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationScopeInfo.create("full", "version", null),
+          "instrument.name",
+          "description",
+          "1",
+          ImmutableHistogramData.create(
+              AggregationTemporality.DELTA,
+              Collections.singletonList(
+                  ImmutableHistogramPointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.empty(),
+                      1.0,
+                      null,
+                      null,
+                      Collections.emptyList(),
+                      Collections.singletonList(2L),
+                      Collections.singletonList(
+                          ImmutableLongExemplarData.create(
+                              Attributes.empty(),
+                              TimeUnit.MILLISECONDS.toNanos(1L),
+                              SpanContext.create(
+                                  "00000000000000000000000000000001",
+                                  "0000000000000002",
+                                  TraceFlags.getDefault(),
+                                  TraceState.getDefault()),
+                              /* value= */ 4))))));
+  private static final MetricData HISTOGRAM_SINGLE_ATTRIBUTE =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
@@ -258,7 +287,8 @@ class SerializerTest {
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM,
+                HISTOGRAM_NO_ATTRIBUTES,
+                HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
@@ -300,6 +330,11 @@ class SerializerTest {
                 + "instrument_name{kp=\"vp\",quantile=\"0.99\"} 0.3 1633950672000\n"
                 + "# TYPE instrument_name histogram\n"
                 + "# HELP instrument_name description\n"
+                + "instrument_name_count 2.0 1633950672000\n"
+                + "instrument_name_sum 1.0 1633950672000\n"
+                + "instrument_name_bucket{le=\"+Inf\"} 2.0 1633950672000\n"
+                + "# TYPE instrument_name histogram\n"
+                + "# HELP instrument_name description\n"
                 + "instrument_name_count{kp=\"vp\"} 2.0 1633950672000\n"
                 + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672000\n"
                 + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672000\n"
@@ -326,7 +361,7 @@ class SerializerTest {
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM,
+                HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
