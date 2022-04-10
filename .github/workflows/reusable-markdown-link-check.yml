@@ -14,7 +14,7 @@ jobs:
 
       - name: Run markdown-link-check
         run: |
-          find exporters -type f \
+          find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
                | xargs .github/scripts/markdown-link-check-with-retry.sh
