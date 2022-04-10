@@ -164,13 +164,29 @@ requests if external links break.
 
       - name: Run markdown-link-check
         run: |
-          # --quiet displays errors only, making them easier to find in the log
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-               | xargs markdown-link-check \
-                       --config .github/scripts/markdown-link-check-config.json \
-                       --quiet
+               | .github/scripts/markdown-link-check-with-retry.sh
+```
+
+`.github/scripts/markdown-link-check-with-retry.sh` helps to reduce sporadic link check failures by
+retrying at a file-by-file level. It fails fast to make errors easier to find in the log.
+
+```bash
+#!/bin/bash -e
+
+for file in "$@"; do
+  for i in 1 2 3; do
+    if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
+                           "$file"; then
+      break
+    elif [[ $i == 3 ]]; then
+      exit 1
+    fi
+    sleep 5
+  done
+done
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
