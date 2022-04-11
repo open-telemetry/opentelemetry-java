@@ -206,7 +206,10 @@ If you run into sites sending back `403` to the link checker bot, you can add `4
 ```json
 {
   "retryOn429": true,
-  "aliveStatusCodes": [ 200, 403 ]
+  "aliveStatusCodes": [
+    200,
+    403
+  ]
 }
 ```
 
