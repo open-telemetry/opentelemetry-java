@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.13.0 (unreleased)
+## Version 1.13.0 (2022-04-08)
 
 Although we originally intended 1.13.0 to be the first stable release of the metrics SDK, we've
 postponed it out of caution due to a large number of changes in both the metrics SDK specification
