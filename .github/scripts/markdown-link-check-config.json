@@ -1,7 +1,13 @@
 {
   "retryOn429": true,
-  "aliveStatusCodes": [
-    200,
-    403
+  "httpHeaders": [
+    {
+      "urls": [
+        "https://docs.github.com"
+      ],
+      "headers": {
+        "Authorization": "Bearer ${{ secrets.GITHUB_TOKEN }}"
+      }
+    }
   ]
 }
