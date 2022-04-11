@@ -201,8 +201,7 @@ The file `.github/scripts/markdown-link-check-config.json` is for configuring th
 
 `retryOn429` helps with GitHub throttling.
 
-If you have problems with links to https://docs.github.com failing with `403`,
-you can add `403` to the `aliveStatusCodes`, e.g.
+If you run into sites sending back `403` to the link checker bot, you can add `403` to the `aliveStatusCodes`, e.g.
 
 ```json
 {

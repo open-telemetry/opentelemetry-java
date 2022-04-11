@@ -1,9 +1,4 @@
 {
-  "ignorePatterns": [
-    {
-      "pattern": "^https://mvnrepository\\.com/artifact/"
-    }
-  ],
   "retryOn429": true,
   "aliveStatusCodes": [ 200, 403 ]
 }
