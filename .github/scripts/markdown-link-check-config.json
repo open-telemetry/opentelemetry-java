@@ -6,7 +6,7 @@
         "https://docs.github.com"
       ],
       "headers": {
-        "Authorization": "Bearer ${{ secrets.GITHUB_TOKEN }}"
+        "Authorization": "Bearer ${{ env.GITHUB_TOKEN }}"
       }
     }
   ]
