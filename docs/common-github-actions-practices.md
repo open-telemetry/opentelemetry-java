@@ -176,12 +176,14 @@ retrying at a file-by-file level. It fails fast to make errors easier to find in
 ```bash
 #!/bin/bash -e
 
+retry_count=3
+
 for file in "$@"; do
-  for i in 1 2 3; do
+  for i in $(seq 1 $retry_count); do
     if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
                            "$file"; then
       break
-    elif [[ $i == 3 ]]; then
+    elif [[ $i == $retry_count ]]; then
       exit 1
     fi
     sleep 5
