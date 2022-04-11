@@ -7,7 +7,7 @@ for file in "$@"; do
     if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
                            "$file"; then
       break
-    elif [[ $i == $retry_count ]]; then
+    elif [[ $i -eq $retry_count ]]; then
       exit 1
     fi
     sleep 5
