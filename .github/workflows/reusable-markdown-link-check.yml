@@ -17,4 +17,5 @@ jobs:
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-               | xargs .github/scripts/markdown-link-check-with-retry.sh
+               | xargs markdown-link-check \
+                       --config .github/scripts/markdown-link-check-config.json
