@@ -63,7 +63,7 @@ jobs:
       - uses: codecov/codecov-action@v3
         if: ${{ matrix.coverage }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ matrix.coverage }}
         with:
           name: coverage-report
