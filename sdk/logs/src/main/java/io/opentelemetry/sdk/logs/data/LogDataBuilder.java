@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -36,37 +35,6 @@ public final class LogDataBuilder {
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.clock = clock;
-  }
-
-  /**
-   * Returns a new {@link LogDataBuilder} with the default clock.
-   *
-   * @deprecated Use {@link #create(Resource, InstrumentationScopeInfo)}.
-   */
-  @Deprecated
-  public static LogDataBuilder create(
-      Resource resource,
-      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return create(
-        resource,
-        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
-        Clock.getDefault());
-  }
-
-  /**
-   * Returns a new {@link LogDataBuilder}.
-   *
-   * @deprecated Use {@link #create(Resource, InstrumentationScopeInfo, Clock)}.
-   */
-  @Deprecated
-  public static LogDataBuilder create(
-      Resource resource,
-      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Clock clock) {
-    return new LogDataBuilder(
-        resource,
-        InstrumentationScopeUtil.toInstrumentationScopeInfo(instrumentationLibraryInfo),
-        clock);
   }
 
   /** Returns a new {@link LogDataBuilder} with the default clock. */

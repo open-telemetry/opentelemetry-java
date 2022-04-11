@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -23,16 +22,6 @@ public interface LogData {
 
   /** Returns the resource of this log. */
   Resource getResource();
-
-  /**
-   * Returns the instrumentation library that generated this log.
-   *
-   * @deprecated Use {@link #getInstrumentationScopeInfo()}.
-   */
-  @Deprecated
-  default io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
-  }
 
   /** Returns the instrumentation scope that generated this log. */
   InstrumentationScopeInfo getInstrumentationScopeInfo();
