@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +43,7 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
   private final TemporalMetricStorage<T> metricStorage;
   private final Aggregator<T> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final AtomicBoolean isLocked = new AtomicBoolean(true);
   private Map<Attributes, T> accumulations = new HashMap<>();
 
   private AsynchronousMetricStorage(
@@ -69,8 +71,46 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
         metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
   }
 
+  /**
+   * Unlock the instrument, allowing recordings.
+   *
+   * <p>Called by {@link CallbackRegistration#invokeCallback()} before callback is invoked.
+   */
+  void unlock() {
+    if (isLocked.compareAndSet(true, false)) {
+      throttlingLogger.log(
+          Level.FINE,
+          "Attempting to unlock AsynchronousMetricStorage for instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " which is already unlocked. This is likely a bug.");
+    }
+  }
+
+  /**
+   * Lock the instrument, preventing additional recordings.
+   *
+   * <p>Called by {@link CallbackRegistration#invokeCallback()} after callback is invoked.
+   */
+  void lock() {
+    if (isLocked.compareAndSet(false, true)) {
+      throttlingLogger.log(
+          Level.FINE,
+          "Attempting to lock AsynchronousMetricStorage for instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " which is already locked. This is likely a bug.");
+    }
+  }
+
   /** Record callback long measurements from {@link ObservableLongMeasurement}. */
   void recordLong(long value, Attributes attributes) {
+    if (isLocked.get()) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Cannot record measurements for instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " outside registered callbacks.");
+      return;
+    }
     T accumulation = aggregator.accumulateLongMeasurement(value, attributes, Context.current());
     if (accumulation != null) {
       recordAccumulation(accumulation, attributes);
@@ -79,6 +119,14 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
 
   /** Record callback double measurements from {@link ObservableDoubleMeasurement}. */
   void recordDouble(double value, Attributes attributes) {
+    if (isLocked.get()) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Cannot record measurements for instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " outside registered callbacks.");
+      return;
+    }
     T accumulation = aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
     if (accumulation != null) {
       recordAccumulation(accumulation, attributes);

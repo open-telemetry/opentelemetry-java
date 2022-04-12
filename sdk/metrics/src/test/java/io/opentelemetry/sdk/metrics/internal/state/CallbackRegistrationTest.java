@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.never;
@@ -14,15 +15,15 @@ import static org.mockito.Mockito.verify;
 import com.google.common.util.concurrent.AtomicDouble;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -33,16 +34,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CallbackRegistrationTest {
 
+  private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("meter");
   private static final InstrumentDescriptor LONG_INSTRUMENT =
       InstrumentDescriptor.create(
-          "name",
+          "long-counter",
           "description",
           "unit",
           InstrumentType.OBSERVABLE_COUNTER,
           InstrumentValueType.LONG);
   private static final InstrumentDescriptor DOUBLE_INSTRUMENT =
       InstrumentDescriptor.create(
-          "name",
+          "double-counter",
           "description",
           "unit",
           InstrumentType.OBSERVABLE_COUNTER,
@@ -53,52 +56,114 @@ class CallbackRegistrationTest {
 
   @Mock private AsynchronousMetricStorage<?> storage1;
   @Mock private AsynchronousMetricStorage<?> storage2;
+  @Mock private AsynchronousMetricStorage<?> storage3;
+
+  private SdkObservableMeasurement measurement1;
+  private SdkObservableMeasurement measurement2;
+
+  @BeforeEach
+  void setup() {
+    measurement1 =
+        SdkObservableMeasurement.create(
+            INSTRUMENTATION_SCOPE_INFO, DOUBLE_INSTRUMENT, Collections.singletonList(storage1));
+    measurement2 =
+        SdkObservableMeasurement.create(
+            INSTRUMENTATION_SCOPE_INFO, LONG_INSTRUMENT, Arrays.asList(storage2, storage3));
+  }
+
+  @Test
+  void callbackDescription() {
+    assertThatThrownBy(() -> CallbackRegistration.callbackDescription(Collections.emptyList()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Callback with no instruments is not allowed");
+    assertThat(CallbackRegistration.callbackDescription(Collections.singletonList(LONG_INSTRUMENT)))
+        .isEqualTo("Instrument long-counter");
+    assertThat(
+            CallbackRegistration.callbackDescription(
+                Arrays.asList(LONG_INSTRUMENT, DOUBLE_INSTRUMENT)))
+        .isEqualTo("BatchCallback([long-counter,double-counter])");
+  }
 
   @Test
   void invokeCallback_Double() {
     AtomicDouble counter = new AtomicDouble();
-    Consumer<ObservableDoubleMeasurement> callback =
-        measurement ->
-            measurement.record(
+    Runnable callback =
+        () ->
+            measurement1.record(
                 counter.addAndGet(1.1), Attributes.builder().put("key", "val").build());
-    CallbackRegistration<?> callbackRegistration =
-        CallbackRegistration.createDouble(
-            DOUBLE_INSTRUMENT, callback, Arrays.asList(storage1, storage2));
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement1), callback);
 
     callbackRegistration.invokeCallback();
 
+    verify(storage1).unlock();
+    verify(storage1).lock();
     assertThat(counter.get()).isEqualTo(1.1);
     verify(storage1).recordDouble(1.1, Attributes.builder().put("key", "val").build());
-    verify(storage2).recordDouble(1.1, Attributes.builder().put("key", "val").build());
   }
 
   @Test
   void invokeCallback_Long() {
-    AtomicInteger counter = new AtomicInteger();
-    Consumer<ObservableDoubleMeasurement> callback =
-        measurement ->
-            measurement.record(
+    AtomicLong counter = new AtomicLong();
+    Runnable callback =
+        () ->
+            measurement2.record(
                 counter.incrementAndGet(), Attributes.builder().put("key", "val").build());
-    CallbackRegistration<?> callbackRegistration =
-        CallbackRegistration.createDouble(
-            LONG_INSTRUMENT, callback, Arrays.asList(storage1, storage2));
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement2), callback);
 
     callbackRegistration.invokeCallback();
 
+    verify(storage2).unlock();
+    verify(storage3).unlock();
+    verify(storage2).lock();
+    verify(storage3).lock();
     assertThat(counter.get()).isEqualTo(1);
-    verify(storage1).recordDouble(1, Attributes.builder().put("key", "val").build());
-    verify(storage2).recordDouble(1, Attributes.builder().put("key", "val").build());
+    verify(storage2).recordLong(1, Attributes.builder().put("key", "val").build());
+    verify(storage3).recordLong(1, Attributes.builder().put("key", "val").build());
+  }
+
+  @Test
+  void invokeCallback_MultipleMeasurements() {
+    AtomicDouble doubleCounter = new AtomicDouble();
+    AtomicLong longCounter = new AtomicLong();
+    Runnable callback =
+        () -> {
+          measurement1.record(
+              doubleCounter.addAndGet(1.1), Attributes.builder().put("key", "val").build());
+          measurement2.record(
+              longCounter.incrementAndGet(), Attributes.builder().put("key", "val").build());
+        };
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback);
+
+    callbackRegistration.invokeCallback();
+
+    verify(storage1).unlock();
+    verify(storage2).unlock();
+    verify(storage3).unlock();
+    verify(storage1).lock();
+    verify(storage2).lock();
+    verify(storage3).lock();
+    assertThat(doubleCounter.get()).isEqualTo(1.1);
+    assertThat(longCounter.get()).isEqualTo(1);
+    verify(storage1).recordDouble(1.1, Attributes.builder().put("key", "val").build());
+    verify(storage2).recordLong(1, Attributes.builder().put("key", "val").build());
+    verify(storage3).recordLong(1, Attributes.builder().put("key", "val").build());
   }
 
   @Test
   void invokeCallback_NoStorage() {
-    AtomicInteger counter = new AtomicInteger();
-    Consumer<ObservableDoubleMeasurement> callback =
-        measurement ->
+    SdkObservableMeasurement measurement =
+        SdkObservableMeasurement.create(
+            INSTRUMENTATION_SCOPE_INFO, LONG_INSTRUMENT, Collections.emptyList());
+    AtomicLong counter = new AtomicLong();
+    Runnable callback =
+        () ->
             measurement.record(
                 counter.incrementAndGet(), Attributes.builder().put("key", "val").build());
-    CallbackRegistration<?> callbackRegistration =
-        CallbackRegistration.createDouble(LONG_INSTRUMENT, callback, Collections.emptyList());
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement), callback);
 
     callbackRegistration.invokeCallback();
 
@@ -106,19 +171,35 @@ class CallbackRegistrationTest {
   }
 
   @Test
-  void invokeCallback_ThrowsException() {
-    Consumer<ObservableDoubleMeasurement> callback =
-        unused -> {
+  void invokeCallback_MultipleMeasurements_ThrowsException() {
+    Runnable callback =
+        () -> {
           throw new RuntimeException("Error!");
         };
-    CallbackRegistration<?> callbackRegistration =
-        CallbackRegistration.createDouble(
-            LONG_INSTRUMENT, callback, Arrays.asList(storage1, storage2));
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback);
 
     callbackRegistration.invokeCallback();
 
     verify(storage1, never()).recordDouble(anyDouble(), any());
     verify(storage2, never()).recordDouble(anyDouble(), any());
-    logs.assertContains("An exception occurred invoking callback for instrument name");
+    logs.assertContains(
+        "An exception occurred invoking callback for BatchCallback([double-counter,long-counter])");
+  }
+
+  @Test
+  void invokeCallback_SingleMeasurement_ThrowsException() {
+    Runnable callback =
+        () -> {
+          throw new RuntimeException("Error!");
+        };
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement2), callback);
+
+    callbackRegistration.invokeCallback();
+
+    verify(storage1, never()).recordDouble(anyDouble(), any());
+    verify(storage2, never()).recordDouble(anyDouble(), any());
+    logs.assertContains("An exception occurred invoking callback for Instrument long-counter");
   }
 }

@@ -6,126 +6,99 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+import static java.util.stream.Collectors.toList;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
- * A registered callback of an asynchronous instrument.
+ * A registered callback.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class CallbackRegistration<T> {
+public final class CallbackRegistration {
   private static final Logger logger = Logger.getLogger(CallbackRegistration.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final InstrumentDescriptor instrumentDescriptor;
-  private final Consumer<T> callback;
-  private final T measurement;
-  private final boolean noStoragesRegistered;
+  private final String callbackDescription;
+  private final List<AsynchronousMetricStorage<?>> storages;
+  private final Runnable callback;
 
   private CallbackRegistration(
-      InstrumentDescriptor instrumentDescriptor,
-      Consumer<T> callback,
-      T measurement,
-      List<AsynchronousMetricStorage<?>> storages) {
-    this.instrumentDescriptor = instrumentDescriptor;
+      List<InstrumentDescriptor> instrumentDescriptors,
+      List<AsynchronousMetricStorage<?>> storages,
+      Runnable callback) {
+    this.callbackDescription = callbackDescription(instrumentDescriptors);
+    this.storages = storages;
     this.callback = callback;
-    this.measurement = measurement;
-    this.noStoragesRegistered = storages.size() == 0;
   }
 
-  /** Create a {@link CallbackRegistration} for a {@code double} asynchronous instrument. */
-  public static CallbackRegistration<ObservableDoubleMeasurement> createDouble(
-      InstrumentDescriptor instrumentDescriptor,
-      Consumer<ObservableDoubleMeasurement> callback,
-      List<AsynchronousMetricStorage<?>> asyncMetricStorages) {
-    ObservableDoubleMeasurement measurement =
-        new ObservableDoubleMeasurementImpl(asyncMetricStorages);
-    return new CallbackRegistration<>(
-        instrumentDescriptor, callback, measurement, asyncMetricStorages);
+  /**
+   * Create a callback registration.
+   *
+   * <p>The {@code observableMeasurements} define the set of measurements the {@code runnable} may
+   * record to. The {@link AsynchronousMetricStorage}s for each is {@link
+   * AsynchronousMetricStorage#unlock()}ed before {@code runnable} is called, and {@link
+   * AsynchronousMetricStorage#lock()}ed afterwards.
+   *
+   * @param observableMeasurements the measurements that the runnable may record to
+   * @param runnable the callback
+   * @return the callback registration
+   */
+  public static CallbackRegistration create(
+      List<SdkObservableMeasurement> observableMeasurements, Runnable runnable) {
+    List<InstrumentDescriptor> instrumentDescriptors =
+        observableMeasurements.stream()
+            .map(SdkObservableMeasurement::getInstrumentDescriptor)
+            .collect(toList());
+    List<AsynchronousMetricStorage<?>> storages =
+        observableMeasurements.stream()
+            .flatMap(measurement -> measurement.getStorages().stream())
+            .collect(toList());
+    return new CallbackRegistration(instrumentDescriptors, storages, runnable);
   }
 
-  /** Create a {@link CallbackRegistration} for a {@code long} asynchronous instrument. */
-  public static CallbackRegistration<ObservableLongMeasurement> createLong(
-      InstrumentDescriptor instrumentDescriptor,
-      Consumer<ObservableLongMeasurement> callback,
-      List<AsynchronousMetricStorage<?>> asyncMetricStorages) {
-    ObservableLongMeasurement measurement = new ObservableLongMeasurementImpl(asyncMetricStorages);
-    return new CallbackRegistration<>(
-        instrumentDescriptor, callback, measurement, asyncMetricStorages);
+  // Visible for test
+  static String callbackDescription(List<InstrumentDescriptor> instrumentDescriptors) {
+    if (instrumentDescriptors.size() == 0) {
+      throw new IllegalStateException("Callback with no instruments is not allowed");
+    }
+    if (instrumentDescriptors.size() == 1) {
+      return "Instrument " + instrumentDescriptors.get(0).getName();
+    }
+    StringBuilder description = new StringBuilder("BatchCallback(");
+    description.append(
+        instrumentDescriptors.stream()
+            .map(InstrumentDescriptor::getName)
+            .collect(Collectors.joining(",", "[", "]")));
+    return description.append(")").toString();
   }
 
-  public InstrumentDescriptor getInstrumentDescriptor() {
-    return instrumentDescriptor;
+  public String getCallbackDescription() {
+    return callbackDescription;
   }
 
   void invokeCallback() {
     // Return early if no storages are registered
-    if (noStoragesRegistered) {
+    if (storages.size() == 0) {
       return;
     }
+    storages.forEach(AsynchronousMetricStorage::unlock);
     try {
-      callback.accept(measurement);
+      callback.run();
     } catch (Throwable e) {
       propagateIfFatal(e);
       throttlingLogger.log(
           Level.WARNING,
-          "An exception occurred invoking callback for instrument "
-              + instrumentDescriptor.getName()
-              + ".",
+          "An exception occurred invoking callback for " + callbackDescription + ".",
           e);
-    }
-  }
-
-  private static class ObservableDoubleMeasurementImpl implements ObservableDoubleMeasurement {
-
-    private final List<AsynchronousMetricStorage<?>> asyncMetricStorages;
-
-    private ObservableDoubleMeasurementImpl(
-        List<AsynchronousMetricStorage<?>> asyncMetricStorages) {
-      this.asyncMetricStorages = asyncMetricStorages;
-    }
-
-    @Override
-    public void record(double value) {
-      record(value, Attributes.empty());
-    }
-
-    @Override
-    public void record(double value, Attributes attributes) {
-      for (AsynchronousMetricStorage<?> asyncMetricStorage : asyncMetricStorages) {
-        asyncMetricStorage.recordDouble(value, attributes);
-      }
-    }
-  }
-
-  private static class ObservableLongMeasurementImpl implements ObservableLongMeasurement {
-
-    private final List<AsynchronousMetricStorage<?>> asyncMetricStorages;
-
-    private ObservableLongMeasurementImpl(List<AsynchronousMetricStorage<?>> asyncMetricStorages) {
-      this.asyncMetricStorages = asyncMetricStorages;
-    }
-
-    @Override
-    public void record(long value) {
-      record(value, Attributes.empty());
-    }
-
-    @Override
-    public void record(long value, Attributes attributes) {
-      for (AsynchronousMetricStorage<?> asyncMetricStorage : asyncMetricStorages) {
-        asyncMetricStorage.recordLong(value, attributes);
-      }
+    } finally {
+      storages.forEach(AsynchronousMetricStorage::lock);
     }
   }
 }

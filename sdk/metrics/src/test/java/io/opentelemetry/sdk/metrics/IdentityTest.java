@@ -964,6 +964,7 @@ class IdentityTest {
   }
 
   @Test
+  @SuppressLogger(ViewRegistry.class)
   void sameMeterDifferentInstrumentIncompatibleViewAggregation() {
     SdkMeterProvider meterProvider =
         builder

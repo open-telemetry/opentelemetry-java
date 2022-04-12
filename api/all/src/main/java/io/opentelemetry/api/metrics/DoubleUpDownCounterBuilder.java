@@ -47,4 +47,15 @@ public interface DoubleUpDownCounterBuilder {
    * @param callback A state-capturing callback used to observe values on-demand.
    */
   ObservableDoubleUpDownCounter buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
+
+  /**
+   * Build an observer for this instrument to observe values from a {@link BatchCallback}.
+   *
+   * <p>When {@link Meter#batchCallbackBuilder() building} the batch callback, this MUST register
+   * this observer via {@link BatchCallbackBuilder#add(ObservableDoubleMeasurement...)}. Values
+   * observed outside registered batch callbacks are ignored.
+   *
+   * @return an observable measurement that batch callbacks use to observe values.
+   */
+  ObservableDoubleMeasurement buildObserver();
 }

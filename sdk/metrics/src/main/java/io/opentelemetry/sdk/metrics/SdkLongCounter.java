@@ -140,5 +140,11 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
           meterSharedState,
           registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback));
     }
+
+    @Override
+    public ObservableLongMeasurement buildObserver() {
+      return buildObservableMeasurement(
+          InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG);
+    }
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.metrics.BatchCallbackBuilder;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
@@ -61,5 +62,10 @@ final class SdkMeter implements Meter {
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
     return new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
+  }
+
+  @Override
+  public BatchCallbackBuilder batchCallbackBuilder() {
+    return new SdkBatchCallbackBuilder(meterSharedState);
   }
 }
