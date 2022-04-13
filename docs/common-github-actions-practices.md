@@ -127,6 +127,7 @@ jobs:
 
   open-issue-on-failure:
     # open an issue on failure because it can be easy to miss CI failure notifications
+    runs-on: ubuntu-latest
     needs: analyze
     if: failure()
     steps:
@@ -418,6 +419,7 @@ This is what we use in the OpenTelemetry Java repositories:
 ```yaml
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 ```
@@ -450,7 +452,8 @@ jobs:
       - name: Create release branch
         id: create-release-branch
         run: |
-          version=$(...)  <-- get the version that is planned to be released
+          # TODO get the version that is planned to be released
+          version=$(...)
           release_branch_name=$(echo $version | sed -E 's,([0-9]+)\.([0-9]+)\.0,release/v\1.\2.x,')
 
           git push origin HEAD:$release_branch_name
@@ -643,7 +646,7 @@ jobs:
               prior_version="$major.$((minor - 1)).0"
             fi
           else
-              prior_version="$major.$minor.$((patch - 1))"
+            prior_version="$major.$minor.$((patch - 1))"
           fi
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
@@ -702,6 +705,7 @@ hitting the "Publish release" button).
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
@@ -742,6 +746,7 @@ as part of the release workflow.
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
@@ -782,7 +787,7 @@ on:
 
 jobs:
   create-pull-request:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -794,6 +799,7 @@ jobs:
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
