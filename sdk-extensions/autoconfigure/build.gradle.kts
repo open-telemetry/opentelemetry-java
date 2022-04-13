@@ -17,7 +17,6 @@ dependencies {
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
-  compileOnly(project(":exporters:otlp:metrics"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:otlp-http:trace"))
@@ -45,7 +44,6 @@ testing {
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
@@ -58,7 +56,6 @@ testing {
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
@@ -124,7 +121,6 @@ testing {
     val testOtlpGrpc by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
