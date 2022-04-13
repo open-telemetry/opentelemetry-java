@@ -164,13 +164,11 @@ requests if external links break.
 
       - name: Run markdown-link-check
         run: |
-          # --quiet displays errors only, making them easier to find in the log
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-                 | xargs markdown-link-check \
-                         --config .github/scripts/markdown-link-check-config.json \
-                         --quiet
+               | xargs markdown-link-check \
+                       --config .github/scripts/markdown-link-check-config.json
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
@@ -182,6 +180,18 @@ The file `.github/scripts/markdown-link-check-config.json` is for configuring th
 ```
 
 `retryOn429` helps with GitHub throttling.
+
+If you run into sites sending back `403` to the link checker bot, you can add `403` to the `aliveStatusCodes`, e.g.
+
+```json
+{
+  "retryOn429": true,
+  "aliveStatusCodes": [
+    200,
+    403
+  ]
+}
+```
 
 ### Automated check for misspellings
 
@@ -210,6 +220,17 @@ requests if new misspellings are added to the misspell dictionary.
 
       - name: Run misspell
         run: bin/misspell -error .
+```
+
+If you need to exclude some files for any reason:
+
+```yaml
+      - name: Run misspell
+        run: |
+          find . -type f \
+                 -not -path './somedir/*' \
+               | xargs bin/misspell -error
+
 ```
 
 ### Markdown lint
