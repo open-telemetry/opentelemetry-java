@@ -12,11 +12,18 @@ import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.nio.charset.StandardCharsets;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Helper to make implementing builders easier. */
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
+
+  static final String DEFAULT_UNIT = "1";
+
+  private static final Logger logger = Logger.getLogger(AbstractInstrumentBuilder.class.getName());
 
   private final MeterProviderSharedState meterProviderSharedState;
   private String description;
@@ -51,7 +58,32 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   }
 
   private InstrumentDescriptor makeDescriptor(InstrumentType type, InstrumentValueType valueType) {
-    return InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+    String validUnit = this.unit;
+    if (!isValidUnit(this.unit)) {
+      validUnit = DEFAULT_UNIT;
+      logger.log(
+          Level.WARNING,
+          "Instrument "
+              + instrumentName
+              + " unit \""
+              + this.unit
+              + "\" is invalid, using "
+              + DEFAULT_UNIT
+              + " instead. Instrument unit must be 63 or less ASCII characters.");
+    }
+    return InstrumentDescriptor.create(instrumentName, description, validUnit, type, valueType);
+  }
+
+  /**
+   * Determine if the instrument unit is valid. Units must be non-null, non-blank, strings of 63 or
+   * less ASCII characters.
+   */
+  // Visible for testing
+  static boolean isValidUnit(String unit) {
+    return unit != null
+        && !unit.equals("")
+        && unit.length() < 64
+        && StandardCharsets.US_ASCII.newEncoder().canEncode(unit);
   }
 
   protected <T> T swapBuilder(SwapBuilder<T> swapper) {

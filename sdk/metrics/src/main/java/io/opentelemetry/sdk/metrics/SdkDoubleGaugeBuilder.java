@@ -20,7 +20,7 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       String name) {
-    this(meterProviderSharedState, meterSharedState, name, "", "1");
+    this(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
   }
 
   SdkDoubleGaugeBuilder(
