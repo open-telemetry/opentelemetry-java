@@ -167,8 +167,28 @@ requests if external links break.
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-               | xargs markdown-link-check \
-                       --config .github/scripts/markdown-link-check-config.json
+               | .github/scripts/markdown-link-check-with-retry.sh
+```
+
+`.github/scripts/markdown-link-check-with-retry.sh` helps to reduce sporadic link check failures by
+retrying at a file-by-file level. It fails fast to make errors easier to find in the log.
+
+```bash
+#!/bin/bash -e
+
+retry_count=3
+
+for file in "$@"; do
+  for i in $(seq 1 $retry_count); do
+    if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
+                           "$file"; then
+      break
+    elif [[ $i -eq $retry_count ]]; then
+      exit 1
+    fi
+    sleep 5
+  done
+done
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
