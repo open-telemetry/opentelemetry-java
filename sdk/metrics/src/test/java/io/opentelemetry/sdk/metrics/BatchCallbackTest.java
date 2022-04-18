@@ -46,23 +46,25 @@ class BatchCallbackTest {
     AtomicLong longVal = new AtomicLong(0);
     AtomicDouble doubleVal = new AtomicDouble(0);
     BatchCallback batchCallback =
-        meter
-            .batchCallbackBuilder()
-            .add(counter1, upDownCounter1, gauge1)
-            .add(counter2, upDownCounter2, gauge2)
-            .build(
-                () -> {
-                  long curLong = longVal.incrementAndGet();
-                  double curDouble = doubleVal.addAndGet(1.1);
-                  counter1.record(curLong, Attributes.builder().put("key", "counter1").build());
-                  counter2.record(curDouble, Attributes.builder().put("key", "counter2").build());
-                  upDownCounter1.record(
-                      curLong, Attributes.builder().put("key", "upDownCounter1").build());
-                  upDownCounter2.record(
-                      curDouble, Attributes.builder().put("key", "upDownCounter2").build());
-                  gauge1.record(curLong, Attributes.builder().put("key", "gauge1").build());
-                  gauge2.record(curDouble, Attributes.builder().put("key", "gauge2").build());
-                });
+        meter.batchCallback(
+            () -> {
+              long curLong = longVal.incrementAndGet();
+              double curDouble = doubleVal.addAndGet(1.1);
+              counter1.record(curLong, Attributes.builder().put("key", "counter1").build());
+              counter2.record(curDouble, Attributes.builder().put("key", "counter2").build());
+              upDownCounter1.record(
+                  curLong, Attributes.builder().put("key", "upDownCounter1").build());
+              upDownCounter2.record(
+                  curDouble, Attributes.builder().put("key", "upDownCounter2").build());
+              gauge1.record(curLong, Attributes.builder().put("key", "gauge1").build());
+              gauge2.record(curDouble, Attributes.builder().put("key", "gauge2").build());
+            },
+            counter1,
+            counter2,
+            upDownCounter1,
+            upDownCounter2,
+            gauge1,
+            gauge2);
 
     assertThat(reader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(

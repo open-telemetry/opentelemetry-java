@@ -56,9 +56,9 @@ public interface LongCounterBuilder {
   /**
    * Build an observer for this instrument to observe values from a {@link BatchCallback}.
    *
-   * <p>When {@link Meter#batchCallbackBuilder() building} the batch callback, this MUST register
-   * this observer via {@link BatchCallbackBuilder#add(ObservableLongMeasurement...)}. Values
-   * observed outside registered batch callbacks are ignored.
+   * <p>This observer MUST be registered when creating a {@link Meter#batchCallback(Runnable,
+   * ObservableMeasurement, ObservableMeasurement...) batchCallback}, which records to it. Values
+   * observed outside registered callbacks are ignored.
    *
    * @return an observable measurement that batch callbacks use to observe values.
    */

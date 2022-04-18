@@ -43,8 +43,7 @@ class DefaultMeter implements Meter {
   private static final DoubleHistogramBuilder NOOP_DOUBLE_HISTOGRAM_BUILDER =
       new NoopDoubleHistogramBuilder();
   private static final DoubleGaugeBuilder NOOP_DOUBLE_GAUGE_BUILDER = new NoopDoubleGaugeBuilder();
-  private static final BatchCallbackBuilder NOOP_BATCH_CALLBACK_BUILDER =
-      new NoopBatchCallbackBuilder();
+  private static final BatchCallback NOOP_BATCH_CALLBACK = new BatchCallback() {};
   private static final ObservableDoubleMeasurement NOOP_OBSERVABLE_DOUBLE_MEASUREMENT =
       new NoopObservableDoubleMeasurement();
   private static final ObservableLongMeasurement NOOP_OBSERVABLE_LONG_MEASUREMENT =
@@ -75,8 +74,11 @@ class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchCallbackBuilder batchCallbackBuilder() {
-    return NOOP_BATCH_CALLBACK_BUILDER;
+  public BatchCallback batchCallback(
+      Runnable callback,
+      ObservableMeasurement observableMeasurement,
+      ObservableMeasurement... observableMeasurements) {
+    return NOOP_BATCH_CALLBACK;
   }
 
   private DefaultMeter() {}
@@ -402,24 +404,5 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value, Attributes attributes) {}
-  }
-
-  private static class NoopBatchCallbackBuilder implements BatchCallbackBuilder {
-    private static final BatchCallback NOOP_BATCH_OBSERVABLE = new BatchCallback() {};
-
-    @Override
-    public BatchCallbackBuilder add(ObservableDoubleMeasurement... observables) {
-      return this;
-    }
-
-    @Override
-    public BatchCallbackBuilder add(ObservableLongMeasurement... observables) {
-      return this;
-    }
-
-    @Override
-    public BatchCallback build(Runnable runnable) {
-      return NOOP_BATCH_OBSERVABLE;
-    }
   }
 }

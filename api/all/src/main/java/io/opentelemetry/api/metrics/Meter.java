@@ -82,9 +82,24 @@ public interface Meter {
    * <p>Batch callbacks allow a single callback to observe measurements for multiple asynchronous
    * instruments.
    *
-   * @return a builder for configuring a new batch callback.
+   * <p>The callback will only be called with the {@link Meter} is being observed.
+   *
+   * <ul>
+   *   <li>Run in a finite amount of time.
+   *   <li>Safe to call repeatedly, across multiple threads.
+   *   <li>Only observe values to registered instruments (i.e. {@code observableMeasurement} and
+   *       {@code observableMeasurements}
+   * </ul>
+   *
+   * @param callback a callback used to observe values on-demand.
+   * @param observableMeasurement Instruments for which the callback may observe values.
+   * @param observableMeasurements Instruments for which the callback may observe values.
    */
-  default BatchCallbackBuilder batchCallbackBuilder() {
-    return DefaultMeter.getInstance().batchCallbackBuilder();
+  default BatchCallback batchCallback(
+      Runnable callback,
+      ObservableMeasurement observableMeasurement,
+      ObservableMeasurement... observableMeasurements) {
+    return DefaultMeter.getInstance()
+        .batchCallback(callback, observableMeasurement, observableMeasurements);
   }
 }

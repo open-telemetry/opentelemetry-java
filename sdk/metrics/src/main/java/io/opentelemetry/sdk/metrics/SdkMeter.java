@@ -5,21 +5,34 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.BatchCallbackBuilder;
+import io.opentelemetry.api.metrics.BatchCallback;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
+
+  private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
+
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
@@ -65,7 +78,37 @@ final class SdkMeter implements Meter {
   }
 
   @Override
-  public BatchCallbackBuilder batchCallbackBuilder() {
-    return new SdkBatchCallbackBuilder(meterSharedState);
+  public BatchCallback batchCallback(
+      Runnable callback,
+      ObservableMeasurement observableMeasurement,
+      ObservableMeasurement... observableMeasurements) {
+    Set<ObservableMeasurement> measurements = new HashSet<>();
+    measurements.add(observableMeasurement);
+    Collections.addAll(measurements, observableMeasurements);
+
+    List<SdkObservableMeasurement> sdkMeasurements = new ArrayList<>();
+    for (ObservableMeasurement measurement : measurements) {
+      if (!(measurement instanceof SdkObservableMeasurement)) {
+        logger.log(
+            Level.WARNING,
+            "batchCallback called with instruments that were not created by the SDK.");
+        continue;
+      }
+      SdkObservableMeasurement sdkMeasurement = (SdkObservableMeasurement) measurement;
+      if (!meterSharedState
+          .getInstrumentationScopeInfo()
+          .equals(sdkMeasurement.getInstrumentationScopeInfo())) {
+        logger.log(
+            Level.WARNING,
+            "batchCallback called with instruments that belong to a different Meter.");
+        continue;
+      }
+      sdkMeasurements.add(sdkMeasurement);
+    }
+
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(sdkMeasurements, callback);
+    meterSharedState.registerCallback(callbackRegistration);
+    return new SdkObservableInstrument(meterSharedState, callbackRegistration);
   }
 }
