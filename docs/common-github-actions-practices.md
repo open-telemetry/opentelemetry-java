@@ -363,14 +363,14 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
   `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare release branch workflow](actions/workflows/prepare-release-branch.yml).
+* Run the [Prepare release branch workflow](https://github.com/open-telemetry/TODO/actions/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
   (one is targeted to the release branch and one is targeted to `main`).
 
 ## Preparing a new patch release
 
 * Backport pull request(s) to the release branch.
-  * Run the [Backport workflow](actions/workflows/backport.yml).
+  * Run the [Backport workflow](https://github.com/open-telemetry/TODO/actions/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
@@ -378,14 +378,14 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 * Merge a pull request to the release branch updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
   `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare patch release workflow](actions/workflows/prepare-patch-release.yml).
+* Run the [Prepare patch release workflow](https://github.com/open-telemetry/TODO/actions/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * Review and merge the pull request that it creates.
 
 ## Making the release
 
-Run the [Release workflow](actions/workflows/release.yml).
+Run the [Release workflow](https://github.com/open-telemetry/TODO/actions/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -397,7 +397,7 @@ Run the [Release workflow](actions/workflows/release.yml).
 
 ## After the release
 
-Run the [Merge change log to main workflow](actions/workflows/merge-change-log-to-main.yml).
+Run the [Merge change log to main workflow](https://github.com/open-telemetry/TODO/actions/workflows/merge-change-log-to-main.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -428,14 +428,14 @@ This is what we use in the OpenTelemetry Java repositories:
 
 Uses release branch naming convention `release/v*`.
 
-The specifics below depend a lot on your specific version bumping needs.
+The specifics below depend a lot on your specific version updating needs.
 
 For OpenTelemetry Java repositories, the version in `main` always ends with `-SNAPSHOT`,
 so preparing the release branch involves
 
 * removing `-SNAPSHOT` from the version on the release branch
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
-* bumping the version to the next `-SNAPSHOT` on `main`
+* updating the version to the next `-SNAPSHOT` on `main`
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
 ```yaml
@@ -461,9 +461,9 @@ jobs:
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_NAME=$release_branch_name" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Update version
         run: |
-          .github/scripts/update-versions.sh $VERSION-SNAPSHOT $VERSION
+          # TODO update version to $VERSION
 
       - name: Set up git name
         run: |
@@ -488,7 +488,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Bump version on main
+      - name: Update version
         run: |
           version=$(...)  <-- get the minor version that is planning to be released
           if [[ $version =~ ([0-9]+).([0-9]+).0 ]]; then
@@ -499,7 +499,7 @@ jobs:
             exit 1
           fi
           next_version="$major.$((minor + 1)).0"
-          .github/scripts/update-versions.sh $version-SNAPSHOT $next_version-SNAPSHOT
+          # TODO update version to $next_version
 
       - name: Set up git name
         run: |
@@ -511,21 +511,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          msg="Bump version"
+          msg="Update version"
           git commit -a -m "$msg"
-          git push origin HEAD:bump-snapshot-version
+          git push origin HEAD:update-version-on-main
           gh pr create --title "$msg" \
                        --body "$msg" \
-                       --head bump-snapshot-version \
+                       --head update-version-on-main \
                        --base main
 ```
 
 ### Prepare patch
 
-The specifics depend a lot on the build tool and your version bumping needs.
+The specifics depend a lot on the build tool and your version updating needs.
 
 For OpenTelemetry Java repositories, we have a workflow which generates a pull request
-against the release branch to bump the version (e.g. from `1.2.0` to `1.2.1`).
+against the release branch to update the version (e.g. from `1.2.0` to `1.2.1`).
 
 ```yaml
 name: Prepare patch release
@@ -549,11 +549,10 @@ jobs:
             exit 1
           fi
           echo "VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
-          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Update version
         run: |
-          .github/scripts/update-versions.sh $PRIOR_VERSION $VERSION
+          # TODO update version to $VERSION
 
       - name: Set up git name
         run: |
@@ -640,7 +639,7 @@ jobs:
           if [[ $patch == 0 ]]; then
             if [[ $minor == 0 ]]; then
               prior_major=$((major - 1))
-              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md  | head -1)
+              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md | head -1)
               prior_version="$prior_major.$prior_minor"
             else
               prior_version="$major.$((minor - 1)).0"
@@ -740,7 +739,7 @@ as part of the release workflow.
           git fetch upstream
           git checkout -b update-opentelemetry-javaagent-to-$VERSION upstream/main
 
-      - name: Bump version
+      - name: Update version
         run: |
           echo $VERSION > autoinstrumentation/java/version.txt
 
