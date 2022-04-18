@@ -6,6 +6,7 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.context.Context;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
@@ -50,21 +51,25 @@ class DefaultMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
+    ValidationUtil.isValidInstrumentName(name);
     return NOOP_LONG_COUNTER_BUILDER;
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
+    ValidationUtil.isValidInstrumentName(name);
     return NOOP_LONG_UP_DOWN_COUNTER_BUILDER;
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
+    ValidationUtil.isValidInstrumentName(name);
     return NOOP_DOUBLE_HISTOGRAM_BUILDER;
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
+    ValidationUtil.isValidInstrumentName(name);
     return NOOP_DOUBLE_GAUGE_BUILDER;
   }
 

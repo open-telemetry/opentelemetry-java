@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
@@ -17,30 +18,18 @@ import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
 
   /**
-   * Instrument names MUST conform to the following syntax.
-   *
-   * <ul>
-   *   <li>They are not null or empty strings.
-   *   <li>They are case-insensitive, ASCII strings.
-   *   <li>The first character must be an alphabetic character.
-   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', and '-'.
-   *   <li>They can have a maximum length of 63 characters.
-   * </ul>
+   * Message appended to warnings when {@link ValidationUtil#isValidInstrumentName(String, String)}
+   * is {@code false}.
    */
-  private static final String VALID_INSTRUMENT_PATTERN =
-      "([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,62}";
+  private static final String NOOP_INSTRUMENT_WARNING = " Returning noop instrument.";
 
-  private static final Pattern VALID_INSTRUMENT_NAME = Pattern.compile(VALID_INSTRUMENT_PATTERN);
-
-  private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
+  private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
+  private static final String NOOP_INSTRUMENT_NAME = "noop";
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final MeterProviderSharedState meterProviderSharedState;
@@ -68,44 +57,29 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return !isValidName(name)
-        ? MeterProvider.noop().meterBuilder(name).build().counterBuilder(name)
+    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+        ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongCounter.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return !isValidName(name)
-        ? MeterProvider.noop().meterBuilder(name).build().upDownCounterBuilder(name)
+    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+        ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongUpDownCounter.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return !isValidName(name)
-        ? MeterProvider.noop().meterBuilder(name).build().histogramBuilder(name)
+    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+        ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleHistogram.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return !isValidName(name)
-        ? MeterProvider.noop().meterBuilder(name).build().gaugeBuilder(name)
+    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+        ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
-  }
-
-  // Visible for testing
-  static boolean isValidName(String name) {
-    if (name == null || !VALID_INSTRUMENT_NAME.matcher(name).matches()) {
-      logger.log(
-          Level.WARNING,
-          "Instrument names \""
-              + name
-              + "\" is invalid, returning noop instrument. Valid instrument names must match "
-              + VALID_INSTRUMENT_PATTERN
-              + ".");
-      return false;
-    }
-    return true;
   }
 }
