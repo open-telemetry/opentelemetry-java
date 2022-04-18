@@ -14,7 +14,9 @@ class JpmsTest {
   @Test
   void noLinkageErrors() {
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(PrometheusHttpServer.create()).build();
+        SdkMeterProvider.builder()
+            .registerMetricReader(PrometheusHttpServer.builder().setPort(0).build())
+            .build();
     meterProvider.close();
   }
 }

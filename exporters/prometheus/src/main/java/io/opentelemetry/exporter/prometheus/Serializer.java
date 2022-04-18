@@ -45,10 +45,13 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
@@ -91,31 +94,38 @@ abstract class Serializer {
   abstract void writeEof(Writer writer) throws IOException;
 
   final void write(Collection<MetricData> metrics, OutputStream output) throws IOException {
+    // Prometheus requires all metrics with the same name to be serialized together, so we need to
+    // group them.
+    // In particular, it is common for OpenTelemetry to report metrics with the same name from
+    // different libraries
+    // separately.
+    Map<String, List<MetricData>> metricsByName =
+        metrics.stream()
+            // Not supported in specification yet.
+            .filter(metric -> metric.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM)
+            .filter(metric -> metricNameFilter.test(metricName(metric)))
+            .collect(
+                Collectors.groupingBy(
+                    metric ->
+                        headerName(
+                            NameSanitizer.INSTANCE.apply(metric.getName()),
+                            PrometheusType.forMetric(metric)),
+                    LinkedHashMap::new,
+                    Collectors.toList()));
     try (Writer writer =
         new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8))) {
-      for (MetricData metric : metrics) {
-        write(metric, writer);
+      for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
+        write(entry.getValue(), entry.getKey(), writer);
       }
       writeEof(writer);
     }
   }
 
-  private void write(MetricData metric, Writer writer) throws IOException {
-    // Not supported in specification yet.
-    if (metric.getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
-      return;
-    }
-
-    PrometheusType type = PrometheusType.forMetric(metric);
-    String name = NameSanitizer.INSTANCE.apply(metric.getName());
-    String headerName = headerName(name, type);
-    if (type == PrometheusType.COUNTER) {
-      name = name + "_total";
-    }
-
-    if (!metricNameFilter.test(name)) {
-      return;
-    }
+  private void write(List<MetricData> metrics, String headerName, Writer writer)
+      throws IOException {
+    // Write header based on first metric
+    PrometheusType type = PrometheusType.forMetric(metrics.get(0));
+    String description = metrics.get(0).getDescription();
 
     writer.write("# TYPE ");
     writer.write(headerName);
@@ -126,8 +136,17 @@ abstract class Serializer {
     writer.write("# HELP ");
     writer.write(headerName);
     writer.write(' ');
-    writeHelp(writer, metric.getDescription());
+    writeHelp(writer, description);
     writer.write('\n');
+
+    // Then write the metrics.
+    for (MetricData metric : metrics) {
+      write(metric, writer);
+    }
+  }
+
+  private void write(MetricData metric, Writer writer) throws IOException {
+    String name = metricName(metric);
 
     for (PointData point : getPoints(metric)) {
       switch (metric.getType()) {
@@ -496,6 +515,15 @@ abstract class Serializer {
         return ExponentialHistogramData.fromMetricData(metricData).getPoints();
     }
     return Collections.emptyList();
+  }
+
+  private static String metricName(MetricData metric) {
+    PrometheusType type = PrometheusType.forMetric(metric);
+    String name = NameSanitizer.INSTANCE.apply(metric.getName());
+    if (type == PrometheusType.COUNTER) {
+      name = name + "_total";
+    }
+    return name;
   }
 
   private static double getExemplarValue(ExemplarData exemplar) {
