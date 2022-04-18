@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -20,21 +21,62 @@ import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.LoggingEvent;
 
-@SuppressLogger(AbstractInstrumentBuilder.class)
+@SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 @SuppressLogger(MetricStorageRegistry.class)
 class SdkMeterTest {
+
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
   private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @RegisterExtension
-  LogCapturer metricStorageLogs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
+  LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
   @RegisterExtension
-  LogCapturer instrumentBuilderLogs =
-      LogCapturer.create().captureForType(AbstractInstrumentBuilder.class);
+  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+
+  @Test
+  void builder_InvalidUnit() {
+    String unit = "日";
+    // Counter
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .counterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // UpDownCounter
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .upDownCounterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // Histogram
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
+
+    // Guage
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
+
+    assertThat(apiUsageLogs.getEvents())
+        .hasSize(12)
+        .extracting(LoggingEvent::getMessage)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using 1 for instrument my-instrument instead."));
+  }
 
   @Test
   void testLongCounter() {
@@ -53,10 +95,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongCounter").build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -69,7 +111,7 @@ class SdkMeterTest {
             .build();
     assertThat(longCounter).isNotNull();
     sdkMeter.counterBuilder("testLongCounter".toUpperCase()).build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -90,10 +132,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testLongUpDownCounter").build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -105,9 +147,9 @@ class SdkMeterTest {
             .setUnit("metric tonnes")
             .build();
     assertThat(longUpDownCounter).isNotNull();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
     sdkMeter.upDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -120,7 +162,7 @@ class SdkMeterTest {
             .setUnit("metric tonnes")
             .build();
     assertThat(longHistogram).isNotNull();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     // Note: We no longer get the same instrument instance as these instances are lightweight
     // objects backed by storage now.  Here we just make sure it doesn't log an error.
@@ -130,10 +172,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testLongValueRecorder").ofLongs().build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -146,10 +188,10 @@ class SdkMeterTest {
             .setUnit("metric tonnes")
             .build();
     assertThat(longHistogram).isNotNull();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testLongValueRecorder".toUpperCase()).ofLongs().build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -160,10 +202,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(obs -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("longValueObserver").ofLongs().buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -174,10 +216,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(obs -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("longValueObserver".toUpperCase()).ofLongs().buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -187,10 +229,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongSumObserver").buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -200,10 +242,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testLongSumObserver".toUpperCase()).buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -213,10 +255,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testLongUpDownSumObserver").buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -226,12 +268,12 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter
         .upDownCounterBuilder("testLongUpDownSumObserver".toUpperCase())
         .buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -253,10 +295,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.counterBuilder("testDoubleCounter").ofDoubles().build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -278,10 +320,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.upDownCounterBuilder("testDoubleUpDownCounter").ofDoubles().build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -301,10 +343,10 @@ class SdkMeterTest {
         .setDescription("My very own ValueRecorder")
         .setUnit("metric tonnes")
         .build();
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -315,10 +357,10 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
     sdkMeter.counterBuilder("testDoubleSumObserver").ofDoubles().buildWithCallback(x -> {});
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -329,14 +371,14 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter
         .upDownCounterBuilder("testDoubleUpDownSumObserver")
         .ofDoubles()
         .buildWithCallback(x -> {});
     sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
-    metricStorageLogs.assertContains("Found duplicate metric definition");
+    logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
@@ -346,53 +388,9 @@ class SdkMeterTest {
         .setDescription("My very own counter")
         .setUnit("metric tonnes")
         .buildWithCallback(x -> {});
-    assertThat(metricStorageLogs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).isEmpty();
 
     sdkMeter.gaugeBuilder("doubleValueObserver").buildWithCallback(x -> {});
-    metricStorageLogs.assertContains("Found duplicate metric definition");
-  }
-
-  @Test
-  void build_InvalidUnitLogs() {
-    String unit = "日";
-    sdkMeter.counterBuilder("name").setUnit(unit).build();
-    sdkMeter.counterBuilder("name").setUnit(unit).buildWithCallback(unused -> {});
-    sdkMeter.counterBuilder("name").setUnit(unit).ofDoubles().build();
-    sdkMeter.counterBuilder("name").setUnit(unit).ofDoubles().buildWithCallback(unused -> {});
-    sdkMeter.upDownCounterBuilder("name").setUnit(unit).build();
-    sdkMeter.upDownCounterBuilder("name").setUnit(unit).buildWithCallback(unused -> {});
-    sdkMeter.upDownCounterBuilder("name").setUnit(unit).ofDoubles().build();
-    sdkMeter.upDownCounterBuilder("name").setUnit(unit).ofDoubles().buildWithCallback(unused -> {});
-    sdkMeter.histogramBuilder("name").setUnit(unit).build();
-    sdkMeter.histogramBuilder("name").setUnit(unit).ofLongs().build();
-    sdkMeter.gaugeBuilder("name").setUnit(unit).buildWithCallback(unused -> {});
-    sdkMeter.gaugeBuilder("name").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
-
-    assertThat(instrumentBuilderLogs.getEvents())
-        .hasSize(12)
-        .allSatisfy(
-            log ->
-                assertThat(log.getMessage())
-                    .isEqualTo(
-                        "Instrument name unit \"日\" is invalid, using 1 instead. Instrument unit must be 63 or less ASCII characters."));
-  }
-
-  @Test
-  void isValidUnit() {
-    assertThat(AbstractInstrumentBuilder.isValidUnit("a")).isTrue();
-    assertThat(AbstractInstrumentBuilder.isValidUnit("A")).isTrue();
-    assertThat(AbstractInstrumentBuilder.isValidUnit("foo129")).isTrue();
-    assertThat(AbstractInstrumentBuilder.isValidUnit("!@#$%^&*()")).isTrue();
-    assertThat(AbstractInstrumentBuilder.isValidUnit(new String(new char[63]).replace('\0', 'a')))
-        .isTrue();
-
-    // Empty and null not allowed
-    assertThat(AbstractInstrumentBuilder.isValidUnit(null)).isFalse();
-    assertThat(AbstractInstrumentBuilder.isValidUnit("")).isFalse();
-    // Non-ascii characters
-    assertThat(AbstractInstrumentBuilder.isValidUnit("日")).isFalse();
-    // Must be 63 characters or less
-    assertThat(AbstractInstrumentBuilder.isValidUnit(new String(new char[64]).replace('\0', 'a')))
-        .isFalse();
+    logs.assertContains("Found duplicate metric definition");
   }
 }
