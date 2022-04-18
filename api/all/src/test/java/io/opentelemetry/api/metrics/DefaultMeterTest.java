@@ -47,7 +47,7 @@ public class DefaultMeterTest {
     METER.histogramBuilder("my-instrument").setUnit(unit).build();
     METER.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
 
-    // Guage
+    // Gauge
     METER.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
     METER.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
 

@@ -65,7 +65,7 @@ class SdkMeterTest {
     sdkMeter.histogramBuilder("my-instrument").setUnit(unit).build();
     sdkMeter.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
 
-    // Guage
+    // Gauge
     sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
     sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
 
