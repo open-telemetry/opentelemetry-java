@@ -135,7 +135,7 @@ jobs:
 
       - name: Create issue
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           gh issue create --title "$GITHUB_WORKFLOW #$GITHUB_RUN_NUMBER failed" \
                           --label bug \
@@ -444,6 +444,17 @@ This is what we use in the OpenTelemetry Java repositories:
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 ```
 
+Furthermore:
+
+> When you use the repository's `GITHUB_TOKEN` to perform tasks, events triggered by the
+`GITHUB_TOKEN` will not create a new workflow run. This prevents you from accidentally creating
+recursive workflow runs.
+
+And so it is also helpful to create a [Personal Access Token][] for the bot and use
+`${{ secrets.BOT_TOKEN }}` instead of `${{ secrets.GITHUB_TOKEN }}` in your workflows.
+
+[Personal Access Token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
 ### Prepare release branch
 
 Uses release branch naming convention `release/v*`.
@@ -493,14 +504,16 @@ jobs:
 
       - name: Create pull request against the release branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Prepare release $VERSION"
-          git commit -a -m "$msg"
-          git push origin HEAD:prepare-release-$VERSION
-          gh pr create --title "[$RELEASE_BRANCH_NAME] $msg" \
-                       --body "$msg" \
-                       --head prepare-release-$VERSION \
+          message="Prepare release $VERSION"
+          branch=prepare-release-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$RELEASE_BRANCH_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
@@ -520,6 +533,7 @@ jobs:
           fi
           next_version="$major.$((minor + 1)).0"
           # TODO update version to $next_version
+          echo "NEXT_VERSION=$next_version" >> $GITHUB_ENV
 
       - name: Set up git name
         run: |
@@ -529,14 +543,17 @@ jobs:
 
       - name: Create pull request against main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Update version"
-          git commit -a -m "$msg"
-          git push origin HEAD:update-version-on-main
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --head update-version-on-main \
+          message="Update version to $NEXT_VERSION"
+          body="Update version to \`$NEXT_VERSION\`."
+          branch=update-version-to-$NEXT_VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --head $branch \
                        --base main
 ```
 
@@ -582,14 +599,16 @@ jobs:
 
       - name: Create pull request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Prepare release $VERSION"
-          git commit -a -m "$msg"
-          git push origin HEAD:prepare-release-$VERSION
-          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
-                       --body "$msg" \
-                       --head prepare-release-$VERSION \
+          message="Prepare release $VERSION"
+          branch=prepare-release-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$GITHUB_REF_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -625,18 +644,19 @@ jobs:
       - name: Create pull request
         env:
           NUMBER: ${{ github.event.inputs.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           commit=$(gh pr view $NUMBER --json mergeCommit --jq .mergeCommit.oid)
           title=$(gh pr view $NUMBER --json title --jq .title)
           url=$(gh pr view $NUMBER --json url --jq .url)
 
-          git cherry-pick $commit
-          git push origin HEAD:backport-$NUMBER-to-$GITHUB_REF_NAME
+          branch=backport-$NUMBER-to-${GITHUB_REF_NAME//\//-}
 
+          git cherry-pick $commit
+          git push origin HEAD:$branch
           gh pr create --title "[$GITHUB_REF_NAME] $title" \
-                       --body "Clean cherry-pick of #$NUMBER to the $GITHUB_REF_NAME branch." \
-                       --head backport-$NUMBER-to-$GITHUB_REF_NAME \
+                       --body "Clean cherry-pick of #$NUMBER to the \`$GITHUB_REF_NAME\` branch." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -672,7 +692,7 @@ jobs:
 
       - name: Generate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # conditional block not indented because of the heredoc
           if [[ $VERSION != *.0 ]]; then
@@ -705,7 +725,7 @@ hitting the "Publish release" button).
 ```yaml
       - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
@@ -719,7 +739,7 @@ hitting the "Publish release" button).
 ```yaml
       - name: Update the change log with the release date
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md
@@ -732,14 +752,16 @@ hitting the "Publish release" button).
 
       - name: Create pull request against the release branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Add $VERSION release date to the change log"
-          git commit -a -m "$msg"
-          git push origin HEAD:add-$VERSION-release-date
-          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
-                       --body "$msg" \
-                       --head add-$VERSION-release-date \
+          message="Add the release date for $VERSION to the change log"
+          branch=add-release-date-for-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$GITHUB_REF_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -748,16 +770,18 @@ hitting the "Publish release" button).
 For example to send a PR to notify/update another repository that a new release is available
 as part of the release workflow.
 
-Note that the Personal Access Token used will need `workflow` (Update GitHub Action workflows)
+Note that the [Personal Access Token][] used will need `workflow` (Update GitHub Action workflows)
 permission since it will be updating the workflows of the origin repository when it pushes the
 branch and workflows have been updated upstream.
+
+[Personal Access Token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
 ```yaml
       - uses: actions/checkout@v3
         with:
           repository: opentelemetry-java-bot/opentelemetry-operator
           # this is the PAT used for "git push" below
-          token: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+          token: ${{ secrets.BOT_TOKEN }}
 
       - name: Initialize pull request branch
         run: |
@@ -778,19 +802,19 @@ branch and workflows have been updated upstream.
       - name: Create pull request against opentelemetry-operator
         env:
           # this is the PAT used for "gh pr create" below
-          GITHUB_TOKEN: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Update opentelemetry-javaagent version to $VERSION"
-          git commit -a -m "$msg"
+          message="Update the javaagent version to $VERSION"
+          body="Update the javaagent version to \`$VERSION\`."
 
           # gh pr create doesn't have a way to explicitly specify different head and base
           # repositories currently, but it will implicitly pick up the head from a different
           # repository if you set up a tracking branch
 
+          git commit -a -m "$message"
           git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
-
-          gh pr create --title "$msg" \
-                       --body "$msg" \
+          gh pr create --title "$message" \
+                       --body "$body" \
                        --repo open-telemetry/opentelemetry-operator
                        --base main
 ```
@@ -831,15 +855,18 @@ jobs:
         # this will fail if there have been conflicting change log updates introduced in main
       - name: Create pull request against main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
+          message="Merge change log updates from $GITHUB_REF_NAME"
+          body="Merge change log updates from \`$GITHUB_REF_NAME\`."
+          branch=merge-change-log-updates-from-${GITHUB_REF_NAME//\//-}
+
           git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply
-          msg="Merge change log updates from $GITHUB_REF_NAME to main"
-          git commit -a -m "$msg"
-          git push origin HEAD:merge-change-log-updates-to-main
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --head merge-change-log-updates-to-main \
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --head $branch \
                        --base main
 ```
 
