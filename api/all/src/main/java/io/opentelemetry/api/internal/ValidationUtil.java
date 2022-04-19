@@ -23,8 +23,22 @@ public final class ValidationUtil {
 
   private static final Logger API_USAGE_LOGGER = Logger.getLogger(API_USAGE_LOGGER_NAME);
 
-  public static void log(String msg) {
-    API_USAGE_LOGGER.log(Level.FINEST, msg, new AssertionError());
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log at {@link Level#FINEST} and include a stack trace.
+   */
+  public static void log(String message) {
+    log(message, Level.FINEST);
+  }
+
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log includes a stack trace.
+   */
+  public static void log(String message, Level level) {
+    API_USAGE_LOGGER.log(level, message, new AssertionError());
   }
 
   /** Determine if the instrument unit is valid. If invalid, log a warning. */
@@ -43,12 +57,12 @@ public final class ValidationUtil {
         && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
       return true;
     }
-    API_USAGE_LOGGER.log(
-        Level.WARNING,
+    log(
         "Unit \""
             + unit
             + "\" is invalid. Instrument unit must be 63 or less ASCII characters."
-            + logSuffix);
+            + logSuffix,
+        Level.WARNING);
     return false;
   }
 
