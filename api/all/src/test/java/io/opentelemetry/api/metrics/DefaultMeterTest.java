@@ -75,6 +75,42 @@ public class DefaultMeterTest {
   }
 
   @Test
+  void builder_InvalidUnit() {
+    String unit = "日";
+    // Counter
+    METER.counterBuilder("my-instrument").setUnit(unit).build();
+    METER.counterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    METER.counterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    METER.counterBuilder("my-instrument").setUnit(unit).ofDoubles().buildWithCallback(unused -> {});
+
+    // UpDownCounter
+    METER.upDownCounterBuilder("my-instrument").setUnit(unit).build();
+    METER.upDownCounterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    METER.upDownCounterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    METER
+        .upDownCounterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // Histogram
+    METER.histogramBuilder("my-instrument").setUnit(unit).build();
+    METER.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
+
+    // Gauge
+    METER.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    METER.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
+
+    assertThat(apiUsageLogs.getEvents())
+        .hasSize(12)
+        .extracting(LoggingEvent::getMessage)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters."));
+  }
+
+  @Test
   void noopLongCounter_doesNotThrow() {
     LongCounter counter =
         METER.counterBuilder("size").setDescription("The size I'm measuring").setUnit("1").build();

@@ -111,6 +111,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongCounterBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -142,6 +143,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleCounterBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -193,6 +195,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongUpDownCounterBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -226,6 +229,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleUpDownCounterBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -275,6 +279,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleHistogramBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -299,6 +304,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongHistogramBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -319,6 +325,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleGaugeBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 
@@ -343,6 +350,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongGaugeBuilder setUnit(String unit) {
+      ValidationUtil.isValidInstrumentUnit(unit);
       return this;
     }
 

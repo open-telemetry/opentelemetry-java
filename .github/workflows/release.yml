@@ -26,7 +26,7 @@ jobs:
       - name: Set versions
         id: set-versions
         run: |
-          version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts | head -1)
+          version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts)
           if [[ $version =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
             major="${BASH_REMATCH[1]}"
             minor="${BASH_REMATCH[2]}"
@@ -38,13 +38,13 @@ jobs:
           if [[ $patch == 0 ]]; then
             if [[ $minor == 0 ]]; then
               prior_major=$((major - 1))
-              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md  | head -1)
+              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md | head -1)
               prior_version="$prior_major.$prior_minor"
             else
               prior_version="$major.$((minor - 1)).0"
             fi
           else
-              prior_version="$major.$minor.$((patch - 1))"
+            prior_version="$major.$minor.$((patch - 1))"
           fi
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
@@ -98,6 +98,8 @@ jobs:
                             v$VERSION
 
       - name: Update the change log with the release date
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md

@@ -99,6 +99,46 @@ class SdkMeterTest {
   }
 
   @Test
+  void builder_InvalidUnit() {
+    String unit = "日";
+    // Counter
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .counterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // UpDownCounter
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .upDownCounterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // Histogram
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
+
+    // Gauge
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
+
+    assertThat(apiUsageLogs.getEvents())
+        .hasSize(12)
+        .extracting(LoggingEvent::getMessage)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using 1 for instrument my-instrument instead."));
+  }
+
+  @Test
   void testLongCounter() {
     LongCounter longCounter =
         sdkMeter
