@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -20,9 +21,12 @@ import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.LoggingEvent;
 
+@SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 @SuppressLogger(MetricStorageRegistry.class)
 class SdkMeterTest {
+
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
@@ -30,6 +34,49 @@ class SdkMeterTest {
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
+
+  @RegisterExtension
+  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+
+  @Test
+  void builder_InvalidUnit() {
+    String unit = "日";
+    // Counter
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .counterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // UpDownCounter
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .upDownCounterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // Histogram
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
+
+    // Gauge
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
+
+    assertThat(apiUsageLogs.getEvents())
+        .hasSize(12)
+        .extracting(LoggingEvent::getMessage)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using 1 for instrument my-instrument instead."));
+  }
 
   @Test
   void testLongCounter() {

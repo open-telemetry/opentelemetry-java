@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.internal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -18,12 +19,52 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class ValidationUtil {
 
-  private ValidationUtil() {}
+  public static final String API_USAGE_LOGGER_NAME = "io.opentelemetry.ApiUsageLogging";
 
-  private static final Logger API_USAGE_LOGGER =
-      Logger.getLogger("io.opentelemetry.ApiUsageLogging");
+  private static final Logger API_USAGE_LOGGER = Logger.getLogger(API_USAGE_LOGGER_NAME);
 
-  public static void log(String msg) {
-    API_USAGE_LOGGER.log(Level.FINEST, msg, new AssertionError());
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log at {@link Level#FINEST} and include a stack trace.
+   */
+  public static void log(String message) {
+    log(message, Level.FINEST);
   }
+
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log includes a stack trace.
+   */
+  public static void log(String message, Level level) {
+    API_USAGE_LOGGER.log(level, message, new AssertionError());
+  }
+
+  /** Determine if the instrument unit is valid. If invalid, log a warning. */
+  public static boolean isValidInstrumentUnit(String unit) {
+    return isValidInstrumentUnit(unit, "");
+  }
+
+  /**
+   * Determine if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
+   * appended.
+   */
+  public static boolean isValidInstrumentUnit(String unit, String logSuffix) {
+    if (unit != null
+        && !unit.equals("")
+        && unit.length() < 64
+        && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
+      return true;
+    }
+    log(
+        "Unit \""
+            + unit
+            + "\" is invalid. Instrument unit must be 63 or less ASCII characters."
+            + logSuffix,
+        Level.WARNING);
+    return false;
+  }
+
+  private ValidationUtil() {}
 }

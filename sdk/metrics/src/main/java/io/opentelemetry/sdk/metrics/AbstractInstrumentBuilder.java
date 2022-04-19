@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -17,6 +18,8 @@ import java.util.function.Consumer;
 
 /** Helper to make implementing builders easier. */
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
+
+  static final String DEFAULT_UNIT = "1";
 
   private final MeterProviderSharedState meterProviderSharedState;
   private String description;
@@ -41,7 +44,12 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    this.unit = unit;
+    if (!ValidationUtil.isValidInstrumentUnit(
+        unit, " Using " + DEFAULT_UNIT + " for instrument " + this.instrumentName + " instead.")) {
+      this.unit = DEFAULT_UNIT;
+    } else {
+      this.unit = unit;
+    }
     return getThis();
   }
 
