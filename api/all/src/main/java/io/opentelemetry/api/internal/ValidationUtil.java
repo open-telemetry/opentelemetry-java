@@ -64,16 +64,16 @@ public final class ValidationUtil {
    * appended.
    */
   public static boolean isValidInstrumentName(String name, String logSuffix) {
-    if (name == null || !VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
-      API_USAGE_LOGGER.log(
-          Level.WARNING,
-          "Instrument name \""
-              + name
-              + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter."
-              + logSuffix);
-      return false;
+    if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
+      return true;
     }
-    return true;
+    log(
+        "Instrument name \""
+            + name
+            + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter."
+            + logSuffix,
+        Level.WARNING);
+    return false;
   }
 
   /** Determine if the instrument unit is valid. If invalid, log a warning. */
