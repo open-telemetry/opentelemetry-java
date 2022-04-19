@@ -10,7 +10,7 @@ jobs:
 
       - name: Set environment variables
         run: |
-          prior_version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts | head -1)
+          prior_version=$(grep -Eo "[0-9]+.[0-9]+.[0-9]+" version.gradle.kts)
           if [[ $prior_version =~ ([0-9]+.[0-9]+).([0-9]+) ]]; then
             major_minor="${BASH_REMATCH[1]}"
             patch="${BASH_REMATCH[2]}"
@@ -19,11 +19,10 @@ jobs:
             exit 1
           fi
           echo "VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
-          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Update version
         run: |
-          sed -ri "s/$PRIOR_VERSION/$VERSION/" version.gradle.kts
+          sed -ri "s/[0-9]+\.[0-9]+\.[0-9]+/$VERSION/" version.gradle.kts
 
       - name: Set git user
         run: |

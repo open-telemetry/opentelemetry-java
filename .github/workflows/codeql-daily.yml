@@ -31,7 +31,7 @@ jobs:
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
 
-  issue:
+  open-issue-on-failure:
     needs: analyze
     if: failure()
     uses: ./.github/workflows/reusable-create-issue-for-failure.yml

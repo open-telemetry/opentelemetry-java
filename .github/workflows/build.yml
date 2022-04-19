@@ -71,13 +71,13 @@ jobs:
 
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance if external links break
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   misspell-check:
     # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
     # to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
   publish-snapshots:
