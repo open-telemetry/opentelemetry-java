@@ -698,6 +698,8 @@ hitting the "Publish release" button).
 
 ```yaml
       - name: Update the change log with the release date
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md
