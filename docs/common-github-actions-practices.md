@@ -726,6 +726,10 @@ hitting the "Publish release" button).
 For example to send a PR to notify/update another repository that a new release is available
 as part of the release workflow.
 
+Note that the Personal Access Token used will need `workflow` (Update GitHub Action workflows)
+permission since it will be updating the workflows of the origin repository when it pushes the
+branch and workflows have been updated upstream.
+
 ```yaml
       - uses: actions/checkout@v3
         with:
