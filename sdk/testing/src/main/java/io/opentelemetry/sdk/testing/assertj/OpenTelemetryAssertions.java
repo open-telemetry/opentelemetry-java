@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.AbstractMap;
@@ -35,9 +36,14 @@ public final class OpenTelemetryAssertions extends Assertions {
     return new AttributesAssert(attributes);
   }
 
-  /** Returns an assertion for {@link SpanDataAssert}. */
+  /** Returns an assertion for {@link SpanData}. */
   public static SpanDataAssert assertThat(@Nullable SpanData spanData) {
     return new SpanDataAssert(spanData);
+  }
+
+  /** Returns an assertion for {@link MetricData}. */
+  public static MetricDataAssert assertThat(@Nullable MetricData metricData) {
+    return new MetricDataAssert(metricData);
   }
 
   /** Returns an assertion for {@link EventDataAssert}. */
