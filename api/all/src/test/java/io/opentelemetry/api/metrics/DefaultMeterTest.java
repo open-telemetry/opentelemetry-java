@@ -20,9 +20,59 @@ import org.slf4j.event.LoggingEvent;
 @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 public class DefaultMeterTest {
   private static final Meter METER = DefaultMeter.getInstance();
+  private static final String NOOP_INSTRUMENT_NAME = "noop";
 
   @RegisterExtension
   LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+
+  @Test
+  void builder_InvalidName() {
+    // Counter
+    assertThat(METER.counterBuilder("1").build())
+        .isSameAs(METER.counterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(METER.counterBuilder("1").ofDoubles().build())
+        .isSameAs(METER.counterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(METER.counterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(METER.counterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(METER.counterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            METER.counterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().buildWithCallback(unused -> {}));
+
+    // UpDownCounter
+    assertThat(METER.upDownCounterBuilder("1").build())
+        .isSameAs(METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(METER.upDownCounterBuilder("1").ofDoubles().build())
+        .isSameAs(METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(METER.upDownCounterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(METER.upDownCounterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            METER
+                .upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
+                .ofDoubles()
+                .buildWithCallback(unused -> {}));
+
+    // Histogram
+    assertThat(METER.histogramBuilder("1").build())
+        .isSameAs(METER.histogramBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(METER.histogramBuilder("1").ofLongs().build())
+        .isSameAs(METER.histogramBuilder(NOOP_INSTRUMENT_NAME).ofLongs().build());
+
+    // Gauage
+    assertThat(METER.gaugeBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(METER.gaugeBuilder("1").ofLongs().buildWithCallback(unused -> {}))
+        .isSameAs(
+            METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).ofLongs().buildWithCallback(unused -> {}));
+
+    assertThat(apiUsageLogs.getEvents())
+        .extracting(LoggingEvent::getMessage)
+        .hasSize(12)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter."));
+  }
 
   @Test
   void builder_InvalidUnit() {
