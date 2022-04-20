@@ -68,3 +68,12 @@ sourceSets {
     java.srcDir("$buildDir/generated/source/wire")
   }
 }
+
+tasks {
+  compileJava {
+    with(options) {
+      // Generated code so can't control serialization.
+      compilerArgs.add("-Xlint:-serial")
+    }
+  }
+}
