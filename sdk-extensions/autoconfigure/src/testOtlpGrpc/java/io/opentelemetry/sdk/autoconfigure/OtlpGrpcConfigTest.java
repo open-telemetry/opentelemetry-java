@@ -174,7 +174,7 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
-    props.put("otel.exporter.otlp.metrics.temporality", "DELTA");
+    props.put("otel.exporter.otlp.metrics.temporality.preference", "DELTA");
     try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props))) {
