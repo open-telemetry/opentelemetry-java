@@ -20,84 +20,84 @@ public class ValidationUtilTest {
       LogCapturer.create().captureForLogger(ValidationUtil.API_USAGE_LOGGER_NAME);
 
   @Test
-  void isValidInstrumentName_InvalidNameLogs() {
-    assertThat(ValidationUtil.isValidInstrumentName("1", " suffix")).isFalse();
+  void checkValidInstrumentName_InvalidNameLogs() {
+    assertThat(ValidationUtil.checkValidInstrumentName("1", " suffix")).isFalse();
     apiUsageLogs.assertContains(
         "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter. suffix");
   }
 
   @Test
-  void isValidInstrumentName() {
+  void checkValidInstrumentName() {
     // Valid names
-    assertThat(ValidationUtil.isValidInstrumentName("f")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("F")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("foo")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("a1")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("a.")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("abcdefghijklmnopqrstuvwxyz")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("ABCDEFGHIJKLMNOPQRSTUVWXYZ")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("a1234567890")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName("a_-.")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentName(new String(new char[63]).replace('\0', 'a')))
+    assertThat(ValidationUtil.checkValidInstrumentName("f")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("F")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("foo")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("a1")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("a.")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("abcdefghijklmnopqrstuvwxyz")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("ABCDEFGHIJKLMNOPQRSTUVWXYZ")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("a1234567890")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName("a_-.")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentName(new String(new char[63]).replace('\0', 'a')))
         .isTrue();
 
     // Empty and null not allowed
-    assertThat(ValidationUtil.isValidInstrumentName(null)).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName(null)).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("")).isFalse();
     // Must start with a letter
-    assertThat(ValidationUtil.isValidInstrumentName("1")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName(".")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("1")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName(".")).isFalse();
     // Illegal characters
-    assertThat(ValidationUtil.isValidInstrumentName("a~")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a!")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a@")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a#")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a$")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a%")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a^")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a&")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a*")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a(")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a)")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a=")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a+")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a{")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a}")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a[")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a]")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a\\")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a|")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a<")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a>")).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentName("a?")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a~")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a!")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a@")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a#")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a$")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a%")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a^")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a&")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a*")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a(")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a)")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a=")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a+")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a{")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a}")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a[")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a]")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a\\")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a|")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a<")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a>")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentName("a?")).isFalse();
     // Must be 63 characters or less
-    assertThat(ValidationUtil.isValidInstrumentName(new String(new char[64]).replace('\0', 'a')))
+    assertThat(ValidationUtil.checkValidInstrumentName(new String(new char[64]).replace('\0', 'a')))
         .isFalse();
   }
 
   @Test
-  void isValidInstrumentUnit_InvalidUnitLogs() {
-    assertThat(ValidationUtil.isValidInstrumentUnit("日", " suffix")).isFalse();
+  void checkValidInstrumentUnit_InvalidUnitLogs() {
+    assertThat(ValidationUtil.checkValidInstrumentUnit("日", " suffix")).isFalse();
     apiUsageLogs.assertContains(
         "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters." + " suffix");
   }
 
   @Test
-  void isValidInstrumentUnit() {
-    assertThat(ValidationUtil.isValidInstrumentUnit("a")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentUnit("A")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentUnit("foo129")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentUnit("!@#$%^&*()")).isTrue();
-    assertThat(ValidationUtil.isValidInstrumentUnit(new String(new char[63]).replace('\0', 'a')))
+  void checkValidInstrumentUnit() {
+    assertThat(ValidationUtil.checkValidInstrumentUnit("a")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentUnit("A")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentUnit("foo129")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentUnit("!@#$%^&*()")).isTrue();
+    assertThat(ValidationUtil.checkValidInstrumentUnit(new String(new char[63]).replace('\0', 'a')))
         .isTrue();
 
     // Empty and null not allowed
-    assertThat(ValidationUtil.isValidInstrumentUnit(null)).isFalse();
-    assertThat(ValidationUtil.isValidInstrumentUnit("")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentUnit(null)).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentUnit("")).isFalse();
     // Non-ascii characters
-    assertThat(ValidationUtil.isValidInstrumentUnit("日")).isFalse();
+    assertThat(ValidationUtil.checkValidInstrumentUnit("日")).isFalse();
     // Must be 63 characters or less
-    assertThat(ValidationUtil.isValidInstrumentUnit(new String(new char[64]).replace('\0', 'a')))
+    assertThat(ValidationUtil.checkValidInstrumentUnit(new String(new char[64]).replace('\0', 'a')))
         .isFalse();
   }
 }

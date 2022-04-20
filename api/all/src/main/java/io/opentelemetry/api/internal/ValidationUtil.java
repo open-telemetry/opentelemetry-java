@@ -54,16 +54,16 @@ public final class ValidationUtil {
     API_USAGE_LOGGER.log(level, message, new AssertionError());
   }
 
-  /** Determine if the instrument name is valid. If invalid, log a warning. */
-  public static boolean isValidInstrumentName(String name) {
-    return isValidInstrumentName(name, "");
+  /** Check if the instrument name is valid. If invalid, log a warning. */
+  public static boolean checkValidInstrumentName(String name) {
+    return checkValidInstrumentName(name, "");
   }
 
   /**
-   * Determine if the instrument name is valid. If invalid, log a warning with the {@code logSuffix}
+   * Check if the instrument name is valid. If invalid, log a warning with the {@code logSuffix}
    * appended.
    */
-  public static boolean isValidInstrumentName(String name, String logSuffix) {
+  public static boolean checkValidInstrumentName(String name, String logSuffix) {
     if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
       return true;
     }
@@ -76,16 +76,16 @@ public final class ValidationUtil {
     return false;
   }
 
-  /** Determine if the instrument unit is valid. If invalid, log a warning. */
-  public static boolean isValidInstrumentUnit(String unit) {
-    return isValidInstrumentUnit(unit, "");
+  /** Check if the instrument unit is valid. If invalid, log a warning. */
+  public static boolean checkValidInstrumentUnit(String unit) {
+    return checkValidInstrumentUnit(unit, "");
   }
 
   /**
-   * Determine if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
+   * Check if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
    * appended.
    */
-  public static boolean isValidInstrumentUnit(String unit, String logSuffix) {
+  public static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
     if (unit != null
         && !unit.equals("")
         && unit.length() < 64

@@ -44,7 +44,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    if (!ValidationUtil.isValidInstrumentUnit(
+    if (!ValidationUtil.checkValidInstrumentUnit(
         unit, " Using " + DEFAULT_UNIT + " for instrument " + this.instrumentName + " instead.")) {
       this.unit = DEFAULT_UNIT;
     } else {

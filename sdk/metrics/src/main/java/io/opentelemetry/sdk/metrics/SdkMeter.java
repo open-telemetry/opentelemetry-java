@@ -23,8 +23,8 @@ import java.util.Collection;
 final class SdkMeter implements Meter {
 
   /**
-   * Message appended to warnings when {@link ValidationUtil#isValidInstrumentName(String, String)}
-   * is {@code false}.
+   * Message appended to warnings when {@link ValidationUtil#checkValidInstrumentName(String,
+   * String)} is {@code false}.
    */
   private static final String NOOP_INSTRUMENT_WARNING = " Returning noop instrument.";
 
@@ -57,28 +57,28 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongCounter.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongUpDownCounter.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleHistogram.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return !ValidationUtil.isValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
   }
