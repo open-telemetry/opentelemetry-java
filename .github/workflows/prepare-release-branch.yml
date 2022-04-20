@@ -60,6 +60,8 @@ jobs:
           next_version="$major.$((minor + 1)).0"
           sed -ri "s/[0-9]+\.[0-9]+\.[0-9]+/$next_version/" version.gradle.kts
 
+          echo "NEXT_VERSION=$next_version" >> $GITHUB_ENV
+
       - name: Set git user
         run: |
           git config user.name opentelemetry-java-bot

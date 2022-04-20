@@ -533,6 +533,7 @@ jobs:
           fi
           next_version="$major.$((minor + 1)).0"
           # TODO update version to $next_version
+
           echo "NEXT_VERSION=$next_version" >> $GITHUB_ENV
 
       - name: Set up git name
