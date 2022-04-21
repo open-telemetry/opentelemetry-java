@@ -9,7 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import java.util.Arrays;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Simple tests of Aggregation classes API. */
@@ -23,10 +24,17 @@ class AggregationTest {
     assertThat(Aggregation.sum()).asString().contains("Sum");
     assertThat(Aggregation.explicitBucketHistogram())
         .asString()
-        .contains("ExplicitBucketHistogram");
-    assertThat(Aggregation.explicitBucketHistogram(Arrays.asList(1.0d)))
+        .contains("ExplicitBucketHistogramAggregation");
+    assertThat(Aggregation.explicitBucketHistogram(Collections.singletonList(1.0d)))
         .asString()
-        .contains("ExplicitBucketHistogram");
+        .contains("ExplicitBucketHistogramAggregation");
+    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
+    assertThat(ExponentialHistogramAggregation.getDefault())
+        .asString()
+        .isEqualTo("ExponentialHistogramAggregation{startingScale=20,maxBuckets=320}");
+    assertThat(ExponentialHistogramAggregation.create(1, 1))
+        .asString()
+        .isEqualTo("ExponentialHistogramAggregation{startingScale=1,maxBuckets=1}");
   }
 
   @Test
@@ -79,6 +87,16 @@ class AggregationTest {
     assertThat(explicitHistogram.isCompatibleWithInstrument(observableUpDownCounter)).isFalse();
     assertThat(explicitHistogram.isCompatibleWithInstrument(observableGauge)).isFalse();
     assertThat(explicitHistogram.isCompatibleWithInstrument(histogram)).isTrue();
+
+    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
+    AggregatorFactory exponentialHistogram =
+        ((AggregatorFactory) ExponentialHistogramAggregation.getDefault());
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(counter)).isTrue();
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(observableCounter)).isFalse();
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(upDownCounter)).isFalse();
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(observableUpDownCounter)).isFalse();
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(observableGauge)).isFalse();
+    assertThat(exponentialHistogram.isCompatibleWithInstrument(histogram)).isTrue();
 
     AggregatorFactory lastValue = ((AggregatorFactory) Aggregation.lastValue());
     assertThat(lastValue.isCompatibleWithInstrument(counter)).isFalse();
