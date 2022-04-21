@@ -122,6 +122,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     return worker.batch;
   }
 
+  // Visible for testing
+  Queue<ReadableSpan> getQueue() {
+    return worker.queue;
+  }
+
   @Override
   public String toString() {
     return "BatchSpanProcessor{"
