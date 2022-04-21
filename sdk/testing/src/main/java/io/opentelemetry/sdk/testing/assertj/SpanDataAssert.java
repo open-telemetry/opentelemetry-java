@@ -267,7 +267,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     assertThat(actualKeys).as("span [%s] attribute keys", actual.getName()).contains(key);
 
     Object value = actual.getAttributes().get(key);
-    AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
+    AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
     attributeAssertion.getAssertion().accept(assertion);
 
     return this;
@@ -276,7 +276,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   /** Asserts the span has the given attributes. */
   public SpanDataAssert hasAttributes(Attributes attributes) {
     isNotNull();
-    if (!attributesAreEqual(attributes)) {
+    if (!AssertUtil.attributesAreEqual(actual.getAttributes(), attributes)) {
       failWithActualExpectedAndMessage(
           actual.getAttributes(),
           attributes,
@@ -298,12 +298,6 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     }
     Attributes attributes = attributesBuilder.build();
     return hasAttributes(attributes);
-  }
-
-  private boolean attributesAreEqual(Attributes attributes) {
-    // compare as maps, since implementations do not have equals that work correctly across
-    // implementations.
-    return actual.getAttributes().asMap().equals(attributes.asMap());
   }
 
   /** Asserts the span has attributes satisfying the given condition. */
@@ -332,7 +326,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
       if (value != null) {
         checkedKeys.add(key);
       }
-      AbstractAssert<?, ?> assertion = attributeValueAssertion(key, value);
+      AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
       attributeAssertion.getAssertion().accept(assertion);
     }
 
@@ -341,32 +335,6 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
         .containsExactlyInAnyOrderElementsOf(checkedKeys);
 
     return this;
-  }
-
-  // The return type of these assertions must match the parameters in methods like
-  // OpenTelemetryAssertions.satisfies.
-  // Our code is nullness annotated but assertj is not. NullAway seems to still treat the base class
-  // of OpenTelemetryAssertions as annotated though, so there seems to be no way to avoid
-  // suppressing here.
-  @SuppressWarnings("NullAway")
-  private static AbstractAssert<?, ?> attributeValueAssertion(
-      AttributeKey<?> key, @Nullable Object value) {
-    switch (key.getType()) {
-      case STRING:
-        return assertThat((String) value);
-      case BOOLEAN:
-        return assertThat((Boolean) value);
-      case LONG:
-        return assertThat((Long) value);
-      case DOUBLE:
-        return assertThat((Double) value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        return assertThat((List<?>) value);
-    }
-    throw new IllegalArgumentException("Unknown type for key " + key);
   }
 
   /**
