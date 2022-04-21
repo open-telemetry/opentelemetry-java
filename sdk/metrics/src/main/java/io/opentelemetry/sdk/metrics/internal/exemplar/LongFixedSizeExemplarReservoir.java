@@ -84,6 +84,7 @@ final class LongFixedSizeExemplarReservoir implements LongExemplarReservoir {
         results.add(result);
       }
     }
+    numMeasurements.reset();
     return Collections.unmodifiableList(results);
   }
 
