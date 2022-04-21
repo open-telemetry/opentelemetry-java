@@ -21,21 +21,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FilteredExemplarReservoirTest {
-  @Mock ExemplarReservoir reservoir;
+class FilteredDoubleExemplarReservoirTest {
+  @Mock DoubleExemplarReservoir reservoir;
   @Mock ExemplarFilter filter;
 
   @Test
   void testFilter_preventsSamplingDoubles() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(false);
-    ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
+    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
     filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_allowsSamplingDoubles() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(true);
-    ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
+    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
     filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
     verify(reservoir).offerMeasurement(1.0, Attributes.empty(), Context.root());
   }
@@ -43,14 +43,14 @@ class FilteredExemplarReservoirTest {
   @Test
   void testFilter_preventsSamplingLongs() {
     when(filter.shouldSampleMeasurement(anyLong(), any(), any())).thenReturn(false);
-    ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
+    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
     filtered.offerMeasurement(1L, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_allowsSamplingLongs() {
     when(filter.shouldSampleMeasurement(anyLong(), any(), any())).thenReturn(true);
-    ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
+    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
     filtered.offerMeasurement(1L, Attributes.empty(), Context.root());
     verify(reservoir).offerMeasurement(1L, Attributes.empty(), Context.root());
   }
@@ -58,7 +58,7 @@ class FilteredExemplarReservoirTest {
   @Test
   void reservoir_collectsUnderlying() {
     when(reservoir.collectAndReset(Attributes.empty())).thenReturn(Collections.emptyList());
-    ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
+    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
     assertThat(filtered.collectAndReset(Attributes.empty())).isEmpty();
   }
 }

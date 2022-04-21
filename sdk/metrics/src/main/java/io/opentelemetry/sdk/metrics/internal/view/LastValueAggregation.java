@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 
 /**
  * Last-value aggregation configuration.
@@ -39,7 +40,7 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T>) new LongLastValueAggregator(ExemplarReservoir::noSamples);
+        return (Aggregator<T>) new LongLastValueAggregator(LongExemplarReservoir::noSamples);
       case DOUBLE:
         return (Aggregator<T>) new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
     }

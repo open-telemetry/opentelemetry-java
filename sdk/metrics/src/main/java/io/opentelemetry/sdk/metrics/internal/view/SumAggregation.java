@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import java.util.function.Supplier;
 
 /**
@@ -36,11 +36,11 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    Supplier<ExemplarReservoir> reservoirFactory =
+    Supplier<DoubleExemplarReservoir> reservoirFactory =
         () ->
-            ExemplarReservoir.filtered(
+            DoubleExemplarReservoir.filtered(
                 exemplarFilter,
-                ExemplarReservoir.fixedSizeReservoir(
+                DoubleExemplarReservoir.fixedSizeReservoir(
                     Clock.getDefault(),
                     Runtime.getRuntime().availableProcessors(),
                     RandomSupplier.platformDefault()));

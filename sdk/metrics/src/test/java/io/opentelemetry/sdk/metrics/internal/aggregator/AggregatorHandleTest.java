@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,7 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregatorHandleTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock
+  DoubleExemplarReservoir reservoir;
 
   @Test
   void acquireMapped() {
@@ -153,7 +154,7 @@ class AggregatorHandleTest {
     final AtomicDouble recordedDouble = new AtomicDouble();
     final AtomicReference<List<ExemplarData>> recordedExemplars = new AtomicReference<>();
 
-    TestAggregatorHandle(ExemplarReservoir reservoir) {
+    TestAggregatorHandle(DoubleExemplarReservoir reservoir) {
       super(reservoir);
     }
 

@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,7 +48,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExponentialHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock
+  DoubleExemplarReservoir reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
       new DoubleExponentialHistogramAggregator(ExemplarReservoir::noSamples);
@@ -444,7 +446,7 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceState.getDefault()),
             1);
     @SuppressWarnings("unchecked")
-    Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Supplier<DoubleExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
     Mockito.when(reservoir.collectAndReset(Attributes.empty()))
         .thenReturn(Collections.singletonList(exemplar));
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);

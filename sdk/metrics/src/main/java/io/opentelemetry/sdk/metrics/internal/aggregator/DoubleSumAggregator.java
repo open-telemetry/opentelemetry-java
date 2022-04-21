@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * at any time.
  */
 public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
 
   /**
    * Constructs a sum aggregator.
@@ -39,7 +39,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleSumAggregator(
-      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor, Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
 
     this.reservoirSupplier = reservoirSupplier;
@@ -100,7 +100,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   static final class Handle extends AggregatorHandle<DoubleAccumulation> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
-    Handle(ExemplarReservoir exemplarReservoir) {
+    Handle(DoubleExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
     }
 

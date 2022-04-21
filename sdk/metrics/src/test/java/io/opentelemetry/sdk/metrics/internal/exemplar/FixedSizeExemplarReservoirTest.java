@@ -27,7 +27,7 @@ class FixedSizeExemplarReservoirTest {
   @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    DoubleExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
@@ -35,7 +35,7 @@ class FixedSizeExemplarReservoirTest {
   @Test
   public void oneMeasurement_alwaysSamplesFirstMeasurement() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    DoubleExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
@@ -67,7 +67,7 @@ class FixedSizeExemplarReservoirTest {
     Attributes partial = Attributes.builder().put("three", true).build();
     Attributes remaining = Attributes.builder().put("one", 1).put("two", "two").build();
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    DoubleExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
@@ -90,7 +90,7 @@ class FixedSizeExemplarReservoirTest {
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    DoubleExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, all, context);
     assertThat(reservoir.collectAndReset(Attributes.empty()))
@@ -122,7 +122,7 @@ class FixedSizeExemplarReservoirTest {
           }
         };
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
+    DoubleExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
     reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
     reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
     reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());

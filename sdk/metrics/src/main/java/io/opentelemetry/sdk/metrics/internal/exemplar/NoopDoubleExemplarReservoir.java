@@ -7,21 +7,16 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 
 /** Implementation of a reservoir that keeps no exemplars. */
-class NoExemplarReservoir implements ExemplarReservoir {
+class NoopDoubleExemplarReservoir implements DoubleExemplarReservoir {
 
-  static final ExemplarReservoir INSTANCE = new NoExemplarReservoir();
+  static final NoopDoubleExemplarReservoir INSTANCE = new NoopDoubleExemplarReservoir();
 
-  private NoExemplarReservoir() {}
-
-  @Override
-  public void offerMeasurement(long value, Attributes attributes, Context context) {
-    // Stores nothing
-  }
+  private NoopDoubleExemplarReservoir() {}
 
   @Override
   public void offerMeasurement(double value, Attributes attributes, Context context) {
@@ -29,7 +24,7 @@ class NoExemplarReservoir implements ExemplarReservoir {
   }
 
   @Override
-  public List<ExemplarData> collectAndReset(Attributes pointAttributes) {
+  public List<DoubleExemplarData> collectAndReset(Attributes pointAttributes) {
     return Collections.emptyList();
   }
 }

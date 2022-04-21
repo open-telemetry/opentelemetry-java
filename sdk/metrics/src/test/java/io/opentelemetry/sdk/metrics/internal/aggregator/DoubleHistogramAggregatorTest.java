@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -38,7 +39,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock
+  DoubleExemplarReservoir reservoir;
 
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final Resource RESOURCE = Resource.getDefault();

@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -23,10 +23,10 @@ import java.util.function.Supplier;
 final class DoubleExponentialHistogramAggregator
     implements Aggregator<ExponentialHistogramAccumulation> {
 
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
   private final ExponentialBucketStrategy bucketStrategy;
 
-  DoubleExponentialHistogramAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  DoubleExponentialHistogramAggregator(Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     this(
         reservoirSupplier,
         ExponentialBucketStrategy.newStrategy(
@@ -34,7 +34,7 @@ final class DoubleExponentialHistogramAggregator
   }
 
   DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir> reservoirSupplier, ExponentialBucketStrategy bucketStrategy) {
+          Supplier<DoubleExemplarReservoir> reservoirSupplier, ExponentialBucketStrategy bucketStrategy) {
     this.reservoirSupplier = reservoirSupplier;
     this.bucketStrategy = bucketStrategy;
   }
@@ -150,7 +150,7 @@ final class DoubleExponentialHistogramAggregator
     private long zeroCount;
     private double sum;
 
-    Handle(ExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
+    Handle(DoubleExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
       super(reservoir);
       this.sum = 0;
       this.zeroCount = 0;

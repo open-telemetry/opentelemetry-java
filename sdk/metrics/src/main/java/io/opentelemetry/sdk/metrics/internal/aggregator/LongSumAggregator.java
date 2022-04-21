@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +30,10 @@ import java.util.function.Supplier;
  */
 public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
 
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
 
   public LongSumAggregator(
-      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor, Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
     this.reservoirSupplier = reservoirSupplier;
   }
@@ -87,7 +87,7 @@ public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulat
   static final class Handle extends AggregatorHandle<LongAccumulation> {
     private final LongAdder current = AdderUtil.createLongAdder();
 
-    Handle(ExemplarReservoir exemplarReservoir) {
+    Handle(DoubleExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
     }
 

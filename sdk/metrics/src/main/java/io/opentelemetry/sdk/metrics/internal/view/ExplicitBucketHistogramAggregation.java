@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregato
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import java.util.List;
 
 /**
@@ -53,9 +53,9 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
         new DoubleHistogramAggregator(
             bucketBoundaryArray,
             () ->
-                ExemplarReservoir.filtered(
+                DoubleExemplarReservoir.filtered(
                     exemplarFilter,
-                    ExemplarReservoir.histogramBucketReservoir(
+                    DoubleExemplarReservoir.histogramBucketReservoir(
                         Clock.getDefault(), bucketBoundaries)));
   }
 
