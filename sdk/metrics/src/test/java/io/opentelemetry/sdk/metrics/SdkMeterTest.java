@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -27,6 +28,9 @@ import org.slf4j.event.LoggingEvent;
 @SuppressLogger(MetricStorageRegistry.class)
 class SdkMeterTest {
 
+  private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
+  private static final String NOOP_INSTRUMENT_NAME = "noop";
+
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
@@ -37,6 +41,62 @@ class SdkMeterTest {
 
   @RegisterExtension
   LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+
+  @Test
+  void builder_InvalidName() {
+    // Counter
+    assertThat(sdkMeter.counterBuilder("1").build())
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.counterBuilder("1").ofDoubles().build())
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(sdkMeter.counterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.counterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .counterBuilder(NOOP_INSTRUMENT_NAME)
+                .ofDoubles()
+                .buildWithCallback(unused -> {}));
+
+    // UpDownCounter
+    assertThat(sdkMeter.upDownCounterBuilder("1").build())
+        .isSameAs(NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.upDownCounterBuilder("1").ofDoubles().build())
+        .isSameAs(NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(sdkMeter.upDownCounterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.upDownCounterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
+                .ofDoubles()
+                .buildWithCallback(unused -> {}));
+
+    // Histogram
+    assertThat(sdkMeter.histogramBuilder("1").build())
+        .isSameAs(NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.histogramBuilder("1").ofLongs().build())
+        .isSameAs(NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME).ofLongs().build());
+
+    // Gauage
+    assertThat(sdkMeter.gaugeBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.gaugeBuilder("1").ofLongs().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .gaugeBuilder(NOOP_INSTRUMENT_NAME)
+                .ofLongs()
+                .buildWithCallback(unused -> {}));
+
+    assertThat(apiUsageLogs.getEvents())
+        .extracting(LoggingEvent::getMessage)
+        .hasSize(12)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter. Returning noop instrument."));
+  }
 
   @Test
   void builder_InvalidUnit() {

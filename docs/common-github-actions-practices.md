@@ -397,7 +397,7 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
   * Review and merge the backport pull request that it generates.
 * Merge a pull request to the release branch updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
-    `## Version 1.9.0 (unreleased)`.
+    `## Version 1.9.1 (unreleased)`.
 * Run the [Prepare patch release workflow](https://github.com/open-telemetry/TODO/actions/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -703,14 +703,17 @@ jobs:
           EOF
           fi
 
-          # TODO this is dependent on the conventions you follow in your CHANGELOG.md
+          # TODO the initial sed range match is dependent on the your CHANGELOG.md format
+
+          # the last complex regex is needed because markdown docs render newlines as soft wraps
+          # while release notes render them as line breaks
           sed -n "/^## Version $VERSION/,/^## Version /p" CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
             | perl -0pe 's/^\n+//g' \
             | perl -0pe 's/\n+$/\n/g' \
             | sed -r "s,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1," \
-            | perl -0pe 's/\n +/ /g' \
+            | perl -0pe 's/(?<!\n)\n *(?!\n)(?![-*] )(?![1-9]+\. )/ /g' \
             >> release-notes.txt
 ```
 
@@ -772,8 +775,8 @@ For example to send a PR to notify/update another repository that a new release 
 as part of the release workflow.
 
 Note that the [Personal Access Token][] used will need `workflow` (Update GitHub Action workflows)
-permission since it will be updating the workflows of the origin repository when it pushes the
-branch and workflows have been updated upstream.
+permission since if workflows have been updated upstream it will be updating the workflows of the
+origin repository when it pushes the branch.
 
 [Personal Access Token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
