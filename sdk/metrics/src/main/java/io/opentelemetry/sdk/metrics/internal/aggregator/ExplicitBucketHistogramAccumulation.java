@@ -13,29 +13,30 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-abstract class HistogramAccumulation {
+abstract class ExplicitBucketHistogramAccumulation {
   /**
-   * Creates a new {@link HistogramAccumulation} with the given values. Assume `counts` is read-only
-   * so we don't need a defensive-copy here.
+   * Creates a new {@link ExplicitBucketHistogramAccumulation} with the given values. Assume
+   * `counts` is read-only so we don't need a defensive-copy here.
    *
-   * @return a new {@link HistogramAccumulation} with the given values.
+   * @return a new {@link ExplicitBucketHistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(
+  static ExplicitBucketHistogramAccumulation create(
       double sum, boolean hasMinMax, double min, double max, long[] counts) {
     return create(sum, hasMinMax, min, max, counts, Collections.emptyList());
   }
 
-  static HistogramAccumulation create(
+  static ExplicitBucketHistogramAccumulation create(
       double sum,
       boolean hasMinMax,
       double min,
       double max,
       long[] counts,
       List<ExemplarData> exemplars) {
-    return new AutoValue_HistogramAccumulation(sum, hasMinMax, min, max, counts, exemplars);
+    return new AutoValue_ExplicitBucketHistogramAccumulation(
+        sum, hasMinMax, min, max, counts, exemplars);
   }
 
-  HistogramAccumulation() {}
+  ExplicitBucketHistogramAccumulation() {}
 
   /**
    * The sum of all measurements recorded.

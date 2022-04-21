@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExplicitBucketHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -50,7 +50,7 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     return (Aggregator<T>)
-        new DoubleHistogramAggregator(
+        new DoubleExplicitBucketHistogramAggregator(
             bucketBoundaryArray,
             () ->
                 ExemplarReservoir.filtered(
