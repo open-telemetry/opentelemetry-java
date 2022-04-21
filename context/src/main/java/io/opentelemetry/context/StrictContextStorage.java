@@ -216,9 +216,9 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
     }
   }
 
+  // Don't care about serialization of this private class.
+  @SuppressWarnings("serial")
   static class CallerStackTrace extends Throwable {
-
-    private static final long serialVersionUID = 783294061323215387L;
 
     final String threadName = currentThread().getName();
     final long threadId = currentThread().getId();
