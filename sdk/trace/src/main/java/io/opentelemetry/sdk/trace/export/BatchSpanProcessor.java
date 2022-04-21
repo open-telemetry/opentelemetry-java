@@ -324,7 +324,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } else {
           logger.log(Level.FINE, "Exporter failed");
         }
-      } catch (RuntimeException e) {
+      } catch (Throwable e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
       } finally {
         batch.clear();
