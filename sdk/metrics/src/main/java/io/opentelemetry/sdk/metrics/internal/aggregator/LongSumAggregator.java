@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -28,18 +28,20 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
+public final class LongSumAggregator
+    extends AbstractSumAggregator<LongAccumulation, LongExemplarData> {
 
-  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
+  private final Supplier<LongExemplarReservoir> reservoirSupplier;
 
   public LongSumAggregator(
-      InstrumentDescriptor instrumentDescriptor, Supplier<DoubleExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor,
+      Supplier<LongExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<LongAccumulation> createHandle() {
+  public AggregatorHandle<LongAccumulation, LongExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
@@ -84,15 +86,15 @@ public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulat
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation> {
+  static final class Handle extends AggregatorHandle<LongAccumulation, LongExemplarData> {
     private final LongAdder current = AdderUtil.createLongAdder();
 
-    Handle(DoubleExemplarReservoir exemplarReservoir) {
+    Handle(LongExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
       return LongAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 

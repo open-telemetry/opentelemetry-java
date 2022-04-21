@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-
 import java.util.Collections;
 import java.util.List;
 

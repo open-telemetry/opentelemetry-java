@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-
 import java.util.List;
 
 /** Implementation of a reservoir that has a pre-filter on measurements. */

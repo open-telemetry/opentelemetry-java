@@ -147,7 +147,7 @@ public class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableLongMeasurement> callback) {
-    List<AsynchronousMetricStorage<?>> registeredStorages =
+    List<AsynchronousMetricStorage<?, ?>> registeredStorages =
         registerAsynchronousInstrument(instrument, meterProviderSharedState);
 
     CallbackRegistration<ObservableLongMeasurement> registration =
@@ -170,7 +170,7 @@ public class MeterSharedState {
           InstrumentDescriptor instrument,
           MeterProviderSharedState meterProviderSharedState,
           Consumer<ObservableDoubleMeasurement> callback) {
-    List<AsynchronousMetricStorage<?>> registeredStorages =
+    List<AsynchronousMetricStorage<?, ?>> registeredStorages =
         registerAsynchronousInstrument(instrument, meterProviderSharedState);
 
     CallbackRegistration<ObservableDoubleMeasurement> registration =
@@ -181,10 +181,10 @@ public class MeterSharedState {
     return registration;
   }
 
-  private List<AsynchronousMetricStorage<?>> registerAsynchronousInstrument(
+  private List<AsynchronousMetricStorage<?, ?>> registerAsynchronousInstrument(
       InstrumentDescriptor instrumentDescriptor,
       MeterProviderSharedState meterProviderSharedState) {
-    List<AsynchronousMetricStorage<?>> storages =
+    List<AsynchronousMetricStorage<?, ?>> storages =
         meterProviderSharedState
             .getViewRegistry()
             .findViews(instrumentDescriptor, getInstrumentationScopeInfo())
@@ -193,8 +193,8 @@ public class MeterSharedState {
             .filter(storage -> !storage.isEmpty())
             .collect(toList());
 
-    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>(storages.size());
-    for (AsynchronousMetricStorage<?> storage : storages) {
+    List<AsynchronousMetricStorage<?, ?>> registeredStorages = new ArrayList<>(storages.size());
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
       registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
 

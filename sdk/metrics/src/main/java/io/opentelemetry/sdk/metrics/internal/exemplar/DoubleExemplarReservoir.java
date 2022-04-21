@@ -23,6 +23,11 @@ import java.util.function.Supplier;
  */
 public interface DoubleExemplarReservoir extends ExemplarReservoir<DoubleExemplarData> {
 
+  /** An exemplar reservoir that stores no exemplars. */
+  static DoubleExemplarReservoir noSamples() {
+    return NoopDoubleExemplarReservoir.INSTANCE;
+  }
+
   /** Wraps a {@link DoubleExemplarReservoir} with a measurement pre-filter. */
   static DoubleExemplarReservoir filtered(ExemplarFilter filter, DoubleExemplarReservoir original) {
     // Optimisation on memory usage.
@@ -41,7 +46,7 @@ public interface DoubleExemplarReservoir extends ExemplarReservoir<DoubleExempla
    */
   static DoubleExemplarReservoir fixedSizeReservoir(
       Clock clock, int size, Supplier<Random> randomSupplier) {
-    return new FixedSizeExemplarReservoir(clock, size, randomSupplier);
+    return new DoubleFixedSizeExemplarReservoir(clock, size, randomSupplier);
   }
 
   /**

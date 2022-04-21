@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -42,7 +42,7 @@ public interface ExponentialHistogramPointData extends PointData {
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
 
     return ImmutableExponentialHistogramPointData.create(
         scale,
@@ -103,4 +103,8 @@ public interface ExponentialHistogramPointData extends PointData {
    * @return the negative buckets.
    */
   ExponentialHistogramBuckets getNegativeBuckets();
+
+  /** List of exemplars collected from measurements that were used to form the data point. */
+  @Override
+  List<DoubleExemplarData> getExemplars();
 }

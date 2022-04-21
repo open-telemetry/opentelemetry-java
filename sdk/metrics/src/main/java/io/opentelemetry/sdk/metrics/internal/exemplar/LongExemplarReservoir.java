@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -22,6 +21,11 @@ import java.util.function.Supplier;
  * at any time.
  */
 public interface LongExemplarReservoir extends ExemplarReservoir<LongExemplarData> {
+
+  /** An exemplar reservoir that stores no exemplars. */
+  static LongExemplarReservoir noSamples() {
+    return NoopLongExemplarReservoir.INSTANCE;
+  }
 
   /** Wraps a {@link LongExemplarReservoir} with a measurement pre-filter. */
   static LongExemplarReservoir filtered(ExemplarFilter filter, LongExemplarReservoir original) {
@@ -41,18 +45,7 @@ public interface LongExemplarReservoir extends ExemplarReservoir<LongExemplarDat
    */
   static LongExemplarReservoir fixedSizeReservoir(
       Clock clock, int size, Supplier<Random> randomSupplier) {
-    return new FixedSizeExemplarReservoir(clock, size, randomSupplier);
-  }
-
-  /**
-   * A Reservoir sampler that preserves the latest seen measurement per-histogram bucket.
-   *
-   * @param clock The clock to use when annotating measurements with time.
-   * @param boundaries A list of (inclusive) upper bounds for the histogram. Should be in order from
-   *     lowest to highest.
-   */
-  static LongExemplarReservoir histogramBucketReservoir(Clock clock, List<Double> boundaries) {
-    return HistogramBucketExemplarReservoir.create(clock, boundaries);
+    return new LongFixedSizeExemplarReservoir(clock, size, randomSupplier);
   }
 
   /** Offers a {@code long} measurement to be sampled. */

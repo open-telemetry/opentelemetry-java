@@ -10,6 +10,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -103,7 +104,11 @@ public abstract class AggregatorHandle<T, U extends ExemplarData> implements Bou
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
+    // TODO(anuraaga): This should always be true, but removing this cast will require significant
+    // refactoring.
+    if (exemplarReservoir instanceof LongExemplarReservoir) {
+      ((LongExemplarReservoir) exemplarReservoir).offerMeasurement(value, attributes, context);
+    }
     recordLong(value);
   }
 
@@ -130,7 +135,11 @@ public abstract class AggregatorHandle<T, U extends ExemplarData> implements Bou
 
   @Override
   public final void recordDouble(double value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
+    // TODO(anuraaga): This should always be true, but removing this cast will require significant
+    // refactoring.
+    if (exemplarReservoir instanceof DoubleExemplarReservoir) {
+      ((DoubleExemplarReservoir) exemplarReservoir).offerMeasurement(value, attributes, context);
+    }
     recordDouble(value);
   }
 

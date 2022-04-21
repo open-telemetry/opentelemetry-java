@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 
-class FixedSizeExemplarReservoirTest {
+class DoubleFixedSizeExemplarReservoirTest {
   private static final String TRACE_ID = "ff000000000000000000000000000041";
   private static final String SPAN_ID = "ff00000000000041";
 
@@ -28,7 +28,7 @@ class FixedSizeExemplarReservoirTest {
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
     DoubleExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
+        new DoubleFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
 
@@ -36,8 +36,8 @@ class FixedSizeExemplarReservoirTest {
   public void oneMeasurement_alwaysSamplesFirstMeasurement() {
     TestClock clock = TestClock.create();
     DoubleExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
+        new DoubleFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -45,11 +45,11 @@ class FixedSizeExemplarReservoirTest {
                 assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(1));
+                    .hasValue(1.1));
 
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(2L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -68,14 +68,14 @@ class FixedSizeExemplarReservoirTest {
     Attributes remaining = Attributes.builder().put("one", 1).put("two", "two").build();
     TestClock clock = TestClock.create();
     DoubleExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1L, all, Context.root());
+        new DoubleFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerMeasurement(1.1, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
             exemplar ->
                 assertThat(exemplar)
                     .hasEpochNanos(clock.now())
-                    .hasValue(1)
+                    .hasValue(1.1)
                     .hasFilteredAttributes(remaining));
   }
 
@@ -91,8 +91,8 @@ class FixedSizeExemplarReservoirTest {
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
     TestClock clock = TestClock.create();
     DoubleExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1L, all, context);
+        new DoubleFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerMeasurement(1, all, context);
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactly(
             exemplar ->
@@ -122,7 +122,8 @@ class FixedSizeExemplarReservoirTest {
           }
         };
     TestClock clock = TestClock.create();
-    DoubleExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
+    DoubleExemplarReservoir reservoir =
+        new DoubleFixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
     reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
     reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
     reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());

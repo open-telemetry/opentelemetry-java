@@ -11,13 +11,16 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
+import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -25,25 +28,25 @@ import javax.annotation.Nullable;
  *
  * <p>Additionally this implementation ONLY exports double valued exemplars.
  */
-abstract class AbstractFixedSizeExemplarReservoir implements DoubleExemplarReservoir {
-  private final Clock clock;
-  private final DoubleReservoirCell[] storage;
+// TODO(anuraaga): Reduce copy-paste from AbstractDoubleFixedSizeExemplarReservoir.
+final class LongFixedSizeExemplarReservoir implements LongExemplarReservoir {
+  private final LongAdder numMeasurements = AdderUtil.createLongAdder();
 
-  /**
-   * Instantiates an exemplar reservoir of fixed size.
-   *
-   * @param clock The clock to use when annotating measurements with time.
-   * @param size The number of exemplars to preserve.
-   */
-  AbstractFixedSizeExemplarReservoir(Clock clock, int size) {
+  private final Clock clock;
+  private final ReservoirCell[] storage;
+  private final Supplier<Random> randomSupplier;
+
+  /** Instantiates an exemplar reservoir of fixed size. */
+  LongFixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
+    this.randomSupplier = randomSupplier;
     this.clock = clock;
-    this.storage = new DoubleReservoirCell[size];
+    this.storage = new ReservoirCell[size];
     for (int i = 0; i < size; ++i) {
-      this.storage[i] = new DoubleReservoirCell();
+      this.storage[i] = new ReservoirCell();
     }
   }
 
-  protected final int maxSize() {
+  int maxSize() {
     return storage.length;
   }
 
@@ -52,18 +55,18 @@ abstract class AbstractFixedSizeExemplarReservoir implements DoubleExemplarReser
    *
    * @return The index to sample into or -1 for no sampling.
    */
-  protected abstract int reservoirIndexFor(double value, Attributes attributes, Context context);
-
-  /** Callback to reset any local state after a {@link #collectAndReset} call. */
-  protected void reset() {}
-
-  @Override
-  public final void offerMeasurement(long value, Attributes attributes, Context context) {
-    offerMeasurement((double) value, attributes, context);
+  int reservoirIndexFor(long value, Attributes attributes, Context context) {
+    int count = numMeasurements.intValue() + 1;
+    int index = this.randomSupplier.get().nextInt(count > 0 ? count : 1);
+    numMeasurements.increment();
+    if (index < maxSize()) {
+      return index;
+    }
+    return -1;
   }
 
   @Override
-  public final void offerMeasurement(double value, Attributes attributes, Context context) {
+  public void offerMeasurement(long value, Attributes attributes, Context context) {
     int bucket = reservoirIndexFor(value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].offerMeasurement(value, attributes, context);
@@ -71,17 +74,16 @@ abstract class AbstractFixedSizeExemplarReservoir implements DoubleExemplarReser
   }
 
   @Override
-  public final List<DoubleExemplarData> collectAndReset(Attributes pointAttributes) {
+  public List<LongExemplarData> collectAndReset(Attributes pointAttributes) {
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
-    List<DoubleExemplarData> results = new ArrayList<>();
-    for (DoubleReservoirCell reservoirCell : this.storage) {
-      DoubleExemplarData result = reservoirCell.getAndReset(pointAttributes);
+    List<LongExemplarData> results = new ArrayList<>();
+    for (ReservoirCell reservoirCell : this.storage) {
+      LongExemplarData result = reservoirCell.getAndReset(pointAttributes);
       if (result != null) {
         results.add(result);
       }
     }
-    reset();
     return Collections.unmodifiableList(results);
   }
 
@@ -93,13 +95,13 @@ abstract class AbstractFixedSizeExemplarReservoir implements DoubleExemplarReser
    *
    * <p>Allocations are acceptable in the {@link #getAndReset(Attributes)} method.
    */
-  private class DoubleReservoirCell {
-    private double value;
+  private class ReservoirCell {
+    private long value;
     @Nullable private Attributes attributes;
     private SpanContext spanContext = SpanContext.getInvalid();
     private long recordTime;
 
-    synchronized void offerMeasurement(double value, Attributes attributes, Context context) {
+    synchronized void offerMeasurement(long value, Attributes attributes, Context context) {
       this.value = value;
       this.attributes = attributes;
       // Note: It may make sense in the future to attempt to pull this from an active span.
@@ -115,11 +117,11 @@ abstract class AbstractFixedSizeExemplarReservoir implements DoubleExemplarReser
     }
 
     @Nullable
-    synchronized DoubleExemplarData getAndReset(Attributes pointAttributes) {
+    synchronized LongExemplarData getAndReset(Attributes pointAttributes) {
       Attributes attributes = this.attributes;
       if (attributes != null) {
-        ExemplarData result =
-            ImmutableDoubleExemplarData.create(
+        LongExemplarData result =
+            ImmutableLongExemplarData.create(
                 filtered(attributes, pointAttributes), recordTime, spanContext, value);
         this.attributes = null;
         this.value = 0;

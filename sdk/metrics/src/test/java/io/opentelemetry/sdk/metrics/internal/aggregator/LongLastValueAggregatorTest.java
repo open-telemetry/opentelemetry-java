@@ -13,14 +13,14 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +34,7 @@ class LongLastValueAggregatorTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongLastValueAggregator aggregator =
-      new LongLastValueAggregator(ExemplarReservoir::noSamples);
+      new LongLastValueAggregator(LongExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -43,7 +43,8 @@ class LongLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12L);
     aggregatorHandle.recordLong(13);
@@ -53,7 +54,8 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
@@ -68,7 +70,7 @@ class LongLastValueAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    LongExemplarData exemplar =
         ImmutableLongExemplarData.create(
             attributes,
             2L,
@@ -78,8 +80,8 @@ class LongLastValueAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<LongExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableLongExemplarData.create(
                 attributes,
@@ -99,7 +101,8 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toMetricData() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =

@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -43,11 +44,11 @@ class TemporalMetricStorageTest {
           InstrumentValueType.DOUBLE);
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final Aggregator<DoubleAccumulation> SUM =
+  private static final Aggregator<DoubleAccumulation, DoubleExemplarData> SUM =
       ((AggregatorFactory) Aggregation.sum())
           .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
 
-  private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
+  private static final Aggregator<DoubleAccumulation, DoubleExemplarData> ASYNC_SUM =
       ((AggregatorFactory) Aggregation.sum())
           .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
 
@@ -74,7 +75,7 @@ class TemporalMetricStorageTest {
   @Test
   void synchronousCumulative_joinsWithLastMeasurementForCumulative() {
     AggregationTemporality temporality = AggregationTemporality.CUMULATIVE;
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
     // Send in new measurement at time 10 for collector 1
     assertThat(
@@ -148,7 +149,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void synchronousCumulative_dropsStaleAtLimit() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
 
     // Send in new measurement at time 10 for collector 1, with attr1
@@ -203,7 +204,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void synchronousDelta_dropsStale() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
 
     // Send in new measurement at time 10 for collector 1, with attr1
@@ -253,7 +254,7 @@ class TemporalMetricStorageTest {
   @Test
   void synchronousDelta_useLastTimestamp() {
     AggregationTemporality temporality = AggregationTemporality.DELTA;
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
     // Send in new measurement at time 10 for collector 1
     assertThat(
@@ -327,7 +328,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void synchronous_deltaAndCumulative() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
     // Send in new measurement at time 10 for collector 1
     assertThat(
@@ -419,7 +420,7 @@ class TemporalMetricStorageTest {
   @Test
   void asynchronousCumulative_doesNotJoin() {
     AggregationTemporality temporality = AggregationTemporality.CUMULATIVE;
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
     // Send in new measurement at time 10 for collector 1
     assertThat(
@@ -493,7 +494,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void asynchronousCumulative_dropsStale() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
 
     // Send in new measurement at time 10 for collector 1, with attr1
@@ -542,7 +543,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void asynchronousDelta_dropsStale() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
 
     // Send in new measurement at time 10 for collector 1, with attr1
@@ -592,7 +593,7 @@ class TemporalMetricStorageTest {
   @Test
   void asynchronousDelta_diffsLastTimestamp() {
     AggregationTemporality temporality = AggregationTemporality.DELTA;
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
     // Send in new measurement at time 10 for collector 1
     assertThat(
@@ -666,7 +667,7 @@ class TemporalMetricStorageTest {
 
   @Test
   void asynchronous_DeltaAndCumulative() {
-    TemporalMetricStorage<DoubleAccumulation> storage =
+    TemporalMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
         new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
 
     // Send in new measurement at time 10 for collector 1

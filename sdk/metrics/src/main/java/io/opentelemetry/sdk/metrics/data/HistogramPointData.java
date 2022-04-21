@@ -61,4 +61,8 @@ public interface HistogramPointData extends PointData {
    * @return the read-only counts in each bucket. <b>do not mutate</b> the returned object.
    */
   List<Long> getCounts();
+
+  /** List of exemplars collected from measurements that were used to form the data point. */
+  @Override
+  List<DoubleExemplarData> getExemplars();
 }

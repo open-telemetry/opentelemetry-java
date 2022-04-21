@@ -16,13 +16,12 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleSumAggregatorTest {
 
-  @Mock
-  DoubleExemplarReservoir reservoir;
+  @Mock DoubleExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -52,7 +50,7 @@ class DoubleSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE),
-          ExemplarReservoir::noSamples);
+          DoubleExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -61,7 +59,8 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
@@ -73,7 +72,8 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-23);
@@ -85,7 +85,8 @@ class DoubleSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13);
@@ -102,7 +103,7 @@ class DoubleSumAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -112,7 +113,7 @@ class DoubleSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleSumAggregator aggregator =
         new DoubleSumAggregator(
@@ -123,7 +124,8 @@ class DoubleSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE),
             () -> reservoir);
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(DoubleAccumulation.create(0, exemplars));
@@ -132,7 +134,7 @@ class DoubleSumAggregatorTest {
   @Test
   void mergeAndDiff() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -142,8 +144,8 @@ class DoubleSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -160,7 +162,7 @@ class DoubleSumAggregatorTest {
             new DoubleSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                ExemplarReservoir::noSamples);
+                DoubleExemplarReservoir::noSamples);
         DoubleAccumulation merged =
             aggregator.merge(
                 DoubleAccumulation.create(1.0d, previousExemplars),
@@ -188,7 +190,8 @@ class DoubleSumAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =
@@ -222,7 +225,7 @@ class DoubleSumAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,

@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
@@ -30,7 +30,8 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DoubleHistogramAggregator implements Aggregator<HistogramAccumulation> {
+public final class DoubleHistogramAggregator
+    implements Aggregator<HistogramAccumulation, DoubleExemplarData> {
   private final double[] boundaries;
 
   // a cache for converting to MetricData
@@ -57,7 +58,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   }
 
   @Override
-  public AggregatorHandle<HistogramAccumulation> createHandle() {
+  public AggregatorHandle<HistogramAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
@@ -138,7 +139,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
                 boundaryList)));
   }
 
-  static final class Handle extends AggregatorHandle<HistogramAccumulation> {
+  static final class Handle extends AggregatorHandle<HistogramAccumulation, DoubleExemplarData> {
     // read-only
     private final double[] boundaries;
 
@@ -170,7 +171,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
     }
 
     @Override
-    protected HistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected HistogramAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
       lock.lock();
       try {
         HistogramAccumulation acc =

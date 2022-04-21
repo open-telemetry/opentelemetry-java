@@ -258,7 +258,7 @@ final class MetricAdapter {
 
   @Nullable
   private static ExemplarData filterExemplars(
-      Collection<ExemplarData> exemplars, double min, double max) {
+      Collection<? extends ExemplarData> exemplars, double min, double max) {
     ExemplarData result = null;
     for (ExemplarData e : exemplars) {
       double value = getExemplarValue(e);

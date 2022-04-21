@@ -9,6 +9,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -30,9 +32,9 @@ import javax.annotation.concurrent.Immutable;
  * at any time.
  */
 @Immutable
-public interface Aggregator<T> {
+public interface Aggregator<T, U extends ExemplarData> {
   /** Returns the drop aggregator, an aggregator that drops measurements. */
-  static Aggregator<Object> drop() {
+  static Aggregator<Object, DoubleExemplarData> drop() {
     return DropAggregator.INSTANCE;
   }
 
@@ -42,7 +44,7 @@ public interface Aggregator<T> {
    *
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T> createHandle();
+  AggregatorHandle<T, U> createHandle();
 
   /**
    * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
@@ -54,7 +56,7 @@ public interface Aggregator<T> {
    */
   @Nullable
   default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
-    AggregatorHandle<T> handle = createHandle();
+    AggregatorHandle<T, U> handle = createHandle();
     handle.recordLong(value, attributes, context);
     return handle.accumulateThenReset(attributes);
   }
@@ -69,7 +71,7 @@ public interface Aggregator<T> {
    */
   @Nullable
   default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {
-    AggregatorHandle<T> handle = createHandle();
+    AggregatorHandle<T, U> handle = createHandle();
     handle.recordDouble(value, attributes, context);
     return handle.accumulateThenReset(attributes);
   }

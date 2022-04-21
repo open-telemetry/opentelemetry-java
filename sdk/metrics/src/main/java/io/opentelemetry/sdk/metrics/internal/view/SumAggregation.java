@@ -8,13 +8,15 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import java.util.function.Supplier;
 
 /**
@@ -34,21 +36,33 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> Aggregator<T> createAggregator(
+  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    Supplier<DoubleExemplarReservoir> reservoirFactory =
-        () ->
-            DoubleExemplarReservoir.filtered(
-                exemplarFilter,
-                DoubleExemplarReservoir.fixedSizeReservoir(
-                    Clock.getDefault(),
-                    Runtime.getRuntime().availableProcessors(),
-                    RandomSupplier.platformDefault()));
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+        {
+          Supplier<LongExemplarReservoir> reservoirFactory =
+              () ->
+                  LongExemplarReservoir.filtered(
+                      exemplarFilter,
+                      LongExemplarReservoir.fixedSizeReservoir(
+                          Clock.getDefault(),
+                          Runtime.getRuntime().availableProcessors(),
+                          RandomSupplier.platformDefault()));
+          return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+        }
       case DOUBLE:
-        return (Aggregator<T>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+        {
+          Supplier<DoubleExemplarReservoir> reservoirFactory =
+              () ->
+                  DoubleExemplarReservoir.filtered(
+                      exemplarFilter,
+                      DoubleExemplarReservoir.fixedSizeReservoir(
+                          Clock.getDefault(),
+                          Runtime.getRuntime().availableProcessors(),
+                          RandomSupplier.platformDefault()));
+          return (Aggregator<T, U>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+        }
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

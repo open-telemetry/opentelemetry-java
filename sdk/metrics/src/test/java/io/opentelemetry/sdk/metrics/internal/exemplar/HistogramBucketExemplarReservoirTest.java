@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -19,15 +18,17 @@ class HistogramBucketExemplarReservoirTest {
   @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
-    DoubleExemplarReservoir reservoir = new HistogramBucketExemplarReservoir(clock, new double[] {});
+    DoubleExemplarReservoir reservoir =
+        new HistogramBucketExemplarReservoir(clock, new double[] {});
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
 
   @Test
   public void oneBucket_samplesEverything() {
     TestClock clock = TestClock.create();
-    DoubleExemplarReservoir reservoir = new HistogramBucketExemplarReservoir(clock, new double[] {});
-    reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
+    DoubleExemplarReservoir reservoir =
+        new HistogramBucketExemplarReservoir(clock, new double[] {});
+    reservoir.offerMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -35,10 +36,10 @@ class HistogramBucketExemplarReservoirTest {
                 assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(1));
+                    .hasValue(1.1));
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(2L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -49,8 +50,8 @@ class HistogramBucketExemplarReservoirTest {
                     .hasValue(2));
     // only latest measurement is kept per-bucket
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(3L, Attributes.empty(), Context.root());
-    reservoir.offerMeasurement(4L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(3, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(4, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -67,14 +68,14 @@ class HistogramBucketExemplarReservoirTest {
     AttributeKey<Long> bucketKey = AttributeKey.longKey("bucket");
     DoubleExemplarReservoir reservoir =
         new HistogramBucketExemplarReservoir(clock, new double[] {0, 10, 20});
-    reservoir.offerMeasurement(-1, Attributes.of(bucketKey, 0L), Context.root());
+    reservoir.offerMeasurement(-1.1, Attributes.of(bucketKey, 0L), Context.root());
     reservoir.offerMeasurement(1, Attributes.of(bucketKey, 1L), Context.root());
     reservoir.offerMeasurement(11, Attributes.of(bucketKey, 2L), Context.root());
     reservoir.offerMeasurement(21, Attributes.of(bucketKey, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(
-            e -> assertThat(e).hasValue(-1).hasFilteredAttributes(Attributes.of(bucketKey, 0L)),
+            e -> assertThat(e).hasValue(-1.1).hasFilteredAttributes(Attributes.of(bucketKey, 0L)),
             e -> assertThat(e).hasValue(1).hasFilteredAttributes(Attributes.of(bucketKey, 1L)),
             e -> assertThat(e).hasValue(11).hasFilteredAttributes(Attributes.of(bucketKey, 2L)),
             e -> assertThat(e).hasValue(21).hasFilteredAttributes(Attributes.of(bucketKey, 3L)));

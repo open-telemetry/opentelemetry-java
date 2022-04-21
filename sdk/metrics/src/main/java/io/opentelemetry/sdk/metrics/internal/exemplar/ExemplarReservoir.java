@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
@@ -5,13 +10,6 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 
 public interface ExemplarReservoir<T extends ExemplarData> {
-
-  /** An exemplar reservoir that stores no exemplars. */
-  // Empty reservoir so the concrete type does not matter.
-  @SuppressWarnings("unchecked")
-  static <T extends ExemplarData> ExemplarReservoir<T> noSamples() {
-    return (ExemplarReservoir<T>) NoopDoubleExemplarReservoir.INSTANCE;
-  }
 
   /**
    * Returns an immutable list of Exemplars for exporting from the current reservoir.

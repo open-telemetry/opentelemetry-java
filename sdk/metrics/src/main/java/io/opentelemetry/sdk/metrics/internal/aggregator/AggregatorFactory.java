@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 
@@ -27,7 +28,7 @@ public interface AggregatorFactory {
    * @return a new {@link Aggregator}. {@link Aggregator#drop()} indicates no measurements should be
    *     recorded.
    */
-  <T> Aggregator<T> createAggregator(
+  <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 
   /**

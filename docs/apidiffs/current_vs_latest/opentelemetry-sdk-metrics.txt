@@ -10,6 +10,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation sum()
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
 	+++  NEW INTERFACE: java.lang.Comparable
 	+++  NEW INTERFACE: java.io.Serializable
 	+++  NEW SUPERCLASS: java.lang.Enum
@@ -30,6 +31,7 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
 	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getValue()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.ExemplarData  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -54,6 +56,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getBoundaries()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getCount()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getCounts()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getMax()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getMin()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getSum()
@@ -68,6 +71,7 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
 	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getValue()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.MetricData  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -88,6 +92,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) boolean isEmpty()
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
 	+++  NEW INTERFACE: java.lang.Comparable
 	+++  NEW INTERFACE: java.io.Serializable
 	+++  NEW SUPERCLASS: java.lang.Enum
@@ -193,6 +198,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setType(io.opentelemetry.sdk.metrics.InstrumentType)
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
 	+++  NEW INTERFACE: java.lang.Comparable
 	+++  NEW INTERFACE: java.io.Serializable
 	+++  NEW SUPERCLASS: java.lang.Enum
@@ -206,6 +212,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentType[] values()
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentValueType  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
 	+++  NEW INTERFACE: java.lang.Comparable
 	+++  NEW INTERFACE: java.io.Serializable
 	+++  NEW SUPERCLASS: java.lang.Enum

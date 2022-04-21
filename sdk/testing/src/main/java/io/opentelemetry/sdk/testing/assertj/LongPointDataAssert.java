@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import javax.annotation.Nullable;
 import org.assertj.core.api.Assertions;
@@ -22,5 +23,14 @@ public final class LongPointDataAssert
     isNotNull();
     Assertions.assertThat(actual.getValue()).as("value").isEqualTo(expected);
     return this;
+  }
+
+  /** Asserts the point has the specified exemplars, in any order. */
+  public LongPointDataAssert hasExemplars(LongExemplarData... exemplars) {
+    isNotNull();
+    Assertions.assertThat(actual.getExemplars())
+        .as("exemplars")
+        .containsExactlyInAnyOrder(exemplars);
+    return myself;
   }
 }
