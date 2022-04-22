@@ -1,0 +1,136 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.metrics.internal.exemplar;
+
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Nullable;
+
+/**
+ * Base implementation for fixed-size reservoir sampling of Exemplars.
+ *
+ * <p>Additionally this implementation ONLY exports double valued exemplars.
+ */
+abstract class AbstractDoubleFixedSizeExemplarReservoir implements DoubleExemplarReservoir {
+  private final Clock clock;
+  private final ReservoirCell[] storage;
+
+  /**
+   * Instantiates an exemplar reservoir of fixed size.
+   *
+   * @param clock The clock to use when annotating measurements with time.
+   * @param size The number of exemplars to preserve.
+   */
+  AbstractDoubleFixedSizeExemplarReservoir(Clock clock, int size) {
+    this.clock = clock;
+    this.storage = new ReservoirCell[size];
+    for (int i = 0; i < size; ++i) {
+      this.storage[i] = new ReservoirCell();
+    }
+  }
+
+  protected final int maxSize() {
+    return storage.length;
+  }
+
+  /**
+   * Determines the sample reservoir index for a given measurement.
+   *
+   * @return The index to sample into or -1 for no sampling.
+   */
+  protected abstract int reservoirIndexFor(double value, Attributes attributes, Context context);
+
+  /** Callback to reset any local state after a {@link #collectAndReset} call. */
+  protected void reset() {}
+
+  @Override
+  public final void offerMeasurement(double value, Attributes attributes, Context context) {
+    int bucket = reservoirIndexFor(value, attributes, context);
+    if (bucket != -1) {
+      this.storage[bucket].offerMeasurement(value, attributes, context);
+    }
+  }
+
+  @Override
+  public final List<DoubleExemplarData> collectAndReset(Attributes pointAttributes) {
+    // Note: we are collecting exemplars from buckets piecemeal, but we
+    // could still be sampling exemplars during this process.
+    List<DoubleExemplarData> results = new ArrayList<>();
+    for (ReservoirCell reservoirCell : this.storage) {
+      DoubleExemplarData result = reservoirCell.getAndReset(pointAttributes);
+      if (result != null) {
+        results.add(result);
+      }
+    }
+    reset();
+    return Collections.unmodifiableList(results);
+  }
+
+  /**
+   * A Reservoir cell pre-allocated memories for Exemplar data.
+   *
+   * <p>We only allocate new objects during collection. This class should NOT cause allocations
+   * during sampling or within the synchronous metric hot-path.
+   *
+   * <p>Allocations are acceptable in the {@link #getAndReset(Attributes)} method.
+   */
+  private class ReservoirCell {
+    private double value;
+    @Nullable private Attributes attributes;
+    private SpanContext spanContext = SpanContext.getInvalid();
+    private long recordTime;
+
+    synchronized void offerMeasurement(double value, Attributes attributes, Context context) {
+      this.value = value;
+      this.attributes = attributes;
+      // Note: It may make sense in the future to attempt to pull this from an active span.
+      this.recordTime = clock.now();
+      updateFromContext(context);
+    }
+
+    private void updateFromContext(Context context) {
+      Span current = Span.fromContext(context);
+      if (current.getSpanContext().isValid()) {
+        this.spanContext = current.getSpanContext();
+      }
+    }
+
+    @Nullable
+    synchronized DoubleExemplarData getAndReset(Attributes pointAttributes) {
+      Attributes attributes = this.attributes;
+      if (attributes != null) {
+        DoubleExemplarData result =
+            ImmutableDoubleExemplarData.create(
+                filtered(attributes, pointAttributes), recordTime, spanContext, value);
+        this.attributes = null;
+        this.value = 0;
+        this.spanContext = SpanContext.getInvalid();
+        this.recordTime = 0;
+        return result;
+      }
+      return null;
+    }
+  }
+
+  /** Returns filtered attributes for exemplars. */
+  private static Attributes filtered(Attributes original, Attributes metricPoint) {
+    if (metricPoint.isEmpty()) {
+      return original;
+    }
+    Set<AttributeKey<?>> metricPointKeys = metricPoint.asMap().keySet();
+    return original.toBuilder().removeIf(metricPointKeys::contains).build();
+  }
+}

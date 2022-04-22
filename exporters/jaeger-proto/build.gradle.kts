@@ -15,3 +15,12 @@ dependencies {
   compileOnly("io.grpc:grpc-protobuf")
   compileOnly("io.grpc:grpc-stub")
 }
+
+tasks {
+  compileJava {
+    with(options) {
+      // Generated code so can't control serialization.
+      compilerArgs.add("-Xlint:-serial")
+    }
+  }
+}

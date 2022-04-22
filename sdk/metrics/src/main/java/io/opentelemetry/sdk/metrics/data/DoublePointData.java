@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import java.util.List;
+
 /** A single data point in a timeseries that describes the time-varying value of a double metric. */
 public interface DoublePointData extends PointData {
   /**
@@ -13,4 +15,8 @@ public interface DoublePointData extends PointData {
    * @return the value of the data point.
    */
   double getValue();
+
+  /** List of exemplars collected from measurements that were used to form the data point. */
+  @Override
+  List<DoubleExemplarData> getExemplars();
 }

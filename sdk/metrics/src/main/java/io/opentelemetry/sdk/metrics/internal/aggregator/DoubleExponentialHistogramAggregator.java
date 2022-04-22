@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -27,9 +27,9 @@ import java.util.function.Supplier;
  * at any time.
  */
 public final class DoubleExponentialHistogramAggregator
-    implements Aggregator<ExponentialHistogramAccumulation> {
+    implements Aggregator<ExponentialHistogramAccumulation, DoubleExemplarData> {
 
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
   private final ExponentialBucketStrategy bucketStrategy;
 
   /**
@@ -41,7 +41,7 @@ public final class DoubleExponentialHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir> reservoirSupplier, int scale, int maxBuckets) {
+      Supplier<DoubleExemplarReservoir> reservoirSupplier, int scale, int maxBuckets) {
     this(
         reservoirSupplier,
         ExponentialBucketStrategy.newStrategy(
@@ -49,13 +49,14 @@ public final class DoubleExponentialHistogramAggregator
   }
 
   DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir> reservoirSupplier, ExponentialBucketStrategy bucketStrategy) {
+      Supplier<DoubleExemplarReservoir> reservoirSupplier,
+      ExponentialBucketStrategy bucketStrategy) {
     this.reservoirSupplier = reservoirSupplier;
     this.bucketStrategy = bucketStrategy;
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramAccumulation> createHandle() {
+  public AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get(), this.bucketStrategy);
   }
 
@@ -158,13 +159,14 @@ public final class DoubleExponentialHistogramAggregator
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {
+  static final class Handle
+      extends AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> {
     private final DoubleExponentialHistogramBuckets positiveBuckets;
     private final DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
 
-    Handle(ExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
+    Handle(DoubleExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
       super(reservoir);
       this.sum = 0;
       this.zeroCount = 0;
@@ -174,7 +176,7 @@ public final class DoubleExponentialHistogramAggregator
 
     @Override
     protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(
-        List<ExemplarData> exemplars) {
+        List<DoubleExemplarData> exemplars) {
       ExponentialHistogramAccumulation acc =
           ExponentialHistogramAccumulation.create(
               this.positiveBuckets.getScale(),

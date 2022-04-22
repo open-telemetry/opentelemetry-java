@@ -13,11 +13,11 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +31,7 @@ class DoubleLastValueAggregatorTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final DoubleLastValueAggregator aggregator =
-      new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
+      new DoubleLastValueAggregator(DoubleExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -40,7 +40,8 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
@@ -50,7 +51,8 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13.1);
@@ -65,7 +67,7 @@ class DoubleLastValueAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -75,8 +77,8 @@ class DoubleLastValueAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -98,7 +100,7 @@ class DoubleLastValueAggregatorTest {
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -108,8 +110,8 @@ class DoubleLastValueAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -131,7 +133,8 @@ class DoubleLastValueAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =

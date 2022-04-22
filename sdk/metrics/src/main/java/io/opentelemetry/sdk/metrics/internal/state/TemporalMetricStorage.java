@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
@@ -20,12 +21,12 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Stores last reported time and (optional) accumulation for metrics. */
 @ThreadSafe
-class TemporalMetricStorage<T> {
-  private final Aggregator<T> aggregator;
+class TemporalMetricStorage<T, U extends ExemplarData> {
+  private final Aggregator<T, U> aggregator;
   private final boolean isSynchronous;
   private final Map<CollectionHandle, LastReportedAccumulation<T>> reportHistory = new HashMap<>();
 
-  TemporalMetricStorage(Aggregator<T> aggregator, boolean isSynchronous) {
+  TemporalMetricStorage(Aggregator<T, U> aggregator, boolean isSynchronous) {
     this.aggregator = aggregator;
     this.isSynchronous = isSynchronous;
   }

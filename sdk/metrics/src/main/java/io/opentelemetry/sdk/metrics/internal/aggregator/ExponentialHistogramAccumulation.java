@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -31,7 +31,7 @@ abstract class ExponentialHistogramAccumulation {
       @Nonnull DoubleExponentialHistogramBuckets positiveBuckets,
       @Nonnull DoubleExponentialHistogramBuckets negativeBuckets,
       long zeroCount,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
     return new AutoValue_ExponentialHistogramAccumulation(
         scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);
   }
@@ -46,5 +46,5 @@ abstract class ExponentialHistogramAccumulation {
 
   abstract long getZeroCount();
 
-  abstract List<ExemplarData> getExemplars();
+  abstract List<DoubleExemplarData> getExemplars();
 }

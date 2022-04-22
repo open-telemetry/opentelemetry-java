@@ -9,12 +9,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,13 +31,13 @@ import java.util.function.Supplier;
  * at any time.
  */
 public final class DoubleExplicitBucketHistogramAggregator
-    implements Aggregator<ExplicitBucketHistogramAccumulation> {
+    implements Aggregator<ExplicitBucketHistogramAccumulation, DoubleExemplarData> {
   private final double[] boundaries;
 
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
 
   /**
    * Constructs an explicit bucket histogram aggregator.
@@ -46,7 +46,7 @@ public final class DoubleExplicitBucketHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries, Supplier<ExemplarReservoir> reservoirSupplier) {
+      double[] boundaries, Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     this.boundaries = boundaries;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -58,7 +58,7 @@ public final class DoubleExplicitBucketHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<ExplicitBucketHistogramAccumulation> createHandle() {
+  public AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
@@ -140,7 +140,8 @@ public final class DoubleExplicitBucketHistogramAggregator
                 boundaryList)));
   }
 
-  static final class Handle extends AggregatorHandle<ExplicitBucketHistogramAccumulation> {
+  static final class Handle
+      extends AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> {
     // read-only
     private final double[] boundaries;
 
@@ -161,7 +162,7 @@ public final class DoubleExplicitBucketHistogramAggregator
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    Handle(double[] boundaries, ExemplarReservoir reservoir) {
+    Handle(double[] boundaries, DoubleExemplarReservoir reservoir) {
       super(reservoir);
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
@@ -173,7 +174,7 @@ public final class DoubleExplicitBucketHistogramAggregator
 
     @Override
     protected ExplicitBucketHistogramAccumulation doAccumulateThenReset(
-        List<ExemplarData> exemplars) {
+        List<DoubleExemplarData> exemplars) {
       lock.lock();
       try {
         ExplicitBucketHistogramAccumulation acc =

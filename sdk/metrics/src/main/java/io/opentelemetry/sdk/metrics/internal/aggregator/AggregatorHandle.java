@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T> implements BoundStorageHandle {
+public abstract class AggregatorHandle<T, U extends ExemplarData> implements BoundStorageHandle {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
   private final AtomicLong refCountMapped;
@@ -43,9 +45,9 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   private volatile boolean hasRecordings = false;
 
   // A reservoir of sampled exemplars for this time period.
-  private final ExemplarReservoir exemplarReservoir;
+  private final ExemplarReservoir<U> exemplarReservoir;
 
-  protected AggregatorHandle(ExemplarReservoir exemplarReservoir) {
+  protected AggregatorHandle(ExemplarReservoir<U> exemplarReservoir) {
     // Start with this binding already bound.
     this.refCountMapped = new AtomicLong(2);
     this.exemplarReservoir = exemplarReservoir;
@@ -98,11 +100,15 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   }
 
   /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract T doAccumulateThenReset(List<ExemplarData> exemplars);
+  protected abstract T doAccumulateThenReset(List<U> exemplars);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
+    // TODO(anuraaga): This should always be true, but removing this cast will require significant
+    // refactoring.
+    if (exemplarReservoir instanceof LongExemplarReservoir) {
+      ((LongExemplarReservoir) exemplarReservoir).offerMeasurement(value, attributes, context);
+    }
     recordLong(value);
   }
 
@@ -129,7 +135,11 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
 
   @Override
   public final void recordDouble(double value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
+    // TODO(anuraaga): This should always be true, but removing this cast will require significant
+    // refactoring.
+    if (exemplarReservoir instanceof DoubleExemplarReservoir) {
+      ((DoubleExemplarReservoir) exemplarReservoir).offerMeasurement(value, attributes, context);
+    }
     recordDouble(value);
   }
 

@@ -51,8 +51,8 @@ class CallbackRegistrationTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(CallbackRegistration.class);
 
-  @Mock private AsynchronousMetricStorage<?> storage1;
-  @Mock private AsynchronousMetricStorage<?> storage2;
+  @Mock private AsynchronousMetricStorage<?, ?> storage1;
+  @Mock private AsynchronousMetricStorage<?, ?> storage2;
 
   @Test
   void invokeCallback_Double() {

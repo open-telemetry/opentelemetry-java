@@ -15,13 +15,13 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -47,10 +47,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExponentialHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock DoubleExemplarReservoir reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(ExemplarReservoir::noSamples, 20, 320);
+      new DoubleExponentialHistogramAggregator(DoubleExemplarReservoir::noSamples, 20, 320);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -61,7 +61,7 @@ class DoubleExponentialHistogramAggregatorTest {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            ExemplarReservoir::noSamples,
+            DoubleExemplarReservoir::noSamples,
             ExponentialBucketStrategy.newStrategy(
                 20, 320, ExponentialCounterFactory.mapCounter())));
   }
@@ -72,8 +72,9 @@ class DoubleExponentialHistogramAggregatorTest {
   }
 
   private static ExponentialHistogramAccumulation getTestAccumulation(
-      List<ExemplarData> exemplars, double... recordings) {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+      List<DoubleExemplarData> exemplars, double... recordings) {
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     for (double r : recordings) {
       aggregatorHandle.recordDouble(r);
     }
@@ -88,7 +89,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void testRecordings() {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(0.5);
     aggregatorHandle.recordDouble(1.0);
     aggregatorHandle.recordDouble(12.0);
@@ -126,7 +128,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void testInvalidRecording() {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     // Non finite recordings should be ignored
     aggregatorHandle.recordDouble(Double.POSITIVE_INFINITY);
     aggregatorHandle.recordDouble(Double.NEGATIVE_INFINITY);
@@ -142,7 +145,8 @@ class DoubleExponentialHistogramAggregatorTest {
   @ParameterizedTest
   @MethodSource("provideAggregator")
   void testRecordingsAtLimits(DoubleExponentialHistogramAggregator aggregator) {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
 
     aggregatorHandle.recordDouble(Double.MIN_VALUE);
     aggregatorHandle.recordDouble(Double.MAX_VALUE);
@@ -186,7 +190,7 @@ class DoubleExponentialHistogramAggregatorTest {
         new DoubleExponentialHistogramAggregator(() -> reservoir, 20, 320);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -196,10 +200,11 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
 
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = agg.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        agg.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
 
     assertThat(
@@ -210,7 +215,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void testAccumulationAndReset() {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(5.0);
@@ -233,7 +239,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -243,8 +249,8 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -272,7 +278,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void diffDownScaledAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -282,8 +288,8 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -308,7 +314,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -318,8 +324,8 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -392,7 +398,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void testInsert1M() {
-    AggregatorHandle<ExponentialHistogramAccumulation> handle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> handle =
+        aggregator.createHandle();
 
     double min = 1.0 / (1 << 16);
     int n = 1024 * 1024 - 1;
@@ -433,7 +440,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testToMetricData() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -444,7 +451,7 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceState.getDefault()),
             1);
     @SuppressWarnings("unchecked")
-    Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Supplier<DoubleExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
     Mockito.when(reservoir.collectAndReset(Attributes.empty()))
         .thenReturn(Collections.singletonList(exemplar));
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
@@ -452,7 +459,7 @@ class DoubleExponentialHistogramAggregatorTest {
     DoubleExponentialHistogramAggregator cumulativeAggregator =
         new DoubleExponentialHistogramAggregator(reservoirSupplier, 20, 320);
 
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
     aggregatorHandle.recordDouble(0);
     aggregatorHandle.recordDouble(0);
@@ -513,7 +520,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     ExponentialHistogram summarizer = new ExponentialHistogram();
     ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
     int numberOfThreads = updates.size();

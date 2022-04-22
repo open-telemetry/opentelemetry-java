@@ -64,7 +64,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordLong() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             registeredView,
             InstrumentDescriptor.create(
@@ -103,7 +103,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordDouble() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             registeredView,
             InstrumentDescriptor.create(
@@ -142,7 +142,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_ProcessesAttributes() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             RegisteredView.create(
                 selector,
@@ -175,7 +175,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             registeredView,
             InstrumentDescriptor.create(
@@ -202,7 +202,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_DuplicateAttributes() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             registeredView,
             InstrumentDescriptor.create(

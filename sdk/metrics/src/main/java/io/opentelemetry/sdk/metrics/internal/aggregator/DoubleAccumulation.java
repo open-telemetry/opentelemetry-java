@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleAccumulation {
 
-  static DoubleAccumulation create(double value, List<ExemplarData> exemplars) {
+  static DoubleAccumulation create(double value, List<DoubleExemplarData> exemplars) {
     return new AutoValue_DoubleAccumulation(value, exemplars);
   }
 
@@ -37,5 +37,5 @@ public abstract class DoubleAccumulation {
   public abstract double getValue();
 
   /** Sampled measurements recorded during this accumulation. */
-  abstract List<ExemplarData> getExemplars();
+  abstract List<DoubleExemplarData> getExemplars();
 }

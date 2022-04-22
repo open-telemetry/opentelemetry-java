@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
-abstract class AbstractSumAggregator<T> implements Aggregator<T> {
+abstract class AbstractSumAggregator<T, U extends ExemplarData> implements Aggregator<T, U> {
   private final boolean isMonotonic;
 
   AbstractSumAggregator(InstrumentDescriptor instrumentDescriptor) {

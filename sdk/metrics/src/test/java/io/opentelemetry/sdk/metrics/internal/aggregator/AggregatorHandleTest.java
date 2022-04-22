@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
@@ -13,9 +14,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregatorHandleTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock DoubleExemplarReservoir reservoir;
 
   @Test
   void acquireMapped() {
@@ -114,7 +115,8 @@ class AggregatorHandleTest {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordLong(1L, attributes, context);
-    Mockito.verify(reservoir).offerMeasurement(1L, attributes, context);
+    // Since double reservoir, long value is not offered.
+    verifyNoMoreInteractions(reservoir);
   }
 
   @Test
@@ -130,7 +132,7 @@ class AggregatorHandleTest {
   void testGenerateExemplarsOnCollect() {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData result =
+    DoubleExemplarData result =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -148,18 +150,18 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
   }
 
-  private static class TestAggregatorHandle extends AggregatorHandle<Void> {
+  private static class TestAggregatorHandle extends AggregatorHandle<Void, DoubleExemplarData> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
-    final AtomicReference<List<ExemplarData>> recordedExemplars = new AtomicReference<>();
+    final AtomicReference<List<DoubleExemplarData>> recordedExemplars = new AtomicReference<>();
 
-    TestAggregatorHandle(ExemplarReservoir reservoir) {
+    TestAggregatorHandle(DoubleExemplarReservoir reservoir) {
       super(reservoir);
     }
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected Void doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

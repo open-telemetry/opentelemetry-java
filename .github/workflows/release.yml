@@ -51,7 +51,7 @@ jobs:
 
       - name: Generate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # conditional blocks not indented because of the heredoc
           if [[ $VERSION == *.0 ]]; then
@@ -66,13 +66,15 @@ jobs:
           EOF
           fi
 
+          # the last complex regex is needed because markdown docs render newlines as soft wraps
+          # while release notes render them as line breaks
           sed -n "/^## Version $VERSION/,/^## Version /p" CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
             | perl -0pe 's/^\n+//g' \
             | perl -0pe 's/\n+$/\n/g' \
             | sed -r "s,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1," \
-            | perl -0pe 's/\n +/ /g' \
+            | perl -0pe 's/(?<!\n)\n *(?!\n)(?![-*] )(?![1-9]+\. )/ /g' \
             >> release-notes.txt
 
           # conditional block not indented because of the heredoc
@@ -84,12 +86,12 @@ jobs:
 
           EOF
 
-          .github/scripts/generate-release-contributors.sh v$PRIOR_VERSION $GITHUB_REF_NAME >> release-notes.txt
+          .github/scripts/generate-release-contributors.sh v$PRIOR_VERSION >> release-notes.txt
           fi
 
       - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
@@ -99,7 +101,7 @@ jobs:
 
       - name: Update the change log with the release date
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md
@@ -111,12 +113,14 @@ jobs:
 
       - name: Create pull request against the release branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Add $VERSION release date to the change log"
-          git commit -a -m "$msg"
-          git push origin HEAD:add-$VERSION-release-date
-          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
-                       --body "$msg" \
-                       --head add-$VERSION-release-date \
+          message="Add the release date for $VERSION to the change log"
+          branch=add-release-date-for-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$GITHUB_REF_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME

@@ -15,12 +15,12 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExplicitBucketHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock DoubleExemplarReservoir reservoir;
 
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final Resource RESOURCE = Resource.getDefault();
@@ -47,7 +47,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final DoubleExplicitBucketHistogramAggregator aggregator =
-      new DoubleExplicitBucketHistogramAggregator(boundaries, ExemplarReservoir::noSamples);
+      new DoubleExplicitBucketHistogramAggregator(boundaries, DoubleExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -57,7 +57,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
 
   @Test
   void testRecordings() {
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordLong(20);
     aggregatorHandle.recordLong(5);
@@ -72,7 +72,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -82,11 +82,11 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleExplicitBucketHistogramAggregator aggregator =
         new DoubleExplicitBucketHistogramAggregator(boundaries, () -> reservoir);
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
@@ -97,7 +97,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
@@ -131,7 +131,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -141,8 +141,8 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -212,7 +212,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -222,8 +222,8 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -249,7 +249,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
 
   @Test
   void toMetricData() {
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
@@ -273,7 +273,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -329,7 +329,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 .length)
         .isEqualTo(boundaries.length + 1);
 
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);
     ExplicitBucketHistogramAccumulation explicitBucketHistogramAccumulation =
@@ -341,7 +341,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    AggregatorHandle<ExplicitBucketHistogramAccumulation> aggregatorHandle =
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     Histogram summarizer = new Histogram();
     ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);

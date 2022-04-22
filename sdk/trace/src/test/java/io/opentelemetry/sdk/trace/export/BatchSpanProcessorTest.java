@@ -505,6 +505,26 @@ class BatchSpanProcessorTest {
                 + "exporterTimeoutNanos=30000000000}");
   }
 
+  @Test
+  @Timeout(5)
+  void exporterThrowsNonRuntimeException() {
+    when(mockSpanExporter.export(anyList()))
+        .thenAnswer(
+            invocation -> {
+              throw new Exception("No export for you.");
+            });
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+            .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    createEndedSpan(SPAN_NAME_1);
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch()).isEmpty());
+    // Continue to export after the exception.
+    createEndedSpan(SPAN_NAME_2);
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
+  }
+
   private static final class BlockingSpanExporter implements SpanExporter {
 
     final Object monitor = new Object();

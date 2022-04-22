@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -23,8 +24,8 @@ final class MetricStorageUtils {
    *
    * <p>Note: This mutates the result map.
    */
-  static <T> void mergeInPlace(
-      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
+  static <T, U extends ExemplarData> void mergeInPlace(
+      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T, U> aggregator) {
     blend(result, toMerge, /* preserve= */ false, aggregator::merge);
   }
 
@@ -34,8 +35,8 @@ final class MetricStorageUtils {
    *
    * <p>Note: This mutates the result map.
    */
-  static <T> void mergeAndPreserveInPlace(
-      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
+  static <T, U extends ExemplarData> void mergeAndPreserveInPlace(
+      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T, U> aggregator) {
     blend(result, toMerge, /* preserve= */ true, aggregator::merge);
   }
 
@@ -47,8 +48,8 @@ final class MetricStorageUtils {
    *
    * <p>Note: This mutates the result map.
    */
-  static <T> void diffInPlace(
-      Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
+  static <T, U extends ExemplarData> void diffInPlace(
+      Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T, U> aggregator) {
     blend(result, toDiff, /* preserve= */ false, aggregator::diff);
   }
 
