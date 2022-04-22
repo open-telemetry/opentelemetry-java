@@ -28,6 +28,14 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
 
   private static final Aggregation DEFAULT = new ExponentialHistogramAggregation(20, 320);
 
+  private final int startingScale;
+  private final int maxBuckets;
+
+  private ExponentialHistogramAggregation(int startingScale, int maxBuckets) {
+    this.startingScale = startingScale;
+    this.maxBuckets = maxBuckets;
+  }
+
   public static Aggregation getDefault() {
     return DEFAULT;
   }
@@ -35,14 +43,6 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
   public static Aggregation create(int scale, int maxBuckets) {
     checkArgument(maxBuckets >= 0, "maxBuckets must be >= 0");
     return new ExponentialHistogramAggregation(scale, maxBuckets);
-  }
-
-  private final int startingScale;
-  private final int maxBuckets;
-
-  private ExponentialHistogramAggregation(int startingScale, int maxBuckets) {
-    this.startingScale = startingScale;
-    this.maxBuckets = maxBuckets;
   }
 
   @Override
