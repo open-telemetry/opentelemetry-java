@@ -819,7 +819,7 @@ origin repository when it pushes the branch.
           git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
           gh pr create --title "$message" \
                        --body "$body" \
-                       --repo open-telemetry/opentelemetry-operator
+                       --repo open-telemetry/opentelemetry-operator \
                        --base main
 ```
 
