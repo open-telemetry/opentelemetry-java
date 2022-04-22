@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.Arrays;
 import java.util.Map;
@@ -107,15 +106,6 @@ public abstract class AbstractPointDataAssert<
    */
   public final PointAssertT hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributes(actual.getAttributes(), assertions);
-    return myself;
-  }
-
-  /** Asserts the point has the specified exemplars, in any order. */
-  public final PointAssertT hasExemplars(ExemplarData... exemplars) {
-    isNotNull();
-    Assertions.assertThat(actual.getExemplars())
-        .as("exemplars")
-        .containsExactlyInAnyOrder(exemplars);
     return myself;
   }
 

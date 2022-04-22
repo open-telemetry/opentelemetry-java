@@ -22,8 +22,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -329,8 +329,8 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<ExemplarData> mapExemplars(List<Distribution.Bucket> buckets) {
-    List<ExemplarData> result = new ArrayList<>();
+  static List<DoubleExemplarData> mapExemplars(List<Distribution.Bucket> buckets) {
+    List<DoubleExemplarData> result = new ArrayList<>();
     for (Distribution.Bucket bucket : buckets) {
       Exemplar exemplar = bucket.getExemplar();
       if (exemplar != null) {
@@ -340,7 +340,7 @@ public final class MetricAdapter {
     return result;
   }
 
-  private static ExemplarData mapExemplar(Exemplar exemplar) {
+  private static DoubleExemplarData mapExemplar(Exemplar exemplar) {
     // Look for trace/span id.
     SpanContext spanContext = SpanContext.getInvalid();
     if (exemplar.getAttachments().containsKey("SpanContext")) {

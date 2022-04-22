@@ -88,7 +88,10 @@ abstract class Serializer {
   abstract void writeTimestamp(Writer writer, long timestampNanos) throws IOException;
 
   abstract void writeExemplar(
-      Writer writer, Collection<ExemplarData> exemplars, double minExemplar, double maxExemplar)
+      Writer writer,
+      Collection<? extends ExemplarData> exemplars,
+      double minExemplar,
+      double maxExemplar)
       throws IOException;
 
   abstract void writeEof(Writer writer) throws IOException;
@@ -278,7 +281,7 @@ abstract class Serializer {
       long epochNanos,
       String additionalAttrKey,
       double additionalAttrValue,
-      Collection<ExemplarData> exemplars,
+      Collection<? extends ExemplarData> exemplars,
       double minExemplar,
       double maxExemplar)
       throws IOException {
@@ -416,7 +419,10 @@ abstract class Serializer {
 
     @Override
     void writeExemplar(
-        Writer writer, Collection<ExemplarData> exemplars, double minExemplar, double maxExemplar) {
+        Writer writer,
+        Collection<? extends ExemplarData> exemplars,
+        double minExemplar,
+        double maxExemplar) {
       // Don't write exemplars
     }
 
@@ -464,7 +470,10 @@ abstract class Serializer {
 
     @Override
     void writeExemplar(
-        Writer writer, Collection<ExemplarData> exemplars, double minExemplar, double maxExemplar)
+        Writer writer,
+        Collection<? extends ExemplarData> exemplars,
+        double minExemplar,
+        double maxExemplar)
         throws IOException {
       for (ExemplarData exemplar : exemplars) {
         double value = getExemplarValue(exemplar);

@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -24,15 +25,16 @@ import java.util.Objects;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetricStorage {
+public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
+    implements SynchronousMetricStorage {
   private final MetricDescriptor metricDescriptor;
-  private final DeltaMetricStorage<T> deltaMetricStorage;
-  private final TemporalMetricStorage<T> temporalMetricStorage;
+  private final DeltaMetricStorage<T, U> deltaMetricStorage;
+  private final TemporalMetricStorage<T, U> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
-      Aggregator<T> aggregator,
+      Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;

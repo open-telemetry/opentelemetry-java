@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +32,16 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+public final class LongLastValueAggregator
+    implements Aggregator<LongAccumulation, LongExemplarData> {
+  private final Supplier<LongExemplarReservoir> reservoirSupplier;
 
-  public LongLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  public LongLastValueAggregator(Supplier<LongExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<LongAccumulation> createHandle() {
+  public AggregatorHandle<LongAccumulation, LongExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
@@ -80,16 +81,16 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation> {
+  static final class Handle extends AggregatorHandle<LongAccumulation, LongExemplarData> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    Handle(ExemplarReservoir exemplarReservoir) {
+    Handle(LongExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
       return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 

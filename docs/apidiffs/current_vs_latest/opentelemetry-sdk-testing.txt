@@ -9,7 +9,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasAttributesSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasEpochNanos(long)
-	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasExemplars(io.opentelemetry.sdk.metrics.data.ExemplarData[])
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasExemplarsSatisfying(java.util.function.Consumer[])
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert hasExemplarsSatisfying(java.lang.Iterable)
@@ -22,6 +21,7 @@ Comparing source compatibility of  against
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoublePointDataAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointDataAssert hasExemplars(io.opentelemetry.sdk.metrics.data.DoubleExemplarData[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointDataAssert hasValue(double)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -44,6 +44,7 @@ Comparing source compatibility of  against
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongPointDataAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.assertj.AbstractPointDataAssert
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointDataAssert hasExemplars(io.opentelemetry.sdk.metrics.data.LongExemplarData[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointDataAssert hasValue(long)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricDataAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.

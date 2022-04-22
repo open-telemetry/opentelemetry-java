@@ -7,13 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 
 /**
  * Last-value aggregation configuration.
@@ -33,15 +35,15 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> Aggregator<T> createAggregator(
+  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
 
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T>) new LongLastValueAggregator(ExemplarReservoir::noSamples);
+        return (Aggregator<T, U>) new LongLastValueAggregator(LongExemplarReservoir::noSamples);
       case DOUBLE:
-        return (Aggregator<T>) new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
+        return (Aggregator<T, U>) new DoubleLastValueAggregator(DoubleExemplarReservoir::noSamples);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

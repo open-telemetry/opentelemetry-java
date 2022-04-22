@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +34,16 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+public final class DoubleLastValueAggregator
+    implements Aggregator<DoubleAccumulation, DoubleExemplarData> {
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
 
-  public DoubleLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  public DoubleLastValueAggregator(Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<DoubleAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
@@ -83,16 +84,16 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation, DoubleExemplarData> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    private Handle(ExemplarReservoir reservoir) {
+    private Handle(DoubleExemplarReservoir reservoir) {
       super(reservoir);
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
       return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 

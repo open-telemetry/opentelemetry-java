@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  *
  * <p>Additionally this implementation ONLY exports double valued exemplars.
  */
-final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
+final class DoubleFixedSizeExemplarReservoir extends AbstractDoubleFixedSizeExemplarReservoir {
   private final Supplier<Random> randomSupplier;
   private final LongAdder numMeasurements = AdderUtil.createLongAdder();
 
@@ -33,7 +33,7 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
    * @param size The number of exemplars to preserve.
    * @param randomSupplier The random number generator to use for sampling.
    */
-  FixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
+  DoubleFixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
     super(clock, size);
     this.randomSupplier = randomSupplier;
   }

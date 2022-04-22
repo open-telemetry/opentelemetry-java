@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -31,7 +31,7 @@ abstract class HistogramAccumulation {
       double min,
       double max,
       long[] counts,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
     return new AutoValue_HistogramAccumulation(sum, hasMinMax, min, max, counts, exemplars);
   }
 
@@ -69,5 +69,5 @@ abstract class HistogramAccumulation {
   abstract long[] getCounts();
 
   /** Exemplars accumulated during this period. */
-  abstract List<ExemplarData> getExemplars();
+  abstract List<DoubleExemplarData> getExemplars();
 }

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import java.util.Collections;
 import java.util.List;
@@ -59,8 +59,8 @@ public abstract class ImmutableLongPointData implements LongPointData {
       long epochNanos,
       Attributes attributes,
       long value,
-      List<ExemplarData> exemplars) {
+      List<LongExemplarData> exemplars) {
     return new AutoValue_ImmutableLongPointData(
-        startEpochNanos, epochNanos, attributes, exemplars, value);
+        startEpochNanos, epochNanos, attributes, value, exemplars);
   }
 }

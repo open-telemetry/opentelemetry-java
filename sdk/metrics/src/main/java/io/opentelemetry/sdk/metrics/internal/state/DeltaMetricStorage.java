@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.metrics.internal.state.MetricStorageUtils.MAX
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -31,19 +32,19 @@ import javax.annotation.concurrent.ThreadSafe;
  * of delta accumulations per-collection-handle.
  */
 @ThreadSafe
-class DeltaMetricStorage<T> {
+class DeltaMetricStorage<T, U extends ExemplarData> {
 
   private static final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(DeltaMetricStorage.class.getName()));
   private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
 
-  private final Aggregator<T> aggregator;
+  private final Aggregator<T, U> aggregator;
   private final InstrumentDescriptor instrument;
-  private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> activeCollectionStorage =
+  private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> activeCollectionStorage =
       new ConcurrentHashMap<>();
   private final List<DeltaAccumulation<T>> unreportedDeltas = new ArrayList<>();
 
-  DeltaMetricStorage(Aggregator<T> aggregator, InstrumentDescriptor instrument) {
+  DeltaMetricStorage(Aggregator<T, U> aggregator, InstrumentDescriptor instrument) {
     this.aggregator = aggregator;
     this.instrument = instrument;
   }
@@ -55,7 +56,7 @@ class DeltaMetricStorage<T> {
    * @return A handle that will (efficiently) record synchronous measurements.
    */
   public BoundStorageHandle bind(Attributes attributes) {
-    AggregatorHandle<T> aggregatorHandle = activeCollectionStorage.get(attributes);
+    AggregatorHandle<T, U> aggregatorHandle = activeCollectionStorage.get(attributes);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
       return aggregatorHandle;
@@ -74,7 +75,7 @@ class DeltaMetricStorage<T> {
                 + ").");
         return NOOP_STORAGE_HANDLE;
       }
-      AggregatorHandle<?> boundAggregatorHandle =
+      AggregatorHandle<T, U> boundAggregatorHandle =
           activeCollectionStorage.putIfAbsent(attributes, aggregatorHandle);
       if (boundAggregatorHandle != null) {
         if (boundAggregatorHandle.acquire()) {
@@ -127,7 +128,7 @@ class DeltaMetricStorage<T> {
   private synchronized void collectSynchronousDeltaAccumulationAndReset() {
     // Grab accumulated measurements.
     Map<Attributes, T> result = new HashMap<>();
-    for (Map.Entry<Attributes, AggregatorHandle<T>> entry : activeCollectionStorage.entrySet()) {
+    for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();
       if (unmappedEntry) {
         // If able to unmap then remove the record from the current Map. This can race with the

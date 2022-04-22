@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,7 +38,7 @@ abstract class ImmutableExponentialHistogramPointData implements ExponentialHist
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
 
     long count = zeroCount + positiveBuckets.getTotalCount() + negativeBuckets.getTotalCount();
 
@@ -83,5 +83,5 @@ abstract class ImmutableExponentialHistogramPointData implements ExponentialHist
   public abstract Attributes getAttributes();
 
   @Override
-  public abstract List<ExemplarData> getExemplars();
+  public abstract List<DoubleExemplarData> getExemplars();
 }

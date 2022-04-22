@@ -17,11 +17,11 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -214,7 +214,7 @@ class MetricAdapterTest {
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
-                          ImmutableLongExemplarData.create(
+                          ImmutableDoubleExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
                               SpanContext.create(
@@ -550,7 +550,7 @@ class MetricAdapterTest {
                     ImmutableList.of(1.0),
                     ImmutableList.of(4L, 9L),
                     ImmutableList.of(
-                        ImmutableLongExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ 0,
                             SpanContext.create(
@@ -559,7 +559,7 @@ class MetricAdapterTest {
                                 TraceFlags.getDefault(),
                                 TraceState.getDefault()),
                             /*value=*/ 0),
-                        ImmutableLongExemplarData.create(
+                        ImmutableDoubleExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ TimeUnit.MILLISECONDS.toNanos(2),
                             SpanContext.create(

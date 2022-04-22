@@ -28,7 +28,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
 
   private final KeyValueMarshaler[] filteredAttributeMarshalers;
 
-  static ExemplarMarshaler[] createRepeated(List<ExemplarData> exemplars) {
+  static ExemplarMarshaler[] createRepeated(List<? extends ExemplarData> exemplars) {
     int numExemplars = exemplars.size();
     ExemplarMarshaler[] marshalers = new ExemplarMarshaler[numExemplars];
     for (int i = 0; i < numExemplars; i++) {

@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -55,9 +55,9 @@ public abstract class ImmutableDoublePointData implements DoublePointData {
       long epochNanos,
       Attributes attributes,
       double value,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
     return new AutoValue_ImmutableDoublePointData(
-        startEpochNanos, epochNanos, attributes, exemplars, value);
+        startEpochNanos, epochNanos, attributes, value, exemplars);
   }
 
   ImmutableDoublePointData() {}
