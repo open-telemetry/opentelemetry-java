@@ -50,7 +50,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Mock DoubleExemplarReservoir reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(DoubleExemplarReservoir::noSamples);
+      new DoubleExponentialHistogramAggregator(DoubleExemplarReservoir::noSamples, 20, 320);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -187,7 +187,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(() -> reservoir);
+        new DoubleExponentialHistogramAggregator(() -> reservoir, 20, 320);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -457,7 +457,7 @@ class DoubleExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(reservoirSupplier);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier, 20, 320);
 
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
@@ -489,7 +489,7 @@ class DoubleExponentialHistogramAggregatorTest {
                     .hasSum(123.456)
                     .hasScale(20)
                     .hasZeroCount(2)
-                    .hasTotalCount(3)
+                    .hasCount(3)
                     .hasExemplars(exemplar);
                 assertThat(point.getPositiveBuckets())
                     .hasCounts(Collections.singletonList(1L))

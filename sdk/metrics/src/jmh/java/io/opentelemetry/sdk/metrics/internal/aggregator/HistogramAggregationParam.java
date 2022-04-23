@@ -13,12 +13,12 @@ import java.util.Collections;
 @SuppressWarnings("ImmutableEnumChecker")
 public enum HistogramAggregationParam {
   EXPLICIT_DEFAULT_BUCKET(
-      new DoubleHistogramAggregator(
+      new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(
               ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES),
           DoubleExemplarReservoir::noSamples)),
   EXPLICIT_SINGLE_BUCKET(
-      new DoubleHistogramAggregator(
+      new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(Collections.emptyList()),
           DoubleExemplarReservoir::noSamples)),
   EXPONENTIAL_SMALL_CIRCULAR_BUFFER(

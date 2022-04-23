@@ -23,8 +23,8 @@ public class ExponentialHistogramPointDataAssert
     return this;
   }
 
-  /** Ensures the {@code totalCount} field matches the expected value. */
-  public ExponentialHistogramPointDataAssert hasTotalCount(long expected) {
+  /** Ensures the {@code count} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasCount(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getCount()).as("count").isEqualTo(expected);
     return this;

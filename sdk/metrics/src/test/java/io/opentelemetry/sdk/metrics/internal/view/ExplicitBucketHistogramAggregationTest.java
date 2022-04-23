@@ -14,7 +14,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Tests configuration errors in explicit bucket histograms. */
-class ExplicitBucketHistogramTest {
+class ExplicitBucketHistogramAggregationTest {
 
   @Test
   void goodConfig() {
