@@ -135,7 +135,7 @@ public final class PeriodicMetricReader implements MetricReader {
         try {
           Collection<MetricData> metricData = metricProducer.collectAllMetrics();
           if (metricData.isEmpty()) {
-            logger.log(Level.FINEST, "No metric data to export - skipping export.");
+            logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();
             exportAvailable.set(true);
           } else {

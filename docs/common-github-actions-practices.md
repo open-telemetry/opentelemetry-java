@@ -817,7 +817,7 @@ origin repository when it pushes the branch.
           git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
           gh pr create --title "$message" \
                        --body "$body" \
-                       --repo open-telemetry/opentelemetry-operator
+                       --repo open-telemetry/opentelemetry-operator \
                        --base main
 ```
 
@@ -863,7 +863,7 @@ jobs:
           body="Merge change log updates from \`$GITHUB_REF_NAME\`."
           branch=merge-change-log-updates-from-${GITHUB_REF_NAME//\//-}
 
-          git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply
+          git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply --3way
           git commit -a -m "$message"
           git push origin HEAD:$branch
           gh pr create --title "$message" \

@@ -5,7 +5,12 @@ on:
     branches:
       - main
       - release/*
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -78,6 +83,7 @@ jobs:
     # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
     # skipping release branches because the versions in those branches are not snapshots
+    # (also this skips pull requests)
     if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
     runs-on: ubuntu-20.04
     steps:
@@ -100,3 +106,16 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
+  required-status-check:
+    needs:
+      # markdown-link-check is not required so that pull requests will not be blocked if external
+      # links break
+      # similarly misspell-check is not required so that pull requests will not be blocked if new
+      # misspellings are added to the misspell dictionary
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: needs.build.result != 'success'
+        run: exit 1

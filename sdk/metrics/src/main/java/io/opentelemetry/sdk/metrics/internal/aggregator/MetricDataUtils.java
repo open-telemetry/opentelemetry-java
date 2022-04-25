@@ -61,8 +61,8 @@ final class MetricDataUtils {
     return points;
   }
 
-  static List<HistogramPointData> toDoubleHistogramPointList(
-      Map<Attributes, HistogramAccumulation> accumulationMap,
+  static List<HistogramPointData> toExplicitBucketHistogramPointList(
+      Map<Attributes, ExplicitBucketHistogramAccumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos,
       List<Double> boundaries) {
