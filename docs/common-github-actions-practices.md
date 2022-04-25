@@ -154,8 +154,8 @@ requests if external links break.
 ```yaml
   # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
-    # release branches are excluded to avoid unnecessary maintenance if external links break
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -227,9 +227,8 @@ requests if new misspellings are added to the misspell dictionary.
   # this is not a required check to avoid blocking pull requests if new misspellings are added
   # to the misspell dictionary
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -276,9 +275,8 @@ Here's an example of doing this with the above `misspell-check` workflow:
 
 ```yaml
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
