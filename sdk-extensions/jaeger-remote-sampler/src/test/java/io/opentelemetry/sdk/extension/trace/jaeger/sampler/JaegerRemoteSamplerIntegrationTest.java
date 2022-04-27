@@ -9,6 +9,12 @@ import static io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import com.google.common.collect.ImmutableList;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
@@ -45,7 +51,16 @@ class JaegerRemoteSamplerIntegrationTest {
       await()
           .atMost(Duration.ofSeconds(10))
           .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
-      assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
+      assertThat(remoteSampler.getDescription()).contains("op0").contains("op1").contains("op2").doesNotContain("150");
+      assertThat(
+              remoteSampler.shouldSample(
+                  Context.current(),
+                  TraceId.getInvalid(),
+                  "op0",
+                  SpanKind.CLIENT,
+                  Attributes.empty(),
+                  ImmutableList.of()))
+          .isEqualTo(SamplingResult.drop());
     }
   }
 

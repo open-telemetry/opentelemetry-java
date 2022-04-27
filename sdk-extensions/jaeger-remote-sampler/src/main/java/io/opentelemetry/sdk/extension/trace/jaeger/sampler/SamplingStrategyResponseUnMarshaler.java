@@ -184,7 +184,16 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
           break;
         case 18:
           probabilisticSamplingParsed = true;
-          input.readRawVarint32(); // skip length
+          int length = input.readRawVarint32();
+          // Default probabilistic strategy.
+          if (length == 0) {
+            SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder
+                defaultProbabilisticStrategy =
+                    new SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder();
+            defaultProbabilisticStrategy.setSamplingRate(0.0);
+            builder.setProbabilisticSamplingStrategy(defaultProbabilisticStrategy.build());
+            break;
+          }
           builder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
           break;
         default:
