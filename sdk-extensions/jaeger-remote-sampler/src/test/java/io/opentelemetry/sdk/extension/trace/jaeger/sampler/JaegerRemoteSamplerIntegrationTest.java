@@ -51,7 +51,11 @@ class JaegerRemoteSamplerIntegrationTest {
       await()
           .atMost(Duration.ofSeconds(10))
           .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
-      assertThat(remoteSampler.getDescription()).contains("op0").contains("op1").contains("op2").doesNotContain("150");
+      assertThat(remoteSampler.getDescription())
+          .contains("op0")
+          .contains("op1")
+          .contains("op2")
+          .doesNotContain("150");
       assertThat(
               remoteSampler.shouldSample(
                   Context.current(),
