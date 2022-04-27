@@ -228,6 +228,10 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       return context;
     }
 
+    if (spanId == null || traceId == null) {
+      logger.warning("Both traceId and spanId are required to extract a valid span context. ");
+    }
+
     SpanContext spanContext =
         SpanContext.createFromRemoteParent(
             StringUtils.padLeft(traceId, TraceId.getLength()),
