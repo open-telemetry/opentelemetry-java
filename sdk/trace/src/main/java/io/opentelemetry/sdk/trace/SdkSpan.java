@@ -124,7 +124,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param name the displayed name for the new span.
    * @param kind the span kind.
    * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
-   * @param spanLimits trace parameters like sampler and probability.
+   * @param spanLimits limits applied to this span.
    * @param spanProcessor handler called when the span starts and ends.
    * @param tracerClock the tracer's clock
    * @param resource the resource associated with this span.
@@ -399,7 +399,8 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    addTimedEvent(ExceptionEventData.create(clock.now(), exception, additionalAttributes));
+    addTimedEvent(
+        ExceptionEventData.create(spanLimits, clock.now(), exception, additionalAttributes));
     return this;
   }
 

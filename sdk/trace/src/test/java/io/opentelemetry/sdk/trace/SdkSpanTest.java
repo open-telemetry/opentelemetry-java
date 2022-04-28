@@ -725,8 +725,10 @@ class SdkSpanTest {
               .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
               .build();
       span.setAllAttributes(attributes);
+      span.recordException(new IllegalStateException(tooLongStrVal));
 
-      attributes = span.toSpanData().getAttributes();
+      SpanData spanData = span.toSpanData();
+      attributes = spanData.getAttributes();
       assertThat(attributes.get(stringKey("string"))).isEqualTo(strVal);
       assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
       assertThat(attributes.get(longKey("long"))).isEqualTo(1L);
@@ -737,6 +739,16 @@ class SdkSpanTest {
           .isEqualTo(Arrays.asList(true, false));
       assertThat(attributes.get(longArrayKey("longArray"))).isEqualTo(Arrays.asList(1L, 2L));
       assertThat(attributes.get(doubleArrayKey("doubleArray"))).isEqualTo(Arrays.asList(1.0, 2.0));
+
+      List<EventData> events = spanData.getEvents();
+      assertThat(events).hasSize(1);
+      EventData event = events.get(0);
+      assertThat(event.getName()).isEqualTo("exception");
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
+          .isEqualTo("java.lang.IllegalStateException".substring(0, maxLength));
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isEqualTo(strVal);
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).length())
+          .isLessThanOrEqualTo(maxLength);
     } finally {
       span.end();
     }
