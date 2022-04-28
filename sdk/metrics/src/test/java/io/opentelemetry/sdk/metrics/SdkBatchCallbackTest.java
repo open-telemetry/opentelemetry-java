@@ -40,7 +40,10 @@ class SdkBatchCallbackTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
+  LogCapturer asyncStorageLogs =
+      LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
+
+  @RegisterExtension LogCapturer sdkMeterLogs = LogCapturer.create().captureForType(SdkMeter.class);
 
   @Test
   void collectAllMetrics() {
@@ -169,7 +172,7 @@ class SdkBatchCallbackTest {
         },
         counter1);
 
-    // Counter 2 is not registered and measurements should be ignored
+    // counter2 is not registered and measurements should be ignored
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -182,7 +185,7 @@ class SdkBatchCallbackTest {
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(1)));
 
-    logs.assertContains(
+    asyncStorageLogs.assertContains(
         "Cannot record measurements for instrument counter2 outside registered callbacks.");
   }
 
@@ -213,7 +216,77 @@ class SdkBatchCallbackTest {
                                 .hasValue(1)
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
 
-    logs.assertContains(
+    asyncStorageLogs.assertContains(
         "Cannot record measurements for instrument counter1 outside registered callbacks.");
+  }
+
+  @Test
+  @SuppressLogger(AsynchronousMetricStorage.class)
+  void collectAllMetrics_InstrumentFromAnotherMeter() {
+    ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
+    ObservableLongMeasurement counter2 =
+        sdkMeterProvider.get("another-meter").counterBuilder("counter2").buildObserver();
+
+    sdkMeter.batchCallback(
+        () -> {
+          counter1.record(1);
+          counter2.record(2);
+        },
+        counter1,
+        counter2);
+
+    // counter2 belongs to another meter and measurements should be ignored
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("counter1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+
+    sdkMeterLogs.assertContains(
+        "batchCallback called with instruments that belong to a different Meter.");
+  }
+
+  @Test
+  @SuppressLogger(AsynchronousMetricStorage.class)
+  void collectAllMetrics_InvalidObserver() {
+    ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
+    ObservableLongMeasurement counter2 =
+        new ObservableLongMeasurement() {
+          @Override
+          public void record(long value) {}
+
+          @Override
+          public void record(long value, Attributes attributes) {}
+        };
+
+    sdkMeter.batchCallback(
+        () -> {
+          counter1.record(1);
+          counter2.record(2);
+        },
+        counter1,
+        counter2);
+
+    // counter2 was not obtained from the sdk and its measurements should be ignored.
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("counter1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+
+    sdkMeterLogs.assertContains(
+        "batchCallback called with instruments that were not created by the SDK.");
   }
 }

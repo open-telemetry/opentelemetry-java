@@ -82,7 +82,7 @@ public interface Meter {
    * <p>Batch callbacks allow a single callback to observe measurements for multiple asynchronous
    * instruments.
    *
-   * <p>The callback will only be called with the {@link Meter} is being observed.
+   * <p>The callback will be called when the {@link Meter} is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *

@@ -38,7 +38,7 @@ public interface LongUpDownCounterBuilder {
   /**
    * Builds this asynchronous instrument with the given callback.
    *
-   * <p>The callback will only be called when the {@link Meter} is being observed.
+   * <p>The callback will be called when the {@link Meter} is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *
@@ -60,5 +60,7 @@ public interface LongUpDownCounterBuilder {
    *
    * @return an observable measurement that batch callbacks use to observe values.
    */
-  ObservableLongMeasurement buildObserver();
+  default ObservableLongMeasurement buildObserver() {
+    return DefaultMeter.getInstance().upDownCounterBuilder("noop").buildObserver();
+  }
 }

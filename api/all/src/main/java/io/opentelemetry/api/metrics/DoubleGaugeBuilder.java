@@ -31,7 +31,7 @@ public interface DoubleGaugeBuilder {
   /**
    * Builds this asynchronous instrument with the given callback.
    *
-   * <p>The callback will only be called when the {@link Meter} is being observed.
+   * <p>The callback will be called when the {@link Meter} is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *
@@ -53,5 +53,7 @@ public interface DoubleGaugeBuilder {
    *
    * @return an observable measurement that batch callbacks use to observe values.
    */
-  ObservableDoubleMeasurement buildObserver();
+  default ObservableDoubleMeasurement buildObserver() {
+    return DefaultMeter.getInstance().gaugeBuilder("noop").buildObserver();
+  }
 }
