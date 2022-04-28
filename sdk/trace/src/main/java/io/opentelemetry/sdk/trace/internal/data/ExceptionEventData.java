@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.internal.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.EventData;
 
 /**
@@ -19,14 +20,19 @@ public interface ExceptionEventData extends EventData {
   /**
    * Returns a new immutable {@link ExceptionEventData}.
    *
+   * @param spanLimits limits applied to {@link ExceptionEventData}.
    * @param epochNanos epoch timestamp in nanos of the {@link ExceptionEventData}.
    * @param exception the {@link Throwable exception} of the {@code Event}.
    * @param additionalAttributes the additional attributes of the {@link ExceptionEventData}.
    * @return a new immutable {@link ExceptionEventData}
    */
   static ExceptionEventData create(
-      long epochNanos, Throwable exception, Attributes additionalAttributes) {
-    return ImmutableExceptionEventData.create(epochNanos, exception, additionalAttributes);
+      SpanLimits spanLimits,
+      long epochNanos,
+      Throwable exception,
+      Attributes additionalAttributes) {
+    return ImmutableExceptionEventData.create(
+        spanLimits, epochNanos, exception, additionalAttributes);
   }
 
   /**
