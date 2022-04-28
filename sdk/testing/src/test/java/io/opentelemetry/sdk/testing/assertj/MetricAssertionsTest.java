@@ -18,17 +18,26 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -134,6 +143,113 @@ class MetricAssertionsTest {
           ImmutableGaugeData.create(
               // Points
               Arrays.asList(LONG_POINT_DATA, LONG_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final MetricData DOUBLE_SUM_METRIC =
+      ImmutableMetricData.createDoubleSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              true,
+              AggregationTemporality.CUMULATIVE,
+              // Points
+              Arrays.asList(DOUBLE_POINT_DATA, DOUBLE_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final MetricData DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC =
+      ImmutableMetricData.createDoubleSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              false,
+              AggregationTemporality.DELTA,
+              // Points
+              Arrays.asList(DOUBLE_POINT_DATA, DOUBLE_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final MetricData LONG_SUM_METRIC =
+      ImmutableMetricData.createLongSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              true,
+              AggregationTemporality.CUMULATIVE,
+              // Points
+              Arrays.asList(LONG_POINT_DATA, LONG_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final MetricData LONG_SUM_METRIC_DELTA_NONMONOTONIC =
+      ImmutableMetricData.createLongSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              false,
+              AggregationTemporality.DELTA,
+              // Points
+              Arrays.asList(LONG_POINT_DATA, LONG_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final HistogramPointData HISTOGRAM_POINT_DATA =
+      ImmutableHistogramPointData.create(
+          1,
+          2,
+          Attributes.empty(),
+          15,
+          4.0,
+          7.0,
+          Collections.singletonList(10.0),
+          Arrays.asList(1L, 2L));
+
+  private static final MetricData HISTOGRAM_METRIC =
+      ImmutableMetricData.createDoubleHistogram(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "histogram",
+          /* description= */ "a histogram",
+          /* unit= */ "1",
+          ImmutableHistogramData.create(
+              AggregationTemporality.CUMULATIVE,
+              // Points
+              Arrays.asList(HISTOGRAM_POINT_DATA)));
+
+  private static final MetricData HISTOGRAM_METRIC_DELTA =
+      ImmutableMetricData.createDoubleHistogram(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "histogram",
+          /* description= */ "a histogram",
+          /* unit= */ "1",
+          ImmutableHistogramData.create(
+              AggregationTemporality.DELTA,
+              // Points
+              Arrays.asList(HISTOGRAM_POINT_DATA)));
+
+  private static final SummaryPointData SUMMARY_POINT_DATA =
+      ImmutableSummaryPointData.create(
+          1,
+          2,
+          Attributes.empty(),
+          1,
+          2,
+          Collections.singletonList(ImmutableValueAtQuantile.create(0, 1)));
+
+  private static final MetricData SUMMARY_METRIC =
+      ImmutableMetricData.createDoubleSummary(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "summary",
+          /* description= */ "a summary",
+          /* unit= */ "1",
+          ImmutableSummaryData.create(
+              // Points
+              Arrays.asList(SUMMARY_POINT_DATA)));
 
   @Test
   void doubleGauge() {
@@ -534,6 +650,229 @@ class MetricAssertionsTest {
                                     point.hasExemplarsSatisfying(
                                         exemplar -> exemplar.hasValue(100), exemplar -> {}),
                                 point -> point.hasValue(1))))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void duobleSum() {
+    assertThat(DOUBLE_SUM_METRIC)
+        .hasDoubleSumSatisfying(
+            sum -> sum.isMonotonic().isCumulative().hasPointsSatisfying(point -> {}, point -> {}));
+    assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+        .hasDoubleSumSatisfying(
+            sum -> sum.isNotMonotonic().isDelta().hasPointsSatisfying(point -> {}, point -> {}));
+  }
+
+  @Test
+  void doubleSumFailure() {
+    assertThatThrownBy(() -> assertThat(DOUBLE_SUM_METRIC).hasLongSumSatisfying(sum -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUM_METRIC)
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                // Not enough points
+                                point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(DOUBLE_SUM_METRIC).hasDoubleSumSatisfying(sum -> sum.isNotMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(DOUBLE_SUM_METRIC).hasDoubleSumSatisfying(sum -> sum.isDelta()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasDoubleSumSatisfying(sum -> sum.isMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasDoubleSumSatisfying(sum -> sum.isCumulative()))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void longSum() {
+    assertThat(LONG_SUM_METRIC)
+        .hasLongSumSatisfying(
+            sum -> sum.isMonotonic().isCumulative().hasPointsSatisfying(point -> {}, point -> {}));
+    assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+        .hasLongSumSatisfying(
+            sum -> sum.isNotMonotonic().isDelta().hasPointsSatisfying(point -> {}, point -> {}));
+  }
+
+  @Test
+  void longSumFailure() {
+    assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasDoubleSumSatisfying(sum -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_SUM_METRIC)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                // Not enough points
+                                point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(LONG_SUM_METRIC).hasLongSumSatisfying(sum -> sum.isNotMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasLongSumSatisfying(sum -> sum.isDelta()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasLongSumSatisfying(sum -> sum.isMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasLongSumSatisfying(sum -> sum.isCumulative()))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void histogram() {
+    assertThat(HISTOGRAM_METRIC)
+        .hasHistogramSatisfying(
+            histogram ->
+                histogram
+                    .isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasSum(15.0)
+                                .hasSumGreaterThan(10.1)
+                                .hasMax(7.0)
+                                .hasMin(4.0)
+                                .hasCount(3)
+                                .hasBucketBoundaries(10.0)));
+    assertThat(HISTOGRAM_METRIC_DELTA).hasHistogramSatisfying(histogram -> histogram.isDelta());
+  }
+
+  @Test
+  void histogram_failure() {
+    assertThatThrownBy(() -> assertThat(HISTOGRAM_METRIC).hasDoubleGaugeSatisfying(gauge -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(histogram -> histogram.isDelta()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC_DELTA)
+                    .hasHistogramSatisfying(histogram -> histogram.isCumulative()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(point -> point.hasSumGreaterThan(16.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point -> point.hasBucketBoundaries(11.0))))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void summary() {
+    assertThat(SUMMARY_METRIC)
+        .hasSummarySatisfying(
+            summary ->
+                summary.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasSum(2.0)
+                            .hasCount(1)
+                            .hasValuesSatisfying(value -> value.hasQuantile(0.0).hasValue(1.0))));
+  }
+
+  @Test
+  void summary_failure() {
+    assertThatThrownBy(() -> assertThat(SUMMARY_METRIC).hasHistogramSatisfying(histogram -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.hasPointsSatisfying(point -> point.hasSum(1.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.hasPointsSatisfying(point -> point.hasCount(2))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary ->
+                            summary.hasPointsSatisfying(
+                                point -> point.hasValuesSatisfying(value -> {}, value -> {}))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary ->
+                            summary.hasPointsSatisfying(
+                                point ->
+                                    point.hasValuesSatisfying(value -> value.hasQuantile(1.0)))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary ->
+                            summary.hasPointsSatisfying(
+                                point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
         .isInstanceOf(AssertionError.class);
   }
 }

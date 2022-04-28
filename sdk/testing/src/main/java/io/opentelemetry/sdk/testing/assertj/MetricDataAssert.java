@@ -123,4 +123,64 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
     assertion.accept(new LongGaugeAssert(actual.getLongGaugeData()));
     return this;
   }
+
+  /** Asserts this {@link MetricData} is a double sum that satisfies the provided assertion. */
+  public MetricDataAssert hasDoubleSumSatisfying(Consumer<DoubleSumAssert> assertion) {
+    isNotNull();
+    if (actual.getType() != MetricDataType.DOUBLE_SUM) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: DOULE_SUM",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.DOUBLE_SUM,
+          actual.getType());
+    }
+    assertion.accept(new DoubleSumAssert(actual.getDoubleSumData()));
+    return this;
+  }
+
+  /** Asserts this {@link MetricData} is a long sum that satisfies the provided assertion. */
+  public MetricDataAssert hasLongSumSatisfying(Consumer<LongSumAssert> assertion) {
+    isNotNull();
+    if (actual.getType() != MetricDataType.LONG_SUM) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: LONG_SUM",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.LONG_SUM,
+          actual.getType());
+    }
+    assertion.accept(new LongSumAssert(actual.getLongSumData()));
+    return this;
+  }
+
+  /** Asserts this {@link MetricData} is a histogram that satisfies the provided assertion. */
+  public MetricDataAssert hasHistogramSatisfying(Consumer<HistogramAssert> assertion) {
+    isNotNull();
+    if (actual.getType() != MetricDataType.HISTOGRAM) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: HISTOGRAM",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.HISTOGRAM,
+          actual.getType());
+    }
+    assertion.accept(new HistogramAssert(actual.getHistogramData()));
+    return this;
+  }
+
+  /** Asserts this {@link MetricData} is a summary that satisfies the provided assertion. */
+  public MetricDataAssert hasSummarySatisfying(Consumer<SummaryAssert> assertion) {
+    isNotNull();
+    if (actual.getType() != MetricDataType.SUMMARY) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: SUMMARY",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.SUMMARY,
+          actual.getType());
+    }
+    assertion.accept(new SummaryAssert(actual.getSummaryData()));
+    return this;
+  }
 }
