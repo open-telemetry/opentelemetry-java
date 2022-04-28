@@ -157,6 +157,19 @@ class MetricAssertionsTest {
               // Points
               Arrays.asList(DOUBLE_POINT_DATA, DOUBLE_POINT_DATA_WITH_EXEMPLAR)));
 
+  private static final MetricData DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC =
+      ImmutableMetricData.createDoubleSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              false,
+              AggregationTemporality.DELTA,
+              // Points
+              Arrays.asList(DOUBLE_POINT_DATA, DOUBLE_POINT_DATA_WITH_EXEMPLAR)));
+
   private static final MetricData LONG_SUM_METRIC =
       ImmutableMetricData.createLongSum(
           RESOURCE,
@@ -167,6 +180,19 @@ class MetricAssertionsTest {
           ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
+              // Points
+              Arrays.asList(LONG_POINT_DATA, LONG_POINT_DATA_WITH_EXEMPLAR)));
+
+  private static final MetricData LONG_SUM_METRIC_DELTA_NONMONOTONIC =
+      ImmutableMetricData.createLongSum(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "sum",
+          /* description= */ "a sum",
+          /* unit= */ "1",
+          ImmutableSumData.create(
+              false,
+              AggregationTemporality.DELTA,
               // Points
               Arrays.asList(LONG_POINT_DATA, LONG_POINT_DATA_WITH_EXEMPLAR)));
 
@@ -190,6 +216,18 @@ class MetricAssertionsTest {
           /* unit= */ "1",
           ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
+              // Points
+              Arrays.asList(HISTOGRAM_POINT_DATA)));
+
+  private static final MetricData HISTOGRAM_METRIC_DELTA =
+      ImmutableMetricData.createDoubleHistogram(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "histogram",
+          /* description= */ "a histogram",
+          /* unit= */ "1",
+          ImmutableHistogramData.create(
+              AggregationTemporality.DELTA,
               // Points
               Arrays.asList(HISTOGRAM_POINT_DATA)));
 
@@ -620,6 +658,9 @@ class MetricAssertionsTest {
     assertThat(DOUBLE_SUM_METRIC)
         .hasDoubleSumSatisfying(
             sum -> sum.isMonotonic().isCumulative().hasPointsSatisfying(point -> {}, point -> {}));
+    assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+        .hasDoubleSumSatisfying(
+            sum -> sum.isNotMonotonic().isDelta().hasPointsSatisfying(point -> {}, point -> {}));
   }
 
   @Test
@@ -641,6 +682,16 @@ class MetricAssertionsTest {
     assertThatThrownBy(
             () -> assertThat(DOUBLE_SUM_METRIC).hasDoubleSumSatisfying(sum -> sum.isDelta()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasDoubleSumSatisfying(sum -> sum.isMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasDoubleSumSatisfying(sum -> sum.isCumulative()))
+        .isInstanceOf(AssertionError.class);
   }
 
   @Test
@@ -648,6 +699,9 @@ class MetricAssertionsTest {
     assertThat(LONG_SUM_METRIC)
         .hasLongSumSatisfying(
             sum -> sum.isMonotonic().isCumulative().hasPointsSatisfying(point -> {}, point -> {}));
+    assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+        .hasLongSumSatisfying(
+            sum -> sum.isNotMonotonic().isDelta().hasPointsSatisfying(point -> {}, point -> {}));
   }
 
   @Test
@@ -668,6 +722,16 @@ class MetricAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasLongSumSatisfying(sum -> sum.isDelta()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasLongSumSatisfying(sum -> sum.isMonotonic()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                    .hasLongSumSatisfying(sum -> sum.isCumulative()))
+        .isInstanceOf(AssertionError.class);
   }
 
   @Test
@@ -686,6 +750,7 @@ class MetricAssertionsTest {
                                 .hasMin(4.0)
                                 .hasCount(3)
                                 .hasBucketBoundaries(10.0)));
+    assertThat(HISTOGRAM_METRIC_DELTA).hasHistogramSatisfying(histogram -> histogram.isDelta());
   }
 
   @Test
@@ -696,6 +761,11 @@ class MetricAssertionsTest {
             () ->
                 assertThat(HISTOGRAM_METRIC)
                     .hasHistogramSatisfying(histogram -> histogram.isDelta()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC_DELTA)
+                    .hasHistogramSatisfying(histogram -> histogram.isCumulative()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
