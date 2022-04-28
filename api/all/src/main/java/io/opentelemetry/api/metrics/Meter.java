@@ -84,6 +84,8 @@ public interface Meter {
    *
    * <p>The callback will only be called with the {@link Meter} is being observed.
    *
+   * <p>Callbacks are expected to abide by the following restrictions:
+   *
    * <ul>
    *   <li>Run in a finite amount of time.
    *   <li>Safe to call repeatedly, across multiple threads.

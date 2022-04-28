@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class AsynchronousMetricStorage<T, U extends ExemplarData> implements MetricStorage {
+public final class AsynchronousMetricStorage<T, U extends ExemplarData> implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);

@@ -5,5 +5,10 @@
 
 package io.opentelemetry.api.metrics;
 
-/** Super interface for observing measurements. */
+/**
+ * Super interface for observing measurements.
+ *
+ * @see ObservableLongMeasurement
+ * @see ObservableDoubleMeasurement
+ */
 public interface ObservableMeasurement {}
