@@ -46,8 +46,6 @@ class IdentityTest {
     // equal.
     SdkMeterProvider meterProvider = builder.build();
 
-    meterProvider.meterBuilder("meter1").at
-
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
 
