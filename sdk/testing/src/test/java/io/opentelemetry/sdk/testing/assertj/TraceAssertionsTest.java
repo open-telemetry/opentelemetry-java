@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
-class OpenTelemetryAssertionsTest {
+class TraceAssertionsTest {
   private static final String TRACE_ID = "00000000000000010000000000000002";
   private static final String SPAN_ID1 = "0000000000000003";
   private static final String SPAN_ID2 = "0000000000000004";

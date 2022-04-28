@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -119,6 +120,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // Visible for testing
   ArrayList<SpanData> getBatch() {
     return worker.batch;
+  }
+
+  // Visible for testing
+  Queue<ReadableSpan> getQueue() {
+    return worker.queue;
   }
 
   @Override
@@ -324,8 +330,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } else {
           logger.log(Level.FINE, "Exporter failed");
         }
-      } catch (RuntimeException e) {
-        logger.log(Level.WARNING, "Exporter threw an Exception", e);
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
+        logger.log(Level.WARNING, "Exporter threw an Exception", t);
       } finally {
         batch.clear();
       }

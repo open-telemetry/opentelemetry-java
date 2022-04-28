@@ -23,12 +23,12 @@ public final class SdkObservableMeasurement
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
-  private final List<AsynchronousMetricStorage<?>> storages;
+  private final List<AsynchronousMetricStorage<?, ?>> storages;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?>> storages) {
+      List<AsynchronousMetricStorage<?, ?>> storages) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.instrumentDescriptor = instrumentDescriptor;
     this.storages = storages;
@@ -45,7 +45,7 @@ public final class SdkObservableMeasurement
   public static SdkObservableMeasurement create(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?>> storages) {
+      List<AsynchronousMetricStorage<?, ?>> storages) {
     return new SdkObservableMeasurement(instrumentationScopeInfo, instrumentDescriptor, storages);
   }
 
@@ -58,7 +58,7 @@ public final class SdkObservableMeasurement
     return instrumentDescriptor;
   }
 
-  List<AsynchronousMetricStorage<?>> getStorages() {
+  List<AsynchronousMetricStorage<?, ?>> getStorages() {
     return storages;
   }
 
@@ -69,7 +69,7 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
-    for (AsynchronousMetricStorage<?> storage : storages) {
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
       storage.recordLong(value, attributes);
     }
   }
@@ -81,7 +81,7 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
-    for (AsynchronousMetricStorage<?> storage : storages) {
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
       storage.recordDouble(value, attributes);
     }
   }

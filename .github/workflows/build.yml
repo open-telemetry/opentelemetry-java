@@ -5,7 +5,12 @@ on:
     branches:
       - main
       - release/*
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,6 +26,8 @@ jobs:
           - 8
           - 11
           - 17
+          - 18
+        # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
             test-java-version: 17
@@ -30,23 +37,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - id: setup-java-8
-        name: Set up Java 8 for tests
+      - id: setup-java-test
+        name: Set up Java ${{ matrix.test-java-version }} for tests
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 8
-          java-package: jre
+          java-version: ${{ matrix.test-java-version }}
 
-      - id: setup-java-11
-        name: Set up Java 11 for tests
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 11
-
-      - id: setup-java-17
-        name: Set up Java 17
+      - id: setup-java
+        name: Set up Java for build
         uses: actions/setup-java@v3
         with:
           distribution: temurin
@@ -58,7 +57,7 @@ jobs:
             build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
-            -Porg.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-17.outputs.path }}
+            -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
 
       - uses: codecov/codecov-action@v3
         if: ${{ matrix.coverage }}
@@ -71,19 +70,20 @@ jobs:
 
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance if external links break
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   misspell-check:
     # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
     # to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
   publish-snapshots:
     # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
     # skipping release branches because the versions in those branches are not snapshots
+    # (also this skips pull requests)
     if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
     runs-on: ubuntu-20.04
     steps:
@@ -91,8 +91,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - id: setup-java-11
-        name: Set up Java 11
+      - id: setup-java
+        name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
@@ -106,3 +106,16 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
+  required-status-check:
+    needs:
+      # markdown-link-check is not required so that pull requests will not be blocked if external
+      # links break
+      # similarly misspell-check is not required so that pull requests will not be blocked if new
+      # misspellings are added to the misspell dictionary
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: needs.build.result != 'success'
+        run: exit 1

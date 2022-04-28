@@ -53,8 +53,8 @@ class AsynchronousMetricStorageTest {
           selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());
   private CollectionInfo collectionInfo;
 
-  private AsynchronousMetricStorage<?> longCounterStorage;
-  private AsynchronousMetricStorage<?> doubleCounterStorage;
+  private AsynchronousMetricStorage<?, ?> longCounterStorage;
+  private AsynchronousMetricStorage<?, ?> doubleCounterStorage;
 
   @BeforeEach
   void setup() {
@@ -252,7 +252,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_ProcessesAttributes() {
-    AsynchronousMetricStorage<?> storage =
+    AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             RegisteredView.create(
                 selector,

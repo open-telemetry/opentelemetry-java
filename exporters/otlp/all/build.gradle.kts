@@ -12,4 +12,5 @@ base.archivesName.set("opentelemetry-exporter-otlp")
 
 dependencies {
   api(project(":exporters:otlp:trace"))
+  api(project(":exporters:otlp:metrics"))
 }

@@ -54,9 +54,9 @@ class CallbackRegistrationTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(CallbackRegistration.class);
 
-  @Mock private AsynchronousMetricStorage<?> storage1;
-  @Mock private AsynchronousMetricStorage<?> storage2;
-  @Mock private AsynchronousMetricStorage<?> storage3;
+  @Mock private AsynchronousMetricStorage<?, ?> storage1;
+  @Mock private AsynchronousMetricStorage<?, ?> storage2;
+  @Mock private AsynchronousMetricStorage<?, ?> storage3;
 
   private SdkObservableMeasurement measurement1;
   private SdkObservableMeasurement measurement2;

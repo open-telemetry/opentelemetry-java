@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -33,14 +34,14 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
    *     recorded.
    */
-  static <T> SynchronousMetricStorage create(
+  static <T, U extends ExemplarData> SynchronousMetricStorage create(
       RegisteredView registeredView,
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
-    Aggregator<T> aggregator =
+    Aggregator<T, U> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, exemplarFilter);
     // We won't be storing this metric.

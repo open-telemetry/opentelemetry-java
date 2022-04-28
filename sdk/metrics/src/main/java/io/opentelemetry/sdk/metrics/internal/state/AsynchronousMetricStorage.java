@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -35,20 +36,20 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class AsynchronousMetricStorage<T> implements MetricStorage {
+final class AsynchronousMetricStorage<T, U extends ExemplarData> implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final MetricDescriptor metricDescriptor;
-  private final TemporalMetricStorage<T> metricStorage;
-  private final Aggregator<T> aggregator;
+  private final TemporalMetricStorage<T, U> metricStorage;
+  private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private final AtomicBoolean isLocked = new AtomicBoolean(true);
   private Map<Attributes, T> accumulations = new HashMap<>();
 
   private AsynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
-      Aggregator<T> aggregator,
+      Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor) {
     this.metricDescriptor = metricDescriptor;
     this.metricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
@@ -59,12 +60,13 @@ final class AsynchronousMetricStorage<T> implements MetricStorage {
   /**
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
-  static <T> AsynchronousMetricStorage<T> create(
+  // TODO(anuraaga): The cast to generic type here looks suspicious.
+  static <T, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
       RegisteredView registeredView, InstrumentDescriptor instrumentDescriptor) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
-    Aggregator<T> aggregator =
+    Aggregator<T, U> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, ExemplarFilter.neverSample());
     return new AsynchronousMetricStorage<>(

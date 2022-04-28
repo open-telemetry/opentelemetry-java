@@ -146,7 +146,7 @@ public class MeterSharedState {
   public final SdkObservableMeasurement registerObservableMeasurement(
       InstrumentDescriptor instrumentDescriptor,
       MeterProviderSharedState meterProviderSharedState) {
-    List<AsynchronousMetricStorage<?>> storages =
+    List<AsynchronousMetricStorage<?, ?>> storages =
         meterProviderSharedState
             .getViewRegistry()
             .findViews(instrumentDescriptor, getInstrumentationScopeInfo())
@@ -155,8 +155,8 @@ public class MeterSharedState {
             .filter(storage -> !storage.isEmpty())
             .collect(toList());
 
-    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>(storages.size());
-    for (AsynchronousMetricStorage<?> storage : storages) {
+    List<AsynchronousMetricStorage<?, ?>> registeredStorages = new ArrayList<>(storages.size());
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
       registeredStorages.add(getMetricStorageRegistry().register(storage));
     }
 

@@ -6,36 +6,37 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-abstract class HistogramAccumulation {
+abstract class ExplicitBucketHistogramAccumulation {
   /**
-   * Creates a new {@link HistogramAccumulation} with the given values. Assume `counts` is read-only
-   * so we don't need a defensive-copy here.
+   * Creates a new {@link ExplicitBucketHistogramAccumulation} with the given values. Assume
+   * `counts` is read-only so we don't need a defensive-copy here.
    *
-   * @return a new {@link HistogramAccumulation} with the given values.
+   * @return a new {@link ExplicitBucketHistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(
+  static ExplicitBucketHistogramAccumulation create(
       double sum, boolean hasMinMax, double min, double max, long[] counts) {
     return create(sum, hasMinMax, min, max, counts, Collections.emptyList());
   }
 
-  static HistogramAccumulation create(
+  static ExplicitBucketHistogramAccumulation create(
       double sum,
       boolean hasMinMax,
       double min,
       double max,
       long[] counts,
-      List<ExemplarData> exemplars) {
-    return new AutoValue_HistogramAccumulation(sum, hasMinMax, min, max, counts, exemplars);
+      List<DoubleExemplarData> exemplars) {
+    return new AutoValue_ExplicitBucketHistogramAccumulation(
+        sum, hasMinMax, min, max, counts, exemplars);
   }
 
-  HistogramAccumulation() {}
+  ExplicitBucketHistogramAccumulation() {}
 
   /**
    * The sum of all measurements recorded.
@@ -69,5 +70,5 @@ abstract class HistogramAccumulation {
   abstract long[] getCounts();
 
   /** Exemplars accumulated during this period. */
-  abstract List<ExemplarData> getExemplars();
+  abstract List<DoubleExemplarData> getExemplars();
 }

@@ -26,12 +26,12 @@ public final class CallbackRegistration {
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final String callbackDescription;
-  private final List<AsynchronousMetricStorage<?>> storages;
+  private final List<AsynchronousMetricStorage<?, ?>> storages;
   private final Runnable callback;
 
   private CallbackRegistration(
       List<InstrumentDescriptor> instrumentDescriptors,
-      List<AsynchronousMetricStorage<?>> storages,
+      List<AsynchronousMetricStorage<?, ?>> storages,
       Runnable callback) {
     this.callbackDescription = callbackDescription(instrumentDescriptors);
     this.storages = storages;
@@ -56,7 +56,7 @@ public final class CallbackRegistration {
         observableMeasurements.stream()
             .map(SdkObservableMeasurement::getInstrumentDescriptor)
             .collect(toList());
-    List<AsynchronousMetricStorage<?>> storages =
+    List<AsynchronousMetricStorage<?, ?>> storages =
         observableMeasurements.stream()
             .flatMap(measurement -> measurement.getStorages().stream())
             .collect(toList());

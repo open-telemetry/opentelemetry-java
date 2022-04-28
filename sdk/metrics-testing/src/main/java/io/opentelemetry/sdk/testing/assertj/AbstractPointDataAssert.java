@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.testing.assertj;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
@@ -62,9 +64,11 @@ public class AbstractPointDataAssert<
    */
   public PointAssertT hasExemplars(ExemplarData... exemplars) {
     isNotNull();
-    Assertions.assertThat(actual.getExemplars())
+    // TODO(anuraaga): This code will be removed so use hacky approach to check ExemplarData.
+    Assertions.assertThat(
+            actual.getExemplars().stream().map(Object.class::cast).collect(Collectors.toList()))
         .as("exemplars")
-        .containsExactlyInAnyOrder(exemplars);
+        .containsExactlyInAnyOrderElementsOf(Arrays.asList(exemplars));
     return myself;
   }
 }

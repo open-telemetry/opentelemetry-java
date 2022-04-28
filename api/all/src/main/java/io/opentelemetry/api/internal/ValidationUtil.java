@@ -5,9 +5,10 @@
 
 package io.opentelemetry.api.internal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.concurrent.Immutable;
+import java.util.regex.Pattern;
 
 /**
  * General internal validation utility methods.
@@ -15,15 +16,90 @@ import javax.annotation.concurrent.Immutable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@Immutable
 public final class ValidationUtil {
 
-  private ValidationUtil() {}
+  public static final String API_USAGE_LOGGER_NAME = "io.opentelemetry.ApiUsageLogging";
 
-  private static final Logger API_USAGE_LOGGER =
-      Logger.getLogger("io.opentelemetry.ApiUsageLogging");
+  private static final Logger API_USAGE_LOGGER = Logger.getLogger(API_USAGE_LOGGER_NAME);
 
-  public static void log(String msg) {
-    API_USAGE_LOGGER.log(Level.FINEST, msg, new AssertionError());
+  /**
+   * Instrument names MUST conform to the following syntax.
+   *
+   * <ul>
+   *   <li>They are not null or empty strings.
+   *   <li>They are case-insensitive, ASCII strings.
+   *   <li>The first character must be an alphabetic character.
+   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', and '-'.
+   *   <li>They can have a maximum length of 63 characters.
+   * </ul>
+   */
+  private static final Pattern VALID_INSTRUMENT_NAME_PATTERN =
+      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,62}");
+
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log at {@link Level#FINEST} and include a stack trace.
+   */
+  public static void log(String message) {
+    log(message, Level.FINEST);
   }
+
+  /**
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
+   *
+   * <p>Log includes a stack trace.
+   */
+  public static void log(String message, Level level) {
+    API_USAGE_LOGGER.log(level, message, new AssertionError());
+  }
+
+  /** Check if the instrument name is valid. If invalid, log a warning. */
+  public static boolean checkValidInstrumentName(String name) {
+    return checkValidInstrumentName(name, "");
+  }
+
+  /**
+   * Check if the instrument name is valid. If invalid, log a warning with the {@code logSuffix}
+   * appended.
+   */
+  public static boolean checkValidInstrumentName(String name, String logSuffix) {
+    if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
+      return true;
+    }
+    log(
+        "Instrument name \""
+            + name
+            + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter."
+            + logSuffix,
+        Level.WARNING);
+    return false;
+  }
+
+  /** Check if the instrument unit is valid. If invalid, log a warning. */
+  public static boolean checkValidInstrumentUnit(String unit) {
+    return checkValidInstrumentUnit(unit, "");
+  }
+
+  /**
+   * Check if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
+   * appended.
+   */
+  public static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
+    if (unit != null
+        && !unit.equals("")
+        && unit.length() < 64
+        && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
+      return true;
+    }
+    log(
+        "Unit \""
+            + unit
+            + "\" is invalid. Instrument unit must be 63 or less ASCII characters."
+            + logSuffix,
+        Level.WARNING);
+    return false;
+  }
+
+  private ValidationUtil() {}
 }

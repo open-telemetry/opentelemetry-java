@@ -1,8 +1,12 @@
 {
+  "retryOn429": true,
+  "aliveStatusCodes": [
+    200,
+    403
+  ],
   "ignorePatterns": [
     {
-      "pattern": "^https://mvnrepository\\.com/artifact/"
+      "pattern": "^https://github.com/open-telemetry/TODO/"
     }
-  ],
-  "retryOn429": true
+  ]
 }

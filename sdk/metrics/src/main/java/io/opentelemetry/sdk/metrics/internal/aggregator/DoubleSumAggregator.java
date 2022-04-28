@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.DoubleAdder;
@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +29,9 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+public final class DoubleSumAggregator
+    extends AbstractSumAggregator<DoubleAccumulation, DoubleExemplarData> {
+  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
 
   /**
    * Constructs a sum aggregator.
@@ -39,14 +40,15 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleSumAggregator(
-      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor,
+      Supplier<DoubleExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
 
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<DoubleAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
@@ -97,15 +99,15 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation, DoubleExemplarData> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
-    Handle(ExemplarReservoir exemplarReservoir) {
+    Handle(DoubleExemplarReservoir exemplarReservoir) {
       super(exemplarReservoir);
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
       return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 

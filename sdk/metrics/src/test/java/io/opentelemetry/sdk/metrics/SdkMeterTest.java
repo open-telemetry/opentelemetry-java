@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -15,14 +16,21 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.LoggingEvent;
 
+@SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 @SuppressLogger(MetricStorageRegistry.class)
 class SdkMeterTest {
+
+  private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
+  private static final String NOOP_INSTRUMENT_NAME = "noop";
+
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
@@ -30,6 +38,105 @@ class SdkMeterTest {
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
+
+  @RegisterExtension
+  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+
+  @Test
+  void builder_InvalidName() {
+    // Counter
+    assertThat(sdkMeter.counterBuilder("1").build())
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.counterBuilder("1").ofDoubles().build())
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(sdkMeter.counterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.counterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .counterBuilder(NOOP_INSTRUMENT_NAME)
+                .ofDoubles()
+                .buildWithCallback(unused -> {}));
+
+    // UpDownCounter
+    assertThat(sdkMeter.upDownCounterBuilder("1").build())
+        .isSameAs(NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.upDownCounterBuilder("1").ofDoubles().build())
+        .isSameAs(NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).ofDoubles().build());
+    assertThat(sdkMeter.upDownCounterBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.upDownCounterBuilder("1").ofDoubles().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
+                .ofDoubles()
+                .buildWithCallback(unused -> {}));
+
+    // Histogram
+    assertThat(sdkMeter.histogramBuilder("1").build())
+        .isSameAs(NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME).build());
+    assertThat(sdkMeter.histogramBuilder("1").ofLongs().build())
+        .isSameAs(NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME).ofLongs().build());
+
+    // Gauage
+    assertThat(sdkMeter.gaugeBuilder("1").buildWithCallback(unused -> {}))
+        .isSameAs(NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
+    assertThat(sdkMeter.gaugeBuilder("1").ofLongs().buildWithCallback(unused -> {}))
+        .isSameAs(
+            NOOP_METER
+                .gaugeBuilder(NOOP_INSTRUMENT_NAME)
+                .ofLongs()
+                .buildWithCallback(unused -> {}));
+
+    assertThat(apiUsageLogs.getEvents())
+        .extracting(LoggingEvent::getMessage)
+        .hasSize(12)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter. Returning noop instrument."));
+  }
+
+  @Test
+  void builder_InvalidUnit() {
+    String unit = "日";
+    // Counter
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.counterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .counterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // UpDownCounter
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.upDownCounterBuilder("my-instrument").setUnit(unit).ofDoubles().build();
+    sdkMeter
+        .upDownCounterBuilder("my-instrument")
+        .setUnit(unit)
+        .ofDoubles()
+        .buildWithCallback(unused -> {});
+
+    // Histogram
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).build();
+    sdkMeter.histogramBuilder("my-instrument").setUnit(unit).ofLongs().build();
+
+    // Gauge
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
+    sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
+
+    assertThat(apiUsageLogs.getEvents())
+        .hasSize(12)
+        .extracting(LoggingEvent::getMessage)
+        .allMatch(
+            log ->
+                log.equals(
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using 1 for instrument my-instrument instead."));
+  }
 
   @Test
   void testLongCounter() {

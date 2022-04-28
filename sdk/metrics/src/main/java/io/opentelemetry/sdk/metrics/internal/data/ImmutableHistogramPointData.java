@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +70,7 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
       @Nullable Double max,
       List<Double> boundaries,
       List<Long> counts,
-      List<ExemplarData> exemplars) {
+      List<DoubleExemplarData> exemplars) {
     if (counts.size() != boundaries.size() + 1) {
       throw new IllegalArgumentException(
           "invalid counts: size should be "
@@ -94,7 +94,6 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         startEpochNanos,
         epochNanos,
         attributes,
-        exemplars,
         sum,
         totalCount,
         min != null,
@@ -102,7 +101,8 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         max != null,
         max != null ? max : -1,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
-        Collections.unmodifiableList(new ArrayList<>(counts)));
+        Collections.unmodifiableList(new ArrayList<>(counts)),
+        exemplars);
   }
 
   ImmutableHistogramPointData() {}

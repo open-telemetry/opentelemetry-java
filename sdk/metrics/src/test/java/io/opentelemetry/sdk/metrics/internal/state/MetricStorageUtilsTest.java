@@ -43,7 +43,7 @@ class MetricStorageUtilsTest {
 
   @Test
   void mergeInPlace() {
-    Aggregator<String> agg = buildConcatAggregator();
+    Aggregator<String, ?> agg = buildConcatAggregator();
     MetricStorageUtils.mergeInPlace(result, toMerge, agg);
 
     assertThat(result).containsOnly(entry(b, "merge(B,B')"), entry(c, "C"));
@@ -51,15 +51,15 @@ class MetricStorageUtilsTest {
 
   @Test
   void diffInPlace() {
-    Aggregator<String> agg = buildConcatAggregator();
+    Aggregator<String, ?> agg = buildConcatAggregator();
     MetricStorageUtils.diffInPlace(result, toMerge, agg);
 
     assertThat(result).containsOnly(entry(b, "diff(B,B')"), entry(c, "C"));
   }
 
   @SuppressWarnings("unchecked")
-  private static Aggregator<String> buildConcatAggregator() {
-    Aggregator<String> agg = mock(Aggregator.class);
+  private static Aggregator<String, ?> buildConcatAggregator() {
+    Aggregator<String, ?> agg = mock(Aggregator.class);
     doAnswer(
             invocation -> {
               String previousCumulative = invocation.getArgument(0);

@@ -9,6 +9,8 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.internal.AttributeUtil;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,18 +24,25 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
   /**
    * Returns a new immutable {@code Event}.
    *
+   * @param spanLimits limits applied to {@code Event}.
    * @param epochNanos epoch timestamp in nanos of the {@code Event}.
    * @param exception the {@link Throwable exception} of the {@code Event}.
    * @param additionalAttributes the additional {@link Attributes} of the {@code Event}.
    * @return a new immutable {@code Event<T>}
    */
   static ExceptionEventData create(
-      long epochNanos, Throwable exception, Attributes additionalAttributes) {
+      SpanLimits spanLimits,
+      long epochNanos,
+      Throwable exception,
+      Attributes additionalAttributes) {
 
-    return new AutoValue_ImmutableExceptionEventData(epochNanos, exception, additionalAttributes);
+    return new AutoValue_ImmutableExceptionEventData(
+        epochNanos, exception, additionalAttributes, spanLimits);
   }
 
   ImmutableExceptionEventData() {}
+
+  protected abstract SpanLimits getSpanLimits();
 
   @Override
   public final String getName() {
@@ -61,7 +70,11 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
     attributesBuilder.put(SemanticAttributes.EXCEPTION_STACKTRACE, stringWriter.toString());
     attributesBuilder.putAll(additionalAttributes);
 
-    return attributesBuilder.build();
+    SpanLimits spanLimits = getSpanLimits();
+    return AttributeUtil.applyAttributesLimit(
+        attributesBuilder.build(),
+        spanLimits.getMaxNumberOfAttributesPerEvent(),
+        spanLimits.getMaxAttributeValueLength());
   }
 
   @Override

@@ -14,8 +14,8 @@ to view a summary of all commits since last release as a reference.
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
-  `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
+    `## Version 1.9.0 (unreleased)`.
+* Run the [Prepare release branch workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
   (one is targeted to the release branch and one is targeted to the `main` branch).
 
@@ -26,22 +26,22 @@ All patch releases should include only bug-fixes, and must avoid adding/modifyin
 In general, patch releases are only made for regressions, memory leaks and deadlocks.
 
 * Backport pull request(s) to the release branch.
-  * Run the [Backport workflow](.github/workflows/backport.yml).
+  * Run the [Backport workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates.
 * Merge a pull request to the release branch updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
-  `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
+    `## Version 1.9.1 (unreleased)`.
+* Run the [Prepare patch release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * Review and merge the pull request that it creates.
 
 ## Making the release
 
-Run the [Release workflow](.github/workflows/release.yml).
+Run the [Release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -52,7 +52,7 @@ Run the [Release workflow](.github/workflows/release.yml).
 
 ## After the release
 
-Run the [Merge change log to main workflow](.github/workflows/merge-change-log-to-main.yml).
+Run the [Merge change log to main workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/merge-change-log-to-main.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.

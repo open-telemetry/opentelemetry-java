@@ -7,13 +7,14 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExplicitBucketHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.List;
 
 /**
@@ -47,15 +48,15 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> Aggregator<T> createAggregator(
+  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return (Aggregator<T>)
-        new DoubleHistogramAggregator(
+    return (Aggregator<T, U>)
+        new DoubleExplicitBucketHistogramAggregator(
             bucketBoundaryArray,
             () ->
-                ExemplarReservoir.filtered(
+                DoubleExemplarReservoir.filtered(
                     exemplarFilter,
-                    ExemplarReservoir.histogramBucketReservoir(
+                    DoubleExemplarReservoir.histogramBucketReservoir(
                         Clock.getDefault(), bucketBoundaries)));
   }
 

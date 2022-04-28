@@ -127,6 +127,7 @@ jobs:
 
   open-issue-on-failure:
     # open an issue on failure because it can be easy to miss CI failure notifications
+    runs-on: ubuntu-latest
     needs: analyze
     if: failure()
     steps:
@@ -134,7 +135,7 @@ jobs:
 
       - name: Create issue
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           gh issue create --title "$GITHUB_WORKFLOW #$GITHUB_RUN_NUMBER failed" \
                           --label bug \
@@ -153,8 +154,8 @@ requests if external links break.
 ```yaml
   # this is not a required check to avoid blocking pull requests if external links break
   markdown-link-check:
-    # release branches are excluded to avoid unnecessary maintenance if external links break
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -164,13 +165,31 @@ requests if external links break.
 
       - name: Run markdown-link-check
         run: |
-          # --quiet displays errors only, making them easier to find in the log
           find . -type f \
                  -name '*.md' \
                  -not -path './CHANGELOG.md' \
-                 | xargs markdown-link-check \
-                         --config .github/scripts/markdown-link-check-config.json \
-                         --quiet
+               | .github/scripts/markdown-link-check-with-retry.sh
+```
+
+`.github/scripts/markdown-link-check-with-retry.sh` helps to reduce sporadic link check failures by
+retrying at a file-by-file level. It fails fast to make errors easier to find in the log.
+
+```bash
+#!/bin/bash -e
+
+retry_count=3
+
+for file in "$@"; do
+  for i in $(seq 1 $retry_count); do
+    if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
+                           "$file"; then
+      break
+    elif [[ $i -eq $retry_count ]]; then
+      exit 1
+    fi
+    sleep 5
+  done
+done
 ```
 
 The file `.github/scripts/markdown-link-check-config.json` is for configuring the markdown link check:
@@ -182,6 +201,18 @@ The file `.github/scripts/markdown-link-check-config.json` is for configuring th
 ```
 
 `retryOn429` helps with GitHub throttling.
+
+If you run into sites sending back `403` to the link checker bot, you can add `403` to the `aliveStatusCodes`, e.g.
+
+```json
+{
+  "retryOn429": true,
+  "aliveStatusCodes": [
+    200,
+    403
+  ]
+}
+```
 
 ### Automated check for misspellings
 
@@ -196,9 +227,8 @@ requests if new misspellings are added to the misspell dictionary.
   # this is not a required check to avoid blocking pull requests if new misspellings are added
   # to the misspell dictionary
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -210,6 +240,17 @@ requests if new misspellings are added to the misspell dictionary.
 
       - name: Run misspell
         run: bin/misspell -error .
+```
+
+If you need to exclude some files for any reason:
+
+```yaml
+      - name: Run misspell
+        run: |
+          find . -type f \
+                 -not -path './somedir/*' \
+               | xargs bin/misspell -error
+
 ```
 
 ### Markdown lint
@@ -234,9 +275,8 @@ Here's an example of doing this with the above `misspell-check` workflow:
 
 ```yaml
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are
-    # added to the misspell dictionary
-    if: ${{ !startsWith(github.ref_name, 'v') }}
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -340,30 +380,30 @@ Here's some sample `RELEASING.md` documentation that goes with the automation be
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
-  `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare release branch workflow](.github/workflows/prepare-release-branch.yml).
+    `## Version 1.9.0 (unreleased)`.
+* Run the [Prepare release branch workflow](https://github.com/open-telemetry/TODO/actions/workflows/prepare-release-branch.yml).
 * Review and merge the two pull requests that it creates
   (one is targeted to the release branch and one is targeted to `main`).
 
 ## Preparing a new patch release
 
 * Backport pull request(s) to the release branch.
-  * Run the [Backport workflow](.github/workflows/backport.yml).
+  * Run the [Backport workflow](https://github.com/open-telemetry/TODO/actions/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates.
 * Merge a pull request to the release branch updating the `CHANGELOG.md`.
   * The heading for the release should include the release version but not the release date, e.g.
-  `## Version 1.9.0 (unreleased)`.
-* Run the [Prepare patch release workflow](.github/workflows/prepare-patch-release.yml).
+    `## Version 1.9.1 (unreleased)`.
+* Run the [Prepare patch release workflow](https://github.com/open-telemetry/TODO/actions/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
 * Review and merge the pull request that it creates.
 
 ## Making the release
 
-Run the [Release workflow](.github/workflows/release.yml).
+Run the [Release workflow](https://github.com/open-telemetry/TODO/actions/workflows/release.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -375,7 +415,7 @@ Run the [Release workflow](.github/workflows/release.yml).
 
 ## After the release
 
-Run the [Merge change log to main workflow](.github/workflows/merge-change-log-to-main.yml).
+Run the [Merge change log to main workflow](https://github.com/open-telemetry/TODO/actions/workflows/merge-change-log-to-main.yml).
 
 * Press the "Run workflow" button, then select the release branch from the dropdown list,
   e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
@@ -397,22 +437,34 @@ This is what we use in the OpenTelemetry Java repositories:
 ```yaml
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 ```
+
+Furthermore:
+
+> When you use the repository's `GITHUB_TOKEN` to perform tasks, events triggered by the
+`GITHUB_TOKEN` will not create a new workflow run. This prevents you from accidentally creating
+recursive workflow runs.
+
+And so it is also helpful to create a [Personal Access Token][] for the bot and use
+`${{ secrets.BOT_TOKEN }}` instead of `${{ secrets.GITHUB_TOKEN }}` in your workflows.
+
+[Personal Access Token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
 ### Prepare release branch
 
 Uses release branch naming convention `release/v*`.
 
-The specifics below depend a lot on your specific version bumping needs.
+The specifics below depend a lot on your specific version updating needs.
 
 For OpenTelemetry Java repositories, the version in `main` always ends with `-SNAPSHOT`,
 so preparing the release branch involves
 
 * removing `-SNAPSHOT` from the version on the release branch
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.2.0`)
-* bumping the version to the next `-SNAPSHOT` on `main`
+* updating the version to the next `-SNAPSHOT` on `main`
   (e.g. updating the version from `1.2.0-SNAPSHOT` to `1.3.0-SNAPSHOT`)
 
 ```yaml
@@ -429,7 +481,8 @@ jobs:
       - name: Create release branch
         id: create-release-branch
         run: |
-          version=$(...)  <-- get the version that is planned to be released
+          # TODO get the version that is planned to be released
+          version=$(...)
           release_branch_name=$(echo $version | sed -E 's,([0-9]+)\.([0-9]+)\.0,release/v\1.\2.x,')
 
           git push origin HEAD:$release_branch_name
@@ -437,9 +490,9 @@ jobs:
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_NAME=$release_branch_name" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Update version
         run: |
-          .github/scripts/update-versions.sh $VERSION-SNAPSHOT $VERSION
+          # TODO update version to $VERSION
 
       - name: Set up git name
         run: |
@@ -447,16 +500,18 @@ jobs:
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
-      - name: Create pull request against release branch
+      - name: Create pull request against the release branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Prepare release $VERSION"
-          git commit -a -m "$msg"
-          git push origin HEAD:prepare-release-$VERSION
-          gh pr create --title "[$RELEASE_BRANCH_NAME] $msg" \
-                       --body "$msg" \
-                       --head prepare-release-$VERSION \
+          message="Prepare release $VERSION"
+          branch=prepare-release-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$RELEASE_BRANCH_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
@@ -464,7 +519,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Bump version on main
+      - name: Update version
         run: |
           version=$(...)  <-- get the minor version that is planning to be released
           if [[ $version =~ ([0-9]+).([0-9]+).0 ]]; then
@@ -475,7 +530,9 @@ jobs:
             exit 1
           fi
           next_version="$major.$((minor + 1)).0"
-          .github/scripts/update-versions.sh $version-SNAPSHOT $next_version-SNAPSHOT
+          # TODO update version to $next_version
+
+          echo "NEXT_VERSION=$next_version" >> $GITHUB_ENV
 
       - name: Set up git name
         run: |
@@ -485,23 +542,26 @@ jobs:
 
       - name: Create pull request against main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Bump version"
-          git commit -a -m "$msg"
-          git push origin HEAD:bump-snapshot-version
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --head bump-snapshot-version \
+          message="Update version to $NEXT_VERSION"
+          body="Update version to \`$NEXT_VERSION\`."
+          branch=update-version-to-$NEXT_VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --head $branch \
                        --base main
 ```
 
 ### Prepare patch
 
-The specifics depend a lot on the build tool and your version bumping needs.
+The specifics depend a lot on the build tool and your version updating needs.
 
 For OpenTelemetry Java repositories, we have a workflow which generates a pull request
-against the release branch to bump the version (e.g. from `1.2.0` to `1.2.1`).
+against the release branch to update the version (e.g. from `1.2.0` to `1.2.1`).
 
 ```yaml
 name: Prepare patch release
@@ -525,11 +585,10 @@ jobs:
             exit 1
           fi
           echo "VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
-          echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
-      - name: Bump version
+      - name: Update version
         run: |
-          .github/scripts/update-versions.sh $PRIOR_VERSION $VERSION
+          # TODO update version to $VERSION
 
       - name: Set up git name
         run: |
@@ -539,14 +598,16 @@ jobs:
 
       - name: Create pull request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Prepare release $VERSION"
-          git commit -a -m "$msg"
-          git push origin HEAD:prepare-release-$VERSION
-          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
-                       --body "$msg" \
-                       --head prepare-release-$VERSION \
+          message="Prepare release $VERSION"
+          branch=prepare-release-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$GITHUB_REF_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -582,18 +643,19 @@ jobs:
       - name: Create pull request
         env:
           NUMBER: ${{ github.event.inputs.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           commit=$(gh pr view $NUMBER --json mergeCommit --jq .mergeCommit.oid)
           title=$(gh pr view $NUMBER --json title --jq .title)
           url=$(gh pr view $NUMBER --json url --jq .url)
 
-          git cherry-pick $commit
-          git push origin HEAD:backport-$NUMBER-to-$GITHUB_REF_NAME
+          branch=backport-$NUMBER-to-${GITHUB_REF_NAME//\//-}
 
+          git cherry-pick $commit
+          git push origin HEAD:$branch
           gh pr create --title "[$GITHUB_REF_NAME] $title" \
-                       --body "Clean cherry-pick of #$NUMBER to the $GITHUB_REF_NAME branch." \
-                       --head backport-$NUMBER-to-$GITHUB_REF_NAME \
+                       --body "Clean cherry-pick of #$NUMBER to the \`$GITHUB_REF_NAME\` branch." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -616,20 +678,20 @@ jobs:
           if [[ $patch == 0 ]]; then
             if [[ $minor == 0 ]]; then
               prior_major=$((major - 1))
-              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md  | head -1)
+              prior_minor=$(grep -Po "^## Version $prior_major.\K([0-9]+)" CHANGELOG.md | head -1)
               prior_version="$prior_major.$prior_minor"
             else
               prior_version="$major.$((minor - 1)).0"
             fi
           else
-              prior_version="$major.$minor.$((patch - 1))"
+            prior_version="$major.$minor.$((patch - 1))"
           fi
           echo "VERSION=$version" >> $GITHUB_ENV
           echo "PRIOR_VERSION=$prior_version" >> $GITHUB_ENV
 
       - name: Generate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # conditional block not indented because of the heredoc
           if [[ $VERSION != *.0 ]]; then
@@ -639,14 +701,17 @@ jobs:
           EOF
           fi
 
-          # TODO this is dependent on the conventions you follow in your CHANGELOG.md
+          # TODO the initial sed range match is dependent on the your CHANGELOG.md format
+
+          # the last complex regex is needed because markdown docs render newlines as soft wraps
+          # while release notes render them as line breaks
           sed -n "/^## Version $VERSION/,/^## Version /p" CHANGELOG.md \
             | tail -n +2 \
             | head -n -1 \
             | perl -0pe 's/^\n+//g' \
             | perl -0pe 's/\n+$/\n/g' \
             | sed -r "s,\[#([0-9]+)]\(https://github.com/$GITHUB_REPOSITORY/(pull|issues)/[0-9]+\),#\1," \
-            | perl -0pe 's/\n +/ /g' \
+            | perl -0pe 's/(?<!\n)\n *(?!\n)(?![-*] )(?![1-9]+\. )/ /g' \
             >> release-notes.txt
 ```
 
@@ -662,7 +727,7 @@ hitting the "Publish release" button).
 ```yaml
       - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
@@ -675,25 +740,30 @@ hitting the "Publish release" button).
 
 ```yaml
       - name: Update the change log with the release date
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           sed -ri "s/## Version $VERSION .*/## Version $VERSION ($date)/" CHANGELOG.md
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request against the release branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Add $VERSION release date to the change log"
-          git commit -a -m "$msg"
-          git push origin HEAD:add-$VERSION-release-date
-          gh pr create --title "[$GITHUB_REF_NAME] $msg" \
-                       --body "$msg" \
-                       --head add-$VERSION-release-date \
+          message="Add the release date for $VERSION to the change log"
+          branch=add-release-date-for-$VERSION
+
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "[$GITHUB_REF_NAME] $message" \
+                       --body "$message." \
+                       --head $branch \
                        --base $GITHUB_REF_NAME
 ```
 
@@ -702,12 +772,18 @@ hitting the "Publish release" button).
 For example to send a PR to notify/update another repository that a new release is available
 as part of the release workflow.
 
+Note that the [Personal Access Token][] used will need `workflow` (Update GitHub Action workflows)
+permission since if workflows have been updated upstream it will be updating the workflows of the
+origin repository when it pushes the branch.
+
+[Personal Access Token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
 ```yaml
       - uses: actions/checkout@v3
         with:
           repository: opentelemetry-java-bot/opentelemetry-operator
           # this is the PAT used for "git push" below
-          token: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+          token: ${{ secrets.BOT_TOKEN }}
 
       - name: Initialize pull request branch
         run: |
@@ -715,32 +791,33 @@ as part of the release workflow.
           git fetch upstream
           git checkout -b update-opentelemetry-javaagent-to-$VERSION upstream/main
 
-      - name: Bump version
+      - name: Update version
         run: |
           echo $VERSION > autoinstrumentation/java/version.txt
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
       - name: Create pull request against opentelemetry-operator
         env:
           # this is the PAT used for "gh pr create" below
-          GITHUB_TOKEN: ${{ secrets.OPENTELEMETRY_JAVA_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          msg="Update opentelemetry-javaagent version to $VERSION"
-          git commit -a -m "$msg"
+          message="Update the javaagent version to $VERSION"
+          body="Update the javaagent version to \`$VERSION\`."
 
           # gh pr create doesn't have a way to explicitly specify different head and base
           # repositories currently, but it will implicitly pick up the head from a different
           # repository if you set up a tracking branch
 
+          git commit -a -m "$message"
           git push --set-upstream origin update-opentelemetry-javaagent-to-$VERSION
-
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --repo open-telemetry/opentelemetry-operator
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --repo open-telemetry/opentelemetry-operator \
                        --base main
 ```
 
@@ -761,7 +838,7 @@ on:
 
 jobs:
   create-pull-request:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -773,21 +850,25 @@ jobs:
 
       - name: Set git user
         run: |
+          # TODO replace opentelemetry-java-bot info with your bot account
           git config user.name opentelemetry-java-bot
           git config user.email 97938252+opentelemetry-java-bot@users.noreply.github.com
 
         # this will fail if there have been conflicting change log updates introduced in main
       - name: Create pull request against main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply
-          msg="Merge change log updates from $GITHUB_REF_NAME to main"
-          git commit -a -m "$msg"
-          git push origin HEAD:merge-change-log-updates-to-main
-          gh pr create --title "$msg" \
-                       --body "$msg" \
-                       --head merge-change-log-updates-to-main \
+          message="Merge change log updates from $GITHUB_REF_NAME"
+          body="Merge change log updates from \`$GITHUB_REF_NAME\`."
+          branch=merge-change-log-updates-from-${GITHUB_REF_NAME//\//-}
+
+          git format-patch --stdout HEAD..origin/$GITHUB_REF_NAME CHANGELOG.md | git apply --3way
+          git commit -a -m "$message"
+          git push origin HEAD:$branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --head $branch \
                        --base main
 ```
 

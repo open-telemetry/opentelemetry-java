@@ -18,10 +18,12 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -47,7 +49,7 @@ class SdkLongHistogramTest {
   @Test
   void record_PreventNullAttributes() {
     assertThatThrownBy(
-            () -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().record(1, null))
+            () -> sdkMeter.histogramBuilder("testHistogram").ofLongs().build().record(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -56,7 +58,7 @@ class SdkLongHistogramTest {
   void bound_PreventNullAttributes() {
     assertThatThrownBy(
             () ->
-                ((SdkLongHistogram) sdkMeter.histogramBuilder("testRecorder").ofLongs().build())
+                ((SdkLongHistogram) sdkMeter.histogramBuilder("testHistogram").ofLongs().build())
                     .bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
@@ -64,9 +66,9 @@ class SdkLongHistogramTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     BoundLongHistogram bound =
-        ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("key", "value").build());
+        ((SdkLongHistogram) longHistogram).bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
@@ -76,23 +78,23 @@ class SdkLongHistogramTest {
 
   @Test
   void collectMetrics_WithEmptyAttributes() {
-    LongHistogram longRecorder =
+    LongHistogram longHistogram =
         sdkMeter
-            .histogramBuilder("testRecorder")
+            .histogramBuilder("testHistogram")
             .ofLongs()
             .setDescription("description")
             .setUnit("By")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    longRecorder.record(12, Attributes.empty());
-    longRecorder.record(12);
+    longHistogram.record(12, Attributes.empty());
+    longHistogram.record(12);
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testRecorder")
+                    .hasName("testHistogram")
                     .hasDescription("description")
                     .hasUnit("By")
                     .hasDoubleHistogram()
@@ -115,25 +117,25 @@ class SdkLongHistogramTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     BoundLongHistogram bound =
-        ((SdkLongHistogram) longRecorder).bind(Attributes.builder().put("K", "V").build());
+        ((SdkLongHistogram) longHistogram).bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longRecorder.record(9, Attributes.empty());
+      longHistogram.record(9, Attributes.empty());
       bound.record(123);
-      longRecorder.record(14, Attributes.empty());
+      longHistogram.record(14, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
-      longRecorder.record(1, Attributes.builder().put("K", "V").build());
+      longHistogram.record(1, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                      .hasName("testRecorder")
+                      .hasName("testHistogram")
                       .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
@@ -158,14 +160,14 @@ class SdkLongHistogramTest {
       // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
-      longRecorder.record(17, Attributes.empty());
+      longHistogram.record(17, Attributes.empty());
       assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                      .hasName("testRecorder")
+                      .hasName("testHistogram")
                       .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
@@ -189,6 +191,78 @@ class SdkLongHistogramTest {
     } finally {
       bound.unbind();
     }
+  }
+
+  @Test
+  void collectMetrics_ExponentialHistogramAggregation() {
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setResource(RESOURCE)
+            .setClock(testClock)
+            .registerMetricReader(sdkMeterReader)
+            .registerView(
+                InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
+                View.builder()
+                    .setAggregation(ExponentialHistogramAggregation.create(-1, 5))
+                    .build())
+            .build();
+    LongHistogram longHistogram =
+        sdkMeterProvider
+            .get(getClass().getName())
+            .histogramBuilder("testHistogram")
+            .setDescription("description")
+            .setUnit("ms")
+            .ofLongs()
+            .build();
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    longHistogram.record(12L, Attributes.builder().put("key", "value").build());
+    longHistogram.record(12L);
+    longHistogram.record(13L);
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("testHistogram")
+                    .hasDescription("description")
+                    .hasUnit("ms")
+                    .hasExponentialHistogram()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point -> {
+                          assertThat(point)
+                              .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                              .hasEpochNanos(testClock.now())
+                              .hasAttributes(Attributes.empty())
+                              .hasCount(2)
+                              .hasSum(25)
+                              .hasScale(-1)
+                              .hasZeroCount(0);
+                          assertThat(point.getPositiveBuckets())
+                              .hasOffset(1)
+                              .hasCounts(Collections.singletonList(2L));
+                          assertThat(point.getNegativeBuckets())
+                              .hasOffset(0)
+                              .hasCounts(Collections.emptyList());
+                        },
+                        point -> {
+                          assertThat(point)
+                              .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                              .hasEpochNanos(testClock.now())
+                              .hasAttributes(Attributes.builder().put("key", "value").build())
+                              .hasCount(1)
+                              .hasSum(12)
+                              .hasScale(-1)
+                              .hasZeroCount(0);
+                          assertThat(point.getPositiveBuckets())
+                              .hasOffset(1)
+                              .hasCounts(Collections.singletonList(1L));
+                          assertThat(point.getNegativeBuckets())
+                              .hasOffset(0)
+                              .hasCounts(Collections.emptyList());
+                        }));
   }
 
   @Test
@@ -218,11 +292,11 @@ class SdkLongHistogramTest {
 
   @Test
   void stressTest() {
-    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((SdkLongHistogram) longRecorder)
+            .setInstrument((SdkLongHistogram) longHistogram)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -230,13 +304,13 @@ class SdkLongHistogramTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new SdkLongHistogramTest.OperationUpdaterDirectCall(longRecorder, "K", "V")));
+              new SdkLongHistogramTest.OperationUpdaterDirectCall(longHistogram, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
               1,
               new SdkLongHistogramTest.OperationUpdaterWithBinding(
-                  ((SdkLongHistogram) longRecorder)
+                  ((SdkLongHistogram) longHistogram)
                       .bind(Attributes.builder().put("K", "V").build()))));
     }
 
@@ -247,7 +321,7 @@ class SdkLongHistogramTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testRecorder")
+                    .hasName("testHistogram")
                     .hasDoubleHistogram()
                     .points()
                     .satisfiesExactly(
@@ -264,11 +338,11 @@ class SdkLongHistogramTest {
   void stressTest_WithDifferentLabelSet() {
     String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((SdkLongHistogram) longRecorder)
+            .setInstrument((SdkLongHistogram) longHistogram)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -277,14 +351,14 @@ class SdkLongHistogramTest {
               1_000,
               2,
               new SdkLongHistogramTest.OperationUpdaterDirectCall(
-                  longRecorder, keys[i], values[i])));
+                  longHistogram, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
               2,
               new SdkLongHistogramTest.OperationUpdaterWithBinding(
-                  ((SdkLongHistogram) longRecorder)
+                  ((SdkLongHistogram) longHistogram)
                       .bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
@@ -295,7 +369,7 @@ class SdkLongHistogramTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testRecorder")
+                    .hasName("testHistogram")
                     .hasDoubleHistogram()
                     .points()
                     .allSatisfy(
@@ -315,38 +389,38 @@ class SdkLongHistogramTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundLongHistogram boundLongValueRecorder;
+    private final BoundLongHistogram boundLongHistogram;
 
-    private OperationUpdaterWithBinding(BoundLongHistogram boundLongValueRecorder) {
-      this.boundLongValueRecorder = boundLongValueRecorder;
+    private OperationUpdaterWithBinding(BoundLongHistogram boundLongHistogram) {
+      this.boundLongHistogram = boundLongHistogram;
     }
 
     @Override
     void update() {
-      boundLongValueRecorder.record(9);
+      boundLongHistogram.record(9);
     }
 
     @Override
     void cleanup() {
-      boundLongValueRecorder.unbind();
+      boundLongHistogram.unbind();
     }
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
 
-    private final LongHistogram longRecorder;
+    private final LongHistogram longHistogram;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(LongHistogram longRecorder, String key, String value) {
-      this.longRecorder = longRecorder;
+    private OperationUpdaterDirectCall(LongHistogram longHistogram, String key, String value) {
+      this.longHistogram = longHistogram;
       this.key = key;
       this.value = value;
     }
 
     @Override
     void update() {
-      longRecorder.record(11, Attributes.builder().put(key, value).build());
+      longHistogram.record(11, Attributes.builder().put(key, value).build());
     }
 
     @Override

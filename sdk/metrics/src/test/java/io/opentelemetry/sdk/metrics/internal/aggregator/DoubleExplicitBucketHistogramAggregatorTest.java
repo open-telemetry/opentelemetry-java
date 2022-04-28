@@ -15,12 +15,12 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +36,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class DoubleHistogramAggregatorTest {
+class DoubleExplicitBucketHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock DoubleExemplarReservoir reservoir;
 
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final Resource RESOURCE = Resource.getDefault();
@@ -46,31 +46,33 @@ class DoubleHistogramAggregatorTest {
       InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final DoubleHistogramAggregator aggregator =
-      new DoubleHistogramAggregator(boundaries, ExemplarReservoir::noSamples);
+  private static final DoubleExplicitBucketHistogramAggregator aggregator =
+      new DoubleExplicitBucketHistogramAggregator(boundaries, DoubleExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
-    assertThat(aggregator.createHandle()).isInstanceOf(DoubleHistogramAggregator.Handle.class);
+    assertThat(aggregator.createHandle())
+        .isInstanceOf(DoubleExplicitBucketHistogramAggregator.Handle.class);
   }
 
   @Test
   void testRecordings() {
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(20);
     aggregatorHandle.recordLong(5);
     aggregatorHandle.recordLong(150);
     aggregatorHandle.recordLong(2000);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 2175, /* hasMinMax= */ true, 5d, 2000d, new long[] {1, 1, 1, 1}));
   }
 
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -80,34 +82,36 @@ class DoubleHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
-    DoubleHistogramAggregator aggregator =
-        new DoubleHistogramAggregator(boundaries, () -> reservoir);
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    DoubleExplicitBucketHistogramAggregator aggregator =
+        new DoubleExplicitBucketHistogramAggregator(boundaries, () -> reservoir);
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 0, 0, new long[] {1, 0, 0, 0}, exemplars));
   }
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(100);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 100, /* hasMinMax= */ true, 100d, 100d, new long[] {0, 1, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 0d, 0d, new long[] {1, 0, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
@@ -116,18 +120,18 @@ class DoubleHistogramAggregatorTest {
   void accumulateData() {
     assertThat(aggregator.accumulateDoubleMeasurement(11.1, Attributes.empty(), Context.current()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 11.1, /* hasMinMax= */ true, 11.1, 11.1, new long[] {0, 1, 0, 0}));
     assertThat(aggregator.accumulateLongMeasurement(10, Attributes.empty(), Context.current()))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 10.0, /* hasMinMax= */ true, 10.0, 10.0, new long[] {1, 0, 0, 0}));
   }
 
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -137,8 +141,8 @@ class DoubleHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -149,16 +153,16 @@ class DoubleHistogramAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 2));
-    HistogramAccumulation previousAccumulation =
-        HistogramAccumulation.create(
+    ExplicitBucketHistogramAccumulation previousAccumulation =
+        ExplicitBucketHistogramAccumulation.create(
             2, /* hasMinMax= */ true, 1d, 2d, new long[] {1, 1, 0}, previousExemplars);
-    HistogramAccumulation nextAccumulation =
-        HistogramAccumulation.create(
+    ExplicitBucketHistogramAccumulation nextAccumulation =
+        ExplicitBucketHistogramAccumulation.create(
             2, /* hasMinMax= */ true, 2d, 3d, new long[] {0, 0, 2}, exemplars);
     // Assure most recent exemplars are kept.
     assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 4, /* hasMinMax= */ true, 1d, 3d, new long[] {1, 1, 2}, exemplars));
   }
 
@@ -167,48 +171,48 @@ class DoubleHistogramAggregatorTest {
     // If min / max is null for both accumulations set min / max to null
     assertThat(
             aggregator.merge(
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()),
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList())))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
     // If min / max is non-null for only one accumulation set min / max to it
     assertThat(
             aggregator.merge(
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()),
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList())))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
     assertThat(
             aggregator.merge(
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList()),
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList())))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
     // If both accumulations have min / max compute the min / max
     assertThat(
             aggregator.merge(
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ true, 1d, 1d, new long[] {}, Collections.emptyList()),
-                HistogramAccumulation.create(
+                ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ true, 2d, 2d, new long[] {}, Collections.emptyList())))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
   }
 
   @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -218,8 +222,8 @@ class DoubleHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<ExemplarData> previousExemplars =
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -230,22 +234,23 @@ class DoubleHistogramAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 2));
-    HistogramAccumulation previousAccumulation =
-        HistogramAccumulation.create(
+    ExplicitBucketHistogramAccumulation previousAccumulation =
+        ExplicitBucketHistogramAccumulation.create(
             2, /* hasMinMax= */ true, 1d, 2d, new long[] {1, 1, 2}, previousExemplars);
-    HistogramAccumulation nextAccumulation =
-        HistogramAccumulation.create(
+    ExplicitBucketHistogramAccumulation nextAccumulation =
+        ExplicitBucketHistogramAccumulation.create(
             5, /* hasMinMax= */ true, 2d, 3d, new long[] {2, 2, 2}, exemplars);
     // Assure most recent exemplars are kept.
     assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 3, /* hasMinMax= */ false, -1, -1, new long[] {1, 1, 0}, exemplars));
   }
 
   @Test
   void toMetricData() {
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -268,7 +273,7 @@ class DoubleHistogramAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
+    DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             attributes,
             2L,
@@ -278,8 +283,8 @@ class DoubleHistogramAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    HistogramAccumulation accumulation =
-        HistogramAccumulation.create(
+    ExplicitBucketHistogramAccumulation accumulation =
+        ExplicitBucketHistogramAccumulation.create(
             2,
             /* hasMinMax= */ true,
             2d,
@@ -324,17 +329,20 @@ class DoubleHistogramAggregatorTest {
                 .length)
         .isEqualTo(boundaries.length + 1);
 
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);
-    HistogramAccumulation histogramAccumulation =
+    ExplicitBucketHistogramAccumulation explicitBucketHistogramAccumulation =
         aggregatorHandle.accumulateThenReset(Attributes.empty());
-    assertThat(histogramAccumulation).isNotNull();
-    assertThat(histogramAccumulation.getCounts().length).isEqualTo(boundaries.length + 1);
+    assertThat(explicitBucketHistogramAccumulation).isNotNull();
+    assertThat(explicitBucketHistogramAccumulation.getCounts().length)
+        .isEqualTo(boundaries.length + 1);
   }
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     Histogram summarizer = new Histogram();
     ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
     int numberOfThreads = updates.size();
@@ -363,16 +371,16 @@ class DoubleHistogramAggregatorTest {
 
     assertThat(summarizer.accumulation)
         .isEqualTo(
-            HistogramAccumulation.create(
+            ExplicitBucketHistogramAccumulation.create(
                 1010000, /* hasMinMax= */ true, 1d, 23d, new long[] {50000, 50000, 0, 0}));
   }
 
   private static final class Histogram {
     private final Object mutex = new Object();
 
-    @Nullable private HistogramAccumulation accumulation;
+    @Nullable private ExplicitBucketHistogramAccumulation accumulation;
 
-    void process(@Nullable HistogramAccumulation other) {
+    void process(@Nullable ExplicitBucketHistogramAccumulation other) {
       if (other == null) {
         return;
       }

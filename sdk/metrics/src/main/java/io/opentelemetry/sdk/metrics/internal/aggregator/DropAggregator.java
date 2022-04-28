@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +22,14 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregator implements Aggregator<Object> {
+public final class DropAggregator implements Aggregator<Object, DoubleExemplarData> {
 
   private static final Object ACCUMULATION = new Object();
 
-  public static final Aggregator<Object> INSTANCE = new DropAggregator();
+  public static final Aggregator<Object, DoubleExemplarData> INSTANCE = new DropAggregator();
 
-  private static final AggregatorHandle<Object> HANDLE =
-      new AggregatorHandle<Object>(ExemplarReservoir.noSamples()) {
+  private static final AggregatorHandle<Object, DoubleExemplarData> HANDLE =
+      new AggregatorHandle<Object, DoubleExemplarData>(DoubleExemplarReservoir.noSamples()) {
         @Override
         protected void doRecordLong(long value) {}
 
@@ -37,7 +37,7 @@ public final class DropAggregator implements Aggregator<Object> {
         protected void doRecordDouble(double value) {}
 
         @Override
-        protected Object doAccumulateThenReset(List<ExemplarData> exemplars) {
+        protected Object doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
           return ACCUMULATION;
         }
       };
@@ -45,7 +45,7 @@ public final class DropAggregator implements Aggregator<Object> {
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<Object> createHandle() {
+  public AggregatorHandle<Object, DoubleExemplarData> createHandle() {
     return HANDLE;
   }
 

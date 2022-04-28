@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -15,11 +16,11 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 class SerializerTest {
 
-  private static final Attributes KP_VP_ATTR = Attributes.of(stringKey("kp"), "vp");
+  private static final AttributeKey<String> TYPE = stringKey("type");
 
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
@@ -51,7 +52,10 @@ class SerializerTest {
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "mcds"),
+                      5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -64,121 +68,142 @@ class SerializerTest {
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "nmcds"),
+                      5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "mdds"),
+                      5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "nmdds"),
+                      5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableLongPointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "mcls"),
+                      5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableLongPointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "nmcls"),
+                      5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
               Collections.singletonList(
                   ImmutableLongPointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "mdls"),
+                      5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
               Collections.singletonList(
                   ImmutableLongPointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "nmdls"),
+                      5))));
 
   private static final MetricData DOUBLE_GAUGE =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L, 1633950672000000000L, Attributes.of(TYPE, "dg"), 5))));
   private static final MetricData LONG_GAUGE =
       ImmutableMetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableLongPointData.create(
-                      1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
+                      1633947011000000000L, 1633950672000000000L, Attributes.of(TYPE, "lg"), 5))));
   private static final MetricData SUMMARY =
       ImmutableMetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableSummaryData.create(
               Collections.singletonList(
                   ImmutableSummaryPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
-                      KP_VP_ATTR,
+                      Attributes.of(TYPE, "s"),
                       5,
                       7,
                       Arrays.asList(
@@ -189,7 +214,7 @@ class SerializerTest {
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
@@ -204,7 +229,7 @@ class SerializerTest {
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
-                          ImmutableLongExemplarData.create(
+                          ImmutableDoubleExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
                               SpanContext.create(
@@ -218,7 +243,7 @@ class SerializerTest {
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
@@ -226,14 +251,14 @@ class SerializerTest {
                   ImmutableHistogramPointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
-                      KP_VP_ATTR,
+                      Attributes.of(TYPE, "hs"),
                       1.0,
                       null,
                       null,
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
-                          ImmutableLongExemplarData.create(
+                          ImmutableDoubleExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
                               SpanContext.create(
@@ -247,7 +272,7 @@ class SerializerTest {
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
@@ -258,14 +283,14 @@ class SerializerTest {
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.create("full", "version", null),
           "instrument.name",
-          "description",
+          "unused",
           "1",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
-                      KP_VP_ATTR.toBuilder().put("animal", "bear").build(),
+                      Attributes.of(TYPE, "dgma", stringKey("animal"), "bear"),
                       8))));
 
   @Test
@@ -294,56 +319,30 @@ class SerializerTest {
         .isEqualTo(
             "# TYPE instrument_name_total counter\n"
                 + "# HELP instrument_name_total description\n"
-                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672000\n"
+                + "instrument_name_total{type=\"mcds\"} 5.0 1633950672000\n"
+                + "instrument_name_total{type=\"mcls\"} 5.0 1633950672000\n"
                 + "# TYPE instrument_name gauge\n"
                 + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name_total counter\n"
-                + "# HELP instrument_name_total description\n"
-                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name summary\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_count{kp=\"vp\"} 5.0 1633950672000\n"
-                + "instrument_name_sum{kp=\"vp\"} 7.0 1633950672000\n"
-                + "instrument_name{kp=\"vp\",quantile=\"0.9\"} 0.1 1633950672000\n"
-                + "instrument_name{kp=\"vp\",quantile=\"0.99\"} 0.3 1633950672000\n"
-                + "# TYPE instrument_name histogram\n"
-                + "# HELP instrument_name description\n"
+                + "instrument_name{type=\"nmcds\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"mdds\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"nmdds\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"nmcls\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"mdls\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"nmdls\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"dg\"} 5.0 1633950672000\n"
+                + "instrument_name{type=\"lg\"} 5.0 1633950672000\n"
+                + "instrument_name_count{type=\"s\"} 5.0 1633950672000\n"
+                + "instrument_name_sum{type=\"s\"} 7.0 1633950672000\n"
+                + "instrument_name{type=\"s\",quantile=\"0.9\"} 0.1 1633950672000\n"
+                + "instrument_name{type=\"s\",quantile=\"0.99\"} 0.3 1633950672000\n"
                 + "instrument_name_count 2.0 1633950672000\n"
                 + "instrument_name_sum 1.0 1633950672000\n"
                 + "instrument_name_bucket{le=\"+Inf\"} 2.0 1633950672000\n"
-                + "# TYPE instrument_name histogram\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_count{kp=\"vp\"} 2.0 1633950672000\n"
-                + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
+                + "instrument_name_count{type=\"hs\"} 2.0 1633950672000\n"
+                + "instrument_name_sum{type=\"hs\"} 1.0 1633950672000\n"
+                + "instrument_name_bucket{type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
                 + "instrument_name 7.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{animal=\"bear\",kp=\"vp\"} 8.0 1633950672000\n");
+                + "instrument_name{animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -367,51 +366,25 @@ class SerializerTest {
         .isEqualTo(
             "# TYPE instrument_name counter\n"
                 + "# HELP instrument_name description\n"
-                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name counter\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_total{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "# TYPE instrument_name summary\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_count{kp=\"vp\"} 5.0 1633950672.000\n"
-                + "instrument_name_sum{kp=\"vp\"} 7.0 1633950672.000\n"
-                + "instrument_name{kp=\"vp\",quantile=\"0.9\"} 0.1 1633950672.000\n"
-                + "instrument_name{kp=\"vp\",quantile=\"0.99\"} 0.3 1633950672.000\n"
-                + "# TYPE instrument_name histogram\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_count{kp=\"vp\"} 2.0 1633950672.000\n"
-                + "instrument_name_sum{kp=\"vp\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{kp=\"vp\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
+                + "instrument_name_total{type=\"mcds\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"nmcds\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"mdds\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"nmdds\"} 5.0 1633950672.000\n"
+                + "instrument_name_total{type=\"mcls\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"nmcls\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"mdls\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"nmdls\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"dg\"} 5.0 1633950672.000\n"
+                + "instrument_name{type=\"lg\"} 5.0 1633950672.000\n"
+                + "instrument_name_count{type=\"s\"} 5.0 1633950672.000\n"
+                + "instrument_name_sum{type=\"s\"} 7.0 1633950672.000\n"
+                + "instrument_name{type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
+                + "instrument_name{type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
+                + "instrument_name_count{type=\"hs\"} 2.0 1633950672.000\n"
+                + "instrument_name_sum{type=\"hs\"} 1.0 1633950672.000\n"
+                + "instrument_name_bucket{type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "instrument_name 7.0 1633950672.000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{animal=\"bear\",kp=\"vp\"} 8.0 1633950672.000\n"
+                + "instrument_name{animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 

@@ -16,12 +16,12 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock LongExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
@@ -49,7 +49,7 @@ class LongSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
-          ExemplarReservoir::noSamples);
+          LongExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -58,7 +58,8 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
@@ -71,7 +72,8 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
@@ -84,7 +86,8 @@ class LongSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
@@ -101,8 +104,8 @@ class LongSumAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
@@ -111,7 +114,7 @@ class LongSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
         new LongSumAggregator(
@@ -122,7 +125,8 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG),
             () -> reservoir);
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(LongAccumulation.create(0, exemplars));
@@ -130,8 +134,8 @@ class LongSumAggregatorTest {
 
   @Test
   void mergeAndDiff() {
-    ExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
             Attributes.empty(),
             2L,
             SpanContext.create(
@@ -140,14 +144,14 @@ class LongSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         LongSumAggregator aggregator =
             new LongSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                ExemplarReservoir::noSamples);
+                LongExemplarReservoir::noSamples);
         LongAccumulation merged =
             aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(merged.getValue())
@@ -172,7 +176,8 @@ class LongSumAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -206,8 +211,8 @@ class LongSumAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
             attributes,
             2L,
             SpanContext.create(
