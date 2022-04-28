@@ -26,7 +26,6 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -150,10 +149,7 @@ class RetryInterceptorTest {
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class)
-        .matches(
-            (Predicate<Throwable>)
-                throwable -> throwable.getMessage().equalsIgnoreCase("connect timed out"));
+        .isInstanceOf(SocketTimeoutException.class);
 
     verify(isRetryableException, times(5)).apply(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
@@ -170,10 +166,7 @@ class RetryInterceptorTest {
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class)
-        .matches(
-            (Predicate<Throwable>)
-                throwable -> throwable.getMessage().equalsIgnoreCase("connect timed out"));
+        .isInstanceOf(SocketTimeoutException.class);
 
     verify(isRetryableException, times(1)).apply(any());
     verify(sleeper, never()).sleep(anyLong());
@@ -188,14 +181,17 @@ class RetryInterceptorTest {
 
   @Test
   void isRetryableException() {
+    // Should retry on connection timeouts, where error message is "Connect timed out" or "connect timed out"
     assertThat(
             RetryInterceptor.isRetryableException(new SocketTimeoutException("Connect timed out")))
         .isTrue();
     assertThat(
             RetryInterceptor.isRetryableException(new SocketTimeoutException("connect timed out")))
         .isTrue();
+    // Shouldn't retry on read timeouts, where error message is "Read timed out"
     assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("Read timed out")))
         .isFalse();
+    // Shouldn't retry on write timeouts, where error message is "timeout", or other IOException
     assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("timeout")))
         .isFalse();
     assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException())).isFalse();
