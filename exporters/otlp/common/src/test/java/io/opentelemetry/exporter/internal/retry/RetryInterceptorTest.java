@@ -181,7 +181,8 @@ class RetryInterceptorTest {
 
   @Test
   void isRetryableException() {
-    // Should retry on connection timeouts, where error message is "Connect timed out" or "connect timed out"
+    // Should retry on connection timeouts, where error message is "Connect timed out" or "connect
+    // timed out"
     assertThat(
             RetryInterceptor.isRetryableException(new SocketTimeoutException("Connect timed out")))
         .isTrue();
