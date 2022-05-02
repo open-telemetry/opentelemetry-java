@@ -527,12 +527,14 @@ class TraceAssertionsTest {
                     span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
     // test asserting spans in wrong oder
     assertThatThrownBy(
-        () ->
-            TracesAssert.assertThat(traces)
-                .hasTracesSatisfyingExactly(
-                    trace ->
-                        trace.hasSpansSatisfyingExactly(
-                            span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1))));
+            () ->
+                TracesAssert.assertThat(traces)
+                    .hasTracesSatisfyingExactly(
+                        trace ->
+                            trace.hasSpansSatisfyingExactly(
+                                span -> span.hasSpanId(SPAN_ID2),
+                                span -> span.hasSpanId(SPAN_ID1))))
+        .isInstanceOf(AssertionError.class);
 
     // test asserting spans in any order
     TracesAssert.assertThat(traces)
@@ -547,11 +549,13 @@ class TraceAssertionsTest {
                     span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1)));
     // test not asserting all spans
     assertThatThrownBy(
-        () ->
-            TracesAssert.assertThat(traces)
-                .hasTracesSatisfyingExactly(
-                    trace ->
-                        trace.hasSpansSatisfyingExactlyInAnyOrder(
-                            span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID1))));
+            () ->
+                TracesAssert.assertThat(traces)
+                    .hasTracesSatisfyingExactly(
+                        trace ->
+                            trace.hasSpansSatisfyingExactlyInAnyOrder(
+                                span -> span.hasSpanId(SPAN_ID1),
+                                span -> span.hasSpanId(SPAN_ID1))))
+        .isInstanceOf(AssertionError.class);
   }
 }
