@@ -8,15 +8,16 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.function.Supplier;
 
 /**
@@ -41,11 +42,11 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         {
-          Supplier<LongExemplarReservoir> reservoirFactory =
+          Supplier<ExemplarReservoir<LongExemplarData>> reservoirFactory =
               () ->
-                  LongExemplarReservoir.filtered(
+                  ExemplarReservoir.filtered(
                       exemplarFilter,
-                      LongExemplarReservoir.fixedSizeReservoir(
+                      ExemplarReservoir.longFixedSizeReservoir(
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));
@@ -53,11 +54,11 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
         }
       case DOUBLE:
         {
-          Supplier<DoubleExemplarReservoir> reservoirFactory =
+          Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirFactory =
               () ->
-                  DoubleExemplarReservoir.filtered(
+                  ExemplarReservoir.filtered(
                       exemplarFilter,
-                      DoubleExemplarReservoir.fixedSizeReservoir(
+                      ExemplarReservoir.doubleFixedSizeReservoir(
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));

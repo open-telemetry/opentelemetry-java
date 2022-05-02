@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,29 +21,32 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FilteredDoubleExemplarReservoirTest {
-  @Mock DoubleExemplarReservoir reservoir;
+class FilteredExemplarReservoirTest {
+  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
   @Mock ExemplarFilter filter;
 
   @Test
   void testFilter_preventsSampling() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(false);
-    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
+    ExemplarReservoir<DoubleExemplarData> filtered =
+        new FilteredExemplarReservoir<>(filter, reservoir);
+    filtered.offerDoubleMeasurement(1.0, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_allowsSampling() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(true);
-    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
-    verify(reservoir).offerMeasurement(1.0, Attributes.empty(), Context.root());
+    ExemplarReservoir<DoubleExemplarData> filtered =
+        new FilteredExemplarReservoir<>(filter, reservoir);
+    filtered.offerDoubleMeasurement(1.0, Attributes.empty(), Context.root());
+    verify(reservoir).offerDoubleMeasurement(1.0, Attributes.empty(), Context.root());
   }
 
   @Test
   void reservoir_collectsUnderlying() {
     when(reservoir.collectAndReset(Attributes.empty())).thenReturn(Collections.emptyList());
-    DoubleExemplarReservoir filtered = new FilteredDoubleExemplarReservoir(filter, reservoir);
+    ExemplarReservoir<DoubleExemplarData> filtered =
+        new FilteredExemplarReservoir<>(filter, reservoir);
     assertThat(filtered.collectAndReset(Attributes.empty())).isEmpty();
   }
 }

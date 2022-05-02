@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public final class DoubleExplicitBucketHistogramAggregator
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
-  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
+  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
 
   /**
    * Constructs an explicit bucket histogram aggregator.
@@ -46,7 +46,7 @@ public final class DoubleExplicitBucketHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries, Supplier<DoubleExemplarReservoir> reservoirSupplier) {
+      double[] boundaries, Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier) {
     this.boundaries = boundaries;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -162,7 +162,7 @@ public final class DoubleExplicitBucketHistogramAggregator
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    Handle(double[] boundaries, DoubleExemplarReservoir reservoir) {
+    Handle(double[] boundaries, ExemplarReservoir<DoubleExemplarData> reservoir) {
       super(reservoir);
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
