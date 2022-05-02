@@ -24,10 +24,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -495,5 +498,60 @@ class TraceAssertionsTest {
                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
                         satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
         .isInstanceOf(AssertionError.class);
+  }
+
+  private static TestSpanData buildTestSpan(String spanId, String spanName) {
+    return TestSpanData.builder()
+        .setResource(RESOURCE)
+        .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
+        .setName(spanName)
+        .setKind(SpanKind.CLIENT)
+        .setStartEpochNanos(100)
+        .setStatus(StatusData.ok())
+        .setEndEpochNanos(200)
+        .setHasEnded(true)
+        .setSpanContext(SpanContext.create(TRACE_ID, spanId, TraceFlags.getSampled(), TRACE_STATE))
+        .build();
+  }
+
+  @Test
+  void hasSpansSatisfyingExactly() {
+    Collection<List<SpanData>> traces = new ArrayList<>();
+    traces.add(Arrays.asList(buildTestSpan(SPAN_ID1, "span1"), buildTestSpan(SPAN_ID2, "span2")));
+
+    // test asserting spans in exact oder
+    TracesAssert.assertThat(traces)
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
+    // test asserting spans in wrong oder
+    assertThatThrownBy(
+        () ->
+            TracesAssert.assertThat(traces)
+                .hasTracesSatisfyingExactly(
+                    trace ->
+                        trace.hasSpansSatisfyingExactly(
+                            span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1))));
+
+    // test asserting spans in any order
+    TracesAssert.assertThat(traces)
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactlyInAnyOrder(
+                    span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
+    TracesAssert.assertThat(traces)
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactlyInAnyOrder(
+                    span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1)));
+    // test not asserting all spans
+    assertThatThrownBy(
+        () ->
+            TracesAssert.assertThat(traces)
+                .hasTracesSatisfyingExactly(
+                    trace ->
+                        trace.hasSpansSatisfyingExactlyInAnyOrder(
+                            span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID1))));
   }
 }
