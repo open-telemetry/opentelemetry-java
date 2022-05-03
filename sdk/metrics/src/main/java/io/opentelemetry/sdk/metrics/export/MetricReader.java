@@ -7,13 +7,14 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import java.util.Collection;
 
 /**
- * A reader of metrics from {@link SdkMeterProvider}.
+ * A metric reader reads metrics from an {@link SdkMeterProvider}.
  *
  * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
  * the built-in readers such as {@link PeriodicMetricReader}.
+ *
+ * @since 1.14.0
  */
 public interface MetricReader extends AggregationTemporalitySelector {
 
@@ -27,12 +28,9 @@ public interface MetricReader extends AggregationTemporalitySelector {
   void register(CollectionRegistration registration);
 
   /**
-   * Flushes metrics read by this reader.
+   * Read and export the metrics.
    *
-   * <p>In all scenarios, the trigger a metrics collection.
-   *
-   * <p>For readers associated with push {@link MetricExporter}s, this should {@link
-   * MetricExporter#export(Collection)} the collected metrics.
+   * <p>Called when {@link SdkMeterProvider#forceFlush()} is called.
    *
    * @return the result of the flush.
    */
@@ -41,10 +39,13 @@ public interface MetricReader extends AggregationTemporalitySelector {
   /**
    * Shuts down the metric reader.
    *
-   * <p>For pull endpoints, like prometheus, this should shut down the metric hosting endpoint or
+   * <p>Called when {@link SdkMeterProvider#shutdown()} is called.
+   *
+   * <p>For pull based readers like prometheus, this should shut down the metric hosting endpoint or
    * server doing such a job.
    *
-   * <p>For push endpoints, this should shut down any scheduler threads.
+   * <p>For push based readers like {@link MetricExporter}, this should shut down any scheduler
+   * threads.
    *
    * @return the result of the shutdown.
    */
