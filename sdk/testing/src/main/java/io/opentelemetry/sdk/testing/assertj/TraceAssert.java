@@ -87,19 +87,8 @@ public final class TraceAssert
    */
   public TraceAssert hasSpansSatisfyingExactlyInAnyOrder(
       Iterable<? extends Consumer<SpanDataAssert>> assertions) {
-    @SuppressWarnings("unchecked")
-    Consumer<SpanData>[] spanDataAsserts =
-        (Consumer<SpanData>[])
-            StreamSupport.stream(assertions.spliterator(), false)
-                .map(TraceAssert::toSpanDataConsumer)
-                .toArray(Consumer[]::new);
-
+    Consumer<SpanData>[] spanDataAsserts = AssertUtil.toConsumers(assertions, SpanDataAssert::new);
     return satisfiesExactlyInAnyOrder(spanDataAsserts);
-  }
-
-  private static Consumer<SpanData> toSpanDataConsumer(
-      Consumer<SpanDataAssert> spanDataAssertConsumer) {
-    return spanData -> spanDataAssertConsumer.accept(new SpanDataAssert(spanData));
   }
 
   /**
