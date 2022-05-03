@@ -27,7 +27,7 @@ public final class LongGaugeAssert
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final LongGaugeAssert hasPointsSatisfying(Consumer<LongPointDataAssert>... assertions) {
+  public final LongGaugeAssert hasPointsSatisfying(Consumer<LongPointAssert>... assertions) {
     return hasPointsSatisfying(Arrays.asList(assertions));
   }
 
@@ -35,9 +35,9 @@ public final class LongGaugeAssert
    * Asserts the gauge has points matching all of the given assertions and no more, in any order.
    */
   public LongGaugeAssert hasPointsSatisfying(
-      Iterable<? extends Consumer<LongPointDataAssert>> assertions) {
+      Iterable<? extends Consumer<LongPointAssert>> assertions) {
     assertThat(actual.getPoints())
-        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, LongPointDataAssert::new));
+        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, LongPointAssert::new));
     return this;
   }
 }

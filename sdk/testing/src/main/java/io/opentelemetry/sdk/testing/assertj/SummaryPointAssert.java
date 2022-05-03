@@ -14,7 +14,7 @@ import org.assertj.core.api.Assertions;
 
 /** Test assertions for (deprecated) {@link SummaryPointData}. */
 public final class SummaryPointAssert
-    extends AbstractPointDataAssert<SummaryPointAssert, SummaryPointData> {
+    extends AbstractPointAssert<SummaryPointAssert, SummaryPointData> {
 
   SummaryPointAssert(SummaryPointData actual) {
     super(actual, SummaryPointAssert.class);
