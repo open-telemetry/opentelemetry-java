@@ -6,9 +6,9 @@
 package io.opentelemetry.exporter.internal.okhttp;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.UncheckedIOException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
@@ -17,18 +17,15 @@ public class JsonRequestBody extends RequestBody {
   private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
 
   private final byte[] preserializedJson;
-  private final int contentLength;
 
   /** Creates a new {@link JsonRequestBody}. */
   public JsonRequestBody(Marshaler marshaler) {
-    preserializedJson =
-        MarshalerUtil.preserializeJsonFields(marshaler).getBytes(StandardCharsets.UTF_8);
-    contentLength = preserializedJson.length;
+    preserializedJson = preserializeJson(marshaler);
   }
 
   @Override
   public long contentLength() {
-    return contentLength;
+    return preserializedJson.length;
   }
 
   @Override
@@ -39,5 +36,16 @@ public class JsonRequestBody extends RequestBody {
   @Override
   public void writeTo(BufferedSink bufferedSink) throws IOException {
     bufferedSink.write(preserializedJson);
+  }
+
+  private static byte[] preserializeJson(Marshaler marshaler) {
+    ByteArrayOutputStream jsonBos = new ByteArrayOutputStream();
+    try {
+      marshaler.writeJsonTo(jsonBos);
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          "Serialization error, this is likely a bug in OpenTelemetry.", e);
+    }
+    return jsonBos.toByteArray();
   }
 }

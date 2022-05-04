@@ -22,7 +22,6 @@ import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
@@ -358,7 +357,12 @@ class OtlpHttpMetricExporterTest {
     CompletableResultCode resultCode = otlpHttpMetricExporter.export(metrics);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
-    return MarshalerUtil.preserializeJsonFields(MetricsRequestMarshaler.create(metrics));
+    try (ByteArrayOutputStream jsonBos = new ByteArrayOutputStream()) {
+      MetricsRequestMarshaler.create(metrics).writeJsonTo(jsonBos);
+      return new String(jsonBos.toByteArray(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private static HttpResponse successResponse() {
