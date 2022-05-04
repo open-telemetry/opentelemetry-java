@@ -748,22 +748,48 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  void sdkMeterProvider_supportsMultipleCollectorsCumulative() {
-    InMemoryMetricReader collector1 = InMemoryMetricReader.create();
-    InMemoryMetricReader collector2 = InMemoryMetricReader.create();
+  void sdkMeterProvider_supportsMultipleReadersCumulative() {
+    InMemoryMetricReader reader1 = InMemoryMetricReader.create();
+    InMemoryMetricReader reader2 = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(collector1)
-            .registerMetricReader(collector2)
-            .build();
+        sdkMeterProviderBuilder.registerMetricReader(reader1).registerMetricReader(reader2).build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     long startTime = testClock.now();
+    Attributes attributes = Attributes.builder().put("key", "value").build();
+
+    counter.add(1L);
+    counter.add(1L, attributes);
+    testClock.advance(Duration.ofSeconds(1));
+
+    assertThat(reader1.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasName("testSum")
+                    .hasLongSum()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(1)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(1)
+                                .hasAttributes(attributes)));
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(collector1.collectAllMetrics())
+    // Reader 2 should see the measurements of Reader 1 plus the additional measurement
+    assertThat(reader2.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -772,18 +798,22 @@ class SdkMeterProviderTest {
                     .hasLongSum()
                     .isCumulative()
                     .points()
-                    .satisfiesExactly(
+                    .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(startTime)
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(1)));
+                                .hasValue(2)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(1)
+                                .hasAttributes(attributes)));
 
-    counter.add(1L);
-    testClock.advance(Duration.ofSeconds(1));
-
-    // Make sure collector 2 sees the value collector 1 saw
-    assertThat(collector2.collectAllMetrics())
+    // Reader 1 should see updated cumulative values
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -792,56 +822,36 @@ class SdkMeterProviderTest {
                     .hasLongSum()
                     .isCumulative()
                     .points()
-                    .satisfiesExactly(
+                    .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(startTime)
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(2)));
-
-    // Make sure Collector 1 sees the same point as 2
-    assertThat(collector1.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasName("testSum")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
+                                .hasValue(2),
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(startTime)
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(2)));
+                                .hasValue(1)
+                                .hasAttributes(attributes)));
   }
 
   @Test
-  void sdkMeterProvider_supportsMultipleCollectorsDelta() {
-    // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
-    // now.
-    InMemoryMetricReader collector1 = InMemoryMetricReader.createDelta();
-    InMemoryMetricReader collector2 = InMemoryMetricReader.createDelta();
+  void sdkMeterProvider_supportsMultipleReadersDelta() {
+    InMemoryMetricReader reader1 = InMemoryMetricReader.createDelta();
+    InMemoryMetricReader reader2 = InMemoryMetricReader.createDelta();
     SdkMeterProvider meterProvider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(collector1)
-            .registerMetricReader(collector2)
-            .registerView(
-                InstrumentSelector.builder()
-                    .setType(InstrumentType.COUNTER)
-                    .setName("testSum")
-                    .build(),
-                View.builder().setAggregation(Aggregation.sum()).build())
-            .build();
+        sdkMeterProviderBuilder.registerMetricReader(reader1).registerMetricReader(reader2).build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     long startTime = testClock.now();
+    Attributes attributes = Attributes.builder().put("key", "value").build();
 
     counter.add(1L);
+    counter.add(1L, attributes);
     testClock.advance(Duration.ofSeconds(1));
 
-    assertThat(collector1.collectAllMetrics())
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -850,19 +860,25 @@ class SdkMeterProviderTest {
                     .hasLongSum()
                     .isDelta()
                     .points()
-                    .satisfiesExactly(
+                    .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(startTime)
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(1)));
+                                .hasValue(1),
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(1L)
+                                .hasAttributes(attributes)));
     long collectorOneTimeOne = testClock.now();
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
 
-    // Make sure collector 2 sees the value collector 1 saw
-    assertThat(collector2.collectAllMetrics())
+    // Reader 2 should see the measurements of Reader 1 plus the additional measurement
+    assertThat(reader2.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -871,15 +887,21 @@ class SdkMeterProviderTest {
                     .hasLongSum()
                     .isDelta()
                     .points()
-                    .satisfiesExactly(
+                    .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(startTime)
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(2)));
+                                .hasValue(2),
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(1L)
+                                .hasAttributes(attributes)));
 
-    // Make sure Collector 1 sees the same point as 2, when it collects.
-    assertThat(collector1.collectAllMetrics())
+    // Reader 1 should only see diff since its last collect
+    assertThat(reader1.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

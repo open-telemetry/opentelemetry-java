@@ -29,7 +29,7 @@ class SdkObservableInstrumentTest {
   @SuppressLogger(SdkObservableInstrument.class)
   void close() {
     MeterSharedState meterSharedState =
-        spy(MeterSharedState.create(InstrumentationScopeInfo.empty()));
+        spy(MeterSharedState.create(InstrumentationScopeInfo.empty(), Collections.emptyList()));
     CallbackRegistration<?> callbackRegistration =
         CallbackRegistration.createDouble(
             InstrumentDescriptor.create(

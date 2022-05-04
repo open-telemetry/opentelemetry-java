@@ -21,13 +21,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,8 +40,6 @@ class AsynchronousMetricStorageTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
-  @Mock private MetricReader reader;
-
   private final TestClock testClock = TestClock.create();
   private final Resource resource = Resource.empty();
   private final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -51,21 +47,21 @@ class AsynchronousMetricStorageTest {
   private final RegisteredView registeredView =
       RegisteredView.create(
           selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());
-  private CollectionInfo collectionInfo;
+
+  @Mock private MetricReader reader;
+  private RegisteredReader registeredReader;
 
   @BeforeEach
   void setup() {
-    CollectionHandle handle = CollectionHandle.createSupplier().get();
-    Set<CollectionHandle> all = CollectionHandle.mutableSet();
-    all.add(handle);
-    collectionInfo = CollectionInfo.create(handle, all, reader);
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
+    registeredReader = RegisteredReader.create(reader);
   }
 
   @Test
   void recordLong() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
@@ -74,14 +70,7 @@ class AsynchronousMetricStorageTest {
     storage.recordLong(2, Attributes.builder().put("key", "b").build());
     storage.recordLong(3, Attributes.builder().put("key", "c").build());
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
@@ -105,6 +94,7 @@ class AsynchronousMetricStorageTest {
   void recordDouble() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
@@ -113,14 +103,7 @@ class AsynchronousMetricStorageTest {
     storage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
     storage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getDoubleSumData().getPoints())
@@ -144,6 +127,7 @@ class AsynchronousMetricStorageTest {
   void record_ProcessesAttributes() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             RegisteredView.create(
                 selector,
                 View.builder().build(),
@@ -154,14 +138,7 @@ class AsynchronousMetricStorageTest {
 
     storage.recordLong(1, Attributes.builder().put("key1", "a").put("key2", "b").build());
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
@@ -177,6 +154,7 @@ class AsynchronousMetricStorageTest {
   void record_MaxAccumulations() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
@@ -185,14 +163,7 @@ class AsynchronousMetricStorageTest {
       storage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
@@ -204,6 +175,7 @@ class AsynchronousMetricStorageTest {
   void record_DuplicateAttributes() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
@@ -211,14 +183,7 @@ class AsynchronousMetricStorageTest {
     storage.recordLong(1, Attributes.builder().put("key1", "a").build());
     storage.recordLong(2, Attributes.builder().put("key1", "a").build());
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())

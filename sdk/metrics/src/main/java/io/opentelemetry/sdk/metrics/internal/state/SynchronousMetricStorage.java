@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 
 /**
@@ -35,6 +36,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    *     recorded.
    */
   static <T, U extends ExemplarData> SynchronousMetricStorage create(
+      RegisteredReader registeredReader,
       RegisteredView registeredView,
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter) {
@@ -49,6 +51,9 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
+        registeredReader,
+        metricDescriptor,
+        aggregator,
+        registeredView.getViewAttributesProcessor());
   }
 }

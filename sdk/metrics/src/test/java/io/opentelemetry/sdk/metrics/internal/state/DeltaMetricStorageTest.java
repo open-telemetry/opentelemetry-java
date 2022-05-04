@@ -17,85 +17,39 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import java.util.Set;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DeltaMetricStorageTest {
+
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
 
-  private CollectionHandle collector1;
-  private CollectionHandle collector2;
-  private Set<CollectionHandle> allCollectors;
-  private DeltaMetricStorage<DoubleAccumulation, DoubleExemplarData> storage;
-
-  @BeforeEach
-  void setup() {
-    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
-    collector1 = supplier.get();
-    collector2 = supplier.get();
-    allCollectors = CollectionHandle.mutableSet();
-    allCollectors.add(collector1);
-    allCollectors.add(collector2);
-    storage =
-        new DeltaMetricStorage<>(
-            ((AggregatorFactory) Aggregation.sum())
-                .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()),
-            DESCRIPTOR);
-  }
+  private final DeltaMetricStorage<DoubleAccumulation, DoubleExemplarData> storage =
+      new DeltaMetricStorage<>(
+          ((AggregatorFactory) Aggregation.sum())
+              .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()),
+          DESCRIPTOR);
 
   @Test
-  void collectionDeltaForMultiReader() {
-    BoundStorageHandle bound = storage.bind(Attributes.empty());
-    bound.recordDouble(1, Attributes.empty(), Context.root());
-    // First collector only sees first recording.
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ false))
-        .hasSize(1)
-        .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(1));
+  void collect() {
+    Attributes empty = Attributes.empty();
+    BoundStorageHandle boundEmpty = storage.bind(empty);
+    Attributes attrs = Attributes.builder().put("key", "value").build();
+    BoundStorageHandle boundAttrs = storage.bind(attrs);
 
-    bound.recordDouble(2, Attributes.empty(), Context.root());
-    // First collector only sees second recording.
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ false))
+    boundEmpty.recordDouble(1, empty, Context.root());
+    boundAttrs.recordDouble(2, attrs, Context.root());
+    assertThat(storage.collect())
+        .hasSize(2)
+        .hasEntrySatisfying(empty, value -> assertThat(value.getValue()).isEqualTo(1))
+        .hasEntrySatisfying(attrs, value -> assertThat(value.getValue()).isEqualTo(2));
+
+    boundEmpty.recordDouble(2, empty, Context.root());
+    assertThat(storage.collect())
         .hasSize(1)
         .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(2));
 
-    // First collector no longer sees a recording.
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ false))
-        .isEmpty();
-
-    // Second collector gets merged recordings
-    assertThat(storage.collectFor(collector2, allCollectors, /* suppressCollection=*/ false))
-        .hasSize(1)
-        .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(3));
-
-    // Second collector no longer sees a recording.
-    assertThat(storage.collectFor(collector2, allCollectors, /* suppressCollection=*/ false))
-        .isEmpty();
-  }
-
-  @Test
-  void avoidCollectionInRapidSuccession() {
-    BoundStorageHandle bound = storage.bind(Attributes.empty());
-    bound.recordDouble(1, Attributes.empty(), Context.root());
-    // First collector only sees first recording.
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ false))
-        .hasSize(1)
-        .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(1));
-    // Add some data immediately after read, but pretent it hasn't been long.
-    bound.recordDouble(2, Attributes.empty(), Context.root());
-    // Collector1 doesn't see new data, because we don't recollect, but collector2 sees old delta.
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ true))
-        .isEmpty();
-    assertThat(storage.collectFor(collector2, allCollectors, /* suppressCollection=*/ true))
-        .hasSize(1)
-        .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(1));
-    // After enough time passes, collector1 sees new data
-    assertThat(storage.collectFor(collector1, allCollectors, /* suppressCollection=*/ false))
-        .hasSize(1)
-        .hasEntrySatisfying(Attributes.empty(), value -> assertThat(value.getValue()).isEqualTo(2));
+    assertThat(storage.collect()).isEmpty();
   }
 }

@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +33,7 @@ class IdentityTest {
   @BeforeEach
   void setup() {
     reader = InMemoryMetricReader.createDelta();
-    builder =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .setMinimumCollectionInterval(Duration.ZERO);
+    builder = SdkMeterProvider.builder().registerMetricReader(reader);
   }
 
   @Test

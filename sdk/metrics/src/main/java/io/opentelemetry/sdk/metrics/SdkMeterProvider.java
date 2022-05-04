@@ -13,9 +13,8 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -23,14 +22,9 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /** SDK implementation for {@link MeterProvider}. */
@@ -41,10 +35,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
-  private final Map<CollectionHandle, CollectionInfo> collectionInfoMap;
+  private final List<RegisteredReader> registeredReaders;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
-  private final AtomicLong lastCollectionTimestamp;
-  private final long minimumCollectionIntervalNanos;
 
   /**
    * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
@@ -56,38 +48,26 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   SdkMeterProvider(
-      List<MetricReader> metricReaders,
+      List<RegisteredReader> registeredReaders,
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
-      ExemplarFilter exemplarFilter,
-      long minimumCollectionIntervalNanos) {
+      ExemplarFilter exemplarFilter) {
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarFilter);
+    this.registeredReaders = registeredReaders;
+    for (RegisteredReader registeredReader : registeredReaders) {
+      registeredReader.getReader().register(new LeasedMetricProducer(registeredReader));
+    }
     this.registry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
-    this.lastCollectionTimestamp =
-        new AtomicLong(clock.nanoTime() - minimumCollectionIntervalNanos);
-    this.minimumCollectionIntervalNanos = minimumCollectionIntervalNanos;
-
-    // Here we construct our own unique handle ids for this SDK.
-    // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
-    // These are *only* mutated in our constructor, and safe to use concurrently after construction.
-    Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
-    collectionInfoMap = new HashMap<>();
-    Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
-    for (MetricReader metricReader : metricReaders) {
-      CollectionHandle handle = handleSupplier.get();
-      collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, metricReader));
-      metricReader.register(new LeasedMetricProducer(handle));
-      collectors.add(handle);
-    }
+            instrumentationLibraryInfo ->
+                new SdkMeter(sharedState, instrumentationLibraryInfo, registeredReaders));
   }
 
   @Override
   public MeterBuilder meterBuilder(String instrumentationScopeName) {
-    if (collectionInfoMap.isEmpty()) {
+    if (registeredReaders.isEmpty()) {
       return MeterProvider.noop().meterBuilder(instrumentationScopeName);
     }
     if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
@@ -102,12 +82,12 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
    * resulting {@link CompletableResultCode} completes when all complete.
    */
   public CompletableResultCode forceFlush() {
-    if (collectionInfoMap.isEmpty()) {
+    if (registeredReaders.isEmpty()) {
       return CompletableResultCode.ofSuccess();
     }
     List<CompletableResultCode> results = new ArrayList<>();
-    for (CollectionInfo collectionInfo : collectionInfoMap.values()) {
-      results.add(collectionInfo.getReader().flush());
+    for (RegisteredReader registeredReader : registeredReaders) {
+      results.add(registeredReader.getReader().flush());
     }
     return CompletableResultCode.ofAll(results);
   }
@@ -121,11 +101,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       LOGGER.info("Multiple close calls");
       return CompletableResultCode.ofSuccess();
     }
-    if (collectionInfoMap.isEmpty()) {
+    if (registeredReaders.isEmpty()) {
       return CompletableResultCode.ofSuccess();
     }
     List<CompletableResultCode> results = new ArrayList<>();
-    for (CollectionInfo info : collectionInfoMap.values()) {
+    for (RegisteredReader info : registeredReaders) {
       results.add(info.getReader().shutdown());
     }
     return CompletableResultCode.ofAll(results);
@@ -139,37 +119,19 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   /** Helper class to expose registered metric exports. */
   private class LeasedMetricProducer implements MetricProducer {
-    private final CollectionHandle handle;
 
-    LeasedMetricProducer(CollectionHandle handle) {
-      this.handle = handle;
+    private final RegisteredReader registeredReader;
+
+    LeasedMetricProducer(RegisteredReader registeredReader) {
+      this.registeredReader = registeredReader;
     }
 
     @Override
     public Collection<MetricData> collectAllMetrics() {
       Collection<SdkMeter> meters = registry.getComponents();
-      // Suppress too-frequent-collection.
-      long currentNanoTime = sharedState.getClock().nanoTime();
-      long pastNanoTime = lastCollectionTimestamp.get();
-      // It hasn't been long enough since the last collection.
-      boolean disableSynchronousCollection =
-          (currentNanoTime - pastNanoTime) < minimumCollectionIntervalNanos;
-      // If we're not disabling metrics, write the current collection time.
-      // We don't care if this happens in more than one thread, suppression is optimistic, and the
-      // interval is small enough some jitter isn't important.
-      if (!disableSynchronousCollection) {
-        lastCollectionTimestamp.lazySet(currentNanoTime);
-      }
-      CollectionInfo info = collectionInfoMap.get(handle);
-      if (info == null) {
-        throw new IllegalStateException(
-            "No collection info for handle, this is a bug in the OpenTelemetry SDK.");
-      }
-
       List<MetricData> result = new ArrayList<>();
       for (SdkMeter meter : meters) {
-        result.addAll(
-            meter.collectAll(info, sharedState.getClock().now(), disableSynchronousCollection));
+        result.addAll(meter.collectAll(registeredReader, sharedState.getClock().now()));
       }
       return Collections.unmodifiableCollection(result);
     }

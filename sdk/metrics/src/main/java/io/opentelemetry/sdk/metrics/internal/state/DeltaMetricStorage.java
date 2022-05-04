@@ -14,12 +14,8 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +38,6 @@ class DeltaMetricStorage<T, U extends ExemplarData> {
   private final InstrumentDescriptor instrument;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> activeCollectionStorage =
       new ConcurrentHashMap<>();
-  private final List<DeltaAccumulation<T>> unreportedDeltas = new ArrayList<>();
 
   DeltaMetricStorage(Aggregator<T, U> aggregator, InstrumentDescriptor instrument) {
     this.aggregator = aggregator;
@@ -92,42 +87,15 @@ class DeltaMetricStorage<T, U extends ExemplarData> {
   }
 
   /**
-   * Returns the latest delta accumulation for a specific collection handle.
-   *
-   * @param collector The current reader of metrics.
-   * @param collectors All possible readers of metrics.
-   * @param suppressCollection If true, don't actively pull synchronous instruments, measurements
-   *     should be up to date.
-   * @return The delta accumulation of metrics since the last read of the specified reader.
-   */
-  public synchronized Map<Attributes, T> collectFor(
-      CollectionHandle collector, Set<CollectionHandle> collectors, boolean suppressCollection) {
-    // First we force a collection
-    if (!suppressCollection) {
-      collectSynchronousDeltaAccumulationAndReset();
-    }
-    // Now build a delta result.
-    Map<Attributes, T> result = new HashMap<>();
-    for (DeltaAccumulation<T> point : unreportedDeltas) {
-      if (!point.wasReadBy(collector)) {
-        MetricStorageUtils.mergeInPlace(result, point.read(collector), aggregator);
-      }
-    }
-    // Now run a quick cleanup of deltas before returning.
-    unreportedDeltas.removeIf(delta -> delta.wasReadByAll(collectors));
-    return result;
-  }
-
-  /**
    * Collects the currently accumulated measurements from the concurrent-friendly synchronous
    * storage.
    *
-   * <p>All synchronous handles will be collected + reset during this method. Additionally cleanup
-   * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
+   * <p>All synchronous handles will be collected + reset during this method. Any {@code null}
+   * measurements are ignored.
    */
-  private synchronized void collectSynchronousDeltaAccumulationAndReset() {
+  public synchronized Map<Attributes, T> collect() {
     // Grab accumulated measurements.
-    Map<Attributes, T> result = new HashMap<>();
+    Map<Attributes, T> accumulations = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();
       if (unmappedEntry) {
@@ -139,12 +107,9 @@ class DeltaMetricStorage<T, U extends ExemplarData> {
       if (accumulation == null) {
         continue;
       }
-      // Feed latest batch to the aggregator.
-      result.put(entry.getKey(), accumulation);
+      accumulations.put(entry.getKey(), accumulation);
     }
-    if (!result.isEmpty()) {
-      unreportedDeltas.add(new DeltaAccumulation<>(result));
-    }
+    return accumulations;
   }
 
   /** An implementation of {@link BoundStorageHandle} that does not record. */

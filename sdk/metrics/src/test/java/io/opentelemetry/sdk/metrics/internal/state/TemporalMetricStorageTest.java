@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
@@ -22,15 +23,17 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TemporalMetricStorageTest {
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
@@ -52,18 +55,14 @@ class TemporalMetricStorageTest {
       ((AggregatorFactory) Aggregation.sum())
           .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
 
-  private CollectionHandle collector1;
-  private CollectionHandle collector2;
-  private Set<CollectionHandle> allCollectors;
+  @Mock private MetricReader reader;
+  private RegisteredReader registeredReader1;
+  private RegisteredReader registeredReader2;
 
   @BeforeEach
   void setup() {
-    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
-    collector1 = supplier.get();
-    collector2 = supplier.get();
-    allCollectors = CollectionHandle.mutableSet();
-    allCollectors.add(collector1);
-    allCollectors.add(collector2);
+    registeredReader1 = RegisteredReader.create(reader);
+    registeredReader2 = RegisteredReader.create(reader);
   }
 
   private static Map<Attributes, DoubleAccumulation> createMeasurement(double value) {
@@ -80,7 +79,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -97,7 +96,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -114,7 +113,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -131,7 +130,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -160,7 +159,7 @@ class TemporalMetricStorageTest {
     }
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -185,7 +184,7 @@ class TemporalMetricStorageTest {
     measurement2.put(attr2, DoubleAccumulation.create(3));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -213,7 +212,7 @@ class TemporalMetricStorageTest {
     measurement1.put(attr1, DoubleAccumulation.create(3));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -235,7 +234,7 @@ class TemporalMetricStorageTest {
     measurement2.put(attr2, DoubleAccumulation.create(7));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -259,7 +258,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -276,7 +275,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -293,7 +292,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -310,7 +309,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -333,7 +332,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -350,7 +349,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -367,7 +366,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -384,7 +383,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -401,7 +400,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 60 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -425,7 +424,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -442,7 +441,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -459,7 +458,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -476,7 +475,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -503,7 +502,7 @@ class TemporalMetricStorageTest {
     measurement1.put(attr1, DoubleAccumulation.create(3));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -525,7 +524,7 @@ class TemporalMetricStorageTest {
     measurement2.put(attr2, DoubleAccumulation.create(7));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -552,7 +551,7 @@ class TemporalMetricStorageTest {
     measurement1.put(attr1, DoubleAccumulation.create(3));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -574,7 +573,7 @@ class TemporalMetricStorageTest {
     measurement2.put(attr2, DoubleAccumulation.create(7));
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -598,7 +597,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -615,7 +614,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -632,7 +631,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -649,7 +648,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -673,7 +672,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 10 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -690,7 +689,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -707,7 +706,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -724,7 +723,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
-                collector1,
+                registeredReader1,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
@@ -742,7 +741,7 @@ class TemporalMetricStorageTest {
     // Send in new measurement at time 60 for collector 2
     assertThat(
             storage.buildMetricFor(
-                collector2,
+                registeredReader2,
                 Resource.empty(),
                 InstrumentationScopeInfo.empty(),
                 METRIC_DESCRIPTOR,
