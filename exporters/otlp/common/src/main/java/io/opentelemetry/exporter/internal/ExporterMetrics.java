@@ -72,6 +72,7 @@ public class ExporterMetrics {
   }
 
   public static ExporterMetrics createHttpJson(String type, MeterProvider meterProvider) {
-    return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-http-json"), type);
+    return new ExporterMetrics(
+        meterProvider.get("io.opentelemetry.exporters.otlp-http-json"), type);
   }
 }

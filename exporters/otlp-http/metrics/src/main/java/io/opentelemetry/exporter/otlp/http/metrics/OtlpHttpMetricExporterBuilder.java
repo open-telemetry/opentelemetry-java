@@ -115,6 +115,11 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  public OtlpHttpMetricExporterBuilder exportAsJson() {
+    delegate.exportAsJson();
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *

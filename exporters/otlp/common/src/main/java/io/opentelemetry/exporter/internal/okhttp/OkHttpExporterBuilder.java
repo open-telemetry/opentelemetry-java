@@ -136,6 +136,12 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     }
 
     return new OkHttpExporter<>(
-        type, clientBuilder.build(), meterProvider, endpoint, headers, compressionEnabled, exportAsJson);
+        type,
+        clientBuilder.build(),
+        meterProvider,
+        endpoint,
+        headers,
+        compressionEnabled,
+        exportAsJson);
   }
 }

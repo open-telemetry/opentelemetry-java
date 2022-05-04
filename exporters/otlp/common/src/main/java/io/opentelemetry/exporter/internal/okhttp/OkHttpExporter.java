@@ -48,7 +48,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   private final String endpoint;
   @Nullable private final Headers headers;
   private final boolean compressionEnabled;
-  private Function<T, RequestBody> requestBodyCreator;
+  private final Function<T, RequestBody> requestBodyCreator;
 
   private final ExporterMetrics exporterMetrics;
 
