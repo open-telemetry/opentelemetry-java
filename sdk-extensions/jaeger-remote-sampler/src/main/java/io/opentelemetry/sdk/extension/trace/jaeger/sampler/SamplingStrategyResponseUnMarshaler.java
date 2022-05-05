@@ -43,8 +43,8 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
           parseSamplingStrategyType(responseBuilder, input);
           break;
         case 18:
-          input.readRawVarint32(); // skip length
-          responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
+          int length = input.readRawVarint32();
+          responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input, length));
           break;
         case 26:
           input.readRawVarint32(); // skip length
@@ -80,9 +80,13 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
   }
 
   private static SamplingStrategyResponse.ProbabilisticSamplingStrategy parseProbabilistic(
-      CodedInputStream input) throws IOException {
+      CodedInputStream input, int length) throws IOException {
     SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder builder =
         new SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder();
+    if (length == 0) {
+      // Default probabilistic strategy.
+      return builder.setSamplingRate(0.0).build();
+    }
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -185,16 +189,7 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
         case 18:
           probabilisticSamplingParsed = true;
           int length = input.readRawVarint32();
-          // Default probabilistic strategy.
-          if (length == 0) {
-            SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder
-                defaultProbabilisticStrategy =
-                    new SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder();
-            defaultProbabilisticStrategy.setSamplingRate(0.0);
-            builder.setProbabilisticSamplingStrategy(defaultProbabilisticStrategy.build());
-            break;
-          }
-          builder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
+          builder.setProbabilisticSamplingStrategy(parseProbabilistic(input, length));
           break;
         default:
           input.skipField(tag);
