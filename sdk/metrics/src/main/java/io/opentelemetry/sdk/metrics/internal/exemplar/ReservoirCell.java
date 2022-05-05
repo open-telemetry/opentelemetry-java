@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
@@ -29,21 +30,37 @@ import javax.annotation.Nullable;
  */
 class ReservoirCell {
   private final Clock clock;
-  private long longValue;
-  private double doubleValue;
   @Nullable private Attributes attributes;
   private SpanContext spanContext = SpanContext.getInvalid();
   private long recordTime;
+
+  // Cell stores either long or double values, but must not store both
+  private long longValue;
+  private double doubleValue;
 
   ReservoirCell(Clock clock) {
     this.clock = clock;
   }
 
+  /**
+   * Record the long measurement to the cell.
+   *
+   * <p>Must be used in tandem with {@link #getAndResetLong(Attributes)}. {@link
+   * #recordDoubleMeasurement(double, Attributes, Context)} and {@link
+   * #getAndResetDouble(Attributes)} must not be used when a cell is recording longs.
+   */
   synchronized void recordLongMeasurement(long value, Attributes attributes, Context context) {
     this.longValue = value;
     offerMeasurement(attributes, context);
   }
 
+  /**
+   * Record the long measurement to the cell.
+   *
+   * <p>Must be used in tandem with {@link #getAndResetDouble(Attributes)}. {@link
+   * #recordLongMeasurement(long, Attributes, Context)} and {@link #getAndResetLong(Attributes)}
+   * must not be used when a cell is recording longs.
+   */
   synchronized void recordDoubleMeasurement(double value, Attributes attributes, Context context) {
     this.doubleValue = value;
     offerMeasurement(attributes, context);
@@ -59,6 +76,11 @@ class ReservoirCell {
     }
   }
 
+  /**
+   * Retrieve the cell's {@link ExemplarData}.
+   *
+   * <p>Must be used in tandem with {@link #recordLongMeasurement(long, Attributes, Context)}.
+   */
   @Nullable
   synchronized LongExemplarData getAndResetLong(Attributes pointAttributes) {
     Attributes attributes = this.attributes;
@@ -72,6 +94,11 @@ class ReservoirCell {
     return result;
   }
 
+  /**
+   * Retrieve the cell's {@link ExemplarData}.
+   *
+   * <p>Must be used in tandem with {@link #recordDoubleMeasurement(double, Attributes, Context)}.
+   */
   @Nullable
   synchronized DoubleExemplarData getAndResetDouble(Attributes pointAttributes) {
     Attributes attributes = this.attributes;
