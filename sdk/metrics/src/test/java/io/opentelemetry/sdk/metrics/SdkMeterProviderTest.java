@@ -115,7 +115,7 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1"))
+                    .hasUnit(""))
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
@@ -284,7 +284,7 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1")
+                    .hasUnit("")
                     .hasDoubleHistogram()
                     .isDelta()
                     .points()
@@ -313,7 +313,7 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1")
+                    .hasUnit("")
                     .hasDoubleHistogram()
                     .isDelta()
                     .points()
@@ -365,7 +365,7 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1"))
+                    .hasUnit(""))
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)

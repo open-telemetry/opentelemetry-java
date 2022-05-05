@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 /** Helper to make implementing builders easier. */
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
-  static final String DEFAULT_UNIT = "1";
+  static final String DEFAULT_UNIT = "";
 
   private final MeterProviderSharedState meterProviderSharedState;
   private String description;
@@ -45,7 +45,8 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   public BuilderT setUnit(String unit) {
     if (!ValidationUtil.checkValidInstrumentUnit(
-        unit, " Using " + DEFAULT_UNIT + " for instrument " + this.instrumentName + " instead.")) {
+        unit,
+        " Using \"" + DEFAULT_UNIT + "\" for instrument " + this.instrumentName + " instead.")) {
       this.unit = DEFAULT_UNIT;
     } else {
       this.unit = unit;
