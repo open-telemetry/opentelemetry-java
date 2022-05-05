@@ -150,7 +150,7 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricReader  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void register(io.opentelemetry.sdk.metrics.export.CollectionRegistration)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
@@ -160,7 +160,7 @@ Comparing source compatibility of  against
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder builder(io.opentelemetry.sdk.metrics.export.MetricExporter)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReader create(io.opentelemetry.sdk.metrics.export.MetricExporter)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
 	+++  NEW METHOD: PUBLIC(+) void register(io.opentelemetry.sdk.metrics.export.CollectionRegistration)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
