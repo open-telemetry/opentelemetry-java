@@ -5,28 +5,27 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import javax.annotation.Nullable;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link DoublePointData}. */
-public final class DoublePointDataAssert
-    extends AbstractPointDataAssert<DoublePointDataAssert, DoublePointData> {
+/** Assertions for an exported {@link LongPointData}. */
+public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, LongPointData> {
 
-  DoublePointDataAssert(@Nullable DoublePointData actual) {
-    super(actual, DoublePointDataAssert.class);
+  LongPointAssert(@Nullable LongPointData actual) {
+    super(actual, LongPointAssert.class);
   }
 
   /** Asserts the point has the given value. */
-  public DoublePointDataAssert hasValue(double expected) {
+  public LongPointAssert hasValue(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getValue()).as("value").isEqualTo(expected);
     return this;
   }
 
   /** Asserts the point has the specified exemplars, in any order. */
-  public DoublePointDataAssert hasExemplars(DoubleExemplarData... exemplars) {
+  public LongPointAssert hasExemplars(LongExemplarData... exemplars) {
     isNotNull();
     Assertions.assertThat(actual.getExemplars())
         .as("exemplars")

@@ -20,12 +20,11 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
 /** Assertions for an exported {@link PointData}. */
-public abstract class AbstractPointDataAssert<
-        PointAssertT extends AbstractPointDataAssert<PointAssertT, PointT>,
-        PointT extends PointData>
+public abstract class AbstractPointAssert<
+        PointAssertT extends AbstractPointAssert<PointAssertT, PointT>, PointT extends PointData>
     extends AbstractAssert<PointAssertT, PointT> {
 
-  AbstractPointDataAssert(@Nullable PointT actual, Class<PointAssertT> assertClass) {
+  AbstractPointAssert(@Nullable PointT actual, Class<PointAssertT> assertClass) {
     super(actual, assertClass);
   }
 
