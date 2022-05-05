@@ -8,9 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +20,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 
 final class OtlpConfigUtil {
@@ -133,7 +131,7 @@ final class OtlpConfigUtil {
 
   static void configureOtlpAggregationTemporality(
       ConfigProperties config,
-      Consumer<Function<InstrumentType, AggregationTemporality>> setAggregationTemporality) {
+      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
     String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
     if (temporalityStr == null) {
       return;
@@ -145,11 +143,11 @@ final class OtlpConfigUtil {
       throw new ConfigurationException(
           "Unrecognized aggregation temporality: " + temporalityStr, e);
     }
-    Function<InstrumentType, AggregationTemporality> temporalityFunction =
+    AggregationTemporalitySelector temporalitySelector =
         temporality == AggregationTemporality.CUMULATIVE
-            ? MetricExporter::alwaysCumulative
-            : MetricExporter::deltaPreferred;
-    setAggregationTemporality.accept(temporalityFunction);
+            ? AggregationTemporalitySelector.alwaysCumulative()
+            : AggregationTemporalitySelector.deltaPreferred();
+    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
   }
 
   private static URL createUrl(URL context, String spec) {

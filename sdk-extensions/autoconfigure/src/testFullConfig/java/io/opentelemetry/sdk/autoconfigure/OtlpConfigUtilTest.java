@@ -18,10 +18,10 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
@@ -357,12 +357,10 @@ class OtlpConfigUtilTest {
   /** Configure and return the aggregation temporality using the given properties. */
   private static AggregationTemporality configureAggregationTemporality(
       Map<String, String> properties) {
-    AtomicReference<Function<InstrumentType, AggregationTemporality>> temporalityRef =
-        new AtomicReference<>();
+    AtomicReference<AggregationTemporalitySelector> temporalityRef = new AtomicReference<>();
     OtlpConfigUtil.configureOtlpAggregationTemporality(
         DefaultConfigProperties.createForTest(properties), temporalityRef::set);
-    // configureOtlpAggregationTemporality sets a function, but we can use the
-    // AggregationTemporality of HISTOGRAM instruments to simplify assertions
-    return temporalityRef.get().apply(InstrumentType.HISTOGRAM);
+    // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
+    return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
   }
 }
