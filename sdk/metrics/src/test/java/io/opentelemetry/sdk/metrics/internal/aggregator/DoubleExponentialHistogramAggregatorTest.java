@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -47,10 +47,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExponentialHistogramAggregatorTest {
 
-  @Mock DoubleExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(DoubleExemplarReservoir::noSamples, 20, 320);
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 320);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -61,7 +61,7 @@ class DoubleExponentialHistogramAggregatorTest {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            DoubleExemplarReservoir::noSamples,
+            ExemplarReservoir::doubleNoSamples,
             ExponentialBucketStrategy.newStrategy(
                 20, 320, ExponentialCounterFactory.mapCounter())));
   }
@@ -451,7 +451,8 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceState.getDefault()),
             1);
     @SuppressWarnings("unchecked")
-    Supplier<DoubleExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier =
+        Mockito.mock(Supplier.class);
     Mockito.when(reservoir.collectAndReset(Attributes.empty()))
         .thenReturn(Collections.singletonList(exemplar));
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);

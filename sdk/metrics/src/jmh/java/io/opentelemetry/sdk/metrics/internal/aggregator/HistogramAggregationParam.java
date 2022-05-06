@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;
 
@@ -16,24 +16,24 @@ public enum HistogramAggregationParam {
       new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(
               ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES),
-          DoubleExemplarReservoir::noSamples)),
+          ExemplarReservoir::doubleNoSamples)),
   EXPLICIT_SINGLE_BUCKET(
       new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(Collections.emptyList()),
-          DoubleExemplarReservoir::noSamples)),
+          ExemplarReservoir::doubleNoSamples)),
   EXPONENTIAL_SMALL_CIRCULAR_BUFFER(
       new DoubleExponentialHistogramAggregator(
-          DoubleExemplarReservoir::noSamples,
+          ExemplarReservoir::doubleNoSamples,
           ExponentialBucketStrategy.newStrategy(
               20, 20, ExponentialCounterFactory.circularBufferCounter()))),
   EXPONENTIAL_CIRCULAR_BUFFER(
       new DoubleExponentialHistogramAggregator(
-          DoubleExemplarReservoir::noSamples,
+          ExemplarReservoir::doubleNoSamples,
           ExponentialBucketStrategy.newStrategy(
               20, 320, ExponentialCounterFactory.circularBufferCounter()))),
   EXPONENTIAL_MAP_COUNTER(
       new DoubleExponentialHistogramAggregator(
-          DoubleExemplarReservoir::noSamples,
+          ExemplarReservoir::doubleNoSamples,
           ExponentialBucketStrategy.newStrategy(20, 320, ExponentialCounterFactory.mapCounter())));
 
   private final Aggregator<?, ?> aggregator;

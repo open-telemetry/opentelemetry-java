@@ -15,29 +15,30 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.RandomSupplier;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 
-class LongFixedSizeExemplarReservoirTest {
+class LongRandomFixedSizeExemplarReservoirTest {
   private static final String TRACE_ID = "ff000000000000000000000000000041";
   private static final String SPAN_ID = "ff00000000000041";
 
   @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
-    LongExemplarReservoir reservoir =
-        new LongFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
+    ExemplarReservoir<LongExemplarData> reservoir =
+        RandomFixedSizeExemplarReservoir.createLong(clock, 1, RandomSupplier.platformDefault());
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
 
   @Test
   public void oneMeasurement_alwaysSamplesFirstMeasurement() {
     TestClock clock = TestClock.create();
-    LongExemplarReservoir reservoir =
-        new LongFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1, Attributes.empty(), Context.root());
+    ExemplarReservoir<LongExemplarData> reservoir =
+        RandomFixedSizeExemplarReservoir.createLong(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerLongMeasurement(1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -49,7 +50,7 @@ class LongFixedSizeExemplarReservoirTest {
 
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(2, Attributes.empty(), Context.root());
+    reservoir.offerLongMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -67,9 +68,9 @@ class LongFixedSizeExemplarReservoirTest {
     Attributes partial = Attributes.builder().put("three", true).build();
     Attributes remaining = Attributes.builder().put("one", 1).put("two", "two").build();
     TestClock clock = TestClock.create();
-    LongExemplarReservoir reservoir =
-        new LongFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1, all, Context.root());
+    ExemplarReservoir<LongExemplarData> reservoir =
+        RandomFixedSizeExemplarReservoir.createLong(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerLongMeasurement(1, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
             exemplar ->
@@ -90,9 +91,9 @@ class LongFixedSizeExemplarReservoirTest {
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
     TestClock clock = TestClock.create();
-    LongExemplarReservoir reservoir =
-        new LongFixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1, all, context);
+    ExemplarReservoir<LongExemplarData> reservoir =
+        RandomFixedSizeExemplarReservoir.createLong(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerLongMeasurement(1, all, context);
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactly(
             exemplar ->
@@ -122,11 +123,11 @@ class LongFixedSizeExemplarReservoirTest {
           }
         };
     TestClock clock = TestClock.create();
-    LongExemplarReservoir reservoir =
-        new LongFixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
-    reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
-    reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
-    reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());
+    ExemplarReservoir<LongExemplarData> reservoir =
+        ExemplarReservoir.longFixedSizeReservoir(clock, 2, () -> mockRandom);
+    reservoir.offerLongMeasurement(1, Attributes.of(key, 1L), Context.root());
+    reservoir.offerLongMeasurement(2, Attributes.of(key, 2L), Context.root());
+    reservoir.offerLongMeasurement(3, Attributes.of(key, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactlyInAnyOrder(
             exemplar -> assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),

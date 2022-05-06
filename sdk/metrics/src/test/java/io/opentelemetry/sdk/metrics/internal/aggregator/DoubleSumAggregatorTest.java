@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleSumAggregatorTest {
 
-  @Mock DoubleExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -50,7 +50,7 @@ class DoubleSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE),
-          DoubleExemplarReservoir::noSamples);
+          ExemplarReservoir::doubleNoSamples);
 
   @Test
   void createHandle() {
@@ -162,7 +162,7 @@ class DoubleSumAggregatorTest {
             new DoubleSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                DoubleExemplarReservoir::noSamples);
+                ExemplarReservoir::doubleNoSamples);
         DoubleAccumulation merged =
             aggregator.merge(
                 DoubleAccumulation.create(1.0d, previousExemplars),

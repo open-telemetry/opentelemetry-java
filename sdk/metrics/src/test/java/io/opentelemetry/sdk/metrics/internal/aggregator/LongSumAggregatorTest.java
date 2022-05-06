@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock LongExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<LongExemplarData> reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
@@ -49,7 +49,7 @@ class LongSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
-          LongExemplarReservoir::noSamples);
+          ExemplarReservoir::longNoSamples);
 
   @Test
   void createHandle() {
@@ -151,7 +151,7 @@ class LongSumAggregatorTest {
             new LongSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                LongExemplarReservoir::noSamples);
+                ExemplarReservoir::longNoSamples);
         LongAccumulation merged =
             aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(merged.getValue())
