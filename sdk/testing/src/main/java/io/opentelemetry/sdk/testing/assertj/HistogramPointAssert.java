@@ -11,7 +11,7 @@ import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link HistogramPointData}. */
 public final class HistogramPointAssert
-    extends AbstractPointDataAssert<HistogramPointAssert, HistogramPointData> {
+    extends AbstractPointAssert<HistogramPointAssert, HistogramPointData> {
 
   HistogramPointAssert(HistogramPointData actual) {
     super(actual, HistogramPointAssert.class);

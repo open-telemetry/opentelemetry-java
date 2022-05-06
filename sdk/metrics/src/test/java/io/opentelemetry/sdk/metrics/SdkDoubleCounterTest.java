@@ -131,7 +131,7 @@ class SdkDoubleCounterTest {
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testCounter")
                       .hasDescription("")
-                      .hasUnit("1")
+                      .hasUnit("")
                       .hasDoubleSum()
                       .isMonotonic()
                       .isCumulative()

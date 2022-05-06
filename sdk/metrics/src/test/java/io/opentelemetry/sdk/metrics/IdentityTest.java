@@ -290,15 +290,14 @@ class IdentityTest {
                     .hasLongSum()
                     .points()
                     .satisfiesExactly(point -> assertThat(point).hasValue(10)),
-            metricData -> {
-              assertThat(metricData)
-                  .hasInstrumentationScope(forMeter("meter1"))
-                  .hasName("counter1")
-                  .hasLongSum()
-                  .points()
-                  .satisfiesExactly(point -> assertThat(point).hasValue(10));
-              assertThat(metricData.getUnit()).isEqualTo("1");
-            });
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasUnit("")
+                    .hasLongSum()
+                    .points()
+                    .satisfiesExactly(point -> assertThat(point).hasValue(10)));
 
     assertThat(metricStorageRegistryLogs.getEvents())
         .allSatisfy(

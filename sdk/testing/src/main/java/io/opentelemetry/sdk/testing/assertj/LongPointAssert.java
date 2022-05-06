@@ -14,22 +14,21 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /** Assertions for an exported {@link LongPointData}. */
-public final class LongPointDataAssert
-    extends AbstractPointDataAssert<LongPointDataAssert, LongPointData> {
+public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, LongPointData> {
 
-  LongPointDataAssert(@Nullable LongPointData actual) {
-    super(actual, LongPointDataAssert.class);
+  LongPointAssert(@Nullable LongPointData actual) {
+    super(actual, LongPointAssert.class);
   }
 
   /** Asserts the point has the given value. */
-  public LongPointDataAssert hasValue(long expected) {
+  public LongPointAssert hasValue(long expected) {
     isNotNull();
     assertThat(actual.getValue()).as("value").isEqualTo(expected);
     return this;
   }
 
   /** Asserts the point has the specified exemplars, in any order. */
-  public LongPointDataAssert hasExemplars(LongExemplarData... exemplars) {
+  public LongPointAssert hasExemplars(LongExemplarData... exemplars) {
     isNotNull();
     assertThat(actual.getExemplars()).as("exemplars").containsExactlyInAnyOrder(exemplars);
     return myself;

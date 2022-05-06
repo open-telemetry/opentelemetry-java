@@ -346,6 +346,14 @@ class AwsXrayPropagatorTest {
     verifyInvalidBehavior(invalidHeaders);
   }
 
+  @Test
+  void extract_Invalid_NoSpanId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>(1);
+    invalidHeaders.put(TRACE_HEADER_KEY, "Root=1-622422bf-59625fe25708d4660735d8ef");
+
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
   private void verifyInvalidBehavior(Map<String, String> invalidHeaders) {
     Context input = Context.current();
     Context result = xrayPropagator.extract(input, invalidHeaders, getter);

@@ -14,13 +14,13 @@ import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link MetricData}. */
-public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricData> {
-  MetricDataAssert(@Nullable MetricData actual) {
-    super(actual, MetricDataAssert.class);
+public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData> {
+  MetricAssert(@Nullable MetricData actual) {
+    super(actual, MetricAssert.class);
   }
 
   /** Asserts the metric has the given {@link Resource}. */
-  public MetricDataAssert hasResource(Resource resource) {
+  public MetricAssert hasResource(Resource resource) {
     isNotNull();
     if (!actual.getResource().equals(resource)) {
       failWithActualExpectedAndMessage(
@@ -34,8 +34,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts the metric has the given the {@link InstrumentationScopeInfo}. */
-  public MetricDataAssert hasInstrumentationScope(
-      InstrumentationScopeInfo instrumentationScopeInfo) {
+  public MetricAssert hasInstrumentationScope(InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
     if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
       failWithActualExpectedAndMessage(
@@ -49,7 +48,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts the metric has the given name. */
-  public MetricDataAssert hasName(String name) {
+  public MetricAssert hasName(String name) {
     isNotNull();
     if (!actual.getName().equals(name)) {
       failWithActualExpectedAndMessage(
@@ -63,7 +62,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts the metric has the given description. */
-  public MetricDataAssert hasDescription(String description) {
+  public MetricAssert hasDescription(String description) {
     isNotNull();
     if (!actual.getDescription().equals(description)) {
       failWithActualExpectedAndMessage(
@@ -77,7 +76,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts the metric has the given unit. */
-  public MetricDataAssert hasUnit(String unit) {
+  public MetricAssert hasUnit(String unit) {
     isNotNull();
     if (!actual.getUnit().equals(unit)) {
       failWithActualExpectedAndMessage(
@@ -93,7 +92,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   /**
    * Asserts this {@link MetricData} is a {@code DoubleGauge} that satisfies the provided assertion.
    */
-  public MetricDataAssert hasDoubleGaugeSatisfying(Consumer<DoubleGaugeAssert> assertion) {
+  public MetricAssert hasDoubleGaugeSatisfying(Consumer<DoubleGaugeAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -110,7 +109,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   /**
    * Asserts this {@link MetricData} is a {@code LongGauge} that satisfies the provided assertion.
    */
-  public MetricDataAssert hasLongGaugeSatisfying(Consumer<LongGaugeAssert> assertion) {
+  public MetricAssert hasLongGaugeSatisfying(Consumer<LongGaugeAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_GAUGE) {
       failWithActualExpectedAndMessage(
@@ -125,7 +124,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts this {@link MetricData} is a double sum that satisfies the provided assertion. */
-  public MetricDataAssert hasDoubleSumSatisfying(Consumer<DoubleSumAssert> assertion) {
+  public MetricAssert hasDoubleSumSatisfying(Consumer<DoubleSumAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_SUM) {
       failWithActualExpectedAndMessage(
@@ -140,7 +139,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts this {@link MetricData} is a long sum that satisfies the provided assertion. */
-  public MetricDataAssert hasLongSumSatisfying(Consumer<LongSumAssert> assertion) {
+  public MetricAssert hasLongSumSatisfying(Consumer<LongSumAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_SUM) {
       failWithActualExpectedAndMessage(
@@ -155,7 +154,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts this {@link MetricData} is a histogram that satisfies the provided assertion. */
-  public MetricDataAssert hasHistogramSatisfying(Consumer<HistogramAssert> assertion) {
+  public MetricAssert hasHistogramSatisfying(Consumer<HistogramAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.HISTOGRAM) {
       failWithActualExpectedAndMessage(
@@ -170,7 +169,7 @@ public final class MetricDataAssert extends AbstractAssert<MetricDataAssert, Met
   }
 
   /** Asserts this {@link MetricData} is a summary that satisfies the provided assertion. */
-  public MetricDataAssert hasSummarySatisfying(Consumer<SummaryAssert> assertion) {
+  public MetricAssert hasSummarySatisfying(Consumer<SummaryAssert> assertion) {
     isNotNull();
     if (actual.getType() != MetricDataType.SUMMARY) {
       failWithActualExpectedAndMessage(

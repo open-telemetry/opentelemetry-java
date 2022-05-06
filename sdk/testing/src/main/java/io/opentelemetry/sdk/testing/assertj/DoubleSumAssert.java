@@ -73,15 +73,15 @@ public final class DoubleSumAssert
   /** Asserts the sum has points matching all of the given assertions and no more, in any order. */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final DoubleSumAssert hasPointsSatisfying(Consumer<DoublePointDataAssert>... assertions) {
+  public final DoubleSumAssert hasPointsSatisfying(Consumer<DoublePointAssert>... assertions) {
     return hasPointsSatisfying(Arrays.asList(assertions));
   }
 
   /** Asserts the sum has points matching all of the given assertions and no more, in any order. */
   public DoubleSumAssert hasPointsSatisfying(
-      Iterable<? extends Consumer<DoublePointDataAssert>> assertions) {
+      Iterable<? extends Consumer<DoublePointAssert>> assertions) {
     assertThat(actual.getPoints())
-        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, DoublePointDataAssert::new));
+        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, DoublePointAssert::new));
     return this;
   }
 }
