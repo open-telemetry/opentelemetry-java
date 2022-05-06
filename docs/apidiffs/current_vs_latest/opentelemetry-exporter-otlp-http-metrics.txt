@@ -13,7 +13,7 @@ Comparing source compatibility of  against
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder addHeader(java.lang.String, java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setAggregationTemporality(java.util.function.Function)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setAggregationTemporalitySelector(io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setClientTls(byte[], byte[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setCompression(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setEndpoint(java.lang.String)
