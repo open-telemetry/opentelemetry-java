@@ -43,8 +43,8 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
           parseSamplingStrategyType(responseBuilder, input);
           break;
         case 18:
-          input.readRawVarint32(); // skip length
-          responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
+          int length = input.readRawVarint32();
+          responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input, length));
           break;
         case 26:
           input.readRawVarint32(); // skip length
@@ -80,9 +80,13 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
   }
 
   private static SamplingStrategyResponse.ProbabilisticSamplingStrategy parseProbabilistic(
-      CodedInputStream input) throws IOException {
+      CodedInputStream input, int length) throws IOException {
     SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder builder =
         new SamplingStrategyResponse.ProbabilisticSamplingStrategy.Builder();
+    if (length == 0) {
+      // Default probabilistic strategy.
+      return builder.setSamplingRate(0.0).build();
+    }
     boolean done = false;
     while (!done) {
       int tag = input.readTag();
@@ -184,8 +188,8 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
           break;
         case 18:
           probabilisticSamplingParsed = true;
-          input.readRawVarint32(); // skip length
-          builder.setProbabilisticSamplingStrategy(parseProbabilistic(input));
+          int length = input.readRawVarint32();
+          builder.setProbabilisticSamplingStrategy(parseProbabilistic(input, length));
           break;
         default:
           input.skipField(tag);
