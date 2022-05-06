@@ -41,13 +41,13 @@ public final class DoublePointAssert
   /** Asserts the point has exemplars matching all of the assertions, in any order. */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final DoublePointDataAssert hasExemplarsSatisfying(
+  public final DoublePointAssert hasExemplarsSatisfying(
       Consumer<DoubleExemplarAssert>... assertions) {
     return hasExemplarsSatisfying(Arrays.asList(assertions));
   }
 
   /** Asserts the point has exemplars matching all of the assertions, in any order. */
-  public DoublePointDataAssert hasExemplarsSatisfying(
+  public DoublePointAssert hasExemplarsSatisfying(
       Iterable<? extends Consumer<DoubleExemplarAssert>> assertions) {
     isNotNull();
     assertThat(actual.getExemplars())

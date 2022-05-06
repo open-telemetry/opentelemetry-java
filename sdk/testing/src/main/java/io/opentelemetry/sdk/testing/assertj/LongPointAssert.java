@@ -37,13 +37,12 @@ public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, 
   /** Asserts the point has exemplars matching all of the assertions, in any order. */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final LongPointDataAssert hasExemplarsSatisfying(
-      Consumer<LongExemplarAssert>... assertions) {
+  public final LongPointAssert hasExemplarsSatisfying(Consumer<LongExemplarAssert>... assertions) {
     return hasExemplarsSatisfying(Arrays.asList(assertions));
   }
 
   /** Asserts the point has exemplars matching all of the assertions, in any order. */
-  public LongPointDataAssert hasExemplarsSatisfying(
+  public LongPointAssert hasExemplarsSatisfying(
       Iterable<? extends Consumer<LongExemplarAssert>> assertions) {
     isNotNull();
     assertThat(actual.getExemplars())
