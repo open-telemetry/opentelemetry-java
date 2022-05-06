@@ -80,7 +80,7 @@ public class InMemoryMetricReader implements MetricReader {
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     collectAllMetrics();
     return CompletableResultCode.ofSuccess();
   }

@@ -98,7 +98,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   /**
-   * Call {@link MetricReader#flush()} on all metric readers associated with this provider. The
+   * Call {@link MetricReader#forceFlush()} on all metric readers associated with this provider. The
    * resulting {@link CompletableResultCode} completes when all complete.
    */
   public CompletableResultCode forceFlush() {
@@ -107,7 +107,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     }
     List<CompletableResultCode> results = new ArrayList<>();
     for (CollectionInfo collectionInfo : collectionInfoMap.values()) {
-      results.add(collectionInfo.getReader().flush());
+      results.add(collectionInfo.getReader().forceFlush());
     }
     return CompletableResultCode.ofAll(results);
   }

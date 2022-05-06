@@ -9,10 +9,20 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasAttributesSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasEpochNanos(long)
-	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasExemplarsSatisfying(java.util.function.Consumer[])
-		+++  NEW ANNOTATION: java.lang.SafeVarargs
-	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasExemplarsSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasStartEpochNanos(long)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasEpochNanos(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttribute(io.opentelemetry.sdk.testing.assertj.AttributeAssertion)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributes(java.util.Map$Entry[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributesSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasSpanId(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasTraceId(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasValue(double)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert hasPointsSatisfying(java.util.function.Consumer[])
@@ -22,6 +32,9 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.assertj.AbstractPointAssert
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasExemplars(io.opentelemetry.sdk.metrics.data.DoubleExemplarData[])
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasExemplarsSatisfying(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasExemplarsSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasValue(double)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleSumAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -32,19 +45,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleSumAssert isDelta()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleSumAssert isMonotonic()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleSumAssert isNotMonotonic()
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasEpochNanos(long)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttribute(io.opentelemetry.sdk.testing.assertj.AttributeAssertion)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttributes(io.opentelemetry.api.common.Attributes)
-	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttributes(java.util.Map$Entry[])
-		+++  NEW ANNOTATION: java.lang.SafeVarargs
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasFilteredAttributesSatisfying(java.lang.Iterable)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasSpanId(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasTraceId(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExemplarDataAssert hasValue(double)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.HistogramAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.HistogramAssert hasPointsSatisfying(java.util.function.Consumer[])
@@ -62,6 +62,19 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasMin(double)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasSum(double)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasSumGreaterThan(double)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasEpochNanos(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttribute(io.opentelemetry.sdk.testing.assertj.AttributeAssertion)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributes(java.util.Map$Entry[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasSpanId(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasTraceId(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasValue(long)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongGaugeAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongGaugeAssert hasPointsSatisfying(java.util.function.Consumer[])
@@ -71,6 +84,9 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.assertj.AbstractPointAssert
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasExemplars(io.opentelemetry.sdk.metrics.data.LongExemplarData[])
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasExemplarsSatisfying(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasExemplarsSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasValue(long)
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongSumAssert  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.

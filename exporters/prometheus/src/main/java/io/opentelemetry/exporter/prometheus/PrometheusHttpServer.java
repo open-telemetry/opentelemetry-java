@@ -119,7 +119,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 
