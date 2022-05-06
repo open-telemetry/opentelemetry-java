@@ -115,7 +115,7 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  public OtlpHttpMetricExporterBuilder exportAsJson() {
+  OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;
   }
