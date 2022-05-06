@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
@@ -105,22 +104,6 @@ public abstract class AbstractPointAssert<
    */
   public final PointAssertT hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributes(actual.getAttributes(), assertions);
-    return myself;
-  }
-
-  /** Asserts the point has exemplars matching all of the assertions, in any order. */
-  @SafeVarargs
-  @SuppressWarnings("varargs")
-  public final PointAssertT hasExemplarsSatisfying(Consumer<ExemplarDataAssert>... assertions) {
-    return hasExemplarsSatisfying(Arrays.asList(assertions));
-  }
-
-  /** Asserts the point has exemplars matching all of the assertions, in any order. */
-  public final PointAssertT hasExemplarsSatisfying(
-      Iterable<? extends Consumer<ExemplarDataAssert>> assertions) {
-    isNotNull();
-    assertThat(actual.getExemplars())
-        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, ExemplarDataAssert::new));
     return myself;
   }
 }
