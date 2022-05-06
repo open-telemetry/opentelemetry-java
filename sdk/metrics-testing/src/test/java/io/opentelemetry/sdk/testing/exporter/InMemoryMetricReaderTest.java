@@ -69,8 +69,8 @@ class InMemoryMetricReaderTest {
     generateFakeMetric(2);
     generateFakeMetric(3);
     // TODO: Better assertions for CompletableResultCode.
-    assertThat(cumulativeReader.flush()).isNotNull();
-    assertThat(deltaReader.flush()).isNotNull();
+    assertThat(cumulativeReader.forceFlush()).isNotNull();
+    assertThat(deltaReader.forceFlush()).isNotNull();
 
     assertThat(cumulativeReader.collectAllMetrics()).hasSize(3);
     assertThat(deltaReader.collectAllMetrics()).hasSize(0);

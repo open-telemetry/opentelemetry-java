@@ -65,7 +65,7 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return scheduled.doRun();
   }
 

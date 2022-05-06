@@ -41,7 +41,7 @@ public interface MetricReader {
    *
    * @return the result of the flush.
    */
-  CompletableResultCode flush();
+  CompletableResultCode forceFlush();
 
   /**
    * Shuts down the metric reader.
