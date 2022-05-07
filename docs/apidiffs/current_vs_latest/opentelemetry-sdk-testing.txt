@@ -136,3 +136,24 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ValueAtQuantileAssert hasQuantile(double)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ValueAtQuantileAssert hasValue(double)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter create()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter create(io.opentelemetry.sdk.metrics.data.AggregationTemporality)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) java.util.List getFinishedMetricItems()
+	+++  NEW METHOD: PUBLIC(+) void reset()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) java.util.Collection collectAllMetrics()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader create()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader createDelta()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) void register(io.opentelemetry.sdk.metrics.export.CollectionRegistration)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
