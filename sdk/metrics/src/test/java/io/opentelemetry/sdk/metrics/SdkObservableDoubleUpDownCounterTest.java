@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -44,7 +45,10 @@ class SdkObservableDoubleUpDownCounterTest {
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
-            metric -> assertThat(metric).hasName("testCounter").hasDoubleSum().points().hasSize(1));
+            metric ->
+                assertThat(metric)
+                    .hasName("testCounter")
+                    .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> {})));
 
     counter.close();
 
@@ -85,19 +89,17 @@ class SdkObservableDoubleUpDownCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasDoubleSum()
-                    .isCumulative()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12.1)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12.1)
+                                            .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -106,19 +108,17 @@ class SdkObservableDoubleUpDownCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasDoubleSum()
-                    .isCumulative()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12.1)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12.1)
+                                            .hasAttributes(attributeEntry("k", "v")))));
   }
 
   @Test
@@ -147,19 +147,17 @@ class SdkObservableDoubleUpDownCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasDoubleSum()
-                    .isDelta()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12.1)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12.1)
+                                            .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -168,19 +166,17 @@ class SdkObservableDoubleUpDownCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasDoubleSum()
-                    .isDelta()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(0)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(0)
+                                            .hasAttributes(attributeEntry("k", "v")))));
   }
 
   @Test

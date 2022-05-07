@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -152,14 +152,14 @@ class DoubleLastValueAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleGauge()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasAttributes(Attributes.empty())
-                    .hasStartEpochNanos(10)
-                    .hasEpochNanos(100)
-                    .hasValue(10));
+        .hasDoubleGaugeSatisfying(
+            gauge ->
+                gauge.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasAttributes(Attributes.empty())
+                            .hasStartEpochNanos(10)
+                            .hasEpochNanos(100)
+                            .hasValue(10)));
   }
 }

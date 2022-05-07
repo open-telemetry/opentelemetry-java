@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -84,20 +85,16 @@ class AsynchronousMetricStorageTest {
                 /* suppressSynchronousCollection= */ false))
         .satisfies(
             metricData ->
-                assertThat(metricData.getLongSumData().getPoints())
-                    .satisfiesExactlyInAnyOrder(
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(1)
-                                .hasAttributes(Attributes.builder().put("key", "a").build()),
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(2)
-                                .hasAttributes(Attributes.builder().put("key", "b").build()),
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(3)
-                                .hasAttributes(Attributes.builder().put("key", "c").build())));
+                assertThat(metricData)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasValue(1).hasAttributes(attributeEntry("key", "a")),
+                                point ->
+                                    point.hasValue(2).hasAttributes(attributeEntry("key", "b")),
+                                point ->
+                                    point.hasValue(3).hasAttributes(attributeEntry("key", "c")))));
     assertThat(logs.size()).isEqualTo(0);
   }
 
@@ -123,20 +120,18 @@ class AsynchronousMetricStorageTest {
                 /* suppressSynchronousCollection= */ false))
         .satisfies(
             metricData ->
-                assertThat(metricData.getDoubleSumData().getPoints())
-                    .satisfiesExactlyInAnyOrder(
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(1.1)
-                                .hasAttributes(Attributes.builder().put("key", "a").build()),
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(2.2)
-                                .hasAttributes(Attributes.builder().put("key", "b").build()),
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(3.3)
-                                .hasAttributes(Attributes.builder().put("key", "c").build())));
+                assertThat(metricData)
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasValue(1.1).hasAttributes(attributeEntry("key", "a")),
+                                point ->
+                                    point.hasValue(2.2).hasAttributes(attributeEntry("key", "b")),
+                                point ->
+                                    point
+                                        .hasValue(3.3)
+                                        .hasAttributes(attributeEntry("key", "c")))));
     assertThat(logs.size()).isEqualTo(0);
   }
 
@@ -164,12 +159,12 @@ class AsynchronousMetricStorageTest {
                 /* suppressSynchronousCollection= */ false))
         .satisfies(
             metricData ->
-                assertThat(metricData.getLongSumData().getPoints())
-                    .satisfiesExactlyInAnyOrder(
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(1)
-                                .hasAttributes(Attributes.builder().put("key1", "a").build())));
+                assertThat(metricData)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
     assertThat(logs.size()).isEqualTo(0);
   }
 
@@ -221,12 +216,12 @@ class AsynchronousMetricStorageTest {
                 /* suppressSynchronousCollection= */ false))
         .satisfies(
             metricData ->
-                assertThat(metricData.getLongSumData().getPoints())
-                    .satisfiesExactlyInAnyOrder(
-                        pointData ->
-                            assertThat(pointData)
-                                .hasValue(1)
-                                .hasAttributes(Attributes.builder().put("key1", "a").build())));
+                assertThat(metricData)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
     logs.assertContains("Instrument name has recorded multiple values for the same attributes");
   }
 }

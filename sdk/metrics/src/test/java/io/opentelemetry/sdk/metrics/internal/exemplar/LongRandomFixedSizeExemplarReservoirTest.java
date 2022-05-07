@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Random;
@@ -43,7 +44,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
         .hasSize(1)
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
                     .hasValue(1));
@@ -55,7 +56,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
         .hasSize(1)
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
                     .hasValue(2));
@@ -74,7 +75,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasValue(1)
                     .hasFilteredAttributes(remaining));
@@ -97,7 +98,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasValue(1)
                     .hasFilteredAttributes(all)
@@ -130,7 +131,9 @@ class LongRandomFixedSizeExemplarReservoirTest {
     reservoir.offerLongMeasurement(3, Attributes.of(key, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactlyInAnyOrder(
-            exemplar -> assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),
-            exemplar -> assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(3));
+            exemplar ->
+                MetricAssertions.assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),
+            exemplar ->
+                MetricAssertions.assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(3));
   }
 }

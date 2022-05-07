@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Metrics;
@@ -51,28 +51,26 @@ class TimerSecondsTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(23.345)
-                                .hasCount(3)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(23.345)
+                                        .hasCount(3)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimerSeconds.max")
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12.345)
-                                .attributes()
-                                .containsEntry("tag", "value")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12.345)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     Metrics.globalRegistry.remove(timer);
     timer.record(12, TimeUnit.SECONDS);
@@ -82,8 +80,17 @@ class TimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimerSeconds")
-                    .hasDoubleHistogram()
-                    .points()
-                    .noneSatisfy(point -> assertThat(point).hasSum(35.345).hasCount(4)));
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasDescription("This is a test timer")
+                    .hasUnit("s")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(23.345)
+                                        .hasCount(3)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 }

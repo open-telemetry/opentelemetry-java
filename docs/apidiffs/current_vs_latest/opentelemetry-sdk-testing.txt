@@ -58,6 +58,10 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasBucketBoundaries(double[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasBucketCounts(long[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasCount(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasExemplars(io.opentelemetry.sdk.metrics.data.DoubleExemplarData[])
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasExemplarsSatisfying(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasExemplarsSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasMax(double)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasMin(double)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasSum(double)

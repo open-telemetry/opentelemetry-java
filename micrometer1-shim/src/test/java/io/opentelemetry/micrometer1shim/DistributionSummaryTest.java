@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -42,27 +42,25 @@ class DistributionSummaryTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(7)
-                                .hasCount(3)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(7)
+                                        .hasCount(3)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testSummary.max")
                     .hasDescription("This is a test distribution summary")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(4)
-                                .attributes()
-                                .containsEntry("tag", "value")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(4)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     Metrics.globalRegistry.remove(summary);
 
@@ -73,15 +71,14 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(7)
-                                .hasCount(3)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(7)
+                                        .hasCount(3)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -109,44 +106,55 @@ class DistributionSummaryTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(555.5)
-                                .hasCount(4)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                points ->
+                                    points
+                                        .hasSum(555.5)
+                                        .hasCount(4)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testSummary.max")
                     .hasDescription("This is a test distribution summary")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(500)
-                                .attributes()
-                                .containsEntry("tag", "value")),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(500)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testSummary.histogram")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point).hasValue(1).attributes().containsEntry("le", "1"),
-                        point ->
-                            assertThat(point).hasValue(2).attributes().containsEntry("le", "10"),
-                        point ->
-                            assertThat(point).hasValue(3).attributes().containsEntry("le", "100"),
-                        point ->
-                            assertThat(point)
-                                .hasValue(4)
-                                .attributes()
-                                .containsEntry("le", "1000")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(
+                                            attributeEntry("le", "1"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(2)
+                                        .hasAttributes(
+                                            attributeEntry("le", "10"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(3)
+                                        .hasAttributes(
+                                            attributeEntry("le", "100"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(4)
+                                        .hasAttributes(
+                                            attributeEntry("le", "1000"),
+                                            attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -171,36 +179,42 @@ class DistributionSummaryTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(150)
-                                .hasCount(2)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(150)
+                                        .hasCount(2)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testSummary.max")
                     .hasDescription("This is a test distribution summary")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(100)
-                                .attributes()
-                                .containsEntry("tag", "value")),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(100)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testSummary.percentile")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(point -> assertThat(point).attributes().containsEntry("phi", "0.5"))
-                    .anySatisfy(
-                        point -> assertThat(point).attributes().containsEntry("phi", "0.95"))
-                    .anySatisfy(
-                        point -> assertThat(point).attributes().containsEntry("phi", "0.99")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.5"),
+                                        attributeEntry("tag", "value")),
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.95"),
+                                        attributeEntry("tag", "value")),
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.99"),
+                                        attributeEntry("tag", "value")))));
   }
 }

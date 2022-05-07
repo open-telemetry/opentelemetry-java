@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.viewconfig;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -61,20 +62,17 @@ class ViewConfigCustomizerTest {
 
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
-            metricData -> {
-              assertThat(metricData)
-                  .hasLongSum()
-                  .points()
-                  .satisfiesExactly(
-                      point ->
-                          assertThat(point)
-                              .hasValue(1)
-                              .hasAttributes(
-                                  Attributes.builder()
-                                      .put("foo", "val")
-                                      .put("bar", "val")
-                                      .build()));
-            });
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(
+                                            attributeEntry("foo", "val"),
+                                            attributeEntry("bar", "val")))));
   }
 
   @Test

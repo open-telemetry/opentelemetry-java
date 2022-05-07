@@ -17,7 +17,7 @@ dependencies {
   api("io.opencensus:opencensus-exporter-metrics-util")
 
   testImplementation(project(":sdk:all"))
-  testImplementation(project(":sdk:metrics-testing"))
+  testImplementation(project(":sdk:testing"))
 
   testImplementation("io.opencensus:opencensus-impl")
   testImplementation("io.opencensus:opencensus-contrib-exemplar-util")

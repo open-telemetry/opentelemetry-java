@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
@@ -95,24 +93,6 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   }
 
   /**
-   * Ensures this {@link MetricData} is a {@code DoubleHistogram}.
-   *
-   * @return convenience API to assert against the {@code DoubleHistogram}.
-   */
-  public HistogramAssert hasDoubleHistogram() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.HISTOGRAM) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: HISTOGRAM",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.HISTOGRAM,
-          actual.getType());
-    }
-    return new HistogramAssert(actual.getHistogramData());
-  }
-
-  /**
    * Ensures this {@link MetricData} is a {@code ExponentialHistogram}.
    *
    * @return convenience API to assert against the {@code ExponentialHistogram}.
@@ -128,95 +108,5 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           actual.getType());
     }
     return new ExponentialHistogramAssert(ExponentialHistogramData.fromMetricData(actual));
-  }
-
-  /**
-   * Ensures this {@link MetricData} is a {@code DoubleGauge}.
-   *
-   * @return convenience API to assert against the {@code DoubleGauge}.
-   */
-  public GaugeAssert<DoublePointData> hasDoubleGauge() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.DOUBLE_GAUGE) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: DOUBLE_GAUGE",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.DOUBLE_GAUGE,
-          actual.getType());
-    }
-    return new GaugeAssert<>(actual.getDoubleGaugeData());
-  }
-
-  /**
-   * Ensures this {@link MetricData} is a {@code DoubleSum}.
-   *
-   * @return convenience API to assert against the {@code DoubleSum}.
-   */
-  public SumDataAssert<DoublePointData> hasDoubleSum() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.DOUBLE_SUM) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: DOUBLE_SUM",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.DOUBLE_SUM,
-          actual.getType());
-    }
-    return new SumDataAssert<>(actual.getDoubleSumData());
-  }
-
-  /**
-   * Ensures this {@link MetricData} is a {@code LongGauge}.
-   *
-   * @return convenience API to assert against the {@code LongGauge}.
-   */
-  public GaugeAssert<LongPointData> hasLongGauge() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.LONG_GAUGE) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: LONG_GAUGE",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.LONG_GAUGE,
-          actual.getType());
-    }
-    return new GaugeAssert<>(actual.getLongGaugeData());
-  }
-
-  /**
-   * Ensures this {@link MetricData} is a {@code LongSum}.
-   *
-   * @return convenience API to assert against the {@code LongSum}.
-   */
-  public SumDataAssert<LongPointData> hasLongSum() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.LONG_SUM) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: LONG_SUM",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.LONG_SUM,
-          actual.getType());
-    }
-    return new SumDataAssert<>(actual.getLongSumData());
-  }
-
-  /**
-   * Ensures this {@link MetricData} is a {@code DoubleSummaryData}.
-   *
-   * @return convenience API to assert against the {@code DoubleSummaryData}.
-   */
-  public SummaryDataAssert hasDoubleSummary() {
-    isNotNull();
-    if (actual.getType() != MetricDataType.SUMMARY) {
-      failWithActualExpectedAndMessage(
-          actual,
-          "type: SUMMARY",
-          "Expected MetricData to have type <%s> but found <%s>",
-          MetricDataType.SUMMARY,
-          actual.getType());
-    }
-    return new SummaryDataAssert(actual.getSummaryData());
   }
 }

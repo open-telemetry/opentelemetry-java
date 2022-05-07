@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -14,11 +14,9 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -88,12 +86,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -105,12 +102,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(30).hasValue(6));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(30).hasValue(6)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -122,12 +118,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -139,12 +134,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(35).hasValue(8));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(35).hasValue(8)));
   }
 
   @Test
@@ -168,13 +162,19 @@ class TemporalMetricStorageTest {
                 measurement1,
                 0,
                 10))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS)
-        .isNotEmpty()
-        .allSatisfy(point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
-
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .satisfies(
+                        sumPoint ->
+                            assertThat(sumPoint.getPoints())
+                                .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS)
+                                .allSatisfy(
+                                    sumPointData -> {
+                                      assertThat(sumPointData.getStartEpochNanos()).isEqualTo(0);
+                                      assertThat(sumPointData.getEpochNanos()).isEqualTo(10);
+                                      assertThat(sumPointData.getValue()).isEqualTo(3);
+                                    })));
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
     Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
@@ -193,13 +193,8 @@ class TemporalMetricStorageTest {
                 measurement2,
                 0,
                 20))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .hasSize(1) // Limiting to only recent measurements means we cut everything here.
-        .isNotEmpty()
-        .extracting(PointData::getAttributes)
-        .contains(attr2);
+        .hasDoubleSumSatisfying(
+            sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasAttributes(attr2)));
   }
 
   @Test
@@ -221,12 +216,11 @@ class TemporalMetricStorageTest {
                 measurement1,
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -243,12 +237,16 @@ class TemporalMetricStorageTest {
                 measurement2,
                 0,
                 20))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .containsExactly(ImmutableDoublePointData.create(10, 20, attr2, 7));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(10)
+                                .hasEpochNanos(20)
+                                .hasAttributes(attr2)
+                                .hasValue(7)));
   }
 
   @Test
@@ -267,12 +265,10 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
+                    point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -284,12 +280,10 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
+                    point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -301,12 +295,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -318,12 +311,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2)));
   }
 
   @Test
@@ -341,12 +333,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -358,12 +349,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -375,12 +365,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 40))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(40).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(40).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -392,12 +381,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2)));
     // Send in new measurement at time 60 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -409,12 +397,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(8));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(8)));
   }
 
   @Test
@@ -433,12 +420,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -450,12 +436,10 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(30).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
+                    point -> point.hasStartEpochNanos(0).hasEpochNanos(30).hasValue(3)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -467,12 +451,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -484,12 +467,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(35).hasValue(2));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(35).hasValue(2)));
   }
 
   @Test
@@ -511,12 +493,16 @@ class TemporalMetricStorageTest {
                 measurement1,
                 0,
                 10))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(10)
+                                .hasAttributes(attr1)
+                                .hasValue(3)));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -533,12 +519,16 @@ class TemporalMetricStorageTest {
                 measurement2,
                 0,
                 20))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .containsExactly(ImmutableDoublePointData.create(0, 20, attr2, 7));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(20)
+                                .hasAttributes(attr2)
+                                .hasValue(7)));
   }
 
   @Test
@@ -560,12 +550,16 @@ class TemporalMetricStorageTest {
                 measurement1,
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .contains(ImmutableDoublePointData.create(0, 10, attr1, 3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(10)
+                                .hasAttributes(attr1)
+                                .hasValue(3)));
 
     // Send in new measurement at time 20 for collector 1, with attr2
     // Result should drop accumulation for attr1, only reporting accumulation for attr2
@@ -582,12 +576,16 @@ class TemporalMetricStorageTest {
                 measurement2,
                 0,
                 20))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .hasSize(1)
-        .isNotEmpty()
-        .containsExactly(ImmutableDoublePointData.create(10, 20, attr2, 7));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(10)
+                                .hasEpochNanos(20)
+                                .hasAttributes(attr2)
+                                .hasValue(7)));
   }
 
   @Test
@@ -606,12 +604,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -623,12 +620,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(0));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(0)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -640,12 +636,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -657,12 +652,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(30).hasEpochNanos(35).hasValue(-1));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(-1)));
   }
 
   @Test
@@ -681,12 +675,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 10))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
     // Send in new measurement at time 30 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -698,12 +691,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(3),
                 0,
                 30))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(0));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(0)));
     // Send in new measurement at time 40 for collector 2
     assertThat(
             storage.buildMetricFor(
@@ -715,12 +707,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(4),
                 0,
                 60))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4)));
     // Send in new measurement at time 35 for collector 1
     assertThat(
             storage.buildMetricFor(
@@ -732,12 +723,11 @@ class TemporalMetricStorageTest {
                 createMeasurement(2),
                 0,
                 35))
-        .hasDoubleSum()
-        .isDelta()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(30).hasEpochNanos(35).hasValue(-1));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(-1)));
 
     // Send in new measurement at time 60 for collector 2
     assertThat(
@@ -750,11 +740,10 @@ class TemporalMetricStorageTest {
                 createMeasurement(5),
                 0,
                 60))
-        .hasDoubleSum()
-        .isCumulative()
-        .points()
-        .isNotEmpty()
-        .satisfiesExactly(
-            point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(5));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(60).hasValue(5)));
   }
 }

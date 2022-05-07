@@ -6,11 +6,12 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -42,27 +43,25 @@ class TimerTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(42_000)
-                                .hasCount(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(42_000)
+                                        .hasCount(1)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimer.max")
                     .hasDescription("This is a test timer")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(42_000)
-                                .attributes()
-                                .containsEntry("tag", "value")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(42_000)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     Metrics.globalRegistry.remove(timer);
     timer.record(12, TimeUnit.SECONDS);
@@ -74,15 +73,14 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(42_000)
-                                .hasCount(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(42_000)
+                                        .hasCount(1)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -97,17 +95,21 @@ class TimerTest {
                 assertThat(metric)
                     .hasName("testNanoTimer")
                     .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point).hasSum(1.234).hasCount(1).attributes().isEmpty()),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(1.234)
+                                        .hasCount(1)
+                                        .hasAttributes(Attributes.empty()))),
             metric ->
                 assertThat(metric)
                     .hasName("testNanoTimer.max")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(point -> assertThat(point).hasValue(1.234).attributes().isEmpty()));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasValue(1.234).hasAttributes(Attributes.empty()))));
   }
 
   @Test
@@ -139,47 +141,55 @@ class TimerTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(555500)
-                                .hasCount(4)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(555500)
+                                        .hasCount(4)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimer.max")
                     .hasDescription("This is a test timer")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(500000)
-                                .attributes()
-                                .containsEntry("tag", "value")),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(500000)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimer.histogram")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point).hasValue(1).attributes().containsEntry("le", "1000"),
-                        point ->
-                            assertThat(point).hasValue(2).attributes().containsEntry("le", "10000"),
-                        point ->
-                            assertThat(point)
-                                .hasValue(3)
-                                .attributes()
-                                .containsEntry("le", "100000"),
-                        point ->
-                            assertThat(point)
-                                .hasValue(4)
-                                .attributes()
-                                .containsEntry("le", "1000000")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(
+                                            attributeEntry("le", "1000"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(2)
+                                        .hasAttributes(
+                                            attributeEntry("le", "10000"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(3)
+                                        .hasAttributes(
+                                            attributeEntry("le", "100000"),
+                                            attributeEntry("tag", "value")),
+                                point ->
+                                    point
+                                        .hasValue(4)
+                                        .hasAttributes(
+                                            attributeEntry("le", "1000000"),
+                                            attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -204,36 +214,42 @@ class TimerTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(150)
-                                .hasCount(2)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(150)
+                                        .hasCount(2)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimer.max")
                     .hasDescription("This is a test timer")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(100)
-                                .attributes()
-                                .containsEntry("tag", "value")),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(100)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testTimer.percentile")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(point -> assertThat(point).attributes().containsEntry("phi", "0.5"))
-                    .anySatisfy(
-                        point -> assertThat(point).attributes().containsEntry("phi", "0.95"))
-                    .anySatisfy(
-                        point -> assertThat(point).attributes().containsEntry("phi", "0.99")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.5"),
+                                        attributeEntry("tag", "value")),
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.95"),
+                                        attributeEntry("tag", "value")),
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("phi", "0.99"),
+                                        attributeEntry("tag", "value")))));
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -480,23 +481,23 @@ class DoubleExponentialHistogramAggregatorTest {
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
-      assertThat(metricDataCumulative)
+      MetricAssertions.assertThat(metricDataCumulative)
           .hasExponentialHistogram()
           .isCumulative()
           .points()
           .satisfiesExactly(
               point -> {
-                assertThat(point)
+                MetricAssertions.assertThat(point)
                     .hasSum(123.456)
                     .hasScale(20)
                     .hasZeroCount(2)
                     .hasCount(3)
                     .hasExemplars(exemplar);
-                assertThat(point.getPositiveBuckets())
+                MetricAssertions.assertThat(point.getPositiveBuckets())
                     .hasCounts(Collections.singletonList(1L))
                     .hasOffset(valueToIndex(20, 123.456))
                     .hasTotalCount(1);
-                assertThat(point.getNegativeBuckets())
+                MetricAssertions.assertThat(point.getNegativeBuckets())
                     .hasTotalCount(0)
                     .hasCounts(Collections.emptyList());
               });
@@ -553,8 +554,12 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
     assertThat(acc.getScale()).isEqualTo(5);
-    assertThat(acc.getPositiveBuckets()).hasTotalCount(numberOfUpdates * 3).hasOffset(-107);
-    assertThat(acc.getNegativeBuckets()).hasTotalCount(numberOfUpdates * 2).hasOffset(-107);
+    MetricAssertions.assertThat(acc.getPositiveBuckets())
+        .hasTotalCount(numberOfUpdates * 3)
+        .hasOffset(-107);
+    MetricAssertions.assertThat(acc.getNegativeBuckets())
+        .hasTotalCount(numberOfUpdates * 2)
+        .hasOffset(-107);
 
     // Verify positive buckets have correct counts
     List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();
