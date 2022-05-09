@@ -70,9 +70,4 @@ public class ExporterMetrics {
   public static ExporterMetrics createHttpProtobuf(String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-http"), type);
   }
-
-  public static ExporterMetrics createHttpJson(String type, MeterProvider meterProvider) {
-    return new ExporterMetrics(
-        meterProvider.get("io.opentelemetry.exporters.otlp-http-json"), type);
-  }
 }

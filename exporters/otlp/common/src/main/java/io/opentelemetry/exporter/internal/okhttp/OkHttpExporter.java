@@ -65,13 +65,8 @@ public final class OkHttpExporter<T extends Marshaler> {
     this.endpoint = endpoint;
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
-    if (exportAsJson) {
-      this.requestBodyCreator = JsonRequestBody::new;
-      this.exporterMetrics = ExporterMetrics.createHttpJson(type, meterProvider);
-    } else {
-      this.requestBodyCreator = ProtoRequestBody::new;
-      this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
-    }
+    this.requestBodyCreator = exportAsJson ? JsonRequestBody::new : ProtoRequestBody::new;
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
