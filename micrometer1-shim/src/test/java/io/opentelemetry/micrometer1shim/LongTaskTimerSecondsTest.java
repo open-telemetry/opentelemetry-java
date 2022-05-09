@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.LongTaskTimer;
@@ -51,15 +51,14 @@ class LongTaskTimerSecondsTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("tasks")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.duration")
@@ -67,17 +66,17 @@ class LongTaskTimerSecondsTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("s")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> {
-                          assertThat(point)
-                              .attributes()
-                              .containsOnly(attributeEntry("tag", "value"));
-                          // any value >0 - duration of currently running tasks
-                          assertThat(point.getValue()).isPositive();
-                        }));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasAttributes(attributeEntry("tag", "value"))
+                                            .satisfies(
+                                                pointData ->
+                                                    assertThat(pointData.getValue())
+                                                        .isPositive()))));
 
     // when
     TimeUnit.MILLISECONDS.sleep(100);
@@ -89,25 +88,23 @@ class LongTaskTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.active")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(0)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(0)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.duration")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(0)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(0)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     // when timer is removed from the registry
     Metrics.globalRegistry.remove(timer);

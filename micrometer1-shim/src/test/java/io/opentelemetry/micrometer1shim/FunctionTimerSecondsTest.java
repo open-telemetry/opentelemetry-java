@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.FunctionTimer;
@@ -61,15 +61,14 @@ class FunctionTimerSecondsTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionTimerSeconds.sum")
@@ -77,14 +76,13 @@ class FunctionTimerSecondsTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("s")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(42)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(42)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     Metrics.globalRegistry.remove(functionTimer);
     assertThat(testing.collectAllMetrics()).isEmpty();

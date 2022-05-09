@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opencensusshim.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opencensus.stats.Aggregation;
 import io.opencensus.stats.Measure;
@@ -48,7 +48,9 @@ class OpenCensusMetricsTest {
             () ->
                 assertThat(reader.collectAllMetrics())
                     .satisfiesExactly(
-                        metric -> assertThat(metric).hasName("otel.sum").hasLongSum(),
-                        metric -> assertThat(metric).hasName("oc.sum").hasLongSum()));
+                        metric ->
+                            assertThat(metric).hasName("otel.sum").hasLongSumSatisfying(sum -> {}),
+                        metric ->
+                            assertThat(metric).hasName("oc.sum").hasLongSumSatisfying(sum -> {})));
   }
 }

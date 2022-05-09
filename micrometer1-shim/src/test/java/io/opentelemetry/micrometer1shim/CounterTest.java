@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Counter;
@@ -41,15 +41,14 @@ class CounterTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test counter")
                     .hasUnit("items")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(3)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(3)
+                                            .hasAttributes(attributeEntry("tag", "value")))));
 
     Metrics.globalRegistry.remove(counter);
     counter.increment();
@@ -60,8 +59,7 @@ class CounterTest {
             metric ->
                 assertThat(metric)
                     .hasName("testCounter")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(3)));
+                    .hasDoubleSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(3))));
   }
 }

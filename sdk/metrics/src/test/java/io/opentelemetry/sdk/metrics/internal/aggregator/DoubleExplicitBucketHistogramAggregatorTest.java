@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
@@ -301,17 +301,17 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 0,
                 10,
                 100))
-        .hasDoubleHistogram()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasSum(2)
-                    .hasMin(2)
-                    .hasMax(2)
-                    .hasBucketCounts(1, 0, 0, 0)
-                    .hasCount(1)
-                    .hasExemplars(exemplar));
+        .hasHistogramSatisfying(
+            histogram ->
+                histogram.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasSum(2)
+                            .hasMin(2)
+                            .hasMax(2)
+                            .hasBucketCounts(1, 0, 0, 0)
+                            .hasCount(1)
+                            .hasExemplars(exemplar)));
   }
 
   @Test

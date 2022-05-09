@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ class HistogramExemplarReservoirTest {
         .hasSize(1)
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
                     .hasValue(1.1));
@@ -47,7 +48,7 @@ class HistogramExemplarReservoirTest {
         .hasSize(1)
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
                     .hasValue(2));
@@ -59,7 +60,7 @@ class HistogramExemplarReservoirTest {
         .hasSize(1)
         .satisfiesExactly(
             exemplar ->
-                assertThat(exemplar)
+                MetricAssertions.assertThat(exemplar)
                     .hasEpochNanos(clock.now())
                     .hasFilteredAttributes(Attributes.empty())
                     .hasValue(4));
@@ -78,9 +79,21 @@ class HistogramExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(
-            e -> assertThat(e).hasValue(-1.1).hasFilteredAttributes(Attributes.of(bucketKey, 0L)),
-            e -> assertThat(e).hasValue(1).hasFilteredAttributes(Attributes.of(bucketKey, 1L)),
-            e -> assertThat(e).hasValue(11).hasFilteredAttributes(Attributes.of(bucketKey, 2L)),
-            e -> assertThat(e).hasValue(21).hasFilteredAttributes(Attributes.of(bucketKey, 3L)));
+            e ->
+                MetricAssertions.assertThat(e)
+                    .hasValue(-1.1)
+                    .hasFilteredAttributes(Attributes.of(bucketKey, 0L)),
+            e ->
+                MetricAssertions.assertThat(e)
+                    .hasValue(1)
+                    .hasFilteredAttributes(Attributes.of(bucketKey, 1L)),
+            e ->
+                MetricAssertions.assertThat(e)
+                    .hasValue(11)
+                    .hasFilteredAttributes(Attributes.of(bucketKey, 2L)),
+            e ->
+                MetricAssertions.assertThat(e)
+                    .hasValue(21)
+                    .hasFilteredAttributes(Attributes.of(bucketKey, 3L)));
   }
 }

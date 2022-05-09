@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
@@ -41,7 +42,11 @@ class SdkDoubleGaugeBuilderTest {
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
-            metric -> assertThat(metric).hasName("testGauge").hasDoubleGauge().points().hasSize(1));
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasDoubleGaugeSatisfying(
+                        doubleGauge -> doubleGauge.hasPointsSatisfying(poit -> {})));
 
     gauge.close();
 
@@ -76,15 +81,15 @@ class SdkDoubleGaugeBuilderTest {
                     .hasName("testObserver")
                     .hasDescription("My own DoubleValueObserver")
                     .hasUnit("ms")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000L)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12.1d)));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now() - 1000000000L)
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(attributeEntry("k", "v"))
+                                        .hasValue(12.1d))));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -95,14 +100,14 @@ class SdkDoubleGaugeBuilderTest {
                     .hasName("testObserver")
                     .hasDescription("My own DoubleValueObserver")
                     .hasUnit("ms")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 2000000000L)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12.1d)));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now() - 2000000000L)
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(attributeEntry("k", "v"))
+                                        .hasValue(12.1d))));
   }
 }

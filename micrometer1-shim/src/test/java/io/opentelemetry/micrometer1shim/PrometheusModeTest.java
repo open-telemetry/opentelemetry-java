@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Counter;
@@ -66,15 +66,14 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test counter")
                     .hasUnit("items")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(12)
+                                            .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -101,15 +100,14 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test summary")
                     .hasUnit("items")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(54)
-                                .hasCount(2)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(54)
+                                        .hasCount(2)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusSummary.items.max")
@@ -117,14 +115,13 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test summary")
                     .hasUnit("items")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(42)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(42)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -153,15 +150,14 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusFunctionTimer.seconds.sum")
@@ -169,14 +165,13 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test function timer")
                     .hasUnit("s")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(42)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(42)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -198,14 +193,13 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test gauge")
                     .hasUnit("items")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(42)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(42)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -230,15 +224,14 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("tasks")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusLongTaskTimer.seconds.duration")
@@ -246,17 +239,17 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("s")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> {
-                          assertThat(point)
-                              .attributes()
-                              .containsOnly(attributeEntry("tag", "value"));
-                          // any value >0 - duration of currently running tasks
-                          assertThat(point.getValue()).isPositive();
-                        }));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasAttributes(attributeEntry("tag", "value"))
+                                            .satisfies(
+                                                pointData ->
+                                                    assertThat(pointData.getValue())
+                                                        .isPositive()))));
 
     // when
     TimeUnit.MILLISECONDS.sleep(100);
@@ -268,25 +261,23 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusLongTaskTimer.seconds.active")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(0)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(0)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusLongTaskTimer.seconds.duration")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(0)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(0)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 
   @Test
@@ -313,15 +304,14 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasSum(16.789)
-                                .hasCount(3)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(16.789)
+                                        .hasCount(3)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusTimer.seconds.max")
@@ -329,13 +319,12 @@ class PrometheusModeTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(10.789)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(10.789)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
   }
 }

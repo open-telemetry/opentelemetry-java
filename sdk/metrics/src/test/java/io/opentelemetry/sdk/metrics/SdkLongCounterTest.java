@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -16,7 +17,6 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -87,17 +87,18 @@ class SdkLongCounterTest {
                     .hasName("testCounter")
                     .hasDescription("description")
                     .hasUnit("By")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(24)));
+                    .hasLongSumSatisfying(
+                        longSum ->
+                            longSum
+                                .isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(24))));
   }
 
   @Test
@@ -122,21 +123,24 @@ class SdkLongCounterTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testCounter")
-                      .hasLongSum()
-                      .isMonotonic()
-                      .isCumulative()
-                      .points()
-                      .allSatisfy(
-                          point ->
-                              assertThat(point)
-                                  .hasStartEpochNanos(startTime)
-                                  .hasEpochNanos(testClock.now()))
-                      .satisfiesExactlyInAnyOrder(
-                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(33),
-                          point ->
-                              assertThat(point)
-                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                  .hasValue(555)));
+                      .hasLongSumSatisfying(
+                          longSum ->
+                              longSum
+                                  .isMonotonic()
+                                  .isCumulative()
+                                  .hasPointsSatisfying(
+                                      point ->
+                                          point
+                                              .hasStartEpochNanos(startTime)
+                                              .hasEpochNanos(testClock.now())
+                                              .hasAttributes(Attributes.empty())
+                                              .hasValue(33),
+                                      point ->
+                                          point
+                                              .hasStartEpochNanos(startTime)
+                                              .hasEpochNanos(testClock.now())
+                                              .hasAttributes(attributeEntry("K", "V"))
+                                              .hasValue(555))));
 
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -149,21 +153,24 @@ class SdkLongCounterTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testCounter")
-                      .hasLongSum()
-                      .isMonotonic()
-                      .isCumulative()
-                      .points()
-                      .allSatisfy(
-                          point ->
-                              assertThat(point)
-                                  .hasStartEpochNanos(startTime)
-                                  .hasEpochNanos(testClock.now()))
-                      .satisfiesExactlyInAnyOrder(
-                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(44),
-                          point ->
-                              assertThat(point)
-                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                  .hasValue(777)));
+                      .hasLongSumSatisfying(
+                          longSum ->
+                              longSum
+                                  .isMonotonic()
+                                  .isCumulative()
+                                  .hasPointsSatisfying(
+                                      point ->
+                                          point
+                                              .hasStartEpochNanos(startTime)
+                                              .hasEpochNanos(testClock.now())
+                                              .hasAttributes(Attributes.empty())
+                                              .hasValue(44),
+                                      point ->
+                                          point
+                                              .hasStartEpochNanos(startTime)
+                                              .hasEpochNanos(testClock.now())
+                                              .hasAttributes(attributeEntry("K", "V"))
+                                              .hasValue(777))));
     } finally {
       bound.unbind();
     }
@@ -224,19 +231,18 @@ class SdkLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testCounter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(160_000)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("K", "V")));
+                    .hasLongSumSatisfying(
+                        longSum ->
+                            longSum
+                                .isCumulative()
+                                .isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(160_000)
+                                            .hasAttributes(attributeEntry("K", "V")))));
   }
 
   @Test
@@ -272,22 +278,36 @@ class SdkLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testCounter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .isMonotonic()
-                    .points()
-                    .allSatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(20_000))
-                    .extracting(PointData::getAttributes)
-                    .containsExactlyInAnyOrder(
-                        Attributes.of(stringKey(keys[0]), values[0]),
-                        Attributes.of(stringKey(keys[1]), values[1]),
-                        Attributes.of(stringKey(keys[2]), values[2]),
-                        Attributes.of(stringKey(keys[3]), values[3])));
+                    .hasLongSumSatisfying(
+                        longSum ->
+                            longSum
+                                .isCumulative()
+                                .isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(20_000)
+                                            .hasAttributes(attributeEntry(keys[0], values[0])),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(20_000)
+                                            .hasAttributes(attributeEntry(keys[1], values[1])),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(20_000)
+                                            .hasAttributes(attributeEntry(keys[2], values[2])),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(20_000)
+                                            .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

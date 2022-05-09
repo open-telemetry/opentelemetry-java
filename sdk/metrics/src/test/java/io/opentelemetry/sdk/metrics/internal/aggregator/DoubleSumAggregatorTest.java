@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -209,17 +209,17 @@ class DoubleSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleSum()
-        .isCumulative()
-        .isMonotonic()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasStartEpochNanos(0)
-                    .hasEpochNanos(100)
-                    .hasAttributes(Attributes.empty())
-                    .hasValue(10));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .isMonotonic()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(100)
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
   }
 
   @Test
@@ -247,8 +247,7 @@ class DoubleSumAggregatorTest {
                 0,
                 10,
                 100))
-        .hasDoubleSum()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }
 }

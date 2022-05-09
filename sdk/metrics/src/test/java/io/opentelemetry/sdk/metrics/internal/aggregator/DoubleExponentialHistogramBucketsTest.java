@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ class DoubleExponentialHistogramBucketsTest {
     b.record(1);
     b.record(1);
     b.record(1);
-    assertThat(b).hasTotalCount(3).hasCounts(Collections.singletonList(3L));
+    MetricAssertions.assertThat(b).hasTotalCount(3).hasCounts(Collections.singletonList(3L));
   }
 
   @ParameterizedTest
@@ -58,7 +59,10 @@ class DoubleExponentialHistogramBucketsTest {
     b.record(2);
     b.record(4);
     assertThat(b.getScale()).isEqualTo(0);
-    assertThat(b).hasTotalCount(3).hasCounts(Arrays.asList(1L, 1L, 1L)).hasOffset(0);
+    MetricAssertions.assertThat(b)
+        .hasTotalCount(3)
+        .hasCounts(Arrays.asList(1L, 1L, 1L))
+        .hasOffset(0);
   }
 
   @ParameterizedTest
