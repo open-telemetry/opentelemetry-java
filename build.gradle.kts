@@ -53,6 +53,7 @@ tasks {
   register("updateVersionInDocs") {
     group = "documentation"
     doLast {
+      val version = findProperty("release.version")
       val versionParts = version.toString().split('.')
       val minorVersionNumber = Integer.parseInt(versionParts[1])
       val nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
