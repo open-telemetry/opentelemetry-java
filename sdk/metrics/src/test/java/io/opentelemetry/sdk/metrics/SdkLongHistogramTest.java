@@ -243,6 +243,8 @@ class SdkLongHistogramTest {
                               .hasAttributes(Attributes.empty())
                               .hasCount(2)
                               .hasSum(25)
+                              .hasMin(12)
+                              .hasMax(13)
                               .hasScale(-1)
                               .hasZeroCount(0);
                           MetricAssertions.assertThat(point.getPositiveBuckets())
@@ -259,6 +261,8 @@ class SdkLongHistogramTest {
                               .hasAttributes(Attributes.builder().put("key", "value").build())
                               .hasCount(1)
                               .hasSum(12)
+                              .hasMin(12)
+                              .hasMax(12)
                               .hasScale(-1)
                               .hasZeroCount(0);
                           MetricAssertions.assertThat(point.getPositiveBuckets())
