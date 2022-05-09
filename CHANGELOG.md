@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.14.0 (unreleased)
+## Version 1.14.0 (2022-05-09)
 
 The metrics SDK is stable! New stable artifacts include:
 
