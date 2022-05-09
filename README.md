@@ -84,7 +84,7 @@ dependency versions in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.13.0</version>
+        <version>1.16.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -103,7 +103,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.13.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.16.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -112,8 +112,8 @@ Note that if you want to use any artifacts that have not fully stabilized yet (s
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.13.0")
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha')
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.16.0-SNAPSHOT")
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.16.0-SNAPSHOT-alpha')
 
   implementation('io.opentelemetry:opentelemetry-api')
   implementation('io.opentelemetry:opentelemetry-api-metrics')
@@ -140,7 +140,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.14.0-SNAPSHOT</version>
+        <version>1.16.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -163,7 +163,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.14.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.16.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -189,21 +189,21 @@ This is a **current** feature status list:
 
 | Component                   | Version                                                      |
 |-----------------------------|--------------------------------------------------------------|
-| Trace API                   | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Trace SDK                   | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Context                     | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Baggage                     | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| Metrics API                 | v<!--VERSION_STABLE-->1.13.0<!--/VERSION_STABLE-->           |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| OTLP Exporter (Logs)        | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.13.0-alpha<!--/VERSION_UNSTABLE--> |
+| Trace API                   | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Context                     | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Baggage                     | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| Metrics API                 | v<!--VERSION_STABLE-->1.15.0-SNAPSHOT<!--/VERSION_STABLE-->           |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| OTLP Exporter (Logs)        | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.15.0-SNAPSHOT-alpha<!--/VERSION_UNSTABLE--> |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues
