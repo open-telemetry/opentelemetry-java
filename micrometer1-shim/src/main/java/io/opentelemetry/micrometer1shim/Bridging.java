@@ -11,8 +11,12 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.NamingConvention;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 final class Bridging {
+
+  private static final ConcurrentMap<String, String> descriptionsCache = new ConcurrentHashMap<>();
 
   static Attributes tagsAsAttributes(Meter.Id id, NamingConvention namingConvention) {
     Iterable<Tag> tags = id.getTagsAsIterable();
@@ -33,8 +37,12 @@ final class Bridging {
   }
 
   static String description(Meter.Id id) {
-    String description = id.getDescription();
-    return description != null ? description : "";
+    return descriptionsCache.computeIfAbsent(
+        id.getName(),
+        n -> {
+          String description = id.getDescription();
+          return description != null ? description : "";
+        });
   }
 
   static String baseUnit(Meter.Id id) {

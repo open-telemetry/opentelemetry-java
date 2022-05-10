@@ -14,7 +14,6 @@ import io.micrometer.core.instrument.Metrics;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -57,8 +56,6 @@ class GaugeTest {
   }
 
   @Test
-  // TODO(anuraaga): Enable after https://github.com/open-telemetry/opentelemetry-java/pull/4222
-  @Disabled
   void gaugesWithSameNameAndDifferentTags() {
     Gauge.builder("testGaugeWithTags", () -> 12)
         .description("First description wins")
