@@ -11,7 +11,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-public class JsonRequestBody extends RequestBody {
+final class JsonRequestBody extends RequestBody {
   private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
 
   private final Marshaler marshaler;

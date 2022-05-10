@@ -17,7 +17,7 @@ import okio.BufferedSink;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ProtoRequestBody extends RequestBody {
+final class ProtoRequestBody extends RequestBody {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
