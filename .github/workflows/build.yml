@@ -108,12 +108,11 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   required-status-check:
-    needs:
-      # markdown-link-check is not required so that pull requests will not be blocked if external
-      # links break
-      # similarly misspell-check is not required so that pull requests will not be blocked if new
-      # misspellings are added to the misspell dictionary
-      - build
+    # markdown-link-check is not required so that pull requests will not be blocked if external
+    # links break
+    # similarly misspell-check is not required so that pull requests will not be blocked if new
+    # misspellings are added to the misspell dictionary
+    needs: build
     runs-on: ubuntu-latest
     if: always()
     steps:
