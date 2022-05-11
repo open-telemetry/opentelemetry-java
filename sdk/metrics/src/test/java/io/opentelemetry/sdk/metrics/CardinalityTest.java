@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressLogger(
     loggerName = "io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage")
-@SuppressLogger(loggerName = "io.opentelemetry.sdk.metrics.internal.state.DeltaMetricStorage")
+@SuppressLogger(DefaultSynchronousMetricStorage.class)
 class CardinalityTest {
 
   /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
