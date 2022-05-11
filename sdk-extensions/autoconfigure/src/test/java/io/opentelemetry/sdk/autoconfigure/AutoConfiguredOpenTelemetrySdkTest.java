@@ -212,7 +212,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void builder_addMeterProviderCustomizer() {
     Mockito.lenient().when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(metricReader.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricReader.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
 
     SdkMeterProvider sdkMeterProvider =
         builder
@@ -224,7 +224,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
             .getSdkMeterProvider();
     sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
-    verify(metricReader).flush();
+    verify(metricReader).forceFlush();
   }
 
   // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default

@@ -67,6 +67,31 @@ public final class TraceAssert
   }
 
   /**
+   * Asserts that the trace under assertion has the same number of spans as provided {@code
+   * assertions} and verifies that there is a combination of spans that satisfies specified {@link
+   * SpanDataAssert} {@code assertions} in the given order. This is a variation of {@link
+   * #hasSpansSatisfyingExactly(Consumer...)} where order does not matter.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final TraceAssert hasSpansSatisfyingExactlyInAnyOrder(
+      Consumer<SpanDataAssert>... assertions) {
+    return hasSpansSatisfyingExactlyInAnyOrder(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that the trace under assertion has the same number of spans as provided {@code
+   * assertions} and verifies that there is a combination of spans that satisfies specified {@link
+   * SpanDataAssert} {@code assertions} in the given order. This is a variation of {@link
+   * #hasSpansSatisfyingExactly(Iterable)} where order does not matter.
+   */
+  public TraceAssert hasSpansSatisfyingExactlyInAnyOrder(
+      Iterable<? extends Consumer<SpanDataAssert>> assertions) {
+    Consumer<SpanData>[] spanDataAsserts = AssertUtil.toConsumers(assertions, SpanDataAssert::new);
+    return satisfiesExactlyInAnyOrder(spanDataAsserts);
+  }
+
+  /**
    * Returns the {@linkplain SpanData span} at the {@code index} within the trace. This can be
    * useful for asserting the parent of a span.
    */

@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -82,77 +83,77 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longCounter")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .hasAttributes(Attributes.builder().put("key", "val1").build())),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("key", "val1")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleCounter")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1.1)
-                                .hasAttributes(Attributes.builder().put("key", "val2").build())),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1.1)
+                                            .hasAttributes(attributeEntry("key", "val2")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longUpDownCounter")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(2)
-                                .hasAttributes(Attributes.builder().put("key", "val3").build())),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(2)
+                                            .hasAttributes(attributeEntry("key", "val3")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleUpDownCounter")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(2.2)
-                                .hasAttributes(Attributes.builder().put("key", "val4").build())),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(2.2)
+                                            .hasAttributes(attributeEntry("key", "val4")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longGauge")
-                    .hasLongGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(3)
-                                .hasAttributes(Attributes.builder().put("key", "val5").build())),
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(3)
+                                        .hasAttributes(attributeEntry("key", "val5")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleGauge")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(3.3)
-                                .hasAttributes(Attributes.builder().put("key", "val6").build())));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(3.3)
+                                        .hasAttributes(attributeEntry("key", "val6")))));
 
     // Should not be called after closed
     batchCallback.close();
@@ -180,10 +181,8 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("counter1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     asyncStorageLogs.assertContains(
         "Cannot record measurements for instrument counter2 outside registered callbacks.");
@@ -207,20 +206,21 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("counter1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(1)
-                                .hasAttributes(Attributes.builder().put("key", "value2").build())));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1)
+                                            .hasAttributes(attributeEntry("key", "value2")))));
 
     asyncStorageLogs.assertContains(
         "Cannot record measurements for instrument counter1 outside registered callbacks.");
   }
 
   @Test
+  @SuppressLogger(SdkMeter.class)
   @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_InstrumentFromAnotherMeter() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
@@ -243,16 +243,15 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("counter1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     sdkMeterLogs.assertContains(
         "batchCallback called with instruments that belong to a different Meter.");
   }
 
   @Test
+  @SuppressLogger(SdkMeter.class)
   @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_InvalidObserver() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
@@ -281,10 +280,8 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("counter1")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1)));
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     sdkMeterLogs.assertContains(
         "batchCallback called with instruments that were not created by the SDK.");

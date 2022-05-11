@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
@@ -44,7 +45,11 @@ class SdkLongGaugeBuilderTest {
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
-            metric -> assertThat(metric).hasName("testGauge").hasLongGauge().points().hasSize(1));
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasLongGaugeSatisfying(
+                        longGauge -> longGauge.hasPointsSatisfying(point -> {})));
 
     gauge.close();
 
@@ -76,15 +81,15 @@ class SdkLongGaugeBuilderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000L)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12)));
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now() - 1000000000L)
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(attributeEntry("k", "v"))
+                                        .hasValue(12))));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -93,14 +98,14 @@ class SdkLongGaugeBuilderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 2000000000L)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12)));
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now() - 2000000000L)
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(attributeEntry("k", "v"))
+                                        .hasValue(12))));
   }
 }

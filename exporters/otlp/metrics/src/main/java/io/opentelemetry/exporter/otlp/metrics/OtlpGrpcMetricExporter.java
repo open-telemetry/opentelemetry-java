@@ -11,9 +11,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
-import java.util.function.Function;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
@@ -21,7 +21,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final GrpcExporter<MetricsRequestMarshaler> delegate;
-  private final Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction;
+  private final AggregationTemporalitySelector aggregationTemporalitySelector;
 
   /**
    * Returns a new {@link OtlpGrpcMetricExporter} reading the configuration values from the
@@ -45,14 +45,14 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   OtlpGrpcMetricExporter(
       GrpcExporter<MetricsRequestMarshaler> delegate,
-      Function<InstrumentType, AggregationTemporality> aggregationTemporalityFunction) {
+      AggregationTemporalitySelector aggregationTemporalitySelector) {
     this.delegate = delegate;
-    this.aggregationTemporalityFunction = aggregationTemporalityFunction;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
   }
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return aggregationTemporalityFunction.apply(instrumentType);
+    return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
   }
 
   /**

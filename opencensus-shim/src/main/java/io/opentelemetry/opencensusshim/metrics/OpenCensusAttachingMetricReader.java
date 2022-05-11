@@ -38,8 +38,8 @@ final class OpenCensusAttachingMetricReader implements MetricReader {
   }
 
   @Override
-  public CompletableResultCode flush() {
-    return adapted.flush();
+  public CompletableResultCode forceFlush() {
+    return adapted.forceFlush();
   }
 
   @Override

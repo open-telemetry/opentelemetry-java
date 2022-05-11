@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +34,9 @@ import javax.annotation.Nullable;
  */
 public final class LongLastValueAggregator
     implements Aggregator<LongAccumulation, LongExemplarData> {
-  private final Supplier<LongExemplarReservoir> reservoirSupplier;
+  private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
 
-  public LongLastValueAggregator(Supplier<LongExemplarReservoir> reservoirSupplier) {
+  public LongLastValueAggregator(Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -85,7 +85,7 @@ public final class LongLastValueAggregator
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    Handle(LongExemplarReservoir exemplarReservoir) {
+    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir) {
       super(exemplarReservoir);
     }
 

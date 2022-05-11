@@ -42,8 +42,8 @@ public final class OpenTelemetryAssertions extends Assertions {
   }
 
   /** Returns an assertion for {@link MetricData}. */
-  public static MetricDataAssert assertThat(@Nullable MetricData metricData) {
-    return new MetricDataAssert(metricData);
+  public static MetricAssert assertThat(@Nullable MetricData metricData) {
+    return new MetricAssert(metricData);
   }
 
   /** Returns an assertion for {@link EventDataAssert}. */

@@ -105,7 +105,7 @@ final class MetricExporterConfiguration {
           builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(
-          config, builder::setAggregationTemporality);
+          config, builder::setAggregationTemporalitySelector);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -126,7 +126,7 @@ final class MetricExporterConfiguration {
           builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(
-          config, builder::setAggregationTemporality);
+          config, builder::setAggregationTemporalitySelector);
 
       return builder.build();
     } else {

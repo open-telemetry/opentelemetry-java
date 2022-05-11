@@ -23,6 +23,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
@@ -35,7 +36,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -65,6 +66,7 @@ class OtlpHttpMetricExporterTest {
 
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
+  private static final MediaType APPLICATION_JSON = MediaType.create("application", "json");
   private static final HeldCertificate HELD_CERTIFICATE;
   private static final String canonicalHostName;
 
@@ -151,11 +153,12 @@ class OtlpHttpMetricExporterTest {
     assertThatCode(
             () ->
                 OtlpHttpMetricExporter.builder()
-                    .setAggregationTemporality(MetricExporter::deltaPreferred))
+                    .setAggregationTemporalitySelector(
+                        AggregationTemporalitySelector.deltaPreferred()))
         .doesNotThrowAnyException();
     assertThat(
             OtlpHttpMetricExporter.builder()
-                .setAggregationTemporality(MetricExporter::deltaPreferred)
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
                 .build()
                 .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
@@ -200,9 +203,10 @@ class OtlpHttpMetricExporterTest {
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
 
-    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setAggregationTemporality(null))
+    assertThatThrownBy(
+            () -> OtlpHttpMetricExporter.builder().setAggregationTemporalitySelector(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("aggregationTemporalityFunction");
+        .hasMessage("aggregationTemporalitySelector");
   }
 
   @Test
@@ -240,6 +244,17 @@ class OtlpHttpMetricExporterTest {
   }
 
   @Test
+  void testExportAsJson() {
+    server.enqueue(successResponse());
+    OtlpHttpMetricExporter exporter = builder.exportAsJson().build();
+
+    String payload = exportJsonAndAssertResult(exporter, /* expectedResult= */ true);
+    AggregatedHttpRequest request = server.takeRequest().request();
+    assertRequestCommon(request, /* isJson= */ true);
+    assertThat(parseJsonRequestBody(request.content().array())).isEqualTo(payload);
+  }
+
+  @Test
   void testExport_flush() {
     OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder().build();
     try {
@@ -250,10 +265,15 @@ class OtlpHttpMetricExporterTest {
   }
 
   private static void assertRequestCommon(AggregatedHttpRequest request) {
+    assertRequestCommon(request, /* isJson= */ false);
+  }
+
+  private static void assertRequestCommon(AggregatedHttpRequest request, boolean isJson) {
     assertThat(request.method()).isEqualTo(HttpMethod.POST);
     assertThat(request.path()).isEqualTo("/v1/metrics");
     assertThat(request.headers().get("foo")).isEqualTo("bar");
-    assertThat(request.headers().get("Content-Type")).isEqualTo(APPLICATION_PROTOBUF.toString());
+    MediaType mediaType = isJson ? APPLICATION_JSON : APPLICATION_PROTOBUF;
+    assertThat(request.headers().get("Content-Type")).isEqualTo(mediaType.toString());
   }
 
   private static ExportMetricsServiceRequest parseRequestBody(byte[] bytes) {
@@ -262,6 +282,10 @@ class OtlpHttpMetricExporterTest {
     } catch (InvalidProtocolBufferException e) {
       throw new IllegalStateException("Unable to parse Protobuf request body.", e);
     }
+  }
+
+  private static String parseJsonRequestBody(byte[] bytes) {
+    return new String(bytes, StandardCharsets.UTF_8);
   }
 
   private static byte[] gzipDecompress(byte[] bytes) {
@@ -325,6 +349,20 @@ class OtlpHttpMetricExporterTest {
                 })
             .collect(Collectors.toList());
     return ExportMetricsServiceRequest.newBuilder().addAllResourceMetrics(resourceMetrics).build();
+  }
+
+  private static String exportJsonAndAssertResult(
+      OtlpHttpMetricExporter otlpHttpMetricExporter, boolean expectedResult) {
+    List<MetricData> metrics = Collections.singletonList(generateFakeMetric());
+    CompletableResultCode resultCode = otlpHttpMetricExporter.export(metrics);
+    resultCode.join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
+    try (ByteArrayOutputStream jsonBos = new ByteArrayOutputStream()) {
+      MetricsRequestMarshaler.create(metrics).writeJsonTo(jsonBos);
+      return new String(jsonBos.toByteArray(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private static HttpResponse successResponse() {

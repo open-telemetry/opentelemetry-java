@@ -15,8 +15,8 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 
 /**
  * Exponential bucket histogram aggregation configuration.
@@ -52,9 +52,9 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
     return (Aggregator<T, U>)
         new DoubleExponentialHistogramAggregator(
             () ->
-                DoubleExemplarReservoir.filtered(
+                ExemplarReservoir.filtered(
                     exemplarFilter,
-                    DoubleExemplarReservoir.fixedSizeReservoir(
+                    ExemplarReservoir.doubleFixedSizeReservoir(
                         Clock.getDefault(),
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())),

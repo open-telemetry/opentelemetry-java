@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleSumAggregatorTest {
 
-  @Mock DoubleExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -50,7 +50,7 @@ class DoubleSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE),
-          DoubleExemplarReservoir::noSamples);
+          ExemplarReservoir::doubleNoSamples);
 
   @Test
   void createHandle() {
@@ -162,7 +162,7 @@ class DoubleSumAggregatorTest {
             new DoubleSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                DoubleExemplarReservoir::noSamples);
+                ExemplarReservoir::doubleNoSamples);
         DoubleAccumulation merged =
             aggregator.merge(
                 DoubleAccumulation.create(1.0d, previousExemplars),
@@ -209,17 +209,17 @@ class DoubleSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleSum()
-        .isCumulative()
-        .isMonotonic()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasStartEpochNanos(0)
-                    .hasEpochNanos(100)
-                    .hasAttributes(Attributes.empty())
-                    .hasValue(10));
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .isMonotonic()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(100)
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
   }
 
   @Test
@@ -247,8 +247,7 @@ class DoubleSumAggregatorTest {
                 0,
                 10,
                 100))
-        .hasDoubleSum()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }
 }

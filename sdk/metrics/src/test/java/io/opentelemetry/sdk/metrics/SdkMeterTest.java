@@ -135,7 +135,7 @@ class SdkMeterTest {
         .allMatch(
             log ->
                 log.equals(
-                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using 1 for instrument my-instrument instead."));
+                    "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters. Using \"\" for instrument my-instrument instead."));
   }
 
   @Test

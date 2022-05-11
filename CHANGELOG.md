@@ -1,5 +1,86 @@
 # Changelog
 
+## Version 1.14.0 (2022-05-09)
+
+The metrics SDK is stable! New stable artifacts include:
+
+* `io.opentelemetry:opentelemetry-sdk-metrics` (also now included
+  in `io.opentelemetry:opentelemetry-sdk`)
+* `io.opentelemetry:opentelemetry-exporter-otlp-metrics` (also now included
+  in `io.opentelemetry:opentelemetry-exporter-otlp`)
+* `io.opentelemetry:opentelemetry-exporter-otlp-http-metrics`
+* Metrics testing components have been moved
+  from `io.opentelemetry:opentelemetry-sdk-metrics-testing` to the
+  stable `io.opentelemetry:opentelemetry-sdk-testing`.
+
+While the API of the metrics SDK is now stable, there are a couple of known issues that will be
+addressed in the next release:
+
+* The start time is incorrect for delta metrics when the first recording for a set of attributes
+  occurs after the first
+  collections ([#4400](https://github.com/open-telemetry/opentelemetry-java/issues/4400)).
+* Registering multiple readers results in incorrect
+  metrics ([#4436](https://github.com/open-telemetry/opentelemetry-java/pull/4436)).
+
+### SDK
+
+#### Traces
+
+* Fix bug where non-runtime exception breaks `BatchSpanProcessor`.
+* Fix bug preventing attribute limits from applying to exception events.
+
+#### Logs
+
+* BREAKING: Drop deprecated methods referencing `InstrumentationLibraryInfo` from Log SDK.
+
+#### Metrics
+
+* Instrument name is validated. If invalid, a warning is logged and a noop instrument is returned.
+* Default unit is empty instead of `1`. If an invalid unit is set, a warning is logged and empty is
+  used.
+* Ensure symmetry between type of `PointData` and their type of exemplars (double or long).
+* BREAKING: Rename `MetricReader#flush()` to `MetricReader#forceFlush()`.
+* Introduce `AggregationTemporalitySelector` interface for selecting aggregation temporality based
+  on instrument. `MetricReader` and `MetricExporter` extend `AggregationTemporalitySelector`.
+
+#### SDK Extensions
+
+* BREAKING: Remove deprecated option to specify temporality
+  with `otel.exporter.otlp.metrics.temporality`.
+  Use `otel.exporter.otlp.metrics.temporality.preference` instead.
+* Log warning when `AwsXrayPropagator` can't identify parent span id.
+* Fix jaeger remote sampling bug preventing correct parsing of 0-probability sampling strategies.
+
+#### Exporter
+
+* Fix prometheus exporter formatting bug when there are no attributes.
+* Ensure prometheus metrics with the same name are serialized as a group.
+* BREAKING: `OtlpHttpMetricExporterBuilder` and `OtlpGrpcMetricExporterBuilder` configure
+  aggregation temporality via `#setAggregationTemporalitySelector(AggregationTemporalitySelector)`.
+
+#### Testing
+
+* BREAKING: Metrics testing components added to stable `io.opentelemetry:opentelemetry-sdk-testing`
+  module, including `InMemoryMetricReader`, `InMemoryMetricExporter`,
+  and `MetricAssertions.assertThat(MetricData)` has been moved
+  to `OpenTelemetryAssertions.assertThat(MetricData)`.
+* BREAKING: The patterns for metrics assertions have been adjusted to better align with assertj
+  conventions. See [#4444](https://github.com/open-telemetry/opentelemetry-java/pull/4444) for
+  examples demonstrating the change in assertion patterns.
+* BREAKING: Metric assertion class names have
+  been [simplified](https://github.com/open-telemetry/opentelemetry-java/pull/4433).
+* Add `TraceAssert.hasSpansSatisfyingExactlyInAnyOrder(..)` methods.
+
+### Micrometer shim
+
+* Instrumentation scope name changed to `io.opentelemetry.micrometer1shim`.
+
+### Project tooling
+
+* Many improvements to the build and release workflows. Big thanks to @trask for driving
+  standardization across `opentelemetry-java`, `opentelemetry-java-instrumentation`,
+  and `opentelemetry-java-contrib`!
+
 ## Version 1.13.0 (2022-04-08)
 
 Although we originally intended 1.13.0 to be the first stable release of the metrics SDK, we've

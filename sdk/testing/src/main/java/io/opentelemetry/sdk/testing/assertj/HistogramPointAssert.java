@@ -5,13 +5,17 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.Arrays;
+import java.util.function.Consumer;
 import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link HistogramPointData}. */
 public final class HistogramPointAssert
-    extends AbstractPointDataAssert<HistogramPointAssert, HistogramPointData> {
+    extends AbstractPointAssert<HistogramPointAssert, HistogramPointData> {
 
   HistogramPointAssert(HistogramPointData actual) {
     super(actual, HistogramPointAssert.class);
@@ -76,5 +80,31 @@ public final class HistogramPointAssert
     Long[] bigCounts = Arrays.stream(counts).boxed().toArray(Long[]::new);
     Assertions.assertThat(actual.getCounts()).as("bucketCounts").containsExactly(bigCounts);
     return this;
+  }
+
+  /** Asserts the point has the specified exemplars, in any order. */
+  public HistogramPointAssert hasExemplars(DoubleExemplarData... exemplars) {
+    isNotNull();
+    Assertions.assertThat(actual.getExemplars())
+        .as("exemplars")
+        .containsExactlyInAnyOrder(exemplars);
+    return myself;
+  }
+
+  /** Asserts the point has exemplars matching all of the assertions, in any order. */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final HistogramPointAssert hasExemplarsSatisfying(
+      Consumer<DoubleExemplarAssert>... assertions) {
+    return hasExemplarsSatisfying(Arrays.asList(assertions));
+  }
+
+  /** Asserts the point has exemplars matching all of the assertions, in any order. */
+  public HistogramPointAssert hasExemplarsSatisfying(
+      Iterable<? extends Consumer<DoubleExemplarAssert>> assertions) {
+    isNotNull();
+    assertThat(actual.getExemplars())
+        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, DoubleExemplarAssert::new));
+    return myself;
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
@@ -21,9 +21,10 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,10 +48,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExponentialHistogramAggregatorTest {
 
-  @Mock DoubleExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(DoubleExemplarReservoir::noSamples, 20, 320);
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 320);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -61,7 +62,7 @@ class DoubleExponentialHistogramAggregatorTest {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            DoubleExemplarReservoir::noSamples,
+            ExemplarReservoir::doubleNoSamples,
             ExponentialBucketStrategy.newStrategy(
                 20, 320, ExponentialCounterFactory.mapCounter())));
   }
@@ -237,81 +238,6 @@ class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
-  void diffAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, 0, 0, 1, 1, -1);
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 0, 1, -1);
-
-    // Assure most recent exemplars are kept
-    // Note: This test relies on implementation details of ExponentialCounter, specifically it
-    // assumes that an Array of all zeros is the same as an empty counter array for negative
-    // buckets.
-    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
-    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 0, 1));
-  }
-
-  @Test
-  void diffDownScaledAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, 1, 1, 100, -1, -100);
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 1, -1);
-
-    // Assure most recent exemplars are kept
-    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
-    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 1, 100, -100));
-  }
-
-  @Test
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -347,6 +273,42 @@ class DoubleExponentialHistogramAggregatorTest {
         .isEqualTo(
             getTestAccumulation(
                 exemplars, 0, 4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
+  }
+
+  @Test
+  void testMergeAccumulationMinAndMax() {
+    // If min / max is null for both accumulations set min / max to null
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ false, 0, 0),
+                createAccumulation(/* hasMinMax= */ false, 0, 0)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ false, -1, -1));
+    // If min / max is non-null for only one accumulation set min / max to it
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ true, 1d, 2d),
+                createAccumulation(/* hasMinMax= */ false, 0, 0)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ false, 0, 0),
+                createAccumulation(/* hasMinMax= */ true, 1d, 2d)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+    // If both accumulations have min / max compute the min / max
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ true, 1d, 1d),
+                createAccumulation(/* hasMinMax= */ true, 2d, 2d)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+  }
+
+  private static ExponentialHistogramAccumulation createAccumulation(
+      boolean hasMinMax, double min, double max) {
+    DoubleExponentialHistogramBuckets buckets =
+        new DoubleExponentialHistogramBuckets(
+            0, 1, ExponentialCounterFactory.circularBufferCounter());
+    return ExponentialHistogramAccumulation.create(
+        0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
   }
 
   @Test
@@ -451,7 +413,8 @@ class DoubleExponentialHistogramAggregatorTest {
                 TraceState.getDefault()),
             1);
     @SuppressWarnings("unchecked")
-    Supplier<DoubleExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier =
+        Mockito.mock(Supplier.class);
     Mockito.when(reservoir.collectAndReset(Attributes.empty()))
         .thenReturn(Collections.singletonList(exemplar));
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
@@ -479,23 +442,25 @@ class DoubleExponentialHistogramAggregatorTest {
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
-      assertThat(metricDataCumulative)
+      MetricAssertions.assertThat(metricDataCumulative)
           .hasExponentialHistogram()
           .isCumulative()
           .points()
           .satisfiesExactly(
               point -> {
-                assertThat(point)
+                MetricAssertions.assertThat(point)
                     .hasSum(123.456)
                     .hasScale(20)
                     .hasZeroCount(2)
                     .hasCount(3)
+                    .hasMin(0)
+                    .hasMax(123.456)
                     .hasExemplars(exemplar);
-                assertThat(point.getPositiveBuckets())
+                MetricAssertions.assertThat(point.getPositiveBuckets())
                     .hasCounts(Collections.singletonList(1L))
                     .hasOffset(valueToIndex(20, 123.456))
                     .hasTotalCount(1);
-                assertThat(point.getNegativeBuckets())
+                MetricAssertions.assertThat(point.getNegativeBuckets())
                     .hasTotalCount(0)
                     .hasCounts(Collections.emptyList());
               });
@@ -552,8 +517,12 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
     assertThat(acc.getScale()).isEqualTo(5);
-    assertThat(acc.getPositiveBuckets()).hasTotalCount(numberOfUpdates * 3).hasOffset(-107);
-    assertThat(acc.getNegativeBuckets()).hasTotalCount(numberOfUpdates * 2).hasOffset(-107);
+    MetricAssertions.assertThat(acc.getPositiveBuckets())
+        .hasTotalCount(numberOfUpdates * 3)
+        .hasOffset(-107);
+    MetricAssertions.assertThat(acc.getNegativeBuckets())
+        .hasTotalCount(numberOfUpdates * 2)
+        .hasOffset(-107);
 
     // Verify positive buckets have correct counts
     List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();

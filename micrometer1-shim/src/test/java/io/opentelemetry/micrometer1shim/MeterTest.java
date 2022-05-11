@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Measurement;
@@ -56,109 +56,101 @@ class MeterTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(12345)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.total_time")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(12345)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.count")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(12345)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.active")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(12345)
+                                            .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.duration")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12345)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.max")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12345)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.value")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))),
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12345)
+                                        .hasAttributes(attributeEntry("tag", "value")))),
             metric ->
                 assertThat(metric)
                     .hasName("testMeter.unknown")
                     .hasDescription("This is a test meter")
                     .hasUnit("things")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasValue(12345)
-                                .attributes()
-                                .containsOnly(attributeEntry("tag", "value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12345)
+                                        .hasAttributes(attributeEntry("tag", "value")))));
 
     // when
     Metrics.globalRegistry.remove(meter);

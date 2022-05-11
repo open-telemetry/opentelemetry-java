@@ -97,6 +97,8 @@ final class MetricDataUtils {
                     aggregator.getScale(),
                     aggregator.getSum(),
                     aggregator.getZeroCount(),
+                    aggregator.getMin(),
+                    aggregator.getMax(),
                     aggregator.getPositiveBuckets(),
                     aggregator.getNegativeBuckets(),
                     startEpochNanos,

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +31,7 @@ class DoubleLastValueAggregatorTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final DoubleLastValueAggregator aggregator =
-      new DoubleLastValueAggregator(DoubleExemplarReservoir::noSamples);
+      new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples);
 
   @Test
   void createHandle() {
@@ -152,14 +152,14 @@ class DoubleLastValueAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleGauge()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasAttributes(Attributes.empty())
-                    .hasStartEpochNanos(10)
-                    .hasEpochNanos(100)
-                    .hasValue(10));
+        .hasDoubleGaugeSatisfying(
+            gauge ->
+                gauge.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasAttributes(Attributes.empty())
+                            .hasStartEpochNanos(10)
+                            .hasEpochNanos(100)
+                            .hasValue(10)));
   }
 }

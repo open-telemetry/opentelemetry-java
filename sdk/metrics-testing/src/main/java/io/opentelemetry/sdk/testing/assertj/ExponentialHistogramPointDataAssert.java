@@ -23,6 +23,20 @@ public class ExponentialHistogramPointDataAssert
     return this;
   }
 
+  /** Ensures the {@code min} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasMin(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMin()).as("min").isEqualTo(expected);
+    return this;
+  }
+
+  /** Ensures the {@code min} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasMax(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMax()).as("max").isEqualTo(expected);
+    return this;
+  }
+
   /** Ensures the {@code count} field matches the expected value. */
   public ExponentialHistogramPointDataAssert hasCount(long expected) {
     isNotNull();

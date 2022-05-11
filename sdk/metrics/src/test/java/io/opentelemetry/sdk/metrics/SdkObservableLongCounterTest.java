@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
@@ -41,7 +42,10 @@ class SdkObservableLongCounterTest {
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
-            metric -> assertThat(metric).hasName("testCounter").hasLongSum().points().hasSize(1));
+            metric ->
+                assertThat(metric)
+                    .hasName("testCounter")
+                    .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> {})));
 
     counter.close();
 
@@ -79,19 +83,17 @@ class SdkObservableLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12)
+                                            .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -100,19 +102,17 @@ class SdkObservableLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12)
+                                            .hasAttributes(attributeEntry("k", "v")))));
   }
 
   @Test
@@ -137,19 +137,17 @@ class SdkObservableLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(12)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(12)
+                                            .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -158,18 +156,16 @@ class SdkObservableLongCounterTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testObserver")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(0)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("k", "v")));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(0)
+                                            .hasAttributes(attributeEntry("k", "v")))));
   }
 }
