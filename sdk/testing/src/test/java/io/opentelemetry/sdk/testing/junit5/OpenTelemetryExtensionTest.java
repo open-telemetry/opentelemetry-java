@@ -8,13 +8,17 @@ package io.opentelemetry.sdk.testing.junit5;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -24,9 +28,10 @@ class OpenTelemetryExtensionTest {
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+  private final Meter meter = otelTesting.getOpenTelemetry().getMeter("test");
 
   @Test
-  public void exportSpan() {
+  public void getSpans() {
     tracer.spanBuilder("test").startSpan().end();
 
     assertThat(otelTesting.getSpans())
@@ -40,7 +45,7 @@ class OpenTelemetryExtensionTest {
 
   // We have two tests to verify spans get cleared up between tests.
   @Test
-  public void exportSpanAgain() {
+  public void getSpansAgain() {
     tracer.spanBuilder("test").startSpan().end();
 
     assertThat(otelTesting.getSpans())
@@ -53,7 +58,7 @@ class OpenTelemetryExtensionTest {
   }
 
   @Test
-  public void exportTraces() {
+  public void assertTraces() {
     Span span = tracer.spanBuilder("testa1").startSpan();
     try (Scope ignored = span.makeCurrent()) {
       tracer.spanBuilder("testa2").startSpan().end();
@@ -138,5 +143,35 @@ class OpenTelemetryExtensionTest {
             trace ->
                 trace.hasSpansSatisfyingExactly(
                     s -> s.hasName("testa1"), s -> s.hasName("testa2")));
+  }
+
+  @Test
+  void getMetrics() {
+    LongCounter counter = meter.counterBuilder("counter").build();
+    counter.add(1);
+
+    OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                OpenTelemetryAssertions.assertThat(metricData)
+                    .hasName("counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+  }
+
+  // We have two tests to verify metrics get cleared up between tests.
+  @Test
+  @Disabled("enable once metrics are reset after each test")
+  void getMetricsAgain() {
+    LongCounter counter = meter.counterBuilder("counter").build();
+    counter.add(1);
+
+    OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                OpenTelemetryAssertions.assertThat(metricData)
+                    .hasName("counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
   }
 }

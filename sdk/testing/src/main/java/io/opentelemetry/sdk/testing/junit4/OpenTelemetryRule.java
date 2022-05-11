@@ -10,10 +10,15 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.rules.ExternalResource;
 
@@ -22,23 +27,28 @@ import org.junit.rules.ExternalResource;
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * // public class CoolTest {
- * //   @Rule
- * //   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- * //
- * //   private Tracer tracer;
- * //
- * //   @Before
- * //   public void setUp() {
- * //       tracer = otelTesting.getOpenTelemetry().getTracer("test");
- * //   }
- * //
- * //   @Test
- * //   public void test() {
- * //     tracer.spanBuilder("name").startSpan().end();
- * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
- * //   }
- * //  }
+ * public class CoolTest {
+ *   @Rule public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ *
+ *   private Tracer tracer;
+ *   private Meter meter;
+ *
+ *   @Before
+ *   public void setUp() {
+ *     tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ *     meter = otelTesting.getOpenTelemetry().getMeter("test");
+ *   }
+ *
+ *   @Test
+ *   public void test() {
+ *     tracer.spanBuilder("name").startSpan().end();
+ *     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ *
+ *     LongCounter counter = meter.counterBuilder("counter-name").build();
+ *     counter.add(1);
+ *     assertThat(otelTesting.getMetrics()).satisfiesExactlyInAnyOrder(metricData -> {});
+ *   }
+ * }
  * }</pre>
  */
 public final class OpenTelemetryRule extends ExternalResource {
@@ -55,21 +65,32 @@ public final class OpenTelemetryRule extends ExternalResource {
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
 
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
             .build();
 
-    return new OpenTelemetryRule(openTelemetry, spanExporter);
+    return new OpenTelemetryRule(openTelemetry, spanExporter, metricReader);
   }
 
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
+  private final InMemoryMetricReader metricReader;
 
-  private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
+  private OpenTelemetryRule(
+      OpenTelemetrySdk openTelemetry,
+      InMemorySpanExporter spanExporter,
+      InMemoryMetricReader metricReader) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
+    this.metricReader = metricReader;
   }
 
   /** Returns the {@link OpenTelemetrySdk} created by this extension. */
@@ -82,6 +103,11 @@ public final class OpenTelemetryRule extends ExternalResource {
     return spanExporter.getFinishedSpanItems();
   }
 
+  /** Returns the current {@link MetricData} in {@link AggregationTemporality#CUMULATIVE} format. */
+  public List<MetricData> getMetrics() {
+    return new ArrayList<>(metricReader.collectAllMetrics());
+  }
+
   /**
    * Clears the collected exported {@link SpanData}. Consider making your test smaller instead of
    * manually clearing state using this method.
@@ -89,6 +115,8 @@ public final class OpenTelemetryRule extends ExternalResource {
   public void clearSpans() {
     spanExporter.reset();
   }
+
+  // TODO(jack-berg): provide way to clear metrics
 
   @Override
   protected void before() {
