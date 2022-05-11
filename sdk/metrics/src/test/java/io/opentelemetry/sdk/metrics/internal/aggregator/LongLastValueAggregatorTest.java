@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +34,7 @@ class LongLastValueAggregatorTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongLastValueAggregator aggregator =
-      new LongLastValueAggregator(LongExemplarReservoir::noSamples);
+      new LongLastValueAggregator(ExemplarReservoir::longNoSamples);
 
   @Test
   void createHandle() {

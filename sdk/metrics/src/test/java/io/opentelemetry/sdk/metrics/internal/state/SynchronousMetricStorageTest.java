@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -81,15 +82,12 @@ public class SynchronousMetricStorageTest {
     MetricData md =
         accumulator.collectAndReset(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
-        .hasDoubleGauge()
-        .points()
-        .allSatisfy(
-            p ->
-                assertThat(p)
-                    .attributes()
-                    .hasSize(2)
-                    .containsEntry("modifiedK", "modifiedV")
-                    .containsEntry("K", "V"));
+        .hasDoubleGaugeSatisfying(
+            gauge ->
+                gauge.hasPointsSatisfying(
+                    point ->
+                        point.hasAttributes(
+                            attributeEntry("K", "V"), attributeEntry("modifiedK", "modifiedV"))));
   }
 
   @Test

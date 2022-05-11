@@ -6,14 +6,15 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.MockClock;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.time.Duration;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -57,11 +58,11 @@ class LongTaskTimerHistogramTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> assertThat(point).hasValue(3).attributes().isEmpty()),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point -> point.hasValue(3).hasAttributes(Attributes.empty()))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
@@ -69,31 +70,31 @@ class LongTaskTimerHistogramTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> {
-                          assertThat(point).attributes().isEmpty();
-                          // any value >0 - duration of currently running tasks
-                          Assertions.assertThat(point.getValue()).isPositive();
-                        }),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasAttributes(Attributes.empty())
+                                            .satisfies(
+                                                pointData ->
+                                                    assertThat(pointData.getValue())
+                                                        .isPositive()))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.histogram")
                     .hasInstrumentationScope(
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point).hasValue(2).attributes().containsEntry("le", "100"))
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(3)
-                                .attributes()
-                                .containsEntry("le", "1000")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(attributeEntry("le", "100")).hasValue(2),
+                                point ->
+                                    point
+                                        .hasAttributes(attributeEntry("le", "1000"))
+                                        .hasValue(3))));
 
     sample1.stop();
     sample2.stop();
@@ -109,11 +110,11 @@ class LongTaskTimerHistogramTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> assertThat(point).hasValue(0).attributes().isEmpty()),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point -> point.hasValue(0).hasAttributes(Attributes.empty()))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
@@ -121,28 +122,22 @@ class LongTaskTimerHistogramTest {
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .points()
-                    .satisfiesExactly(
-                        point -> {
-                          assertThat(point).attributes().isEmpty();
-                          // any value >0 - duration of currently running tasks
-                          Assertions.assertThat(point.getValue()).isZero();
-                        }),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .hasPointsSatisfying(
+                                    point -> point.hasValue(0).hasAttributes(Attributes.empty()))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.histogram")
-                    .hasDoubleGauge()
-                    .points()
-                    .anySatisfy(
-                        point ->
-                            assertThat(point).hasValue(0).attributes().containsEntry("le", "100"))
-                    .anySatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasValue(0)
-                                .attributes()
-                                .containsEntry("le", "1000")));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasValue(0).hasAttributes(attributeEntry("le", "100")),
+                                point ->
+                                    point
+                                        .hasValue(0)
+                                        .hasAttributes(attributeEntry("le", "1000")))));
   }
 }

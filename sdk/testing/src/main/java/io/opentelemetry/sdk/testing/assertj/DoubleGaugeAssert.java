@@ -27,8 +27,7 @@ public final class DoubleGaugeAssert
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final DoubleGaugeAssert hasPointsSatisfying(
-      Consumer<DoublePointDataAssert>... assertions) {
+  public final DoubleGaugeAssert hasPointsSatisfying(Consumer<DoublePointAssert>... assertions) {
     return hasPointsSatisfying(Arrays.asList(assertions));
   }
 
@@ -36,10 +35,10 @@ public final class DoubleGaugeAssert
    * Asserts the gauge has points matching all of the given assertions and no more, in any order.
    */
   public DoubleGaugeAssert hasPointsSatisfying(
-      Iterable<? extends Consumer<DoublePointDataAssert>> assertions) {
+      Iterable<? extends Consumer<DoublePointAssert>> assertions) {
     isNotNull();
     assertThat(actual.getPoints())
-        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, DoublePointDataAssert::new));
+        .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, DoublePointAssert::new));
     return this;
   }
 }

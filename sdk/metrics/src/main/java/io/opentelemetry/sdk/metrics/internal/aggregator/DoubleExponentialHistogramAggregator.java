@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 public final class DoubleExponentialHistogramAggregator
     implements Aggregator<ExponentialHistogramAccumulation, DoubleExemplarData> {
 
-  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
+  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
   private final ExponentialBucketStrategy bucketStrategy;
 
   /**
@@ -41,7 +41,9 @@ public final class DoubleExponentialHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExponentialHistogramAggregator(
-      Supplier<DoubleExemplarReservoir> reservoirSupplier, int scale, int maxBuckets) {
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      int scale,
+      int maxBuckets) {
     this(
         reservoirSupplier,
         ExponentialBucketStrategy.newStrategy(
@@ -49,7 +51,7 @@ public final class DoubleExponentialHistogramAggregator
   }
 
   DoubleExponentialHistogramAggregator(
-      Supplier<DoubleExemplarReservoir> reservoirSupplier,
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
       ExponentialBucketStrategy bucketStrategy) {
     this.reservoirSupplier = reservoirSupplier;
     this.bucketStrategy = bucketStrategy;
@@ -65,72 +67,48 @@ public final class DoubleExponentialHistogramAggregator
    * performs a merge using the buckets from both accumulations, without modifying those
    * accumulations.
    *
-   * @param previousAccumulation the previously captured accumulation
-   * @param delta the newly captured (delta) accumulation
+   * @param previous the previously captured accumulation
+   * @param current the newly captured (delta) accumulation
    * @return the result of the merge of the given accumulations.
    */
   @Override
   public ExponentialHistogramAccumulation merge(
-      ExponentialHistogramAccumulation previousAccumulation,
-      ExponentialHistogramAccumulation delta) {
-
-    double sum = previousAccumulation.getSum() + delta.getSum();
-    long zeroCount = previousAccumulation.getZeroCount() + delta.getZeroCount();
+      ExponentialHistogramAccumulation previous, ExponentialHistogramAccumulation current) {
 
     // Create merged buckets
     DoubleExponentialHistogramBuckets posBuckets =
         DoubleExponentialHistogramBuckets.merge(
-            previousAccumulation.getPositiveBuckets(), delta.getPositiveBuckets());
+            previous.getPositiveBuckets(), current.getPositiveBuckets());
     DoubleExponentialHistogramBuckets negBuckets =
         DoubleExponentialHistogramBuckets.merge(
-            previousAccumulation.getNegativeBuckets(), delta.getNegativeBuckets());
+            previous.getNegativeBuckets(), current.getNegativeBuckets());
 
     // resolve possible scale difference due to merge
     int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
     posBuckets.downscale(posBuckets.getScale() - commonScale);
     negBuckets.downscale(negBuckets.getScale() - commonScale);
-
-    return ExponentialHistogramAccumulation.create(
-        posBuckets.getScale(), sum, posBuckets, negBuckets, zeroCount, delta.getExemplars());
-  }
-
-  /**
-   * Returns a new DELTA aggregation by comparing two cumulative measurements.
-   *
-   * <p>It is similar to merge(), however it decrements counts and sum instead of incrementing. It
-   * does not modify the accumulations.
-   *
-   * @param previousCumulative the previously captured accumulation.
-   * @param currentCumulative the newly captured (cumulative) accumulation.
-   * @return The resulting delta accumulation.
-   */
-  @Override
-  public ExponentialHistogramAccumulation diff(
-      ExponentialHistogramAccumulation previousCumulative,
-      ExponentialHistogramAccumulation currentCumulative) {
-
-    double sum = currentCumulative.getSum() - previousCumulative.getSum();
-    long zeroCount = currentCumulative.getZeroCount() - previousCumulative.getZeroCount();
-
-    DoubleExponentialHistogramBuckets posBuckets =
-        DoubleExponentialHistogramBuckets.diff(
-            currentCumulative.getPositiveBuckets(), previousCumulative.getPositiveBuckets());
-    DoubleExponentialHistogramBuckets negBuckets =
-        DoubleExponentialHistogramBuckets.diff(
-            currentCumulative.getNegativeBuckets(), previousCumulative.getNegativeBuckets());
-
-    // resolve possible scale difference due to merge
-    int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
-    posBuckets.downscale(posBuckets.getScale() - commonScale);
-    negBuckets.downscale(negBuckets.getScale() - commonScale);
-
+    double min = -1;
+    double max = -1;
+    if (previous.hasMinMax() && current.hasMinMax()) {
+      min = Math.min(previous.getMin(), current.getMin());
+      max = Math.max(previous.getMax(), current.getMax());
+    } else if (previous.hasMinMax()) {
+      min = previous.getMin();
+      max = previous.getMax();
+    } else if (current.hasMinMax()) {
+      min = current.getMin();
+      max = current.getMax();
+    }
     return ExponentialHistogramAccumulation.create(
         posBuckets.getScale(),
-        sum,
+        previous.getSum() + current.getSum(),
+        previous.hasMinMax() || current.hasMinMax(),
+        min,
+        max,
         posBuckets,
         negBuckets,
-        zeroCount,
-        currentCumulative.getExemplars());
+        previous.getZeroCount() + current.getZeroCount(),
+        current.getExemplars());
   }
 
   @Override
@@ -165,11 +143,18 @@ public final class DoubleExponentialHistogramAggregator
     private final DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
+    private double min;
+    private double max;
+    private long count;
 
-    Handle(DoubleExemplarReservoir reservoir, ExponentialBucketStrategy bucketStrategy) {
+    Handle(
+        ExemplarReservoir<DoubleExemplarData> reservoir, ExponentialBucketStrategy bucketStrategy) {
       super(reservoir);
       this.sum = 0;
       this.zeroCount = 0;
+      this.min = Double.MAX_VALUE;
+      this.max = -1;
+      this.count = 0;
       this.positiveBuckets = bucketStrategy.newBuckets();
       this.negativeBuckets = bucketStrategy.newBuckets();
     }
@@ -181,12 +166,18 @@ public final class DoubleExponentialHistogramAggregator
           ExponentialHistogramAccumulation.create(
               this.positiveBuckets.getScale(),
               sum,
+              this.count > 0,
+              this.count > 0 ? this.min : -1,
+              this.count > 0 ? this.max : -1,
               positiveBuckets.copy(),
               negativeBuckets.copy(),
               zeroCount,
               exemplars);
       this.sum = 0;
       this.zeroCount = 0;
+      this.min = Double.MAX_VALUE;
+      this.max = -1;
+      this.count = 0;
       this.positiveBuckets.clear();
       this.negativeBuckets.clear();
       return acc;
@@ -201,8 +192,12 @@ public final class DoubleExponentialHistogramAggregator
       }
 
       sum += value;
-      int c = Double.compare(value, 0);
 
+      this.min = Math.min(this.min, value);
+      this.max = Math.max(this.max, value);
+      count++;
+
+      int c = Double.compare(value, 0);
       if (c == 0) {
         zeroCount++;
         return;

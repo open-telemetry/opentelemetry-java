@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
   public static final Aggregator<Object, DoubleExemplarData> INSTANCE = new DropAggregator();
 
   private static final AggregatorHandle<Object, DoubleExemplarData> HANDLE =
-      new AggregatorHandle<Object, DoubleExemplarData>(DoubleExemplarReservoir.noSamples()) {
+      new AggregatorHandle<Object, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
         @Override
         protected void doRecordLong(long value) {}
 
@@ -51,11 +51,6 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
 
   @Override
   public Object merge(Object previousAccumulation, Object accumulation) {
-    return ACCUMULATION;
-  }
-
-  @Override
-  public Object diff(Object previousAccumulation, Object accumulation) {
     return ACCUMULATION;
   }
 

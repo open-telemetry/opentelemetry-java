@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -27,7 +27,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
@@ -115,92 +114,94 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1"))
+                    .hasUnit(""))
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleHistogram")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasCount(1)
-                                .hasSum(10.1)
-                                .hasBucketCounts(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(Attributes.empty())
+                                        .hasCount(1)
+                                        .hasSum(10.1)
+                                        .hasBucketCounts(
+                                            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleCounter")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10.1)),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(10.1))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongHistogram")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasCount(1)
-                                .hasSum(10)
-                                .hasBucketCounts(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(Attributes.empty())
+                                        .hasCount(1)
+                                        .hasSum(10)
+                                        .hasBucketCounts(
+                                            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongUpDownCounter")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(-10)),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(-10))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongCounter")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10)),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(10))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleUpDownCounter")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(-10.1)));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(-10.1))));
   }
 
   @Test
@@ -226,16 +227,17 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testLongCounter")
-                    .hasDoubleHistogram()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 1000000000)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasBucketCounts(1))));
 
     longCounter.add(10, Attributes.empty());
     testClock.advance(Duration.ofSeconds(1));
@@ -246,16 +248,17 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasDoubleHistogram()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 1000000000)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasBucketCounts(1))));
   }
 
   @Test
@@ -284,17 +287,18 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1")
-                    .hasDoubleHistogram()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)))
+                    .hasUnit("")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 1000000000)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasBucketCounts(1))))
         .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter", "testDoubleCounter", "testLongHistogram", "testDoubleHistogram");
@@ -313,17 +317,18 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1")
-                    .hasDoubleHistogram()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 1000000000)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasBucketCounts(1)))
+                    .hasUnit("")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram
+                                .isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - 1000000000)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasBucketCounts(1))))
         .extracting(MetricData::getName)
         .containsExactlyInAnyOrder(
             "testLongCounter", "testDoubleCounter", "testLongHistogram", "testDoubleHistogram");
@@ -365,88 +370,88 @@ class SdkMeterProviderTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasDescription("")
-                    .hasUnit("1"))
+                    .hasUnit(""))
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
                     .hasName("testLongSumObserver")
-                    .hasLongSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10)),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(10))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleSumObserver")
-                    .hasDoubleSum()
-                    .isMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10.1)),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(10.1))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongUpDownSumObserver")
-                    .hasLongSum()
-                    .isNotMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(-10)),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(-10))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleUpDownSumObserver")
-                    .hasDoubleSum()
-                    .isNotMonotonic()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(-10.1)),
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(-10.1))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongValueObserver")
-                    .hasLongGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10)),
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(Attributes.empty())
+                                        .hasValue(10))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleValueObserver")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10.1)));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(Attributes.empty())
+                                        .hasValue(10.1))));
   }
 
   @Test
@@ -473,18 +478,11 @@ class SdkMeterProviderTest {
         .satisfiesExactly(
             metricData ->
                 assertThat(metricData)
-                    .hasLongSum()
-                    .points()
-                    .hasSize(2)
-                    .satisfiesExactlyInAnyOrder(
-                        pointData ->
-                            assertThat(pointData)
-                                .hasAttributes(Attributes.builder().put("callback", "one").build()),
-                        (Consumer<LongPointData>)
-                            longPointData ->
-                                assertThat(longPointData)
-                                    .hasAttributes(
-                                        Attributes.builder().put("callback", "two").build())));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point -> point.hasAttributes(attributeEntry("callback", "one")),
+                                point -> point.hasAttributes(attributeEntry("callback", "two")))));
 
     observableCounter1.close();
 
@@ -493,15 +491,10 @@ class SdkMeterProviderTest {
         .satisfiesExactly(
             metricData ->
                 assertThat(metricData)
-                    .hasLongSum()
-                    .points()
-                    .hasSize(1)
-                    .satisfiesExactlyInAnyOrder(
-                        (Consumer<LongPointData>)
-                            longPointData ->
-                                assertThat(longPointData)
-                                    .hasAttributes(
-                                        Attributes.builder().put("callback", "two").build())));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point -> point.hasAttributes(attributeEntry("callback", "two")))));
 
     observableCounter2.close();
     assertThat(reader.collectAllMetrics()).hasSize(0);
@@ -546,14 +539,11 @@ class SdkMeterProviderTest {
       assertThat(allMetricData)
           .hasSize(4)
           .allSatisfy(
-              metricData -> {
-                assertThat(metricData)
-                    .hasInstrumentationScope(InstrumentationScopeInfo.create("meter"))
-                    .hasLongSum()
-                    .points()
-                    .hasSize(1)
-                    .satisfiesExactly(point -> assertThat(point).hasValue(1));
-              });
+              metricData ->
+                  assertThat(metricData)
+                      .hasInstrumentationScope(InstrumentationScopeInfo.create("meter"))
+                      .hasLongSumSatisfying(
+                          sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
     } finally {
       executorService.shutdown();
     }
@@ -583,12 +573,10 @@ class SdkMeterProviderTest {
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point.getAttributes().asMap())
-                                .containsOnly(entry(AttributeKey.stringKey("allowed"), "bear"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasAttributes(attributeEntry("allowed", "bear")))));
   }
 
   @Test
@@ -618,11 +606,11 @@ class SdkMeterProviderTest {
                     .hasName("not_test")
                     .hasDescription("not_desc")
                     .hasUnit("unit")
-                    .hasDoubleGauge());
+                    .hasDoubleGaugeSatisfying(gauge -> {}));
   }
 
   @Test
-  void viewSdk_AllowMulitpleViewsPerSynchronousInstrument() {
+  void viewSdk_AllowMultipleViewsPerSynchronousInstrument() {
     InstrumentSelector selector = InstrumentSelector.builder().setName("test").build();
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
@@ -654,13 +642,13 @@ class SdkMeterProviderTest {
                     .hasName("not_test")
                     .hasDescription("not_desc")
                     .hasUnit("unit")
-                    .hasDoubleHistogram(),
+                    .hasHistogramSatisfying(histogramAssert -> {}),
             metric ->
                 assertThat(metric)
                     .hasName("not_test_2")
                     .hasDescription("not_desc_2")
                     .hasUnit("unit")
-                    .hasDoubleSum());
+                    .hasDoubleSumSatisfying(sum -> {}));
   }
 
   @Test
@@ -698,13 +686,13 @@ class SdkMeterProviderTest {
                     .hasName("not_test")
                     .hasDescription("not_desc")
                     .hasUnit("unit")
-                    .hasDoubleGauge(),
+                    .hasDoubleGaugeSatisfying(gauge -> {}),
             metric ->
                 assertThat(metric)
                     .hasName("not_test_2")
                     .hasDescription("not_desc_2")
                     .hasUnit("unit")
-                    .hasDoubleGauge());
+                    .hasDoubleGaugeSatisfying(gauge -> {}));
   }
 
   @Test
@@ -737,14 +725,12 @@ class SdkMeterProviderTest {
             metric ->
                 assertThat(metric)
                     .hasName("test")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasAttributes(
-                                    Attributes.builder().put("baggage", "value").build())));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point.hasAttributes(attributeEntry("baggage", "value")))));
   }
 
   @Test
@@ -768,22 +754,22 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1)
-                                .hasAttributes(Attributes.empty()),
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1)
-                                .hasAttributes(attributes)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(Attributes.empty()),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(attributes))));
 
     counter.add(1L);
     testClock.advance(Duration.ofSeconds(1));
@@ -795,22 +781,22 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(2)
-                                .hasAttributes(Attributes.empty()),
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1)
-                                .hasAttributes(attributes)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(2)
+                                            .hasAttributes(Attributes.empty()),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(attributes))));
 
     // Reader 1 should see updated cumulative values
     assertThat(reader1.collectAllMetrics())
@@ -819,21 +805,22 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(2),
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1)
-                                .hasAttributes(attributes)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(2)
+                                            .hasAttributes(Attributes.empty()),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(attributes))));
   }
 
   @Test
@@ -857,21 +844,22 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1),
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1L)
-                                .hasAttributes(attributes)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(Attributes.empty()),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(attributes))));
     long collectorOneTimeOne = testClock.now();
 
     counter.add(1L);
@@ -884,21 +872,22 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(2),
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(startTime)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1L)
-                                .hasAttributes(attributes)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(2)
+                                            .hasAttributes(Attributes.empty()),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1)
+                                            .hasAttributes(attributes))));
 
     // Reader 1 should only see diff since its last collect
     assertThat(reader1.collectAllMetrics())
@@ -907,15 +896,15 @@ class SdkMeterProviderTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasName("testSum")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(collectorOneTimeOne)
-                                .hasEpochNanos(testClock.now())
-                                .hasValue(1)));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(collectorOneTimeOne)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(1))));
   }
 
   @Test

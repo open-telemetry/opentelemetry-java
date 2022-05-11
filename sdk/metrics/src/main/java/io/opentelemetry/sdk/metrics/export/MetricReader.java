@@ -6,9 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.util.Collection;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Collection;
  * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
  * the built-in readers such as {@link PeriodicMetricReader}.
  */
-public interface MetricReader {
+public interface MetricReader extends AggregationTemporalitySelector {
 
   /**
    * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
@@ -27,9 +25,6 @@ public interface MetricReader {
    * implementations of {@link MetricReader} are not currently supported.
    */
   void register(CollectionRegistration registration);
-
-  /** Return the default aggregation temporality for the {@link InstrumentType}. */
-  AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
 
   /**
    * Flushes metrics read by this reader.
@@ -41,7 +36,7 @@ public interface MetricReader {
    *
    * @return the result of the flush.
    */
-  CompletableResultCode flush();
+  CompletableResultCode forceFlush();
 
   /**
    * Shuts down the metric reader.

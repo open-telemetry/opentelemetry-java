@@ -68,7 +68,7 @@ public final class PrometheusCollector implements MetricReader {
 
   // Prometheus cannot flush.
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 

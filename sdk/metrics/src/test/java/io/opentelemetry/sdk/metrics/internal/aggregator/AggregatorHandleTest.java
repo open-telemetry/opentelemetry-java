@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
@@ -15,8 +14,10 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,11 +32,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregatorHandleTest {
 
-  @Mock DoubleExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<DoubleExemplarData> doubleReservoir;
+  @Mock ExemplarReservoir<LongExemplarData> longReservoir;
 
   @Test
   void acquireMapped() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
     assertThat(testAggregator.acquire()).isTrue();
     testAggregator.release();
     assertThat(testAggregator.acquire()).isTrue();
@@ -48,7 +50,7 @@ class AggregatorHandleTest {
 
   @Test
   void tryUnmap_AcquiredHandler() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.tryUnmap()).isFalse();
     testAggregator.release();
@@ -60,7 +62,7 @@ class AggregatorHandleTest {
 
   @Test
   void tryUnmap_AcquiredHandler_MultipleTimes() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.acquire()).isTrue();
@@ -81,7 +83,7 @@ class AggregatorHandleTest {
 
   @Test
   void bind_ThenUnmap_ThenTryToBind() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
     testAggregator.release();
     assertThat(testAggregator.tryUnmap()).isTrue();
     assertThat(testAggregator.acquire()).isFalse();
@@ -90,7 +92,7 @@ class AggregatorHandleTest {
 
   @Test
   void testRecordings() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
 
     testAggregator.recordLong(22);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
@@ -111,26 +113,26 @@ class AggregatorHandleTest {
 
   @Test
   void testOfferMeasurementLongToExemplar() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(longReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordLong(1L, attributes, context);
-    // Since double reservoir, long value is not offered.
-    verifyNoMoreInteractions(reservoir);
+    Mockito.verify(longReservoir).offerLongMeasurement(1L, attributes, context);
   }
 
   @Test
   void testOfferMeasurementDoubleToExemplar() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordDouble(1.0d, attributes, context);
-    Mockito.verify(reservoir).offerMeasurement(1.0d, attributes, context);
+    Mockito.verify(doubleReservoir).offerDoubleMeasurement(1.0d, attributes, context);
   }
 
   @Test
   void testGenerateExemplarsOnCollect() {
-    TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
+    TestAggregatorHandle<DoubleExemplarData> testAggregator =
+        new TestAggregatorHandle<>(doubleReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData result =
         ImmutableDoubleExemplarData.create(
@@ -144,24 +146,25 @@ class AggregatorHandleTest {
             1);
     // We need to first record a value so that collect and reset does something.
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
-    Mockito.when(reservoir.collectAndReset(attributes))
+    Mockito.when(doubleReservoir.collectAndReset(attributes))
         .thenReturn(Collections.singletonList(result));
     testAggregator.accumulateThenReset(attributes);
     assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
   }
 
-  private static class TestAggregatorHandle extends AggregatorHandle<Void, DoubleExemplarData> {
+  private static class TestAggregatorHandle<T extends ExemplarData>
+      extends AggregatorHandle<Void, T> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
-    final AtomicReference<List<DoubleExemplarData>> recordedExemplars = new AtomicReference<>();
+    final AtomicReference<List<T>> recordedExemplars = new AtomicReference<>();
 
-    TestAggregatorHandle(DoubleExemplarReservoir reservoir) {
+    TestAggregatorHandle(ExemplarReservoir<T> reservoir) {
       super(reservoir);
     }
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
+    protected Void doAccumulateThenReset(List<T> exemplars) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

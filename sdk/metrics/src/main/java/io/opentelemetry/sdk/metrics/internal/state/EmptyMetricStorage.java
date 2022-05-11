@@ -47,7 +47,7 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
         }
 
         @Override
-        public CompletableResultCode flush() {
+        public CompletableResultCode forceFlush() {
           return CompletableResultCode.ofSuccess();
         }
 

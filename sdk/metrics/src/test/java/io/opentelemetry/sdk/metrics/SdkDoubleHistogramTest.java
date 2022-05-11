@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -16,10 +17,10 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
 import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -97,21 +98,23 @@ class SdkDoubleHistogramTest {
                     .hasName("testHistogram")
                     .hasDescription("description")
                     .hasUnit("ms")
-                    .hasDoubleHistogram()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.empty())
-                                .hasCount(2)
-                                .hasSum(24)
-                                .hasBucketBoundaries(
-                                    5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500, 5_000,
-                                    7_500, 10_000)
-                                .hasBucketCounts(0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasCount(2)
+                                            .hasSum(24)
+                                            .hasBucketBoundaries(
+                                                5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500,
+                                                5_000, 7_500, 10_000)
+                                            .hasBucketCounts(
+                                                0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))));
   }
 
   @Test
@@ -136,26 +139,27 @@ class SdkDoubleHistogramTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testHistogram")
-                      .hasDoubleHistogram()
-                      .points()
-                      .allSatisfy(
-                          point ->
-                              assertThat(point)
-                                  .hasStartEpochNanos(startTime)
-                                  .hasEpochNanos(testClock.now()))
-                      .satisfiesExactlyInAnyOrder(
-                          point ->
-                              assertThat(point)
-                                  .hasCount(3)
-                                  .hasSum(566.3d)
-                                  .hasBucketCounts(0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
-                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
-                          point ->
-                              assertThat(point)
-                                  .hasCount(2)
-                                  .hasSum(22.2d)
-                                  .hasBucketCounts(0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                  .hasAttributes(Attributes.empty())));
+                      .hasHistogramSatisfying(
+                          histogram ->
+                              histogram.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasStartEpochNanos(startTime)
+                                          .hasEpochNanos(testClock.now())
+                                          .hasCount(3)
+                                          .hasSum(566.3d)
+                                          .hasBucketCounts(
+                                              0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasAttributes(attributeEntry("K", "V")),
+                                  point ->
+                                      point
+                                          .hasStartEpochNanos(startTime)
+                                          .hasEpochNanos(testClock.now())
+                                          .hasCount(2)
+                                          .hasSum(22.2d)
+                                          .hasBucketCounts(
+                                              0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasAttributes(Attributes.empty()))));
 
       // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -168,26 +172,27 @@ class SdkDoubleHistogramTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                       .hasName("testHistogram")
-                      .hasDoubleHistogram()
-                      .points()
-                      .allSatisfy(
-                          point ->
-                              assertThat(point)
-                                  .hasStartEpochNanos(startTime)
-                                  .hasEpochNanos(testClock.now()))
-                      .satisfiesExactlyInAnyOrder(
-                          point ->
-                              assertThat(point)
-                                  .hasCount(4)
-                                  .hasSum(788.3)
-                                  .hasBucketCounts(0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0)
-                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
-                          point ->
-                              assertThat(point)
-                                  .hasCount(3)
-                                  .hasSum(39.2)
-                                  .hasBucketCounts(0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                  .hasAttributes(Attributes.empty())));
+                      .hasHistogramSatisfying(
+                          histogram ->
+                              histogram.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasStartEpochNanos(startTime)
+                                          .hasEpochNanos(testClock.now())
+                                          .hasCount(4)
+                                          .hasSum(788.3)
+                                          .hasBucketCounts(
+                                              0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasAttributes(attributeEntry("K", "V")),
+                                  point ->
+                                      point
+                                          .hasStartEpochNanos(startTime)
+                                          .hasEpochNanos(testClock.now())
+                                          .hasCount(3)
+                                          .hasSum(39.2)
+                                          .hasBucketCounts(
+                                              0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasAttributes(Attributes.empty()))));
     } finally {
       bound.unbind();
     }
@@ -220,7 +225,7 @@ class SdkDoubleHistogramTest {
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
-                assertThat(metric)
+                MetricAssertions.assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testHistogram")
@@ -231,34 +236,38 @@ class SdkDoubleHistogramTest {
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point -> {
-                          assertThat(point)
+                          MetricAssertions.assertThat(point)
                               .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
                               .hasEpochNanos(testClock.now())
                               .hasAttributes(Attributes.empty())
                               .hasCount(2)
                               .hasSum(25)
+                              .hasMin(12)
+                              .hasMax(13)
                               .hasScale(-1)
                               .hasZeroCount(0);
-                          assertThat(point.getPositiveBuckets())
+                          MetricAssertions.assertThat(point.getPositiveBuckets())
                               .hasOffset(1)
                               .hasCounts(Collections.singletonList(2L));
-                          assertThat(point.getNegativeBuckets())
+                          MetricAssertions.assertThat(point.getNegativeBuckets())
                               .hasOffset(0)
                               .hasCounts(Collections.emptyList());
                         },
                         point -> {
-                          assertThat(point)
+                          MetricAssertions.assertThat(point)
                               .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
                               .hasEpochNanos(testClock.now())
                               .hasAttributes(Attributes.builder().put("key", "value").build())
                               .hasCount(1)
                               .hasSum(12)
+                              .hasMin(12)
+                              .hasMax(12)
                               .hasScale(-1)
                               .hasZeroCount(0);
-                          assertThat(point.getPositiveBuckets())
+                          MetricAssertions.assertThat(point.getPositiveBuckets())
                               .hasOffset(1)
                               .hasCounts(Collections.singletonList(1L));
-                          assertThat(point.getNegativeBuckets())
+                          MetricAssertions.assertThat(point.getNegativeBuckets())
                               .hasOffset(0)
                               .hasCounts(Collections.emptyList());
                         }));
@@ -321,16 +330,16 @@ class SdkDoubleHistogramTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testHistogram")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                .hasCount(8_000)
-                                .hasSum(80_000)));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasAttributes(attributeEntry("K", "V"))
+                                        .hasCount(8_000)
+                                        .hasSum(80_000))));
   }
 
   @Test
@@ -369,22 +378,45 @@ class SdkDoubleHistogramTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testHistogram")
-                    .hasDoubleHistogram()
-                    .points()
-                    .allSatisfy(
-                        point ->
-                            assertThat(point)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())
-                                .hasCount(4_000)
-                                .hasSum(40_000)
-                                .hasBucketCounts(0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-                    .extracting(PointData::getAttributes)
-                    .containsExactlyInAnyOrder(
-                        Attributes.of(stringKey(keys[0]), values[0]),
-                        Attributes.of(stringKey(keys[1]), values[1]),
-                        Attributes.of(stringKey(keys[2]), values[2]),
-                        Attributes.of(stringKey(keys[3]), values[3])));
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasCount(4_000)
+                                        .hasSum(40_000)
+                                        .hasBucketCounts(
+                                            0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasAttributes(attributeEntry(keys[0], values[0])),
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasCount(4_000)
+                                        .hasSum(40_000)
+                                        .hasBucketCounts(
+                                            0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasAttributes(attributeEntry(keys[1], values[1])),
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasCount(4_000)
+                                        .hasSum(40_000)
+                                        .hasBucketCounts(
+                                            0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasAttributes(attributeEntry(keys[2], values[2])),
+                                point ->
+                                    point
+                                        .hasStartEpochNanos(testClock.now())
+                                        .hasEpochNanos(testClock.now())
+                                        .hasCount(4_000)
+                                        .hasSum(40_000)
+                                        .hasBucketCounts(
+                                            0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

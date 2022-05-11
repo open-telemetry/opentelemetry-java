@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -116,16 +116,16 @@ class SdkMeterRegistryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongCounter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .isMonotonic()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point ->
-                            assertThat(point)
-                                .hasValue(10)
-                                .hasStartEpochNanos(testClock.now())
-                                .hasEpochNanos(testClock.now())))
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(10)
+                                            .hasStartEpochNanos(testClock.now())
+                                            .hasEpochNanos(testClock.now()))))
         .extracting(MetricData::getInstrumentationScopeInfo)
         .containsExactlyInAnyOrder(
             ((SdkMeter) sdkMeter1).getInstrumentationScopeInfo(),

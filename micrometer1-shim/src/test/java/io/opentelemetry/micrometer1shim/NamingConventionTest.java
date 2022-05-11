@@ -6,7 +6,7 @@
 package io.opentelemetry.micrometer1shim;
 
 import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.micrometer.core.instrument.Counter;
@@ -69,13 +69,12 @@ class NamingConventionTest {
                     .hasName("test.renamedCounter")
                     .hasInstrumentationScope(
                         InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -88,23 +87,20 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedSummary")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(attributeEntry("test.tag", "test.value")))),
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedSummary.max")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -116,13 +112,12 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedFunctionCounter")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -141,23 +136,20 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedFunctionTimer.count")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(attributeEntry("test.tag", "test.value")))),
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedFunctionTimer.sum")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -169,13 +161,12 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedGauge")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -188,23 +179,20 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedLongTaskTimer.active")
-                    .hasLongSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(attributeEntry("test.tag", "test.value")))),
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedLongTaskTimer.duration")
-                    .hasDoubleSum()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 
   @Test
@@ -217,22 +205,19 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedTimer")
-                    .hasDoubleHistogram()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))),
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(attributeEntry("test.tag", "test.value")))),
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedTimer.max")
-                    .hasDoubleGauge()
-                    .points()
-                    .satisfiesExactly(
-                        point ->
-                            assertThat(point)
-                                .attributes()
-                                .containsOnly(attributeEntry("test.tag", "test.value"))));
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasAttributes(
+                                        attributeEntry("test.tag", "test.value")))));
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock LongExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<LongExemplarData> reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
@@ -49,7 +49,7 @@ class LongSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
-          LongExemplarReservoir::noSamples);
+          ExemplarReservoir::longNoSamples);
 
   @Test
   void createHandle() {
@@ -151,7 +151,7 @@ class LongSumAggregatorTest {
             new LongSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                LongExemplarReservoir::noSamples);
+                ExemplarReservoir::longNoSamples);
         LongAccumulation merged =
             aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(merged.getValue())
@@ -195,17 +195,17 @@ class LongSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasLongSum()
-        .isCumulative()
-        .isMonotonic()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasStartEpochNanos(0)
-                    .hasEpochNanos(100)
-                    .hasAttributes(Attributes.empty())
-                    .hasValue(10));
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .isMonotonic()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(100)
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
   }
 
   @Test
@@ -232,8 +232,7 @@ class LongSumAggregatorTest {
                 0,
                 10,
                 100))
-        .hasLongSum()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));
+        .hasLongSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }
 }

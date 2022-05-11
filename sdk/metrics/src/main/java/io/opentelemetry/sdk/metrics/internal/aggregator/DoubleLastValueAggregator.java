@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +36,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DoubleLastValueAggregator
     implements Aggregator<DoubleAccumulation, DoubleExemplarData> {
-  private final Supplier<DoubleExemplarReservoir> reservoirSupplier;
+  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
 
-  public DoubleLastValueAggregator(Supplier<DoubleExemplarReservoir> reservoirSupplier) {
+  public DoubleLastValueAggregator(
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -88,7 +89,7 @@ public final class DoubleLastValueAggregator
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    private Handle(DoubleExemplarReservoir reservoir) {
+    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir) {
       super(reservoir);
     }
 

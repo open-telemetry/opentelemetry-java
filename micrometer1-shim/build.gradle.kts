@@ -11,7 +11,6 @@ dependencies {
 
   api("io.micrometer:micrometer-core")
 
-  testImplementation(project(":sdk:metrics-testing"))
   testImplementation(project(":sdk:testing"))
 }
 
@@ -25,7 +24,6 @@ testing {
         }
       }
       dependencies {
-        implementation(project(":sdk:metrics-testing"))
         implementation(project(":sdk:testing"))
 
         implementation(project.dependencies.enforcedPlatform("io.micrometer:micrometer-bom:1.5.17"))
@@ -38,7 +36,6 @@ testing {
         }
       }
       dependencies {
-        implementation(project(":sdk:metrics-testing"))
         implementation(project(":sdk:testing"))
 
         implementation(project.dependencies.enforcedPlatform("io.micrometer:micrometer-bom:1.6.13"))

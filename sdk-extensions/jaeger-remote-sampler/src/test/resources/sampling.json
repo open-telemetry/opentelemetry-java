@@ -6,6 +6,11 @@
       "param": 0.33,
       "operation_strategies": [
         {
+          "operation": "op0",
+          "type": "probabilistic",
+          "param": 0
+        },
+        {
           "operation": "op1",
           "type": "probabilistic",
           "param": 0.2
