@@ -97,23 +97,6 @@ public final class DoubleExplicitBucketHistogramAggregator
   }
 
   @Override
-  public ExplicitBucketHistogramAccumulation diff(
-      ExplicitBucketHistogramAccumulation previous, ExplicitBucketHistogramAccumulation current) {
-    long[] previousCounts = previous.getCounts();
-    long[] diffedCounts = new long[previousCounts.length];
-    for (int i = 0; i < previousCounts.length; ++i) {
-      diffedCounts[i] = current.getCounts()[i] - previousCounts[i];
-    }
-    return ExplicitBucketHistogramAccumulation.create(
-        current.getSum() - previous.getSum(),
-        /* hasMinMax= */ false,
-        -1,
-        -1,
-        diffedCounts,
-        current.getExemplars());
-  }
-
-  @Override
   public MetricData toMetricData(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,

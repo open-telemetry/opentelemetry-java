@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,10 +34,13 @@ public interface ExponentialHistogramPointData extends PointData {
    *
    * @return an ExponentialHistogramPointData.
    */
+  @SuppressWarnings("TooManyParameters")
   static ExponentialHistogramPointData create(
       int scale,
       double sum,
       long zeroCount,
+      @Nullable Double min,
+      @Nullable Double max,
       ExponentialHistogramBuckets positiveBuckets,
       ExponentialHistogramBuckets negativeBuckets,
       long startEpochNanos,
@@ -48,6 +52,8 @@ public interface ExponentialHistogramPointData extends PointData {
         scale,
         sum,
         zeroCount,
+        min,
+        max,
         positiveBuckets,
         negativeBuckets,
         startEpochNanos,
@@ -87,6 +93,24 @@ public interface ExponentialHistogramPointData extends PointData {
    * @return the number of values equal to zero.
    */
   long getZeroCount();
+
+  /** Return {@code true} if {@link #getMin()} is set. */
+  boolean hasMin();
+
+  /**
+   * The min of all measurements recorded, if {@link #hasMin()} is {@code true}. If {@link
+   * #hasMin()} is {@code false}, the response should be ignored.
+   */
+  double getMin();
+
+  /** Return {@code true} if {@link #getMax()} is set. */
+  boolean hasMax();
+
+  /**
+   * The max of all measurements recorded, if {@link #hasMax()} is {@code true}. If {@link
+   * #hasMax()} is {@code false}, the response should be ignored.
+   */
+  double getMax();
 
   /**
    * Return the {@link ExponentialHistogramBuckets} representing the positive measurements taken for

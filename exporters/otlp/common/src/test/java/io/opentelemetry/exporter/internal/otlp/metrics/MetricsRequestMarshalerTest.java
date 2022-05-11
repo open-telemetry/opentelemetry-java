@@ -349,8 +349,8 @@ class MetricsRequestMarshalerTest {
                         456,
                         KV_ATTR,
                         14.2,
-                        4.1,
-                        10.1,
+                        null,
+                        null,
                         ImmutableList.of(1.0),
                         ImmutableList.of(1L, 5L)),
                     ImmutableHistogramPointData.create(
@@ -390,6 +390,8 @@ class MetricsRequestMarshalerTest {
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
+                .setMin(3.3)
+                .setMax(12.0)
                 .addBucketCounts(7)
                 .addExemplars(
                     Exemplar.newBuilder()
@@ -417,6 +419,20 @@ class MetricsRequestMarshalerTest {
                         0,
                         123.4,
                         1,
+                        null,
+                        null,
+                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        123,
+                        456,
+                        Attributes.empty(),
+                        Collections.emptyList()),
+                    ExponentialHistogramPointData.create(
+                        0,
+                        123.4,
+                        1,
+                        3.3,
+                        80.1,
                         new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
                         new TestExponentialHistogramBuckets(0, Collections.emptyList()),
                         123,
@@ -436,12 +452,26 @@ class MetricsRequestMarshalerTest {
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
+                .setCount(1)
+                .setScale(0)
+                .setSum(123.4)
+                .setZeroCount(1)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .build(),
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .setCount(4) // Counts in positive, negative, and zero count.
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
                 .setScale(0)
                 .setSum(123.4)
+                .setMin(3.3)
+                .setMax(80.1)
                 .setZeroCount(1)
                 .setPositive(
                     ExponentialHistogramDataPoint.Buckets.newBuilder()
@@ -779,6 +809,8 @@ class MetricsRequestMarshalerTest {
                                             .build()))
                                 .setCount(33)
                                 .setSum(4.0)
+                                .setMin(1.0)
+                                .setMax(3.0)
                                 .addBucketCounts(33)
                                 .build())
                         .build())
@@ -802,6 +834,8 @@ class MetricsRequestMarshalerTest {
                                 20,
                                 123.4,
                                 257,
+                                20.1,
+                                44.3,
                                 new TestExponentialHistogramBuckets(
                                     -1, ImmutableList.of(0L, 128L, 1L << 32)),
                                 new TestExponentialHistogramBuckets(
@@ -834,6 +868,8 @@ class MetricsRequestMarshalerTest {
                                 .setScale(20)
                                 .setSum(123.4)
                                 .setZeroCount(257)
+                                .setMin(20.1)
+                                .setMax(44.3)
                                 .setPositive(
                                     ExponentialHistogramDataPoint.Buckets.newBuilder()
                                         .setOffset(-1)

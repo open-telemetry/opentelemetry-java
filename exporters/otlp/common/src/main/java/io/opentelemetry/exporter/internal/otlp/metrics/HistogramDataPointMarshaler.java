@@ -21,6 +21,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
   private final long timeUnixNano;
   private final long count;
   private final double sum;
+  private final boolean hasMin;
+  private final double min;
+  private final boolean hasMax;
+  private final double max;
   private final List<Long> bucketCounts;
   private final List<Double> explicitBounds;
   private final ExemplarMarshaler[] exemplars;
@@ -45,6 +49,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
         point.getEpochNanos(),
         point.getCount(),
         point.getSum(),
+        point.hasMin(),
+        point.getMin(),
+        point.hasMax(),
+        point.getMax(),
         point.getCounts(),
         point.getBoundaries(),
         exemplarMarshalers,
@@ -56,6 +64,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       long count,
       double sum,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       List<Long> bucketCounts,
       List<Double> explicitBounds,
       ExemplarMarshaler[] exemplars,
@@ -66,6 +78,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
             timeUnixNano,
             count,
             sum,
+            hasMin,
+            min,
+            hasMax,
+            max,
             bucketCounts,
             explicitBounds,
             exemplars,
@@ -74,6 +90,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
     this.timeUnixNano = timeUnixNano;
     this.count = count;
     this.sum = sum;
+    this.hasMin = hasMin;
+    this.min = min;
+    this.hasMax = hasMax;
+    this.max = max;
     this.bucketCounts = bucketCounts;
     this.explicitBounds = explicitBounds;
     this.exemplars = exemplars;
@@ -86,6 +106,12 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     output.serializeFixed64(HistogramDataPoint.COUNT, count);
     output.serializeDoubleOptional(HistogramDataPoint.SUM, sum);
+    if (hasMin) {
+      output.serializeDoubleOptional(HistogramDataPoint.MIN, min);
+    }
+    if (hasMax) {
+      output.serializeDoubleOptional(HistogramDataPoint.MAX, max);
+    }
     output.serializeRepeatedFixed64(
         HistogramDataPoint.BUCKET_COUNTS, PrimitiveLongList.toArray(bucketCounts));
     output.serializeRepeatedDouble(HistogramDataPoint.EXPLICIT_BOUNDS, explicitBounds);
@@ -98,6 +124,10 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
       long timeUnixNano,
       long count,
       double sum,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       List<Long> bucketCounts,
       List<Double> explicitBounds,
       ExemplarMarshaler[] exemplars,
@@ -107,6 +137,12 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     size += MarshalerUtil.sizeFixed64(HistogramDataPoint.COUNT, count);
     size += MarshalerUtil.sizeDoubleOptional(HistogramDataPoint.SUM, sum);
+    if (hasMin) {
+      size += MarshalerUtil.sizeDoubleOptional(HistogramDataPoint.MIN, min);
+    }
+    if (hasMax) {
+      size += MarshalerUtil.sizeDoubleOptional(HistogramDataPoint.MAX, max);
+    }
     size += MarshalerUtil.sizeRepeatedFixed64(HistogramDataPoint.BUCKET_COUNTS, bucketCounts);
     size += MarshalerUtil.sizeRepeatedDouble(HistogramDataPoint.EXPLICIT_BOUNDS, explicitBounds);
     size += MarshalerUtil.sizeRepeatedMessage(HistogramDataPoint.EXEMPLARS, exemplars);
