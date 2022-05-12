@@ -208,6 +208,21 @@ class PeriodicMetricReaderTest {
         .hasMessage("executor");
   }
 
+  @Test
+  void stringRepresentation() {
+    when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
+    assertThat(
+            PeriodicMetricReader.builder(metricExporter)
+                .setInterval(Duration.ofSeconds(1))
+                .build()
+                .toString())
+        .isEqualTo(
+            "PeriodicMetricReader{"
+                + "exporter=MockMetricExporter{}, "
+                + "intervalNanos=1000000000"
+                + "}");
+  }
+
   private static class WaitingMetricExporter implements MetricExporter {
 
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
