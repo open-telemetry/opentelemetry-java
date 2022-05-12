@@ -85,4 +85,11 @@ public class MetricStorageRegistry {
     // Finally, return the storage
     return oldOrNewStorage;
   }
+
+  /** Reset the storage registry, clearing all storages. */
+  void resetForTest() {
+    synchronized (lock) {
+      registry.clear();
+    }
+  }
 }

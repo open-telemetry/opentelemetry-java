@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal;
 
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -99,6 +100,17 @@ public final class SdkMeterProviderUtil {
       method.invoke(viewBuilder, attributesProcessor);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException("Error adding AttributesProcessor to ViewBuilder", e);
+    }
+  }
+
+  /** Reflectively reset the {@link SdkMeterProvider}, clearing all registered instruments. */
+  public static void resetForTest(SdkMeterProvider sdkMeterProvider) {
+    try {
+      Method method = SdkMeterProvider.class.getDeclaredMethod("resetForTest");
+      method.setAccessible(true);
+      method.invoke(sdkMeterProvider);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      throw new IllegalStateException("Error calling resetForTest on SdkMeterProvider", e);
     }
   }
 }

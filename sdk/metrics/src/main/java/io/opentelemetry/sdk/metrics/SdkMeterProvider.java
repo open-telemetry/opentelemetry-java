@@ -97,6 +97,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     return new SdkMeterBuilder(registry, instrumentationScopeName);
   }
 
+  /** Reset the provider, clearing all registered instruments. */
+  void resetForTest() {
+    registry.getComponents().forEach(SdkMeter::resetForTest);
+  }
+
   /**
    * Call {@link MetricReader#forceFlush()} on all metric readers associated with this provider. The
    * resulting {@link CompletableResultCode} completes when all complete.
