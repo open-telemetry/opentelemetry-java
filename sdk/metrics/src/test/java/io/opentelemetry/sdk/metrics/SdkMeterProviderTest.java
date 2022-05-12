@@ -915,6 +915,91 @@ class SdkMeterProviderTest {
     assertThat(result.isSuccess()).isTrue();
   }
 
+  @Test
+  void resetForTest() {
+    InMemoryMetricReader reader1 = InMemoryMetricReader.createDelta();
+    InMemoryMetricReader reader2 = InMemoryMetricReader.create();
+
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(reader1)
+            .registerMetricReader(reader2)
+            .registerView(
+                InstrumentSelector.builder().setName("counter").build(),
+                View.builder().setName("new-counter").build())
+            .build();
+
+    Meter meter = meterProvider.get("meter");
+
+    // Create both synchronous and asynchronous instruments
+    LongCounter counter = meter.counterBuilder("counter").build();
+    counter.add(1);
+    meter.counterBuilder("async-counter").buildWithCallback(observable -> observable.record(1));
+
+    assertThat(reader1.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasName("new-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isDelta().hasPointsSatisfying(point -> point.hasValue(1))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("async-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isDelta().hasPointsSatisfying(point -> point.hasValue(1))));
+    assertThat(reader2.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasName("new-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasValue(1))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("async-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasValue(1))));
+
+    // Reset the meter provider and confirm empty collections
+    SdkMeterProviderUtil.resetForTest(meterProvider);
+
+    counter.add(1);
+
+    assertThat(reader1.collectAllMetrics()).isEmpty();
+    assertThat(reader2.collectAllMetrics()).isEmpty();
+
+    // Create new instruments and confirm valid collections, including view configuration
+    counter = meter.counterBuilder("counter").build();
+    counter.add(1);
+    meter.counterBuilder("async-counter").buildWithCallback(observable -> observable.record(1));
+
+    assertThat(reader1.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasName("new-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isDelta().hasPointsSatisfying(point -> point.hasValue(1))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("async-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isDelta().hasPointsSatisfying(point -> point.hasValue(1))));
+    assertThat(reader2.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasName("new-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasValue(1))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("async-counter")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasValue(1))));
+  }
+
   private static void registerViewForAllTypes(
       SdkMeterProviderBuilder meterProviderBuilder, Aggregation aggregation) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
