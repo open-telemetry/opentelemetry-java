@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
@@ -37,23 +38,23 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * between tests.
  *
  * <pre>{@code
- * class CoolTest {
- *   @RegisterExtension
- *   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- *
- *   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
- *   private final Meter meter = otelTesting.getOpenTelemetry().getMeter("test");
- *
- *   @Test
- *   void test() {
- *     tracer.spanBuilder("name").startSpan().end();
- *     assertThat(otelTesting.getSpans()).containsExactly(expected);
- *
- *     LongCounter counter = meter.counterBuilder("counter-name").build();
- *     counter.add(1);
- *     assertThat(otelTesting.getMetrics()).satisfiesExactlyInAnyOrder(metricData -> {});
- *   }
- * }
+ * // class CoolTest {
+ * //   @RegisterExtension
+ * //   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //   private final Meter meter = otelTesting.getOpenTelemetry().getMeter("test");
+ * //
+ * //   @Test
+ * //   void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //
+ * //     LongCounter counter = meter.counterBuilder("counter-name").build();
+ * //     counter.add(1);
+ * //     assertThat(otelTesting.getMetrics()).satisfiesExactlyInAnyOrder(metricData -> {});
+ * //   }
+ * // }
  * }</pre>
  */
 public final class OpenTelemetryExtension
@@ -138,11 +139,15 @@ public final class OpenTelemetryExtension
     spanExporter.reset();
   }
 
-  // TODO(jack-berg): provide way to clear metrics
+  /** Clears all registered metric instruments, such that {@link #getMetrics()} is empty. */
+  public void clearMetrics() {
+    SdkMeterProviderUtil.resetForTest(openTelemetry.getSdkMeterProvider());
+  }
 
   @Override
   public void beforeEach(ExtensionContext context) {
     clearSpans();
+    clearMetrics();
   }
 
   @Override

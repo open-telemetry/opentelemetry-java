@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -27,28 +28,28 @@ import org.junit.rules.ExternalResource;
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * public class CoolTest {
- *   @Rule public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- *
- *   private Tracer tracer;
- *   private Meter meter;
- *
- *   @Before
- *   public void setUp() {
- *     tracer = otelTesting.getOpenTelemetry().getTracer("test");
- *     meter = otelTesting.getOpenTelemetry().getMeter("test");
- *   }
- *
- *   @Test
- *   public void test() {
- *     tracer.spanBuilder("name").startSpan().end();
- *     assertThat(otelTesting.getSpans()).containsExactly(expected);
- *
- *     LongCounter counter = meter.counterBuilder("counter-name").build();
- *     counter.add(1);
- *     assertThat(otelTesting.getMetrics()).satisfiesExactlyInAnyOrder(metricData -> {});
- *   }
- * }
+ * // public class CoolTest {
+ * //   @Rule public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private Tracer tracer;
+ * //   private Meter meter;
+ * //
+ * //   @Before
+ * //   public void setUp() {
+ * //     tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //     meter = otelTesting.getOpenTelemetry().getMeter("test");
+ * //   }
+ * //
+ * //   @Test
+ * //   public void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //
+ * //     LongCounter counter = meter.counterBuilder("counter-name").build();
+ * //     counter.add(1);
+ * //     assertThat(otelTesting.getMetrics()).satisfiesExactlyInAnyOrder(metricData -> {});
+ * //   }
+ * // }
  * }</pre>
  */
 public final class OpenTelemetryRule extends ExternalResource {
@@ -116,13 +117,17 @@ public final class OpenTelemetryRule extends ExternalResource {
     spanExporter.reset();
   }
 
-  // TODO(jack-berg): provide way to clear metrics
+  /** Clears all registered metric instruments, such that {@link #getMetrics()} is empty. */
+  public void clearMetrics() {
+    SdkMeterProviderUtil.resetForTest(openTelemetry.getSdkMeterProvider());
+  }
 
   @Override
   protected void before() {
     GlobalOpenTelemetry.resetForTest();
     GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
+    clearMetrics();
   }
 
   @Override

@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -161,7 +160,6 @@ class OpenTelemetryExtensionTest {
 
   // We have two tests to verify metrics get cleared up between tests.
   @Test
-  @Disabled("enable once metrics are reset after each test")
   void getMetricsAgain() {
     LongCounter counter = meter.counterBuilder("counter").build();
     counter.add(1);
