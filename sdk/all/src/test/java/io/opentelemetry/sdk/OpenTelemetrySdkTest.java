@@ -351,7 +351,7 @@ class OpenTelemetrySdkTest {
                 + "clock=SystemClock{}, "
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
                 + "metricReaders=[PeriodicMetricReader{exporter=MockMetricExporter{}, intervalNanos=60000000000}], "
-                + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentType=null, instrumentName=instrument, meterName=null, meterVersion=null, meterSchemaUrl=null}, view=View{name=new-instrument, description=null, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}}]"
+                + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentName=instrument}, view=View{name=new-instrument, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}}]"
                 + "}"
                 + "}");
   }
