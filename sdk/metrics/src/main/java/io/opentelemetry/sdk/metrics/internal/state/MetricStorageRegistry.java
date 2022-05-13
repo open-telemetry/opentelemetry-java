@@ -38,7 +38,7 @@ public class MetricStorageRegistry {
   private final Map<MetricDescriptor, MetricStorage> registry = new HashMap<>();
 
   /** Returns a {@link Collection} of the registered {@link MetricStorage}. */
-  public Collection<MetricStorage> getMetrics() {
+  public Collection<MetricStorage> getStorages() {
     synchronized (lock) {
       return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
     }

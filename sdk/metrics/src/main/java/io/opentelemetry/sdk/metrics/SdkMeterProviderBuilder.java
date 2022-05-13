@@ -5,16 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,19 +27,11 @@ public final class SdkMeterProviderBuilder {
    */
   private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.sampleWithTraces();
 
-  /**
-   * By default, the minimum collection interval is 0ns.
-   *
-   * @see #setMinimumCollectionInterval(Duration)
-   */
-  private static final long DEFAULT_MIN_COLLECTION_INTERVAL_NANOS = 0;
-
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<MetricReader> metricReaders = new ArrayList<>();
+  private final List<RegisteredReader> registeredReaders = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
-  private long minimumCollectionIntervalNanos = DEFAULT_MIN_COLLECTION_INTERVAL_NANOS;
 
   SdkMeterProviderBuilder() {}
 
@@ -123,21 +113,7 @@ public final class SdkMeterProviderBuilder {
    * @return this
    */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
-    metricReaders.add(reader);
-    return this;
-  }
-
-  /**
-   * Configure the minimum duration between synchronous collections. If collections occur more
-   * frequently than this, synchronous collection will be suppressed.
-   *
-   * @param duration The duration.
-   * @return this
-   */
-  SdkMeterProviderBuilder setMinimumCollectionInterval(Duration duration) {
-    Objects.requireNonNull(duration, "duration");
-    checkArgument(!duration.isNegative(), "duration must not be negative");
-    minimumCollectionIntervalNanos = duration.toNanos();
+    registeredReaders.add(RegisteredReader.create(reader));
     return this;
   }
 
@@ -147,11 +123,6 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(
-        metricReaders,
-        clock,
-        resource,
-        viewRegistryBuilder.build(),
-        exemplarFilter,
-        minimumCollectionIntervalNanos);
+        registeredReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
   }
 }
