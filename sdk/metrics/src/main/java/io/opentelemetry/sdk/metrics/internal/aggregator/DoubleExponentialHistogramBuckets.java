@@ -135,20 +135,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   /**
-   * Return buckets a subtracted by buckets b. May perform downscaling if required.
-   *
-   * @param a the minuend of the subtraction.
-   * @param b the subtrahend of the subtraction.
-   * @return buckets a subtracted by buckets b.
-   */
-  static DoubleExponentialHistogramBuckets diff(
-      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
-    DoubleExponentialHistogramBuckets copy = a.copy();
-    copy.mergeWith(b, /* additive= */ false);
-    return copy;
-  }
-
-  /**
    * Immutable method for merging. This method copies the first set of buckets, performs the merge
    * on the copy, and returns the copy.
    *

@@ -91,11 +91,15 @@ public interface Aggregator<T, U extends ExemplarData> {
   /**
    * Returns a new DELTA aggregation by comparing two cumulative measurements.
    *
+   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
+   *
    * @param previousCumulative the previously captured accumulation.
    * @param currentCumulative the newly captured (cumulative) accumulation.
    * @return The resulting delta accumulation.
    */
-  T diff(T previousCumulative, T currentCumulative);
+  default T diff(T previousCumulative, T currentCumulative) {
+    throw new UnsupportedOperationException("This aggregator does not support diff.");
+  }
 
   /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.

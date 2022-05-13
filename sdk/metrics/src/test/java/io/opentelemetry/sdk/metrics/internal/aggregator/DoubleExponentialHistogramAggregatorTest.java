@@ -238,81 +238,6 @@ class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
-  void diffAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, 0, 0, 1, 1, -1);
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 0, 1, -1);
-
-    // Assure most recent exemplars are kept
-    // Note: This test relies on implementation details of ExponentialCounter, specifically it
-    // assumes that an Array of all zeros is the same as an empty counter array for negative
-    // buckets.
-    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
-    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 0, 1));
-  }
-
-  @Test
-  void diffDownScaledAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, 1, 1, 100, -1, -100);
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 1, -1);
-
-    // Assure most recent exemplars are kept
-    ExponentialHistogramAccumulation diff = aggregator.diff(previousAccumulation, nextAccumulation);
-    assertThat(diff).isEqualTo(getTestAccumulation(exemplars, 1, 100, -100));
-  }
-
-  @Test
   void testMergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -348,6 +273,42 @@ class DoubleExponentialHistogramAggregatorTest {
         .isEqualTo(
             getTestAccumulation(
                 exemplars, 0, 4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
+  }
+
+  @Test
+  void testMergeAccumulationMinAndMax() {
+    // If min / max is null for both accumulations set min / max to null
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ false, 0, 0),
+                createAccumulation(/* hasMinMax= */ false, 0, 0)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ false, -1, -1));
+    // If min / max is non-null for only one accumulation set min / max to it
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ true, 1d, 2d),
+                createAccumulation(/* hasMinMax= */ false, 0, 0)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ false, 0, 0),
+                createAccumulation(/* hasMinMax= */ true, 1d, 2d)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+    // If both accumulations have min / max compute the min / max
+    assertThat(
+            aggregator.merge(
+                createAccumulation(/* hasMinMax= */ true, 1d, 1d),
+                createAccumulation(/* hasMinMax= */ true, 2d, 2d)))
+        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
+  }
+
+  private static ExponentialHistogramAccumulation createAccumulation(
+      boolean hasMinMax, double min, double max) {
+    DoubleExponentialHistogramBuckets buckets =
+        new DoubleExponentialHistogramBuckets(
+            0, 1, ExponentialCounterFactory.circularBufferCounter());
+    return ExponentialHistogramAccumulation.create(
+        0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
   }
 
   @Test
@@ -492,6 +453,8 @@ class DoubleExponentialHistogramAggregatorTest {
                     .hasScale(20)
                     .hasZeroCount(2)
                     .hasCount(3)
+                    .hasMin(0)
+                    .hasMax(123.456)
                     .hasExemplars(exemplar);
                 MetricAssertions.assertThat(point.getPositiveBuckets())
                     .hasCounts(Collections.singletonList(1L))

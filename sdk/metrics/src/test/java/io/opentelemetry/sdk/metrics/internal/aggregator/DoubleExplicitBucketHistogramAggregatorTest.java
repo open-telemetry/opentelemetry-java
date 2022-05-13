@@ -172,12 +172,12 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     assertThat(
             aggregator.merge(
                 ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()),
+                    0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList()),
                 ExplicitBucketHistogramAccumulation.create(
                     0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList())))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
-                0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
+                0, /* hasMinMax= */ false, -1, -1, new long[] {}, Collections.emptyList()));
     // If min / max is non-null for only one accumulation set min / max to it
     assertThat(
             aggregator.merge(
@@ -207,44 +207,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
-  }
-
-  @Test
-  void diffAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    ExplicitBucketHistogramAccumulation previousAccumulation =
-        ExplicitBucketHistogramAccumulation.create(
-            2, /* hasMinMax= */ true, 1d, 2d, new long[] {1, 1, 2}, previousExemplars);
-    ExplicitBucketHistogramAccumulation nextAccumulation =
-        ExplicitBucketHistogramAccumulation.create(
-            5, /* hasMinMax= */ true, 2d, 3d, new long[] {2, 2, 2}, exemplars);
-    // Assure most recent exemplars are kept.
-    assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                3, /* hasMinMax= */ false, -1, -1, new long[] {1, 1, 0}, exemplars));
   }
 
   @Test

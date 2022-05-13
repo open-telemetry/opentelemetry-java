@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import javax.annotation.concurrent.ThreadSafe;
 class TemporalMetricStorage<T, U extends ExemplarData> {
   private final Aggregator<T, U> aggregator;
   private final boolean isSynchronous;
-  private final Map<CollectionHandle, LastReportedAccumulation<T>> reportHistory = new HashMap<>();
+  private final Map<RegisteredReader, LastReportedAccumulation<T>> reportHistory = new HashMap<>();
 
   TemporalMetricStorage(Aggregator<T, U> aggregator, boolean isSynchronous) {
     this.aggregator = aggregator;
@@ -34,7 +34,6 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
   /**
    * Builds the {@link MetricData} streams to report against a specific metric reader.
    *
-   * @param collector The handle of the metric reader.
    * @param resource The resource to attach these metrics against.
    * @param instrumentationScopeInfo The instrumentation scope that generated these metrics.
    * @param temporality The aggregation temporality requested by the reader.
@@ -45,7 +44,7 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
    * @return The {@link MetricData} points.
    */
   synchronized MetricData buildMetricFor(
-      CollectionHandle collector,
+      RegisteredReader registeredReader,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
@@ -58,8 +57,8 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
     long lastCollectionEpoch = startEpochNanos;
     Map<Attributes, T> result = currentAccumulation;
     // Check our last report time.
-    if (reportHistory.containsKey(collector)) {
-      LastReportedAccumulation<T> last = reportHistory.get(collector);
+    if (reportHistory.containsKey(registeredReader)) {
+      LastReportedAccumulation<T> last = reportHistory.get(registeredReader);
       lastCollectionEpoch = last.getEpochNanos();
       // Use aggregation temporality + instrument to determine if we do a merge or a diff of
       // previous.  We have the following four scenarios:
@@ -92,10 +91,11 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
     // could be optimised to not record results for cases 3+4 listed above.
     if (isSynchronous) {
       // Sync instruments remember the full recording.
-      reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
+      reportHistory.put(registeredReader, new LastReportedAccumulation<>(result, epochNanos));
     } else {
       // Async instruments record the raw measurement.
-      reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
+      reportHistory.put(
+          registeredReader, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
     }
     if (result.isEmpty()) {
       return EmptyMetricData.getInstance();

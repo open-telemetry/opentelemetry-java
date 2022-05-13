@@ -106,6 +106,16 @@ public final class PeriodicMetricReader implements MetricReader {
     start();
   }
 
+  @Override
+  public String toString() {
+    return "PeriodicMetricReader{"
+        + "exporter="
+        + exporter
+        + ", intervalNanos="
+        + intervalNanos
+        + '}';
+  }
+
   void start() {
     synchronized (lock) {
       if (scheduledFuture != null) {

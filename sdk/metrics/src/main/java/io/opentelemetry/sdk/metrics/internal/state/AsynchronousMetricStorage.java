@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
@@ -39,17 +39,25 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
+  private final AggregationTemporality aggregationTemporality;
   private final TemporalMetricStorage<T, U> metricStorage;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private Map<Attributes, T> accumulations = new HashMap<>();
 
   private AsynchronousMetricStorage(
+      RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor) {
+    this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
+    this.aggregationTemporality =
+        registeredReader
+            .getReader()
+            .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.metricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
@@ -60,7 +68,9 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
   static <T, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
-      RegisteredView registeredView, InstrumentDescriptor instrumentDescriptor) {
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -68,7 +78,10 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, ExemplarFilter.neverSample());
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
+        registeredReader,
+        metricDescriptor,
+        aggregator,
+        registeredView.getViewAttributesProcessor());
   }
 
   /** Record callback long measurements from {@link ObservableLongMeasurement}. */
@@ -120,23 +133,24 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   }
 
   @Override
+  public RegisteredReader getRegisteredReader() {
+    return registeredReader;
+  }
+
+  @Override
   public MetricData collectAndReset(
-      CollectionInfo collectionInfo,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
-      long epochNanos,
-      boolean suppressSynchronousCollection) {
-    AggregationTemporality temporality =
-        collectionInfo.getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
+      long epochNanos) {
     Map<Attributes, T> currentAccumulations = accumulations;
     accumulations = new HashMap<>();
     return metricStorage.buildMetricFor(
-        collectionInfo.getCollector(),
+        registeredReader,
         resource,
         instrumentationScopeInfo,
         getMetricDescriptor(),
-        temporality,
+        aggregationTemporality,
         currentAccumulations,
         startEpochNanos,
         epochNanos);

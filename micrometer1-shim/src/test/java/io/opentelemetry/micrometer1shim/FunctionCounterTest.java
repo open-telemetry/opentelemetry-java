@@ -58,14 +58,14 @@ class FunctionCounterTest {
 
   @Test
   @SuppressLogger(MetricStorageRegistry.class)
-  void functionCountersWithSameNameAndDifferentDescriptions() {
+  void functionCountersWithSameNameAndDifferentTags() {
     FunctionCounter.builder("testFunctionCounterWithTags", num, AtomicLong::get)
         .description("First description")
         .tags("tag", "1")
         .baseUnit("items")
         .register(Metrics.globalRegistry);
     FunctionCounter.builder("testFunctionCounterWithTags", anotherNum, AtomicLong::get)
-        .description("Second description")
+        .description("ignored")
         .tags("tag", "2")
         .baseUnit("items")
         .register(Metrics.globalRegistry);
@@ -84,16 +84,7 @@ class FunctionCounterTest {
                                     point ->
                                         point
                                             .hasValue(12)
-                                            .hasAttributes(attributeEntry("tag", "1")))),
-            metric ->
-                assertThat(metric)
-                    .hasName("testFunctionCounterWithTags")
-                    .hasDescription("Second description")
-                    .hasUnit("items")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .hasPointsSatisfying(
+                                            .hasAttributes(attributeEntry("tag", "1")),
                                     point ->
                                         point
                                             .hasValue(13)

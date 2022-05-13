@@ -147,6 +147,11 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     shutdown().join(10, TimeUnit.SECONDS);
   }
 
+  @Override
+  public String toString() {
+    return "PrometheusHttpServer{address=" + server.getAddress() + "}";
+  }
+
   // Visible for testing.
   InetSocketAddress getAddress() {
     return server.getAddress();
