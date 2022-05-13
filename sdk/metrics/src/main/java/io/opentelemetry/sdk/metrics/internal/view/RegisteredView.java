@@ -42,4 +42,14 @@ public abstract class RegisteredView {
 
   /** The {@link SourceInfo} from where the view was registered. */
   public abstract SourceInfo getViewSourceInfo();
+
+  @Override
+  public final String toString() {
+    return "RegisteredView{"
+        + "instrumentSelector="
+        + getInstrumentSelector()
+        + ", view="
+        + getView()
+        + "}";
+  }
 }

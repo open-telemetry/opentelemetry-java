@@ -39,6 +39,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
 
+  private final List<MetricReader> metricReaders;
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
   private final Map<CollectionHandle, CollectionInfo> collectionInfoMap;
@@ -62,6 +63,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       ViewRegistry viewRegistry,
       ExemplarFilter exemplarFilter,
       long minimumCollectionIntervalNanos) {
+    this.metricReaders = metricReaders;
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarFilter);
     this.registry =
@@ -140,6 +142,20 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   @Override
   public void close() {
     shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Override
+  public String toString() {
+    return "SdkMeterProvider{"
+        + "clock="
+        + sharedState.getClock()
+        + ", resource="
+        + sharedState.getResource()
+        + ", metricReaders="
+        + metricReaders
+        + ", views="
+        + sharedState.getViewRegistry().getViews()
+        + "}";
   }
 
   /** Helper class to expose registered metric exports. */

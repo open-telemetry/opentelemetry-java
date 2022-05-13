@@ -90,4 +90,9 @@ public class InMemoryMetricReader implements MetricReader {
     isShutdown.set(true);
     return CompletableResultCode.ofSuccess();
   }
+
+  @Override
+  public String toString() {
+    return "InMemoryMetricReader{aggregationTemporality=" + aggregationTemporality + "}";
+  }
 }

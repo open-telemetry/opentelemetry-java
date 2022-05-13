@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -75,4 +76,25 @@ public abstract class InstrumentSelector {
    */
   @Nullable
   public abstract String getMeterSchemaUrl();
+
+  @Override
+  public final String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "InstrumentSelector{", "}");
+    if (getInstrumentType() != null) {
+      joiner.add("instrumentType=" + getInstrumentType());
+    }
+    if (getInstrumentName() != null) {
+      joiner.add("instrumentName=" + getInstrumentName());
+    }
+    if (getMeterName() != null) {
+      joiner.add("meterName=" + getMeterName());
+    }
+    if (getMeterVersion() != null) {
+      joiner.add("meterVersion=" + getMeterVersion());
+    }
+    if (getMeterSchemaUrl() != null) {
+      joiner.add("meterSchemaUrl=" + getMeterSchemaUrl());
+    }
+    return joiner.toString();
+  }
 }
