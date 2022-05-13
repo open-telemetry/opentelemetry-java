@@ -185,14 +185,26 @@ class OpenTelemetrySdkTest {
 
   @Test
   void meterBuilder() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                    .build())
+            .build();
     assertThat(openTelemetry.meterBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().meterBuilder("instr"));
   }
 
   @Test
   void meterBuilder_ViaProvider() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                    .build())
+            .build();
     assertThat(openTelemetry.getMeterProvider().meterBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().meterBuilder("instr"));
   }
