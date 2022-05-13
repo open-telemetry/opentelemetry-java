@@ -41,7 +41,6 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
-  private final AggregationTemporality aggregationTemporality;
   private final TemporalMetricStorage<T, U> metricStorage;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
@@ -54,11 +53,17 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
       AttributesProcessor attributesProcessor) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    this.aggregationTemporality =
+    AggregationTemporality aggregationTemporality =
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
-    this.metricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
+    this.metricStorage =
+        new TemporalMetricStorage<>(
+            aggregator,
+            /* isSynchronous= */ false,
+            registeredReader,
+            aggregationTemporality,
+            metricDescriptor);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
   }
@@ -146,14 +151,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
     Map<Attributes, T> currentAccumulations = accumulations;
     accumulations = new HashMap<>();
     return metricStorage.buildMetricFor(
-        registeredReader,
-        resource,
-        instrumentationScopeInfo,
-        getMetricDescriptor(),
-        aggregationTemporality,
-        currentAccumulations,
-        startEpochNanos,
-        epochNanos);
+        resource, instrumentationScopeInfo, currentAccumulations, startEpochNanos, epochNanos);
   }
 
   @Override

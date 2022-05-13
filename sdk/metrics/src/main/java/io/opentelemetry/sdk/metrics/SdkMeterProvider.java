@@ -55,9 +55,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Resource resource,
       ViewRegistry viewRegistry,
       ExemplarFilter exemplarFilter) {
+    long startEpochNanos = clock.now();
     this.registeredReaders = registeredReaders;
     this.sharedState =
-        MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarFilter);
+        MeterProviderSharedState.create(
+            clock, resource, viewRegistry, exemplarFilter, startEpochNanos);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
@@ -65,6 +67,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     for (RegisteredReader registeredReader : registeredReaders) {
       MetricProducer producer = new LeasedMetricProducer(registry, sharedState, registeredReader);
       registeredReader.getReader().register(producer);
+      registeredReader.setLastCollectEpochNanos(startEpochNanos);
     }
   }
 
@@ -159,9 +162,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     public Collection<MetricData> collectAllMetrics() {
       Collection<SdkMeter> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>();
+      long collectTime = sharedState.getClock().now();
       for (SdkMeter meter : meters) {
-        result.addAll(meter.collectAll(registeredReader, sharedState.getClock().now()));
+        result.addAll(meter.collectAll(registeredReader, collectTime));
       }
+      registeredReader.setLastCollectEpochNanos(collectTime);
       return Collections.unmodifiableCollection(result);
     }
   }
