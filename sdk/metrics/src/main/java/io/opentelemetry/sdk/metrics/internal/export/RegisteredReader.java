@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.export;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 /**
@@ -18,8 +18,8 @@ import javax.annotation.Nullable;
  */
 public class RegisteredReader {
 
-  private final UUID id = UUID.randomUUID();
-  private final int hashCode = id.hashCode();
+  private static final AtomicInteger ID_COUNTER = new AtomicInteger(1);
+  private final int id = ID_COUNTER.incrementAndGet();
   private final MetricReader metricReader;
 
   /** Construct a new collection info object storing information for collection against a reader. */
@@ -37,7 +37,7 @@ public class RegisteredReader {
 
   @Override
   public int hashCode() {
-    return hashCode;
+    return id;
   }
 
   @Override
@@ -48,11 +48,11 @@ public class RegisteredReader {
     if (!(o instanceof RegisteredReader)) {
       return false;
     }
-    return id.equals(((RegisteredReader) o).id);
+    return id == ((RegisteredReader) o).id;
   }
 
   @Override
   public String toString() {
-    return "RegisteredReader(" + id + ")";
+    return "RegisteredReader{" + id + "}";
   }
 }

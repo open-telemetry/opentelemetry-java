@@ -19,4 +19,5 @@ dependencies {
   implementation(project(":semconv"))
 
   testImplementation("junit:junit")
+  testImplementation("org.junit.vintage:junit-vintage-engine")
 }

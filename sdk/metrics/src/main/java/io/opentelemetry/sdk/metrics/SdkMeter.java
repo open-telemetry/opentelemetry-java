@@ -55,6 +55,11 @@ final class SdkMeter implements Meter {
     return meterSharedState.collectAll(registeredReader, meterProviderSharedState, epochNanos);
   }
 
+  /** Reset the meter, clearing all registered instruments. */
+  void resetForTest() {
+    this.meterSharedState.resetForTest();
+  }
+
   @Override
   public LongCounterBuilder counterBuilder(String name) {
     return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)

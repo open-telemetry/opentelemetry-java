@@ -89,4 +89,10 @@ class InMemoryMetricReaderTest {
     assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
     assertThat(deltaReader.collectAllMetrics()).hasSize(0);
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(deltaReader.toString())
+        .isEqualTo("InMemoryMetricReader{aggregationTemporality=DELTA}");
+  }
 }

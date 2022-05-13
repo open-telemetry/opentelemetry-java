@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static java.util.stream.Collectors.toList;
+
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -33,9 +35,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
 
-  private final ComponentRegistry<SdkMeter> registry;
-  private final MeterProviderSharedState sharedState;
   private final List<RegisteredReader> registeredReaders;
+  private final MeterProviderSharedState sharedState;
+  private final ComponentRegistry<SdkMeter> registry;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
   /**
@@ -53,16 +55,17 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Resource resource,
       ViewRegistry viewRegistry,
       ExemplarFilter exemplarFilter) {
+    this.registeredReaders = registeredReaders;
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarFilter);
-    this.registeredReaders = registeredReaders;
-    for (RegisteredReader registeredReader : registeredReaders) {
-      registeredReader.getReader().register(new LeasedMetricProducer(registeredReader));
-    }
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
                 new SdkMeter(sharedState, instrumentationLibraryInfo, registeredReaders));
+    for (RegisteredReader registeredReader : registeredReaders) {
+      MetricProducer producer = new LeasedMetricProducer(registry, sharedState, registeredReader);
+      registeredReader.getReader().register(producer);
+    }
   }
 
   @Override
@@ -75,6 +78,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       instrumentationScopeName = DEFAULT_METER_NAME;
     }
     return new SdkMeterBuilder(registry, instrumentationScopeName);
+  }
+
+  /** Reset the provider, clearing all registered instruments. */
+  void resetForTest() {
+    registry.getComponents().forEach(SdkMeter::resetForTest);
   }
 
   /**
@@ -117,12 +125,33 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     shutdown().join(10, TimeUnit.SECONDS);
   }
 
-  /** Helper class to expose registered metric exports. */
-  private class LeasedMetricProducer implements MetricProducer {
+  @Override
+  public String toString() {
+    return "SdkMeterProvider{"
+        + "clock="
+        + sharedState.getClock()
+        + ", resource="
+        + sharedState.getResource()
+        + ", metricReaders="
+        + registeredReaders.stream().map(RegisteredReader::getReader).collect(toList())
+        + ", views="
+        + sharedState.getViewRegistry().getViews()
+        + "}";
+  }
 
+  /** Helper class to expose registered metric exports. */
+  private static class LeasedMetricProducer implements MetricProducer {
+
+    private final ComponentRegistry<SdkMeter> registry;
+    private final MeterProviderSharedState sharedState;
     private final RegisteredReader registeredReader;
 
-    LeasedMetricProducer(RegisteredReader registeredReader) {
+    LeasedMetricProducer(
+        ComponentRegistry<SdkMeter> registry,
+        MeterProviderSharedState sharedState,
+        RegisteredReader registeredReader) {
+      this.registry = registry;
+      this.sharedState = sharedState;
       this.registeredReader = registeredReader;
     }
 

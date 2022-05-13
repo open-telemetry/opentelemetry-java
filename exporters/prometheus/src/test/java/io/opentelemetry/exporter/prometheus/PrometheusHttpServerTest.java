@@ -163,6 +163,12 @@ class PrometheusHttpServerTest {
     assertThat(response.contentUtf8()).isEqualTo("Exporter is Healthy.");
   }
 
+  @Test
+  void stringRepresentation() {
+    assertThat(prometheusServer.toString())
+        .isEqualTo("PrometheusHttpServer{address=" + prometheusServer.getAddress() + "}");
+  }
+
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
         ImmutableMetricData.createLongSum(

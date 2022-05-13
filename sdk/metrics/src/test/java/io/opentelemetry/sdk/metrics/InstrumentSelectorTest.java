@@ -74,4 +74,27 @@ class InstrumentSelectorTest {
             .build();
     assertThat(selector.getMeterSchemaUrl()).isEqualTo("http://bar.com");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(InstrumentSelector.builder().setName("name").build().toString())
+        .isEqualTo("InstrumentSelector{instrumentName=name}");
+    assertThat(
+            InstrumentSelector.builder()
+                .setType(InstrumentType.COUNTER)
+                .setName("name")
+                .setMeterName("meter")
+                .setMeterVersion("version")
+                .setMeterSchemaUrl("http://url.com")
+                .build()
+                .toString())
+        .isEqualTo(
+            "InstrumentSelector{"
+                + "instrumentType=COUNTER, "
+                + "instrumentName=name, "
+                + "meterName=meter, "
+                + "meterVersion=version, "
+                + "meterSchemaUrl=http://url.com"
+                + "}");
+  }
 }

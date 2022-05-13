@@ -110,6 +110,16 @@ public class MeterSharedState {
     }
   }
 
+  /** Reset the meter state, clearing all registered callbacks and storages. */
+  public void resetForTest() {
+    synchronized (collectLock) {
+      synchronized (callbackLock) {
+        callbackRegistrations.clear();
+      }
+      this.readerStorageRegistries.values().forEach(MetricStorageRegistry::resetForTest);
+    }
+  }
+
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
