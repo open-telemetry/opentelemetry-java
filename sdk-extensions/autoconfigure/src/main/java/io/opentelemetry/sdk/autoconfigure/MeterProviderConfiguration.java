@@ -6,10 +6,13 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 final class MeterProviderConfiguration {
@@ -40,14 +43,26 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName == null) {
-      exporterName = "otlp";
+    Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.metrics.exporter");
+    if (exporterNames.contains("none")) {
+      if (exporterNames.size() > 1) {
+        throw new ConfigurationException(
+            "otel.metrics.exporter contains none along with other exporters");
+      }
+      return;
     }
-    if (!exporterName.equals("none")) {
-      MetricExporterConfiguration.configureExporter(
-          exporterName, config, serviceClassLoader, meterProviderBuilder, metricExporterCustomizer);
+
+    if (exporterNames.isEmpty()) {
+      exporterNames = Collections.singleton("otlp");
     }
+    exporterNames.forEach(
+        exporterName ->
+            MetricExporterConfiguration.configureExporter(
+                exporterName,
+                config,
+                serviceClassLoader,
+                meterProviderBuilder,
+                metricExporterCustomizer));
   }
 
   private MeterProviderConfiguration() {}
