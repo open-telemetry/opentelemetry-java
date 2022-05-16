@@ -122,6 +122,33 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
+  void tracerSdk_AlwaysExport_Span() {
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(waitingSpanExporter, /* sampled= */ false))
+            .setSampler(mockSampler)
+            .build();
+
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.drop());
+
+    try {
+      Tracer tracer = sdkTracerProvider.get(getClass().getName());
+      Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+      span.end();
+
+      // our span should always get exported because sample=false
+      List<SpanData> exported = waitingSpanExporter.waitForExport();
+      assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
+    } finally {
+      sdkTracerProvider.shutdown();
+    }
+  }
+
+  @Test
   void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
