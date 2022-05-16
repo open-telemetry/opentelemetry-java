@@ -42,7 +42,6 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
 
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
-  private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> activeCollectionStorage =
       new ConcurrentHashMap<>();
@@ -56,12 +55,18 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
       AttributesProcessor attributesProcessor) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    this.aggregationTemporality =
+    AggregationTemporality aggregationTemporality =
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
-    this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
+    this.temporalMetricStorage =
+        new TemporalMetricStorage<>(
+            aggregator,
+            /* isSynchronous= */ true,
+            registeredReader,
+            aggregationTemporality,
+            metricDescriptor);
     this.attributesProcessor = attributesProcessor;
   }
 
@@ -177,14 +182,7 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     }
 
     return temporalMetricStorage.buildMetricFor(
-        registeredReader,
-        resource,
-        instrumentationScopeInfo,
-        getMetricDescriptor(),
-        aggregationTemporality,
-        accumulations,
-        startEpochNanos,
-        epochNanos);
+        resource, instrumentationScopeInfo, accumulations, startEpochNanos, epochNanos);
   }
 
   @Override
