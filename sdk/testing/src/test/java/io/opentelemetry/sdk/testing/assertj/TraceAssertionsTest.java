@@ -431,7 +431,7 @@ class TraceAssertionsTest {
             () ->
                 assertThat(SPAN1)
                     .hasStatusSatisfying(
-                        status -> assertThat(status.getStatusCode()).isEqualTo(StatusCode.OK)))
+                        status -> assertThat(status.getStatusCode()).isEqualTo(StatusCode.ERROR)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
