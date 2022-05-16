@@ -129,7 +129,7 @@ class SimpleSpanProcessorTest {
 
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.create(waitingSpanExporter, false))
+            .addSpanProcessor(SimpleSpanProcessor.create(waitingSpanExporter, /* sampled= */ false))
             .setSampler(mockSampler)
             .build();
 
