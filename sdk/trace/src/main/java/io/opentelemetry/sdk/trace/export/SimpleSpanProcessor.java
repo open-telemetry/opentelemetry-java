@@ -56,6 +56,21 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return new SimpleSpanProcessor(exporter, /* sampled= */ true);
   }
 
+  /**
+   * Returns a new {@link SimpleSpanProcessor} which exports spans to the {@link SpanExporter}
+   * synchronously.
+   *
+   * <p>This processor will cause all spans to be exported directly as they finish, meaning each
+   * export request will have a single span. Most backends will not perform well with a single span
+   * per request so unless you know what you're doing, strongly consider using {@link
+   * BatchSpanProcessor} instead, including in special environments such as serverless runtimes.
+   * {@link SimpleSpanProcessor} is generally meant to for logging exporters only.
+   */
+  public static SpanProcessor create(SpanExporter exporter, boolean sampled) {
+    requireNonNull(exporter, "exporter");
+    return new SimpleSpanProcessor(exporter, sampled);
+  }
+
   SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
