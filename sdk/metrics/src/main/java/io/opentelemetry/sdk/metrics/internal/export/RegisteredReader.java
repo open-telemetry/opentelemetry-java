@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.export;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -21,6 +23,7 @@ public class RegisteredReader {
   private static final AtomicInteger ID_COUNTER = new AtomicInteger(1);
   private final int id = ID_COUNTER.incrementAndGet();
   private final MetricReader metricReader;
+  private volatile long lastCollectEpochNanos;
 
   /** Construct a new collection info object storing information for collection against a reader. */
   public static RegisteredReader create(MetricReader reader) {
@@ -33,6 +36,25 @@ public class RegisteredReader {
 
   public MetricReader getReader() {
     return metricReader;
+  }
+
+  /**
+   * Set the time the last collection took place for the reader.
+   *
+   * <p>Called by {@link SdkMeterProvider}'s {@link MetricProducer} after collection.
+   */
+  public void setLastCollectEpochNanos(long epochNanos) {
+    this.lastCollectEpochNanos = epochNanos;
+  }
+
+  /**
+   * Get the time of the last collection for the reader.
+   *
+   * <p>Used to compute the {@link PointData#getStartEpochNanos()} for instruments aggregations with
+   * {@link AggregationTemporality#DELTA} temporality.
+   */
+  public long getLastCollectEpochNanos() {
+    return lastCollectEpochNanos;
   }
 
   @Override

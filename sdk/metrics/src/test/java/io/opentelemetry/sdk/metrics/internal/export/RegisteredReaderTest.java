@@ -36,4 +36,15 @@ class RegisteredReaderTest {
 
     assertThat(registeredReader.getReader()).isSameAs(reader);
   }
+
+  @Test
+  void setAndGetLastCollectEpochNanos() {
+    RegisteredReader registeredReader = RegisteredReader.create(reader);
+
+    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(0);
+    registeredReader.setLastCollectEpochNanos(1);
+    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(1);
+    registeredReader.setLastCollectEpochNanos(5);
+    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(5);
+  }
 }
