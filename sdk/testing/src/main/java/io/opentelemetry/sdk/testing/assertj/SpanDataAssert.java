@@ -455,6 +455,13 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
+  /** Asserts the span has a status satisfying the given condition. */
+  public SpanDataAssert hasStatusSatisfying(Consumer<StatusData> condition) {
+    isNotNull();
+    assertThat(actual.getStatus()).satisfies(condition);
+    return this;
+  }
+
   /** Asserts the span ends at the given epoch timestamp, in nanos. */
   public SpanDataAssert endsAt(long endEpochNanos) {
     isNotNull();
