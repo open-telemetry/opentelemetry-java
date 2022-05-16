@@ -121,7 +121,6 @@ class SimpleSpanProcessorTest {
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }
 
-
   @Test
   void tracerSdk_AlwaysExport_Span() {
     WaitingSpanExporter waitingSpanExporter =
@@ -148,7 +147,7 @@ class SimpleSpanProcessorTest {
       sdkTracerProvider.shutdown();
     }
   }
-  
+
   @Test
   void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter =
