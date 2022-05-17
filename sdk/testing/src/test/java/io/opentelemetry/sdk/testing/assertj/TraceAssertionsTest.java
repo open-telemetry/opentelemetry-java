@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
@@ -242,7 +244,14 @@ class TraceAssertionsTest {
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
         .hasStatus(StatusData.ok())
-        .hasStatusSatisfying(status -> assertThat(status.getStatusCode()).isEqualTo(StatusCode.OK))
+        .hasStatusSatisfying(
+            status ->
+                status
+                    .isOk()
+                    .hasCode(StatusCode.OK)
+                    .hasDescription("")
+                    .hasDescriptionMatching(Pattern.compile("^$"))
+                    .hasDescriptionSatisfying(AbstractCharSequenceAssert::isBlank))
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
@@ -427,17 +436,18 @@ class TraceAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasStatus(StatusData.error()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasStatusSatisfying(StatusDataAssert::isError))
+        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasStatusSatisfying(
-                        status -> assertThat(status.getStatusCode()).isEqualTo(StatusCode.ERROR)))
+            () -> assertThat(SPAN1).hasStatusSatisfying(status -> status.hasCode(StatusCode.ERROR)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
                 assertThat(SPAN1)
                     .hasStatusSatisfying(
-                        status -> assertThat(status.getDescription()).isNotBlank()))
+                        status ->
+                            status.hasDescriptionSatisfying(
+                                AbstractCharSequenceAssert::isNotBlank)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10, TimeUnit.NANOSECONDS))

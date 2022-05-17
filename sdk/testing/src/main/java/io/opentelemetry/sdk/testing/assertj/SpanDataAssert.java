@@ -456,9 +456,10 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   }
 
   /** Asserts the span has a status satisfying the given condition. */
-  public SpanDataAssert hasStatusSatisfying(Consumer<StatusData> condition) {
+  public SpanDataAssert hasStatusSatisfying(Consumer<StatusDataAssert> condition) {
     isNotNull();
-    assertThat(actual.getStatus()).satisfies(condition);
+    StatusDataAssert statusDataAssert = new StatusDataAssert(actual.getStatus());
+    condition.accept(statusDataAssert);
     return this;
   }
 

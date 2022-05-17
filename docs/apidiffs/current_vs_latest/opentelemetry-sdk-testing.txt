@@ -1,7 +1,18 @@
 Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert assertThat(io.opentelemetry.sdk.trace.data.StatusData)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasStatusSatisfying(java.util.function.Consumer)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasCode(io.opentelemetry.api.trace.StatusCode)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasDescriptionMatching(java.util.regex.Pattern)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasDescriptionSatisfying(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert isError()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert isOk()
 ***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
