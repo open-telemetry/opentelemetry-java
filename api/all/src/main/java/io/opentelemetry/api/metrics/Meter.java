@@ -90,18 +90,18 @@ public interface Meter {
    *   <li>Run in a finite amount of time.
    *   <li>Safe to call repeatedly, across multiple threads.
    *   <li>Only observe values to registered instruments (i.e. {@code observableMeasurement} and
-   *       {@code observableMeasurements}
+   *       {@code additionalMeasurements}
    * </ul>
    *
    * @param callback a callback used to observe values on-demand.
    * @param observableMeasurement Instruments for which the callback may observe values.
-   * @param observableMeasurements Instruments for which the callback may observe values.
+   * @param additionalMeasurements Instruments for which the callback may observe values.
    */
   default BatchCallback batchCallback(
       Runnable callback,
       ObservableMeasurement observableMeasurement,
-      ObservableMeasurement... observableMeasurements) {
+      ObservableMeasurement... additionalMeasurements) {
     return DefaultMeter.getInstance()
-        .batchCallback(callback, observableMeasurement, observableMeasurements);
+        .batchCallback(callback, observableMeasurement, additionalMeasurements);
   }
 }

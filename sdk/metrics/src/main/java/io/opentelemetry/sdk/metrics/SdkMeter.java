@@ -104,10 +104,10 @@ final class SdkMeter implements Meter {
   public BatchCallback batchCallback(
       Runnable callback,
       ObservableMeasurement observableMeasurement,
-      ObservableMeasurement... observableMeasurements) {
+      ObservableMeasurement... additionalMeasurements) {
     Set<ObservableMeasurement> measurements = new HashSet<>();
     measurements.add(observableMeasurement);
-    Collections.addAll(measurements, observableMeasurements);
+    Collections.addAll(measurements, additionalMeasurements);
 
     List<SdkObservableMeasurement> sdkMeasurements = new ArrayList<>();
     for (ObservableMeasurement measurement : measurements) {

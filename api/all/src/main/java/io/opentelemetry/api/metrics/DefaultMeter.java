@@ -82,7 +82,7 @@ class DefaultMeter implements Meter {
   public BatchCallback batchCallback(
       Runnable callback,
       ObservableMeasurement observableMeasurement,
-      ObservableMeasurement... observableMeasurements) {
+      ObservableMeasurement... additionalMeasurements) {
     return NOOP_BATCH_CALLBACK;
   }
 
