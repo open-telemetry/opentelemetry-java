@@ -56,6 +56,15 @@ class ConfigErrorTest {
   }
 
   @Test
+  @SetSystemProperty(key = "otel.traces.sampler", value = "parentbased_traceidratio_without_dropping")
+  @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
+  void invalidTraceIdRatioWithoutDroppingWithParent() {
+    assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property otel.traces.sampler.arg=bar. Must be a double.");
+  }
+
+  @Test
   @SetSystemProperty(key = "otel.traces.sampler", value = "cat")
   void invalidSampler() {
     assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
