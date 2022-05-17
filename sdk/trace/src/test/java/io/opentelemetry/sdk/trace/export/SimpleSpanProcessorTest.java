@@ -142,7 +142,7 @@ class SimpleSpanProcessorTest {
 
       // our span should always get exported because sample=false
       List<SpanData> exported = waitingSpanExporter.waitForExport();
-      assertThat(exported).containsExactly();
+      assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
     } finally {
       sdkTracerProvider.shutdown();
     }
