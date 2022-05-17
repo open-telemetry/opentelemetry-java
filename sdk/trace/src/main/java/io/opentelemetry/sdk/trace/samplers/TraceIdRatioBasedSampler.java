@@ -26,12 +26,15 @@ final class TraceIdRatioBasedSampler implements Sampler {
 
   private static final SamplingResult POSITIVE_SAMPLING_RESULT = SamplingResult.recordAndSample();
 
-  private static final SamplingResult NEGATIVE_SAMPLING_RESULT = SamplingResult.drop();
-
   private final long idUpperBound;
   private final String description;
+  private final SamplingResult negativeSamplingResult;
 
   static TraceIdRatioBasedSampler create(double ratio) {
+    return create(ratio, SamplingResult.drop());
+  }
+
+  static TraceIdRatioBasedSampler create(double ratio, SamplingResult negativeSamplingResult) {
     if (ratio < 0.0 || ratio > 1.0) {
       throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
     }
@@ -47,12 +50,13 @@ final class TraceIdRatioBasedSampler implements Sampler {
     } else {
       idUpperBound = (long) (ratio * Long.MAX_VALUE);
     }
-    return new TraceIdRatioBasedSampler(ratio, idUpperBound);
+    return new TraceIdRatioBasedSampler(ratio, idUpperBound, negativeSamplingResult);
   }
 
-  TraceIdRatioBasedSampler(double ratio, long idUpperBound) {
+  TraceIdRatioBasedSampler(double ratio, long idUpperBound, SamplingResult negativeSamplingResult) {
     this.idUpperBound = idUpperBound;
     description = String.format("TraceIdRatioBased{%.6f}", ratio);
+    this.negativeSamplingResult = negativeSamplingResult;
   }
 
   @Override
@@ -73,7 +77,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
     // code is executed in-line for every Span creation).
     return Math.abs(getTraceIdRandomPart(traceId)) < idUpperBound
         ? POSITIVE_SAMPLING_RESULT
-        : NEGATIVE_SAMPLING_RESULT;
+        : negativeSamplingResult;
   }
 
   @Override
