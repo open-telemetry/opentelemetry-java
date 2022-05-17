@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.util.Collection;
 
@@ -15,7 +17,7 @@ import java.util.Collection;
  * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
  * the built-in readers such as {@link PeriodicMetricReader}.
  */
-public interface MetricReader extends AggregationTemporalitySelector {
+public interface MetricReader extends AggregationTemporalitySelector, DefaultAggregationSelector {
 
   /**
    * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
@@ -25,6 +27,16 @@ public interface MetricReader extends AggregationTemporalitySelector {
    * implementations of {@link MetricReader} are not currently supported.
    */
   void register(CollectionRegistration registration);
+
+  /**
+   * Return the default aggregation for the {@link InstrumentType}.
+   *
+   * @see DefaultAggregationSelector#getDefaultAggregation(InstrumentType)
+   */
+  @Override
+  default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return Aggregation.defaultAggregation();
+  }
 
   /**
    * Flushes metrics read by this reader.

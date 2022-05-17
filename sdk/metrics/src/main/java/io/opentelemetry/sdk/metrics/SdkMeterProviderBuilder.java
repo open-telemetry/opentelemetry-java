@@ -9,9 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +27,8 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
-  private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<RegisteredReader> registeredReaders = new ArrayList<>();
+  private final List<MetricReader> metricReaders = new ArrayList<>();
+  private final List<RegisteredView> registeredViews = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
 
   SdkMeterProviderBuilder() {}
@@ -99,8 +97,9 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
     Objects.requireNonNull(view, "view");
-    viewRegistryBuilder.addView(
-        selector, view, view.getAttributesProcessor(), SourceInfo.fromCurrentStack());
+    registeredViews.add(
+        RegisteredView.create(
+            selector, view, view.getAttributesProcessor(), SourceInfo.fromCurrentStack()));
     return this;
   }
 
@@ -113,7 +112,7 @@ public final class SdkMeterProviderBuilder {
    * @return this
    */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
-    registeredReaders.add(RegisteredReader.create(reader));
+    metricReaders.add(reader);
     return this;
   }
 
@@ -122,7 +121,6 @@ public final class SdkMeterProviderBuilder {
    * SdkMeterProviderBuilder}.
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(
-        registeredReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
+    return new SdkMeterProvider(registeredViews, metricReaders, clock, resource, exemplarFilter);
   }
 }

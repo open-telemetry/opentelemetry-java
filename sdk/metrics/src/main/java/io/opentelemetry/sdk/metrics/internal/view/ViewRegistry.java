@@ -8,16 +8,22 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,33 +48,48 @@ public final class ViewRegistry {
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
-  private final List<RegisteredView> reverseRegistration;
+  private final Map<InstrumentType, RegisteredView> instrumentDefaultRegisteredView;
+  private final List<RegisteredView> registeredViews;
 
-  ViewRegistry(List<RegisteredView> reverseRegistration) {
-    this.reverseRegistration = reverseRegistration;
+  ViewRegistry(
+      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
+    instrumentDefaultRegisteredView = new HashMap<>();
+    for (InstrumentType instrumentType : InstrumentType.values()) {
+      instrumentDefaultRegisteredView.put(
+          instrumentType,
+          RegisteredView.create(
+              InstrumentSelector.builder().setName("*").build(),
+              View.builder()
+                  .setAggregation(defaultAggregationSelector.getDefaultAggregation(instrumentType))
+                  .build(),
+              AttributesProcessor.noop(),
+              SourceInfo.noSourceInfo()));
+    }
+    this.registeredViews = registeredViews;
   }
 
-  /** Returns a builder of {@link ViewRegistry}. */
-  public static ViewRegistryBuilder builder() {
-    return new ViewRegistryBuilder();
+  /** Returns a {@link ViewRegistry}. */
+  public static ViewRegistry create(
+      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
+    return new ViewRegistry(defaultAggregationSelector, new ArrayList<>(registeredViews));
   }
 
-  /** Return a list of all registered views. */
-  public List<RegisteredView> getViews() {
-    return new ArrayList<>(reverseRegistration);
+  /** Return a {@link ViewRegistry} using the default aggregation and no views registered. */
+  public static ViewRegistry create() {
+    return create(unused -> Aggregation.defaultAggregation(), Collections.emptyList());
   }
 
   /**
    * Returns the metric {@link View} for a given instrument.
    *
    * @param descriptor description of the instrument.
-   * @return The list of {@link View}s for this instrument in registered order, or a default
-   *     aggregation view.
+   * @return The list of {@link View}s for this instrument, or a default view.
    */
   public List<RegisteredView> findViews(
       InstrumentDescriptor descriptor, InstrumentationScopeInfo meterScope) {
     List<RegisteredView> result = new ArrayList<>();
-    for (RegisteredView entry : reverseRegistration) {
+    // Find matching views for the instrument
+    for (RegisteredView entry : registeredViews) {
       if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
         AggregatorFactory viewAggregatorFactory =
             (AggregatorFactory) entry.getView().getAggregation();
@@ -87,10 +108,34 @@ public final class ViewRegistry {
       }
     }
 
-    if (result.isEmpty()) {
-      return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
+    // If a view matched, return it
+    if (!result.isEmpty()) {
+      return Collections.unmodifiableList(result);
     }
-    return Collections.unmodifiableList(result);
+
+    // Not views matched, use default view
+    RegisteredView instrumentDefaultView =
+        Objects.requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+    AggregatorFactory viewAggregatorFactory =
+        (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
+
+    // If the aggregation from default aggregation selector is compatible with the instrument, use
+    // it
+    if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
+      return Collections.singletonList(instrumentDefaultView);
+    }
+
+    // The aggregation from default aggregation selector was incompatible with instrument, use
+    // default aggregation instead
+    logger.log(
+        Level.WARNING,
+        "Instrument default aggregation "
+            + AggregationUtil.aggregationName(instrumentDefaultView.getView().getAggregation())
+            + " is incompatible with instrument "
+            + descriptor.getName()
+            + " of type "
+            + descriptor.getType());
+    return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
   }
 
   // Matches an instrument selector against an instrument + meter.

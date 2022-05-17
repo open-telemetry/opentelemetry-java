@@ -81,15 +81,13 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   final CallbackRegistration<ObservableDoubleMeasurement> registerDoubleAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.DOUBLE);
-    return meterSharedState.registerDoubleAsynchronousInstrument(
-        descriptor, meterProviderSharedState, updater);
+    return meterSharedState.registerDoubleAsynchronousInstrument(descriptor, updater);
   }
 
   final CallbackRegistration<ObservableLongMeasurement> registerLongAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.LONG);
-    return meterSharedState.registerLongAsynchronousInstrument(
-        descriptor, meterProviderSharedState, updater);
+    return meterSharedState.registerLongAsynchronousInstrument(descriptor, updater);
   }
 
   @FunctionalInterface

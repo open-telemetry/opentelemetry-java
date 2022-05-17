@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.Closeable;
 import java.util.Collection;
@@ -17,7 +19,18 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
  */
-public interface MetricExporter extends AggregationTemporalitySelector, Closeable {
+public interface MetricExporter
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
+
+  /**
+   * Return the default aggregation for the {@link InstrumentType}.
+   *
+   * @see DefaultAggregationSelector#getDefaultAggregation(InstrumentType)
+   */
+  @Override
+  default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return Aggregation.defaultAggregation();
+  }
 
   /**
    * Exports the collection of given {@link MetricData}. Note that export operations can be

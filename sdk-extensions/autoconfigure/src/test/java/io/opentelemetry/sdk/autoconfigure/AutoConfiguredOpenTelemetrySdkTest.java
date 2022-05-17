@@ -213,6 +213,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_addMeterProviderCustomizer() {
     Mockito.lenient().when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(metricReader.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricReader.getDefaultAggregation(any())).thenCallRealMethod();
 
     SdkMeterProvider sdkMeterProvider =
         builder
