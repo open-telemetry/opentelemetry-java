@@ -16,7 +16,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -50,10 +50,11 @@ final class SdkMeter implements Meter {
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationScopeInfo instrumentationScopeInfo) {
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      List<RegisteredReader> registeredReaders) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = MeterSharedState.create(instrumentationScopeInfo);
+    this.meterSharedState = MeterSharedState.create(instrumentationScopeInfo, registeredReaders);
   }
 
   // Visible for testing
@@ -62,10 +63,13 @@ final class SdkMeter implements Meter {
   }
 
   /** Collects all the metric recordings that changed since the previous call. */
-  Collection<MetricData> collectAll(
-      CollectionInfo collectionInfo, long epochNanos, boolean suppressSynchronousCollection) {
-    return meterSharedState.collectAll(
-        collectionInfo, meterProviderSharedState, epochNanos, suppressSynchronousCollection);
+  Collection<MetricData> collectAll(RegisteredReader registeredReader, long epochNanos) {
+    return meterSharedState.collectAll(registeredReader, meterProviderSharedState, epochNanos);
+  }
+
+  /** Reset the meter, clearing all registered instruments. */
+  void resetForTest() {
+    this.meterSharedState.resetForTest();
   }
 
   @Override

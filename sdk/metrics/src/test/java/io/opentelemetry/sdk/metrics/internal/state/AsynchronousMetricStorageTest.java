@@ -22,13 +22,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +41,6 @@ class AsynchronousMetricStorageTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
-  @Mock private MetricReader reader;
-
   private final TestClock testClock = TestClock.create();
   private final Resource resource = Resource.empty();
   private final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -52,21 +48,21 @@ class AsynchronousMetricStorageTest {
   private final RegisteredView registeredView =
       RegisteredView.create(
           selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());
-  private CollectionInfo collectionInfo;
+
+  @Mock private MetricReader reader;
+  private RegisteredReader registeredReader;
 
   private AsynchronousMetricStorage<?, ?> longCounterStorage;
   private AsynchronousMetricStorage<?, ?> doubleCounterStorage;
 
   @BeforeEach
   void setup() {
-    CollectionHandle handle = CollectionHandle.createSupplier().get();
-    Set<CollectionHandle> all = CollectionHandle.mutableSet();
-    all.add(handle);
-    collectionInfo = CollectionInfo.create(handle, all, reader);
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
+    registeredReader = RegisteredReader.create(reader);
 
     longCounterStorage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "long-counter",
@@ -76,6 +72,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentValueType.LONG));
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             registeredView,
             InstrumentDescriptor.create(
                 "double-counter",
@@ -86,117 +83,12 @@ class AsynchronousMetricStorageTest {
   }
 
   @Test
-  void lockAndUnlock_long() {
-    // Storage is initially locked and recording is not allowed
-    longCounterStorage.recordLong(1, Attributes.empty());
-    assertThat(
-            longCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isTrue();
-    logs.assertContains(
-        "Cannot record measurements for instrument long-counter outside registered callbacks.");
-
-    // After unlocking, recording is allowed
-    longCounterStorage.unlock();
-    longCounterStorage.recordLong(1, Attributes.empty());
-    assertThat(
-            longCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isFalse();
-
-    // After locking, recording is once again not allowed
-    longCounterStorage.lock();
-    assertThat(
-            longCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isTrue();
-  }
-
-  @Test
-  void lockAndUnlock_double() {
-    // Storage is initially locked and recording is not allowed
-    doubleCounterStorage.recordDouble(1.1, Attributes.empty());
-    assertThat(
-            doubleCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isTrue();
-    logs.assertContains(
-        "Cannot record measurements for instrument double-counter outside registered callbacks.");
-
-    // After unlocking, recording is allowed
-    doubleCounterStorage.unlock();
-    doubleCounterStorage.recordDouble(1.1, Attributes.empty());
-    assertThat(
-            doubleCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isFalse();
-
-    // After locking, recording is once again not allowed
-    doubleCounterStorage.lock();
-    assertThat(
-            doubleCounterStorage
-                .collectAndReset(
-                    collectionInfo,
-                    resource,
-                    scope,
-                    0,
-                    testClock.nanoTime(),
-                    /* suppressSynchronousCollection= */ false)
-                .isEmpty())
-        .isTrue();
-  }
-
-  @Test
   void recordLong() {
-    longCounterStorage.unlock();
     longCounterStorage.recordLong(1, Attributes.builder().put("key", "a").build());
     longCounterStorage.recordLong(2, Attributes.builder().put("key", "b").build());
     longCounterStorage.recordLong(3, Attributes.builder().put("key", "c").build());
-    longCounterStorage.lock();
 
-    assertThat(
-            longCounterStorage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -214,20 +106,11 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordDouble() {
-    doubleCounterStorage.unlock();
     doubleCounterStorage.recordDouble(1.1, Attributes.builder().put("key", "a").build());
     doubleCounterStorage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
     doubleCounterStorage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
-    doubleCounterStorage.lock();
 
-    assertThat(
-            doubleCounterStorage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(doubleCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -249,6 +132,7 @@ class AsynchronousMetricStorageTest {
   void record_ProcessesAttributes() {
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
+            registeredReader,
             RegisteredView.create(
                 selector,
                 View.builder().build(),
@@ -257,18 +141,9 @@ class AsynchronousMetricStorageTest {
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 
-    storage.unlock();
     storage.recordLong(1, Attributes.builder().put("key1", "a").put("key2", "b").build());
-    storage.lock();
 
-    assertThat(
-            storage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -282,20 +157,11 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    longCounterStorage.unlock();
     for (int i = 0; i <= MetricStorageUtils.MAX_ACCUMULATIONS + 1; i++) {
       longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
-    longCounterStorage.lock();
 
-    assertThat(
-            longCounterStorage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
@@ -305,19 +171,10 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_DuplicateAttributes() {
-    longCounterStorage.unlock();
     longCounterStorage.recordLong(1, Attributes.builder().put("key1", "a").build());
     longCounterStorage.recordLong(2, Attributes.builder().put("key1", "a").build());
-    longCounterStorage.lock();
 
-    assertThat(
-            longCounterStorage.collectAndReset(
-                collectionInfo,
-                resource,
-                scope,
-                0,
-                testClock.nanoTime(),
-                /* suppressSynchronousCollection= */ false))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)

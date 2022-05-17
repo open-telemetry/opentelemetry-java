@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal;
 
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -12,7 +13,6 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.function.Predicate;
 
 /**
@@ -39,27 +39,6 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
-    }
-  }
-
-  /**
-   * Reflectively set the minimum duration between synchronous collections for the {@link
-   * SdkMeterProviderBuilder}. If collections occur more frequently than this, synchronous
-   * collection will be suppressed.
-   *
-   * @param duration The duration.
-   */
-  public static void setMinimumCollectionInterval(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder, Duration duration) {
-    try {
-      Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod(
-              "setMinimumCollectionInterval", Duration.class);
-      method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, duration);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalStateException(
-          "Error calling setMinimumCollectionInterval on SdkMeterProviderBuilder", e);
     }
   }
 
@@ -99,6 +78,17 @@ public final class SdkMeterProviderUtil {
       method.invoke(viewBuilder, attributesProcessor);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException("Error adding AttributesProcessor to ViewBuilder", e);
+    }
+  }
+
+  /** Reflectively reset the {@link SdkMeterProvider}, clearing all registered instruments. */
+  public static void resetForTest(SdkMeterProvider sdkMeterProvider) {
+    try {
+      Method method = SdkMeterProvider.class.getDeclaredMethod("resetForTest");
+      method.setAccessible(true);
+      method.invoke(sdkMeterProvider);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      throw new IllegalStateException("Error calling resetForTest on SdkMeterProvider", e);
     }
   }
 }

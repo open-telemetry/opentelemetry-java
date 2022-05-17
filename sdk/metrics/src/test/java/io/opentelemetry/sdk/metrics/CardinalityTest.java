@@ -14,8 +14,8 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressLogger(
     loggerName = "io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage")
-@SuppressLogger(loggerName = "io.opentelemetry.sdk.metrics.internal.state.DeltaMetricStorage")
+@SuppressLogger(DefaultSynchronousMetricStorage.class)
 class CardinalityTest {
 
   /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
@@ -41,7 +41,6 @@ class CardinalityTest {
         SdkMeterProvider.builder()
             .registerMetricReader(deltaReader)
             .registerMetricReader(cumulativeReader)
-            .setMinimumCollectionInterval(Duration.ofSeconds(0))
             .build();
     meter = sdkMeterProvider.get(CardinalityTest.class.getName());
   }

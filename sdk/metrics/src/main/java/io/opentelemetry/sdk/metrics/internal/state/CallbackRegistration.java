@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,26 +26,34 @@ public final class CallbackRegistration {
   private static final Logger logger = Logger.getLogger(CallbackRegistration.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final String callbackDescription;
-  private final List<AsynchronousMetricStorage<?, ?>> storages;
+  private final List<SdkObservableMeasurement> observableMeasurements;
   private final Runnable callback;
+  private final String callbackDescription;
+  private final boolean hasStorages;
 
   private CallbackRegistration(
-      List<InstrumentDescriptor> instrumentDescriptors,
-      List<AsynchronousMetricStorage<?, ?>> storages,
-      Runnable callback) {
-    this.callbackDescription = callbackDescription(instrumentDescriptors);
-    this.storages = storages;
+      List<SdkObservableMeasurement> observableMeasurements, Runnable callback) {
+    this.observableMeasurements = observableMeasurements;
     this.callback = callback;
+    List<InstrumentDescriptor> instrumentDescriptors =
+        observableMeasurements.stream()
+            .map(SdkObservableMeasurement::getInstrumentDescriptor)
+            .collect(toList());
+    this.callbackDescription = callbackDescription(instrumentDescriptors);
+    this.hasStorages =
+        observableMeasurements.stream()
+            .flatMap(measurement -> measurement.getStorages().stream())
+            .findAny()
+            .isPresent();
   }
 
   /**
    * Create a callback registration.
    *
    * <p>The {@code observableMeasurements} define the set of measurements the {@code runnable} may
-   * record to. The {@link AsynchronousMetricStorage}s for each is {@link
-   * AsynchronousMetricStorage#unlock()}ed before {@code runnable} is called, and {@link
-   * AsynchronousMetricStorage#lock()}ed afterwards.
+   * record to. The active reader of each {@code observableMeasurements} is set via {@link
+   * SdkObservableMeasurement#setActiveReader(RegisteredReader)} before {@code runnable} is called,
+   * and set to {@code null} afterwards.
    *
    * @param observableMeasurements the measurements that the runnable may record to
    * @param runnable the callback
@@ -52,15 +61,7 @@ public final class CallbackRegistration {
    */
   public static CallbackRegistration create(
       List<SdkObservableMeasurement> observableMeasurements, Runnable runnable) {
-    List<InstrumentDescriptor> instrumentDescriptors =
-        observableMeasurements.stream()
-            .map(SdkObservableMeasurement::getInstrumentDescriptor)
-            .collect(toList());
-    List<AsynchronousMetricStorage<?, ?>> storages =
-        observableMeasurements.stream()
-            .flatMap(measurement -> measurement.getStorages().stream())
-            .collect(toList());
-    return new CallbackRegistration(instrumentDescriptors, storages, runnable);
+    return new CallbackRegistration(observableMeasurements, runnable);
   }
 
   // Visible for test
@@ -83,12 +84,15 @@ public final class CallbackRegistration {
     return callbackDescription;
   }
 
-  void invokeCallback() {
+  void invokeCallback(RegisteredReader reader) {
     // Return early if no storages are registered
-    if (storages.size() == 0) {
+    if (!hasStorages) {
       return;
     }
-    storages.forEach(AsynchronousMetricStorage::unlock);
+    // Set the active reader on each observable measurement so that measurements are only recorded
+    // to relevant storages
+    observableMeasurements.forEach(
+        observableMeasurement -> observableMeasurement.setActiveReader(reader));
     try {
       callback.run();
     } catch (Throwable e) {
@@ -98,7 +102,8 @@ public final class CallbackRegistration {
           "An exception occurred invoking callback for " + callbackDescription + ".",
           e);
     } finally {
-      storages.forEach(AsynchronousMetricStorage::lock);
+      observableMeasurements.forEach(
+          observableMeasurement -> observableMeasurement.setActiveReader(null));
     }
   }
 }

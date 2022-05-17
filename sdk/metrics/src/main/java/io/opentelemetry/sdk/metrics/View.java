@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -47,4 +48,18 @@ public abstract class View {
 
   /** The attribute processor used for this view. */
   abstract AttributesProcessor getAttributesProcessor();
+
+  @Override
+  public final String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "View{", "}");
+    if (getName() != null) {
+      joiner.add("name=" + getName());
+    }
+    if (getDescription() != null) {
+      joiner.add("description=" + getDescription());
+    }
+    joiner.add("aggregation=" + getAggregation());
+    joiner.add("attributesProcessor=" + getAttributesProcessor());
+    return joiner.toString();
+  }
 }

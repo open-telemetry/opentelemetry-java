@@ -20,13 +20,12 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,19 +39,31 @@ public final class AsynchronousMetricStorage<T, U extends ExemplarData> implemen
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final TemporalMetricStorage<T, U> metricStorage;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
-  private final AtomicBoolean isLocked = new AtomicBoolean(true);
   private Map<Attributes, T> accumulations = new HashMap<>();
 
   private AsynchronousMetricStorage(
+      RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor) {
+    this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    this.metricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
+    AggregationTemporality aggregationTemporality =
+        registeredReader
+            .getReader()
+            .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
+    this.metricStorage =
+        new TemporalMetricStorage<>(
+            aggregator,
+            /* isSynchronous= */ false,
+            registeredReader,
+            aggregationTemporality,
+            metricDescriptor);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
   }
@@ -62,7 +73,9 @@ public final class AsynchronousMetricStorage<T, U extends ExemplarData> implemen
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
   static <T, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
-      RegisteredView registeredView, InstrumentDescriptor instrumentDescriptor) {
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -70,49 +83,14 @@ public final class AsynchronousMetricStorage<T, U extends ExemplarData> implemen
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(instrumentDescriptor, ExemplarFilter.neverSample());
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, registeredView.getViewAttributesProcessor());
-  }
-
-  /**
-   * Unlock the instrument, allowing recordings.
-   *
-   * <p>Called by {@link CallbackRegistration#invokeCallback()} before callback is invoked.
-   */
-  void unlock() {
-    if (isLocked.compareAndSet(true, false)) {
-      throttlingLogger.log(
-          Level.FINE,
-          "Attempting to unlock AsynchronousMetricStorage for instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " which is already unlocked. This is likely a bug.");
-    }
-  }
-
-  /**
-   * Lock the instrument, preventing additional recordings.
-   *
-   * <p>Called by {@link CallbackRegistration#invokeCallback()} after callback is invoked.
-   */
-  void lock() {
-    if (isLocked.compareAndSet(false, true)) {
-      throttlingLogger.log(
-          Level.FINE,
-          "Attempting to lock AsynchronousMetricStorage for instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " which is already locked. This is likely a bug.");
-    }
+        registeredReader,
+        metricDescriptor,
+        aggregator,
+        registeredView.getViewAttributesProcessor());
   }
 
   /** Record callback long measurements from {@link ObservableLongMeasurement}. */
   void recordLong(long value, Attributes attributes) {
-    if (isLocked.get()) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Cannot record measurements for instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " outside registered callbacks.");
-      return;
-    }
     T accumulation = aggregator.accumulateLongMeasurement(value, attributes, Context.current());
     if (accumulation != null) {
       recordAccumulation(accumulation, attributes);
@@ -121,14 +99,6 @@ public final class AsynchronousMetricStorage<T, U extends ExemplarData> implemen
 
   /** Record callback double measurements from {@link ObservableDoubleMeasurement}. */
   void recordDouble(double value, Attributes attributes) {
-    if (isLocked.get()) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Cannot record measurements for instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " outside registered callbacks.");
-      return;
-    }
     T accumulation = aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
     if (accumulation != null) {
       recordAccumulation(accumulation, attributes);
@@ -168,26 +138,20 @@ public final class AsynchronousMetricStorage<T, U extends ExemplarData> implemen
   }
 
   @Override
+  public RegisteredReader getRegisteredReader() {
+    return registeredReader;
+  }
+
+  @Override
   public MetricData collectAndReset(
-      CollectionInfo collectionInfo,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
-      long epochNanos,
-      boolean suppressSynchronousCollection) {
-    AggregationTemporality temporality =
-        collectionInfo.getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
+      long epochNanos) {
     Map<Attributes, T> currentAccumulations = accumulations;
     accumulations = new HashMap<>();
     return metricStorage.buildMetricFor(
-        collectionInfo.getCollector(),
-        resource,
-        instrumentationScopeInfo,
-        getMetricDescriptor(),
-        temporality,
-        currentAccumulations,
-        startEpochNanos,
-        epochNanos);
+        resource, instrumentationScopeInfo, currentAccumulations, startEpochNanos, epochNanos);
   }
 
   @Override

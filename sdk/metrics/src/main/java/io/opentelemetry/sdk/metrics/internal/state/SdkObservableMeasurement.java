@@ -9,8 +9,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Records values from asynchronous instruments to associated {@link AsynchronousMetricStorage}.
@@ -21,9 +26,13 @@ import java.util.List;
 public final class SdkObservableMeasurement
     implements ObservableLongMeasurement, ObservableDoubleMeasurement {
 
+  private static final Logger logger = Logger.getLogger(SdkObservableMeasurement.class.getName());
+
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
   private final List<AsynchronousMetricStorage<?, ?>> storages;
+  @Nullable private volatile RegisteredReader activeReader;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
@@ -54,6 +63,10 @@ public final class SdkObservableMeasurement
     return instrumentationScopeInfo;
   }
 
+  public void setActiveReader(@Nullable RegisteredReader registeredReader) {
+    this.activeReader = registeredReader;
+  }
+
   InstrumentDescriptor getInstrumentDescriptor() {
     return instrumentDescriptor;
   }
@@ -69,8 +82,19 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
+    if (activeReader == null) {
+      throttlingLogger.log(
+          Level.FINE,
+          "Measurement recorded for instrument "
+              + instrumentDescriptor.getName()
+              + " outside callback registered to instrument. Dropping measurement.");
+      return;
+    }
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
-      storage.recordLong(value, attributes);
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.recordLong(value, attributes);
+      }
     }
   }
 
@@ -81,8 +105,19 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
+    if (activeReader == null) {
+      throttlingLogger.log(
+          Level.FINE,
+          "Measurement recorded for instrument "
+              + instrumentDescriptor.getName()
+              + " outside callback registered to instrument. Dropping measurement.");
+      return;
+    }
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
-      storage.recordDouble(value, attributes);
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.recordDouble(value, attributes);
+      }
     }
   }
 }

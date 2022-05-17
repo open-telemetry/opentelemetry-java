@@ -17,12 +17,13 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 class SdkBatchCallbackTest {
 
@@ -41,8 +42,8 @@ class SdkBatchCallbackTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @RegisterExtension
-  LogCapturer asyncStorageLogs =
-      LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
+  LogCapturer observableMeasurementLogs =
+      LogCapturer.create().forLevel(Level.TRACE).captureForType(SdkObservableMeasurement.class);
 
   @RegisterExtension LogCapturer sdkMeterLogs = LogCapturer.create().captureForType(SdkMeter.class);
 
@@ -161,7 +162,6 @@ class SdkBatchCallbackTest {
   }
 
   @Test
-  @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_RecordToUnregisteredInstrument() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
     ObservableLongMeasurement counter2 = sdkMeter.counterBuilder("counter2").buildObserver();
@@ -184,12 +184,11 @@ class SdkBatchCallbackTest {
                     .hasLongSumSatisfying(
                         sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
-    asyncStorageLogs.assertContains(
-        "Cannot record measurements for instrument counter2 outside registered callbacks.");
+    observableMeasurementLogs.assertContains(
+        "Measurement recorded for instrument counter2 outside callback registered to instrument. Dropping measurement.");
   }
 
   @Test
-  @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_RecordOutsideCallback() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
 
@@ -215,13 +214,12 @@ class SdkBatchCallbackTest {
                                             .hasValue(1)
                                             .hasAttributes(attributeEntry("key", "value2")))));
 
-    asyncStorageLogs.assertContains(
-        "Cannot record measurements for instrument counter1 outside registered callbacks.");
+    observableMeasurementLogs.assertContains(
+        "Measurement recorded for instrument counter1 outside callback registered to instrument. Dropping measurement.");
   }
 
   @Test
   @SuppressLogger(SdkMeter.class)
-  @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_InstrumentFromAnotherMeter() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
     ObservableLongMeasurement counter2 =
@@ -252,7 +250,6 @@ class SdkBatchCallbackTest {
 
   @Test
   @SuppressLogger(SdkMeter.class)
-  @SuppressLogger(AsynchronousMetricStorage.class)
   void collectAllMetrics_InvalidObserver() {
     ObservableLongMeasurement counter1 = sdkMeter.counterBuilder("counter1").buildObserver();
     ObservableLongMeasurement counter2 =

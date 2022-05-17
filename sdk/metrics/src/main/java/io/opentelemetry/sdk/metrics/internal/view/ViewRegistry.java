@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
+
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -36,7 +38,7 @@ public final class ViewRegistry {
       RegisteredView.create(
           InstrumentSelector.builder().setName("*").build(),
           DEFAULT_VIEW,
-          AttributesProcessor.NOOP,
+          NOOP,
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
@@ -49,6 +51,11 @@ public final class ViewRegistry {
   /** Returns a builder of {@link ViewRegistry}. */
   public static ViewRegistryBuilder builder() {
     return new ViewRegistryBuilder();
+  }
+
+  /** Return a list of all registered views. */
+  public List<RegisteredView> getViews() {
+    return new ArrayList<>(reverseRegistration);
   }
 
   /**

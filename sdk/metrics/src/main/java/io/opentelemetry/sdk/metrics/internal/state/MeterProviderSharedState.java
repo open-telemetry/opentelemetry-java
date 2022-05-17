@@ -22,9 +22,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterProviderSharedState {
   public static MeterProviderSharedState create(
-      Clock clock, Resource resource, ViewRegistry viewRegistry, ExemplarFilter exemplarFilter) {
+      Clock clock,
+      Resource resource,
+      ViewRegistry viewRegistry,
+      ExemplarFilter exemplarFilter,
+      long startEpochNanos) {
     return new AutoValue_MeterProviderSharedState(
-        clock, resource, viewRegistry, clock.now(), exemplarFilter);
+        clock, resource, viewRegistry, startEpochNanos, exemplarFilter);
   }
 
   MeterProviderSharedState() {}
@@ -33,16 +37,16 @@ public abstract class MeterProviderSharedState {
   public abstract Clock getClock();
 
   /** Returns the {@link Resource} to attach telemetry to. */
-  abstract Resource getResource();
+  public abstract Resource getResource();
 
   /** Returns the {@link ViewRegistry} for custom aggregation and metric definitions. */
-  abstract ViewRegistry getViewRegistry();
+  public abstract ViewRegistry getViewRegistry();
 
   /**
    * Returns the timestamp when this {@code MeterProvider} was started, in nanoseconds since Unix
    * epoch time.
    */
-  abstract long getStartEpochNanos();
+  public abstract long getStartEpochNanos();
 
   /** Returns the {@link ExemplarFilter} for remembering synchronous measurements. */
   abstract ExemplarFilter getExemplarFilter();
