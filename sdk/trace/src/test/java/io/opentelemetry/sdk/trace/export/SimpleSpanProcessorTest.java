@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.PropagatedSpan;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -142,7 +143,7 @@ class SimpleSpanProcessorTest {
 
       // our span should always get exported because sample=false
       List<SpanData> exported = waitingSpanExporter.waitForExport();
-      assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
+      assertThat(exported).containsExactly(((PropagatedSpan) span).toSpanData());
     } finally {
       sdkTracerProvider.shutdown();
     }
