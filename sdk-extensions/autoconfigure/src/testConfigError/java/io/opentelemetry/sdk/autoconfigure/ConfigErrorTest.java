@@ -56,7 +56,9 @@ class ConfigErrorTest {
   }
 
   @Test
-  @SetSystemProperty(key = "otel.traces.sampler", value = "parentbased_traceidratio_without_dropping")
+  @SetSystemProperty(
+      key = "otel.traces.sampler",
+      value = "parentbased_traceidratio_without_dropping")
   @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void invalidTraceIdRatioWithoutDroppingWithParent() {
     assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
