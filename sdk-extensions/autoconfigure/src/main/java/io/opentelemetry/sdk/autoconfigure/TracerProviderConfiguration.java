@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,6 +165,14 @@ final class TracerProviderConfiguration {
             ratio = 1.0d;
           }
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
+        }
+      case "parentbased_traceidratio_without_dropping":
+        {
+          Double ratio = config.getDouble("otel.traces.sampler.arg");
+          if (ratio == null) {
+            ratio = 1.0d;
+          }
+          return Sampler.parentBased(Sampler.traceIdRatioBased(ratio, SamplingResult.recordOnly()));
         }
       default:
         Sampler spiSampler = spiSamplersManager.getByName(sampler);
