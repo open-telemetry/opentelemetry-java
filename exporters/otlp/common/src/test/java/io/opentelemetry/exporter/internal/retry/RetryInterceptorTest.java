@@ -195,7 +195,7 @@ class RetryInterceptorTest {
     // Shouldn't retry on write timeouts, where error message is "timeout", or other IOException
     assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("timeout")))
         .isFalse();
-    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException())).isFalse();
+    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException())).isTrue();
     assertThat(RetryInterceptor.isRetryableException(new IOException("error"))).isFalse();
   }
 
