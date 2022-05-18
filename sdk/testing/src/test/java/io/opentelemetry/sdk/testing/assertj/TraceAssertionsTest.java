@@ -35,8 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
@@ -250,8 +248,7 @@ class TraceAssertionsTest {
                     .isOk()
                     .hasCode(StatusCode.OK)
                     .hasDescription("")
-                    .hasDescriptionMatching(Pattern.compile("^$"))
-                    .hasDescriptionSatisfying(AbstractCharSequenceAssert::isBlank))
+                    .hasDescriptionMatching("^$"))
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
@@ -444,10 +441,7 @@ class TraceAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(SPAN1)
-                    .hasStatusSatisfying(
-                        status ->
-                            status.hasDescriptionSatisfying(
-                                AbstractCharSequenceAssert::isNotBlank)))
+                    .hasStatusSatisfying(status -> status.hasDescriptionMatching("test")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10, TimeUnit.NANOSECONDS))

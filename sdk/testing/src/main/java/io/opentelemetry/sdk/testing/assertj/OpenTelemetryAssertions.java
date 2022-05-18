@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +39,6 @@ public final class OpenTelemetryAssertions extends Assertions {
   /** Returns an assertion for {@link SpanData}. */
   public static SpanDataAssert assertThat(@Nullable SpanData spanData) {
     return new SpanDataAssert(spanData);
-  }
-
-  /** Returns an assertion for {@link StatusData}. */
-  public static StatusDataAssert assertThat(@Nullable StatusData statusData) {
-    return new StatusDataAssert(statusData);
   }
 
   /** Returns an assertion for {@link MetricData}. */
