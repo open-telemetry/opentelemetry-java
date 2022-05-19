@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -90,7 +89,6 @@ class NotOnClasspathTest {
                     "logging",
                     EMPTY,
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
@@ -117,7 +115,6 @@ class NotOnClasspathTest {
                     "otlp",
                     EMPTY,
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
@@ -136,7 +133,6 @@ class NotOnClasspathTest {
                     "otlp",
                     config,
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .hasMessageContaining(
             "OTLP HTTP Metrics Exporter enabled but opentelemetry-exporter-otlp-http-metrics not found on classpath");
@@ -150,7 +146,6 @@ class NotOnClasspathTest {
                     "prometheus",
                     EMPTY,
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(

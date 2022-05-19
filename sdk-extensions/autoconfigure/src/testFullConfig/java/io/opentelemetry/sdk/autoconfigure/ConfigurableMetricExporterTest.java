@@ -9,22 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class ConfigurableMetricExporterTest {
 
@@ -50,7 +46,6 @@ public class ConfigurableMetricExporterTest {
                     "testExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     new URLClassLoader(new URL[0], null),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
@@ -64,7 +59,6 @@ public class ConfigurableMetricExporterTest {
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     MetricExporterConfiguration.class.getClassLoader(),
-                    SdkMeterProvider.builder(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
@@ -91,24 +85,19 @@ public class ConfigurableMetricExporterTest {
   void defaultExporter() {
     ConfigProperties config = DefaultConfigProperties.createForTest(Collections.emptyMap());
 
-    SdkMeterProviderBuilder builder = Mockito.mock(SdkMeterProviderBuilder.class);
-    List<MetricReader> metricReaders = new ArrayList<>();
-    Mockito.when(builder.registerMetricReader(Mockito.any()))
-        .thenAnswer(
-            invocation -> {
-              metricReaders.add(invocation.getArgument(0));
-              return builder;
-            });
-    MeterProviderConfiguration.configureMeterProvider(
-        builder,
-        config,
-        MetricExporterConfiguration.class.getClassLoader(),
-        (metricExporter, unused) -> metricExporter);
-
-    Mockito.verify(builder)
-        .registerMetricReader(
-            Mockito.argThat(argument -> argument instanceof PeriodicMetricReader));
-    metricReaders.forEach(metricReader -> metricReader.shutdown().join(10, TimeUnit.SECONDS));
+    assertThat(
+            MeterProviderConfiguration.configureMetricReaders(
+                config,
+                MeterProviderConfiguration.class.getClassLoader(),
+                (metricExporter, unused) -> metricExporter))
+        .hasSize(1)
+        .first()
+        .isInstanceOf(PeriodicMetricReader.class)
+        .extracting("exporter")
+        .isInstanceOf(OtlpGrpcMetricExporter.class)
+        .satisfies(
+            metricExporter ->
+                ((OtlpGrpcMetricExporter) metricExporter).shutdown().join(10, TimeUnit.SECONDS));
   }
 
   @Test
@@ -116,26 +105,15 @@ public class ConfigurableMetricExporterTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("otel.metrics.exporter", "otlp,prometheus"));
-    SdkMeterProviderBuilder builder = Mockito.mock(SdkMeterProviderBuilder.class);
-    List<MetricReader> metricReaders = new ArrayList<>();
-    Mockito.when(builder.registerMetricReader(Mockito.any()))
-        .thenAnswer(
-            invocation -> {
-              metricReaders.add(invocation.getArgument(0));
-              return builder;
-            });
-    MeterProviderConfiguration.configureMeterProvider(
-        builder,
-        config,
-        MetricExporterConfiguration.class.getClassLoader(),
-        (metricExporter, unused) -> metricExporter);
 
-    Mockito.verify(builder)
-        .registerMetricReader(
-            Mockito.argThat(argument -> argument instanceof PeriodicMetricReader));
-    Mockito.verify(builder)
-        .registerMetricReader(
-            Mockito.argThat(argument -> argument instanceof PrometheusHttpServer));
-    metricReaders.forEach(metricReader -> metricReader.shutdown().join(10, TimeUnit.SECONDS));
+    assertThat(
+            MeterProviderConfiguration.configureMetricReaders(
+                config,
+                MeterProviderConfiguration.class.getClassLoader(),
+                (metricExporter, unused) -> metricExporter))
+        .hasSize(2)
+        .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
+        .hasAtLeastOneElementOfType(PrometheusHttpServer.class)
+        .allSatisfy(metricReader -> metricReader.shutdown().join(10, TimeUnit.SECONDS));
   }
 }

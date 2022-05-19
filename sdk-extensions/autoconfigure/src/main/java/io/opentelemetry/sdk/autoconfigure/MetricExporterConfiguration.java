@@ -20,24 +20,22 @@ import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
-  static void configureExporter(
+  static MetricReader configureExporter(
       String name,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
-      SdkMeterProviderBuilder sdkMeterProviderBuilder,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer) {
     if (name.equals("prometheus")) {
-      sdkMeterProviderBuilder.registerMetricReader(configurePrometheusMetricReader(config));
-      return;
+      return configurePrometheusMetricReader(config);
     }
 
     MetricExporter metricExporter;
@@ -57,8 +55,7 @@ final class MetricExporterConfiguration {
     }
 
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
-    sdkMeterProviderBuilder.registerMetricReader(
-        configurePeriodicMetricReader(config, metricExporter));
+    return configurePeriodicMetricReader(config, metricExporter);
   }
 
   private static MetricExporter configureLoggingExporter() {
