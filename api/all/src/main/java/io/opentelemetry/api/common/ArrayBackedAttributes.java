@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
+public final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
     implements Attributes {
 
   // We only compare the key name, not type, when constructing, to allow deduping keys with the

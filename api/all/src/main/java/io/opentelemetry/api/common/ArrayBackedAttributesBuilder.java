@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-class ArrayBackedAttributesBuilder implements AttributesBuilder {
+public class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
 
   ArrayBackedAttributesBuilder() {
