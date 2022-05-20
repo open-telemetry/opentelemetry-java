@@ -210,83 +210,83 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### Bill of Material
 
-| Component                                    | Artifact ID               | Version                                                     |
-|----------------------------------------------|---------------------------|-------------------------------------------------------------|
-| [Bill of Materials (BOM)](./bom)             | `opentelemetry-bom`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Alpha Bill of Materials (BOM)](./bom-alpha) | `opentelemetry-bom-alpha` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                    | Description                            | Artifact ID               | Version                                                     |
+|----------------------------------------------|----------------------------------------|---------------------------|-------------------------------------------------------------|
+| [Bill of Materials (BOM)](./bom)             | Bill of materials for stable artifacts | `opentelemetry-bom`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Alpha Bill of Materials (BOM)](./bom-alpha) | Bill of materials for alpha artifacts  | `opentelemetry-bom-alpha` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### API
 
-| Component                         | Artifact ID             | Version                                                     |
-|-----------------------------------|-------------------------|-------------------------------------------------------------|
-| [API](./api/all)                  | `opentelemetry-api`     | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Context API](./context)          | `opentelemetry-context` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Semantic Conventions](./semconv) | `opentelemetry-semconv` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                         | Description                                                    | Artifact ID             | Version                                                     |
+|-----------------------------------|----------------------------------------------------------------|-------------------------|-------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context | `opentelemetry-api`     | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Context API](./context)          | OpenTelemetry context API                                      | `opentelemetry-context` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions          | `opentelemetry-semconv` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+
+### API Extensions
+
+| Component                                                     | Description                                                                    | Artifact ID                                 | Version                                                     |
+|---------------------------------------------------------------|--------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
+| [Annotations Extension](./extensions/annotations)             | Instrumentation annotations, used in conjunction with OpenTelemetry java agent | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [AWS Extension](./extensions/aws)                             | AWS Xray propagator                                                            | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                               | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                              | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer          | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [Noop API Extension](./extensions/noop-api)                   | A noop OpenTelemetry implementation which ignores context                      | `opentelemetry-extension-noop-api`          | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### SDK
 
-| Component                              | Artifact ID                      | Version                                                     |
-|----------------------------------------|----------------------------------|-------------------------------------------------------------|
-| [SDK](./sdk/all)                       | `opentelemetry-sdk`              | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK Common](./sdk/common)             | `opentelemetry-sdk-common`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Metrics SDK](./sdk/metrics)           | `opentelemetry-sdk-metrics`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Trace SDK](./sdk/trace)               | `opentelemetry-sdk-trace`        | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Log SDK](./sdk/logs)                  | `opentelemetry-sdk-logs`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK Testing](./sdk/testing)           | `opentelemetry-sdk-testing`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK Logs Testing](./sdk/logs-testing) | `opentelemetry-sdk-logs-testing` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                              | Description                                            | Artifact ID                      | Version                                                     |
+|----------------------------------------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------|
+| [SDK](./sdk/all)                       | OpenTelemetry SDK, including metrics, traces, and logs | `opentelemetry-sdk`              | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Metrics SDK](./sdk/metrics)           | OpenTelemetry metrics SDK                              | `opentelemetry-sdk-metrics`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Trace SDK](./sdk/trace)               | OpenTelemetry trace SDK                                | `opentelemetry-sdk-trace`        | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Log SDK](./sdk/logs)                  | OpenTelemetry log SDK                                  | `opentelemetry-sdk-logs`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK Common](./sdk/common)             | Shared SDK components                                  | `opentelemetry-sdk-common`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK Testing](./sdk/testing)           | Components for testing OpenTelemetry instrumentation   | `opentelemetry-sdk-testing`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK Logs Testing](./sdk/logs-testing) | Components for testing OpenTelemetry logs              | `opentelemetry-sdk-logs-testing` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
-### Exporter
+### SDK Exporters
 
-| Component                                                   | Artifact ID                                | Version                                                     |
-|-------------------------------------------------------------|--------------------------------------------|-------------------------------------------------------------|
-| [OTLP gRPC Exporter](./exporters/otlp/all)                  | `opentelemetry-exporter-otlp`              | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Trace Exporter](./exporters/otlp/trace)          | `opentelemetry-exporter-otlp-trace`        | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Metrics Exporter](./exporters/otlp/metrics)      | `opentelemetry-exporter-otlp-metrics`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Logs Exporter](./exporters/otlp/logs)            | `opentelemetry-exporter-otlp-logs`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OTLP HTTP Trace Exporter](./exporters/otlp-http/trace)     | `opentelemetry-exporter-otlp-http-trace`   | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP HTTP Metrics Exporter](./exporters/otlp-http/metrics) | `opentelemetry-exporter-otlp-http-metrics` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP HTTP Logs Exporter](./exporters/otlp-http/logs)       | `opentelemetry-exporter-otlp-http-logs`    | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OTLP Common](./exporters/otlp/common)                      | `opentelemetry-exporter-otlp-common`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger gRPC Exporter](./exporters/jaeger)                  | `opentelemetry-exporter-jaeger`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger Thrift Exporter](./exporters/jaeger-thrift)         | `opentelemetry-exporter-jaeger-thift`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger Proto](./exporters/jaeger-proto)                    | `opentelemetry-exporter-jaeger-proto`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Logging Exporter](./exporters/logging)                     | `opentelemetry-exporter-logging`           | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP Logging Exporter](./exporters/logging-otlp)           | `opentelemetry-exporter-logging-otlp`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Zipkin Exporter](./exporters/zipkin)                       | `opentelemetry-exporter-zipkin`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Prometheus Exporter](./exporters/prometheus)               | `opentelemetry-exporter-prometheus`        | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                                   | Description                                                                         | Artifact ID                                | Version                                                     |
+|-------------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------|-------------------------------------------------------------|
+| [OTLP gRPC Exporter](./exporters/otlp/all)                  | OTLP gRPC exporters, including metrics and trace                                    | `opentelemetry-exporter-otlp`              | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP gRPC Trace Exporter](./exporters/otlp/trace)          | OTLP gRPC trace exporter                                                            | `opentelemetry-exporter-otlp-trace`        | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP gRPC Metrics Exporter](./exporters/otlp/metrics)      | OTLP gRPC metrics exporter                                                          | `opentelemetry-exporter-otlp-metrics`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP gRPC Logs Exporter](./exporters/otlp/logs)            | OTLP gRPC log exporter                                                              | `opentelemetry-exporter-otlp-logs`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [OTLP HTTP Trace Exporter](./exporters/otlp-http/trace)     | OTLP http/protobuf trace exporter                                                   | `opentelemetry-exporter-otlp-http-trace`   | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP HTTP Metrics Exporter](./exporters/otlp-http/metrics) | OTLP http/protobuf metrics exporter                                                 | `opentelemetry-exporter-otlp-http-metrics` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP HTTP Logs Exporter](./exporters/otlp-http/logs)       | OTLP http/protobuf logs exporter                                                    | `opentelemetry-exporter-otlp-http-logs`    | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [OTLP Common](./exporters/otlp/common)                      | Shared OTLP components (internal)                                                   | `opentelemetry-exporter-otlp-common`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger gRPC Exporter](./exporters/jaeger)                  | Jaeger gRPC trace exporter                                                          | `opentelemetry-exporter-jaeger`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger Thrift Exporter](./exporters/jaeger-thrift)         | Jaeger thrift trace exporter                                                        | `opentelemetry-exporter-jaeger-thift`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger Proto](./exporters/jaeger-proto)                    | Jaeger gRPC protobuf definitions (internal)                                         | `opentelemetry-exporter-jaeger-proto`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Logging Exporter](./exporters/logging)                     | Logging exporters, includings metrics, traces, and logs                             | `opentelemetry-exporter-logging`           | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP Logging Exporter](./exporters/logging-otlp)           | Logging exporters in OTLP protobuf JSON format, including metrics, traces, and logs | `opentelemetry-exporter-logging-otlp`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Zipkin Exporter](./exporters/zipkin)                       | Zipkin trace exporter                                                               | `opentelemetry-exporter-zipkin`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Prometheus Exporter](./exporters/prometheus)               | Prometheus metric exporter                                                          | `opentelemetry-exporter-prometheus`        | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
-### Shim
+### SDK Extensions
 
-| Component                              | Artifact ID                      | Version                                                     |
-|----------------------------------------|----------------------------------|-------------------------------------------------------------|
-| [Micrometer Shim](./micrometer1-shim)  | `opentelemetry-micrometer1-shim` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OpenCensus Shim](./opencensus-shim)   | `opentelemetry-opencensus-shim`  | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OpenTracing Shim](./opentracing-shim) | `opentelemetry-opentracing-shim` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                                                     | Description                                                               | Artifact ID                                         | Version                                                     |
+|-------------------------------------------------------------------------------|---------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------|
+| [SDK Autoconfigure Extension](./sdk-extensions/autoconfigure)                 | Autoconfigure OpenTelemetry SDK from env vars, system properties, and SPI | `opentelemetry-sdk-extension-autoconfigure`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK Autoconfigure SPI](./sdk-extensions/autoconfigure-spi)                   | Service Provider Interface (SPI) definitions for autoconfigure            | `opentelemetry-sdk-extension-autoconfigure-spi`     | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK Resources Extension](./sdk-extensions/resources)                         | Resource providers, including container, host, os, and process            | `opentelemetry-sdk-extension-resources`             | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK AWS Extension](./sdk-extensions/aws)                                     | AWS resource providers, including beanstalk, ec2, ecs, eks, and lambda    | `opentelemetry-sdk-extension-aws`                   | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | Sampler which obtains sampling configuration from remote Jaeger server    | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [SDK JFR Events Extension](./sdk-extensions/jfr-events)                       | SpanProcessor which records spans as JFR events                           | `opentelemetry-sdk-extension-jfr-events`            | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK Metric Incubator Extension](./sdk-extensions/metric-incubator)           | Metrics incubator, including YAML based view configuration                | `opentelemetry-sdk-extension-metric-incubator`      | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK Tracing Incubator Extension](./sdk-extensions/tracing-incubator)         | Trace incubator, including leak detecting SpanProcessor                   | `opentelemetry-sdk-extension-tracing-incubator`     | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK zPages Extension](./sdk-extensions/zpages)                               | SpanProcessor which exposes spans with zPages                             | `opentelemetry-sdk-extension-zpages`                | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
-### Extension
+### Shims
 
-| Component                                                     | Artifact ID                                 | Version                                                     |
-|---------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
-| [Annotations Extension](./extensions/annotations)             | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [AWS Extension](./extensions/aws)                             | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Kotlin Extension](./extensions/kotlin)                       | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Trace Propagators Extension](./extensions/trace-propagators) | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Incubator Extension](./extensions/incubator)                 | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Noop API Extension](./extensions/noop-api)                   | `opentelemetry-extension-noop-api`          | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-
-### SDK Extension
-
-| Component                                                                     | Artifact ID                                         | Version                                                     |
-|-------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------|
-| [SDK Autoconfigure SPI](./sdk-extensions/autoconfigure-spi)                   | `opentelemetry-sdk-extension-autoconfigure-spi`     | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK AWS Extension](./sdk-extensions/aws)                                     | `opentelemetry-sdk-extension-aws`                   | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK Resources Extension](./sdk-extensions/resources)                         | `opentelemetry-sdk-extension-resources`             | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [SDK Autoconfigure Extension](./sdk-extensions/autoconfigure)                 | `opentelemetry-sdk-extension-autoconfigure`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK JFR Events Extension](./sdk-extensions/jfr-events)                       | `opentelemetry-sdk-extension-jfr-events`            | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK Metric Incubator Extension](./sdk-extensions/metric-incubator)           | `opentelemetry-sdk-extension-metric-incubator`      | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK Tracing Incubator Extension](./sdk-extensions/tracing-incubator)         | `opentelemetry-sdk-extension-tracing-incubator`     | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK zPages Extension](./sdk-extensions/zpages)                               | `opentelemetry-sdk-extension-zpages`                | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                              | Description                                                  | Artifact ID                      | Version                                                     |
+|----------------------------------------|--------------------------------------------------------------|----------------------------------|-------------------------------------------------------------|
+| [Micrometer Shim](./micrometer1-shim)  | Bridge micrometer metrics into the OpenTelemetry metrics API | `opentelemetry-micrometer1-shim` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [OpenCensus Shim](./opencensus-shim)   | Bridge opencensus metrics into the OpenTelemetry metrics SDK | `opentelemetry-opencensus-shim`  | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [OpenTracing Shim](./opentracing-shim) | Bridge opentracing spans into the OpenTelemetry trace API    | `opentelemetry-opentracing-shim` | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ## Contributing
 
