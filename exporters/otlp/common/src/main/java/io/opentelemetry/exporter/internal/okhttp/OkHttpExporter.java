@@ -53,6 +53,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   private final ExporterMetrics exporterMetrics;
 
   OkHttpExporter(
+      String exporterName,
       String type,
       OkHttpClient client,
       MeterProvider meterProvider,
@@ -66,7 +67,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
     this.requestBodyCreator = exportAsJson ? JsonRequestBody::new : ProtoRequestBody::new;
-    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(exporterName, type, meterProvider);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

@@ -31,6 +31,7 @@ import okhttp3.OkHttpClient;
 public final class OkHttpExporterBuilder<T extends Marshaler> {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
 
+  private final String exporterName;
   private final String type;
 
   private String endpoint;
@@ -45,7 +46,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
-  public OkHttpExporterBuilder(String type, String defaultEndpoint) {
+  public OkHttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
+    this.exporterName = exporterName;
     this.type = type;
 
     endpoint = defaultEndpoint;
@@ -136,6 +138,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     }
 
     return new OkHttpExporter<>(
+        exporterName,
         type,
         clientBuilder.build(),
         meterProvider,

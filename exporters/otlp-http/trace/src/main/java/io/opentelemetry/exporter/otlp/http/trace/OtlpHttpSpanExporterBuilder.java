@@ -22,7 +22,7 @@ public final class OtlpHttpSpanExporterBuilder {
   private final OkHttpExporterBuilder<TraceRequestMarshaler> delegate;
 
   OtlpHttpSpanExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("span", DEFAULT_ENDPOINT);
+    delegate = new OkHttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
   }
 
   /**

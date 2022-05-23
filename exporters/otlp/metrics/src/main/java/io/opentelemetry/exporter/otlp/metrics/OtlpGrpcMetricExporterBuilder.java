@@ -42,6 +42,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "otlp",
             "metric",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,

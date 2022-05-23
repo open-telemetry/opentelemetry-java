@@ -33,6 +33,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   JaegerGrpcSpanExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "jaeger",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
