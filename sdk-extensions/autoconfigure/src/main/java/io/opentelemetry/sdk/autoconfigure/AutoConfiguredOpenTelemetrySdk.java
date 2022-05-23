@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -40,11 +41,15 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   static AutoConfiguredOpenTelemetrySdk create(
-      OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
+      @Nullable OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
     return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
   }
 
-  /** Returns the {@link OpenTelemetrySdk} that was auto-configured. */
+  /**
+   * Returns the {@link OpenTelemetrySdk} that was auto-configured, or {@code null} if the SDK has
+   * been disabled.
+   */
+  @Nullable
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 
   /** Returns the {@link Resource} that was auto-configured. */

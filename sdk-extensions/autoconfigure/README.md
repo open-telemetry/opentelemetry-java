@@ -35,6 +35,14 @@ and not something we can control. If you require logging during shutdown hooks, 
 that might shut itself down in a shutdown hook, thus suppressing your log messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253)
 for more details.
 
+## Disabling OpenTelemetrySdk
+
+The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return `null`, and `GlobalOpenTelemetry` will be set to `OpenTelemetry.noop()`.
+
+| System property               | Environment variable          | Purpose                                                        |
+|-------------------------------|-------------------------------|----------------------------------------------------------------|
+| otel.experimental.sdk.enabled | OTEL_EXPERIMENTAL_SDK_ENABLED | If `false`, disable the OpenTelemetry SDK. Defaults to `true`. |
+
 ## Exporters
 
 The following configuration properties are common to all exporters:

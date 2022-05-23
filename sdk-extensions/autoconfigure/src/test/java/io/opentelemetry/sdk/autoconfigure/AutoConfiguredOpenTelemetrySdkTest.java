@@ -274,6 +274,19 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
+  void disableSdk() {
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(
+                () -> Collections.singletonMap("otel.experimental.sdk.enabled", "false"))
+            .build();
+
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isNull();
+    assertThat(GlobalOpenTelemetry.get().getMeter("meter"))
+        .isEqualTo(OpenTelemetry.noop().getMeter("meter"));
+  }
+
+  @Test
   void tracerProviderCustomizer() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
     AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
