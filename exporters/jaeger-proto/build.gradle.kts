@@ -1,6 +1,5 @@
 plugins {
   id("otel.protobuf-conventions")
-  id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
 }
