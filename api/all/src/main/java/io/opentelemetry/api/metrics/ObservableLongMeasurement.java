@@ -21,7 +21,7 @@ public interface ObservableLongMeasurement {
    * Records a measurement with a set of attributes.
    *
    * @param value The measurement value.
-   * @param attributes A set of attributes to associate with the va;ie.
+   * @param attributes A set of attributes to associate with the value.
    */
   void record(long value, Attributes attributes);
 }
