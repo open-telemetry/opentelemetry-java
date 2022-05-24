@@ -12,23 +12,27 @@ public interface LongGaugeBuilder {
   /**
    * Sets the description for this instrument.
    *
-   * <p>Description strings should follow the instrument description rules:
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
+   * @param description The description.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description">Instrument
+   *     Description</a>
    */
   LongGaugeBuilder setDescription(String description);
 
   /**
    * Sets the unit of measure for this instrument.
    *
-   * <p>Unit strings should follow the instrument unit rules:
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit
+   * @param unit The unit. Instrument units must be 63 or fewer ASCII characters.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit">Instrument
+   *     Unit</a>
    */
   LongGaugeBuilder setUnit(String unit);
 
   /**
-   * Builds this asynchronous instrument with the given callback.
+   * Builds an asynchronous gauge instrument with the given callback.
    *
-   * <p>The callback will only be called when the {@link Meter} is being observed.
+   * <p>The callback will only be called when the instrument is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *
@@ -37,7 +41,7 @@ public interface LongGaugeBuilder {
    *   <li>Safe to call repeatedly, across multiple threads.
    * </ul>
    *
-   * @param callback A state-capturing callback used to observe values on-demand.
+   * @param callback A callback which observes measurements when invoked.
    */
   ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback);
 }

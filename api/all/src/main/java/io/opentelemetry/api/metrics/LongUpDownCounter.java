@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** An up-down-counter instrument that records {@code long} values. */
+/** An up down counter instrument that records {@code long} values. */
 @ThreadSafe
 public interface LongUpDownCounter {
   /**
@@ -29,7 +29,7 @@ public interface LongUpDownCounter {
    * measurement.
    *
    * @param value The increment amount. May be positive, negative or zero.
-   * @param attributes A set of attributes to associate with the count.
+   * @param attributes A set of attributes to associate with the value.
    */
   void add(long value, Attributes attributes);
 
@@ -37,7 +37,7 @@ public interface LongUpDownCounter {
    * Records a value with a set of attributes.
    *
    * @param value The increment amount. May be positive, negative or zero.
-   * @param attributes A set of attributes to associate with the count.
+   * @param attributes A set of attributes to associate with the value.
    * @param context The explicit context to associate with this measurement.
    */
   void add(long value, Attributes attributes, Context context);

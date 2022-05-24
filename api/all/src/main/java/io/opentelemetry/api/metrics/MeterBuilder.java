@@ -5,18 +5,11 @@
 
 package io.opentelemetry.api.metrics;
 
-/**
- * Builder class for creating {@link Meter} instances.
- *
- * @since 1.4.0
- */
+/** Builder class for creating {@link Meter} instances. */
 public interface MeterBuilder {
 
   /**
    * Assigns an OpenTelemetry schema URL to the resulting Meter.
-   *
-   * <p>Schemas are used to identify expected metrics (semantic conventions) and allow backends to
-   * "automatically migrate" to supported versions.
    *
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
    * @return this

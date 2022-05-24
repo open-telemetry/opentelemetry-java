@@ -8,7 +8,7 @@ package io.opentelemetry.api.metrics;
 import java.util.function.Consumer;
 
 /**
- * A reference to an observable metric registered with {@link
+ * A reference to an observable instrument registered with {@link
  * LongGaugeBuilder#buildWithCallback(Consumer)}.
  */
 public interface ObservableLongGauge extends AutoCloseable {
@@ -18,7 +18,7 @@ public interface ObservableLongGauge extends AutoCloseable {
    * this is called, the callback won't be invoked on future collections. Subsequent calls to {@link
    * #close()} have no effect.
    *
-   * <p>Note: other callbacks registered to the metric with the same identity are unaffected.
+   * <p>Note: other callbacks registered to the instrument with the same identity are unaffected.
    */
   @Override
   default void close() {}

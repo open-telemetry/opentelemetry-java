@@ -11,16 +11,20 @@ public interface DoubleHistogramBuilder {
   /**
    * Sets the description for this instrument.
    *
-   * <p>Description strings should follow the instrument description rules:
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
+   * @param description The description.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description">Instrument
+   *     Description</a>
    */
   DoubleHistogramBuilder setDescription(String description);
 
   /**
    * Sets the unit of measure for this instrument.
    *
-   * <p>Unit strings should follow the instrument unit rules:
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit
+   * @param unit The unit. Instrument units must be 63 or fewer ASCII characters.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit">Instrument
+   *     Unit</a>
    */
   DoubleHistogramBuilder setUnit(String unit);
 
@@ -28,9 +32,9 @@ public interface DoubleHistogramBuilder {
   LongHistogramBuilder ofLongs();
 
   /**
-   * Builds and returns a {@code DoubleHistogram} with the desired options.
+   * Builds and returns a histogram instrument with the configuration.
    *
-   * @return a {@code DoubleHistogram} with the desired options.
+   * @return The histogram instrument.
    */
   DoubleHistogram build();
 }
