@@ -45,13 +45,14 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
 
   /** Creates a new {@link DefaultGrpcExporter}. */
   DefaultGrpcExporter(
+      String exporterName,
       String type,
       ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,
       MeterProvider meterProvider,
       long timeoutNanos) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpc(type, meterProvider);
+    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProvider);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
     this.stub = stub;

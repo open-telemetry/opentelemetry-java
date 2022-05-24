@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import java.net.URI;
@@ -32,6 +33,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   JaegerGrpcSpanExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "jaeger",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
@@ -99,6 +101,16 @@ public final class JaegerGrpcSpanExporterBuilder {
   /** Sets the client key and chain to use for verifying servers when mTLS is enabled. */
   public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   */
+  public JaegerGrpcSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 

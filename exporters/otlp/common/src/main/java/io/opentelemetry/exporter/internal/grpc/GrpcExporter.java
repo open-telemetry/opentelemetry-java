@@ -22,6 +22,7 @@ public interface GrpcExporter<T extends Marshaler> {
 
   /** Returns a new {@link GrpcExporterBuilder}. */
   static <T extends Marshaler> GrpcExporterBuilder<T> builder(
+      String exporterName,
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
@@ -29,7 +30,13 @@ public interface GrpcExporter<T extends Marshaler> {
       String grpcServiceName,
       String grpcEndpointPath) {
     return GrpcExporterUtil.exporterBuilder(
-        type, defaultTimeoutSecs, defaultEndpoint, stubFactory, grpcServiceName, grpcEndpointPath);
+        exporterName,
+        type,
+        defaultTimeoutSecs,
+        defaultEndpoint,
+        stubFactory,
+        grpcServiceName,
+        grpcEndpointPath);
   }
 
   /**

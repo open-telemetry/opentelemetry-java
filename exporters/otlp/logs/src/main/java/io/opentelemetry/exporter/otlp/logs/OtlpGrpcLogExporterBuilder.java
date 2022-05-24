@@ -35,6 +35,7 @@ public final class OtlpGrpcLogExporterBuilder {
   OtlpGrpcLogExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "otlp",
             "log",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,

@@ -35,6 +35,7 @@ import okhttp3.Protocol;
 public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     implements GrpcExporterBuilder<T> {
 
+  private final String exporterName;
   private final String type;
   private final String grpcEndpointPath;
 
@@ -51,7 +52,12 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   // Visible for testing
   public OkHttpGrpcExporterBuilder(
-      String type, String grpcEndpointPath, long defaultTimeoutSecs, URI defaultEndpoint) {
+      String exporterName,
+      String type,
+      String grpcEndpointPath,
+      long defaultTimeoutSecs,
+      URI defaultEndpoint) {
+    this.exporterName = exporterName;
     this.type = type;
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
@@ -157,6 +163,12 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     }
 
     return new OkHttpGrpcExporter<>(
-        type, clientBuilder.build(), meterProvider, endpoint, headers.build(), compressionEnabled);
+        exporterName,
+        type,
+        clientBuilder.build(),
+        meterProvider,
+        endpoint,
+        headers.build(),
+        compressionEnabled);
   }
 }

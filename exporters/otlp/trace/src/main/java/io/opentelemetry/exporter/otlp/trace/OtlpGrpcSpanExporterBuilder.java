@@ -35,6 +35,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   OtlpGrpcSpanExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "otlp",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,

@@ -31,6 +31,7 @@ final class GrpcExporterUtil {
   }
 
   static <T extends Marshaler> GrpcExporterBuilder<T> exporterBuilder(
+      String exporterName,
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
@@ -39,10 +40,15 @@ final class GrpcExporterUtil {
       String grpcEndpointPath) {
     if (USE_OKHTTP) {
       return new OkHttpGrpcExporterBuilder<>(
-          type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
+          exporterName, type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
     } else {
       return new DefaultGrpcExporterBuilder<>(
-          type, stubFactory.get(), defaultTimeoutSecs, defaultEndpoint, grpcServiceName);
+          exporterName,
+          type,
+          stubFactory.get(),
+          defaultTimeoutSecs,
+          defaultEndpoint,
+          grpcServiceName);
     }
   }
 

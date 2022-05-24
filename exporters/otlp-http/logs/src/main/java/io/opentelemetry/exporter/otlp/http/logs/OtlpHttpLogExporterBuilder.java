@@ -22,7 +22,7 @@ public final class OtlpHttpLogExporterBuilder {
   private final OkHttpExporterBuilder<LogsRequestMarshaler> delegate;
 
   OtlpHttpLogExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("log", DEFAULT_ENDPOINT);
+    delegate = new OkHttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
   }
 
   /**

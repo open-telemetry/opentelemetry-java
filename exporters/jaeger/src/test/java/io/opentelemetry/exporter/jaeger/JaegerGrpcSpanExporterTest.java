@@ -17,6 +17,7 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -88,7 +89,11 @@ class JaegerGrpcSpanExporterTest {
 
   @BeforeAll
   static void setUp() {
-    exporter = JaegerGrpcSpanExporter.builder().setEndpoint(server.httpUri().toString()).build();
+    exporter =
+        JaegerGrpcSpanExporter.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setMeterProvider(MeterProvider.noop())
+            .build();
   }
 
   @AfterAll

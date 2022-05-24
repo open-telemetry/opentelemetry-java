@@ -71,6 +71,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
 
   /** Creates a new {@link OkHttpGrpcExporter}. */
   OkHttpGrpcExporter(
+      String exporterName,
       String type,
       OkHttpClient client,
       MeterProvider meterProvider,
@@ -78,7 +79,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
       Headers headers,
       boolean compressionEnabled) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpcOkHttp(type, meterProvider);
+    this.exporterMetrics = ExporterMetrics.createGrpcOkHttp(exporterName, type, meterProvider);
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
