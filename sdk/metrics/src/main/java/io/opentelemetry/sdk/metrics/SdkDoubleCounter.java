@@ -127,5 +127,11 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
           meterSharedState,
           registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback));
     }
+
+    @Override
+    public ObservableDoubleMeasurement buildObserver() {
+      return buildObservableMeasurement(
+          InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.DOUBLE);
+    }
   }
 }

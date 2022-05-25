@@ -75,4 +75,33 @@ public interface Meter {
    * @return a builder used for configuring how to report gauge measurements on demand.
    */
   DoubleGaugeBuilder gaugeBuilder(String name);
+
+  /**
+   * Constructs a batch callback.
+   *
+   * <p>Batch callbacks allow a single callback to observe measurements for multiple asynchronous
+   * instruments.
+   *
+   * <p>The callback will be called when the {@link Meter} is being observed.
+   *
+   * <p>Callbacks are expected to abide by the following restrictions:
+   *
+   * <ul>
+   *   <li>Run in a finite amount of time.
+   *   <li>Safe to call repeatedly, across multiple threads.
+   *   <li>Only observe values to registered instruments (i.e. {@code observableMeasurement} and
+   *       {@code additionalMeasurements}
+   * </ul>
+   *
+   * @param callback a callback used to observe values on-demand.
+   * @param observableMeasurement Instruments for which the callback may observe values.
+   * @param additionalMeasurements Instruments for which the callback may observe values.
+   */
+  default BatchCallback batchCallback(
+      Runnable callback,
+      ObservableMeasurement observableMeasurement,
+      ObservableMeasurement... additionalMeasurements) {
+    return DefaultMeter.getInstance()
+        .batchCallback(callback, observableMeasurement, additionalMeasurements);
+  }
 }

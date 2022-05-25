@@ -28,7 +28,7 @@ public interface LongGaugeBuilder {
   /**
    * Builds this asynchronous instrument with the given callback.
    *
-   * <p>The callback will only be called when the {@link Meter} is being observed.
+   * <p>The callback will be called when the {@link Meter} is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *
@@ -40,4 +40,17 @@ public interface LongGaugeBuilder {
    * @param callback A state-capturing callback used to observe values on-demand.
    */
   ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback);
+
+  /**
+   * Build an observer for this instrument to observe values from a {@link BatchCallback}.
+   *
+   * <p>This observer MUST be registered when creating a {@link Meter#batchCallback(Runnable,
+   * ObservableMeasurement, ObservableMeasurement...) batchCallback}, which records to it. Values
+   * observed outside registered callbacks are ignored.
+   *
+   * @return an observable measurement that batch callbacks use to observe values.
+   */
+  default ObservableLongMeasurement buildObserver() {
+    return DefaultMeter.getInstance().gaugeBuilder("noop").ofLongs().buildObserver();
+  }
 }
