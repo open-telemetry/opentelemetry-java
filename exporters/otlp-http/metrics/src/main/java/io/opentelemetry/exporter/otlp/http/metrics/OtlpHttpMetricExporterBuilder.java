@@ -29,7 +29,7 @@ public final class OtlpHttpMetricExporterBuilder {
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
   OtlpHttpMetricExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("metric", DEFAULT_ENDPOINT);
+    delegate = new OkHttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
   }
 
   /**

@@ -65,6 +65,7 @@ public class GrpcExporterBenchmark {
 
     defaultGrpcExporter =
         new DefaultGrpcExporterBuilder<>(
+                "otlp",
                 "span",
                 MarshalerTraceServiceGrpc::newFutureStub,
                 10,
@@ -74,6 +75,7 @@ public class GrpcExporterBenchmark {
 
     okhttpGrpcExporter =
         new OkHttpGrpcExporterBuilder<TraceRequestMarshaler>(
+                "otlp",
                 "span",
                 OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
                 10,

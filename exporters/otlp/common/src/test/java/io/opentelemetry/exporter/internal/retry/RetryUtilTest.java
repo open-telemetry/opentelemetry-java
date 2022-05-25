@@ -24,7 +24,7 @@ class RetryUtilTest {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     DefaultGrpcExporterBuilder<?> builder =
         new DefaultGrpcExporterBuilder<>(
-            "test", unused -> null, 0, new URI("http://localhost"), "test");
+            "otlp", "test", unused -> null, 0, new URI("http://localhost"), "test");
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 
@@ -37,7 +37,7 @@ class RetryUtilTest {
   void setRetryPolicyOnDelegate_OkHttpGrpcExporterBuilder() throws URISyntaxException {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     OkHttpGrpcExporterBuilder<?> builder =
-        new OkHttpGrpcExporterBuilder<>("test", "/test", 0, new URI("http://localhost"));
+        new OkHttpGrpcExporterBuilder<>("otlp", "test", "/test", 0, new URI("http://localhost"));
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 
@@ -50,7 +50,7 @@ class RetryUtilTest {
   void setRetryPolicyOnDelegate_OkHttpExporterBuilder() {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     OkHttpExporterBuilder<?> builder =
-        new OkHttpExporterBuilder<>("test", "http://localhost:4318/test");
+        new OkHttpExporterBuilder<>("otlp", "test", "http://localhost:4318/test");
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 
     assertThat(builder)

@@ -33,6 +33,7 @@ import javax.net.ssl.SSLException;
 public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     implements GrpcExporterBuilder<T> {
 
+  private final String exporterName;
   private final String type;
   private final Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory;
   private final String grpcServiceName;
@@ -51,11 +52,13 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
   // Visible for testing
   public DefaultGrpcExporterBuilder(
+      String exporterName,
       String type,
       Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       String grpcServiceName) {
+    this.exporterName = exporterName;
     this.type = type;
     this.stubFactory = stubFactory;
     this.grpcServiceName = grpcServiceName;
@@ -165,6 +168,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
-    return new DefaultGrpcExporter<>(type, channel, stub, meterProvider, timeoutNanos);
+    return new DefaultGrpcExporter<>(
+        exporterName, type, channel, stub, meterProvider, timeoutNanos);
   }
 }

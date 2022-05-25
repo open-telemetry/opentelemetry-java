@@ -15,7 +15,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 
 /**
- * Helper for recording metrics from OTLP exporters.
+ * Helper for recording metrics from exporters.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -32,10 +32,13 @@ public class ExporterMetrics {
   private final Attributes successAttrs;
   private final Attributes failedAttrs;
 
-  private ExporterMetrics(Meter meter, String type) {
+  private ExporterMetrics(
+      MeterProvider meterProvider, String exporterName, String type, String transportName) {
+    Meter meter =
+        meterProvider.get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
     seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, type).build();
-    seen = meter.counterBuilder("otlp.exporter.seen").build();
-    exported = meter.counterBuilder("otlp.exporter.exported").build();
+    seen = meter.counterBuilder(exporterName + ".exporter.seen").build();
+    exported = meter.counterBuilder(exporterName + ".exporter.exported").build();
     successAttrs = seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     failedAttrs = seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
@@ -55,19 +58,21 @@ public class ExporterMetrics {
     exported.add(value, failedAttrs);
   }
 
-  /** Create an instance for recording OTLP gRPC exporter metrics. */
-  public static ExporterMetrics createGrpc(String type, MeterProvider meterProvider) {
-    return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-grpc"), type);
+  /** Create an instance for recording gRPC exporter metrics. */
+  public static ExporterMetrics createGrpc(
+      String exporterName, String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider, exporterName, type, "grpc");
   }
 
-  /** Create an instance for recording OTLP gRPC OkHttp exporter metrics. */
-  public static ExporterMetrics createGrpcOkHttp(String type, MeterProvider meterProvider) {
-    return new ExporterMetrics(
-        meterProvider.get("io.opentelemetry.exporters.otlp-grpc-okhttp"), type);
+  /** Create an instance for recording gRPC OkHttp exporter metrics. */
+  public static ExporterMetrics createGrpcOkHttp(
+      String exporterName, String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider, exporterName, type, "grpc-okhttp");
   }
 
-  /** Create an instance for recording OTLP http/protobuf exporter metrics. */
-  public static ExporterMetrics createHttpProtobuf(String type, MeterProvider meterProvider) {
-    return new ExporterMetrics(meterProvider.get("io.opentelemetry.exporters.otlp-http"), type);
+  /** Create an instance for recording http/protobuf exporter metrics. */
+  public static ExporterMetrics createHttpProtobuf(
+      String exporterName, String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider, exporterName, type, "http");
   }
 }

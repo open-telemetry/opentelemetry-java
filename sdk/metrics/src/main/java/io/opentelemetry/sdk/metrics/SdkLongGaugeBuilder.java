@@ -35,4 +35,9 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
         meterSharedState,
         registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback));
   }
+
+  @Override
+  public ObservableLongMeasurement buildObserver() {
+    return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG);
+  }
 }
