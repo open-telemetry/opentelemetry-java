@@ -43,7 +43,7 @@ public interface LongCounterBuilder {
   /**
    * Builds an Asynchronous Counter instrument with the given callback.
    *
-   * <p>The callback will only be called when the instrument is being observed.
+   * <p>The callback will be called when the instrument is being observed.
    *
    * <p>Callbacks are expected to abide by the following restrictions:
    *
@@ -55,4 +55,17 @@ public interface LongCounterBuilder {
    * @param callback A callback which observes measurements when invoked.
    */
   ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback);
+
+  /**
+   * Build an observer for this instrument to observe values from a {@link BatchCallback}.
+   *
+   * <p>This observer MUST be registered when creating a {@link Meter#batchCallback(Runnable,
+   * ObservableMeasurement, ObservableMeasurement...) batchCallback}, which records to it. Values
+   * observed outside registered callbacks are ignored.
+   *
+   * @return an observable measurement that batch callbacks use to observe values.
+   */
+  default ObservableLongMeasurement buildObserver() {
+    return DefaultMeter.getInstance().counterBuilder("noop").buildObserver();
+  }
 }

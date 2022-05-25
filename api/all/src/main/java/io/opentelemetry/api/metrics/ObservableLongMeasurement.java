@@ -8,7 +8,7 @@ package io.opentelemetry.api.metrics;
 import io.opentelemetry.api.common.Attributes;
 
 /** An interface for observing measurements with {@code long} values. */
-public interface ObservableLongMeasurement {
+public interface ObservableLongMeasurement extends ObservableMeasurement {
 
   /**
    * Records a measurement.
