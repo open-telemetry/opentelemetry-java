@@ -28,9 +28,9 @@ public interface LongHistogramBuilder {
   LongHistogramBuilder setUnit(String unit);
 
   /**
-   * Builds and returns a histogram instrument with the configuration.
+   * Builds and returns a Histogram instrument with the configuration.
    *
-   * @return The histogram instrument.
+   * @return The Histogram instrument.
    */
   LongHistogram build();
 }

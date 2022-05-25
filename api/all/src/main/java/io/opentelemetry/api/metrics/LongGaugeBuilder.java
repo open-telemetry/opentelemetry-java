@@ -30,7 +30,7 @@ public interface LongGaugeBuilder {
   LongGaugeBuilder setUnit(String unit);
 
   /**
-   * Builds an asynchronous gauge instrument with the given callback.
+   * Builds an Asynchronous Gauge instrument with the given callback.
    *
    * <p>The callback will only be called when the instrument is being observed.
    *

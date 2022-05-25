@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A counter instrument that records {@code long} values. */
+/** A Counter instrument that records {@code long} values. */
 @ThreadSafe
 public interface LongCounter {
 

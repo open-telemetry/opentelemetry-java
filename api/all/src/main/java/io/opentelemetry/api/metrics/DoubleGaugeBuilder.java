@@ -29,11 +29,11 @@ public interface DoubleGaugeBuilder {
    */
   DoubleGaugeBuilder setUnit(String unit);
 
-  /** Sets the gauge for recording {@code long} values. */
+  /** Sets the Gauge for recording {@code long} values. */
   LongGaugeBuilder ofLongs();
 
   /**
-   * Builds an asynchronous gauge instrument with the given callback.
+   * Builds an Asynchronous Gauge instrument with the given callback.
    *
    * <p>The callback will only be called when the instrument is being observed.
    *

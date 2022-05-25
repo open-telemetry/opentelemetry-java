@@ -11,7 +11,11 @@ import io.opentelemetry.context.Context;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** No-op implementation of {@link Meter}. */
+/**
+ * No-op implementation of {@link Meter}.
+ *
+ * <p>This implementation should induce as close to zero overhead as possible.
+ */
 @ThreadSafe
 class DefaultMeter implements Meter {
 

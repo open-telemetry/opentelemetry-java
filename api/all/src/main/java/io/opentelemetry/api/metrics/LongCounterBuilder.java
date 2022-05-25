@@ -30,18 +30,18 @@ public interface LongCounterBuilder {
    */
   LongCounterBuilder setUnit(String unit);
 
-  /** Sets the counter for recording {@code double} values. */
+  /** Sets the Counter for recording {@code double} values. */
   DoubleCounterBuilder ofDoubles();
 
   /**
-   * Builds and returns a counter instrument with the configuration.
+   * Builds and returns a Counter instrument with the configuration.
    *
-   * @return The counter instrument.
+   * @return The Counter instrument.
    */
   LongCounter build();
 
   /**
-   * Builds an asynchronous counter instrument with the given callback.
+   * Builds an Asynchronous Counter instrument with the given callback.
    *
    * <p>The callback will only be called when the instrument is being observed.
    *

@@ -28,13 +28,13 @@ public interface DoubleHistogramBuilder {
    */
   DoubleHistogramBuilder setUnit(String unit);
 
-  /** Sets the counter for recording {@code long} values. */
+  /** Sets the Counter for recording {@code long} values. */
   LongHistogramBuilder ofLongs();
 
   /**
-   * Builds and returns a histogram instrument with the configuration.
+   * Builds and returns a Histogram instrument with the configuration.
    *
-   * @return The histogram instrument.
+   * @return The Histogram instrument.
    */
   DoubleHistogram build();
 }

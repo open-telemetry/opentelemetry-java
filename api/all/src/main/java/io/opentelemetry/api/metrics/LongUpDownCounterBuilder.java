@@ -29,18 +29,18 @@ public interface LongUpDownCounterBuilder {
    */
   LongUpDownCounterBuilder setUnit(String unit);
 
-  /** Sets the counter for recording {@code double} values. */
+  /** Sets the Counter for recording {@code double} values. */
   DoubleUpDownCounterBuilder ofDoubles();
 
   /**
-   * Builds and returns an up down counter instrument with the configuration.
+   * Builds and returns an UpDownCounter instrument with the configuration.
    *
-   * @return The up down counter instrument.
+   * @return The UpDownCounter instrument.
    */
   LongUpDownCounter build();
 
   /**
-   * Builds an asynchronous up down counter instrument with the given callback.
+   * Builds an Asynchronous UpDownCounter instrument with the given callback.
    *
    * <p>The callback will only be called when the instrument is being observed.
    *

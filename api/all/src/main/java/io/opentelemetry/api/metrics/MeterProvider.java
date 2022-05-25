@@ -18,18 +18,18 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface MeterProvider {
   /**
-   * Gets or creates a named meter instance.
+   * Gets or creates a named Meter instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
-   * @return a meter instance.
+   * @return a Meter instance.
    */
   default Meter get(String instrumentationScopeName) {
     return meterBuilder(instrumentationScopeName).build();
   }
 
   /**
-   * Creates a MeterBuilder for a named meter instance.
+   * Creates a MeterBuilder for a named Meter instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.

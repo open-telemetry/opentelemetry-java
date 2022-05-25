@@ -20,30 +20,30 @@ import javax.annotation.concurrent.ThreadSafe;
  *   <li>I want to <b>count</b> something (by recording a delta value):
  *       <ul>
  *         <li>If the value is monotonically increasing (the delta value is always non-negative) -
- *             use a counter:
+ *             use a Counter:
  *             <pre>meter.counterBuilder("my-counter").build()</pre>
  *         <li>If the value is NOT monotonically increasing (the delta value can be positive,
- *             negative, or zero)) - use an up down counter:
+ *             negative, or zero)) - use an UpDownCounter:
  *             <pre>meter.upDownCounterBuilder("my-up-down-counter").build()</pre>
  *       </ul>
  *   <li>I want to <b>record</b> or <b>time</b> something, and the <b>statistics</b> about this
- *       thing are likely to be meaningful - use a histogram:
+ *       thing are likely to be meaningful - use a Histogram:
  *       <pre>meter.histogramBuilder("my-histogram").build()</pre>
  *   <li>I want to <b>measure</b> something (by reporting an absolute value):
  *       <ul>
  *         <li>If it makes NO sense to add up the values across different sets of attributes, use an
- *             asynchronous gauge:
+ *             Asynchronous Gauge:
  *             <pre>
  *             meter.gaugeBuilder("my-gauge").buildWithCallback(observableMeasurement -> observableMeasurement.record(..))
  *             </pre>
  *         <li>If it makes sense to add up the values across different sets of attributes:
  *             <ul>
- *               <li>If the value is monotonically increasing - use an asynchronous counter:
+ *               <li>If the value is monotonically increasing - use an Asynchronous Counter:
  *                   <pre>
  *                   meter.counterBuilder("my-async-counter").buildWithCallback(observableMeasurement -> observableMeasurement.record(..))
  *                   </pre>
- *               <li>If the value is NOT monotonically increasing - use an asynchronous up down
- *                   counter:
+ *               <li>If the value is NOT monotonically increasing - use an Asynchronous
+ *                   UpDownCounter:
  *                   <pre>
  *                   meter.upDownCounterBuilder("my-async-counter").buildWithCallback(observableMeasurement -> observableMeasurement.record(..))
  *                   </pre>
@@ -58,14 +58,14 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface Meter {
   /**
-   * Constructs a counter instrument.
+   * Constructs a Counter instrument.
    *
    * <p>This is used to build both synchronous instruments and asynchronous instruments (i.e.
    * callbacks).
    *
-   * @param name the name of the counter. Instrument names must consist of 63 or fewer characters
+   * @param name the name of the Counter. Instrument names must consist of 63 or fewer characters
    *     including alphanumeric, _, ., -, and start with a letter.
-   * @return a builder for configuring a counter instrument. Defaults to recording long values, but
+   * @return a builder for configuring a Counter instrument. Defaults to recording long values, but
    *     may be changed.
    * @see <a
    *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule">Instrument
@@ -74,14 +74,14 @@ public interface Meter {
   LongCounterBuilder counterBuilder(String name);
 
   /**
-   * Constructs an up down counter instrument.
+   * Constructs an UpDownCounter instrument.
    *
    * <p>This is used to build both synchronous instruments and asynchronous instruments (i.e.
    * callbacks).
    *
-   * @param name the name of the up down counter. Instrument names must consist of 63 or fewer
+   * @param name the name of the UpDownCounter. Instrument names must consist of 63 or fewer
    *     characters including alphanumeric, _, ., -, and start with a letter.
-   * @return a builder for configuring an up down counter instrument. Defaults to recording long
+   * @return a builder for configuring an UpDownCounter instrument. Defaults to recording long
    *     values, but may be changed.
    * @see <a
    *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule">Instrument
@@ -90,11 +90,11 @@ public interface Meter {
   LongUpDownCounterBuilder upDownCounterBuilder(String name);
 
   /**
-   * Constructs a histogram instrument.
+   * Constructs a Histogram instrument.
    *
-   * @param name the name of the histogram. Instrument names must consist of 63 or fewer characters
+   * @param name the name of the Histogram. Instrument names must consist of 63 or fewer characters
    *     including alphanumeric, _, ., -, and start with a letter.
-   * @return a builder for configuring a histogram synchronous instrument. Defaults to recording
+   * @return a builder for configuring a Histogram synchronous instrument. Defaults to recording
    *     double values, but may be changed.
    * @see <a
    *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule">Instrument
@@ -103,11 +103,11 @@ public interface Meter {
   DoubleHistogramBuilder histogramBuilder(String name);
 
   /**
-   * Constructs an asynchronous gauge instrument.
+   * Constructs an Asynchronous Gauge instrument.
    *
-   * @param name the name of the gauge. Instrument names must consist of 63 or fewer characters
+   * @param name the name of the Gauge. Instrument names must consist of 63 or fewer characters
    *     including alphanumeric, _, ., -, and start with a letter.
-   * @return a builder used for configuring a gauge instrument. Defaults to recording double values,
+   * @return a builder used for configuring a Gauge instrument. Defaults to recording double values,
    *     but may be changed.
    * @see <a
    *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule">Instrument

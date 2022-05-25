@@ -30,14 +30,14 @@ public interface DoubleUpDownCounterBuilder {
   DoubleUpDownCounterBuilder setUnit(String unit);
 
   /**
-   * Builds and returns an up down counter instrument with the configuration.
+   * Builds and returns an UpDownCounter instrument with the configuration.
    *
-   * @return The up down counter instrument.
+   * @return The UpDownCounter instrument.
    */
   DoubleUpDownCounter build();
 
   /**
-   * Builds an asynchronous up down counter instrument with the given callback.
+   * Builds an Asynchronous UpDownCounter instrument with the given callback.
    *
    * <p>The callback will only be called when the instrument is being observed.
    *
