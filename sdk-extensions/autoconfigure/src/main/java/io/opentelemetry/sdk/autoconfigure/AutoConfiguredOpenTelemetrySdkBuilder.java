@@ -309,7 +309,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
-    OpenTelemetrySdk openTelemetrySdk = null;
+    OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
     boolean sdkEnabled =
         Optional.ofNullable(config.getBoolean("otel.experimental.sdk.enabled")).orElse(true);
     if (sdkEnabled) {
@@ -368,13 +368,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     if (setResultAsGlobal) {
-      OpenTelemetry openTelemetry =
-          openTelemetrySdk != null ? openTelemetrySdk : OpenTelemetry.noop();
+      OpenTelemetry openTelemetry = sdkEnabled ? openTelemetrySdk : OpenTelemetry.noop();
       GlobalOpenTelemetry.set(openTelemetry);
       logger.log(Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetry);
     }
 
-    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+    return AutoConfiguredOpenTelemetrySdk.create(sdkEnabled, openTelemetrySdk, resource, config);
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer

@@ -37,7 +37,7 @@ for more details.
 
 ## Disabling OpenTelemetrySdk
 
-The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return `null`, and `GlobalOpenTelemetry` will be set to `OpenTelemetry.noop()`.
+The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#isSdkEnabled()` will return `false`, and `GlobalOpenTelemetry` will be set to `OpenTelemetry.noop()`.
 
 | System property               | Environment variable          | Purpose                                                        |
 |-------------------------------|-------------------------------|----------------------------------------------------------------|

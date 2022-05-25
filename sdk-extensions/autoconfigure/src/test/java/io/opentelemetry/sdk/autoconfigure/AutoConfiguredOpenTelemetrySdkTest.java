@@ -275,13 +275,16 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void disableSdk() {
+    assertThat(builder.build().isSdkEnabled()).isTrue();
+
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(
                 () -> Collections.singletonMap("otel.experimental.sdk.enabled", "false"))
             .build();
 
-    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isNull();
+    assertThat(autoConfiguredSdk.isSdkEnabled()).isFalse();
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isNotNull();
     assertThat(GlobalOpenTelemetry.get().getMeter("meter"))
         .isEqualTo(OpenTelemetry.noop().getMeter("meter"));
   }

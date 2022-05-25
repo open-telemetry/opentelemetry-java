@@ -6,10 +6,11 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -25,8 +26,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * Returns an {@link AutoConfiguredOpenTelemetrySdk} automatically initialized through recognized
    * system properties and environment variables.
    *
-   * <p>This will automatically set the resulting SDK as the {@link
-   * io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   * <p>This will automatically set the resulting SDK as the {@link GlobalOpenTelemetry} instance.
    */
   public static AutoConfiguredOpenTelemetrySdk initialize() {
     return builder().build();
@@ -41,15 +41,23 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   static AutoConfiguredOpenTelemetrySdk create(
-      @Nullable OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
-    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
+      boolean isSdkEnabled, OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(isSdkEnabled, sdk, resource, config);
   }
+
+  /**
+   * Returns true if the SDK is enabled. If false, {@link #getOpenTelemetrySdk()} should be ignored.
+   *
+   * <p>When the SDK is disabled and {@link
+   * AutoConfiguredOpenTelemetrySdkBuilder#setResultAsGlobal(boolean)} is {@code true}, {@link
+   * GlobalOpenTelemetry#set(OpenTelemetry)} is set to a noop.
+   */
+  public abstract boolean isSdkEnabled();
 
   /**
    * Returns the {@link OpenTelemetrySdk} that was auto-configured, or {@code null} if the SDK has
    * been disabled.
    */
-  @Nullable
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 
   /** Returns the {@link Resource} that was auto-configured. */
