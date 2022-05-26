@@ -19,7 +19,6 @@ dependencies {
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
-  compileOnly(project(":exporters:otlp-http:logs"))
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
 
@@ -116,7 +115,7 @@ testing {
         }
       }
     }
-    val testOtlpGrpc by registering(JvmTestSuite::class) {
+    val testOtlp by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:logs"))
@@ -126,21 +125,9 @@ testing {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
-      }
-    }
-    val testOtlpHttp by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp-http:logs"))
-        implementation(project(":exporters:otlp:common"))
-        implementation(project(":sdk:testing"))
-
-        implementation("com.google.guava:guava")
-        implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.squareup.okhttp3:okhttp")
         implementation("com.squareup.okhttp3:okhttp-tls")
-        implementation("io.opentelemetry.proto:opentelemetry-proto")
+        runtimeOnly("io.grpc:grpc-netty-shaded")
       }
     }
     val testPrometheus by registering(JvmTestSuite::class) {
