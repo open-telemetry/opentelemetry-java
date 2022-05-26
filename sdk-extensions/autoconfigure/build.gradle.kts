@@ -19,8 +19,6 @@ dependencies {
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
-  compileOnly(project(":exporters:otlp-http:trace"))
-  compileOnly(project(":exporters:otlp-http:metrics"))
   compileOnly(project(":exporters:otlp-http:logs"))
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
@@ -133,8 +131,7 @@ testing {
     }
     val testOtlpHttp by registering(JvmTestSuite::class) {
       dependencies {
-        implementation(project(":exporters:otlp-http:trace"))
-        implementation(project(":exporters:otlp-http:metrics"))
+        implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp-http:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))

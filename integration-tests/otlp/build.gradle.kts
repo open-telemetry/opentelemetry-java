@@ -11,8 +11,6 @@ dependencies {
   implementation(project(":exporters:otlp:all"))
   implementation(project(":exporters:otlp:logs"))
   implementation(project(":exporters:otlp-http:logs"))
-  implementation(project(":exporters:otlp-http:metrics"))
-  implementation(project(":exporters:otlp-http:trace"))
   implementation(project(":semconv"))
 
   implementation("com.linecorp.armeria:armeria-grpc-protocol")
