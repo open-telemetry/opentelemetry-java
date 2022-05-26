@@ -14,6 +14,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * using reflection.
  *
  * @see Meter
+ * @since 1.10.0
  */
 @ThreadSafe
 public interface MeterProvider {

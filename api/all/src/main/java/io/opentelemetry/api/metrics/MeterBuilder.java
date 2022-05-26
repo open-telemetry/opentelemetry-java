@@ -5,7 +5,11 @@
 
 package io.opentelemetry.api.metrics;
 
-/** Builder class for creating {@link Meter} instances. */
+/**
+ * Builder class for creating {@link Meter} instances.
+ *
+ * @since 1.10.0
+ */
 public interface MeterBuilder {
 
   /**

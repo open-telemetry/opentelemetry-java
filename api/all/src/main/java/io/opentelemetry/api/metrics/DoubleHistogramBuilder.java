@@ -5,7 +5,11 @@
 
 package io.opentelemetry.api.metrics;
 
-/** Builder class for {@link DoubleHistogram}. */
+/**
+ * Builder class for {@link DoubleHistogram}.
+ *
+ * @since 1.10.0
+ */
 public interface DoubleHistogramBuilder {
 
   /**

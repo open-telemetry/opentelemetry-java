@@ -7,7 +7,11 @@ package io.opentelemetry.api.metrics;
 
 import java.util.function.Consumer;
 
-/** Builder class for {@link DoubleCounter}. */
+/**
+ * Builder class for {@link DoubleCounter}.
+ *
+ * @since 1.10.0
+ */
 public interface DoubleCounterBuilder {
   /**
    * Sets the description for this instrument.
@@ -60,6 +64,7 @@ public interface DoubleCounterBuilder {
    * observed outside registered callbacks are ignored.
    *
    * @return an observable measurement that batch callbacks use to observe values.
+   * @since 1.15.0
    */
   default ObservableDoubleMeasurement buildObserver() {
     return DefaultMeter.getInstance().counterBuilder("noop").ofDoubles().buildObserver();

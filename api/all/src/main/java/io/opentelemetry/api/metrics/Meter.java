@@ -54,6 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @see <a
  *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/supplementary-guidelines.md#instrument-selection">Instrument
  *     Selection Guidelines</a>
+ * @since 1.10.0
  */
 @ThreadSafe
 public interface Meter {

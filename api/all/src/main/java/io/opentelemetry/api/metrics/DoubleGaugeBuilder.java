@@ -7,7 +7,11 @@ package io.opentelemetry.api.metrics;
 
 import java.util.function.Consumer;
 
-/** A builder for Gauge metric types. These can only be asynchronously collected. */
+/**
+ * A builder for Gauge metric types. These can only be asynchronously collected.
+ *
+ * @since 1.10.0
+ */
 public interface DoubleGaugeBuilder {
   /**
    * Sets the description for this instrument.
@@ -56,6 +60,7 @@ public interface DoubleGaugeBuilder {
    * observed outside registered callbacks are ignored.
    *
    * @return an observable measurement that batch callbacks use to observe values.
+   * @since 1.15.0
    */
   default ObservableDoubleMeasurement buildObserver() {
     return DefaultMeter.getInstance().gaugeBuilder("noop").buildObserver();

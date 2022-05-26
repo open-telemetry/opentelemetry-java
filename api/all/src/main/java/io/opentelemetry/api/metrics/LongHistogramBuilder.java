@@ -5,7 +5,11 @@
 
 package io.opentelemetry.api.metrics;
 
-/** Builder class for {@link LongHistogram}. */
+/**
+ * Builder class for {@link LongHistogram}.
+ *
+ * @since 1.10.0
+ */
 public interface LongHistogramBuilder {
   /**
    * Sets the description for this instrument.

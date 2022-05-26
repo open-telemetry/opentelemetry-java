@@ -7,7 +7,11 @@ package io.opentelemetry.api.metrics;
 
 import java.util.function.Consumer;
 
-/** Builder class for {@link LongCounter}. */
+/**
+ * Builder class for {@link LongCounter}.
+ *
+ * @since 1.10.0
+ */
 public interface LongCounterBuilder {
 
   /**
@@ -64,6 +68,7 @@ public interface LongCounterBuilder {
    * observed outside registered callbacks are ignored.
    *
    * @return an observable measurement that batch callbacks use to observe values.
+   * @since 1.15.0
    */
   default ObservableLongMeasurement buildObserver() {
     return DefaultMeter.getInstance().counterBuilder("noop").buildObserver();

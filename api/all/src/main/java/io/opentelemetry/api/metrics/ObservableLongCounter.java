@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 /**
  * A reference to an observable instrument registered with {@link
  * LongCounterBuilder#buildWithCallback(Consumer)}.
+ *
+ * @since 1.10.0
  */
 public interface ObservableLongCounter extends AutoCloseable {
 
@@ -19,6 +21,8 @@ public interface ObservableLongCounter extends AutoCloseable {
    * {@link #close()} have no effect.
    *
    * <p>Note: other callbacks registered to the instrument with the same identity are unaffected.
+   *
+   * @since 1.12.0
    */
   @Override
   default void close() {}

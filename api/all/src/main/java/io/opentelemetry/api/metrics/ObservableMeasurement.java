@@ -10,5 +10,6 @@ package io.opentelemetry.api.metrics;
  *
  * @see ObservableLongMeasurement
  * @see ObservableDoubleMeasurement
+ * @since 1.15.0
  */
 public interface ObservableMeasurement {}

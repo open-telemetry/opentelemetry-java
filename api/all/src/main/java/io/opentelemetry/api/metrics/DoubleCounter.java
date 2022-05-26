@@ -9,7 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A Counter instrument that records {@code double} values. */
+/**
+ * A Counter instrument that records {@code double} values.
+ *
+ * @since 1.10.0
+ */
 @ThreadSafe
 public interface DoubleCounter {
   /**

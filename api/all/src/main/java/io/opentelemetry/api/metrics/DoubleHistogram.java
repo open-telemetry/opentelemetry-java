@@ -9,7 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A Histogram instrument that records {@code double} values. */
+/**
+ * A Histogram instrument that records {@code double} values.
+ *
+ * @since 1.10.0
+ */
 @ThreadSafe
 public interface DoubleHistogram {
 
