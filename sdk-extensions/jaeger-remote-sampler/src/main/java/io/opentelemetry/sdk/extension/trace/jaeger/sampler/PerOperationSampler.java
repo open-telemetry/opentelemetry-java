@@ -11,6 +11,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,9 @@ class PerOperationSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     Sampler sampler = this.perOperationSampler.get(name);
+    if (sampler == null) {
+      sampler = this.perOperationSampler.get(attributes.get(SemanticAttributes.HTTP_TARGET));
+    }
     if (sampler == null) {
       sampler = this.defaultSampler;
     }
