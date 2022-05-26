@@ -242,7 +242,7 @@ These properties can be used to control the maximum number and length of attribu
 | System property                   | Environment variable              | Description                                                                                              |
 |-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------------|
 | otel.attribute.value.length.limit | OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. Applies to spans and logs. By default there is no limit.         |
-| otel.attribute.count.limit        | OTEL_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes. Applies to spans, span events, span links, and logs. Default is `128`. |                                              
+| otel.attribute.count.limit        | OTEL_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes. Applies to spans, span events, span links, and logs. Default is `128`. |
 
 ## Span limits
 
