@@ -106,14 +106,24 @@ final class TracerProviderConfiguration {
   static SpanLimits configureSpanLimits(ConfigProperties config) {
     SpanLimitsBuilder builder = SpanLimits.builder();
 
-    Integer maxLength = config.getInt("otel.span.attribute.value.length.limit");
-    if (maxLength != null) {
-      builder.setMaxAttributeValueLength(maxLength);
+    Integer maxAttrLength = config.getInt("otel.attribute.value.length.limit");
+    if (maxAttrLength != null) {
+      builder.setMaxAttributeValueLength(maxAttrLength);
+    }
+    Integer maxSpanAttrLength = config.getInt("otel.span.attribute.value.length.limit");
+    if (maxSpanAttrLength != null) {
+      builder.setMaxAttributeValueLength(maxSpanAttrLength);
     }
 
-    Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
+    Integer maxAttrs = config.getInt("otel.attribute.count.limit");
     if (maxAttrs != null) {
       builder.setMaxNumberOfAttributes(maxAttrs);
+      builder.setMaxNumberOfAttributesPerEvent(maxAttrs);
+      builder.setMaxNumberOfAttributesPerLink(maxAttrs);
+    }
+    Integer maxSpanAttrs = config.getInt("otel.span.attribute.count.limit");
+    if (maxSpanAttrs != null) {
+      builder.setMaxNumberOfAttributes(maxSpanAttrs);
     }
 
     Integer maxEvents = config.getInt("otel.span.event.count.limit");
