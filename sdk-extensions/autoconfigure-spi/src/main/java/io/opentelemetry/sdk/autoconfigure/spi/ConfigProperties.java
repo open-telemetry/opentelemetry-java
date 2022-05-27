@@ -23,6 +23,8 @@ public interface ConfigProperties {
   String getString(String name);
 
   /**
+   * Returns a string-valued configuration property.
+   *
    * @return a string-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
@@ -42,6 +44,8 @@ public interface ConfigProperties {
   Boolean getBoolean(String name);
 
   /**
+   * Returns a boolean-valued configuration property.
+   *
    * @return a Boolean-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
@@ -60,6 +64,8 @@ public interface ConfigProperties {
   Integer getInt(String name);
 
   /**
+   * Returns an Integer-valued configuration property.
+   *
    * @return an Integer-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
@@ -78,6 +84,8 @@ public interface ConfigProperties {
   Long getLong(String name);
 
   /**
+   * Returns a Long-valued configuration property.
+   *
    * @return a Long-valued configuration property or {@code defaultValue} if a property with {@code
    *     name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
@@ -96,6 +104,8 @@ public interface ConfigProperties {
   Double getDouble(String name);
 
   /**
+   * Returns a double-valued configuration property.
+   *
    * @return a Double-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
@@ -129,6 +139,8 @@ public interface ConfigProperties {
   Duration getDuration(String name);
 
   /**
+   * Returns a Duration value configuration property.
+   *
    * @see ConfigProperties#getDuration(String name)
    * @return a Double-valued configuration property or {@code defaultValue} if a property with name
    *     {@code name} has not been configured.
@@ -148,6 +160,8 @@ public interface ConfigProperties {
   List<String> getList(String name);
 
   /**
+   * Returns a List value configuration property.
+   *
    * @see ConfigProperties#getList(String name)
    * @return a List configuration property or {@code defaultValue} if a property with {@code name}
    *     has not been configured.
@@ -169,6 +183,8 @@ public interface ConfigProperties {
   Map<String, String> getMap(String name);
 
   /**
+   * Returns a Map value configuration property.
+   *
    * @see ConfigProperties#getMap(String name)
    * @return a Double-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
