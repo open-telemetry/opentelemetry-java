@@ -5,13 +5,17 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +47,7 @@ class ConfigPropertiesTest {
 
   @Test
   void allMissing() {
-    ConfigProperties config = DefaultConfigProperties.createForTest(Collections.emptyMap());
+    ConfigProperties config = DefaultConfigProperties.createForTest(emptyMap());
     assertThat(config.getString("string")).isNull();
     assertThat(config.getInt("int")).isNull();
     assertThat(config.getLong("long")).isNull();
@@ -215,5 +219,32 @@ class ConfigPropertiesTest {
             DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "8   ms"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(8));
+  }
+
+  @Test
+  void defaultMethods() {
+    ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
+    assertEquals(true, properties.getBoolean("foo", true));
+    assertEquals("bar", properties.getString("foo", "bar"));
+    assertEquals(65.535, properties.getDouble("foo", 65.535));
+    assertEquals(21, properties.getInt("foo", 21));
+    assertEquals(123L, properties.getLong("foo", 123L));
+    assertEquals(Duration.ofDays(13), properties.getDuration("foo", Duration.ofDays(13)));
+  }
+
+  @Test
+  void defaultCollectionTypes() {
+    ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
+    assertEquals(
+        Arrays.asList("1", "2", "3"), properties.getList("foo", Arrays.asList("1", "2", "3")));
+    assertEquals(emptyList(), properties.getList("foo"));
+    Map<String, String> defaultMap = new HashMap<>();
+    defaultMap.put("one", "1");
+    defaultMap.put("two", "2");
+    Map<String, String> expected = new HashMap<>();
+    expected.put("one", "1");
+    expected.put("two", "2");
+    assertEquals(expected, properties.getMap("foo", defaultMap));
+    assertEquals(emptyMap(), properties.getMap("foo"));
   }
 }
