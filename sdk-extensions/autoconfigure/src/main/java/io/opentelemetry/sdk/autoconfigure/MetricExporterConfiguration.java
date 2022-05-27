@@ -28,6 +28,9 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
+
+  private static final Duration DEFAULT_EXPORT_INTERVAL = Duration.ofMinutes(1);
+
   static MetricReader configureExporter(
       String name,
       ConfigProperties config,
@@ -134,12 +137,9 @@ final class MetricExporterConfiguration {
   private static PeriodicMetricReader configurePeriodicMetricReader(
       ConfigProperties config, MetricExporter exporter) {
 
-    Duration exportInterval = config.getDuration("otel.metric.export.interval");
-    if (exportInterval == null) {
-      exportInterval = Duration.ofMinutes(1);
-    }
-
-    return PeriodicMetricReader.builder(exporter).setInterval(exportInterval).build();
+    return PeriodicMetricReader.builder(exporter)
+        .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
+        .build();
   }
 
   private static PrometheusHttpServer configurePrometheusMetricReader(ConfigProperties config) {

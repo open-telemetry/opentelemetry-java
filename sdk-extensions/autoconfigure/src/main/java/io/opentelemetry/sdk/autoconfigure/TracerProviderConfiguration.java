@@ -27,6 +27,9 @@ import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
+  private static final double DEFAULT_SAMPLE_RATIO = 1.0d;
+  private static final String DEFAULT_SAMPLER = "parentbased_always_on";
+
   static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
@@ -38,10 +41,7 @@ final class TracerProviderConfiguration {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
 
-    String sampler = config.getString("otel.traces.sampler");
-    if (sampler == null) {
-      sampler = "parentbased_always_on";
-    }
+    String sampler = config.getString("otel.traces.sampler", DEFAULT_SAMPLER);
     tracerProviderBuilder.setSampler(
         samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
@@ -157,22 +157,16 @@ final class TracerProviderConfiguration {
         return Sampler.alwaysOff();
       case "traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
-          if (ratio == null) {
-            ratio = 1.0d;
-          }
+          Double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
           return Sampler.traceIdRatioBased(ratio);
         }
-      case "parentbased_always_on":
+      case DEFAULT_SAMPLER:
         return Sampler.parentBased(Sampler.alwaysOn());
       case "parentbased_always_off":
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
-          if (ratio == null) {
-            ratio = 1.0d;
-          }
+          Double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:

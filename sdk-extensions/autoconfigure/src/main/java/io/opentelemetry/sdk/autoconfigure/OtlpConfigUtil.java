@@ -32,11 +32,9 @@ final class OtlpConfigUtil {
   static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
-    String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
-    if (protocol == null) {
-      protocol = config.getString("otel.exporter.otlp.protocol");
-    }
-    return (protocol == null) ? PROTOCOL_GRPC : protocol;
+    String configKey = "otel.exporter.otlp." + dataType + ".protocol";
+    String fallback = config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
+    return config.getString(configKey, fallback);
   }
 
   static void configureOtlpExporterBuilder(
@@ -73,10 +71,9 @@ final class OtlpConfigUtil {
       setEndpoint.accept(endpoint.toString());
     }
 
-    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
-    if (headers.isEmpty()) {
-      headers = config.getMap("otel.exporter.otlp.headers");
-    }
+    Map<String, String> fallbackHeaders = config.getMap("otel.exporter.otlp.headers");
+    Map<String, String> headers =
+        config.getMap("otel.exporter.otlp." + dataType + ".headers", fallbackHeaders);
     headers.forEach(addHeader);
 
     String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
@@ -123,8 +120,9 @@ final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
-    if (retryEnabled != null && retryEnabled) {
+    Boolean retryEnabled =
+        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
+    if (retryEnabled) {
       setRetryPolicy.accept(RetryPolicy.getDefault());
     }
   }
@@ -207,12 +205,14 @@ final class OtlpConfigUtil {
   private static String determinePropertyByType(
       ConfigProperties config, String prefix, String dataType, String suffix) {
     String propertyToRead = prefix + "." + dataType + "." + suffix;
-    String value = config.getString(propertyToRead);
-    if (value == null) {
-      return prefix + "." + suffix;
-    } else {
+    if (configContainsKey(config, propertyToRead)) {
       return propertyToRead;
     }
+    return prefix + "." + suffix;
+  }
+
+  private static boolean configContainsKey(ConfigProperties config, String propertyToRead) {
+    return config.getString(propertyToRead) != null;
   }
 
   private static String signalPath(String dataType) {
