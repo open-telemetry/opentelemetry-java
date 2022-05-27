@@ -30,7 +30,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default String getString(String name, String defaultValue) {
-    return _defaultIfNull(getString(name), defaultValue);
+    return defaultIfNull(getString(name), defaultValue);
   }
 
   /**
@@ -51,7 +51,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default Boolean getBoolean(String name, Boolean defaultValue) {
-    return _defaultIfNull(getBoolean(name), defaultValue);
+    return defaultIfNull(getBoolean(name), defaultValue);
   }
 
   /**
@@ -71,7 +71,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default Integer getInt(String name, Integer defaultValue) {
-    return _defaultIfNull(getInt(name), defaultValue);
+    return defaultIfNull(getInt(name), defaultValue);
   }
 
   /**
@@ -91,7 +91,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default Long getLong(String name, Long defaultValue) {
-    return _defaultIfNull(getLong(name), defaultValue);
+    return defaultIfNull(getLong(name), defaultValue);
   }
 
   /**
@@ -111,7 +111,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default Double getDouble(String name, Double defaultValue) {
-    return _defaultIfNull(getDouble(name), defaultValue);
+    return defaultIfNull(getDouble(name), defaultValue);
   }
 
   /**
@@ -147,7 +147,7 @@ public interface ConfigProperties {
    * @throws ConfigurationException if the property is not a valid string.
    */
   default Duration getDuration(String name, Duration defaultValue) {
-    return _defaultIfNull(getDuration(name), defaultValue);
+    return defaultIfNull(getDuration(name), defaultValue);
   }
 
   /**
@@ -199,7 +199,7 @@ public interface ConfigProperties {
    * Returns defaultValue if value is null, otherwise value. This is an internal method that should
    * not be broadly used.
    */
-  default <T> T _defaultIfNull(@Nullable T value, T defaultValue) {
+  default <T> T defaultIfNull(@Nullable T value, T defaultValue) {
     return value == null ? defaultValue : value;
   }
 }
