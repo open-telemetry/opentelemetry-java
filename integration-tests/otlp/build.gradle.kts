@@ -8,8 +8,7 @@ otelJava.moduleName.set("io.opentelemetry.integration.tests.otlp")
 dependencies {
   api("org.testcontainers:junit-jupiter")
 
-  implementation(project(":exporters:otlp:trace"))
-  implementation(project(":exporters:otlp:metrics"))
+  implementation(project(":exporters:otlp:all"))
   implementation(project(":exporters:otlp:logs"))
   implementation(project(":exporters:otlp-http:logs"))
   implementation(project(":exporters:otlp-http:metrics"))
