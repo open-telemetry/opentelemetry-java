@@ -75,4 +75,10 @@ public class ExporterMetrics {
       String exporterName, String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider, exporterName, type, "http");
   }
+
+  /** Create an instance for recording http/json exporter metrics. */
+  public static ExporterMetrics createHttpJson(
+      String exporterName, String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider, exporterName, type, "http-json");
+  }
 }

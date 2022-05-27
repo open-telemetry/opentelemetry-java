@@ -37,6 +37,7 @@ import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
+import zipkin2.codec.Encoding;
 import zipkin2.reporter.Sender;
 
 /**
@@ -71,7 +72,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
   ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, MeterProvider meterProvider) {
     this.encoder = encoder;
     this.sender = sender;
-    this.exporterMetrics = ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProvider);
+    this.exporterMetrics =
+        sender.encoding() == Encoding.JSON
+            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProvider)
+            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProvider);
     localAddress = produceLocalIp();
   }
 

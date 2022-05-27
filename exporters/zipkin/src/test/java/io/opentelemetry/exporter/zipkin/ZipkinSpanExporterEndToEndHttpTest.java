@@ -103,7 +103,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     exportAndVerify(exporter);
 
     exporter.close();
-    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
+    verifyMetrics(sdkMeterReader, "http-json", EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
@@ -117,7 +117,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     exportAndVerify(exporter);
 
     exporter.close();
-    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
+    verifyMetrics(sdkMeterReader, "http", EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
@@ -132,7 +132,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     exportAndVerify(exporter);
 
     exporter.close();
-    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
+    verifyMetrics(sdkMeterReader, "http", EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
@@ -146,7 +146,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     exportAndVerify(exporter);
 
     exporter.close();
-    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
+    verifyMetrics(sdkMeterReader, "http-json", EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
@@ -164,7 +164,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     assertThat(zipkinSpans).isEmpty();
 
     exporter.close();
-    verifyMetrics(sdkMeterReader, EXPORTED_FAILED_ATTRIBUTES);
+    verifyMetrics(sdkMeterReader, "http-json", EXPORTED_FAILED_ATTRIBUTES);
   }
 
   private static ZipkinSpanExporter buildZipkinExporter(
@@ -249,13 +249,14 @@ class ZipkinSpanExporterEndToEndHttpTest {
   }
 
   private static void verifyMetrics(
-      InMemoryMetricReader sdkMeterReader, Attributes exportedAttributes) {
+      InMemoryMetricReader sdkMeterReader, String transportName, Attributes exportedAttributes) {
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
             metric ->
                 assertThat(metric)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("io.opentelemetry.exporters.zipkin-http")))
+                        InstrumentationScopeInfo.create(
+                            "io.opentelemetry.exporters.zipkin-" + transportName)))
         .satisfiesExactlyInAnyOrder(
             metric ->
                 assertThat(metric)
