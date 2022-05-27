@@ -157,7 +157,7 @@ final class TracerProviderConfiguration {
         return Sampler.alwaysOff();
       case "traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
+          double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
           return Sampler.traceIdRatioBased(ratio);
         }
       case DEFAULT_SAMPLER:
@@ -166,7 +166,7 @@ final class TracerProviderConfiguration {
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
+          double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_SAMPLE_RATIO);
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:

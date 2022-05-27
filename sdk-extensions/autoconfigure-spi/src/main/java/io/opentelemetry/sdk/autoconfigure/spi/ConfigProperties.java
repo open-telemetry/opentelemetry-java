@@ -50,7 +50,7 @@ public interface ConfigProperties {
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    */
-  default Boolean getBoolean(String name, Boolean defaultValue) {
+  default boolean getBoolean(String name, boolean defaultValue) {
     return defaultIfNull(getBoolean(name), defaultValue);
   }
 
@@ -70,7 +70,7 @@ public interface ConfigProperties {
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    */
-  default Integer getInt(String name, Integer defaultValue) {
+  default int getInt(String name, int defaultValue) {
     return defaultIfNull(getInt(name), defaultValue);
   }
 
@@ -90,7 +90,7 @@ public interface ConfigProperties {
    *     name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    */
-  default Long getLong(String name, Long defaultValue) {
+  default long getLong(String name, long defaultValue) {
     return defaultIfNull(getLong(name), defaultValue);
   }
 
@@ -110,7 +110,7 @@ public interface ConfigProperties {
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    */
-  default Double getDouble(String name, Double defaultValue) {
+  default double getDouble(String name, double defaultValue) {
     return defaultIfNull(getDouble(name), defaultValue);
   }
 

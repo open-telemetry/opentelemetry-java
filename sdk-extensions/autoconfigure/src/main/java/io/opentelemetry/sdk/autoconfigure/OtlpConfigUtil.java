@@ -120,7 +120,7 @@ final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    Boolean retryEnabled =
+    boolean retryEnabled =
         config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
     if (retryEnabled) {
       setRetryPolicy.accept(RetryPolicy.getDefault());
