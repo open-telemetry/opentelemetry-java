@@ -6,7 +6,7 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry Protocol OTLP Exporters"
+description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
 base.archivesName.set("opentelemetry-exporter-otlp")
 
