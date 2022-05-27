@@ -44,6 +44,8 @@ class PerOperationSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     Sampler sampler = this.perOperationSampler.get(name);
+    // The name for spans started in HTTP servers is always "HTTP <method>".
+    // For these spans, using the HTTP target may be more useful.
     if (sampler == null) {
       sampler = this.perOperationSampler.get(attributes.get(SemanticAttributes.HTTP_TARGET));
     }
