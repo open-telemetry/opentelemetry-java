@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.zipkin;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ public final class ZipkinSpanExporterBuilder {
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. A {@link
@@ -93,6 +95,16 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   */
+  public ZipkinSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
    * Builds a {@link ZipkinSpanExporter}.
    *
    * @return a {@code ZipkinSpanExporter}.
@@ -103,6 +115,6 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(encoder, sender);
+    return new ZipkinSpanExporter(encoder, sender, meterProvider);
   }
 }

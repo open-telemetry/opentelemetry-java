@@ -5,18 +5,24 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpStatus;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -28,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -64,61 +71,108 @@ class ZipkinSpanExporterEndToEndHttpTest {
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
   private static final String SERVICE_NAME = "myService";
 
+  private static final Attributes SEEN_ATTRIBUTES =
+      Attributes.of(AttributeKey.stringKey("type"), "span");
+  private static final Attributes EXPORTED_SUCCESS_ATTRIBUTES =
+      SEEN_ATTRIBUTES.toBuilder().put(AttributeKey.booleanKey("success"), true).build();
+  private static final Attributes EXPORTED_FAILED_ATTRIBUTES =
+      SEEN_ATTRIBUTES.toBuilder().put(AttributeKey.booleanKey("success"), false).build();
+
   @Container
   public static GenericContainer<?> zipkinContainer =
       new GenericContainer<>("ghcr.io/openzipkin/zipkin:2.23")
           .withExposedPorts(ZIPKIN_API_PORT)
           .waitingFor(Wait.forHttp("/health").forPort(ZIPKIN_API_PORT));
 
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+  private final SdkMeterProvider sdkMeterProvider =
+      SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
+
+  @AfterEach
+  void tearDown() {
+    sdkMeterProvider.close();
+  }
+
   @Test
   void testExportWithDefaultEncoding() {
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder().setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS)).build();
-
+        ZipkinSpanExporter.builder()
+            .setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS))
+            .setMeterProvider(sdkMeterProvider)
+            .build();
     exportAndVerify(exporter);
+
+    exporter.close();
+    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
   void testExportAsProtobuf() {
     ZipkinSpanExporter exporter =
-        buildZipkinExporter(zipkinUrl(ENDPOINT_V2_SPANS), Encoding.PROTO3, SpanBytesEncoder.PROTO3);
+        buildZipkinExporter(
+            zipkinUrl(ENDPOINT_V2_SPANS),
+            Encoding.PROTO3,
+            SpanBytesEncoder.PROTO3,
+            sdkMeterProvider);
     exportAndVerify(exporter);
+
+    exporter.close();
+    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
   void testExportAsThrift() {
     @SuppressWarnings("deprecation") // we have to use the deprecated thrift encoding to test it
     ZipkinSpanExporter exporter =
-        buildZipkinExporter(zipkinUrl(ENDPOINT_V1_SPANS), Encoding.THRIFT, SpanBytesEncoder.THRIFT);
+        buildZipkinExporter(
+            zipkinUrl(ENDPOINT_V1_SPANS),
+            Encoding.THRIFT,
+            SpanBytesEncoder.THRIFT,
+            sdkMeterProvider);
     exportAndVerify(exporter);
+
+    exporter.close();
+    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
   void testExportAsJsonV1() {
     ZipkinSpanExporter exporter =
-        buildZipkinExporter(zipkinUrl(ENDPOINT_V1_SPANS), Encoding.JSON, SpanBytesEncoder.JSON_V1);
+        buildZipkinExporter(
+            zipkinUrl(ENDPOINT_V1_SPANS),
+            Encoding.JSON,
+            SpanBytesEncoder.JSON_V1,
+            sdkMeterProvider);
     exportAndVerify(exporter);
+
+    exporter.close();
+    verifyMetrics(sdkMeterReader, EXPORTED_SUCCESS_ATTRIBUTES);
   }
 
   @Test
   void testExportFailedAsWrongEncoderUsed() {
-    ZipkinSpanExporter zipkinSpanExporter =
-        buildZipkinExporter(zipkinUrl(ENDPOINT_V2_SPANS), Encoding.JSON, SpanBytesEncoder.PROTO3);
+    ZipkinSpanExporter exporter =
+        buildZipkinExporter(
+            zipkinUrl(ENDPOINT_V2_SPANS), Encoding.JSON, SpanBytesEncoder.PROTO3, sdkMeterProvider);
 
     String traceId = IdGenerator.random().generateTraceId();
     SpanData spanData = buildStandardSpan(traceId).build();
-    CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    CompletableResultCode resultCode = exporter.export(Collections.singleton(spanData));
 
     assertThat(resultCode.isSuccess()).isFalse();
     List<Span> zipkinSpans = getTrace(traceId);
     assertThat(zipkinSpans).isEmpty();
+
+    exporter.close();
+    verifyMetrics(sdkMeterReader, EXPORTED_FAILED_ATTRIBUTES);
   }
 
   private static ZipkinSpanExporter buildZipkinExporter(
-      String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
+      String endpoint, Encoding encoding, SpanBytesEncoder encoder, MeterProvider meterProvider) {
     return ZipkinSpanExporter.builder()
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setEncoder(encoder)
+        .setMeterProvider(meterProvider)
         .build();
   }
 
@@ -137,8 +191,9 @@ class ZipkinSpanExporterEndToEndHttpTest {
 
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
-    assertThat(zipkinSpans.get(0))
-        .isEqualTo(buildZipkinSpan(zipkinSpanExporter.getLocalAddressForTest(), traceId));
+    InetAddress address = zipkinSpanExporter.getLocalAddressForTest();
+    assertThat(address).isNotNull();
+    assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan(address, traceId));
   }
 
   private static TestSpanData.Builder buildStandardSpan(String traceId) {
@@ -184,10 +239,41 @@ class ZipkinSpanExporterEndToEndHttpTest {
     if (response.status().equals(HttpStatus.NOT_FOUND)) {
       return Collections.emptyList();
     }
-    return SpanBytesDecoder.JSON_V2.decodeList(response.content().array());
+    try (HttpData content = response.content()) {
+      return SpanBytesDecoder.JSON_V2.decodeList(content.array());
+    }
   }
 
   private static String zipkinUrl(String endpoint) {
     return "http://localhost:" + zipkinContainer.getMappedPort(ZIPKIN_API_PORT) + endpoint;
+  }
+
+  private static void verifyMetrics(
+      InMemoryMetricReader sdkMeterReader, Attributes exportedAttributes) {
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create("io.opentelemetry.exporters.zipkin-http")))
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("zipkin.exporter.seen")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point -> point.hasAttributes(SEEN_ATTRIBUTES).hasValue(1))),
+            metric ->
+                assertThat(metric)
+                    .hasName("zipkin.exporter.exported")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point -> point.hasAttributes(exportedAttributes).hasValue(1))));
   }
 }
