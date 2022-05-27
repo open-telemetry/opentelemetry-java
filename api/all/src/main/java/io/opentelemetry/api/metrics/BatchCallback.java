@@ -8,6 +8,8 @@ package io.opentelemetry.api.metrics;
 /**
  * A reference to a batch callback registered via {@link Meter#batchCallback(Runnable,
  * ObservableMeasurement, ObservableMeasurement...)}.
+ *
+ * @since 1.15.0
  */
 public interface BatchCallback extends AutoCloseable {
 

@@ -9,7 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A histogram instrument that records {@code long} values. */
+/**
+ * A Histogram instrument that records {@code long} values.
+ *
+ * @since 1.10.0
+ */
 @ThreadSafe
 public interface LongHistogram {
 
@@ -19,7 +23,7 @@ public interface LongHistogram {
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this
    * measurement.
    *
-   * @param value The amount of the measurement.
+   * @param value The amount of the measurement. MUST be non-negative.
    */
   void record(long value);
 
@@ -29,16 +33,16 @@ public interface LongHistogram {
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this
    * measurement.
    *
-   * @param value The amount of the measurement.
-   * @param attributes A set of attributes to associate with the count.
+   * @param value The amount of the measurement. MUST be non-negative.
+   * @param attributes A set of attributes to associate with the value.
    */
   void record(long value, Attributes attributes);
 
   /**
    * Records a value with a set of attributes.
    *
-   * @param value The amount of the measurement.
-   * @param attributes A set of attributes to associate with the count.
+   * @param value The amount of the measurement. MUST be non-negative.
+   * @param attributes A set of attributes to associate with the value.
    * @param context The explicit context to associate with this measurement.
    */
   void record(long value, Attributes attributes, Context context);
