@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcConfigTest.shutdownGlobalSdk;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeLog;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeMetric;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeSpan;
@@ -47,6 +48,7 @@ class OtlpHttpConfigTest {
 
   @AfterEach
   public void tearDown() {
+    shutdownGlobalSdk();
     GlobalOpenTelemetry.resetForTest();
   }
 

@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +62,7 @@ class OtlpGrpcConfigTest {
   @AfterEach
   public void tearDown() {
     server.reset();
+    shutdownGlobalSdk();
     GlobalOpenTelemetry.resetForTest();
   }
 
@@ -323,5 +326,30 @@ class OtlpGrpcConfigTest {
               // potentially others.
               assertThat(server.metricRequests).isNotEmpty();
             });
+  }
+
+  static void shutdownGlobalSdk() {
+    try {
+      Field globalOpenTelemetryField =
+          GlobalOpenTelemetry.class.getDeclaredField("globalOpenTelemetry");
+      globalOpenTelemetryField.setAccessible(true);
+      Object globalOpenTelemetry = globalOpenTelemetryField.get(null);
+      if (globalOpenTelemetry == null) {
+        return;
+      }
+      Field delegateField =
+          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+              .getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(globalOpenTelemetry);
+      if (delegate instanceof OpenTelemetrySdk) {
+        OpenTelemetrySdk sdk = ((OpenTelemetrySdk) delegate);
+        sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
+        sdk.getSdkMeterProvider().shutdown().join(10, TimeUnit.SECONDS);
+        sdk.getSdkLogEmitterProvider().shutdown().join(10, TimeUnit.SECONDS);
+      }
+    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalStateException("Error shutting down global SDK.", e);
+    }
   }
 }
