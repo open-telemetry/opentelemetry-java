@@ -32,9 +32,11 @@ final class OtlpConfigUtil {
   static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
-    String configKey = "otel.exporter.otlp." + dataType + ".protocol";
-    String fallback = config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
-    return config.getString(configKey, fallback);
+    String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
+    if (protocol != null) {
+      return protocol;
+    }
+    return config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
   }
 
   static void configureOtlpExporterBuilder(

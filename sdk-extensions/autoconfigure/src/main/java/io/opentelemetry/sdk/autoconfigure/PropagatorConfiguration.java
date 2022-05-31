@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 
 final class PropagatorConfiguration {
 
-  public static final List<String> DEFAULT_PROPAGATORS = Arrays.asList("tracecontext", "baggage");
+  private static final List<String> DEFAULT_PROPAGATORS = Arrays.asList("tracecontext", "baggage");
 
   static ContextPropagators configurePropagators(
       ConfigProperties config,
