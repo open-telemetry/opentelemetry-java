@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
+import static io.opentelemetry.sdk.autoconfigure.spi.NullDefaultUtility.defaultIfNull;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -193,13 +195,5 @@ public interface ConfigProperties {
   default Map<String, String> getMap(String name, Map<String, String> defaultValue) {
     Map<String, String> value = getMap(name);
     return value.isEmpty() ? defaultValue : value;
-  }
-
-  /**
-   * Returns defaultValue if value is null, otherwise value. This is an internal method that should
-   * not be broadly used.
-   */
-  default <T> T defaultIfNull(@Nullable T value, T defaultValue) {
-    return value == null ? defaultValue : value;
   }
 }
