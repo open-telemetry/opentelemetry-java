@@ -169,7 +169,7 @@ public interface ConfigProperties {
    */
   default List<String> getList(String name, List<String> defaultValue) {
     List<String> value = getList(name);
-    return (value == null || value.isEmpty()) ? defaultValue : value;
+    return value.isEmpty() ? defaultValue : value;
   }
 
   /**
@@ -192,7 +192,7 @@ public interface ConfigProperties {
    */
   default Map<String, String> getMap(String name, Map<String, String> defaultValue) {
     Map<String, String> value = getMap(name);
-    return (value == null || value.isEmpty()) ? defaultValue : value;
+    return value.isEmpty() ? defaultValue : value;
   }
 
   /**
