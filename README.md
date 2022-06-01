@@ -112,7 +112,7 @@ dependencies {
 }
 ```
 
-Note that if you want to use any artifacts that have not fully stabilized yet (such as the [semantic conventions constants](https://github.com/open-telemetry/opentelemetry-java/tree/main/semconv), the [SDK Autoconfigure Extension](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure) or the logs SDK), then you will need to add an entry for the Alpha BOM as well, e.g.
+Note that if you want to use any artifacts that have not fully stabilized yet (such as the [semantic conventions constants](https://github.com/open-telemetry/opentelemetry-java/tree/main/semconv) or the [SDK Autoconfigure Extension](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure)), then you will need to add an entry for the Alpha BOM as well, e.g.
 
 ```groovy
 dependencies {
@@ -122,8 +122,6 @@ dependencies {
   implementation('io.opentelemetry:opentelemetry-api')
   implementation('io.opentelemetry:opentelemetry-semconv')
   implementation('io.opentelemetry:opentelemetry-sdk-extension-autoconfigure')
-  implementation('io.opentelemetry:opentelemetry-sdk-logs')
-  implementation('io.opentelemetry:opentelemetry-exporter-otlp-logs')
 }
 ```
 
