@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.jaeger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;

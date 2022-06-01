@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.jfr;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -69,15 +69,14 @@ class JfrSpanProcessorTest {
       }
 
       List<RecordedEvent> events = RecordingFile.readAllEvents(output);
-      assertEquals(1, events.size());
-      events.stream()
-          .forEach(
-              e -> {
-                assertEquals(span.getSpanContext().getTraceId(), e.getValue("traceId"));
-                assertEquals(span.getSpanContext().getSpanId(), e.getValue("spanId"));
-                assertEquals(OPERATION_NAME, e.getValue("operationName"));
-              });
-
+      assertThat(events).hasSize(1);
+      assertThat(events)
+          .extracting(e -> e.getValue("traceId"))
+          .isEqualTo(span.getSpanContext().getTraceId());
+      assertThat(events)
+          .extracting(e -> e.getValue("spanId"))
+          .isEqualTo(span.getSpanContext().getSpanId());
+      assertThat(events).extracting(e -> e.getValue("operationName")).isEqualTo(OPERATION_NAME);
     } finally {
       Files.delete(output);
     }
@@ -109,16 +108,17 @@ class JfrSpanProcessorTest {
       }
 
       List<RecordedEvent> events = RecordingFile.readAllEvents(output);
-      assertEquals(2, events.size());
-      events.stream()
-          .forEach(
-              e -> {
-                assertEquals(span.getSpanContext().getTraceId(), e.getValue("traceId"));
-                assertEquals(span.getSpanContext().getSpanId(), e.getValue("spanId"));
-                if ("Span".equals(e.getEventType().getLabel())) {
-                  assertEquals(OPERATION_NAME, e.getValue("operationName"));
-                }
-              });
+      assertThat(events).hasSize(2);
+      assertThat(events)
+          .extracting(e -> e.getValue("traceId"))
+          .isEqualTo(span.getSpanContext().getTraceId());
+      assertThat(events)
+          .extracting(e -> e.getValue("spanId"))
+          .isEqualTo(span.getSpanContext().getSpanId());
+      assertThat(events)
+          .filteredOn(e -> "Span".equals(e.getEventType().getLabel()))
+          .extracting(e -> e.getValue("operationName"))
+          .isEqualTo(OPERATION_NAME);
 
     } finally {
       Files.delete(output);
