@@ -11,12 +11,12 @@ import javax.annotation.Nullable;
  * Holder for the non-public defaultIfNull method. This serves only to mitigate the method being on
  * a public interface.
  */
-final class NullDefaultUtility {
+final class ConfigUtil {
 
   /** Returns defaultValue if value is null, otherwise value. This is an internal method. */
   static <T> T defaultIfNull(@Nullable T value, T defaultValue) {
     return value == null ? defaultValue : value;
   }
 
-  private NullDefaultUtility() {}
+  private ConfigUtil() {}
 }

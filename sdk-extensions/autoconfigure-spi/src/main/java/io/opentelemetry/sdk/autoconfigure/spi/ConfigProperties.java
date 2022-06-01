@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
-import static io.opentelemetry.sdk.autoconfigure.spi.NullDefaultUtility.defaultIfNull;
+import static io.opentelemetry.sdk.autoconfigure.spi.ConfigUtil.defaultIfNull;
 
 import java.time.Duration;
 import java.util.List;
