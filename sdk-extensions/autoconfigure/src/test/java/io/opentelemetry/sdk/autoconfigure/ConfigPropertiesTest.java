@@ -10,7 +10,6 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -224,27 +223,26 @@ class ConfigPropertiesTest {
   @Test
   void defaultMethods() {
     ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
-    assertEquals(true, properties.getBoolean("foo", true));
-    assertEquals("bar", properties.getString("foo", "bar"));
-    assertEquals(65.535, properties.getDouble("foo", 65.535));
-    assertEquals(21, properties.getInt("foo", 21));
-    assertEquals(123L, properties.getLong("foo", 123L));
-    assertEquals(Duration.ofDays(13), properties.getDuration("foo", Duration.ofDays(13)));
+    assertThat(properties.getBoolean("foo", true)).isTrue();
+    assertThat(properties.getString("foo", "bar")).isEqualTo("bar");
+    assertThat(properties.getDouble("foo", 65.535)).isEqualTo(65.535);
+    assertThat(properties.getInt("foo", 21)).isEqualTo(21);
+    assertThat(properties.getLong("foo", 123L)).isEqualTo(123L);
+    assertThat(properties.getDuration("foo", Duration.ofDays(13))).isEqualTo(Duration.ofDays(13));
   }
 
   @Test
   void defaultCollectionTypes() {
     ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
-    assertEquals(
-        Arrays.asList("1", "2", "3"), properties.getList("foo", Arrays.asList("1", "2", "3")));
-    assertEquals(emptyList(), properties.getList("foo"));
+    assertThat(properties.getList("foo", Arrays.asList("1", "2", "3"))).containsExactly("1", "2", "3");
+    assertThat(properties.getList("foo")).isEmpty();
     Map<String, String> defaultMap = new HashMap<>();
     defaultMap.put("one", "1");
     defaultMap.put("two", "2");
     Map<String, String> expected = new HashMap<>();
     expected.put("one", "1");
     expected.put("two", "2");
-    assertEquals(expected, properties.getMap("foo", defaultMap));
-    assertEquals(emptyMap(), properties.getMap("foo"));
+    assertThat(properties.getMap("foo", defaultMap)).containsExactlyEntriesOf(expected);
+    assertThat(properties.getMap("foo")).isEmpty();
   }
 }
