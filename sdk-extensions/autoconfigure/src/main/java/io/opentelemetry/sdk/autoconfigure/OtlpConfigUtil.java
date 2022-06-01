@@ -73,9 +73,10 @@ final class OtlpConfigUtil {
       setEndpoint.accept(endpoint.toString());
     }
 
-    Map<String, String> fallbackHeaders = config.getMap("otel.exporter.otlp.headers");
-    Map<String, String> headers =
-        config.getMap("otel.exporter.otlp." + dataType + ".headers", fallbackHeaders);
+    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
+    if (headers.isEmpty()) {
+      headers = config.getMap("otel.exporter.otlp.headers");
+    }
     headers.forEach(addHeader);
 
     String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
