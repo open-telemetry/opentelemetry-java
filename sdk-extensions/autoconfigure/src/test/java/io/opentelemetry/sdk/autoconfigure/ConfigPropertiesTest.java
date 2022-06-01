@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -234,7 +233,8 @@ class ConfigPropertiesTest {
   @Test
   void defaultCollectionTypes() {
     ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
-    assertThat(properties.getList("foo", Arrays.asList("1", "2", "3"))).containsExactly("1", "2", "3");
+    assertThat(properties.getList("foo", Arrays.asList("1", "2", "3")))
+        .containsExactly("1", "2", "3");
     assertThat(properties.getList("foo")).isEmpty();
     Map<String, String> defaultMap = new HashMap<>();
     defaultMap.put("one", "1");
