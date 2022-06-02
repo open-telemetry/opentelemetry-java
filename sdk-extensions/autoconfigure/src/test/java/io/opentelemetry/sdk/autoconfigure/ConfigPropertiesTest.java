@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,14 +24,7 @@ class ConfigPropertiesTest {
 
   @Test
   void allValid() {
-    Map<String, String> properties = new HashMap<>();
-    properties.put("string", "str");
-    properties.put("int", "10");
-    properties.put("long", "20");
-    properties.put("double", "5.4");
-    properties.put("list", "cat,dog,bear");
-    properties.put("map", "cat=meow,dog=bark,bear=growl");
-    properties.put("duration", "1s");
+    Map<String, String> properties = makeTestProps();
 
     ConfigProperties config = DefaultConfigProperties.createForTest(properties);
     assertThat(config.getString("string")).isEqualTo("str");
@@ -220,7 +214,27 @@ class ConfigPropertiesTest {
   }
 
   @Test
-  void defaultMethods() {
+  void defaultMethodsDelegate() {
+    Map<String, String> expectedMap = new HashMap<>();
+    expectedMap.put("dog", "bark");
+    expectedMap.put("cat", "meow");
+    expectedMap.put("bear", "growl");
+
+    Map<String, String> map = makeTestProps();
+    ConfigProperties properties = DefaultConfigProperties.get(map);
+    assertThat(properties.getBoolean("boolean", false)).isTrue();
+    assertThat(properties.getString("string", "nah")).isEqualTo("str");
+    assertThat(properties.getDouble("double", 65.535)).isEqualTo(5.4);
+    assertThat(properties.getInt("int", 21)).isEqualTo(10);
+    assertThat(properties.getLong("long", 123L)).isEqualTo(20L);
+    assertThat(properties.getDuration("duration", Duration.ofDays(13)))
+        .isEqualTo(Duration.ofSeconds(1));
+    assertThat(properties.getList("list", emptyList())).containsExactly("cat", "dog", "bear");
+    assertThat(properties.getMap("map", emptyMap())).containsAllEntriesOf(expectedMap);
+  }
+
+  @Test
+  void defaultMethodsFallBack() {
     ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
     assertThat(properties.getBoolean("foo", true)).isTrue();
     assertThat(properties.getString("foo", "bar")).isEqualTo("bar");
@@ -244,5 +258,18 @@ class ConfigPropertiesTest {
     expected.put("two", "2");
     assertThat(properties.getMap("foo", defaultMap)).containsExactlyEntriesOf(expected);
     assertThat(properties.getMap("foo")).isEmpty();
+  }
+
+  private Map<String, String> makeTestProps() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put("string", "str");
+    properties.put("int", "10");
+    properties.put("long", "20");
+    properties.put("double", "5.4");
+    properties.put("boolean", "true");
+    properties.put("list", "cat,dog,bear");
+    properties.put("map", "cat=meow,dog=bark,bear=growl");
+    properties.put("duration", "1s");
+    return properties;
   }
 }
