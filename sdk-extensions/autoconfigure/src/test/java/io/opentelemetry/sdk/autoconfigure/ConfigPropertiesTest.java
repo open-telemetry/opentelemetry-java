@@ -253,10 +253,8 @@ class ConfigPropertiesTest {
     Map<String, String> defaultMap = new HashMap<>();
     defaultMap.put("one", "1");
     defaultMap.put("two", "2");
-    Map<String, String> expected = new HashMap<>();
-    expected.put("one", "1");
-    expected.put("two", "2");
-    assertThat(properties.getMap("foo", defaultMap)).containsExactlyEntriesOf(expected);
+    assertThat(properties.getMap("foo", defaultMap)).containsExactly(
+      entry("one", "1"), entry("two", "2"));
     assertThat(properties.getMap("foo")).isEmpty();
   }
 
