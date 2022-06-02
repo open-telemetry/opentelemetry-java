@@ -103,8 +103,8 @@ public class SpiUtilTest {
             mockFinder);
 
     assertThatThrownBy(() -> spiProvider.getByName("init-failure-example"))
-        .isInstanceOf(RuntimeException.class)
-        .withFailMessage(exceptionMessage);
+        .withFailMessage(exceptionMessage)
+        .isInstanceOf(RuntimeException.class);
   }
 
   private interface SpiExampleProvider {
