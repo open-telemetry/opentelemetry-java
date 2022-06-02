@@ -258,7 +258,7 @@ class ConfigPropertiesTest {
     assertThat(properties.getMap("foo")).isEmpty();
   }
 
-  private Map<String, String> makeTestProps() {
+  private static Map<String, String> makeTestProps() {
     Map<String, String> properties = new HashMap<>();
     properties.put("string", "str");
     properties.put("int", "10");
