@@ -33,10 +33,10 @@ final class OtlpConfigUtil {
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
     String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
-    if (protocol == null) {
-      protocol = config.getString("otel.exporter.otlp.protocol");
+    if (protocol != null) {
+      return protocol;
     }
-    return (protocol == null) ? PROTOCOL_GRPC : protocol;
+    return config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
   }
 
   static void configureOtlpExporterBuilder(
@@ -123,8 +123,9 @@ final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
-    if (retryEnabled != null && retryEnabled) {
+    boolean retryEnabled =
+        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
+    if (retryEnabled) {
       setRetryPolicy.accept(RetryPolicy.getDefault());
     }
   }
@@ -207,12 +208,14 @@ final class OtlpConfigUtil {
   private static String determinePropertyByType(
       ConfigProperties config, String prefix, String dataType, String suffix) {
     String propertyToRead = prefix + "." + dataType + "." + suffix;
-    String value = config.getString(propertyToRead);
-    if (value == null) {
-      return prefix + "." + suffix;
-    } else {
+    if (configContainsKey(config, propertyToRead)) {
       return propertyToRead;
     }
+    return prefix + "." + suffix;
+  }
+
+  private static boolean configContainsKey(ConfigProperties config, String propertyToRead) {
+    return config.getString(propertyToRead) != null;
   }
 
   private static String signalPath(String dataType) {

@@ -28,10 +28,7 @@ final class MeterProviderConfiguration {
           metricExporterCustomizer) {
 
     // Configure default exemplar filters.
-    String exemplarFilter = config.getString("otel.metrics.exemplar.filter");
-    if (exemplarFilter == null) {
-      exemplarFilter = "with_sampled_trace";
-    }
+    String exemplarFilter = config.getString("otel.metrics.exemplar.filter", "with_sampled_trace");
     switch (exemplarFilter) {
       case "none":
         SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.neverSample());
