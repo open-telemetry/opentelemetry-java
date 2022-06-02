@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.logs.data;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +32,7 @@ class LogDataBuilderTest {
     LogDataBuilder builder = LogDataBuilder.create(resource, scopeInfo, clock);
 
     LogData result = builder.build();
-    assertEquals(12L, result.getEpochNanos());
+    assertThat(result.getEpochNanos()).isEqualTo(12L);
   }
 
   @Test
@@ -41,14 +40,14 @@ class LogDataBuilderTest {
     LogDataBuilder builder = LogDataBuilder.create(resource, scopeInfo);
     SpanContext spanContext = mock(SpanContext.class);
     LogData result = builder.setSpanContext(spanContext).build();
-    assertSame(spanContext, result.getSpanContext());
+    assertThat(result.getSpanContext()).isSameAs(spanContext);
   }
 
   @Test
   void setSpanContext_nullSafe() {
     LogDataBuilder builder = LogDataBuilder.create(resource, scopeInfo);
     LogData result = builder.setSpanContext(null).build();
-    assertSame(SpanContext.getInvalid(), result.getSpanContext());
+    assertThat(result.getSpanContext()).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -65,6 +64,6 @@ class LogDataBuilderTest {
     LogDataBuilder builder = LogDataBuilder.create(resource, scopeInfo);
 
     LogData result = builder.setContext(context).build();
-    assertSame(spanContext, result.getSpanContext());
+    assertThat(result.getSpanContext()).isSameAs(spanContext);
   }
 }
