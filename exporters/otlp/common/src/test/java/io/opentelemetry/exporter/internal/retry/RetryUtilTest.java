@@ -24,7 +24,7 @@ class RetryUtilTest {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     DefaultGrpcExporterBuilder<?> builder =
         new DefaultGrpcExporterBuilder<>(
-            "otlp", "test", unused -> null, 0, new URI("http://localhost"), "test");
+            "otlp", "test", (u1, u2) -> null, 0, new URI("http://localhost"), "test");
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 

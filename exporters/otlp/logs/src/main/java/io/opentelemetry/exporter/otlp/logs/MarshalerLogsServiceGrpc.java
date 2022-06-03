@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.io.InputStream;
+import javax.annotation.Nullable;
 
 // Adapted from the protoc generated code for LogsServiceGrpc.
 final class MarshalerLogsServiceGrpc {
@@ -57,8 +58,10 @@ final class MarshalerLogsServiceGrpc {
               .setResponseMarshaller(RESPONSE_MARSHALER)
               .build();
 
-  static LogsServiceFutureStub newFutureStub(Channel channel) {
-    return LogsServiceFutureStub.newStub(LogsServiceFutureStub::new, channel);
+  static LogsServiceFutureStub newFutureStub(Channel channel, @Nullable String authorityOverride) {
+    return LogsServiceFutureStub.newStub(
+        (c, options) -> new LogsServiceFutureStub(c, options.withAuthority(authorityOverride)),
+        channel);
   }
 
   static final class LogsServiceFutureStub
