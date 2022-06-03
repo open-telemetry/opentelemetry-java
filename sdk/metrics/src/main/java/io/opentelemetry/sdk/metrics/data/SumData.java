@@ -8,27 +8,15 @@ package io.opentelemetry.sdk.metrics.data;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A sum metric point.
+ * Data for a {@link MetricDataType#LONG_SUM} or {@link MetricDataType#DOUBLE_SUM} metric.
  *
- * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#sums
+ * @since 1.14.0
  */
 @Immutable
 public interface SumData<T extends PointData> extends Data<T> {
-  /**
-   * Returns "true" if the sum is monotonic.
-   *
-   * @return "true" if the sum is monotonic
-   */
+  /** Returns "true" if the sum is monotonic. */
   boolean isMonotonic();
 
-  /**
-   * Returns the {@code AggregationTemporality} of this metric,
-   *
-   * <p>AggregationTemporality describes if the aggregator reports delta changes since last report
-   * time, or cumulative changes since a fixed start time.
-   *
-   * @return the {@code AggregationTemporality} of this metric
-   */
+  /** Returns the sum {@link AggregationTemporality}. */
   AggregationTemporality getAggregationTemporality();
 }

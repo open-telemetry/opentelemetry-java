@@ -62,7 +62,7 @@ final class SdkMeter implements Meter {
     return instrumentationScopeInfo;
   }
 
-  /** Collects all the metric recordings that changed since the previous call. */
+  /** Collect all metrics for the meter. */
   Collection<MetricData> collectAll(RegisteredReader registeredReader, long epochNanos) {
     return meterSharedState.collectAll(registeredReader, meterProviderSharedState, epochNanos);
   }

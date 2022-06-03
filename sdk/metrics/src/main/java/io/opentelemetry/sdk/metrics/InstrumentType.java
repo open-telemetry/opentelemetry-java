@@ -5,7 +5,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
-/** All instrument types available in the metric package. */
+/**
+ * All possible instrument types.
+ *
+ * @since 1.14.0
+ */
 public enum InstrumentType {
   COUNTER,
   UP_DOWN_COUNTER,

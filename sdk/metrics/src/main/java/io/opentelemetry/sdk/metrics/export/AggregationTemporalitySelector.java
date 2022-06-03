@@ -11,6 +11,8 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 /**
  * A functional interface that selects {@link AggregationTemporality} based on {@link
  * InstrumentType}.
+ *
+ * @since 1.14.0
  */
 @FunctionalInterface
 public interface AggregationTemporalitySelector {

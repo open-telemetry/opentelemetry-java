@@ -5,7 +5,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
-/** All possible types for the values recorded via the instruments. */
+/**
+ * All possible measurement value types.
+ *
+ * @since 1.14.0
+ */
 public enum InstrumentValueType {
   LONG,
   DOUBLE,
