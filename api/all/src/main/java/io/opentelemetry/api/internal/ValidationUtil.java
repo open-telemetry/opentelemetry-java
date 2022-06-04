@@ -70,7 +70,7 @@ public final class ValidationUtil {
     log(
         "Instrument name \""
             + name
-            + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter."
+            + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."
             + logSuffix,
         Level.WARNING);
     return false;
@@ -95,7 +95,7 @@ public final class ValidationUtil {
     log(
         "Unit \""
             + unit
-            + "\" is invalid. Instrument unit must be 63 or less ASCII characters."
+            + "\" is invalid. Instrument unit must be 63 or fewer ASCII characters."
             + logSuffix,
         Level.WARNING);
     return false;

@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
@@ -23,8 +24,12 @@ import javax.annotation.Nullable;
 
 /**
  * A {@link MetricReader} which wraps a {@link MetricExporter} and automatically reads and exports
- * the metrics every export interval. Metrics may also be dropped when it becomes time to export
- * again, and there is an export in progress.
+ * the metrics every export interval.
+ *
+ * <p>Register with {@link SdkMeterProvider} via {@link
+ * SdkMeterProviderBuilder#registerMetricReader(MetricReader)}.
+ *
+ * @since 1.14.0
  */
 public final class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
@@ -39,9 +44,8 @@ public final class PeriodicMetricReader implements MetricReader {
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Returns a new {@link PeriodicMetricReader} which can be registered to a {@link
-   * SdkMeterProvider} to start a {@link PeriodicMetricReader} exporting once every minute on a new
-   * daemon thread.
+   * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
+   * minute.
    */
   public static PeriodicMetricReader create(MetricExporter exporter) {
     return builder(exporter).build();

@@ -10,17 +10,16 @@ import io.opentelemetry.api.trace.SpanContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A sample input measurement.
+ * An example measurement.
  *
- * <p>Exemplars also hold information about the environment when the measurement was recorded, for
- * example the span and trace ID of the active span when the exemplar was recorded.
+ * <p>Provides details about a measurement that are normally aggregated away, including the
+ * measurement value, the measurement timestamp, and additional attributes.
  */
 @Immutable
 public interface ExemplarData {
   /**
-   * The set of key/value pairs that were filtered out by the aggregator, but recorded alongside the
-   * original measurement. Only key/value pairs that were filtered out by the aggregator should be
-   * included.
+   * Returns the attributes that were recorded alongside the original measurement but filtered out
+   * by the aggregator.
    */
   Attributes getFilteredAttributes();
 

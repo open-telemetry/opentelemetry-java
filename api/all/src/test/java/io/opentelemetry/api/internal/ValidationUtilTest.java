@@ -23,7 +23,7 @@ public class ValidationUtilTest {
   void checkValidInstrumentName_InvalidNameLogs() {
     assertThat(ValidationUtil.checkValidInstrumentName("1", " suffix")).isFalse();
     apiUsageLogs.assertContains(
-        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or less characters including alphanumeric, _, ., -, and start with a letter. suffix");
+        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter. suffix");
   }
 
   @Test
@@ -79,7 +79,7 @@ public class ValidationUtilTest {
   void checkValidInstrumentUnit_InvalidUnitLogs() {
     assertThat(ValidationUtil.checkValidInstrumentUnit("日", " suffix")).isFalse();
     apiUsageLogs.assertContains(
-        "Unit \"日\" is invalid. Instrument unit must be 63 or less ASCII characters." + " suffix");
+        "Unit \"日\" is invalid. Instrument unit must be 63 or fewer ASCII characters." + " suffix");
   }
 
   @Test

@@ -5,10 +5,12 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
- * A summary metric.
+ * Data for a {@link MetricDataType#SUMMARY} metric.
  *
- * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#summary
+ * @since 1.14.0
  */
+@Immutable
 public interface SummaryData extends Data<SummaryPointData> {}

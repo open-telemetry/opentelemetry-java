@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -15,7 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Builder class for the {@link SdkMeterProvider}. */
+/**
+ * Builder class for the {@link SdkMeterProvider}.
+ *
+ * @since 1.14.0
+ */
 public final class SdkMeterProviderBuilder {
 
   /**
@@ -37,7 +42,6 @@ public final class SdkMeterProviderBuilder {
    * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.
-   * @return this
    */
   public SdkMeterProviderBuilder setClock(Clock clock) {
     Objects.requireNonNull(clock, "clock");
@@ -45,12 +49,7 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /**
-   * Assign a {@link Resource} to be attached to all metrics created by Meters.
-   *
-   * @param resource A Resource implementation.
-   * @return this
-   */
+  /** Assign a {@link Resource} to be attached to all metrics. */
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = resource;
@@ -60,7 +59,8 @@ public final class SdkMeterProviderBuilder {
   /**
    * Assign an {@link ExemplarFilter} for all metrics created by Meters.
    *
-   * @return this
+   * <p>Note: not currently stable but available for experimental use via {@link
+   * SdkMeterProviderUtil#setExemplarFilter(SdkMeterProviderBuilder, ExemplarFilter)}.
    */
   SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = filter;
@@ -68,31 +68,28 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Register a view with the given {@link InstrumentSelector}.
+   * Register a {@link View}.
    *
-   * <p>Example on how to register a view:
+   * <p>The {@code view} influences how instruments which match the {@code selector} are aggregated
+   * and exported.
+   *
+   * <p>For example, the following code registers a view which changes all histogram instruments to
+   * aggregate with bucket boundaries different from the default:
    *
    * <pre>{@code
    * // create a SdkMeterProviderBuilder
    * SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
    *
-   * // create a selector to select which instruments to customize:
-   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
-   *   .setType(InstrumentType.COUNTER)
-   *   .build();
-   *
    * // register the view with the SdkMeterProviderBuilder
    * meterProviderBuilder.registerView(
-   *   instrumentSelector,
+   *   InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *       .setType(InstrumentType.HISTOGRAM)
+   *       .build(),
    *   View.builder()
    *       .setAggregation(
    *           Aggregation.explicitBucketHistogram(Arrays.asList(10d, 20d, 30d, 40d, 50d)))
-   *       .setName("my-view-name")
-   *       .setDescription("my-view-description")
    *       .build());
    * }</pre>
-   *
-   * @since 1.1.0
    */
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
@@ -104,22 +101,16 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Registers a {@link MetricReader} for this SDK.
+   * Registers a {@link MetricReader}.
    *
    * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
-   *
-   * @param reader The reader.
-   * @return this
    */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
     metricReaders.add(reader);
     return this;
   }
 
-  /**
-   * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
-   * SdkMeterProviderBuilder}.
-   */
+  /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(registeredViews, metricReaders, clock, resource, exemplarFilter);
   }

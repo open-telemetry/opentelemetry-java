@@ -112,7 +112,7 @@ dependencies {
 }
 ```
 
-Note that if you want to use any artifacts that have not fully stabilized yet (such as metrics), then you will need to add an entry for the Alpha BOM as well, e.g.
+Note that if you want to use any artifacts that have not fully stabilized yet (such as the [semantic conventions constants](https://github.com/open-telemetry/opentelemetry-java/tree/main/semconv) or the [SDK Autoconfigure Extension](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure)), then you will need to add an entry for the Alpha BOM as well, e.g.
 
 ```groovy
 dependencies {
@@ -120,7 +120,8 @@ dependencies {
   implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.14.0-alpha')
 
   implementation('io.opentelemetry:opentelemetry-api')
-  implementation('io.opentelemetry:opentelemetry-api-metrics')
+  implementation('io.opentelemetry:opentelemetry-semconv')
+  implementation('io.opentelemetry:opentelemetry-sdk-extension-autoconfigure')
 }
 ```
 
@@ -248,23 +249,18 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### SDK Exporters
 
-| Component                                                   | Description                                                                         | Artifact ID                                | Version                                                     |
-|-------------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------|-------------------------------------------------------------|
-| [OTLP gRPC Exporter](./exporters/otlp/all)                  | OTLP gRPC exporters, including metrics and trace                                    | `opentelemetry-exporter-otlp`              | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Trace Exporter](./exporters/otlp/trace)          | OTLP gRPC trace exporter                                                            | `opentelemetry-exporter-otlp-trace`        | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Metrics Exporter](./exporters/otlp/metrics)      | OTLP gRPC metrics exporter                                                          | `opentelemetry-exporter-otlp-metrics`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP gRPC Logs Exporter](./exporters/otlp/logs)            | OTLP gRPC log exporter                                                              | `opentelemetry-exporter-otlp-logs`         | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OTLP HTTP Trace Exporter](./exporters/otlp-http/trace)     | OTLP http/protobuf trace exporter                                                   | `opentelemetry-exporter-otlp-http-trace`   | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP HTTP Metrics Exporter](./exporters/otlp-http/metrics) | OTLP http/protobuf metrics exporter                                                 | `opentelemetry-exporter-otlp-http-metrics` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP HTTP Logs Exporter](./exporters/otlp-http/logs)       | OTLP http/protobuf logs exporter                                                    | `opentelemetry-exporter-otlp-http-logs`    | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
-| [OTLP Common](./exporters/otlp/common)                      | Shared OTLP components (internal)                                                   | `opentelemetry-exporter-otlp-common`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger gRPC Exporter](./exporters/jaeger)                  | Jaeger gRPC trace exporter                                                          | `opentelemetry-exporter-jaeger`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger Thrift Exporter](./exporters/jaeger-thrift)         | Jaeger thrift trace exporter                                                        | `opentelemetry-exporter-jaeger-thift`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Jaeger Proto](./exporters/jaeger-proto)                    | Jaeger gRPC protobuf definitions (internal)                                         | `opentelemetry-exporter-jaeger-proto`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Logging Exporter](./exporters/logging)                     | Logging exporters, includings metrics, traces, and logs                             | `opentelemetry-exporter-logging`           | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [OTLP Logging Exporter](./exporters/logging-otlp)           | Logging exporters in OTLP protobuf JSON format, including metrics, traces, and logs | `opentelemetry-exporter-logging-otlp`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Zipkin Exporter](./exporters/zipkin)                       | Zipkin trace exporter                                                               | `opentelemetry-exporter-zipkin`            | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
-| [Prometheus Exporter](./exporters/prometheus)               | Prometheus metric exporter                                                          | `opentelemetry-exporter-prometheus`        | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                           | Description                                                                         | Artifact ID                           | Version                                                     |
+|-----------------------------------------------------|-------------------------------------------------------------------------------------|---------------------------------------|-------------------------------------------------------------|
+| [OTLP Exporters](./exporters/otlp/all)              | OTLP gRPC & HTTP exporters, including metrics and trace                             | `opentelemetry-exporter-otlp`         | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP Log Exporters](./exporters/otlp/logs)         | OTLP gRPC & HTTP log exporters                                                      | `opentelemetry-exporter-otlp-logs`    | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
+| [OTLP Common](./exporters/otlp/common)              | Shared OTLP components (internal)                                                   | `opentelemetry-exporter-otlp-common`  | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger gRPC Exporter](./exporters/jaeger)          | Jaeger gRPC trace exporter                                                          | `opentelemetry-exporter-jaeger`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger Thrift Exporter](./exporters/jaeger-thrift) | Jaeger thrift trace exporter                                                        | `opentelemetry-exporter-jaeger-thift` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Jaeger Proto](./exporters/jaeger-proto)            | Jaeger gRPC protobuf definitions (deprecated)                                       | `opentelemetry-exporter-jaeger-proto` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Logging Exporter](./exporters/logging)             | Logging exporters, includings metrics, traces, and logs                             | `opentelemetry-exporter-logging`      | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [OTLP Logging Exporter](./exporters/logging-otlp)   | Logging exporters in OTLP protobuf JSON format, including metrics, traces, and logs | `opentelemetry-exporter-logging-otlp` | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Zipkin Exporter](./exporters/zipkin)               | Zipkin trace exporter                                                               | `opentelemetry-exporter-zipkin`       | <!--VERSION_STABLE-->1.14.0<!--/VERSION_STABLE-->           |
+| [Prometheus Exporter](./exporters/prometheus)       | Prometheus metric exporter                                                          | `opentelemetry-exporter-prometheus`   | <!--VERSION_UNSTABLE-->1.14.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### SDK Extensions
 

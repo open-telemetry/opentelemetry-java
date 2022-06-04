@@ -1,4 +1,4 @@
-# OpenTelemetry - OTLP Exporter
+# OpenTelemetry - OTLP gRPC Exporters
 
 [![Javadocs][javadoc-image]][javadoc-url]
 

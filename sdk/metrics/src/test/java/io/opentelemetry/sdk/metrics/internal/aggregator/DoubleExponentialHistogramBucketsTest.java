@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
@@ -79,18 +77,18 @@ class DoubleExponentialHistogramBucketsTest {
     DoubleExponentialHistogramBuckets b = buckets.newBuckets();
 
     assertThat(a).isNotNull();
-    assertEquals(a, b);
-    assertEquals(b, a);
+    assertThat(b).isEqualTo(a);
+    assertThat(a).isEqualTo(b);
     assertThat(a).hasSameHashCodeAs(b);
 
     a.record(1);
-    assertNotEquals(a, b);
-    assertNotEquals(b, a);
+    assertThat(a).isNotEqualTo(b);
+    assertThat(b).isNotEqualTo(a);
     assertThat(a).doesNotHaveSameHashCodeAs(b);
 
     b.record(1);
-    assertEquals(a, b);
-    assertEquals(b, a);
+    assertThat(b).isEqualTo(a);
+    assertThat(a).isEqualTo(b);
     assertThat(a).hasSameHashCodeAs(b);
 
     // Now we start to play with altering offset, but having same effective counts.

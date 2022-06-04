@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
+import static io.opentelemetry.sdk.autoconfigure.spi.ConfigUtil.defaultIfNull;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,17 @@ public interface ConfigProperties {
   String getString(String name);
 
   /**
+   * Returns a string-valued configuration property.
+   *
+   * @return a string-valued configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default String getString(String name, String defaultValue) {
+    return defaultIfNull(getString(name), defaultValue);
+  }
+
+  /**
    * Returns a boolean-valued configuration property. Implementations should use the same rules as
    * {@link Boolean#parseBoolean(String)} for handling the values.
    *
@@ -33,7 +46,18 @@ public interface ConfigProperties {
   Boolean getBoolean(String name);
 
   /**
-   * Returns a integer-valued configuration property.
+   * Returns a boolean-valued configuration property.
+   *
+   * @return a Boolean-valued configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default boolean getBoolean(String name, boolean defaultValue) {
+    return defaultIfNull(getBoolean(name), defaultValue);
+  }
+
+  /**
+   * Returns an Integer-valued configuration property.
    *
    * @return null if the property has not been configured.
    * @throws ConfigurationException if the property is not a valid integer.
@@ -42,13 +66,35 @@ public interface ConfigProperties {
   Integer getInt(String name);
 
   /**
-   * Returns a long-valued configuration property.
+   * Returns an Integer-valued configuration property.
+   *
+   * @return an Integer-valued configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default int getInt(String name, int defaultValue) {
+    return defaultIfNull(getInt(name), defaultValue);
+  }
+
+  /**
+   * Returns a Long-valued configuration property.
    *
    * @return null if the property has not been configured.
    * @throws ConfigurationException if the property is not a valid long.
    */
   @Nullable
   Long getLong(String name);
+
+  /**
+   * Returns a Long-valued configuration property.
+   *
+   * @return a Long-valued configuration property or {@code defaultValue} if a property with {@code
+   *     name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default long getLong(String name, long defaultValue) {
+    return defaultIfNull(getLong(name), defaultValue);
+  }
 
   /**
    * Returns a double-valued configuration property.
@@ -58,6 +104,17 @@ public interface ConfigProperties {
    */
   @Nullable
   Double getDouble(String name);
+
+  /**
+   * Returns a double-valued configuration property.
+   *
+   * @return a Double-valued configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default double getDouble(String name, double defaultValue) {
+    return defaultIfNull(getDouble(name), defaultValue);
+  }
 
   /**
    * Returns a duration property from the map, or {@code null} if it cannot be found or it has a
@@ -84,6 +141,18 @@ public interface ConfigProperties {
   Duration getDuration(String name);
 
   /**
+   * Returns a Duration value configuration property.
+   *
+   * @see ConfigProperties#getDuration(String name)
+   * @return a Double-valued configuration property or {@code defaultValue} if a property with name
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default Duration getDuration(String name, Duration defaultValue) {
+    return defaultIfNull(getDuration(name), defaultValue);
+  }
+
+  /**
    * Returns a list-valued configuration property. The format of the original value must be
    * comma-separated. Empty values will be removed.
    *
@@ -93,12 +162,38 @@ public interface ConfigProperties {
   List<String> getList(String name);
 
   /**
-   * Returns a map-valued configuration property. The format of the original value must be
-   * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
+   * Returns a List value configuration property.
+   *
+   * @see ConfigProperties#getList(String name)
+   * @return a List configuration property or {@code defaultValue} if a property with {@code name}
+   *     has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default List<String> getList(String name, List<String> defaultValue) {
+    List<String> value = getList(name);
+    return value.isEmpty() ? defaultValue : value;
+  }
+
+  /**
+   * Returns a Map configuration property. The format of the original value must be comma-separated
+   * for each key, with an '=' separating the key and value. For instance, <code>
    * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
    *
    * @return an empty map if the property has not been configured.
    * @throws ConfigurationException for malformed map strings.
    */
   Map<String, String> getMap(String name);
+
+  /**
+   * Returns a Map value configuration property.
+   *
+   * @see ConfigProperties#getMap(String name)
+   * @return a Double-valued configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
+   */
+  default Map<String, String> getMap(String name, Map<String, String> defaultValue) {
+    Map<String, String> value = getMap(name);
+    return value.isEmpty() ? defaultValue : value;
+  }
 }

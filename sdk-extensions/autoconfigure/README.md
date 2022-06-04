@@ -235,16 +235,25 @@ Supported values for `otel.traces.sampler` are
 - "parentbased_always_off": ParentBased(root=AlwaysOffSampler)
 - "parentbased_traceidratio": ParentBased(root=TraceIdRatioBased). `otel.traces.sampler.arg` sets the ratio.
 
+## Attribute limits
+
+These properties can be used to control the maximum number and length of attributes.
+
+| System property                   | Environment variable              | Description                                                                                              |
+|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------------|
+| otel.attribute.value.length.limit | OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. Applies to spans and logs. By default there is no limit.         |
+| otel.attribute.count.limit        | OTEL_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes. Applies to spans, span events, span links, and logs. Default is `128`. |
+
 ## Span limits
 
-These properties can be used to control the maximum size of recordings per span.
+These properties can be used to control the maximum size of spans by placing limits on attributes, events, and links.
 
-| System property                        | Environment variable                   | Description                                                            |
-|----------------------------------------|----------------------------------------|------------------------------------------------------------------------|
-| otel.span.attribute.value.length.limit | OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. By default there is no limit.  |
-| otel.span.attribute.count.limit        | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes per span. Default is `128`.           |
-| otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.               |
-| otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                 |
+| System property                        | Environment variable                   | Description                                                                                                                           |
+|----------------------------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| otel.span.attribute.value.length.limit | OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of span attribute values. Takes precedence over `otel.attribute.value.length.limit`. By default there is no limit. |
+| otel.span.attribute.count.limit        | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes per span. Takes precedence over `otel.attribute.count.limit`. Default is `128`.                      |
+| otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.                                                                              |
+| otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                                                                                |
 
 ## Exemplars
 

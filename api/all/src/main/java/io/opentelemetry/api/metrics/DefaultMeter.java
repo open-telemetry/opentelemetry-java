@@ -12,26 +12,9 @@ import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * No-op implementations of {@link Meter}.
+ * No-op implementation of {@link Meter}.
  *
  * <p>This implementation should induce as close to zero overhead as possible.
- *
- * <p>A few notes from the specification on allowed behaviors leading to this design [<a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument">Instrument
- * Spec</a>]:
- *
- * <ul>
- *   <li>Multiple Instruments with the same name under the same Meter MUST return an error
- *   <li>Different Meters MUST be treated as separate namespaces
- *   <li>Implementations MUST NOT require users to repeatedly obtain a Meter again with the same
- *       name+version+schema_url to pick up configuration changes. This can be achieved either by
- *       allowing to work with an outdated configuration or by ensuring that new configuration
- *       applies also to previously returned Meters.
- *   <li>A MeterProvider could also return a no-op Meter here if application owners configure the
- *       SDK to suppress telemetry produced by this library
- *   <li>In case an invalid name (null or empty string) is specified, a working Meter implementation
- *       MUST be returned as a fallback rather than returning null or throwing an exception,
- * </ul>
  */
 @ThreadSafe
 class DefaultMeter implements Meter {
