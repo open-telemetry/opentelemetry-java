@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -368,12 +367,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
 
     if (setResultAsGlobal) {
-      OpenTelemetry openTelemetry = sdkEnabled ? openTelemetrySdk : OpenTelemetry.noop();
-      GlobalOpenTelemetry.set(openTelemetry);
-      logger.log(Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetry);
+      GlobalOpenTelemetry.set(openTelemetrySdk);
+      logger.log(
+          Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
     }
 
-    return AutoConfiguredOpenTelemetrySdk.create(sdkEnabled, openTelemetrySdk, resource, config);
+    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
