@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,8 +72,8 @@ public final class ContainerResource {
       if (value.isPresent()) {
         return value.get();
       }
-    } catch (IOException e) {
-      logger.log(Level.WARNING, "Unable to read file: " + e.getMessage());
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Unable to read file", e);
     }
     return null;
   }
@@ -90,6 +89,10 @@ public final class ContainerResource {
     String lastSection = line.substring(lastSlashIdx + 1);
     int startIdx = lastSection.lastIndexOf('-');
     int endIdx = lastSection.lastIndexOf('.');
+
+    if (startIdx > endIdx && endIdx != -1) {
+      return null;
+    }
 
     String containerId =
         lastSection.substring(
