@@ -90,13 +90,17 @@ public final class ContainerResource {
     int startIdx = lastSection.lastIndexOf('-');
     int endIdx = lastSection.lastIndexOf('.');
 
-    if (startIdx > endIdx && endIdx != -1) {
+    if (startIdx == -1) {
+      startIdx = 0;
+    }
+    if (endIdx == -1) {
+      endIdx = lastSection.length();
+    }
+    if (startIdx > endIdx) {
       return null;
     }
 
-    String containerId =
-        lastSection.substring(
-            startIdx == -1 ? 0 : startIdx + 1, endIdx == -1 ? lastSection.length() : endIdx);
+    String containerId = lastSection.substring(startIdx, endIdx);
     if (OtelEncodingUtils.isValidBase16String(containerId) && !containerId.isEmpty()) {
       return containerId;
     } else {
