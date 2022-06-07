@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import com.google.common.collect.ImmutableList;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -16,11 +17,17 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -243,6 +250,76 @@ class JaegerRemoteSamplerTest {
                         "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
                 assertThat(sampler.getDescription()).contains("bar");
               });
+    }
+  }
+
+  @Test
+  void perOperationSamplerUsesHttpAttributes() {
+    Sampling.SamplingStrategyResponse response =
+        Sampling.SamplingStrategyResponse.newBuilder()
+            .setOperationSampling(
+                Sampling.PerOperationSamplingStrategies.newBuilder()
+                    .setDefaultSamplingProbability(0)
+                    .addPerOperationStrategies(
+                        Sampling.OperationSamplingStrategy.newBuilder()
+                            .setOperation("foo")
+                            .setProbabilisticSampling(
+                                Sampling.ProbabilisticSamplingStrategy.newBuilder()
+                                    .setSamplingRate(1)
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+    responses.add(response);
+
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
+            .build()) {
+
+      await()
+          .untilAsserted(
+              () -> {
+                assertThat(sampler.getDescription())
+                    .startsWith(
+                        "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.000000}, perOperation={foo=TraceIdRatioBased{1.000000}}");
+              });
+      assertThat(
+              sampler
+                  .shouldSample(
+                      Context.current(),
+                      TraceId.fromLongs(1L, 2L),
+                      "HTTP GET",
+                      SpanKind.CLIENT,
+                      Attributes.of(SemanticAttributes.HTTP_TARGET, "foo"),
+                      ImmutableList.of())
+                  .getDecision())
+          .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
+      assertThat(
+              sampler
+                  .shouldSample(
+                      Context.current(),
+                      TraceId.fromLongs(1L, 2L),
+                      "HTTP GET",
+                      SpanKind.CLIENT,
+                      Attributes.of(SemanticAttributes.HTTP_TARGET, "bar"),
+                      ImmutableList.of())
+                  .getDecision())
+          .isEqualTo(SamplingDecision.DROP);
+      assertThat(
+              sampler
+                  .shouldSample(
+                      Context.current(),
+                      TraceId.fromLongs(1L, 2L),
+                      "foo",
+                      SpanKind.CLIENT,
+                      Attributes.of(SemanticAttributes.HTTP_TARGET, "bar"),
+                      ImmutableList.of())
+                  .getDecision())
+          .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
     }
   }
 
