@@ -1,7 +1,7 @@
 name: "Close stale pull requests"
 on:
   schedule:
-    - cron: "12 31 * * *" # arbitrary time not to DDOS GitHub
+    - cron: "23 * * * *" # https://crontab.guru/#23_*_*_*_*
 
 jobs:
   stale:
@@ -17,3 +17,5 @@ jobs:
           any-of-issue-labels: needs-author-feedback
           days-before-issue-stale: 7
           days-before-issue-close: 7
+          stale-issue-message: 'This issue was marked stale due to lack of author feedback. It will be closed in 7 days.'
+          close-issue-message: 'Closed as inactive. Feel free to reopen if this issue is still being worked on.'
