@@ -90,9 +90,7 @@ public final class ContainerResource {
     int startIdx = lastSection.lastIndexOf('-');
     int endIdx = lastSection.lastIndexOf('.');
 
-    if (startIdx == -1) {
-      startIdx = 0;
-    }
+    startIdx = startIdx == -1 ? 0 : startIdx + 1;
     if (endIdx == -1) {
       endIdx = lastSection.length();
     }
