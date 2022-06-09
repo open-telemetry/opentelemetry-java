@@ -12,17 +12,17 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.13.2.20220328",
+  "com.fasterxml.jackson:jackson-bom:2.13.3",
   "com.google.guava:guava-bom:31.1-jre",
-  "com.google.protobuf:protobuf-bom:3.20.0",
-  "com.linecorp.armeria:armeria-bom:1.15.0",
+  "com.google.protobuf:protobuf-bom:3.21.1",
+  "com.linecorp.armeria:armeria-bom:1.16.0",
   "com.squareup.okhttp3:okhttp-bom:4.9.3",
-  "io.grpc:grpc-bom:1.45.1",
-  "io.micrometer:micrometer-bom:1.8.4",
-  "io.zipkin.brave:brave-bom:5.13.8",
+  "io.grpc:grpc-bom:1.47.0",
+  "io.micrometer:micrometer-bom:1.9.0",
+  "io.zipkin.brave:brave-bom:5.13.9",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.8.2",
-  "org.testcontainers:testcontainers-bom:1.16.3",
+  "org.testcontainers:testcontainers-bom:1.17.2",
   "org.yaml:snakeyaml:1.30"
 )
 
@@ -34,12 +34,12 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.12.1",
+    "2.14.0",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
     "io.opencensus",
-    "0.31.0",
+    "0.31.1",
     listOf(
       "opencensus-api",
       "opencensus-impl-core",
@@ -65,7 +65,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.mockito",
-    "4.4.0",
+    "4.6.1",
     listOf("mockito-core", "mockito-junit-jupiter")
   ),
   DependencySet(
@@ -77,28 +77,28 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.8.0",
+  "com.google.api.grpc:proto-google-common-protos:2.8.3",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:0.23.1",
-  "com.uber.nullaway:nullaway:0.9.6",
+  "com.uber.nullaway:nullaway:0.9.7",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
-  "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
-  "eu.rekawek.toxiproxy:toxiproxy-java:2.1.5",
+  "edu.berkeley.cs.jqf:jqf-fuzz:1.9",
+  "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:1.1.3",
   "io.jaegertracing:jaeger-client:1.8.0",
   "io.opentelemetry.proto:opentelemetry-proto:0.18.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.10",
-  "org.assertj:assertj-core:3.22.0",
+  "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.21",
   "org.jctools:jctools-core:3.3.0",
-  "org.junit-pioneer:junit-pioneer:1.6.2",
+  "org.junit-pioneer:junit-pioneer:1.7.1",
   "org.skyscreamer:jsonassert:1.5.0",
 )
 
