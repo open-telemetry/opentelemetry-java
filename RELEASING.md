@@ -1,8 +1,9 @@
 # OpenTelemetry Release Process
 
-Before releasing, it is a good idea to run `./gradlew japicmp` on the main branch
-and verify that there are no unexpected public API changes seen in the `docs/apidiffs/current_vs_latest`
-directory.
+Before releasing, it is a good idea to run `./gradlew japicmp` on the main branch and verify that
+there are no unexpected public API changes seen in the `docs/apidiffs/current_vs_latest`
+directory. Additionally, ensure that appropriate `@since` annotations are added to any additions to
+the public APIs.
 
 When preparing the change log, you can use
 `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent`
