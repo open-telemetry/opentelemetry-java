@@ -16,7 +16,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model. */
+/**
+ * Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model.
+ *
+ * @since 1.14.0
+ */
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 

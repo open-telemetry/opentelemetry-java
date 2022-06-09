@@ -19,7 +19,11 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for this exporter. */
+/**
+ * Builder utility for this exporter.
+ *
+ * @since 1.14.0
+ */
 public final class OtlpGrpcMetricExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME =

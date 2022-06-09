@@ -13,7 +13,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
-/** Test assertions for {@link HistogramData}. */
+/**
+ * Test assertions for {@link HistogramData}.
+ *
+ * @since 1.14.0
+ */
 public final class HistogramAssert extends AbstractAssert<HistogramAssert, HistogramData> {
 
   HistogramAssert(HistogramData actual) {

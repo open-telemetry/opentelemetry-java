@@ -136,6 +136,7 @@ public interface Meter {
    * @param callback a callback used to observe values on-demand.
    * @param observableMeasurement Instruments for which the callback may observe values.
    * @param additionalMeasurements Instruments for which the callback may observe values.
+   * @since 1.15.0
    */
   default BatchCallback batchCallback(
       Runnable callback,

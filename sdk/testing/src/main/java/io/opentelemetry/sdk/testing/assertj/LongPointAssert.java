@@ -13,7 +13,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
-/** Assertions for an exported {@link LongPointData}. */
+/**
+ * Assertions for an exported {@link LongPointData}.
+ *
+ * @since 1.14.0
+ */
 public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, LongPointData> {
 
   LongPointAssert(@Nullable LongPointData actual) {

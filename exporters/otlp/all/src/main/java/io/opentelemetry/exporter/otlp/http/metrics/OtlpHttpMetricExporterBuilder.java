@@ -16,7 +16,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for {@link OtlpHttpMetricExporter}. */
+/**
+ * Builder utility for {@link OtlpHttpMetricExporter}.
+ *
+ * @since 1.14.0
+ */
 public final class OtlpHttpMetricExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/metrics";

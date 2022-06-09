@@ -14,7 +14,11 @@ import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for {@link OtlpHttpSpanExporter}. */
+/**
+ * Builder utility for {@link OtlpHttpSpanExporter}.
+ *
+ * @since 1.5.0
+ */
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
