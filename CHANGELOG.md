@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.15.0 (Unreleased)
+## Version 1.15.0 (2022-06-10)
 
 ### API
 
