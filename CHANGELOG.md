@@ -32,6 +32,8 @@
   span export metrics.
 * DEPRECATION: the `opentelemetry-exporter-jaeger-proto` module containing jaeger proto definitions
   and corresponding generated classes is deprecated for removal in next major version.
+* OTLP gRPC exporters support overriding `:authority`
+  via `OtlpGrpc*ExporterBuilder#addHeader("host", "my-authority-override")`.
 
 #### SDK Extensions
 
