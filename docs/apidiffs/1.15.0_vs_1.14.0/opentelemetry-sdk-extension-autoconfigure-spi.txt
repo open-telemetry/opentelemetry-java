@@ -1,0 +1,16 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) boolean getBoolean(java.lang.String, boolean)
+	+++! NEW METHOD: PUBLIC(+) double getDouble(java.lang.String, double)
+	+++! NEW METHOD: PUBLIC(+) java.time.Duration getDuration(java.lang.String, java.time.Duration)
+	+++! NEW METHOD: PUBLIC(+) int getInt(java.lang.String, int)
+	+++! NEW METHOD: PUBLIC(+) java.util.List getList(java.lang.String, java.util.List)
+	+++! NEW METHOD: PUBLIC(+) long getLong(java.lang.String, long)
+	+++! NEW METHOD: PUBLIC(+) java.util.Map getMap(java.lang.String, java.util.Map)
+	+++! NEW METHOD: PUBLIC(+) java.lang.String getString(java.lang.String, java.lang.String)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricExporter createExporter(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
