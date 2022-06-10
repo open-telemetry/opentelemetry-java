@@ -42,6 +42,8 @@ import java.util.logging.Logger;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
+  private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
+
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
@@ -144,8 +146,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   private static final class Worker implements Runnable {
-
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
     private final LongCounter processedSpansCounter;
     private final Attributes droppedAttrs;
