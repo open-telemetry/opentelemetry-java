@@ -1,0 +1,12 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) void clearMetrics()
+	+++  NEW METHOD: PUBLIC(+) java.util.List getMetrics()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) void clearMetrics()
+	+++  NEW METHOD: PUBLIC(+) java.util.List getMetrics()
