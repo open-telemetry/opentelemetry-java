@@ -53,6 +53,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *   }
  * }
  * </code></pre>
+ *
+ * @since 1.14.0
  */
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();

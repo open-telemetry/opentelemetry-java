@@ -15,7 +15,11 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link SummaryData}. */
+/**
+ * Test assertions for {@link SummaryData}.
+ *
+ * @since 1.14.0
+ */
 public final class SummaryAssert extends AbstractAssert<SummaryAssert, SummaryData> {
 
   SummaryAssert(SummaryData actual) {

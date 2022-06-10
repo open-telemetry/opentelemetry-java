@@ -107,6 +107,8 @@ public final class JaegerGrpcSpanExporterBuilder {
   /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
    * will not be collected.
+   *
+   * @since 1.15.0
    */
   public JaegerGrpcSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");

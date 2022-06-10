@@ -14,7 +14,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link DoublePointData}. */
+/**
+ * Test assertions for {@link DoublePointData}.
+ *
+ * @since 1.14.0
+ */
 public final class DoublePointAssert
     extends AbstractPointAssert<DoublePointAssert, DoublePointData> {
 

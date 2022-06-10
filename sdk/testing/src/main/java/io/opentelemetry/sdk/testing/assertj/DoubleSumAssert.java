@@ -14,7 +14,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
-/** Test assertions for double {@link SumData}. */
+/**
+ * Test assertions for double {@link SumData}.
+ *
+ * @since 1.14.0
+ */
 public final class DoubleSumAssert
     extends AbstractAssert<DoubleSumAssert, SumData<DoublePointData>> {
   DoubleSumAssert(SumData<DoublePointData> actual) {

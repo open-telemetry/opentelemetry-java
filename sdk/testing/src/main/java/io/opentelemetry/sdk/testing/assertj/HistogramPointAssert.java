@@ -13,7 +13,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link HistogramPointData}. */
+/**
+ * Test assertions for {@link HistogramPointData}.
+ *
+ * @since 1.14.0
+ */
 public final class HistogramPointAssert
     extends AbstractPointAssert<HistogramPointAssert, HistogramPointData> {
 

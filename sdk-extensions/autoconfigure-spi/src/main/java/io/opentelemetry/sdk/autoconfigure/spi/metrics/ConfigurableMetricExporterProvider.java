@@ -13,6 +13,8 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * autoconfigured SDK. If the {@code otel.metrics.exporter} property contains a value equal to what
  * is returned by {@link #getName()}, the exporter returned by {@link
  * #createExporter(ConfigProperties)} will be enabled and added to the SDK.
+ *
+ * @since 1.15.0
  */
 public interface ConfigurableMetricExporterProvider {
 
