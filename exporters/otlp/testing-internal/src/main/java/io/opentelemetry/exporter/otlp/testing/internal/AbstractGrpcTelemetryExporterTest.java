@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -73,6 +74,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static final AtomicInteger attempts = new AtomicInteger();
 
+  private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
+      new ConcurrentLinkedQueue<>();
+
   @RegisterExtension
   @Order(1)
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
@@ -131,6 +135,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
     @Override
     protected CompletionStage<byte[]> handleMessage(ServiceRequestContext ctx, byte[] message) {
+      httpRequests.add(ctx.request());
       attempts.incrementAndGet();
       T request;
       try {
@@ -177,6 +182,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     exportedResourceTelemetry.clear();
     grpcErrors.clear();
     attempts.set(0);
+    httpRequests.clear();
   }
 
   @Test
@@ -498,6 +504,27 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
 
     assertThat(attempts).hasValue(1);
+  }
+
+  @Test
+  void overrideHost() {
+    List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .addHeader("host", "opentelemetry")
+            .build();
+    try {
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+    List<U> expectedResourceTelemetry = toProto(telemetry);
+    assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    assertThat(httpRequests)
+        .singleElement()
+        .satisfies(req -> assertThat(req.authority()).isEqualTo("opentelemetry"));
   }
 
   @Test
