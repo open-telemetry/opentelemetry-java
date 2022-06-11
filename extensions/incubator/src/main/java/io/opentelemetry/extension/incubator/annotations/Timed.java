@@ -3,18 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.extension.annotations;
+package io.opentelemetry.extension.incubator.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 /**
- * This annotation creates a {@link io.opentelemetry.api.metrics.LongCounter Counter} instrument
- * recording the number of invocations of the annotated method or constructor.
+ * This annotation creates a {@link io.opentelemetry.api.metrics.LongHistogram Histogram} instrument
+ * observing the duration of invocations of the annotated method or constructor.
  *
- * <p>By default, the Counter instrument will have the following attributes:
+ * <p>By default, the Histogram instrument will have the following attributes:
  *
  * <ul>
  *   <li><b>code.namespace:</b> The fully qualified name of the class whose method is invoked.
@@ -25,7 +26,7 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
- * that the Counter instrument should be created.
+ * that the Histogram instrument should be created.
  *
  * <p>If you are a library developer, then probably you should NOT use this annotation, because it
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
@@ -33,20 +34,20 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Counted {
+public @interface Timed {
 
   /**
-   * Name of the Counter instrument.
+   * Name of the Histogram instrument.
    *
    * <p>The name should follow the instrument naming rule: <a
    * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule">https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-naming-rule</a>
    *
-   * <p>The default name is {@code method.invocations.total}.
+   * <p>The default name is {@code method.invocations.duration}.
    */
-  String value() default "method.invocations.total";
+  String value() default "method.invocations.duration";
 
   /**
-   * Description of the instrument.
+   * Description for the instrument.
    *
    * <p>Description strings should follow the instrument description rules: <a
    * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description">https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description</a>
@@ -54,12 +55,11 @@ public @interface Counted {
   String description() default "";
 
   /**
-   * Unit of the instrument.
+   * The unit for the instrument.
    *
-   * <p>Unit strings should follow the instrument unit rules: <a
-   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit">https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit</a>
+   * <p>Default is seconds.
    */
-  String unit() default "";
+  TimeUnit unit() default TimeUnit.SECONDS;
 
   /**
    * List of key-value pairs to supply additional attributes.
@@ -67,14 +67,14 @@ public @interface Counted {
    * <p>Example:
    *
    * <pre>
-   * {@literal @}Counted(
+   * {@literal @}Timed(
    *     additionalAttributes = {
    *       "key1", "value1",
    *       "key2", "value2",
    * })
    * </pre>
    */
-  String[] additionalAttributes() default {};
+  String[] attributes() default {};
 
   /**
    * Attribute name for the return value.
