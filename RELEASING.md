@@ -85,15 +85,13 @@ Finally, update the [website docs][] to refer to the newly released version.
 
 ## Credentials
 
-The following credentials are required for publishing (and automatically set in Circle CI):
+The following credentials are required for publishing (and automatically set in Github Actions):
 
 * `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing
-  - Note, currently only @anuraaga has this and we need to find a way to safely share secrets in the
-    OpenTelemetry project, for example with a password manager. In the worst case if you need to
-    release manually and cannot get a hold of it, you can generate a new key but don't forget to
-    upload the public key to keyservers.
-
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
+
+Additionally, credentials are stored with maintainers via
+the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account.
 
 ## Releasing from the local setup
 
