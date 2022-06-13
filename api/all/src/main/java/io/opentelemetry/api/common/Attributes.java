@@ -174,12 +174,4 @@ public interface Attributes {
    * Attributes}.
    */
   AttributesBuilder toBuilder();
-
-  /**
-   * Returns a new {@link AttributesBuilder} instance populated with the data of this {@link
-   * Attributes}.
-   */
-  default AttributesBuilder toBuilder1() {
-    return toBuilder();
-  }
 }
