@@ -110,7 +110,7 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
 
       @Override
       public TelemetryExporter<SpanData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        return TelemetryExporter.wrap(builder.build(), () -> {});
       }
     };
   }

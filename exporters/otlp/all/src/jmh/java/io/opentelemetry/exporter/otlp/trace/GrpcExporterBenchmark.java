@@ -7,8 +7,9 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.grpc.GrpcService;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
@@ -56,6 +57,8 @@ public class GrpcExporterBenchmark {
           .http(0)
           .build();
 
+  private static ManagedChannel defaultGrpcChannel;
+
   private static GrpcExporter<TraceRequestMarshaler> defaultGrpcExporter;
   private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcExporter;
 
@@ -63,23 +66,29 @@ public class GrpcExporterBenchmark {
   public void setUp() {
     server.start().join();
 
+    defaultGrpcChannel =
+        ManagedChannelBuilder.forAddress("localhost", server.activeLocalPort()).build();
     defaultGrpcExporter =
-        new DefaultGrpcExporterBuilder<>(
-                "otlp",
-                "span",
-                MarshalerTraceServiceGrpc::newFutureStub,
-                10,
-                URI.create("http://localhost:" + server.activeLocalPort()),
-                OtlpGrpcSpanExporterBuilder.GRPC_SERVICE_NAME)
-            .build();
-
-    okhttpGrpcExporter =
-        new OkHttpGrpcExporterBuilder<TraceRequestMarshaler>(
+        new OkHttpGrpcExporterBuilder<>(
                 "otlp",
                 "span",
                 OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
                 10,
-                URI.create("http://localhost:" + server.activeLocalPort()))
+                URI.create("http://localhost:" + server.activeLocalPort()),
+                "opentelemetry.proto.collector.trace.v1.TraceService",
+                () -> MarshalerTraceServiceGrpc::newFutureStub)
+            .setChannel(defaultGrpcChannel)
+            .build();
+
+    okhttpGrpcExporter =
+        new OkHttpGrpcExporterBuilder<>(
+                "otlp",
+                "span",
+                OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
+                10,
+                URI.create("http://localhost:" + server.activeLocalPort()),
+                "opentelemetry.proto.collector.trace.v1.TraceService",
+                () -> MarshalerTraceServiceGrpc::newFutureStub)
             .build();
   }
 
@@ -87,6 +96,7 @@ public class GrpcExporterBenchmark {
   public void tearDown() {
     defaultGrpcExporter.shutdown().join(10, TimeUnit.SECONDS);
     okhttpGrpcExporter.shutdown().join(10, TimeUnit.SECONDS);
+    defaultGrpcChannel.shutdownNow();
     server.stop().join();
   }
 

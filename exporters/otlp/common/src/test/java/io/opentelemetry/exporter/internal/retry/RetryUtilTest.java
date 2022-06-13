@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import java.net.URI;
@@ -20,24 +19,17 @@ import org.junit.jupiter.api.Test;
 class RetryUtilTest {
 
   @Test
-  void setRetryPolicyOnDelegate_DefaultGrpcExporterBuilder() throws URISyntaxException {
-    RetryPolicy retryPolicy = RetryPolicy.getDefault();
-    DefaultGrpcExporterBuilder<?> builder =
-        new DefaultGrpcExporterBuilder<>(
-            "otlp", "test", (u1, u2) -> null, 0, new URI("http://localhost"), "test");
-
-    RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
-
-    assertThat(builder)
-        .extracting("retryPolicy", as(InstanceOfAssertFactories.type(RetryPolicy.class)))
-        .isEqualTo(retryPolicy);
-  }
-
-  @Test
-  void setRetryPolicyOnDelegate_OkHttpGrpcExporterBuilder() throws URISyntaxException {
+  void setRetryPolicyOnDelegate_GrpcExporterBuilder() throws URISyntaxException {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     OkHttpGrpcExporterBuilder<?> builder =
-        new OkHttpGrpcExporterBuilder<>("otlp", "test", "/test", 0, new URI("http://localhost"));
+        new OkHttpGrpcExporterBuilder<>(
+            "otlp",
+            "test",
+            "/test",
+            0,
+            new URI("http://localhost"),
+            "opentelemetry.proto.collector.trace.v1.TraceService",
+            () -> (u1, u2) -> null);
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 

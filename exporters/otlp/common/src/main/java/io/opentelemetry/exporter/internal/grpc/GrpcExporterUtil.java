@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.ManagedChannel;
+import io.grpc.Channel;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
 import java.util.function.BiFunction;
@@ -16,40 +16,22 @@ import javax.annotation.Nullable;
 
 final class GrpcExporterUtil {
 
-  private static final boolean USE_OKHTTP;
-
-  static {
-    boolean useOkhttp = true;
-    // Use the OkHttp exporter unless grpc-stub is on the classpath.
-    try {
-      Class.forName("io.grpc.stub.AbstractStub");
-      useOkhttp = false;
-    } catch (ClassNotFoundException e) {
-      // Fall through
-    }
-    USE_OKHTTP = useOkhttp;
-  }
-
   static <T extends Marshaler> GrpcExporterBuilder<T> exporterBuilder(
       String exporterName,
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<BiFunction<ManagedChannel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
+      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       String grpcServiceName,
       String grpcEndpointPath) {
-    if (USE_OKHTTP) {
-      return new OkHttpGrpcExporterBuilder<>(
-          exporterName, type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint);
-    } else {
-      return new DefaultGrpcExporterBuilder<>(
-          exporterName,
-          type,
-          stubFactory.get(),
-          defaultTimeoutSecs,
-          defaultEndpoint,
-          grpcServiceName);
-    }
+    return new OkHttpGrpcExporterBuilder<>(
+        exporterName,
+        type,
+        grpcEndpointPath,
+        defaultTimeoutSecs,
+        defaultEndpoint,
+        grpcServiceName,
+        stubFactory);
   }
 
   static void logUnimplemented(Logger logger, String type, @Nullable String fullErrorMessage) {

@@ -8,8 +8,11 @@ package io.opentelemetry.exporter.otlp.logs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -23,6 +26,8 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.Closeable;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -46,18 +51,28 @@ class OtlpGrpcNettyLogExporterTest
   }
 
   @Test
-  void usingGrpc() {
-    assertThat(OtlpGrpcLogExporter.builder().delegate)
-        .isInstanceOf(DefaultGrpcExporterBuilder.class);
+  @SuppressWarnings("deprecation")
+  void usingGrpc() throws Exception {
+    try (Closeable exporter =
+        OtlpGrpcLogExporter.builder()
+            .setChannel(InProcessChannelBuilder.forName("test").build())
+            .build()) {
+      assertThat(exporter).extracting("delegate").isInstanceOf(DefaultGrpcExporter.class);
+    }
   }
 
   @Override
   protected TelemetryExporterBuilder<LogData> exporterBuilder() {
     OtlpGrpcLogExporterBuilder builder = OtlpGrpcLogExporter.builder();
     return new TelemetryExporterBuilder<LogData>() {
+      private ManagedChannel channel;
+
       @Override
+      @SuppressWarnings("deprecation")
       public TelemetryExporterBuilder<LogData> setEndpoint(String endpoint) {
-        builder.setEndpoint(endpoint);
+        URI uri = URI.create(endpoint);
+        channel = ManagedChannelBuilder.forAddress(uri.getAuthority(), uri.getPort()).build();
+        builder.setChannel(channel);
         return this;
       }
 
@@ -106,7 +121,7 @@ class OtlpGrpcNettyLogExporterTest
 
       @Override
       public TelemetryExporter<LogData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        return TelemetryExporter.wrap(builder.build(), channel::shutdownNow);
       }
     };
   }

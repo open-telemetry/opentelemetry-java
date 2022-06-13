@@ -105,7 +105,7 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
 
       @Override
       public TelemetryExporter<LogData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        return TelemetryExporter.wrap(builder.build(), () -> {});
       }
     };
   }

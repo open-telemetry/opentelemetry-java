@@ -109,7 +109,7 @@ class OtlpGrpcMetricExporterTest
 
       @Override
       public TelemetryExporter<MetricData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        return TelemetryExporter.wrap(builder.build(), () -> {});
       }
     };
   }

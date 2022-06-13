@@ -8,11 +8,14 @@ package io.opentelemetry.exporter.otlp.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -25,6 +28,8 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.Closeable;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -51,18 +56,28 @@ class OtlpGrpcNettySpanExporterTest
   }
 
   @Test
-  void usingGrpc() {
-    assertThat(OtlpGrpcSpanExporter.builder().delegate)
-        .isInstanceOf(DefaultGrpcExporterBuilder.class);
+  @SuppressWarnings("deprecation")
+  void usingGrpc() throws Exception {
+    try (Closeable exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setChannel(InProcessChannelBuilder.forName("test").build())
+            .build()) {
+      assertThat(exporter).extracting("delegate").isInstanceOf(DefaultGrpcExporter.class);
+    }
   }
 
   @Override
   protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
     return new TelemetryExporterBuilder<SpanData>() {
+      private ManagedChannel channel;
+
       @Override
+      @SuppressWarnings("deprecation")
       public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
-        builder.setEndpoint(endpoint);
+        URI uri = URI.create(endpoint);
+        channel = ManagedChannelBuilder.forAddress(uri.getAuthority(), uri.getPort()).build();
+        builder.setChannel(channel);
         return this;
       }
 
@@ -111,7 +126,7 @@ class OtlpGrpcNettySpanExporterTest
 
       @Override
       public TelemetryExporter<SpanData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        return TelemetryExporter.wrap(builder.build(), channel::shutdownNow);
       }
     };
   }

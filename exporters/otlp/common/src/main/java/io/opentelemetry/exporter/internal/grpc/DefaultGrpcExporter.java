@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.internal.grpc;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
@@ -39,7 +38,6 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
-  private final ManagedChannel managedChannel;
   private final MarshalerServiceStub<T, ?, ?> stub;
   private final long timeoutNanos;
 
@@ -47,13 +45,11 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
   DefaultGrpcExporter(
       String exporterName,
       String type,
-      ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,
       MeterProvider meterProvider,
       long timeoutNanos) {
     this.type = type;
     this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProvider);
-    this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
     this.stub = stub;
   }
@@ -121,9 +117,6 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
 
   @Override
   public CompletableResultCode shutdown() {
-    if (managedChannel.isTerminated()) {
-      return CompletableResultCode.ofSuccess();
-    }
-    return ManagedChannelUtil.shutdownChannel(managedChannel);
+    return CompletableResultCode.ofSuccess();
   }
 }

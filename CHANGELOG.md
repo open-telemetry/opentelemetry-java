@@ -42,7 +42,7 @@
   stable `opentelemetry-sdk-extension-autoconfigure-spi`.
 * Autoconfigure now supports multiple values for `otel.metrics.exporter`.
 * Autoconfigure now
-  supports [general attribute limits](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#attribute-limits), 
+  supports [general attribute limits](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#attribute-limits),
   applicable to span attributes, span event attributes, span link attributes, and log attributes.
 * Autoconfigure now supports an experimental option to disable the SDK.
   If `otel.experimental.sdk.enabled=true`, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()`

@@ -12,12 +12,15 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 
 public interface TelemetryExporter<T> {
 
   /** Wraps a SpanExporter. */
-  static TelemetryExporter<SpanData> wrap(SpanExporter exporter) {
+  static TelemetryExporter<SpanData> wrap(SpanExporter exporter, Closeable onShutdown) {
     return new TelemetryExporter<SpanData>() {
       @Override
       public CompletableResultCode export(Collection<SpanData> items) {
@@ -26,13 +29,18 @@ public interface TelemetryExporter<T> {
 
       @Override
       public CompletableResultCode shutdown() {
+        try {
+          onShutdown.close();
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
         return exporter.shutdown();
       }
     };
   }
 
   /** Wraps a MetricExporter. */
-  static TelemetryExporter<MetricData> wrap(MetricExporter exporter) {
+  static TelemetryExporter<MetricData> wrap(MetricExporter exporter, Closeable onShutdown) {
     return new TelemetryExporter<MetricData>() {
       @Override
       public CompletableResultCode export(Collection<MetricData> items) {
@@ -41,13 +49,18 @@ public interface TelemetryExporter<T> {
 
       @Override
       public CompletableResultCode shutdown() {
+        try {
+          onShutdown.close();
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
         return exporter.shutdown();
       }
     };
   }
 
   /** Wraps a LogExporter. */
-  static TelemetryExporter<LogData> wrap(LogExporter exporter) {
+  static TelemetryExporter<LogData> wrap(LogExporter exporter, Closeable onShutdown) {
     return new TelemetryExporter<LogData>() {
       @Override
       public CompletableResultCode export(Collection<LogData> items) {
@@ -56,6 +69,11 @@ public interface TelemetryExporter<T> {
 
       @Override
       public CompletableResultCode shutdown() {
+        try {
+          onShutdown.close();
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
         return exporter.shutdown();
       }
     };
