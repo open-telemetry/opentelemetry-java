@@ -61,13 +61,13 @@ jobs:
 
       - name: Check for diff
         run: |
-          if git diff --quiet HEAD -- 
+          if git diff --quiet
           then 
             echo "No diff detected."
           else 
             echo "Diff detected:"
-            echo $(git diff --name-only HEAD --)
-            echo $(git diff HEAD --)
+            echo $(git diff --name-only)
+            echo $(git diff)
             exit 1
           fi
 
