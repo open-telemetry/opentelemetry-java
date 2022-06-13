@@ -115,6 +115,7 @@ public final class OtlpGrpcLogExporterBuilder {
 
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpGrpcLogExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);

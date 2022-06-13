@@ -170,6 +170,24 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @BeforeAll
   void setUp() {
     exporter = exporterBuilder().setEndpoint(server.httpUri().toString()).build();
+
+    // Sanity check that TLS files are in PEM format.
+    assertThat(certificate.certificateFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN CERTIFICATE-----");
+    assertThat(certificate.privateKeyFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN PRIVATE KEY-----");
+    assertThat(clientCertificate.certificateFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN CERTIFICATE-----");
+    assertThat(clientCertificate.privateKeyFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN PRIVATE KEY-----");
   }
 
   @AfterAll
