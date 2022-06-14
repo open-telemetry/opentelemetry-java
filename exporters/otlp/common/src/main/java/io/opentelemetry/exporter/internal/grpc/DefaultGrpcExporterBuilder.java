@@ -20,7 +20,7 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
@@ -35,7 +35,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   private final String exporterName;
   private final String type;
-  private final Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory;
+  private final BiFunction<ManagedChannel, String, MarshalerServiceStub<T, ?, ?>> stubFactory;
   private final String grpcServiceName;
 
   @Nullable private ManagedChannel channel;
@@ -47,6 +47,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   @Nullable private byte[] privateKeyPem;
   @Nullable private byte[] certificatePem;
   @Nullable RetryPolicy retryPolicy;
+  @Nullable String authorityOverride;
   private MeterProvider meterProvider = MeterProvider.noop();
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
@@ -54,7 +55,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   public DefaultGrpcExporterBuilder(
       String exporterName,
       String type,
-      Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
+      BiFunction<ManagedChannel, String, MarshalerServiceStub<T, ?, ?>> stubFactory,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       String grpcServiceName) {
@@ -110,6 +111,10 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public DefaultGrpcExporterBuilder<T> addHeader(String key, String value) {
+    if (key.equals("host")) {
+      authorityOverride = value;
+      return this;
+    }
     if (metadata == null) {
       metadata = new Metadata();
     }
@@ -167,7 +172,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     MarshalerServiceStub<T, ?, ?> stub =
-        stubFactory.apply(channel).withCompression(codec.getMessageEncoding());
+        stubFactory.apply(channel, authorityOverride).withCompression(codec.getMessageEncoding());
     return new DefaultGrpcExporter<>(
         exporterName, type, channel, stub, meterProvider, timeoutNanos);
   }

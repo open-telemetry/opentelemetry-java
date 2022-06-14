@@ -19,7 +19,11 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for this exporter. */
+/**
+ * Builder utility for this exporter.
+ *
+ * @since 1.14.0
+ */
 public final class OtlpGrpcMetricExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME =
@@ -122,6 +126,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpGrpcMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);

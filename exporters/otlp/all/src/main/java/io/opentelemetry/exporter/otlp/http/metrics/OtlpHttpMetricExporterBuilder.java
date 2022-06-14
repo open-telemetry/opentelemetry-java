@@ -16,7 +16,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for {@link OtlpHttpMetricExporter}. */
+/**
+ * Builder utility for {@link OtlpHttpMetricExporter}.
+ *
+ * @since 1.14.0
+ */
 public final class OtlpHttpMetricExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/metrics";
@@ -93,6 +97,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);

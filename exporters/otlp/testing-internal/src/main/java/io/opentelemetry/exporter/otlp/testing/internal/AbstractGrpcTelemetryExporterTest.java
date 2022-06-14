@@ -8,9 +8,12 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -48,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
@@ -56,8 +60,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
@@ -72,6 +80,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       new ConcurrentLinkedQueue<>();
 
   private static final AtomicInteger attempts = new AtomicInteger();
+
+  private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
+      new ConcurrentLinkedQueue<>();
 
   @RegisterExtension
   @Order(1)
@@ -131,6 +142,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
     @Override
     protected CompletionStage<byte[]> handleMessage(ServiceRequestContext ctx, byte[] message) {
+      httpRequests.add(ctx.request());
       attempts.incrementAndGet();
       T request;
       try {
@@ -165,6 +177,24 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @BeforeAll
   void setUp() {
     exporter = exporterBuilder().setEndpoint(server.httpUri().toString()).build();
+
+    // Sanity check that TLS files are in PEM format.
+    assertThat(certificate.certificateFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN CERTIFICATE-----");
+    assertThat(certificate.privateKeyFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN PRIVATE KEY-----");
+    assertThat(clientCertificate.certificateFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN CERTIFICATE-----");
+    assertThat(clientCertificate.privateKeyFile())
+        .binaryContent()
+        .asString(StandardCharsets.UTF_8)
+        .startsWith("-----BEGIN PRIVATE KEY-----");
   }
 
   @AfterAll
@@ -177,6 +207,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     exportedResourceTelemetry.clear();
     grpcErrors.clear();
     attempts.set(0);
+    httpRequests.clear();
   }
 
   @Test
@@ -255,15 +286,15 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .hasMessageContaining("Could not set trusted certificates");
   }
 
-  @Test
-  void clientTls() throws Exception {
+  @ParameterizedTest
+  @ArgumentsSource(ClientPrivateKeyProvider.class)
+  void clientTls(byte[] privateKey) throws Exception {
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri().toString())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setClientTls(
-                clientCertificate.privateKey().getEncoded(),
-                clientCertificate.certificate().getEncoded())
+                privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
             .build();
     try {
       CompletableResultCode result =
@@ -271,6 +302,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     } finally {
       exporter.shutdown();
+    }
+  }
+
+  private static class ClientPrivateKeyProvider implements ArgumentsProvider {
+    @Override
+    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+      return Stream.of(
+          arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
+          arguments(named("DER", clientCertificate.privateKey().getEncoded())));
     }
   }
 
@@ -498,6 +539,27 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
 
     assertThat(attempts).hasValue(1);
+  }
+
+  @Test
+  void overrideHost() {
+    List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .addHeader("host", "opentelemetry")
+            .build();
+    try {
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+    List<U> expectedResourceTelemetry = toProto(telemetry);
+    assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    assertThat(httpRequests)
+        .singleElement()
+        .satisfies(req -> assertThat(req.authority()).isEqualTo("opentelemetry"));
   }
 
   @Test

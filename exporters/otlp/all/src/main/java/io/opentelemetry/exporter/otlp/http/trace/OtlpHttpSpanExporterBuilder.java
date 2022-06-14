@@ -14,7 +14,11 @@ import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder utility for {@link OtlpHttpSpanExporter}. */
+/**
+ * Builder utility for {@link OtlpHttpSpanExporter}.
+ *
+ * @since 1.5.0
+ */
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
@@ -86,6 +90,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);

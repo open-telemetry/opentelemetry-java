@@ -14,7 +14,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for an exported double {@link GaugeData}. */
+/**
+ * Assertions for an exported double {@link GaugeData}.
+ *
+ * @since 1.14.0
+ */
 public final class DoubleGaugeAssert
     extends AbstractAssert<DoubleGaugeAssert, GaugeData<DoublePointData>> {
 

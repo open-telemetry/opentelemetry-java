@@ -30,6 +30,7 @@ public interface ConfigProperties {
    * @return a string-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default String getString(String name, String defaultValue) {
     return defaultIfNull(getString(name), defaultValue);
@@ -51,6 +52,7 @@ public interface ConfigProperties {
    * @return a Boolean-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default boolean getBoolean(String name, boolean defaultValue) {
     return defaultIfNull(getBoolean(name), defaultValue);
@@ -71,6 +73,7 @@ public interface ConfigProperties {
    * @return an Integer-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default int getInt(String name, int defaultValue) {
     return defaultIfNull(getInt(name), defaultValue);
@@ -91,6 +94,7 @@ public interface ConfigProperties {
    * @return a Long-valued configuration property or {@code defaultValue} if a property with {@code
    *     name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default long getLong(String name, long defaultValue) {
     return defaultIfNull(getLong(name), defaultValue);
@@ -111,6 +115,7 @@ public interface ConfigProperties {
    * @return a Double-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default double getDouble(String name, double defaultValue) {
     return defaultIfNull(getDouble(name), defaultValue);
@@ -147,6 +152,7 @@ public interface ConfigProperties {
    * @return a Double-valued configuration property or {@code defaultValue} if a property with name
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default Duration getDuration(String name, Duration defaultValue) {
     return defaultIfNull(getDuration(name), defaultValue);
@@ -168,6 +174,7 @@ public interface ConfigProperties {
    * @return a List configuration property or {@code defaultValue} if a property with {@code name}
    *     has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default List<String> getList(String name, List<String> defaultValue) {
     List<String> value = getList(name);
@@ -191,6 +198,7 @@ public interface ConfigProperties {
    * @return a Double-valued configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
+   * @since 1.15.0
    */
   default Map<String, String> getMap(String name, Map<String, String> defaultValue) {
     Map<String, String> value = getMap(name);

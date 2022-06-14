@@ -13,7 +13,11 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
+/**
+ * Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model.
+ *
+ * @since 1.5.0
+ */
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 

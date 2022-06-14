@@ -17,7 +17,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for an exported {@link DoubleExemplarData}. */
+/**
+ * Assertions for an exported {@link DoubleExemplarData}.
+ *
+ * @since 1.14.0
+ */
 public final class DoubleExemplarAssert
     extends AbstractAssert<DoubleExemplarAssert, DoubleExemplarData> {
   DoubleExemplarAssert(@Nullable DoubleExemplarData actual) {

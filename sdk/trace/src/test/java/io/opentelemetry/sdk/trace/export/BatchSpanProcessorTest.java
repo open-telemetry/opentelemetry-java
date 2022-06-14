@@ -507,6 +507,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(5)
+  @SuppressLogger(BatchSpanProcessor.class)
   void exporterThrowsNonRuntimeException() {
     when(mockSpanExporter.export(anyList()))
         .thenAnswer(

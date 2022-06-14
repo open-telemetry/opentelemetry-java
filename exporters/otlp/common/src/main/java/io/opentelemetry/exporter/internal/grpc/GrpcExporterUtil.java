@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +35,7 @@ final class GrpcExporterUtil {
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>>> stubFactory,
+      Supplier<BiFunction<ManagedChannel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       String grpcServiceName,
       String grpcEndpointPath) {
     if (USE_OKHTTP) {

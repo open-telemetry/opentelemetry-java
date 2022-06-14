@@ -17,7 +17,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for an exported {@link LongExemplarData}. */
+/**
+ * Assertions for an exported {@link LongExemplarData}.
+ *
+ * @since 1.14.0
+ */
 public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert, LongExemplarData> {
   LongExemplarAssert(@Nullable LongExemplarData actual) {
     super(actual, LongExemplarAssert.class);
