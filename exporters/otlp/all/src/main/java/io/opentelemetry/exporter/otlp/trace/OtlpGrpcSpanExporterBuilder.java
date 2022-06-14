@@ -105,7 +105,7 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   /**
    * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
-   * should contain a X.509 certificate collection in PEM format. If not set, TLS connections will
+   * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
    * use the system default trusted certificates.
    */
   public OtlpGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
