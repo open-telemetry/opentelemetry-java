@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -23,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
@@ -34,6 +36,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Utilities for working with TLS.
@@ -42,6 +45,9 @@ import javax.net.ssl.X509TrustManager;
  * at any time.
  */
 public final class TlsUtil {
+
+  private static final String PEM_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
+  private static final String PEM_KEY_FOOTER = "-----END PRIVATE KEY-----";
 
   private TlsUtil() {}
 
@@ -78,7 +84,7 @@ public final class TlsUtil {
       KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
       ks.load(null);
       KeyFactory factory = KeyFactory.getInstance("RSA");
-      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyPem);
+      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodePem(privateKeyPem));
       PrivateKey key = factory.generatePrivate(keySpec);
 
       CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -128,6 +134,29 @@ public final class TlsUtil {
       return (X509TrustManager) tmf.getTrustManagers()[0];
     } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
       throw new SSLException("Could not build TrustManagerFactory from trustedCertificatesPem.", e);
+    }
+  }
+
+  // We catch linkage error to provide a better exception message on Android.
+  // https://github.com/open-telemetry/opentelemetry-java/issues/4533
+  @IgnoreJRERequirement
+  private static byte[] decodePem(byte[] pem) {
+    String pemStr = new String(pem, StandardCharsets.UTF_8).trim();
+    if (!pemStr.startsWith(PEM_KEY_HEADER) || !pemStr.endsWith(PEM_KEY_FOOTER)) {
+      // pem may already be a decoded binary key, try to use it.
+      return pem;
+    }
+
+    String contentWithNewLines =
+        pemStr.substring(PEM_KEY_HEADER.length(), pemStr.length() - PEM_KEY_FOOTER.length());
+    String content = contentWithNewLines.replaceAll("\\s", "");
+
+    try {
+      return Base64.getDecoder().decode(content);
+    } catch (LinkageError unused) {
+      throw new IllegalArgumentException(
+          "PEM private keys are currently not supported on Android. "
+              + "You may try a key encoded as DER.");
     }
   }
 }
