@@ -35,19 +35,14 @@ public final class DoubleExponentialHistogramAggregator
   /**
    * Constructs an exponential histogram aggregator.
    *
-   * @param scale the starting scale.
-   * @param maxBuckets the maximum number of buckets that will be used for positive or negative
-   *     recordings.
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
-      int scale,
-      int maxBuckets) {
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, int maxBuckets) {
     this(
         reservoirSupplier,
         ExponentialBucketStrategy.newStrategy(
-            scale, maxBuckets, ExponentialCounterFactory.circularBufferCounter()));
+            maxBuckets, ExponentialCounterFactory.circularBufferCounter()));
   }
 
   DoubleExponentialHistogramAggregator(

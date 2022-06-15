@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -207,9 +208,7 @@ class SdkLongHistogramTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
-                View.builder()
-                    .setAggregation(ExponentialHistogramAggregation.create(-1, 5))
-                    .build())
+                View.builder().setAggregation(ExponentialHistogramAggregation.create(5)).build())
             .build();
     LongHistogram longHistogram =
         sdkMeterProvider
@@ -245,11 +244,11 @@ class SdkLongHistogramTest {
                               .hasSum(25)
                               .hasMin(12)
                               .hasMax(13)
-                              .hasScale(-1)
+                              .hasScale(5)
                               .hasZeroCount(0);
                           MetricAssertions.assertThat(point.getPositiveBuckets())
-                              .hasOffset(1)
-                              .hasCounts(Collections.singletonList(2L));
+                              .hasOffset(114)
+                              .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L));
                           MetricAssertions.assertThat(point.getNegativeBuckets())
                               .hasOffset(0)
                               .hasCounts(Collections.emptyList());
@@ -263,10 +262,10 @@ class SdkLongHistogramTest {
                               .hasSum(12)
                               .hasMin(12)
                               .hasMax(12)
-                              .hasScale(-1)
+                              .hasScale(20)
                               .hasZeroCount(0);
                           MetricAssertions.assertThat(point.getPositiveBuckets())
-                              .hasOffset(1)
+                              .hasOffset(3759105)
                               .hasCounts(Collections.singletonList(1L));
                           MetricAssertions.assertThat(point.getNegativeBuckets())
                               .hasOffset(0)

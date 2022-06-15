@@ -25,16 +25,16 @@ public enum HistogramAggregationParam {
       new DoubleExponentialHistogramAggregator(
           ExemplarReservoir::doubleNoSamples,
           ExponentialBucketStrategy.newStrategy(
-              20, 20, ExponentialCounterFactory.circularBufferCounter()))),
+              20, ExponentialCounterFactory.circularBufferCounter()))),
   EXPONENTIAL_CIRCULAR_BUFFER(
       new DoubleExponentialHistogramAggregator(
           ExemplarReservoir::doubleNoSamples,
           ExponentialBucketStrategy.newStrategy(
-              20, 320, ExponentialCounterFactory.circularBufferCounter()))),
+              160, ExponentialCounterFactory.circularBufferCounter()))),
   EXPONENTIAL_MAP_COUNTER(
       new DoubleExponentialHistogramAggregator(
           ExemplarReservoir::doubleNoSamples,
-          ExponentialBucketStrategy.newStrategy(20, 320, ExponentialCounterFactory.mapCounter())));
+          ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter())));
 
   private final Aggregator<?, ?> aggregator;
 
