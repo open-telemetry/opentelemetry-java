@@ -91,7 +91,13 @@ The following credentials are required for publishing (and automatically set in 
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
 
 Additionally, credentials are stored with maintainers via
-the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account.
+the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account. The following 
+defines the mapping from Github Action secret keys to 1Password keys:
+
+| Github Actions Key | 1Password Key |
+|--------------------|---------------|
+| `GPG_PASSWORD` | `opentelemetry-java GPG_PASSWORD` |
+| `GPG_PRIVATE_KEY` | `opentelemetry-java GPG_PRIVATE_KEY` |
 
 ## Releasing from the local setup
 
