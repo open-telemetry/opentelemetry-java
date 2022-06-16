@@ -14,7 +14,8 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -35,7 +36,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@SuppressLogger(DefaultGrpcExporter.class)
+@SuppressLogger(OkHttpGrpcExporter.class)
 class OtlpGrpcRetryTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
@@ -52,7 +53,7 @@ class OtlpGrpcRetryTest {
   public static final OtlpGrpcServerExtension server = new OtlpGrpcServerExtension(certificate);
 
   @Test
-  @SuppressLogger(DefaultGrpcExporter.class)
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureSpanExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.traces.endpoint", "https://localhost:" + server.httpsPort());
@@ -72,7 +73,7 @@ class OtlpGrpcRetryTest {
   }
 
   @Test
-  @SuppressLogger(DefaultGrpcExporter.class)
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureMetricExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.metrics.endpoint", "https://localhost:" + server.httpsPort());
@@ -91,7 +92,7 @@ class OtlpGrpcRetryTest {
   }
 
   @Test
-  @SuppressLogger(DefaultGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void configureLogExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort());
