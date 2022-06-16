@@ -8,16 +8,13 @@ package io.opentelemetry.exporter.otlp.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
-import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
+import io.opentelemetry.exporter.otlp.testing.internal.ManagedChannelTelemetryExporterBuilder;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -28,8 +25,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
-import java.net.URI;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -55,67 +50,8 @@ class OtlpGrpcOkHttpMetricExporterTest
 
   @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
-    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-    return new TelemetryExporterBuilder<MetricData>() {
-      private ManagedChannel channel;
-
-      @Override
-      @SuppressWarnings("deprecation") // testing deprecated feature
-      public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
-        URI uri = URI.create(endpoint);
-        channel = ManagedChannelBuilder.forAddress(uri.getHost(), uri.getPort()).build();
-        builder.setChannel(channel);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(long timeout, TimeUnit unit) {
-        builder.setTimeout(timeout, unit);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(Duration timeout) {
-        builder.setTimeout(timeout);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
-        builder.setCompression(compression);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
-        builder.addHeader(key, value);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
-        builder.setTrustedCertificates(certificates);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setClientTls(
-          byte[] privateKeyPem, byte[] certificatePem) {
-        builder.setClientTls(privateKeyPem, certificatePem);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
-        builder.delegate.setRetryPolicy(retryPolicy);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporter<MetricData> build() {
-        return TelemetryExporter.wrap(builder.build(), channel::shutdownNow);
-      }
-    };
+    return ManagedChannelTelemetryExporterBuilder.wrap(
+        TelemetryExporterBuilder.wrap(OtlpGrpcMetricExporter.builder()));
   }
 
   @Override

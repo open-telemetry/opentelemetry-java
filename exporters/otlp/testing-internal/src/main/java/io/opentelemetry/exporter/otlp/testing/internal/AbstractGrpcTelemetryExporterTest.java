@@ -280,6 +280,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(
             () ->
                 exporterBuilder()
+                    .setEndpoint(server.httpsUri().toString())
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
                     .build())
         .isInstanceOf(IllegalStateException.class)

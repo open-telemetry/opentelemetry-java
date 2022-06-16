@@ -16,7 +16,6 @@ import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
-import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -26,7 +25,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -56,62 +54,7 @@ class OtlpGrpcMetricExporterTest
 
   @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
-    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-    return new TelemetryExporterBuilder<MetricData>() {
-      @Override
-      public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
-        builder.setEndpoint(endpoint);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(long timeout, TimeUnit unit) {
-        builder.setTimeout(timeout, unit);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(Duration timeout) {
-        builder.setTimeout(timeout);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
-        builder.setCompression(compression);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
-        builder.addHeader(key, value);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
-        builder.setTrustedCertificates(certificates);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setClientTls(
-          byte[] privateKeyPem, byte[] certificatePem) {
-        builder.setClientTls(privateKeyPem, certificatePem);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
-        builder.delegate.setRetryPolicy(retryPolicy);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporter<MetricData> build() {
-        return TelemetryExporter.wrap(builder.build(), () -> {});
-      }
-    };
+    return TelemetryExporterBuilder.wrap(OtlpGrpcMetricExporter.builder());
   }
 
   @Override
