@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
@@ -92,7 +91,7 @@ class OtlpGrpcRetryTest {
   }
 
   @Test
-  @SuppressLogger(GrpcExporter.class)
+  @SuppressLogger(OkHttpGrpcExporter.class)
   void configureLogExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort());
