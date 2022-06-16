@@ -135,6 +135,9 @@ class TracerShimTest {
 
       assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
       assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(actualBaggage);
+
+      Span child = tracerShim.buildSpan("child").start();
+      assertThat(child.getBaggageItem("foo")).isEqualTo("bar");
     }
 
     assertThat(tracerShim.activeSpan()).isNull();
