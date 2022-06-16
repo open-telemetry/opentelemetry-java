@@ -47,7 +47,6 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   private final String exporterName;
   private final String type;
   private final String grpcEndpointPath;
-  private final String grpcServiceName;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
       grpcStubFactory;
 
@@ -72,7 +71,6 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
       String grpcEndpointPath,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      String grpcServiceName,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory) {
     this.exporterName = exporterName;
     this.type = type;
@@ -80,7 +78,6 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
     this.grpcStubFactory = grpcStubFactory;
-    this.grpcServiceName = grpcServiceName;
   }
 
   @Override
@@ -146,7 +143,7 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   @Override
   public GrpcExporter<T> build() {
     if (grpcChannel != null) {
-      return buildWithChannel((Channel) grpcChannel);
+      return new UpstreamGrpcExporterFactory().buildWithChannel((Channel) grpcChannel);
     }
 
     OkHttpClient.Builder clientBuilder =
@@ -199,28 +196,31 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
         compressionEnabled);
   }
 
-  private GrpcExporter<T> buildWithChannel(Channel channel) {
-    Metadata metadata = new Metadata();
-    String authorityOverride = null;
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      String name = entry.getKey();
-      String value = entry.getValue();
-      if (name.equals("host")) {
-        authorityOverride = value;
-        continue;
+  private class UpstreamGrpcExporterFactory {
+    private GrpcExporter<T> buildWithChannel(Channel channel) {
+      Metadata metadata = new Metadata();
+      String authorityOverride = null;
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        String name = entry.getKey();
+        String value = entry.getValue();
+        if (name.equals("host")) {
+          authorityOverride = value;
+          continue;
+        }
+        metadata.put(Metadata.Key.of(name, Metadata.ASCII_STRING_MARSHALLER), value);
       }
-      metadata.put(Metadata.Key.of(name, Metadata.ASCII_STRING_MARSHALLER), value);
+
+      channel =
+          ClientInterceptors.intercept(
+              channel, MetadataUtils.newAttachHeadersInterceptor(metadata));
+
+      Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
+      MarshalerServiceStub<T, ?, ?> stub =
+          grpcStubFactory
+              .get()
+              .apply(channel, authorityOverride)
+              .withCompression(codec.getMessageEncoding());
+      return new DefaultGrpcExporter<>(exporterName, type, stub, meterProvider, timeoutNanos);
     }
-
-    channel =
-        ClientInterceptors.intercept(channel, MetadataUtils.newAttachHeadersInterceptor(metadata));
-
-    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
-    MarshalerServiceStub<T, ?, ?> stub =
-        grpcStubFactory
-            .get()
-            .apply(channel, authorityOverride)
-            .withCompression(codec.getMessageEncoding());
-    return new DefaultGrpcExporter<>(exporterName, type, stub, meterProvider, timeoutNanos);
   }
 }

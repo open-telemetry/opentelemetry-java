@@ -22,16 +22,9 @@ final class GrpcExporterUtil {
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      String grpcServiceName,
       String grpcEndpointPath) {
     return new OkHttpGrpcExporterBuilder<>(
-        exporterName,
-        type,
-        grpcEndpointPath,
-        defaultTimeoutSecs,
-        defaultEndpoint,
-        grpcServiceName,
-        stubFactory);
+        exporterName, type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint, stubFactory);
   }
 
   static void logUnimplemented(Logger logger, String type, @Nullable String fullErrorMessage) {

@@ -23,13 +23,7 @@ class RetryUtilTest {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
     OkHttpGrpcExporterBuilder<?> builder =
         new OkHttpGrpcExporterBuilder<>(
-            "otlp",
-            "test",
-            "/test",
-            0,
-            new URI("http://localhost"),
-            "opentelemetry.proto.collector.trace.v1.TraceService",
-            () -> (u1, u2) -> null);
+            "otlp", "test", "/test", 0, new URI("http://localhost"), () -> (u1, u2) -> null);
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 

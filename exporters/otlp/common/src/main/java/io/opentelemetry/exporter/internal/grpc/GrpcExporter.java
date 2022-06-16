@@ -27,16 +27,9 @@ public interface GrpcExporter<T extends Marshaler> {
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      String grpcServiceName,
       String grpcEndpointPath) {
     return GrpcExporterUtil.exporterBuilder(
-        exporterName,
-        type,
-        defaultTimeoutSecs,
-        defaultEndpoint,
-        stubFactory,
-        grpcServiceName,
-        grpcEndpointPath);
+        exporterName, type, defaultTimeoutSecs, defaultEndpoint, stubFactory, grpcEndpointPath);
   }
 
   /**

@@ -34,6 +34,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 class OtlpGrpcNettySpanExporterTest
@@ -56,7 +57,7 @@ class OtlpGrpcNettySpanExporterTest
   }
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("deprecation") // testing deprecated feature
   void usingGrpc() throws Exception {
     try (Closeable exporter =
         OtlpGrpcSpanExporter.builder()
@@ -70,14 +71,16 @@ class OtlpGrpcNettySpanExporterTest
   protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
     return new TelemetryExporterBuilder<SpanData>() {
-      private ManagedChannel channel;
+      @Nullable
+      private ManagedChannelBuilder<?> channelBuilder;
 
       @Override
-      @SuppressWarnings("deprecation")
       public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
         URI uri = URI.create(endpoint);
-        channel = ManagedChannelBuilder.forAddress(uri.getAuthority(), uri.getPort()).build();
-        builder.setChannel(channel);
+        channelBuilder = ManagedChannelBuilder.forAddress(uri.getHost(), uri.getPort());
+        if (!uri.getScheme().equals("https")) {
+          channelBuilder.usePlaintext();
+        }
         return this;
       }
 
@@ -125,7 +128,10 @@ class OtlpGrpcNettySpanExporterTest
       }
 
       @Override
+      @SuppressWarnings("deprecation") // testing deprecated feature
       public TelemetryExporter<SpanData> build() {
+        ManagedChannel channel = channelBuilder.build();
+        builder.delegate.setChannel(channel);
         return TelemetryExporter.wrap(builder.build(), channel::shutdownNow);
       }
     };

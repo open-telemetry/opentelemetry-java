@@ -75,7 +75,6 @@ public class GrpcExporterBenchmark {
                 OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
                 10,
                 URI.create("http://localhost:" + server.activeLocalPort()),
-                "opentelemetry.proto.collector.trace.v1.TraceService",
                 () -> MarshalerTraceServiceGrpc::newFutureStub)
             .setChannel(defaultGrpcChannel)
             .build();
@@ -87,7 +86,6 @@ public class GrpcExporterBenchmark {
                 OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
                 10,
                 URI.create("http://localhost:" + server.activeLocalPort()),
-                "opentelemetry.proto.collector.trace.v1.TraceService",
                 () -> MarshalerTraceServiceGrpc::newFutureStub)
             .build();
   }

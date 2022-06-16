@@ -54,7 +54,7 @@ class OtlpGrpcNettyMetricExporterTest
   }
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("deprecation") // testing deprecated feature
   void usingGrpc() throws Exception {
     try (Closeable exporter =
         OtlpGrpcMetricExporter.builder()
@@ -71,10 +71,10 @@ class OtlpGrpcNettyMetricExporterTest
       private ManagedChannel channel;
 
       @Override
-      @SuppressWarnings("deprecation")
+      @SuppressWarnings("deprecation") // testing deprecated feature
       public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
         URI uri = URI.create(endpoint);
-        channel = ManagedChannelBuilder.forAddress(uri.getAuthority(), uri.getPort()).build();
+        channel = ManagedChannelBuilder.forAddress(uri.getHost(), uri.getPort()).build();
         builder.setChannel(channel);
         return this;
       }

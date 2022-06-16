@@ -38,7 +38,6 @@ public final class JaegerGrpcSpanExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerCollectorServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 
