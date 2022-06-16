@@ -24,9 +24,9 @@ class DoubleExponentialHistogramBucketsTest {
 
   static Stream<ExponentialBucketStrategy> bucketStrategies() {
     return Stream.of(
-        ExponentialBucketStrategy.newStrategy(20, 320, ExponentialCounterFactory.mapCounter()),
+        ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter()),
         ExponentialBucketStrategy.newStrategy(
-            20, 320, ExponentialCounterFactory.circularBufferCounter()));
+            160, ExponentialCounterFactory.circularBufferCounter()));
   }
 
   @ParameterizedTest
