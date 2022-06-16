@@ -83,7 +83,7 @@ jobs:
           if [[ $VERSION == *.0 ]]; then
           cat > /tmp/release-notes.txt << EOF
           This release targets the OpenTelemetry SDK $VERSION.
-          
+
           EOF
           else
           cat > /tmp/release-notes.txt << EOF
