@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -48,9 +49,10 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
   }
 
   @Test
-  void usingOkHttp() {
-    assertThat(OtlpGrpcSpanExporter.builder().delegate)
-        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
+  void usingOkHttp() throws Exception {
+    try (Closeable exporter = OtlpGrpcSpanExporter.builder().build()) {
+      assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
+    }
   }
 
   @Override

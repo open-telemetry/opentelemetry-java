@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -52,7 +52,7 @@ class OtlpGrpcNettyLogExporterTest
         OtlpGrpcLogExporter.builder()
             .setChannel(InProcessChannelBuilder.forName("test").build())
             .build()) {
-      assertThat(exporter).extracting("delegate").isInstanceOf(DefaultGrpcExporter.class);
+      assertThat(exporter).extracting("delegate").isInstanceOf(UpstreamGrpcExporter.class);
     }
   }
 

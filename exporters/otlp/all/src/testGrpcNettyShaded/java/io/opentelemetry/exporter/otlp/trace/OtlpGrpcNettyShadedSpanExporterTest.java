@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
@@ -46,7 +46,7 @@ class OtlpGrpcNettyShadedSpanExporterTest
         OtlpGrpcSpanExporter.builder()
             .setChannel(InProcessChannelBuilder.forName("test").build())
             .build()) {
-      assertThat(exporter).extracting("delegate").isInstanceOf(DefaultGrpcExporter.class);
+      assertThat(exporter).extracting("delegate").isInstanceOf(UpstreamGrpcExporter.class);
     }
   }
 

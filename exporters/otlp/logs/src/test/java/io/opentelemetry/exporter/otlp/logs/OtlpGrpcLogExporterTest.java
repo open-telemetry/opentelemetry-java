@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.Closeable;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -42,9 +43,10 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
   }
 
   @Test
-  void usingOkHttp() {
-    assertThat(OtlpGrpcLogExporter.builder().delegate)
-        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
+  void usingOkHttp() throws Exception {
+    try (Closeable exporter = OtlpGrpcLogExporter.builder().build()) {
+      assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
+    }
   }
 
   @Override

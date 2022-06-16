@@ -9,7 +9,8 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,9 +22,9 @@ class RetryUtilTest {
   @Test
   void setRetryPolicyOnDelegate_GrpcExporterBuilder() throws URISyntaxException {
     RetryPolicy retryPolicy = RetryPolicy.getDefault();
-    OkHttpGrpcExporterBuilder<?> builder =
-        new OkHttpGrpcExporterBuilder<>(
-            "otlp", "test", "/test", 0, new URI("http://localhost"), () -> (u1, u2) -> null);
+    GrpcExporterBuilder<?> builder =
+        GrpcExporter.builder(
+            "otlp", "test", 0, new URI("http://localhost"), () -> (u1, u2) -> null, "/test");
 
     RetryUtil.setRetryPolicyOnDelegate(new WithDelegate(builder), retryPolicy);
 

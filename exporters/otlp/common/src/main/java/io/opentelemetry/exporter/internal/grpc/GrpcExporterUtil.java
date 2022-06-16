@@ -5,27 +5,11 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.Channel;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import java.net.URI;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 final class GrpcExporterUtil {
-
-  static <T extends Marshaler> GrpcExporterBuilder<T> exporterBuilder(
-      String exporterName,
-      String type,
-      long defaultTimeoutSecs,
-      URI defaultEndpoint,
-      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      String grpcEndpointPath) {
-    return new OkHttpGrpcExporterBuilder<>(
-        exporterName, type, grpcEndpointPath, defaultTimeoutSecs, defaultEndpoint, stubFactory);
-  }
 
   static void logUnimplemented(Logger logger, String type, @Nullable String fullErrorMessage) {
     String envVar;

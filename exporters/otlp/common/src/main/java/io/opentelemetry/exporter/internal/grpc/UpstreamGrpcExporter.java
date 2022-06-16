@@ -21,15 +21,15 @@ import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * A {@link GrpcExporter} which uses the standard grpc-java library.
+ * A {@link GrpcExporter} which uses the upstream grpc-java library.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExporter<T> {
+public final class UpstreamGrpcExporter<T extends Marshaler> implements GrpcExporter<T> {
 
   private static final Logger internalLogger =
-      Logger.getLogger(DefaultGrpcExporter.class.getName());
+      Logger.getLogger(UpstreamGrpcExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
@@ -41,8 +41,8 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
   private final MarshalerServiceStub<T, ?, ?> stub;
   private final long timeoutNanos;
 
-  /** Creates a new {@link DefaultGrpcExporter}. */
-  DefaultGrpcExporter(
+  /** Creates a new {@link UpstreamGrpcExporter}. */
+  UpstreamGrpcExporter(
       String exporterName,
       String type,
       MarshalerServiceStub<T, ?, ?> stub,

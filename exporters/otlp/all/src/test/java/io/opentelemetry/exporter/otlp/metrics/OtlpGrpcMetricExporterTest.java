@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -47,9 +48,10 @@ class OtlpGrpcMetricExporterTest
   }
 
   @Test
-  void usingOkHttp() {
-    assertThat(OtlpGrpcMetricExporter.builder().delegate)
-        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
+  void usingOkHttp() throws Exception {
+    try (Closeable exporter = OtlpGrpcMetricExporter.builder().build()) {
+      assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
+    }
   }
 
   @Override
