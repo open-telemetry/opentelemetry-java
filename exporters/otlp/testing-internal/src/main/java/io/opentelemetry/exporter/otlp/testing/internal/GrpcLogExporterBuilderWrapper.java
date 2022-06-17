@@ -8,77 +8,76 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
+import io.opentelemetry.sdk.logs.data.LogData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Wrapper of {@link OtlpGrpcSpanExporterBuilder} for use in integration tests. */
-final class GrpcSpanExporterWrapper implements TelemetryExporterBuilder<SpanData> {
-  private final OtlpGrpcSpanExporterBuilder builder;
+final class GrpcLogExporterBuilderWrapper implements TelemetryExporterBuilder<LogData> {
+  private final OtlpGrpcLogExporterBuilder builder;
 
-  GrpcSpanExporterWrapper(OtlpGrpcSpanExporterBuilder builder) {
+  GrpcLogExporterBuilderWrapper(OtlpGrpcLogExporterBuilder builder) {
     this.builder = builder;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
+  public TelemetryExporterBuilder<LogData> setEndpoint(String endpoint) {
     builder.setEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setTimeout(long timeout, TimeUnit unit) {
+  public TelemetryExporterBuilder<LogData> setTimeout(long timeout, TimeUnit unit) {
     builder.setTimeout(timeout, unit);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setTimeout(Duration timeout) {
+  public TelemetryExporterBuilder<LogData> setTimeout(Duration timeout) {
     builder.setTimeout(timeout);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
+  public TelemetryExporterBuilder<LogData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> addHeader(String key, String value) {
+  public TelemetryExporterBuilder<LogData> addHeader(String key, String value) {
     builder.addHeader(key, value);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
+  public TelemetryExporterBuilder<LogData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setClientTls(
+  public TelemetryExporterBuilder<LogData> setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     builder.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
+  public TelemetryExporterBuilder<LogData> setRetryPolicy(RetryPolicy retryPolicy) {
     RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
     return this;
   }
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<SpanData> setChannel(ManagedChannel channel) {
+  public TelemetryExporterBuilder<LogData> setChannel(ManagedChannel channel) {
     builder.setChannel(channel);
     return this;
   }
 
   @Override
-  public TelemetryExporter<SpanData> build() {
+  public TelemetryExporter<LogData> build() {
     return TelemetryExporter.wrap(builder.build());
   }
 }

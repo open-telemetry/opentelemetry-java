@@ -8,76 +8,77 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-final class GrpcMetricExporterWrapper implements TelemetryExporterBuilder<MetricData> {
-  private final OtlpGrpcMetricExporterBuilder builder;
+/** Wrapper of {@link OtlpGrpcSpanExporterBuilder} for use in integration tests. */
+final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<SpanData> {
+  private final OtlpGrpcSpanExporterBuilder builder;
 
-  GrpcMetricExporterWrapper(OtlpGrpcMetricExporterBuilder builder) {
+  GrpcSpanExporterBuilderWrapper(OtlpGrpcSpanExporterBuilder builder) {
     this.builder = builder;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
+  public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
     builder.setEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setTimeout(long timeout, TimeUnit unit) {
+  public TelemetryExporterBuilder<SpanData> setTimeout(long timeout, TimeUnit unit) {
     builder.setTimeout(timeout, unit);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setTimeout(Duration timeout) {
+  public TelemetryExporterBuilder<SpanData> setTimeout(Duration timeout) {
     builder.setTimeout(timeout);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
+  public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
+  public TelemetryExporterBuilder<SpanData> addHeader(String key, String value) {
     builder.addHeader(key, value);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
+  public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setClientTls(
+  public TelemetryExporterBuilder<SpanData> setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     builder.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
+  public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
     RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
     return this;
   }
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<MetricData> setChannel(ManagedChannel channel) {
+  public TelemetryExporterBuilder<SpanData> setChannel(ManagedChannel channel) {
     builder.setChannel(channel);
     return this;
   }
 
   @Override
-  public TelemetryExporter<MetricData> build() {
+  public TelemetryExporter<SpanData> build() {
     return TelemetryExporter.wrap(builder.build());
   }
 }

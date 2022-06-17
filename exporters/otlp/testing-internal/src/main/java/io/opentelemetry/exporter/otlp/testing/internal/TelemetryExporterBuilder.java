@@ -19,15 +19,15 @@ import java.util.concurrent.TimeUnit;
 public interface TelemetryExporterBuilder<T> {
 
   static TelemetryExporterBuilder<SpanData> wrap(OtlpGrpcSpanExporterBuilder builder) {
-    return new GrpcSpanExporterWrapper(builder);
+    return new GrpcSpanExporterBuilderWrapper(builder);
   }
 
   static TelemetryExporterBuilder<MetricData> wrap(OtlpGrpcMetricExporterBuilder builder) {
-    return new GrpcMetricExporterWrapper(builder);
+    return new GrpcMetricExporterBuilderWrapper(builder);
   }
 
   static TelemetryExporterBuilder<LogData> wrap(OtlpGrpcLogExporterBuilder builder) {
-    return new GrpcLogExporterWrapper(builder);
+    return new GrpcLogExporterBuilderWrapper(builder);
   }
 
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);

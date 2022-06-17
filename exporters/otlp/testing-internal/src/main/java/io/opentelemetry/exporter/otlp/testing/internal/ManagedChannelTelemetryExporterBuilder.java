@@ -80,7 +80,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   // When a user provides a Channel, we are not in control of TLS or retry config and reimplement it
   // here for use in tests. Technically we don't have to test them since they are out of the SDK's
-  // control, but it's probably worth verifying the baseline functionality anywaysl
+  // control, but it's probably worth verifying the baseline functionality anyways.
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
@@ -98,11 +98,11 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     String grpcServiceName;
-    if (delegate instanceof GrpcLogExporterWrapper) {
+    if (delegate instanceof GrpcLogExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.logs.v1.LogsService";
-    } else if (delegate instanceof GrpcMetricExporterWrapper) {
+    } else if (delegate instanceof GrpcMetricExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.metrics.v1.MetricsService";
-    } else if (delegate instanceof GrpcSpanExporterWrapper) {
+    } else if (delegate instanceof GrpcSpanExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.trace.v1.TraceService";
     } else {
       throw new IllegalStateException("Can't happen");
