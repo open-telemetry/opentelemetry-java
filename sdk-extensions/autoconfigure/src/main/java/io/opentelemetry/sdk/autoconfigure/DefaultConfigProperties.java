@@ -56,7 +56,8 @@ final class DefaultConfigProperties implements ConfigProperties {
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
         (key, value) ->
-            config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
+            config.put(
+                key.toString().toLowerCase(Locale.ROOT).replace('-', '.'), value.toString()));
 
     this.config = config;
   }
