@@ -40,7 +40,6 @@ public final class OtlpGrpcSpanExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 

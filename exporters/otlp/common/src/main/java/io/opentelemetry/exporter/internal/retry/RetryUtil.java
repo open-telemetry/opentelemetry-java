@@ -5,9 +5,8 @@
 
 package io.opentelemetry.exporter.internal.retry;
 
-import io.opentelemetry.exporter.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -50,22 +49,19 @@ public class RetryUtil {
   }
 
   /**
-   * Reflectively access a {@link DefaultGrpcExporterBuilder}, {@link OkHttpGrpcExporterBuilder}, or
-   * {@link OkHttpExporterBuilder} instance in field called "delegate" of the instance, and set the
-   * {@link RetryPolicy}.
+   * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
+   * field called "delegate" of the instance, and set the {@link RetryPolicy}.
    *
    * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
-   *     type {@link DefaultGrpcExporterBuilder}
+   *     a supported type.
    */
   public static void setRetryPolicyOnDelegate(Object instance, RetryPolicy retryPolicy) {
     try {
       Field field = instance.getClass().getDeclaredField("delegate");
       field.setAccessible(true);
       Object value = field.get(instance);
-      if (value instanceof DefaultGrpcExporterBuilder) {
-        ((DefaultGrpcExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
-      } else if (value instanceof OkHttpGrpcExporterBuilder) {
-        ((OkHttpGrpcExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
+      if (value instanceof GrpcExporterBuilder) {
+        ((GrpcExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
       } else if (value instanceof OkHttpExporterBuilder) {
         ((OkHttpExporterBuilder<?>) value).setRetryPolicy(retryPolicy);
       } else {

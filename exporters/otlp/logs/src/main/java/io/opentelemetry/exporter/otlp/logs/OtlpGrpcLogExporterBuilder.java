@@ -40,7 +40,6 @@ public final class OtlpGrpcLogExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 

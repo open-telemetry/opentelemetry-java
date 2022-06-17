@@ -15,7 +15,6 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
@@ -47,9 +46,7 @@ class SpanExporterConfigurationTest {
           .isInstanceOfSatisfying(
               OtlpGrpcSpanExporter.class,
               otlp ->
-                  assertThat(otlp)
-                      .extracting("delegate.timeoutNanos")
-                      .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
+                  assertThat(otlp).extracting("delegate.client.callTimeoutMillis").isEqualTo(10));
     } finally {
       exporter.shutdown();
     }
@@ -70,9 +67,7 @@ class SpanExporterConfigurationTest {
           .isInstanceOfSatisfying(
               JaegerGrpcSpanExporter.class,
               jaeger ->
-                  assertThat(jaeger)
-                      .extracting("delegate.timeoutNanos")
-                      .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
+                  assertThat(jaeger).extracting("delegate.client.callTimeoutMillis").isEqualTo(10));
     } finally {
       exporter.shutdown();
     }

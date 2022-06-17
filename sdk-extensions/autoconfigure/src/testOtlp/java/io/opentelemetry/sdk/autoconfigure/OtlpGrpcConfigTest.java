@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generat
 import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generateFakeSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
@@ -83,8 +84,8 @@ class OtlpGrpcConfigTest {
         LogExporter logExporter =
             LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
       assertThat(spanExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(spanExporter.export(SPAN_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(server.traceRequests).hasSize(1);
       assertThat(server.requestHeaders)
@@ -96,8 +97,8 @@ class OtlpGrpcConfigTest {
                       && headers.contains("grpc-encoding", "gzip"));
 
       assertThat(metricExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(metricExporter.export(METRIC_DATA).join(15, TimeUnit.SECONDS).isSuccess())
           .isTrue();
       assertThat(server.metricRequests).hasSize(1);
@@ -111,8 +112,8 @@ class OtlpGrpcConfigTest {
                       && headers.contains("grpc-encoding", "gzip"));
 
       assertThat(logExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
@@ -148,8 +149,8 @@ class OtlpGrpcConfigTest {
             NamedSpiManager.createEmpty(),
             MeterProvider.noop())) {
       assertThat(spanExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(spanExporter.export(SPAN_DATA).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(server.traceRequests).hasSize(1);
       assertThat(server.requestHeaders)
@@ -183,8 +184,8 @@ class OtlpGrpcConfigTest {
             DefaultConfigProperties.createForTest(props))) {
 
       assertThat(metricExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(metricExporter.getAggregationTemporality(InstrumentType.COUNTER))
           .isEqualTo(AggregationTemporality.DELTA);
       assertThat(metricExporter.getAggregationTemporality(InstrumentType.UP_DOWN_COUNTER))
@@ -224,8 +225,8 @@ class OtlpGrpcConfigTest {
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
       assertThat(logExporter)
-          .extracting("delegate.timeoutNanos")
-          .isEqualTo(TimeUnit.SECONDS.toNanos(15));
+          .extracting("delegate.client.callTimeoutMillis", INTEGER)
+          .isEqualTo(TimeUnit.SECONDS.toMillis(15));
       assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)

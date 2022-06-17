@@ -51,7 +51,6 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 
