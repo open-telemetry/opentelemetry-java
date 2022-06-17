@@ -85,8 +85,6 @@ public final class OkHttpExporter<T extends Marshaler> {
       requestBuilder.post(requestBody);
     }
 
-    CompletableResultCode result = new CompletableResultCode();
-
     client
         .newCall(requestBuilder.build())
         .enqueue(
@@ -100,7 +98,6 @@ public final class OkHttpExporter<T extends Marshaler> {
                         + type
                         + "s. The request could not be executed. Full error message: "
                         + e.getMessage());
-                result.fail();
               }
 
               @Override
@@ -108,7 +105,6 @@ public final class OkHttpExporter<T extends Marshaler> {
                 try (ResponseBody body = response.body()) {
                   if (response.isSuccessful()) {
                     exporterMetrics.addSuccess(numItems);
-                    result.succeed();
                     return;
                   }
 
@@ -125,12 +121,11 @@ public final class OkHttpExporter<T extends Marshaler> {
                           + code
                           + ". Error message: "
                           + status);
-                  result.fail();
                 }
               }
             });
 
-    return result;
+    return CompletableResultCode.ofSuccess();
   }
 
   public CompletableResultCode shutdown() {
