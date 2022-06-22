@@ -42,10 +42,13 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -353,7 +356,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
             .setResultAsGlobal(false);
 
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
     AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
     assertThat(autoConfigured.getResource().getAttribute(stringKey("cow"))).isEqualTo("moo");
 
@@ -366,5 +368,29 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     // Ensures the export happened.
     sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void testNonStringProperties() {
+    Properties properties = System.getProperties();
+
+    properties.putIfAbsent("my-key", 7);
+    properties.putIfAbsent(7.39, "my-value");
+    properties.putIfAbsent(new BigDecimal("7.397"), new BigInteger("7"));
+
+    AutoConfiguredOpenTelemetrySdk autoConfigured = builder.build();
+
+    assertThat(autoConfigured)
+        .extracting("config")
+        .isInstanceOfSatisfying(
+            ConfigProperties.class,
+            config -> {
+              String value1 = config.getString("my.key");
+              assertThat(value1).isEqualTo("7");
+              String value2 = config.getString("7.39");
+              assertThat(value2).isEqualTo("my-value");
+              String value3 = config.getString("7.397");
+              assertThat(value3).isEqualTo("7");
+            });
   }
 }
