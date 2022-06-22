@@ -356,7 +356,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
             .setResultAsGlobal(false);
 
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
     AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
     assertThat(autoConfigured.getResource().getAttribute(stringKey("cow"))).isEqualTo("moo");
 
@@ -379,24 +378,19 @@ class AutoConfiguredOpenTelemetrySdkTest {
     properties.putIfAbsent(7.39, "my-value");
     properties.putIfAbsent(new BigDecimal("7.397"), new BigInteger("7"));
 
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
     AutoConfiguredOpenTelemetrySdk autoConfigured = builder.build();
 
     assertThat(autoConfigured)
         .extracting("config")
-        .matches(
+        .isInstanceOfSatisfying(
+            ConfigProperties.class,
             config -> {
-              assertThat(config).isInstanceOf(ConfigProperties.class);
-              ConfigProperties configProperties = (ConfigProperties) config;
-
-              String value1 = configProperties.getString("my.key");
+              String value1 = config.getString("my.key");
               assertThat(value1).isEqualTo("7");
-              String value2 = configProperties.getString("7.39");
+              String value2 = config.getString("7.39");
               assertThat(value2).isEqualTo("my-value");
-              String value3 = configProperties.getString("7.397");
+              String value3 = config.getString("7.397");
               assertThat(value3).isEqualTo("7");
-
-              return true;
             });
   }
 }
