@@ -11,8 +11,14 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Provides means for selecting one or more instruments. Used for configuring aggregations for the
- * specified instruments.
+ * Instrument selection criteria for applying {@link View}s registered via {@link
+ * SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}.
+ *
+ * <p>Properties are ANDed together. For example, if {@link #getInstrumentName()} is
+ * "http.server.duration" and {@link #getMeterName()} is "my.http.meter", then instruments are
+ * selected where name is "http.server.duration" AND meter name is "my.http.meter".
+ *
+ * @since 1.14.0
  */
 @AutoValue
 @Immutable
@@ -35,15 +41,12 @@ public abstract class InstrumentSelector {
 
   InstrumentSelector() {}
 
-  /**
-   * Returns selection criteria for {@link InstrumentType}. If null, select instruments with any
-   * type.
-   */
+  /** Returns the selected {@link InstrumentType}, or null if this selects all instrument types. */
   @Nullable
   public abstract InstrumentType getInstrumentType();
 
   /**
-   * Returns the selection criteria for instrument name. If null, select instruments with any name.
+   * Returns the selected instrument name, or null if this selects all instrument names.
    *
    * <p>Instrument name may contain the wildcard characters {@code *} and {@code ?} with the
    * following matching criteria:
@@ -56,23 +59,20 @@ public abstract class InstrumentSelector {
   @Nullable
   public abstract String getInstrumentName();
 
-  /**
-   * Returns the selection criteria for meter name. If null, select instruments from meters with any
-   * name.
-   */
+  /** Returns the selected meter name, or null if this selects instruments from all meter names. */
   @Nullable
   public abstract String getMeterName();
 
   /**
-   * Returns the selection criteria for meter version. If null, select instruments from meters with
-   * any version.
+   * Returns the selected meter version, or null if this selects instruments from all meter
+   * versions.
    */
   @Nullable
   public abstract String getMeterVersion();
 
   /**
-   * Returns the selection criteria for meter schema url. If null, select instruments from meters
-   * with any schema url.
+   * Returns the selected meter schema url, or null if this selects instruments from all meter
+   * schema urls.
    */
   @Nullable
   public abstract String getMeterSchemaUrl();

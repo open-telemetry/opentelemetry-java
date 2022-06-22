@@ -6,13 +6,14 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
 /**
- * A histogram metric point.
+ * Point data for {@link HistogramData}.
  *
- * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
+ * @since 1.14.0
  */
+@Immutable
 public interface HistogramPointData extends PointData {
   /**
    * The sum of all measurements recorded.

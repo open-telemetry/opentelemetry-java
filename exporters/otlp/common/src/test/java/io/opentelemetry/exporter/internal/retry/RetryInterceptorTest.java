@@ -145,7 +145,7 @@ class RetryInterceptorTest {
     when(random.get(anyLong())).thenReturn(1L);
     doNothing().when(sleeper).sleep(anyLong());
 
-    // Connecting to a non-routable IP address to trigger connection timeout
+    // Connecting to a non-routable IP address to trigger connection error
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())

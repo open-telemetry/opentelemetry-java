@@ -32,11 +32,11 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   private long totalCount;
 
   DoubleExponentialHistogramBuckets(
-      int scale, int maxBuckets, ExponentialCounterFactory counterFactory) {
+      int startingScale, int maxBuckets, ExponentialCounterFactory counterFactory) {
     this.counterFactory = counterFactory;
     this.counts = counterFactory.newCounter(maxBuckets);
-    this.scale = scale;
-    this.scaleFactor = computeScaleFactor(scale);
+    this.scale = startingScale;
+    this.scaleFactor = computeScaleFactor(startingScale);
     this.totalCount = 0;
   }
 
@@ -150,7 +150,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       return b;
     }
     DoubleExponentialHistogramBuckets copy = a.copy();
-    copy.mergeWith(b, /* additive= */ true);
+    copy.mergeWith(b/* additive= */ );
     return copy;
   }
 
@@ -165,9 +165,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * <p>This algorithm for merging is adapted from NrSketch.
    *
    * @param other the histogram that will be merged into this one
-   * @param additive whether the bucket counts will be added or subtracted (diff vs merge).
    */
-  private void mergeWith(DoubleExponentialHistogramBuckets other, boolean additive) {
+  private void mergeWith(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
     }
@@ -199,14 +198,13 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     deltaOther = other.scale - this.scale;
 
     // do actual merging of other into this. Will decrement or increment depending on sign.
-    int sign = additive ? 1 : -1;
     for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
-      if (!this.counts.increment(i >> deltaOther, sign * other.counts.get(i))) {
+      if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
         throw new IllegalStateException("Failed to merge exponential histogram buckets.");
       }
     }
-    this.totalCount += sign * other.totalCount;
+    this.totalCount += other.totalCount;
   }
 
   int getScale() {
@@ -254,8 +252,9 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   /**
    * Maps a recorded double value to a bucket index.
    *
-   * <p>The strategy to retrieve the index is specified in the OpenTelemetry specification:
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponential-buckets
+   * <p>The strategy to retrieve the index is specified in the <a
+   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponential-buckets">OpenTelemetry
+   * specification</a>.
    *
    * @param value Measured value (must be non-zero).
    * @return the index of the bucket which the value maps to.

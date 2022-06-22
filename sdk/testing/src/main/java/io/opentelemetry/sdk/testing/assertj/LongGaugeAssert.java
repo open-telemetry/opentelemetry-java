@@ -14,7 +14,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for an exported long {@link GaugeData}. */
+/**
+ * Assertions for an exported long {@link GaugeData}.
+ *
+ * @since 1.14.0
+ */
 public final class LongGaugeAssert
     extends AbstractAssert<LongGaugeAssert, GaugeData<LongPointData>> {
 

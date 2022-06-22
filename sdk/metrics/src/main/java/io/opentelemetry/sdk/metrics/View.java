@@ -11,7 +11,14 @@ import java.util.StringJoiner;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** A configuration for a metric stream transformation. */
+/**
+ * A view configures how measurements are aggregated and exported as metrics.
+ *
+ * <p>Views are registered with the SDK {@link
+ * SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}.
+ *
+ * @since 1.14.0
+ */
 @AutoValue
 @Immutable
 public abstract class View {
@@ -32,21 +39,23 @@ public abstract class View {
   View() {}
 
   /**
-   * The name of the resulting metric to generate, or {@code null} if the same as the instrument.
+   * Returns the name of the resulting metric, or {@code null} if the matched instrument name should
+   * be used.
    */
   @Nullable
   public abstract String getName();
 
   /**
-   * The name of the resulting metric to generate, or {@code null} if the same as the instrument.
+   * Returns the description of the resulting metric, or {@code null} if the matched instrument
+   * description should be used.
    */
   @Nullable
   public abstract String getDescription();
 
-  /** The aggregation used for this view. */
+  /** Returns the aggregation of the resulting metric. */
   public abstract Aggregation getAggregation();
 
-  /** The attribute processor used for this view. */
+  /** Returns the attribute processor used for this view. */
   abstract AttributesProcessor getAttributesProcessor();
 
   @Override

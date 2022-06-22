@@ -5,7 +5,7 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry Protocol Logs Exporter"
+description = "OpenTelemetry Protocol (OTLP) Log Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.logs")
 
 dependencies {
@@ -16,6 +16,10 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
+
+  testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
+  testImplementation("com.squareup.okhttp3:okhttp-tls")
 }
 
 testing {

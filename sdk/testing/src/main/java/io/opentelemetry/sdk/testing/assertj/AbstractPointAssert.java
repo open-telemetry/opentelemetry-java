@@ -18,7 +18,11 @@ import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
-/** Assertions for an exported {@link PointData}. */
+/**
+ * Assertions for an exported {@link PointData}.
+ *
+ * @since 1.14.0
+ */
 public abstract class AbstractPointAssert<
         PointAssertT extends AbstractPointAssert<PointAssertT, PointT>, PointT extends PointData>
     extends AbstractAssert<PointAssertT, PointT> {

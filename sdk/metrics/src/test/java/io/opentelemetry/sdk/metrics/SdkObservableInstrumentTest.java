@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -30,16 +31,19 @@ class SdkObservableInstrumentTest {
   void close() {
     MeterSharedState meterSharedState =
         spy(MeterSharedState.create(InstrumentationScopeInfo.empty(), Collections.emptyList()));
-    CallbackRegistration<?> callbackRegistration =
-        CallbackRegistration.createDouble(
-            InstrumentDescriptor.create(
-                "my-instrument",
-                "description",
-                "unit",
-                InstrumentType.COUNTER,
-                InstrumentValueType.DOUBLE),
-            unused -> {},
-            Collections.emptyList());
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(
+            Collections.singletonList(
+                SdkObservableMeasurement.create(
+                    InstrumentationScopeInfo.create("meter"),
+                    InstrumentDescriptor.create(
+                        "my-instrument",
+                        "description",
+                        "unit",
+                        InstrumentType.COUNTER,
+                        InstrumentValueType.DOUBLE),
+                    Collections.emptyList())),
+            () -> {});
 
     SdkObservableInstrument observableInstrument =
         new SdkObservableInstrument(meterSharedState, callbackRegistration);

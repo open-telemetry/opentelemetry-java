@@ -110,7 +110,11 @@ public final class OpenTelemetryExtension
     return spanExporter.getFinishedSpanItems();
   }
 
-  /** Returns the current {@link MetricData} in {@link AggregationTemporality#CUMULATIVE} format. */
+  /**
+   * Returns the current {@link MetricData} in {@link AggregationTemporality#CUMULATIVE} format.
+   *
+   * @since 1.15.0
+   */
   public List<MetricData> getMetrics() {
     return new ArrayList<>(metricReader.collectAllMetrics());
   }
@@ -139,7 +143,11 @@ public final class OpenTelemetryExtension
     spanExporter.reset();
   }
 
-  /** Clears all registered metric instruments, such that {@link #getMetrics()} is empty. */
+  /**
+   * Clears all registered metric instruments, such that {@link #getMetrics()} is empty.
+   *
+   * @since 1.15.0
+   */
   public void clearMetrics() {
     SdkMeterProviderUtil.resetForTest(openTelemetry.getSdkMeterProvider());
   }

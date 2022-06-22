@@ -20,16 +20,15 @@ import java.util.function.BiFunction;
 
 final class PropagatorConfiguration {
 
+  private static final List<String> DEFAULT_PROPAGATORS = Arrays.asList("tracecontext", "baggage");
+
   static ContextPropagators configurePropagators(
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
-    List<String> requestedPropagators = config.getList("otel.propagators");
-    if (requestedPropagators.isEmpty()) {
-      requestedPropagators = Arrays.asList("tracecontext", "baggage");
-    }
+    List<String> requestedPropagators = config.getList("otel.propagators", DEFAULT_PROPAGATORS);
 
     NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
         SpiUtil.loadConfigurable(

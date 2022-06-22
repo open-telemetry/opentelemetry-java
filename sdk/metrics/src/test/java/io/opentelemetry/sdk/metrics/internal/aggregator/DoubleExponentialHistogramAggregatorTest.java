@@ -51,7 +51,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 320);
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -63,8 +63,7 @@ class DoubleExponentialHistogramAggregatorTest {
         aggregator,
         new DoubleExponentialHistogramAggregator(
             ExemplarReservoir::doubleNoSamples,
-            ExponentialBucketStrategy.newStrategy(
-                20, 320, ExponentialCounterFactory.mapCounter())));
+            ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter())));
   }
 
   private static int valueToIndex(int scale, double value) {
@@ -106,7 +105,7 @@ class DoubleExponentialHistogramAggregatorTest {
     ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
     List<Long> positiveCounts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
     List<Long> negativeCounts = acc.getNegativeBuckets().getBucketCounts();
-    int expectedScale = 6; // should be downscaled from 20 to 6 after recordings
+    int expectedScale = 5; // should be downscaled from 20 to 5 after recordings
 
     assertThat(acc.getScale()).isEqualTo(expectedScale);
     assertThat(acc.getZeroCount()).isEqualTo(2);
@@ -162,11 +161,11 @@ class DoubleExponentialHistogramAggregatorTest {
         .isEqualTo(bucketCounts.size() - 2);
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(2);
 
-    // With 320 buckets allowed, minimum scale is -3
-    assertThat(acc.getScale()).isEqualTo(-3);
+    // With 160 buckets allowed, minimum scale is -4
+    assertThat(acc.getScale()).isEqualTo(-4);
 
-    // if scale is -3, base is 256.
-    int base = 256;
+    // if scale is -4, base is 65,536.
+    int base = 65_536;
 
     // Verify the rule holds:
     // base ^ (offset+i) <= (values recorded to bucket i) < base ^ (offset+i+1)
@@ -188,7 +187,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(() -> reservoir, 20, 320);
+        new DoubleExponentialHistogramAggregator(() -> reservoir, 160);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -372,8 +371,8 @@ class DoubleExponentialHistogramAggregatorTest {
     }
 
     ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
-    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(4);
-    assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(320);
+    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(3);
+    assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(160);
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(n);
   }
 
@@ -420,7 +419,7 @@ class DoubleExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(reservoirSupplier, 20, 320);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160);
 
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
@@ -516,13 +515,13 @@ class DoubleExponentialHistogramAggregatorTest {
     ExponentialHistogramAccumulation acc = Objects.requireNonNull(summarizer.accumulation);
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
-    assertThat(acc.getScale()).isEqualTo(5);
+    assertThat(acc.getScale()).isEqualTo(3);
     MetricAssertions.assertThat(acc.getPositiveBuckets())
         .hasTotalCount(numberOfUpdates * 3)
-        .hasOffset(-107);
+        .hasOffset(-27);
     MetricAssertions.assertThat(acc.getNegativeBuckets())
         .hasTotalCount(numberOfUpdates * 2)
-        .hasOffset(-107);
+        .hasOffset(-27);
 
     // Verify positive buckets have correct counts
     List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();

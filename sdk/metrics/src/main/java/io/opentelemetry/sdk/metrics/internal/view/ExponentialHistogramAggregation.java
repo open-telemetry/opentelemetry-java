@@ -26,13 +26,14 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  */
 public final class ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
-  private static final Aggregation DEFAULT = new ExponentialHistogramAggregation(20, 320);
+  private static final int DEFAULT_MAX_BUCKETS = 160;
 
-  private final int startingScale;
+  private static final Aggregation DEFAULT =
+      new ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS);
+
   private final int maxBuckets;
 
-  private ExponentialHistogramAggregation(int startingScale, int maxBuckets) {
-    this.startingScale = startingScale;
+  private ExponentialHistogramAggregation(int maxBuckets) {
     this.maxBuckets = maxBuckets;
   }
 
@@ -40,9 +41,9 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
     return DEFAULT;
   }
 
-  public static Aggregation create(int scale, int maxBuckets) {
-    checkArgument(maxBuckets >= 0, "maxBuckets must be >= 0");
-    return new ExponentialHistogramAggregation(scale, maxBuckets);
+  public static Aggregation create(int maxBuckets) {
+    checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
+    return new ExponentialHistogramAggregation(maxBuckets);
   }
 
   @Override
@@ -58,7 +59,6 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
                         Clock.getDefault(),
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())),
-            startingScale,
             maxBuckets);
   }
 
@@ -75,10 +75,6 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
 
   @Override
   public String toString() {
-    return "ExponentialHistogramAggregation{startingScale="
-        + startingScale
-        + ",maxBuckets="
-        + maxBuckets
-        + "}";
+    return "ExponentialHistogramAggregation{maxBuckets=" + maxBuckets + "}";
   }
 }

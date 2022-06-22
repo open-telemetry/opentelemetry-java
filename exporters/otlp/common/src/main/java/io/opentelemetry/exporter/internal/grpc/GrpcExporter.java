@@ -5,11 +5,11 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.ManagedChannel;
+import io.grpc.Channel;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.URI;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -26,17 +26,10 @@ public interface GrpcExporter<T extends Marshaler> {
       String type,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      String grpcServiceName,
+      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       String grpcEndpointPath) {
-    return GrpcExporterUtil.exporterBuilder(
-        exporterName,
-        type,
-        defaultTimeoutSecs,
-        defaultEndpoint,
-        stubFactory,
-        grpcServiceName,
-        grpcEndpointPath);
+    return new GrpcExporterBuilder<>(
+        exporterName, type, defaultTimeoutSecs, defaultEndpoint, stubFactory, grpcEndpointPath);
   }
 
   /**

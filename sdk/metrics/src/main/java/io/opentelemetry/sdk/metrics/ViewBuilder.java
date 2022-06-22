@@ -5,13 +5,18 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
-/** A builder for {@link View}. */
+/**
+ * A builder for {@link View}.
+ *
+ * @since 1.14.0
+ */
 public final class ViewBuilder {
 
   @Nullable private String name;
@@ -24,8 +29,7 @@ public final class ViewBuilder {
   /**
    * Sets the name of the resulting metric.
    *
-   * @param name metric name or {@code null} if the underlying instrument name should be used.
-   * @return this Builder.
+   * @param name metric name or {@code null} if the matched instrument name should be used.
    */
   public ViewBuilder setName(String name) {
     this.name = name;
@@ -35,9 +39,8 @@ public final class ViewBuilder {
   /**
    * Sets the description of the resulting metric.
    *
-   * @param description metric description or {@code null} if the underlying instrument description
+   * @param description metric description or {@code null} if the matched instrument description
    *     should be used.
-   * @return this Builder.
    */
   public ViewBuilder setDescription(String description) {
     this.description = description;
@@ -48,7 +51,6 @@ public final class ViewBuilder {
    * Sets {@link Aggregation}.
    *
    * @param aggregation aggregation to use.
-   * @return this Builder.
    */
   public ViewBuilder setAggregation(Aggregation aggregation) {
     if (!(aggregation instanceof AggregatorFactory)) {
@@ -61,19 +63,23 @@ public final class ViewBuilder {
   }
 
   /**
-   * Sets a filter for attributes, where only attribute names that pass the supplied {@link
-   * Predicate} will be included in the output.
+   * Sets a filter for attributes keys.
    *
-   * <p>Note: This runs after all other attribute processing added so far.
+   * <p>Only attribute keys that pass the supplied {@link Predicate} will be included in the output.
    *
-   * @param keyFilter filter for key names to include.
-   * @return this Builder.
+   * @param keyFilter filter for attribute keys to include.
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
     return addAttributesProcessor(AttributesProcessor.filterByKeyName(keyFilter));
   }
 
+  /**
+   * Add an attribute processor.
+   *
+   * <p>Note: not currently stable but additional attribute processors can be configured via {@link
+   * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
+   */
   ViewBuilder addAttributesProcessor(AttributesProcessor attributesProcessor) {
     this.processor = this.processor.then(attributesProcessor);
     return this;

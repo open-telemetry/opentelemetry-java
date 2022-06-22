@@ -52,26 +52,43 @@ class AsynchronousMetricStorageTest {
   @Mock private MetricReader reader;
   private RegisteredReader registeredReader;
 
+  private AsynchronousMetricStorage<?, ?> longCounterStorage;
+  private AsynchronousMetricStorage<?, ?> doubleCounterStorage;
+
   @BeforeEach
   void setup() {
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
     registeredReader = RegisteredReader.create(reader);
-  }
 
-  @Test
-  void recordLong() {
-    AsynchronousMetricStorage<?, ?> storage =
+    longCounterStorage =
         AsynchronousMetricStorage.create(
             registeredReader,
             registeredView,
             InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "long-counter",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG));
+    doubleCounterStorage =
+        AsynchronousMetricStorage.create(
+            registeredReader,
+            registeredView,
+            InstrumentDescriptor.create(
+                "double-counter",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.DOUBLE));
+  }
 
-    storage.recordLong(1, Attributes.builder().put("key", "a").build());
-    storage.recordLong(2, Attributes.builder().put("key", "b").build());
-    storage.recordLong(3, Attributes.builder().put("key", "c").build());
+  @Test
+  void recordLong() {
+    longCounterStorage.recordLong(1, Attributes.builder().put("key", "a").build());
+    longCounterStorage.recordLong(2, Attributes.builder().put("key", "b").build());
+    longCounterStorage.recordLong(3, Attributes.builder().put("key", "c").build());
 
-    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -89,18 +106,11 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordDouble() {
-    AsynchronousMetricStorage<?, ?> storage =
-        AsynchronousMetricStorage.create(
-            registeredReader,
-            registeredView,
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+    doubleCounterStorage.recordDouble(1.1, Attributes.builder().put("key", "a").build());
+    doubleCounterStorage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
+    doubleCounterStorage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
 
-    storage.recordDouble(1.1, Attributes.builder().put("key", "a").build());
-    storage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
-    storage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
-
-    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(doubleCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -147,38 +157,24 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    AsynchronousMetricStorage<?, ?> storage =
-        AsynchronousMetricStorage.create(
-            registeredReader,
-            registeredView,
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
-
     for (int i = 0; i <= MetricStorageUtils.MAX_ACCUMULATIONS + 1; i++) {
-      storage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
+      longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
 
-    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
                     .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS));
-    logs.assertContains("Instrument name has exceeded the maximum allowed accumulations");
+    logs.assertContains("Instrument long-counter has exceeded the maximum allowed accumulations");
   }
 
   @Test
   void record_DuplicateAttributes() {
-    AsynchronousMetricStorage<?, ?> storage =
-        AsynchronousMetricStorage.create(
-            registeredReader,
-            registeredView,
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+    longCounterStorage.recordLong(1, Attributes.builder().put("key1", "a").build());
+    longCounterStorage.recordLong(2, Attributes.builder().put("key1", "a").build());
 
-    storage.recordLong(1, Attributes.builder().put("key1", "a").build());
-    storage.recordLong(2, Attributes.builder().put("key1", "a").build());
-
-    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -187,6 +183,7 @@ class AsynchronousMetricStorageTest {
                             sum.hasPointsSatisfying(
                                 point ->
                                     point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
-    logs.assertContains("Instrument name has recorded multiple values for the same attributes");
+    logs.assertContains(
+        "Instrument long-counter has recorded multiple values for the same attributes");
   }
 }

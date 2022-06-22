@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
@@ -29,7 +30,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-/** SDK implementation for {@link MeterProvider}. */
+/**
+ * SDK implementation for {@link MeterProvider}.
+ *
+ * @since 1.14.0
+ */
 public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
@@ -40,11 +45,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final ComponentRegistry<SdkMeter> registry;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
-  /**
-   * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
-   *
-   * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
-   */
+  /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
   public static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
   }
@@ -83,7 +84,12 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     return new SdkMeterBuilder(registry, instrumentationScopeName);
   }
 
-  /** Reset the provider, clearing all registered instruments. */
+  /**
+   * Reset the provider, clearing all registered instruments.
+   *
+   * <p>Note: not currently stable but available for experimental use via {@link
+   * SdkMeterProviderUtil#resetForTest(SdkMeterProvider)}.
+   */
   void resetForTest() {
     registry.getComponents().forEach(SdkMeter::resetForTest);
   }

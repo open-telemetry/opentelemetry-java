@@ -12,7 +12,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for (deprecated) {@link SummaryPointData}. */
+/**
+ * Test assertions for (deprecated) {@link SummaryPointData}.
+ *
+ * @since 1.14.0
+ */
 public final class SummaryPointAssert
     extends AbstractPointAssert<SummaryPointAssert, SummaryPointData> {
 

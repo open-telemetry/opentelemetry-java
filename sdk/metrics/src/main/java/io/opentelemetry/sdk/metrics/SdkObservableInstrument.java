@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.metrics.BatchCallback;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
@@ -24,17 +25,18 @@ class SdkObservableInstrument
         ObservableDoubleGauge,
         ObservableLongGauge,
         ObservableDoubleUpDownCounter,
-        ObservableLongUpDownCounter {
+        ObservableLongUpDownCounter,
+        BatchCallback {
 
   private static final Logger logger = Logger.getLogger(SdkObservableInstrument.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final MeterSharedState meterSharedState;
-  private final CallbackRegistration<?> callbackRegistration;
+  private final CallbackRegistration callbackRegistration;
   private final AtomicBoolean removed = new AtomicBoolean(false);
 
   SdkObservableInstrument(
-      MeterSharedState meterSharedState, CallbackRegistration<?> callbackRegistration) {
+      MeterSharedState meterSharedState, CallbackRegistration callbackRegistration) {
     this.meterSharedState = meterSharedState;
     this.callbackRegistration = callbackRegistration;
   }
@@ -44,9 +46,7 @@ class SdkObservableInstrument
     if (!removed.compareAndSet(false, true)) {
       throttlingLogger.log(
           Level.WARNING,
-          "Instrument "
-              + callbackRegistration.getInstrumentDescriptor().getName()
-              + " has called close() multiple times.");
+          callbackRegistration.getCallbackDescription() + " has called close() multiple times.");
       return;
     }
     meterSharedState.removeCallback(callbackRegistration);

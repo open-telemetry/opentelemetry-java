@@ -1,0 +1,22 @@
+name: "Close stale pull requests"
+on:
+  schedule:
+    - cron: "23 * * * *" # https://crontab.guru/#23_*_*_*_*
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: 'This PR was marked stale due to lack of activity. It will be closed in 14 days.'
+          close-pr-message: 'Closed as inactive. Feel free to reopen if this PR is still being worked on.'
+          days-before-pr-stale: 14
+          days-before-pr-close: 14
+          exempt-pr-labels: prototype
+          any-of-issue-labels: needs-author-feedback
+          days-before-issue-stale: 7
+          days-before-issue-close: 7
+          stale-issue-message: 'This issue was marked stale due to lack of author feedback. It will be closed in 7 days.'
+          close-issue-message: 'Closed as inactive. Feel free to reopen if this issue is still being worked on.'

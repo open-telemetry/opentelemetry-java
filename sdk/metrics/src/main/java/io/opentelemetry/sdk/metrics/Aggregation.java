@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.view.DefaultAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DropAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
@@ -13,43 +14,52 @@ import io.opentelemetry.sdk.metrics.internal.view.SumAggregation;
 import java.util.List;
 
 /**
- * Configures how measurements are combined into metrics.
+ * Configures how instrument measurements are combined into metrics.
  *
  * <p>Aggregation provides a set of built-in aggregations via static methods.
+ *
+ * @since 1.14.0
  */
 // TODO(anuraaga): Have methods when custom aggregations are supported.
 @SuppressWarnings("InterfaceWithOnlyStatics")
 public interface Aggregation {
 
-  /** The drop Aggregation will ignore/drop all Instrument Measurements. */
+  /** Drops all measurements and don't export any metric. */
   static Aggregation drop() {
     return DropAggregation.getInstance();
   }
 
-  /** The default aggregation for an instrument will be chosen. */
+  /** Choose the default aggregation for the {@link InstrumentType}. */
   static Aggregation defaultAggregation() {
     return DefaultAggregation.getInstance();
   }
 
-  /** Instrument measurements will be combined into a metric Sum. */
+  /**
+   * Aggregates measurements into a {@link MetricDataType#DOUBLE_SUM} or {@link
+   * MetricDataType#LONG_SUM}.
+   */
   static Aggregation sum() {
     return SumAggregation.getInstance();
   }
 
-  /** Remembers the last seen measurement and reports as a Gauge. */
+  /**
+   * Records the last seen measurement as a {@link MetricDataType#DOUBLE_GAUGE} or {@link
+   * MetricDataType#LONG_GAUGE}.
+   */
   static Aggregation lastValue() {
     return LastValueAggregation.getInstance();
   }
 
   /**
-   * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
+   * Aggregates measurements into an explicit bucket {@link MetricDataType#HISTOGRAM} using the
+   * default bucket boundaries.
    */
   static Aggregation explicitBucketHistogram() {
     return ExplicitBucketHistogramAggregation.getDefault();
   }
 
   /**
-   * Aggregates measurements into an explicit bucket histogram.
+   * Aggregates measurements into an explicit bucket {@link MetricDataType#HISTOGRAM}.
    *
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.

@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -307,63 +308,68 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
-    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-    meterProviderBuilder.setResource(resource);
-    MeterProviderConfiguration.configureMeterProvider(
-        meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
-    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
-    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+    OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
+    boolean sdkEnabled =
+        Optional.ofNullable(config.getBoolean("otel.experimental.sdk.enabled")).orElse(true);
+    if (sdkEnabled) {
+      SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+      meterProviderBuilder.setResource(resource);
+      MeterProviderConfiguration.configureMeterProvider(
+          meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
+      meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+      SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
-    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-    tracerProviderBuilder.setResource(resource);
-    TracerProviderConfiguration.configureTracerProvider(
-        tracerProviderBuilder,
-        config,
-        serviceClassLoader,
-        meterProvider,
-        spanExporterCustomizer,
-        samplerCustomizer);
-    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+      SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+      tracerProviderBuilder.setResource(resource);
+      TracerProviderConfiguration.configureTracerProvider(
+          tracerProviderBuilder,
+          config,
+          serviceClassLoader,
+          meterProvider,
+          spanExporterCustomizer,
+          samplerCustomizer);
+      tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+      SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
-    SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
-    logEmitterProviderBuilder.setResource(resource);
-    LogEmitterProviderConfiguration.configureLogEmitterProvider(
-        logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
-    logEmitterProviderBuilder =
-        logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
-    SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
+      SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
+      logEmitterProviderBuilder.setResource(resource);
+      LogEmitterProviderConfiguration.configureLogEmitterProvider(
+          logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
+      logEmitterProviderBuilder =
+          logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
+      SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
 
-    if (registerShutdownHook) {
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    List<CompletableResultCode> shutdown = new ArrayList<>();
-                    shutdown.add(tracerProvider.shutdown());
-                    shutdown.add(meterProvider.shutdown());
-                    shutdown.add(logEmitterProvider.shutdown());
-                    CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
-                  }));
+      if (registerShutdownHook) {
+        Runtime.getRuntime()
+            .addShutdownHook(
+                new Thread(
+                    () -> {
+                      List<CompletableResultCode> shutdown = new ArrayList<>();
+                      shutdown.add(tracerProvider.shutdown());
+                      shutdown.add(meterProvider.shutdown());
+                      shutdown.add(logEmitterProvider.shutdown());
+                      CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
+                    }));
+      }
+
+      ContextPropagators propagators =
+          PropagatorConfiguration.configurePropagators(
+              config, serviceClassLoader, propagatorCustomizer);
+
+      OpenTelemetrySdkBuilder sdkBuilder =
+          OpenTelemetrySdk.builder()
+              .setTracerProvider(tracerProvider)
+              .setLogEmitterProvider(logEmitterProvider)
+              .setMeterProvider(meterProvider)
+              .setPropagators(propagators);
+
+      openTelemetrySdk = sdkBuilder.build();
     }
-
-    ContextPropagators propagators =
-        PropagatorConfiguration.configurePropagators(
-            config, serviceClassLoader, propagatorCustomizer);
-
-    OpenTelemetrySdkBuilder sdkBuilder =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(tracerProvider)
-            .setLogEmitterProvider(logEmitterProvider)
-            .setMeterProvider(meterProvider)
-            .setPropagators(propagators);
-
-    OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
 
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
       logger.log(
-          Level.FINE, "Global OpenTelemetrySdk set to {0} by autoconfiguration", openTelemetrySdk);
+          Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
     }
 
     return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);

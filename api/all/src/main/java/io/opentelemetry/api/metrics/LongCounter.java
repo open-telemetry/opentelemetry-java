@@ -10,10 +10,9 @@ import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A counter instrument that records {@code long} values.
+ * A Counter instrument that records {@code long} values.
  *
- * <p>Counters only allow adding positive values, and guarantee the resulting metrics will be
- * always-increasing monotonic sums.
+ * @since 1.10.0
  */
 @ThreadSafe
 public interface LongCounter {
@@ -35,7 +34,7 @@ public interface LongCounter {
    * measurement.
    *
    * @param value The increment amount. MUST be non-negative.
-   * @param attributes A set of attributes to associate with the count.
+   * @param attributes A set of attributes to associate with the value.
    */
   void add(long value, Attributes attributes);
 
@@ -43,7 +42,7 @@ public interface LongCounter {
    * Records a value with a set of attributes.
    *
    * @param value The increment amount. MUST be non-negative.
-   * @param attributes A set of attributes to associate with the count.
+   * @param attributes A set of attributes to associate with the value.
    * @param context The explicit context to associate with this measurement.
    */
   void add(long value, Attributes attributes, Context context);

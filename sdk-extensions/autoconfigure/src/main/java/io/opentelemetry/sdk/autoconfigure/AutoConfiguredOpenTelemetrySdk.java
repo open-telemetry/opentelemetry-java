@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,8 +25,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * Returns an {@link AutoConfiguredOpenTelemetrySdk} automatically initialized through recognized
    * system properties and environment variables.
    *
-   * <p>This will automatically set the resulting SDK as the {@link
-   * io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   * <p>This will automatically set the resulting SDK as the {@link GlobalOpenTelemetry} instance.
    */
   public static AutoConfiguredOpenTelemetrySdk initialize() {
     return builder().build();
@@ -44,7 +44,10 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
     return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
   }
 
-  /** Returns the {@link OpenTelemetrySdk} that was auto-configured. */
+  /**
+   * Returns the {@link OpenTelemetrySdk} that was auto-configured, or {@code null} if the SDK has
+   * been disabled.
+   */
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 
   /** Returns the {@link Resource} that was auto-configured. */

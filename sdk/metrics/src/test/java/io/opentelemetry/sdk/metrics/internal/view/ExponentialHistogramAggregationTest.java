@@ -15,13 +15,13 @@ class ExponentialHistogramAggregationTest {
   @Test
   void goodConfig() {
     assertThat(ExponentialHistogramAggregation.getDefault()).isNotNull();
-    assertThat(ExponentialHistogramAggregation.create(10, 10)).isNotNull();
+    assertThat(ExponentialHistogramAggregation.create(10)).isNotNull();
   }
 
   @Test
   void badBuckets_throwArgumentException() {
-    assertThatThrownBy(() -> ExponentialHistogramAggregation.create(1, -1))
+    assertThatThrownBy(() -> ExponentialHistogramAggregation.create(0))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxBuckets must be >= 0");
+        .hasMessage("maxBuckets must be > 0");
   }
 }

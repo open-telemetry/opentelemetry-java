@@ -1,0 +1,36 @@
+Comparing source compatibility of  against 
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.BatchCallback  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) void close()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleCounterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableDoubleMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleGaugeBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableDoubleMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableDoubleMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongCounterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableLongMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongGaugeBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableLongMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongUpDownCounterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.ObservableLongMeasurement buildObserver()
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.Meter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.BatchCallback batchCallback(java.lang.Runnable, io.opentelemetry.api.metrics.ObservableMeasurement, io.opentelemetry.api.metrics.ObservableMeasurement[])
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableDoubleMeasurement  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.ObservableLongMeasurement  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.ObservableMeasurement
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.ObservableMeasurement  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object

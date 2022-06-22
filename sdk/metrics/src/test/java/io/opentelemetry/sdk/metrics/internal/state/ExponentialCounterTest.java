@@ -33,7 +33,7 @@ public class ExponentialCounterTest {
   @ParameterizedTest
   @MethodSource("counterProviders")
   void expandLower(ExponentialCounterFactory counterFactory) {
-    ExponentialCounter counter = counterFactory.newCounter(320);
+    ExponentialCounter counter = counterFactory.newCounter(160);
     assertThat(counter.increment(10, 1)).isTrue();
     // Add BEFORE the initial see (array index 0) and make sure we wrap around the datastructure.
     assertThat(counter.increment(0, 1)).isTrue();
@@ -53,14 +53,14 @@ public class ExponentialCounterTest {
   @ParameterizedTest
   @MethodSource("counterProviders")
   void shouldFailAtLimit(ExponentialCounterFactory counterFactory) {
-    ExponentialCounter counter = counterFactory.newCounter(320);
+    ExponentialCounter counter = counterFactory.newCounter(160);
     assertThat(counter.increment(0, 1)).isTrue();
-    assertThat(counter.increment(319, 1)).isTrue();
+    assertThat(counter.increment(120, 1)).isTrue();
     // Check state
     assertThat(counter.getIndexStart()).as("index start").isEqualTo(0);
-    assertThat(counter.getIndexEnd()).as("index start").isEqualTo(319);
+    assertThat(counter.getIndexEnd()).as("index start").isEqualTo(120);
     assertThat(counter.get(0)).as("counter[0]").isEqualTo(1);
-    assertThat(counter.get(319)).as("counter[319]").isEqualTo(1);
+    assertThat(counter.get(120)).as("counter[120]").isEqualTo(1);
     // Adding over the maximum # of buckets
     assertThat(counter.increment(3000, 1)).isFalse();
   }

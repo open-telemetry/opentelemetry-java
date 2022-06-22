@@ -10,7 +10,11 @@ import static java.util.Objects.requireNonNull;
 
 import javax.annotation.Nullable;
 
-/** Builder for {@link InstrumentSelector}. */
+/**
+ * Builder for {@link InstrumentSelector}.
+ *
+ * @since 1.14.0
+ */
 public final class InstrumentSelectorBuilder {
 
   @Nullable private InstrumentType instrumentType;
@@ -21,7 +25,7 @@ public final class InstrumentSelectorBuilder {
 
   InstrumentSelectorBuilder() {}
 
-  /** Sets a specifier for {@link InstrumentType}. */
+  /** Select instruments with the given {@code instrumentType}. */
   public InstrumentSelectorBuilder setType(InstrumentType instrumentType) {
     requireNonNull(instrumentType, "instrumentType");
     this.instrumentType = instrumentType;
@@ -29,7 +33,7 @@ public final class InstrumentSelectorBuilder {
   }
 
   /**
-   * Sets the exact instrument name that will be selected.
+   * Select instruments with the given {@code name}.
    *
    * <p>Instrument name may contain the wildcard characters {@code *} and {@code ?} with the
    * following matching criteria:
@@ -45,37 +49,28 @@ public final class InstrumentSelectorBuilder {
     return this;
   }
 
-  /**
-   * Sets a specifier for selecting instruments by the name of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
+  /** Select instruments associated with the given {@code meterName}. */
   public InstrumentSelectorBuilder setMeterName(String meterName) {
     requireNonNull(meterName, "meterName");
     this.meterName = meterName;
     return this;
   }
 
-  /**
-   * Sets a specifier for selecting instruments by the version of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
+  /** Select instruments associated with the given {@code meterVersion}. */
   public InstrumentSelectorBuilder setMeterVersion(String meterVersion) {
     requireNonNull(meterVersion, "meterVersion");
     this.meterVersion = meterVersion;
     return this;
   }
 
-  /**
-   * Sets a specifier for selecting instruments by the schema URL of their associated {@link
-   * io.opentelemetry.api.metrics.Meter}.
-   */
+  /** Select instruments associated with the given {@code meterSchemaUrl}. */
   public InstrumentSelectorBuilder setMeterSchemaUrl(String meterSchemaUrl) {
     requireNonNull(meterSchemaUrl, "meterSchemaUrl");
     this.meterSchemaUrl = meterSchemaUrl;
     return this;
   }
 
-  /** Returns an InstrumentSelector instance with the content of this builder. */
+  /** Returns an {@link InstrumentSelector} with the configuration of this builder. */
   public InstrumentSelector build() {
     checkArgument(
         instrumentType != null

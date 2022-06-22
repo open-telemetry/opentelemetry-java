@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
@@ -12,6 +14,7 @@ import static org.assertj.core.api.Assertions.entry;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,14 +24,7 @@ class ConfigPropertiesTest {
 
   @Test
   void allValid() {
-    Map<String, String> properties = new HashMap<>();
-    properties.put("string", "str");
-    properties.put("int", "10");
-    properties.put("long", "20");
-    properties.put("double", "5.4");
-    properties.put("list", "cat,dog,bear");
-    properties.put("map", "cat=meow,dog=bark,bear=growl");
-    properties.put("duration", "1s");
+    Map<String, String> properties = makeTestProps();
 
     ConfigProperties config = DefaultConfigProperties.createForTest(properties);
     assertThat(config.getString("string")).isEqualTo("str");
@@ -43,7 +39,7 @@ class ConfigPropertiesTest {
 
   @Test
   void allMissing() {
-    ConfigProperties config = DefaultConfigProperties.createForTest(Collections.emptyMap());
+    ConfigProperties config = DefaultConfigProperties.createForTest(emptyMap());
     assertThat(config.getString("string")).isNull();
     assertThat(config.getInt("int")).isNull();
     assertThat(config.getLong("long")).isNull();
@@ -215,5 +211,63 @@ class ConfigPropertiesTest {
             DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "8   ms"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(8));
+  }
+
+  @Test
+  void defaultMethodsDelegate() {
+    Map<String, String> expectedMap = new HashMap<>();
+    expectedMap.put("dog", "bark");
+    expectedMap.put("cat", "meow");
+    expectedMap.put("bear", "growl");
+
+    Map<String, String> map = makeTestProps();
+    ConfigProperties properties = DefaultConfigProperties.get(map);
+    assertThat(properties.getBoolean("boolean", false)).isTrue();
+    assertThat(properties.getString("string", "nah")).isEqualTo("str");
+    assertThat(properties.getDouble("double", 65.535)).isEqualTo(5.4);
+    assertThat(properties.getInt("int", 21)).isEqualTo(10);
+    assertThat(properties.getLong("long", 123L)).isEqualTo(20L);
+    assertThat(properties.getDuration("duration", Duration.ofDays(13)))
+        .isEqualTo(Duration.ofSeconds(1));
+    assertThat(properties.getList("list", emptyList())).containsExactly("cat", "dog", "bear");
+    assertThat(properties.getMap("map", emptyMap())).containsAllEntriesOf(expectedMap);
+  }
+
+  @Test
+  void defaultMethodsFallBack() {
+    ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
+    assertThat(properties.getBoolean("foo", true)).isTrue();
+    assertThat(properties.getString("foo", "bar")).isEqualTo("bar");
+    assertThat(properties.getDouble("foo", 65.535)).isEqualTo(65.535);
+    assertThat(properties.getInt("foo", 21)).isEqualTo(21);
+    assertThat(properties.getLong("foo", 123L)).isEqualTo(123L);
+    assertThat(properties.getDuration("foo", Duration.ofDays(13))).isEqualTo(Duration.ofDays(13));
+  }
+
+  @Test
+  void defaultCollectionTypes() {
+    ConfigProperties properties = DefaultConfigProperties.get(emptyMap());
+    assertThat(properties.getList("foo", Arrays.asList("1", "2", "3")))
+        .containsExactly("1", "2", "3");
+    assertThat(properties.getList("foo")).isEmpty();
+    Map<String, String> defaultMap = new HashMap<>();
+    defaultMap.put("one", "1");
+    defaultMap.put("two", "2");
+    assertThat(properties.getMap("foo", defaultMap))
+        .containsExactly(entry("one", "1"), entry("two", "2"));
+    assertThat(properties.getMap("foo")).isEmpty();
+  }
+
+  private static Map<String, String> makeTestProps() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put("string", "str");
+    properties.put("int", "10");
+    properties.put("long", "20");
+    properties.put("double", "5.4");
+    properties.put("boolean", "true");
+    properties.put("list", "cat,dog,bear");
+    properties.put("map", "cat=meow,dog=bark,bear=growl");
+    properties.put("duration", "1s");
+    return properties;
   }
 }

@@ -1,8 +1,9 @@
 # OpenTelemetry Release Process
 
-Before releasing, it is a good idea to run `./gradlew japicmp` on the main branch
-and verify that there are no unexpected public API changes seen in the `docs/apidiffs/current_vs_latest`
-directory.
+Before releasing, it is a good idea to run `./gradlew japicmp` on the main branch and verify that
+there are no unexpected public API changes seen in the `docs/apidiffs/current_vs_latest`
+directory. Additionally, ensure that appropriate `@since` annotations are added to any additions to
+the public APIs.
 
 When preparing the change log, you can use
 `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent`
@@ -84,15 +85,27 @@ Finally, update the [website docs][] to refer to the newly released version.
 
 ## Credentials
 
-The following credentials are required for publishing (and automatically set in Circle CI):
+The following credentials are required for publishing (and automatically set in Github Actions):
 
-* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing
-  - Note, currently only @anuraaga has this and we need to find a way to safely share secrets in the
-    OpenTelemetry project, for example with a password manager. In the worst case if you need to
-    release manually and cannot get a hold of it, you can generate a new key but don't forget to
-    upload the public key to keyservers.
-
+* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing. 
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
+  * Each maintainer will have their own set of Sonotype credentials with permission to publish to
+    the `io.opentelemetry` group prefix.
+  * Request [publishing permissions](https://central.sonatype.org/publish/manage-permissions/) by
+    commenting on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
+    from another maintainer.
+  * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, login
+    to [oss.sonatype.org](https://oss.sonatype.org/) and navigate to Profile -> User Token -> Access
+    User Token.
+
+Additionally, credentials are stored with maintainers via
+the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account. The following 
+defines the mapping from Github Action secret keys to 1Password keys:
+
+| Github Actions Key | 1Password Key |
+|--------------------|---------------|
+| `GPG_PASSWORD` | `opentelemetry-java GPG_PASSWORD` |
+| `GPG_PRIVATE_KEY` | `opentelemetry-java GPG_PRIVATE_KEY` |
 
 ## Releasing from the local setup
 
