@@ -14,6 +14,7 @@ jobs:
           close-pr-message: 'Closed as inactive. Feel free to reopen if this PR is still being worked on.'
           days-before-pr-stale: 14
           days-before-pr-close: 14
+          exempt-pr-labels: prototype
           any-of-issue-labels: needs-author-feedback
           days-before-issue-stale: 7
           days-before-issue-close: 7
