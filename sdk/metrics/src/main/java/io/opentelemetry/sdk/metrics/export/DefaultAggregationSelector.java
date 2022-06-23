@@ -10,6 +10,8 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 
 /**
  * A functional interface that selects default {@link Aggregation} based on {@link InstrumentType}.
+ *
+ * @since 1.16.0
  */
 @FunctionalInterface
 public interface DefaultAggregationSelector {

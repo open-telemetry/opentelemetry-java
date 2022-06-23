@@ -31,6 +31,7 @@ public interface MetricExporter
    * Return the default aggregation for the {@link InstrumentType}.
    *
    * @see DefaultAggregationSelector#getDefaultAggregation(InstrumentType)
+   * @since 1.16.0
    */
   @Override
   default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
