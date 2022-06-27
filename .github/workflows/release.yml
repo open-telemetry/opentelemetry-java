@@ -118,13 +118,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp jmx-metrics/build/libs/opentelemetry-jmx-metrics-$VERSION-alpha.jar opentelemetry-jmx-metrics.jar
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
                             --discussion-category announcements \
-                            v$VERSION \
-                            opentelemetry-jmx-metrics.jar
+                            v$VERSION
 
       - uses: actions/checkout@v3
         with:
