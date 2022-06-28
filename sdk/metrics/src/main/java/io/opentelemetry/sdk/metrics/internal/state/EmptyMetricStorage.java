@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -17,7 +18,9 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 
 final class EmptyMetricStorage implements SynchronousMetricStorage {
   static final EmptyMetricStorage INSTANCE = new EmptyMetricStorage();
@@ -39,6 +42,11 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   private final MetricReader emptyReader =
       new MetricReader() {
         @Override
+        public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+          return Aggregation.drop();
+        }
+
+        @Override
         public void register(CollectionRegistration registration) {}
 
         @Override
@@ -56,7 +64,9 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
           return CompletableResultCode.ofFailure();
         }
       };
-  private final RegisteredReader registeredReader = RegisteredReader.create(emptyReader);
+  private final RegisteredReader registeredReader =
+      RegisteredReader.create(
+          emptyReader, ViewRegistry.create(emptyReader, Collections.emptyList()));
 
   @Override
   public MetricDescriptor getMetricDescriptor() {

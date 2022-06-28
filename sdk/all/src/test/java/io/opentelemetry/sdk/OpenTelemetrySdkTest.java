@@ -8,6 +8,7 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetrySdkTest {
 
+  @Mock private MetricExporter metricExporter;
   @Mock private SdkTracerProvider tracerProvider;
   @Mock private SdkMeterProvider meterProvider;
   @Mock private SdkLogEmitterProvider logEmitterProvider;
@@ -185,11 +187,12 @@ class OpenTelemetrySdkTest {
 
   @Test
   void meterBuilder() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setMeterProvider(
                 SdkMeterProvider.builder()
-                    .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                     .build())
             .build();
     assertThat(openTelemetry.meterBuilder("instr"))
@@ -198,11 +201,12 @@ class OpenTelemetrySdkTest {
 
   @Test
   void meterBuilder_ViaProvider() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setMeterProvider(
                 SdkMeterProvider.builder()
-                    .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                     .build())
             .build();
     assertThat(openTelemetry.getMeterProvider().meterBuilder("instr"))
@@ -225,16 +229,17 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
             SdkMeterProvider.builder()
                 .setResource(Resource.empty())
                 .setClock(mock(Clock.class))
                 .registerMetricReader(
-                    PeriodicMetricReader.builder(mock(MetricExporter.class))
+                    PeriodicMetricReader.builder(metricExporter)
                         .setInterval(Duration.ofSeconds(10))
                         .build())
-                .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                 .registerView(
                     InstrumentSelector.builder().setName("name").build(),
                     View.builder().setName("new-name").build())
@@ -261,10 +266,11 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void trivialOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
             SdkMeterProvider.builder()
-                .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                 .build())
         .setTracerProvider(
             SdkTracerProvider.builder()
@@ -278,10 +284,11 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void minimalOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
             SdkMeterProvider.builder()
-                .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                 .build())
         .setTracerProvider(
             SdkTracerProvider.builder()
@@ -294,7 +301,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setMeterProvider(
             SdkMeterProvider.builder()
-                .registerMetricReader(PeriodicMetricReader.create(mock(MetricExporter.class)))
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
                 .registerView(
                     InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
                     View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
@@ -313,7 +320,7 @@ class OpenTelemetrySdkTest {
   void stringRepresentation() {
     SpanExporter spanExporter = mock(SpanExporter.class);
     when(spanExporter.toString()).thenReturn("MockSpanExporter{}");
-    MetricExporter metricExporter = mock(MetricExporter.class);
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     Resource resource =
         Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();

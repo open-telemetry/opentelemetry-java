@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +59,7 @@ class AsynchronousMetricStorageTest {
   @BeforeEach
   void setup() {
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
-    registeredReader = RegisteredReader.create(reader);
+    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     longCounterStorage =
         AsynchronousMetricStorage.create(

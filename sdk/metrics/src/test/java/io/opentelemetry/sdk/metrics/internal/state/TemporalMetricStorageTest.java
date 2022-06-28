@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,7 @@ class TemporalMetricStorageTest {
 
   @BeforeEach
   void setup() {
-    registeredReader = RegisteredReader.create(reader);
+    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
     registeredReader.setLastCollectEpochNanos(0);
   }
 

@@ -9,7 +9,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,13 +22,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterProviderSharedState {
   public static MeterProviderSharedState create(
-      Clock clock,
-      Resource resource,
-      ViewRegistry viewRegistry,
-      ExemplarFilter exemplarFilter,
-      long startEpochNanos) {
-    return new AutoValue_MeterProviderSharedState(
-        clock, resource, viewRegistry, startEpochNanos, exemplarFilter);
+      Clock clock, Resource resource, ExemplarFilter exemplarFilter, long startEpochNanos) {
+    return new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
   }
 
   MeterProviderSharedState() {}
@@ -39,9 +33,6 @@ public abstract class MeterProviderSharedState {
 
   /** Returns the {@link Resource} to attach telemetry to. */
   public abstract Resource getResource();
-
-  /** Returns the {@link ViewRegistry} for custom aggregation and metric definitions. */
-  public abstract ViewRegistry getViewRegistry();
 
   /** Returns the timestamp when the {@link SdkMeterProvider} was started, in epoch nanos. */
   public abstract long getStartEpochNanos();

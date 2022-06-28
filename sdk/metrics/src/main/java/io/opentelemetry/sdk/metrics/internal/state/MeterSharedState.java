@@ -131,17 +131,15 @@ public class MeterSharedState {
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
 
     List<SynchronousMetricStorage> registeredStorages = new ArrayList<>();
-    for (RegisteredView registeredView :
-        meterProviderSharedState
-            .getViewRegistry()
-            .findViews(instrument, getInstrumentationScopeInfo())) {
-      if (Aggregation.drop() == registeredView.getView().getAggregation()) {
-        continue;
-      }
-      for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
-          readerStorageRegistries.entrySet()) {
-        RegisteredReader reader = entry.getKey();
-        MetricStorageRegistry registry = entry.getValue();
+    for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
+        readerStorageRegistries.entrySet()) {
+      RegisteredReader reader = entry.getKey();
+      MetricStorageRegistry registry = entry.getValue();
+      for (RegisteredView registeredView :
+          reader.getViewRegistry().findViews(instrument, getInstrumentationScopeInfo())) {
+        if (Aggregation.drop() == registeredView.getView().getAggregation()) {
+          continue;
+        }
         registeredStorages.add(
             registry.register(
                 SynchronousMetricStorage.create(
@@ -161,21 +159,17 @@ public class MeterSharedState {
 
   /** Register new asynchronous storage associated with a given instrument. */
   public final SdkObservableMeasurement registerObservableMeasurement(
-      InstrumentDescriptor instrumentDescriptor,
-      MeterProviderSharedState meterProviderSharedState) {
-
+      InstrumentDescriptor instrumentDescriptor) {
     List<AsynchronousMetricStorage<?, ?>> registeredStorages = new ArrayList<>();
-    for (RegisteredView registeredView :
-        meterProviderSharedState
-            .getViewRegistry()
-            .findViews(instrumentDescriptor, getInstrumentationScopeInfo())) {
-      if (Aggregation.drop() == registeredView.getView().getAggregation()) {
-        continue;
-      }
-      for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
-          readerStorageRegistries.entrySet()) {
-        RegisteredReader reader = entry.getKey();
-        MetricStorageRegistry registry = entry.getValue();
+    for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
+        readerStorageRegistries.entrySet()) {
+      RegisteredReader reader = entry.getKey();
+      MetricStorageRegistry registry = entry.getValue();
+      for (RegisteredView registeredView :
+          reader.getViewRegistry().findViews(instrumentDescriptor, getInstrumentationScopeInfo())) {
+        if (Aggregation.drop() == registeredView.getView().getAggregation()) {
+          continue;
+        }
         registeredStorages.add(
             registry.register(
                 AsynchronousMetricStorage.create(reader, registeredView, instrumentDescriptor)));
