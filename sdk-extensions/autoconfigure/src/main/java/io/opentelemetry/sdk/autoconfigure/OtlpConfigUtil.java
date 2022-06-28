@@ -8,8 +8,11 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -149,6 +152,24 @@ final class OtlpConfigUtil {
             ? AggregationTemporalitySelector.alwaysCumulative()
             : AggregationTemporalitySelector.deltaPreferred();
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
+  }
+
+  static void configureOtlpHistogramDefaultAggregation(
+      ConfigProperties config,
+      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
+    String defaultHistogramAggregation =
+        config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
+    if (defaultHistogramAggregation == null) {
+      return;
+    }
+    if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")) {
+      defaultAggregationSelectorConsumer.accept(
+          DefaultAggregationSelector.getDefault()
+              .compose(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
+    } else if (!defaultHistogramAggregation.equalsIgnoreCase("EXPLICIT_BUCKET_HISTOGRAM")) {
+      throw new ConfigurationException(
+          "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
+    }
   }
 
   private static URL createUrl(URL context, String spec) {

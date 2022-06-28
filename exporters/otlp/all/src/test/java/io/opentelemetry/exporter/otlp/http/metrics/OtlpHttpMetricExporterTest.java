@@ -33,10 +33,12 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -167,6 +169,15 @@ class OtlpHttpMetricExporterTest {
                 .build()
                 .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+
+    assertThat(
+            OtlpHttpMetricExporter.builder()
+                .setDefaultAggregationSelector(
+                    DefaultAggregationSelector.getDefault()
+                        .compose(InstrumentType.HISTOGRAM, Aggregation.drop()))
+                .build()
+                .getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(Aggregation.drop());
   }
 
   @Test
@@ -207,6 +218,10 @@ class OtlpHttpMetricExporterTest {
             () -> OtlpHttpMetricExporter.builder().setAggregationTemporalitySelector(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("aggregationTemporalitySelector");
+
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setDefaultAggregationSelector(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("defaultAggregationSelector");
   }
 
   @Test
