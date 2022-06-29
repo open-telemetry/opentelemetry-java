@@ -32,20 +32,17 @@ The equivalent view configuration would be:
 SdkMeterProvider.builder()
    .registerView(
        InstrumentSelector.builder()
-           .setInstrumentName("my-instrument")
-           .setInstrumentType(InstrumentType.COUNTER)
-           .setMeterSelector(
-               MeterSelector.builder()
-                   .setName("my-meter")
-                   .setVersion("1.0.0")
-                   .setSchemaUrl("http://example.com")
-                   .build())
+           .setName("my-instrument")
+           .setType(InstrumentType.COUNTER)
+           .setMeterName("my-meter")
+           .setMeterVersion("1.0.0")
+           .setMeterSchemaUrl("http://example.com")
            .build(),
        View.builder()
            .setName("new-instrument")
            .setDescription("new-description")
            .setAggregation(Aggregation.histogram())
-           .filterAttributes(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
+           .setAttributesFilter(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
            .build());
 ```
 
@@ -76,8 +73,8 @@ Notes on usage:
   will result in the default from `InstrumentSelector` being used.
 - At least one view field is required, but including all is not required. Any omitted fields will
   result in the default from `View` being used.
-- Advanced selection criteria, like regular expressions, is not yet supported.
+- Instrument name selection supports the following wildcard characters: `*` matches 0 or more instances of any character; `?` matches exactly one instance of any character. No other advanced selection criteria is supported.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator.svg
 
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator
