@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -40,9 +40,7 @@ class ViewConfigTest {
     ViewConfig.registerViews(builder, resourceFileInputStream("full-config.yaml"));
 
     assertThat(builder)
-        .extracting(
-            "viewRegistryBuilder", as(InstanceOfAssertFactories.type(ViewRegistryBuilder.class)))
-        .extracting("orderedViews", as(InstanceOfAssertFactories.list(Object.class)))
+        .extracting("registeredViews", as(InstanceOfAssertFactories.list(RegisteredView.class)))
         .hasSize(2);
   }
 

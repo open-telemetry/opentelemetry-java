@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -22,7 +24,19 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 1.14.0
  */
-public interface MetricExporter extends AggregationTemporalitySelector, Closeable {
+public interface MetricExporter
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
+
+  /**
+   * Return the default aggregation for the {@link InstrumentType}.
+   *
+   * @see DefaultAggregationSelector#getDefaultAggregation(InstrumentType)
+   * @since 1.16.0
+   */
+  @Override
+  default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return Aggregation.defaultAggregation();
+  }
 
   /**
    * Exports the {@code metrics}. The caller (i.e. {@link PeriodicMetricReader} will not call export

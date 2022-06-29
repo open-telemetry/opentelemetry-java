@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class MetricStorageRegistryTest {
 
   @BeforeEach
   void setup() {
-    registeredReader = RegisteredReader.create(reader);
+    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
   }
 
   @Test

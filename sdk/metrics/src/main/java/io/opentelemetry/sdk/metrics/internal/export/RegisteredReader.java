@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
@@ -23,15 +24,17 @@ public class RegisteredReader {
   private static final AtomicInteger ID_COUNTER = new AtomicInteger(1);
   private final int id = ID_COUNTER.incrementAndGet();
   private final MetricReader metricReader;
+  private final ViewRegistry viewRegistry;
   private volatile long lastCollectEpochNanos;
 
   /** Construct a new collection info object storing information for collection against a reader. */
-  public static RegisteredReader create(MetricReader reader) {
-    return new RegisteredReader(reader);
+  public static RegisteredReader create(MetricReader reader, ViewRegistry viewRegistry) {
+    return new RegisteredReader(reader, viewRegistry);
   }
 
-  private RegisteredReader(MetricReader metricReader) {
+  private RegisteredReader(MetricReader metricReader, ViewRegistry viewRegistry) {
     this.metricReader = metricReader;
+    this.viewRegistry = viewRegistry;
   }
 
   public MetricReader getReader() {
@@ -55,6 +58,11 @@ public class RegisteredReader {
    */
   public long getLastCollectEpochNanos() {
     return lastCollectEpochNanos;
+  }
+
+  /** Get the {@link ViewRegistry} for the reader. */
+  public ViewRegistry getViewRegistry() {
+    return viewRegistry;
   }
 
   @Override

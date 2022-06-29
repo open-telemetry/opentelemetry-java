@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.export;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,8 +21,8 @@ class RegisteredReaderTest {
 
   @Test
   void create_UniqueIdentity() {
-    RegisteredReader registeredReader1 = RegisteredReader.create(reader);
-    RegisteredReader registeredReader2 = RegisteredReader.create(reader);
+    RegisteredReader registeredReader1 = RegisteredReader.create(reader, ViewRegistry.create());
+    RegisteredReader registeredReader2 = RegisteredReader.create(reader, ViewRegistry.create());
 
     assertThat(registeredReader1).isEqualTo(registeredReader1);
     assertThat(registeredReader1).isNotEqualTo(registeredReader2);
@@ -32,14 +33,14 @@ class RegisteredReaderTest {
 
   @Test
   void getReader() {
-    RegisteredReader registeredReader = RegisteredReader.create(reader);
+    RegisteredReader registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     assertThat(registeredReader.getReader()).isSameAs(reader);
   }
 
   @Test
   void setAndGetLastCollectEpochNanos() {
-    RegisteredReader registeredReader = RegisteredReader.create(reader);
+    RegisteredReader registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(0);
     registeredReader.setLastCollectEpochNanos(1);

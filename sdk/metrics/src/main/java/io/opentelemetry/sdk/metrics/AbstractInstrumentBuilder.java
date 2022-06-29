@@ -104,8 +104,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   final SdkObservableMeasurement buildObservableMeasurement(
       InstrumentType type, InstrumentValueType valueType) {
-    InstrumentDescriptor descriptor = makeDescriptor(type, valueType);
-    return meterSharedState.registerObservableMeasurement(descriptor, meterProviderSharedState);
+    return meterSharedState.registerObservableMeasurement(makeDescriptor(type, valueType));
   }
 
   @FunctionalInterface

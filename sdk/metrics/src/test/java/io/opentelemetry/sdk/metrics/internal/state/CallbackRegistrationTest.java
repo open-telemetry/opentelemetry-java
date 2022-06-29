@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
@@ -72,7 +73,7 @@ class CallbackRegistrationTest {
 
   @BeforeEach
   void setup() {
-    registeredReader = RegisteredReader.create(reader);
+    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
     when(storage1.getRegisteredReader()).thenReturn(registeredReader);
     when(storage2.getRegisteredReader()).thenReturn(registeredReader);
     when(storage3.getRegisteredReader()).thenReturn(registeredReader);
