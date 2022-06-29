@@ -54,20 +54,17 @@ import org.yaml.snakeyaml.Yaml;
  * SdkMeterProvider.builder()
  *     .registerView(
  *         InstrumentSelector.builder()
- *             .setInstrumentName("my-instrument")
- *             .setInstrumentType(InstrumentType.COUNTER)
- *             .setMeterSelector(
- *                 MeterSelector.builder()
- *                     .setName("my-meter")
- *                     .setVersion("1.0.0")
- *                     .setSchemaUrl("http://example.com")
- *                     .build())
+ *             .setName("my-instrument")
+ *             .setType(InstrumentType.COUNTER)
+ *             .setMeterName("my-meter")
+ *             .setMeterVersion("1.0.0")
+ *             .setMeterSchemaUrl("http://example.com")
  *             .build(),
  *         View.builder()
  *             .setName("new-instrument")
  *             .setDescription("new-description")
  *             .setAggregation(Aggregation.histogram())
- *             .filterAttributes(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
+ *             .setAttributesFilter(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
  *             .build());
  * }</pre>
  */

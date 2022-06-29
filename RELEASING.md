@@ -87,7 +87,7 @@ Finally, update the [website docs][] to refer to the newly released version.
 
 The following credentials are required for publishing (and automatically set in Github Actions):
 
-* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing. 
+* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing.
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
   * Each maintainer will have their own set of Sonotype credentials with permission to publish to
     the `io.opentelemetry` group prefix.
@@ -99,7 +99,7 @@ The following credentials are required for publishing (and automatically set in 
     User Token.
 
 Additionally, credentials are stored with maintainers via
-the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account. The following 
+the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account. The following
 defines the mapping from Github Action secret keys to 1Password keys:
 
 | Github Actions Key | 1Password Key |
