@@ -520,7 +520,9 @@ class BatchSpanProcessorTest {
             .build();
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
     createEndedSpan(SPAN_NAME_1);
-    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch()).isEmpty());
+    // Assert isEmpty() isTrue(). AbstractIterableAssert#isEmpty() iterates over list and can cause
+    // ConcurrentModificationException
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch().isEmpty()).isTrue());
     // Continue to export after the exception.
     createEndedSpan(SPAN_NAME_2);
     await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
