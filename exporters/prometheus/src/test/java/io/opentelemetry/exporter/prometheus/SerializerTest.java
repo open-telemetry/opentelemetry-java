@@ -317,7 +317,10 @@ class SerializerTest {
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
-            "# TYPE instrument_name_total counter\n"
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE instrument_name_total counter\n"
                 + "# HELP instrument_name_total description\n"
                 + "instrument_name_total{type=\"mcds\"} 5.0 1633950672000\n"
                 + "instrument_name_total{type=\"mcls\"} 5.0 1633950672000\n"
@@ -364,7 +367,10 @@ class SerializerTest {
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
-            "# TYPE instrument_name counter\n"
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE instrument_name counter\n"
                 + "# HELP instrument_name description\n"
                 + "instrument_name_total{type=\"mcds\"} 5.0 1633950672.000\n"
                 + "instrument_name{type=\"nmcds\"} 5.0 1633950672.000\n"

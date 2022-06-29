@@ -1,0 +1,23 @@
+extensions:
+  health_check: {}
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'app'
+          scrape_interval: 1s
+          static_configs:
+            - targets: ['$APP_ENDPOINT']
+exporters:
+  logging:
+    logLevel: $LOGGING_EXPORTER_LOG_LEVEL
+  otlp:
+    endpoint: $OTLP_EXPORTER_ENDPOINT
+    tls:
+      insecure: true
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      exporters: [logging, otlp]
