@@ -261,6 +261,7 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [OTLP Logging Exporter](./exporters/logging-otlp)   | Logging exporters in OTLP protobuf JSON format, including metrics, traces, and logs | `opentelemetry-exporter-logging-otlp` | <!--VERSION_STABLE-->1.15.0<!--/VERSION_STABLE-->           |
 | [Zipkin Exporter](./exporters/zipkin)               | Zipkin trace exporter                                                               | `opentelemetry-exporter-zipkin`       | <!--VERSION_STABLE-->1.15.0<!--/VERSION_STABLE-->           |
 | [Prometheus Exporter](./exporters/prometheus)       | Prometheus metric exporter                                                          | `opentelemetry-exporter-prometheus`   | <!--VERSION_UNSTABLE-->1.15.0-alpha<!--/VERSION_UNSTABLE--> |
+| [Exporter Common](./exporters/common)               | Shared exporter components (internal)                                               | `opentelemetry-exporter-common`       | TODO: add version once published in 1.16.0                  |
 
 ### SDK Extensions
 

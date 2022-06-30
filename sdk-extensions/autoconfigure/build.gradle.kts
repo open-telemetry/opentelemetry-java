@@ -13,6 +13,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":semconv"))
+  implementation(project(":exporters:common"))
 
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
