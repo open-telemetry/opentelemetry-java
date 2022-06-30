@@ -77,6 +77,17 @@ public interface AutoConfigurationCustomizer {
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * <p>Note: calling {@link SdkTracerProviderBuilder#setSampler(Sampler)} inside of your
+   * configuration function will cause any sampler customizers to be ignored that were configured
+   * via {@link #addSamplerCustomizer(BiFunction)}. If you want to replace the default sampler,
+   * check out {@link io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider} and
+   * use {@link #addPropertiesSupplier(Supplier)} to set `otel.traces.sampler` to your named
+   * sampler.
+   *
+   * <p>Similarly, calling {@link SdkTracerProviderBuilder#setResource(Resource)} inside of your
+   * configuration function will cause any resource customizers to be ignored that were configured
+   * via {@link #addResourceCustomizer(BiFunction)}.
    */
   default AutoConfigurationCustomizer addTracerProviderCustomizer(
       BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>

@@ -27,47 +27,62 @@ class ConfigPropertiesTest {
     Map<String, String> properties = makeTestProps();
 
     ConfigProperties config = DefaultConfigProperties.createForTest(properties);
-    assertThat(config.getString("string")).isEqualTo("str");
-    assertThat(config.getInt("int")).isEqualTo(10);
-    assertThat(config.getLong("long")).isEqualTo(20);
-    assertThat(config.getDouble("double")).isEqualTo(5.4);
-    assertThat(config.getList("list")).containsExactly("cat", "dog", "bear");
-    assertThat(config.getMap("map"))
+    assertThat(config.getString("test.string")).isEqualTo("str");
+    assertThat(config.getInt("test.int")).isEqualTo(10);
+    assertThat(config.getLong("test.long")).isEqualTo(20);
+    assertThat(config.getDouble("test.double")).isEqualTo(5.4);
+    assertThat(config.getList("test.list")).containsExactly("cat", "dog", "bear");
+    assertThat(config.getMap("test.map"))
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
-    assertThat(config.getDuration("duration")).isEqualTo(Duration.ofSeconds(1));
+    assertThat(config.getDuration("test.duration")).isEqualTo(Duration.ofSeconds(1));
+  }
+
+  @Test
+  void allValidUsingHyphens() {
+    Map<String, String> properties = makeTestProps();
+
+    ConfigProperties config = DefaultConfigProperties.createForTest(properties);
+    assertThat(config.getString("test-string")).isEqualTo("str");
+    assertThat(config.getInt("test-int")).isEqualTo(10);
+    assertThat(config.getLong("test-long")).isEqualTo(20);
+    assertThat(config.getDouble("test-double")).isEqualTo(5.4);
+    assertThat(config.getList("test-list")).containsExactly("cat", "dog", "bear");
+    assertThat(config.getMap("test-map"))
+        .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+    assertThat(config.getDuration("test-duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
   @Test
   void allMissing() {
     ConfigProperties config = DefaultConfigProperties.createForTest(emptyMap());
-    assertThat(config.getString("string")).isNull();
-    assertThat(config.getInt("int")).isNull();
-    assertThat(config.getLong("long")).isNull();
-    assertThat(config.getDouble("double")).isNull();
-    assertThat(config.getList("list")).isEmpty();
-    assertThat(config.getMap("map")).isEmpty();
-    assertThat(config.getDuration("duration")).isNull();
+    assertThat(config.getString("test.string")).isNull();
+    assertThat(config.getInt("test.int")).isNull();
+    assertThat(config.getLong("test.long")).isNull();
+    assertThat(config.getDouble("test.double")).isNull();
+    assertThat(config.getList("test.list")).isEmpty();
+    assertThat(config.getMap("test.map")).isEmpty();
+    assertThat(config.getDuration("test.duration")).isNull();
   }
 
   @Test
   void allEmpty() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("string", "");
-    properties.put("int", "");
-    properties.put("long", "");
-    properties.put("double", "");
-    properties.put("list", "");
-    properties.put("map", "");
-    properties.put("duration", "");
+    properties.put("test.string", "");
+    properties.put("test.int", "");
+    properties.put("test.long", "");
+    properties.put("test.double", "");
+    properties.put("test.list", "");
+    properties.put("test.map", "");
+    properties.put("test.duration", "");
 
     ConfigProperties config = DefaultConfigProperties.createForTest(properties);
-    assertThat(config.getString("string")).isEmpty();
-    assertThat(config.getInt("int")).isNull();
-    assertThat(config.getLong("long")).isNull();
-    assertThat(config.getDouble("double")).isNull();
-    assertThat(config.getList("list")).isEmpty();
-    assertThat(config.getMap("map")).isEmpty();
-    assertThat(config.getDuration("duration")).isNull();
+    assertThat(config.getString("test.string")).isEmpty();
+    assertThat(config.getInt("test.int")).isNull();
+    assertThat(config.getLong("test.long")).isNull();
+    assertThat(config.getDouble("test.double")).isNull();
+    assertThat(config.getList("test.list")).isEmpty();
+    assertThat(config.getMap("test.map")).isEmpty();
+    assertThat(config.getDuration("test.duration")).isNull();
   }
 
   @Test
@@ -222,15 +237,15 @@ class ConfigPropertiesTest {
 
     Map<String, String> map = makeTestProps();
     ConfigProperties properties = DefaultConfigProperties.get(map);
-    assertThat(properties.getBoolean("boolean", false)).isTrue();
-    assertThat(properties.getString("string", "nah")).isEqualTo("str");
-    assertThat(properties.getDouble("double", 65.535)).isEqualTo(5.4);
-    assertThat(properties.getInt("int", 21)).isEqualTo(10);
-    assertThat(properties.getLong("long", 123L)).isEqualTo(20L);
-    assertThat(properties.getDuration("duration", Duration.ofDays(13)))
+    assertThat(properties.getBoolean("test.boolean", false)).isTrue();
+    assertThat(properties.getString("test.string", "nah")).isEqualTo("str");
+    assertThat(properties.getDouble("test.double", 65.535)).isEqualTo(5.4);
+    assertThat(properties.getInt("test.int", 21)).isEqualTo(10);
+    assertThat(properties.getLong("test.long", 123L)).isEqualTo(20L);
+    assertThat(properties.getDuration("test.duration", Duration.ofDays(13)))
         .isEqualTo(Duration.ofSeconds(1));
-    assertThat(properties.getList("list", emptyList())).containsExactly("cat", "dog", "bear");
-    assertThat(properties.getMap("map", emptyMap())).containsAllEntriesOf(expectedMap);
+    assertThat(properties.getList("test.list", emptyList())).containsExactly("cat", "dog", "bear");
+    assertThat(properties.getMap("test.map", emptyMap())).containsAllEntriesOf(expectedMap);
   }
 
   @Test
@@ -260,14 +275,14 @@ class ConfigPropertiesTest {
 
   private static Map<String, String> makeTestProps() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("string", "str");
-    properties.put("int", "10");
-    properties.put("long", "20");
-    properties.put("double", "5.4");
-    properties.put("boolean", "true");
-    properties.put("list", "cat,dog,bear");
-    properties.put("map", "cat=meow,dog=bark,bear=growl");
-    properties.put("duration", "1s");
+    properties.put("test.string", "str");
+    properties.put("test.int", "10");
+    properties.put("test.long", "20");
+    properties.put("test.double", "5.4");
+    properties.put("test.boolean", "true");
+    properties.put("test.list", "cat,dog,bear");
+    properties.put("test.map", "cat=meow,dog=bark,bear=growl");
+    properties.put("test.duration", "1s");
     return properties;
   }
 }
