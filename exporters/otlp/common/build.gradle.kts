@@ -13,8 +13,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
 val versions: Map<String, String> by project
 dependencies {
-  protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
-
   api(project(":api:all"))
 
   compileOnly(project(":sdk:metrics"))
@@ -64,6 +62,10 @@ wire {
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
     "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest"
   )
+
+  sourcePath {
+    srcJar("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
+  }
 
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"

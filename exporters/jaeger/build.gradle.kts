@@ -13,8 +13,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.jaeger")
 dependencies {
   api(project(":sdk:all"))
 
-  protoSource(project(":exporters:jaeger-proto"))
-
   // TODO(anuraaga): otlp-common has a lot of code not specific to OTLP now. As it's just internal
   // code, this mysterious dependency is possibly still OK but we may need a rename or splitting.
   implementation(project(":exporters:otlp:common"))
@@ -37,6 +35,10 @@ dependencies {
 }
 
 wire {
+  sourcePath {
+    srcDir("${project(":exporters:jaeger-proto").file("src/main/proto")}")
+  }
+
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
