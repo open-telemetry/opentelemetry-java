@@ -77,7 +77,7 @@ class OtlpGrpcMetricExporterTest
             OtlpGrpcMetricExporter.builder()
                 .setDefaultAggregationSelector(
                     DefaultAggregationSelector.getDefault()
-                        .compose(InstrumentType.HISTOGRAM, Aggregation.drop()))
+                        .with(InstrumentType.HISTOGRAM, Aggregation.drop()))
                 .build()
                 .getDefaultAggregation(InstrumentType.HISTOGRAM))
         .isEqualTo(Aggregation.drop());

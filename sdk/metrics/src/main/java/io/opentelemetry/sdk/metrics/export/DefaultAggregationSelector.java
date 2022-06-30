@@ -27,8 +27,8 @@ public interface DefaultAggregationSelector {
   }
 
   /**
-   * Returns a composed default aggregation selector which uses the given {@code aggregation} for
-   * the given {@code instrumentType}, and defers to this for other instrument types.
+   * Returns a default aggregation selector which returns the given {@code aggregation} for the
+   * given {@code instrumentType}, and defers to this for other instrument types.
    *
    * <p>For example, the following produces a selector which drops histograms and uses the default
    * aggregation for other instruments:
@@ -36,13 +36,12 @@ public interface DefaultAggregationSelector {
    * <pre>{@code
    * // DefaultAggregationSelector selector =
    * //   DefaultAggregationSelector.getDefault()
-   * //     .compose(InstrumentType.HISTOGRAM, Aggregation.drop());
+   * //     .with(InstrumentType.HISTOGRAM, Aggregation.drop());
    * }</pre>
    *
    * @since 1.16.0
    */
-  default DefaultAggregationSelector compose(
-      InstrumentType instrumentType, Aggregation aggregation) {
+  default DefaultAggregationSelector with(InstrumentType instrumentType, Aggregation aggregation) {
     requireNonNull(instrumentType, "instrumentType");
     requireNonNull(aggregation, "aggregation");
     return instrumentType1 -> {

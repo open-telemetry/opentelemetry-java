@@ -24,17 +24,15 @@ class DefaultAggregationSelectorTest {
   }
 
   @Test
-  void compose() {
-    assertThatThrownBy(
-            () -> DefaultAggregationSelector.getDefault().compose(null, Aggregation.drop()))
+  void with() {
+    assertThatThrownBy(() -> DefaultAggregationSelector.getDefault().with(null, Aggregation.drop()))
         .hasMessage("instrumentType");
     assertThatThrownBy(
-            () -> DefaultAggregationSelector.getDefault().compose(InstrumentType.HISTOGRAM, null))
+            () -> DefaultAggregationSelector.getDefault().with(InstrumentType.HISTOGRAM, null))
         .hasMessage("aggregation");
 
     DefaultAggregationSelector selector1 =
-        DefaultAggregationSelector.getDefault()
-            .compose(InstrumentType.HISTOGRAM, Aggregation.drop());
+        DefaultAggregationSelector.getDefault().with(InstrumentType.HISTOGRAM, Aggregation.drop());
     assertThat(selector1.getDefaultAggregation(InstrumentType.COUNTER))
         .isEqualTo(Aggregation.defaultAggregation());
     assertThat(selector1.getDefaultAggregation(InstrumentType.UP_DOWN_COUNTER))
@@ -49,7 +47,7 @@ class DefaultAggregationSelectorTest {
         .isEqualTo(Aggregation.defaultAggregation());
 
     DefaultAggregationSelector selector2 =
-        selector1.compose(InstrumentType.COUNTER, Aggregation.drop());
+        selector1.with(InstrumentType.COUNTER, Aggregation.drop());
     assertThat(selector2.getDefaultAggregation(InstrumentType.COUNTER))
         .isEqualTo(Aggregation.drop());
     assertThat(selector2.getDefaultAggregation(InstrumentType.UP_DOWN_COUNTER))

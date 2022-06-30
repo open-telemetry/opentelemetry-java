@@ -165,7 +165,7 @@ final class OtlpConfigUtil {
     if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")) {
       defaultAggregationSelectorConsumer.accept(
           DefaultAggregationSelector.getDefault()
-              .compose(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
+              .with(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
     } else if (!defaultHistogramAggregation.equalsIgnoreCase("EXPLICIT_BUCKET_HISTOGRAM")) {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);

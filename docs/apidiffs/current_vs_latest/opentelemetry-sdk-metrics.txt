@@ -2,9 +2,9 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector compose(io.opentelemetry.sdk.metrics.InstrumentType, io.opentelemetry.sdk.metrics.Aggregation)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector getDefault()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Aggregation getDefaultAggregation(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector with(io.opentelemetry.sdk.metrics.InstrumentType, io.opentelemetry.sdk.metrics.Aggregation)
 	+++  NEW ANNOTATION: java.lang.FunctionalInterface
 **** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.MetricExporter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
