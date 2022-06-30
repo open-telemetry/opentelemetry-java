@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** No-op implementations of {@link Tracer}. */
+/** No-op implementation of {@link Tracer}. */
 @ThreadSafe
 final class DefaultTracer implements Tracer {
 

@@ -17,6 +17,7 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.aws.AwsXrayPropagator;
@@ -35,17 +36,18 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.LogRecord;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.logs.LogEmitter;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -141,7 +143,7 @@ class FullConfigTest {
         }
       };
 
-  private SdkLogEmitterProvider logEmitterProvider;
+  private AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk;
 
   @BeforeEach
   void setUp() {
@@ -153,11 +155,27 @@ class FullConfigTest {
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
-    // SdkLogEmitterProvider isn't globally accessible so we initialize here to get a reference
-    logEmitterProvider =
-        AutoConfiguredOpenTelemetrySdk.initialize()
-            .getOpenTelemetrySdk()
-            .getSdkLogEmitterProvider();
+    // Initialize here so we get SdkLogEmitterProvider and shutdown when done
+    autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
+  }
+
+  @AfterEach
+  void afterEach() {
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkMeterProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkLogEmitterProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
+    autoConfiguredOpenTelemetrySdk
+        .getOpenTelemetrySdk()
+        .getSdkTracerProvider()
+        .shutdown()
+        .join(10, TimeUnit.SECONDS);
   }
 
   @Test
@@ -187,10 +205,14 @@ class FullConfigTest {
         .end();
 
     Meter meter = GlobalOpenTelemetry.get().getMeter("test");
-    meter.counterBuilder("my-metric").build().add(1);
+    meter
+        .counterBuilder("my-metric")
+        .build()
+        .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    LogEmitter logEmitter = logEmitterProvider.get("test");
+    LogEmitter logEmitter =
+        autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLogEmitterProvider().get("test");
     logEmitter.logBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logEmitter.logBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
@@ -208,7 +230,7 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
     io.opentelemetry.proto.trace.v1.Span span =
-        traceRequest.getResourceSpans(0).getInstrumentationLibrarySpans(0).getSpans(0);
+        traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
     // Dog dropped by attribute limit.
     assertThat(span.getAttributesList())
         .containsExactlyInAnyOrder(
@@ -244,24 +266,22 @@ class FullConfigTest {
                           .build());
 
               for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
-                assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
-                    .anySatisfy(
-                        ilm ->
-                            assertThat(ilm.getInstrumentationLibrary().getName())
-                                .isEqualTo("test"));
-                for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
-                    resourceMetrics.getInstrumentationLibraryMetricsList()) {
+                assertThat(resourceMetrics.getScopeMetricsList())
+                    .anySatisfy(ilm -> assertThat(ilm.getScope().getName()).isEqualTo("test"));
+                for (ScopeMetrics instrumentationLibraryMetrics :
+                    resourceMetrics.getScopeMetricsList()) {
                   for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
                     // SPI was loaded
                     // MetricExporterCustomizer filters metrics not named my-metric
                     assertThat(metric.getName()).isEqualTo("my-metric");
-                    // TestMeterProviderConfigurer configures a view that adds the "configured=true"
-                    // attribute
+                    // TestMeterProviderConfigurer configures a view that only passes on attribute
+                    // named allowed
+                    // configured-test
                     assertThat(getFirstDataPointLabels(metric))
                         .contains(
                             KeyValue.newBuilder()
-                                .setKey("configured")
-                                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                                .setKey("allowed")
+                                .setValue(AnyValue.newBuilder().setStringValue("bear").build())
                                 .build());
                   }
                 }
@@ -281,7 +301,7 @@ class FullConfigTest {
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
     // MetricExporterCustomizer filters logs not whose level is less than Severity.INFO
-    LogRecord log = logRequest.getResourceLogs(0).getInstrumentationLibraryLogs(0).getLogs(0);
+    LogRecord log = logRequest.getResourceLogs(0).getScopeLogs(0).getLogRecords(0);
     assertThat(log.getBody().getStringValue()).isEqualTo("info log message");
     assertThat(log.getSeverityNumberValue()).isEqualTo(Severity.INFO.getSeverityNumber());
   }

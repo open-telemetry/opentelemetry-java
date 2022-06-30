@@ -5,12 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
+import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -25,9 +24,9 @@ class DoubleExponentialHistogramBucketsTest {
 
   static Stream<ExponentialBucketStrategy> bucketStrategies() {
     return Stream.of(
-        ExponentialBucketStrategy.newStrategy(20, 320, ExponentialCounterFactory.mapCounter()),
+        ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter()),
         ExponentialBucketStrategy.newStrategy(
-            20, 320, ExponentialCounterFactory.circularBufferCounter()));
+            160, ExponentialCounterFactory.circularBufferCounter()));
   }
 
   @ParameterizedTest
@@ -39,7 +38,7 @@ class DoubleExponentialHistogramBucketsTest {
     b.record(1);
     b.record(1);
     b.record(1);
-    assertThat(b).hasTotalCount(3).hasCounts(Collections.singletonList(3L));
+    MetricAssertions.assertThat(b).hasTotalCount(3).hasCounts(Collections.singletonList(3L));
   }
 
   @ParameterizedTest
@@ -58,7 +57,10 @@ class DoubleExponentialHistogramBucketsTest {
     b.record(2);
     b.record(4);
     assertThat(b.getScale()).isEqualTo(0);
-    assertThat(b).hasTotalCount(3).hasCounts(Arrays.asList(1L, 1L, 1L)).hasOffset(0);
+    MetricAssertions.assertThat(b)
+        .hasTotalCount(3)
+        .hasCounts(Arrays.asList(1L, 1L, 1L))
+        .hasOffset(0);
   }
 
   @ParameterizedTest
@@ -75,18 +77,18 @@ class DoubleExponentialHistogramBucketsTest {
     DoubleExponentialHistogramBuckets b = buckets.newBuckets();
 
     assertThat(a).isNotNull();
-    assertEquals(a, b);
-    assertEquals(b, a);
+    assertThat(b).isEqualTo(a);
+    assertThat(a).isEqualTo(b);
     assertThat(a).hasSameHashCodeAs(b);
 
     a.record(1);
-    assertNotEquals(a, b);
-    assertNotEquals(b, a);
+    assertThat(a).isNotEqualTo(b);
+    assertThat(b).isNotEqualTo(a);
     assertThat(a).doesNotHaveSameHashCodeAs(b);
 
     b.record(1);
-    assertEquals(a, b);
-    assertEquals(b, a);
+    assertThat(b).isEqualTo(a);
+    assertThat(a).isEqualTo(b);
     assertThat(a).hasSameHashCodeAs(b);
 
     // Now we start to play with altering offset, but having same effective counts.
@@ -98,19 +100,6 @@ class DoubleExponentialHistogramBucketsTest {
     // Record can fail if scale is not set correctly.
     assertThat(c.record(3)).isTrue();
     assertThat(c.getTotalCount()).isEqualTo(2);
-
-    DoubleExponentialHistogramBuckets resultCc = DoubleExponentialHistogramBuckets.diff(c, c);
-    assertThat(c).isNotEqualTo(resultCc);
-    assertEquals(resultCc, empty);
-    assertThat(resultCc).hasSameHashCodeAs(empty);
-
-    DoubleExponentialHistogramBuckets d = buckets.newBuckets();
-    d.record(1);
-    // Downscale d to be the same as C but do NOT record the value 3.
-    d.downscale(20);
-    DoubleExponentialHistogramBuckets resultCd = DoubleExponentialHistogramBuckets.diff(c, d);
-    assertThat(c).isNotEqualTo(d);
-    assertThat(resultCd).isNotEqualTo(empty);
   }
 
   @ParameterizedTest

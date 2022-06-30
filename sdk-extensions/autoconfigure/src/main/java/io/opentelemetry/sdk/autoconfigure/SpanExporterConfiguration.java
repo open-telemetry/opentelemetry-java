@@ -89,7 +89,7 @@ final class SpanExporterConfiguration {
       case "otlp":
         return configureOtlp(config, meterProvider);
       case "jaeger":
-        return configureJaeger(config);
+        return configureJaeger(config, meterProvider);
       case "zipkin":
         return configureZipkin(config);
       case "logging":
@@ -126,6 +126,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       builder.setMeterProvider(meterProvider);
@@ -146,6 +147,7 @@ final class SpanExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       builder.setMeterProvider(meterProvider);
 
@@ -155,7 +157,8 @@ final class SpanExporterConfiguration {
     }
   }
 
-  private static SpanExporter configureJaeger(ConfigProperties config) {
+  private static SpanExporter configureJaeger(
+      ConfigProperties config, MeterProvider meterProvider) {
     ClasspathUtil.checkClassExists(
         "io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter",
         "Jaeger gRPC Exporter",
@@ -171,6 +174,8 @@ final class SpanExporterConfiguration {
     if (timeout != null) {
       builder.setTimeout(timeout);
     }
+
+    builder.setMeterProvider(meterProvider);
 
     return builder.build();
   }

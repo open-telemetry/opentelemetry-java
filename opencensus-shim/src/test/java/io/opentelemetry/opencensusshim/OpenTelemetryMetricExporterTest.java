@@ -5,7 +5,8 @@
 
 package io.opentelemetry.opencensusshim;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -22,6 +23,7 @@ import io.opencensus.tags.TagMetadata;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import java.util.Comparator;
@@ -112,51 +114,55 @@ class OpenTelemetryMetricExporterTest {
                                   .hasName("double_gauge")
                                   .hasDescription("double gauge")
                                   .hasUnit("ms")
-                                  .hasDoubleGauge()
-                                  .points()
-                                  .satisfiesExactly(
-                                      point ->
-                                          assertThat(point).hasValue(60).attributes().hasSize(0)),
+                                  .hasDoubleGaugeSatisfying(
+                                      gauge ->
+                                          gauge.hasPointsSatisfying(
+                                              point ->
+                                                  point
+                                                      .hasValue(60)
+                                                      .hasAttributes(Attributes.empty()))),
                           metric ->
                               assertThat(metric)
                                   .hasName("double_sum")
                                   .hasDescription("double sum")
                                   .hasUnit("ms")
-                                  .hasDoubleSum()
-                                  .points()
-                                  .satisfiesExactly(
-                                      point ->
-                                          assertThat(point).hasValue(60).attributes().hasSize(0)),
+                                  .hasDoubleSumSatisfying(
+                                      sum ->
+                                          sum.hasPointsSatisfying(
+                                              point ->
+                                                  point
+                                                      .hasValue(60)
+                                                      .hasAttributes(Attributes.empty()))),
                           metric ->
                               assertThat(metric)
                                   .hasName("long_gauge")
                                   .hasDescription("long gauge")
                                   .hasUnit("ms")
-                                  .hasLongGauge()
-                                  .points()
-                                  .satisfiesExactly(
-                                      point ->
-                                          assertThat(point)
-                                              .hasValue(50)
-                                              .attributes()
-                                              .hasSize(1)
-                                              .containsEntry(
-                                                  tagKey.getName(), tagValue.asString())),
+                                  .hasLongGaugeSatisfying(
+                                      gauge ->
+                                          gauge.hasPointsSatisfying(
+                                              point ->
+                                                  point
+                                                      .hasValue(50)
+                                                      .hasAttributes(
+                                                          attributeEntry(
+                                                              tagKey.getName(),
+                                                              tagValue.asString())))),
                           metric ->
                               assertThat(metric)
                                   .hasName("long_sum")
                                   .hasDescription("long sum")
                                   .hasUnit("ms")
-                                  .hasLongSum()
-                                  .points()
-                                  .satisfiesExactly(
-                                      point ->
-                                          assertThat(point)
-                                              .hasValue(50)
-                                              .attributes()
-                                              .hasSize(1)
-                                              .containsEntry(
-                                                  tagKey.getName(), tagValue.asString()))));
+                                  .hasLongSumSatisfying(
+                                      sum ->
+                                          sum.hasPointsSatisfying(
+                                              point ->
+                                                  point
+                                                      .hasValue(50)
+                                                      .hasAttributes(
+                                                          attributeEntry(
+                                                              tagKey.getName(),
+                                                              tagValue.asString()))))));
     } finally {
       otelExporter.stop();
     }

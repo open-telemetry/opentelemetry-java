@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -37,8 +37,7 @@ class OtlpJsonLoggingLogExporterTest {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final LogData LOG1 =
-      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation", "1"))
-          .setName("testLog1")
+      LogDataBuilder.create(RESOURCE, InstrumentationScopeInfo.create("instrumentation", "1", null))
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -53,8 +52,8 @@ class OtlpJsonLoggingLogExporterTest {
           .build();
 
   private static final LogData LOG2 =
-      LogDataBuilder.create(RESOURCE, InstrumentationLibraryInfo.create("instrumentation2", "2"))
-          .setName("testLog2")
+      LogDataBuilder.create(
+              RESOURCE, InstrumentationScopeInfo.create("instrumentation2", "2", null))
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -85,6 +84,7 @@ class OtlpJsonLoggingLogExporterTest {
     assertThat(logs.getEvents())
         .hasSize(1)
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
     JSONAssert.assertEquals(
         "{\n"
             + "   \"resource\":{\n"
@@ -97,18 +97,17 @@ class OtlpJsonLoggingLogExporterTest {
             + "         }\n"
             + "      ]\n"
             + "   },\n"
-            + "   \"instrumentationLibraryLogs\":[\n"
+            + "   \"scopeLogs\":[\n"
             + "      {\n"
-            + "         \"instrumentationLibrary\":{\n"
+            + "         \"scope\":{\n"
             + "            \"name\":\"instrumentation2\",\n"
             + "            \"version\":\"2\"\n"
             + "         },\n"
-            + "         \"logs\":[\n"
+            + "         \"logRecords\":[\n"
             + "            {\n"
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
             + "               \"severityText\":\"INFO\",\n"
-            + "               \"name\":\"testLog2\",\n"
             + "               \"body\":{\n"
             + "                  \"stringValue\":\"body2\"\n"
             + "               },\n"
@@ -126,16 +125,15 @@ class OtlpJsonLoggingLogExporterTest {
             + "         ]\n"
             + "      },\n"
             + "      {\n"
-            + "         \"instrumentationLibrary\":{\n"
+            + "         \"scope\":{\n"
             + "            \"name\":\"instrumentation\",\n"
             + "            \"version\":\"1\"\n"
             + "         },\n"
-            + "         \"logs\":[\n"
+            + "         \"logRecords\":[\n"
             + "            {\n"
             + "               \"timeUnixNano\":\"1631533710000000\",\n"
             + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
             + "               \"severityText\":\"INFO\",\n"
-            + "               \"name\":\"testLog1\",\n"
             + "               \"body\":{\n"
             + "                  \"stringValue\":\"body1\"\n"
             + "               },\n"
@@ -160,9 +158,9 @@ class OtlpJsonLoggingLogExporterTest {
             + "      }\n"
             + "   ]\n"
             + "}",
-        logs.getEvents().get(0).getMessage(),
+        message,
         /* strict= */ false);
-    assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
+    assertThat(message).doesNotContain("\n");
   }
 
   @Test

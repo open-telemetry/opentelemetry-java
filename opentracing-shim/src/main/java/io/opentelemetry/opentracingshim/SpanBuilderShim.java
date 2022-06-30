@@ -56,7 +56,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Verify we handle a no-op Span
-    SpanShim spanShim = getSpanShim(parent);
+    SpanShim spanShim = ShimUtil.getSpanShim(parent);
 
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = spanShim;
@@ -79,7 +79,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Use referenceType
-    SpanContextShim contextShim = getContextShim(referencedContext);
+    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
 
     if (parentSpan == null && parentSpanContext == null) {
       parentSpanContext = contextShim;
@@ -228,21 +228,5 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     return new SpanShim(telemetryInfo(), span, baggage);
-  }
-
-  private static SpanShim getSpanShim(Span span) {
-    if (!(span instanceof SpanShim)) {
-      throw new IllegalArgumentException("span is not a valid SpanShim object");
-    }
-
-    return (SpanShim) span;
-  }
-
-  private static SpanContextShim getContextShim(SpanContext context) {
-    if (!(context instanceof SpanContextShim)) {
-      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
-    }
-
-    return (SpanContextShim) context;
   }
 }

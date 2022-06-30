@@ -15,25 +15,20 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
-import io.prometheus.client.Collector;
-import io.prometheus.client.Predicate;
-import io.prometheus.client.SampleNameFilter;
-import io.prometheus.client.exporter.common.TextFormat;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,11 +37,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
 /**
- * A {@link MetricExporter} that starts an HTTP server that will collect metrics and serialize to
+ * A {@link MetricReader} that starts an HTTP server that will collect metrics and serialize to
  * Prometheus text format on request.
  */
 // Very similar to
@@ -58,14 +55,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
 
   /**
-   * Returns a new {@link MetricReaderFactory} which can be registered to an {@link
+   * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProvider} to expose Prometheus metrics on port {@value
    * PrometheusHttpServerBuilder#DEFAULT_PORT}.
    */
-  public static MetricReaderFactory newMetricReaderFactory() {
-    return builder().newMetricReaderFactory();
+  public static PrometheusHttpServer create() {
+    return builder().build();
   }
 
   /** Returns a new {@link PrometheusHttpServerBuilder}. */
@@ -73,20 +71,25 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     return new PrometheusHttpServerBuilder();
   }
 
-  PrometheusHttpServer(String host, int port, MetricProducer producer) {
+  PrometheusHttpServer(String host, int port) {
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    server.createContext("/", new MetricsHandler(producer));
-    server.createContext("/metrics", new MetricsHandler(producer));
+    server.createContext("/", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
+    server.createContext(
+        "/metrics", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
 
     executor = Executors.newFixedThreadPool(5, THREAD_FACTORY);
     server.setExecutor(executor);
 
     start();
+  }
+
+  private MetricProducer getMetricProducer() {
+    return metricProducer;
   }
 
   private void start() {
@@ -106,12 +109,17 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return AggregationTemporality.CUMULATIVE;
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 
@@ -139,6 +147,11 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     shutdown().join(10, TimeUnit.SECONDS);
   }
 
+  @Override
+  public String toString() {
+    return "PrometheusHttpServer{address=" + server.getAddress() + "}";
+  }
+
   // Visible for testing.
   InetSocketAddress getAddress() {
     return server.getAddress();
@@ -146,30 +159,21 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static class MetricsHandler implements HttpHandler {
 
-    private final MetricProducer producer;
+    private final Supplier<Collection<MetricData>> metricsSupplier;
 
-    private MetricsHandler(MetricProducer producer) {
-      this.producer = producer;
+    private MetricsHandler(Supplier<Collection<MetricData>> metricsSupplier) {
+      this.metricsSupplier = metricsSupplier;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-      String contentType =
-          TextFormat.chooseContentType(exchange.getRequestHeaders().getFirst("Accept"));
-      exchange.getResponseHeaders().set("Content-Type", contentType);
-
-      Collection<MetricData> metrics = producer.collectAllMetrics();
-      List<Collector.MetricFamilySamples> samples = new ArrayList<>(metrics.size());
+      Collection<MetricData> metrics = metricsSupplier.get();
+      Set<String> requestedNames = parseQuery(exchange.getRequestURI().getRawQuery());
       Predicate<String> filter =
-          SampleNameFilter.restrictToNamesEqualTo(
-              null, parseQuery(exchange.getRequestURI().getRawQuery()));
-      for (MetricData metric : metrics) {
-        Collector.MetricFamilySamples sample =
-            MetricAdapter.toMetricFamilySamples(metric).filter(filter);
-        if (sample != null) {
-          samples.add(sample);
-        }
-      }
+          requestedNames.isEmpty() ? unused -> true : requestedNames::contains;
+      Serializer serializer =
+          Serializer.create(exchange.getRequestHeaders().getFirst("Accept"), filter);
+      exchange.getResponseHeaders().set("Content-Type", serializer.contentType());
 
       boolean compress = shouldUseCompression(exchange);
       if (compress) {
@@ -180,19 +184,13 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
       } else {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-        OutputStreamWriter writer;
+        OutputStream out;
         if (compress) {
-          writer =
-              new OutputStreamWriter(
-                  new GZIPOutputStream(exchange.getResponseBody()), StandardCharsets.UTF_8);
+          out = new GZIPOutputStream(exchange.getResponseBody());
         } else {
-          writer = new OutputStreamWriter(exchange.getResponseBody(), StandardCharsets.UTF_8);
+          out = exchange.getResponseBody();
         }
-        try {
-          TextFormat.writeFormat(contentType, writer, Collections.enumeration(samples));
-        } finally {
-          writer.close();
-        }
+        serializer.write(metrics, out);
       }
       exchange.close();
     }

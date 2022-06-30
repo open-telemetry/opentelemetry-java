@@ -5,19 +5,25 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressLogger(
+    loggerName = "io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage")
+@SuppressLogger(DefaultSynchronousMetricStorage.class)
 class CardinalityTest {
 
   /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
@@ -35,7 +41,6 @@ class CardinalityTest {
         SdkMeterProvider.builder()
             .registerMetricReader(deltaReader)
             .registerMetricReader(cumulativeReader)
-            .setMinimumCollectionInterval(Duration.ofSeconds(0))
             .build();
     meter = sdkMeterProvider.get(CardinalityTest.class.getName());
   }
@@ -58,29 +63,28 @@ class CardinalityTest {
       // DELTA reader only has latest
       assertThat(deltaReader.collectAllMetrics())
           .as("Delta collection " + i)
-          .hasSize(1)
           .satisfiesExactly(
               metricData ->
                   assertThat(metricData)
                       .hasName("sync-counter")
-                      .hasLongSum()
-                      .isDelta()
-                      .points()
-                      .hasSize(1));
+                      .hasLongSumSatisfying(sum -> sum.isDelta().hasPointsSatisfying(point -> {})));
 
       // Make sure we preserve previous cumulatives
       int currentSize = i;
       assertThat(cumulativeReader.collectAllMetrics())
           .as("Cumulative collection " + i)
-          .hasSize(1)
           .satisfiesExactly(
               metricData ->
                   assertThat(metricData)
                       .hasName("sync-counter")
-                      .hasLongSum()
-                      .isCumulative()
-                      .points()
-                      .hasSize(currentSize));
+                      .hasLongSumSatisfying(
+                          sum ->
+                              sum.isCumulative()
+                                  .satisfies(
+                                      (Consumer<SumData<LongPointData>>)
+                                          sumPointData ->
+                                              assertThat(sumPointData.getPoints().size())
+                                                  .isEqualTo(currentSize))));
     }
     // Now punch the limit and ONLY metrics we just recorded stay, due to simplistic GC.
     for (int i = 2001; i <= 2010; i++) {
@@ -88,27 +92,33 @@ class CardinalityTest {
     }
     assertThat(deltaReader.collectAllMetrics())
         .as("Delta collection - post limit @ 10")
-        .hasSize(1)
         .satisfiesExactly(
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .hasSize(10));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(10))));
 
     assertThat(cumulativeReader.collectAllMetrics())
         .as("Cumulative collection - post limit @ 10")
-        .hasSize(1)
         .satisfiesExactly(
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .hasSize(10));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(10))));
   }
 
   /**
@@ -130,27 +140,20 @@ class CardinalityTest {
     for (int i = 1; i <= 5; i++) {
       assertThat(deltaReader.collectAllMetrics())
           .as("Delta collection " + i)
-          .hasSize(1)
           .satisfiesExactlyInAnyOrder(
               metricData ->
                   assertThat(metricData)
                       .hasName("async-counter")
-                      .hasLongSum()
-                      .isDelta()
-                      .points()
-                      .hasSize(1));
+                      .hasLongSumSatisfying(sum -> sum.isDelta().hasPointsSatisfying(point -> {})));
 
       assertThat(cumulativeReader.collectAllMetrics())
           .as("Cumulative collection " + i)
-          .hasSize(1)
           .satisfiesExactlyInAnyOrder(
               metricData ->
                   assertThat(metricData)
                       .hasName("async-counter")
-                      .hasLongSum()
-                      .isCumulative()
-                      .points()
-                      .hasSize(1));
+                      .hasLongSumSatisfying(
+                          sum -> sum.isCumulative().hasPointsSatisfying(point -> {})));
     }
   }
 
@@ -169,41 +172,55 @@ class CardinalityTest {
 
     assertThat(deltaReader.collectAllMetrics())
         .as("Delta collection")
-        .hasSize(2)
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter1")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))),
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter2")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))));
 
     assertThat(cumulativeReader.collectAllMetrics())
         .as("Cumulative collection")
-        .hasSize(2)
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter1")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))),
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter2")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))));
   }
 
   /**
@@ -223,40 +240,54 @@ class CardinalityTest {
 
     assertThat(deltaReader.collectAllMetrics())
         .as("Delta collection")
-        .hasSize(2)
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter1")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))),
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter2")
-                    .hasLongSum()
-                    .isDelta()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))));
 
     assertThat(cumulativeReader.collectAllMetrics())
         .as("Cumulative collection")
-        .hasSize(2)
         .satisfiesExactlyInAnyOrder(
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter1")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS),
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))),
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter2")
-                    .hasLongSum()
-                    .isCumulative()
-                    .points()
-                    .hasSize(MAX_ACCUMULATIONS));
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    (Consumer<SumData<LongPointData>>)
+                                        sumPointData ->
+                                            assertThat(sumPointData.getPoints().size())
+                                                .isEqualTo(MAX_ACCUMULATIONS))));
   }
 }

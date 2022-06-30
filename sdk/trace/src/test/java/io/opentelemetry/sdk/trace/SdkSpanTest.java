@@ -28,13 +28,15 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -74,8 +76,8 @@ class SdkSpanTest {
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.empty();
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo =
-      InstrumentationLibraryInfo.create("theName", null);
+  private final InstrumentationScopeInfo instrumentationScopeInfo =
+      InstrumentationScopeInfo.create("theName");
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
   private final LinkData link = LinkData.create(spanContext);
@@ -328,10 +330,23 @@ class SdkSpanTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
-      assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+      assertThat(span.getInstrumentationLibraryInfo())
+          .isEqualTo(
+              InstrumentationScopeUtil.toInstrumentationLibraryInfo(instrumentationScopeInfo));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getInstrumentationScopeInfo() {
+    SdkSpan span = createTestSpan(SpanKind.CLIENT);
+    try {
+      assertThat(span.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
     } finally {
       span.end();
     }
@@ -535,10 +550,10 @@ class SdkSpanTest {
             .put(doubleArrayKey("ArrayDoubleKey"), Arrays.asList(0.1, 2.3, 4.5, 6.7, 8.9))
             .put(booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true))
             // These should be dropped
-            .put(stringArrayKey("NullArrayStringKey"), null)
-            .put(longArrayKey("NullArrayLongKey"), null)
-            .put(doubleArrayKey("NullArrayDoubleKey"), null)
-            .put(booleanArrayKey("NullArrayBooleanKey"), null)
+            .put(stringArrayKey("NullArrayStringKey"), (String[]) null)
+            .put(longArrayKey("NullArrayLongKey"), (Long[]) null)
+            .put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null)
+            .put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null)
             // These should be maintained
             .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
             .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))
@@ -710,8 +725,10 @@ class SdkSpanTest {
               .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
               .build();
       span.setAllAttributes(attributes);
+      span.recordException(new IllegalStateException(tooLongStrVal));
 
-      attributes = span.toSpanData().getAttributes();
+      SpanData spanData = span.toSpanData();
+      attributes = spanData.getAttributes();
       assertThat(attributes.get(stringKey("string"))).isEqualTo(strVal);
       assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
       assertThat(attributes.get(longKey("long"))).isEqualTo(1L);
@@ -722,6 +739,16 @@ class SdkSpanTest {
           .isEqualTo(Arrays.asList(true, false));
       assertThat(attributes.get(longArrayKey("longArray"))).isEqualTo(Arrays.asList(1L, 2L));
       assertThat(attributes.get(doubleArrayKey("doubleArray"))).isEqualTo(Arrays.asList(1.0, 2.0));
+
+      List<EventData> events = spanData.getEvents();
+      assertThat(events).hasSize(1);
+      EventData event = events.get(0);
+      assertThat(event.getName()).isEqualTo("exception");
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
+          .isEqualTo("java.lang.IllegalStateException".substring(0, maxLength));
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isEqualTo(strVal);
+      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).length())
+          .isLessThanOrEqualTo(maxLength);
     } finally {
       span.end();
     }
@@ -894,6 +921,14 @@ class SdkSpanTest {
                 .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
                 .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
+
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
+            });
   }
 
   @Test
@@ -958,6 +993,20 @@ class SdkSpanTest {
                 .put("exception.message", "this is a precedence attribute")
                 .put("exception.stacktrace", stacktrace)
                 .build());
+
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+              assertThat(exceptionEvent.getAdditionalAttributes())
+                  .isEqualTo(
+                      Attributes.of(
+                          stringKey("key1"),
+                          "this is an additional attribute",
+                          stringKey("exception.message"),
+                          "this is a precedence attribute"));
+            });
   }
 
   @Test
@@ -1035,7 +1084,7 @@ class SdkSpanTest {
         SdkSpan.startSpan(
             spanContext,
             SPAN_NAME,
-            instrumentationLibraryInfo,
+            instrumentationScopeInfo,
             kind,
             parentSpanId != null
                 ? Span.wrap(
@@ -1083,7 +1132,7 @@ class SdkSpanTest {
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getSpanContext().getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
-    assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+    assertThat(spanData.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
     assertThat(spanData.getEvents()).isEqualTo(eventData);
     assertThat(spanData.getLinks()).isEqualTo(links);
@@ -1122,7 +1171,7 @@ class SdkSpanTest {
         SdkSpan.startSpan(
             context,
             name,
-            instrumentationLibraryInfo,
+            instrumentationScopeInfo,
             kind,
             parentSpanId != null
                 ? Span.wrap(

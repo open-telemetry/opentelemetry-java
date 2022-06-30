@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,26 +24,33 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +70,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private Sampler sampler2;
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
-  @Mock private MetricReaderFactory metricReaderFactory;
   @Mock private MetricReader metricReader;
   @Mock private LogProcessor logProcessor;
 
@@ -213,21 +221,21 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addMeterProviderCustomizer() {
-    when(metricReaderFactory.apply(any())).thenReturn(metricReader);
     Mockito.lenient().when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(metricReader.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricReader.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricReader.getDefaultAggregation(any())).thenCallRealMethod();
 
     SdkMeterProvider sdkMeterProvider =
         builder
             .addMeterProviderCustomizer(
                 (meterProviderBuilder, configProperties) ->
-                    meterProviderBuilder.registerMetricReader(metricReaderFactory))
+                    meterProviderBuilder.registerMetricReader(metricReader))
             .build()
             .getOpenTelemetrySdk()
             .getSdkMeterProvider();
     sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
-    verify(metricReader).flush();
+    verify(metricReader).forceFlush();
   }
 
   // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
@@ -277,6 +285,61 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
+  void disableSdk() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer =
+            spy(
+                new BiFunction<
+                    SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>() {
+                  @Override
+                  public SdkTracerProviderBuilder apply(
+                      SdkTracerProviderBuilder builder, ConfigProperties config) {
+                    return builder;
+                  }
+                });
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer =
+            spy(
+                new BiFunction<
+                    SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>() {
+                  @Override
+                  public SdkMeterProviderBuilder apply(
+                      SdkMeterProviderBuilder builder, ConfigProperties config) {
+                    return builder;
+                  }
+                });
+    BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+        logCustomizer =
+            spy(
+                new BiFunction<
+                    SdkLogEmitterProviderBuilder,
+                    ConfigProperties,
+                    SdkLogEmitterProviderBuilder>() {
+                  @Override
+                  public SdkLogEmitterProviderBuilder apply(
+                      SdkLogEmitterProviderBuilder builder, ConfigProperties config) {
+                    return builder;
+                  }
+                });
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(
+                () -> Collections.singletonMap("otel.experimental.sdk.enabled", "false"))
+            .addTracerProviderCustomizer(traceCustomizer)
+            .addMeterProviderCustomizer(metricCustomizer)
+            .addLogEmitterProviderCustomizer(logCustomizer)
+            .build();
+
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
+
+    // When the SDK is disabled, configuration is skipped and none of the customizers are called
+    verify(traceCustomizer, never()).apply(any(), any());
+    verify(metricCustomizer, never()).apply(any(), any());
+    verify(logCustomizer, never()).apply(any(), any());
+  }
+
+  @Test
   void tracerProviderCustomizer() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
     AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
@@ -294,7 +357,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
             .setResultAsGlobal(false);
 
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
     AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
     assertThat(autoConfigured.getResource().getAttribute(stringKey("cow"))).isEqualTo("moo");
 
@@ -307,5 +369,29 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     // Ensures the export happened.
     sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void testNonStringProperties() {
+    Properties properties = System.getProperties();
+
+    properties.putIfAbsent("my-key", 7);
+    properties.putIfAbsent(7.39, "my-value");
+    properties.putIfAbsent(new BigDecimal("7.397"), new BigInteger("7"));
+
+    AutoConfiguredOpenTelemetrySdk autoConfigured = builder.build();
+
+    assertThat(autoConfigured)
+        .extracting("config")
+        .isInstanceOfSatisfying(
+            ConfigProperties.class,
+            config -> {
+              String value1 = config.getString("my.key");
+              assertThat(value1).isEqualTo("7");
+              String value2 = config.getString("7.39");
+              assertThat(value2).isEqualTo("my-value");
+              String value3 = config.getString("7.397");
+              assertThat(value3).isEqualTo("7");
+            });
   }
 }

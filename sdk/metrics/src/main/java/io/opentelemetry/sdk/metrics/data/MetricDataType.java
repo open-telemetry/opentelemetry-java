@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-/** The kind of metric. It describes how the data is reported. */
+/**
+ * The type of metric {@link PointData}.
+ *
+ * @since 1.14.0
+ */
 public enum MetricDataType {
-  /**
-   * A Gauge represents a measurement of a long value at a moment in time. Generally only one
-   * instance of a given Gauge metric will be reported per reporting interval.
-   */
+  /** A Gauge represents a measurement of a long value at a moment in time. */
   LONG_GAUGE,
 
   /**
@@ -19,15 +20,16 @@ public enum MetricDataType {
    */
   DOUBLE_GAUGE,
 
-  /** A sum of non negative long (int64) values. Reports {@link LongSumData} data. */
+  /** A Sum of long (int64) values. */
   LONG_SUM,
 
-  /** A sum of non negative double values. Reports {@link DoubleSumData} data. */
+  /** A Sum of double values. */
   DOUBLE_SUM,
 
   /**
-   * A Summary of measurements of numeric values, containing the minimum value recorded, the maximum
-   * value recorded, the sum of all measurements and the total number of measurements recorded.
+   * A Summary of measurements of numeric values, the sum of all measurements and the total number
+   * of measurements recorded, and quantiles describing the distribution of measurements (often
+   * including minimum "0.0" and maximum "1.0" quantiles).
    */
   SUMMARY,
 

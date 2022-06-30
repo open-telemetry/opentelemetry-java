@@ -9,10 +9,10 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.InstrumentationLibraryMarshaler;
+import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaller;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.ResourceMetrics;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -29,26 +29,26 @@ import java.util.Map;
 public final class ResourceMetricsMarshaler extends MarshalerWithSize {
   private final ResourceMarshaler resourceMarshaler;
   private final byte[] schemaUrl;
-  private final InstrumentationLibraryMetricsMarshaler[] instrumentationLibraryMetricsMarshalers;
+  private final InstrumentationScopeMetricsMarshaler[] instrumentationScopeMetricsMarshalers;
 
   /** Returns Marshalers of ResourceMetrics created by grouping the provided metricData. */
   public static ResourceMetricsMarshaler[] create(Collection<MetricData> metricDataList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> resourceAndLibraryMap =
-        groupByResourceAndLibrary(metricDataList);
+    Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> resourceAndScopeMap =
+        groupByResourceAndScope(metricDataList);
 
     ResourceMetricsMarshaler[] resourceMetricsMarshalers =
-        new ResourceMetricsMarshaler[resourceAndLibraryMap.size()];
+        new ResourceMetricsMarshaler[resourceAndScopeMap.size()];
     int posResource = 0;
-    for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> entry :
-        resourceAndLibraryMap.entrySet()) {
-      InstrumentationLibraryMetricsMarshaler[] instrumentationLibrarySpansMarshalers =
-          new InstrumentationLibraryMetricsMarshaler[entry.getValue().size()];
+    for (Map.Entry<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> entry :
+        resourceAndScopeMap.entrySet()) {
+      InstrumentationScopeMetricsMarshaler[] instrumentationLibrarySpansMarshalers =
+          new InstrumentationScopeMetricsMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
-      for (Map.Entry<InstrumentationLibraryInfo, List<Marshaler>> entryIs :
+      for (Map.Entry<InstrumentationScopeInfo, List<Marshaler>> entryIs :
           entry.getValue().entrySet()) {
         instrumentationLibrarySpansMarshalers[posInstrumentation++] =
-            new InstrumentationLibraryMetricsMarshaler(
-                InstrumentationLibraryMarshaler.create(entryIs.getKey()),
+            new InstrumentationScopeMetricsMarshaler(
+                InstrumentationScopeMarshaller.create(entryIs.getKey()),
                 MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
                 entryIs.getValue());
       }
@@ -65,43 +65,42 @@ public final class ResourceMetricsMarshaler extends MarshalerWithSize {
   ResourceMetricsMarshaler(
       ResourceMarshaler resourceMarshaler,
       byte[] schemaUrl,
-      InstrumentationLibraryMetricsMarshaler[] instrumentationLibraryMetricsMarshalers) {
-    super(calculateSize(resourceMarshaler, schemaUrl, instrumentationLibraryMetricsMarshalers));
+      InstrumentationScopeMetricsMarshaler[] instrumentationScopeMetricsMarshalers) {
+    super(calculateSize(resourceMarshaler, schemaUrl, instrumentationScopeMetricsMarshalers));
     this.resourceMarshaler = resourceMarshaler;
     this.schemaUrl = schemaUrl;
-    this.instrumentationLibraryMetricsMarshalers = instrumentationLibraryMetricsMarshalers;
+    this.instrumentationScopeMetricsMarshalers = instrumentationScopeMetricsMarshalers;
   }
 
   @Override
   public void writeTo(Serializer output) throws IOException {
     output.serializeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
     output.serializeRepeatedMessage(
-        ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS, instrumentationLibraryMetricsMarshalers);
+        ResourceMetrics.SCOPE_METRICS, instrumentationScopeMetricsMarshalers);
     output.serializeString(ResourceMetrics.SCHEMA_URL, schemaUrl);
   }
 
   private static int calculateSize(
       ResourceMarshaler resourceMarshaler,
       byte[] schemaUrl,
-      InstrumentationLibraryMetricsMarshaler[] instrumentationLibraryMetricsMarshalers) {
+      InstrumentationScopeMetricsMarshaler[] instrumentationScopeMetricsMarshalers) {
     int size = 0;
     size += MarshalerUtil.sizeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
     size += MarshalerUtil.sizeBytes(ResourceMetrics.SCHEMA_URL, schemaUrl);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS,
-            instrumentationLibraryMetricsMarshalers);
+            ResourceMetrics.SCOPE_METRICS, instrumentationScopeMetricsMarshalers);
     return size;
   }
 
-  private static Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>>
-      groupByResourceAndLibrary(Collection<MetricData> metricDataList) {
-    return MarshalerUtil.groupByResourceAndLibrary(
+  private static Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>>
+      groupByResourceAndScope(Collection<MetricData> metricDataList) {
+    return MarshalerUtil.groupByResourceAndScope(
         metricDataList,
         // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
         // two.
         MetricData::getResource,
-        MetricData::getInstrumentationLibraryInfo,
+        MetricData::getInstrumentationScopeInfo,
         MetricMarshaler::create);
   }
 }

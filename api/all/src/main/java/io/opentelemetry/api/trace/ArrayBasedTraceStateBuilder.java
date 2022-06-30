@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.StringUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -20,23 +21,37 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final ArrayBasedTraceState EMPTY =
       ArrayBasedTraceState.create(Collections.emptyList());
 
-  private static final int MAX_KEY_VALUE_PAIRS = 32;
+  private static final int MAX_ENTRIES = 32;
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
 
-  private final List<String> entries;
+  // Later calls to put must be at the front of trace state. We append to the list and then reverse
+  // when finished.
+  private final List<String> reversedEntries;
+
+  // We record removed entries with null values, this is the number of entries in the builder not
+  // including removed ones.
+  int numEntries;
 
   static TraceState empty() {
     return EMPTY;
   }
 
   ArrayBasedTraceStateBuilder() {
-    entries = new ArrayList<>();
+    reversedEntries = new ArrayList<>();
+    numEntries = 0;
   }
 
   ArrayBasedTraceStateBuilder(ArrayBasedTraceState parent) {
-    entries = new ArrayList<>(parent.getEntries());
+    List<String> entries = parent.getEntries();
+    int size = entries.size();
+    reversedEntries = new ArrayList<>(size);
+    for (int i = size - 2; i >= 0; i -= 2) {
+      reversedEntries.add(entries.get(i));
+      reversedEntries.add(entries.get(i + 1));
+    }
+    numEntries = size / 2;
   }
 
   /**
@@ -51,14 +66,22 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
    */
   @Override
   public TraceStateBuilder put(String key, String value) {
-    if (!isKeyValid(key) || !isValueValid(value) || entries.size() >= MAX_KEY_VALUE_PAIRS) {
+    if (!isKeyValid(key) || !isValueValid(value) || numEntries >= MAX_ENTRIES) {
       return this;
     }
-    removeEntry(key);
-    // Inserts the element at the front of this list. (note: probably pretty inefficient with an
-    // ArrayList as the underlying implementation!)
-    entries.add(0, key);
-    entries.add(1, value);
+    for (int i = 0; i < reversedEntries.size(); i += 2) {
+      if (reversedEntries.get(i).equals(key)) {
+        String currentValue = reversedEntries.get(i + 1);
+        reversedEntries.set(i + 1, value);
+        if (currentValue == null) {
+          numEntries++;
+        }
+        return this;
+      }
+    }
+    reversedEntries.add(key);
+    reversedEntries.add(value);
+    numEntries++;
     return this;
   }
 
@@ -67,26 +90,38 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
     if (key == null) {
       return this;
     }
-    removeEntry(key);
-    return this;
-  }
-
-  private void removeEntry(String key) {
-    int currentSize = entries.size();
-    for (int i = 0; i < currentSize; i += 2) {
-      if (entries.get(i).equals(key)) {
-        // remove twice at i to get the key & the value (yes, this is pretty ugly).
-        entries.remove(i);
-        entries.remove(i);
-        // Exit now because the entries list cannot contain duplicates.
-        break;
+    for (int i = 0; i < reversedEntries.size(); i += 2) {
+      if (reversedEntries.get(i).equals(key)) {
+        reversedEntries.set(i + 1, null);
+        numEntries--;
+        return this;
       }
     }
+    return this;
   }
 
   @Override
   public TraceState build() {
-    return ArrayBasedTraceState.create(entries);
+    if (numEntries == 0) {
+      return empty();
+    }
+
+    if (reversedEntries.size() == 2) {
+      return ArrayBasedTraceState.create(new ArrayList<>(reversedEntries));
+    }
+    String[] entries = new String[numEntries * 2];
+    int pos = 0;
+    for (int i = reversedEntries.size() - 2; i >= 0; i -= 2) {
+      String key = reversedEntries.get(i);
+      String value = reversedEntries.get(i + 1);
+      if (value != null) {
+        entries[pos++] = key;
+        entries[pos++] = value;
+      }
+    }
+    // TODO(anuraaga): We may consider removing AutoValue which prevents us from storing the array
+    // directly as it would be a bit more performant, though not hugely.
+    return ArrayBasedTraceState.create(Arrays.asList(entries));
   }
 
   /**

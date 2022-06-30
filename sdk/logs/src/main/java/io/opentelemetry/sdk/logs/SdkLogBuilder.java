@@ -57,12 +57,6 @@ final class SdkLogBuilder implements LogBuilder {
   }
 
   @Override
-  public LogBuilder setName(String name) {
-    logDataBuilder.setName(name);
-    return this;
-  }
-
-  @Override
   public LogBuilder setBody(String body) {
     logDataBuilder.setBody(body);
     return this;

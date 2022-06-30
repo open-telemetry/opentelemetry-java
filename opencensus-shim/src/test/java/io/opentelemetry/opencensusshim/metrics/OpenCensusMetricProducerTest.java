@@ -5,8 +5,7 @@
 
 package io.opentelemetry.opencensusshim.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opencensus.contrib.exemplar.util.ExemplarUtils;
 import io.opencensus.stats.Aggregation;
@@ -22,7 +21,7 @@ import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.Arrays;
@@ -77,24 +76,28 @@ class OpenCensusMetricProducerTest {
                                 .hasName("task_latency_distribution")
                                 .hasDescription("The distribution of the task latencies.")
                                 .hasUnit("ms")
-                                .hasDoubleHistogram()
-                                .isCumulative()
-                                .points()
-                                .satisfiesExactly(
-                                    point ->
-                                        assertThat(point)
-                                            .hasSum(50)
-                                            .hasCount(1)
-                                            .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
-                                            .hasBucketBoundaries(
-                                                100d, 200d, 400d, 1000d, 2000d, 4000d)
-                                            .exemplars()
-                                            .satisfiesExactly(
-                                                exemplar ->
-                                                    assertThat(exemplar)
-                                                        .hasFilteredAttributes(Attributes.empty())
-                                                        .hasValue(50)
-                                                        .hasTraceId(TRACE_ID.toLowerBase16())
-                                                        .hasSpanId(SPAN_ID.toLowerBase16())))));
+                                .hasHistogramSatisfying(
+                                    histogram ->
+                                        histogram
+                                            .isCumulative()
+                                            .hasPointsSatisfying(
+                                                point ->
+                                                    point
+                                                        .hasSum(50)
+                                                        .hasCount(1)
+                                                        .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
+                                                        .hasBucketBoundaries(
+                                                            100d, 200d, 400d, 1000d, 2000d, 4000d)
+                                                        .hasExemplarsSatisfying(
+                                                            exemplar ->
+                                                                exemplar
+                                                                    .hasFilteredAttributes(
+                                                                        Attributes.empty())
+                                                                    .hasValue(50)
+                                                                    .hasTraceId(
+                                                                        TRACE_ID.toLowerBase16())
+                                                                    .hasSpanId(
+                                                                        SPAN_ID
+                                                                            .toLowerBase16()))))));
   }
 }

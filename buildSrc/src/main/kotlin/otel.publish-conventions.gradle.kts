@@ -8,12 +8,6 @@ plugins {
 publishing {
   publications {
     register<MavenPublication>("mavenPublication") {
-      val release = findProperty("otel.release")
-      if (release != null) {
-        val versionParts = version.split('-').toMutableList()
-        versionParts[0] += "-$release"
-        version = versionParts.joinToString("-")
-      }
       groupId = "io.opentelemetry"
       afterEvaluate {
         // not available until evaluated.
@@ -60,14 +54,6 @@ publishing {
         }
       }
     }
-  }
-}
-
-afterEvaluate {
-  val publishToSonatype by tasks.getting
-  val release by rootProject.tasks.existing
-  release.configure {
-    finalizedBy(publishToSonatype)
   }
 }
 

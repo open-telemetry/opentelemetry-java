@@ -27,7 +27,6 @@ class SdkLogBuilderTest {
   @Test
   void buildAndEmit() {
     Instant now = Instant.now();
-    String name = "skippy";
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
@@ -55,8 +54,6 @@ class SdkLogBuilderTest {
     verify(delegate).setAttributes(attrs);
     builder.setContext(context);
     verify(delegate).setContext(context);
-    builder.setName(name);
-    verify(delegate).setName(name);
     builder.setSeverity(severity);
     verify(delegate).setSeverity(severity);
     builder.setSeverityText(sevText);

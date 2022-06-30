@@ -6,9 +6,8 @@
 package io.opentelemetry.exporter.internal.otlp.traces;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNSET;
@@ -30,13 +29,13 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -58,8 +57,13 @@ class TraceRequestMarshalerTest {
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+  private static final String TRACE_STATE_VALUE = "baz=qux,foo=bar";
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
+      SpanContext.create(
+          TRACE_ID,
+          SPAN_ID,
+          TraceFlags.getSampled(),
+          TraceState.builder().put("foo", "bar").put("baz", "qux").build());
 
   @Test
   void toProtoResourceSpans() {
@@ -75,8 +79,8 @@ class TraceRequestMarshalerTest {
                     .setStartEpochNanos(12345)
                     .setEndEpochNanos(12349)
                     .setStatus(StatusData.unset())
-                    .setInstrumentationLibraryInfo(
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .setInstrumentationScopeInfo(
+                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .build()));
@@ -86,13 +90,11 @@ class TraceRequestMarshalerTest {
     ResourceSpans onlyResourceSpans =
         parse(ResourceSpans.getDefaultInstance(), resourceSpansMarshalers[0]);
     assertThat(onlyResourceSpans.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(onlyResourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
-    InstrumentationLibrarySpans instrumentationLibrarySpans =
-        onlyResourceSpans.getInstrumentationLibrarySpans(0);
+    assertThat(onlyResourceSpans.getScopeSpansCount()).isEqualTo(1);
+    ScopeSpans instrumentationLibrarySpans = onlyResourceSpans.getScopeSpans(0);
     assertThat(instrumentationLibrarySpans.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(instrumentationLibrarySpans.getInstrumentationLibrary())
-        .isEqualTo(
-            InstrumentationLibrary.newBuilder().setName("testLib").setVersion("1.0").build());
+    assertThat(instrumentationLibrarySpans.getScope())
+        .isEqualTo(InstrumentationScope.newBuilder().setName("testLib").setVersion("1.0").build());
   }
 
   @Test
@@ -132,6 +134,7 @@ class TraceRequestMarshalerTest {
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
+    assertThat(span.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(span.getName()).isEqualTo("GET /api/endpoint");
     assertThat(span.getKind()).isEqualTo(SPAN_KIND_SERVER);
@@ -209,6 +212,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(span.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
     assertThat(span.getStatus()).isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
@@ -229,45 +233,24 @@ class TraceRequestMarshalerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(parse(Status.getDefaultInstance(), SpanStatusMarshaler.create(StatusData.unset())))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_UNSET)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_UNSET).build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "ERROR"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("ERROR")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("ERROR").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.ERROR, "UNKNOWN"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ERROR)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
-                .setMessage("UNKNOWN")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("UNKNOWN").build());
     assertThat(
             parse(
                 Status.getDefaultInstance(),
                 SpanStatusMarshaler.create(StatusData.create(StatusCode.OK, "OK_OVERRIDE"))))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_OK)
-                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
-                .setMessage("OK_OVERRIDE")
-                .build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
   @Test
@@ -318,6 +301,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
 
@@ -333,6 +317,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()
                         .setKey("key_string")
@@ -383,9 +368,8 @@ class TraceRequestMarshalerTest {
 
     if (result instanceof ResourceSpans) {
       ResourceSpans.Builder fixed = (ResourceSpans.Builder) builder;
-      for (InstrumentationLibrarySpans.Builder ils :
-          fixed.getInstrumentationLibrarySpansBuilderList()) {
-        for (Span.Builder span : ils.getSpansBuilderList()) {
+      for (ScopeSpans.Builder ss : fixed.getScopeSpansBuilderList()) {
+        for (Span.Builder span : ss.getSpansBuilderList()) {
           fixSpanJsonIds(span);
         }
       }

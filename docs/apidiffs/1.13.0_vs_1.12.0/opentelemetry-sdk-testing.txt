@@ -1,0 +1,20 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion equalTo(io.opentelemetry.api.common.AttributeKey, int)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttribute(io.opentelemetry.sdk.testing.assertj.AttributeAssertion)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasInstrumentationLibraryInfo(io.opentelemetry.sdk.common.InstrumentationLibraryInfo)
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasInstrumentationScopeInfo(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.trace.TestSpanData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+**** MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.testing.trace.TestSpanData$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC NON_ABSTRACT (<- ABSTRACT) io.opentelemetry.sdk.testing.trace.TestSpanData$Builder setInstrumentationLibraryInfo(io.opentelemetry.sdk.common.InstrumentationLibraryInfo)
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.trace.TestSpanData$Builder setInstrumentationScopeInfo(io.opentelemetry.sdk.common.InstrumentationScopeInfo)

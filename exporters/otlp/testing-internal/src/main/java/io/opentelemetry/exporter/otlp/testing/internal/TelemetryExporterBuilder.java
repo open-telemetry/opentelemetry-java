@@ -5,11 +5,31 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public interface TelemetryExporterBuilder<T> {
+
+  static TelemetryExporterBuilder<SpanData> wrap(OtlpGrpcSpanExporterBuilder builder) {
+    return new GrpcSpanExporterBuilderWrapper(builder);
+  }
+
+  static TelemetryExporterBuilder<MetricData> wrap(OtlpGrpcMetricExporterBuilder builder) {
+    return new GrpcMetricExporterBuilderWrapper(builder);
+  }
+
+  static TelemetryExporterBuilder<LogData> wrap(OtlpGrpcLogExporterBuilder builder) {
+    return new GrpcLogExporterBuilderWrapper(builder);
+  }
+
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);
 
   TelemetryExporterBuilder<T> setTimeout(long timeout, TimeUnit unit);
@@ -22,7 +42,11 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
+  TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem);
+
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
+
+  TelemetryExporterBuilder<T> setChannel(ManagedChannel channel);
 
   TelemetryExporter<T> build();
 }

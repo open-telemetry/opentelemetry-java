@@ -75,7 +75,7 @@ public final class Application {
     }
   }
 
-  private static class Service {
+  static class Service {
     private final WebClient client = WebClient.of();
 
     @Post("/verify-tracecontext")

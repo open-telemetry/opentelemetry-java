@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.8.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.9.0";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -33,6 +33,17 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> AWS_LAMBDA_INVOKED_ARN =
       stringKey("aws.lambda.invoked_arn");
+
+  /**
+   * Parent-child Reference type
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The causal relationship between a child Span and a parent Span.
+   * </ul>
+   */
+  public static final AttributeKey<String> OPENTRACING_REF_TYPE = stringKey("opentracing.ref_type");
 
   /**
    * An identifier for the database management system (DBMS) product being used. See below for a
@@ -868,6 +879,15 @@ public final class SemanticAttributes {
       longKey("message.uncompressed_size");
 
   // Enum definitions
+  public static final class OpentracingRefTypeValues {
+    /** The parent Span depends on the child Span in some capacity. */
+    public static final String CHILD_OF = "child_of";
+    /** The parent Span does not depend in any way on the result of the child Span. */
+    public static final String FOLLOWS_FROM = "follows_from";
+
+    private OpentracingRefTypeValues() {}
+  }
+
   public static final class DbSystemValues {
     /** Some other SQL database. Fallback only. See notes. */
     public static final String OTHER_SQL = "other_sql";

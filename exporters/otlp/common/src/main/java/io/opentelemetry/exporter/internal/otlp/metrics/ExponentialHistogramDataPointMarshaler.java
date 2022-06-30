@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.ExponentialHistogramDataPoint;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -26,6 +26,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
   private final long count;
   private final long zeroCount;
   private final double sum;
+  private final boolean hasMin;
+  private final double min;
+  private final boolean hasMax;
+  private final double max;
   private final ExponentialHistogramBucketsMarshaler positiveBuckets;
   private final ExponentialHistogramBucketsMarshaler negativeBuckets;
   private final ExemplarMarshaler[] exemplars;
@@ -37,6 +41,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
       int scale,
       long count,
       double sum,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       long zeroCount,
       ExponentialHistogramBucketsMarshaler positiveBuckets,
       ExponentialHistogramBucketsMarshaler negativeBuckets,
@@ -49,6 +57,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
             scale,
             count,
             sum,
+            hasMin,
+            min,
+            hasMax,
+            max,
             zeroCount,
             positiveBuckets,
             negativeBuckets,
@@ -58,6 +70,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     this.timeUnixNano = epochNanos;
     this.scale = scale;
     this.sum = sum;
+    this.hasMin = hasMin;
+    this.min = min;
+    this.hasMax = hasMax;
+    this.max = max;
     this.count = count;
     this.zeroCount = zeroCount;
     this.positiveBuckets = positiveBuckets;
@@ -81,6 +97,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
         point.getScale(),
         point.getCount(),
         point.getSum(),
+        point.hasMin(),
+        point.getMin(),
+        point.hasMax(),
+        point.getMax(),
         point.getZeroCount(),
         positiveBuckets,
         negativeBuckets,
@@ -105,6 +125,12 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     output.serializeFixed64(ExponentialHistogramDataPoint.COUNT, count);
     output.serializeDouble(ExponentialHistogramDataPoint.SUM, sum);
+    if (hasMin) {
+      output.serializeDoubleOptional(ExponentialHistogramDataPoint.MIN, min);
+    }
+    if (hasMax) {
+      output.serializeDoubleOptional(ExponentialHistogramDataPoint.MAX, max);
+    }
     output.serializeSInt32(ExponentialHistogramDataPoint.SCALE, scale);
     output.serializeFixed64(ExponentialHistogramDataPoint.ZERO_COUNT, zeroCount);
     output.serializeMessage(ExponentialHistogramDataPoint.POSITIVE, positiveBuckets);
@@ -119,6 +145,10 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
       int scale,
       long count,
       double sum,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       long zeroCount,
       ExponentialHistogramBucketsMarshaler positiveBucketMarshaler,
       ExponentialHistogramBucketsMarshaler negativeBucketMarshaler,
@@ -132,6 +162,12 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.SCALE, scale);
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.COUNT, count);
     size += MarshalerUtil.sizeDouble(ExponentialHistogramDataPoint.SUM, sum);
+    if (hasMin) {
+      size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MIN, min);
+    }
+    if (hasMax) {
+      size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MAX, max);
+    }
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.ZERO_COUNT, zeroCount);
     size +=
         MarshalerUtil.sizeMessage(ExponentialHistogramDataPoint.POSITIVE, positiveBucketMarshaler);

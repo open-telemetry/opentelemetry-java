@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -22,16 +22,19 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
 public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
 
-  SpanDataAssert(SpanData actual) {
+  SpanDataAssert(@Nullable SpanData actual) {
     super(actual, SpanDataAssert.class);
   }
 
@@ -157,9 +160,14 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has the given {@link InstrumentationLibraryInfo}. */
+  /**
+   * Asserts the span has the given {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}.
+   *
+   * @deprecated Use {@link #hasInstrumentationScopeInfo(InstrumentationScopeInfo)}.
+   */
+  @Deprecated
   public SpanDataAssert hasInstrumentationLibraryInfo(
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
     isNotNull();
     if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibraryInfo)) {
       failWithActualExpectedAndMessage(
@@ -169,6 +177,22 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           actual.getName(),
           instrumentationLibraryInfo,
           actual.getInstrumentationLibraryInfo());
+    }
+    return this;
+  }
+
+  /** Asserts the span has the given {@link InstrumentationScopeInfo}. */
+  public SpanDataAssert hasInstrumentationScopeInfo(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
+    isNotNull();
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
+      failWithActualExpectedAndMessage(
+          actual.getInstrumentationScopeInfo(),
+          instrumentationScopeInfo,
+          "Expected span [%s] to have instrumentation scope info <%s> but was <%s>",
+          actual.getName(),
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }
@@ -228,10 +252,31 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return startsAt(toNanos(timestamp));
   }
 
+  /** Asserts the span has the given attribute. */
+  public <T> SpanDataAssert hasAttribute(AttributeKey<T> key, T value) {
+    return hasAttribute(OpenTelemetryAssertions.equalTo(key, value));
+  }
+
+  /** Asserts the span has an attribute matching the {@code attributeAssertion}. */
+  public SpanDataAssert hasAttribute(AttributeAssertion attributeAssertion) {
+    isNotNull();
+
+    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
+    AttributeKey<?> key = attributeAssertion.getKey();
+
+    assertThat(actualKeys).as("span [%s] attribute keys", actual.getName()).contains(key);
+
+    Object value = actual.getAttributes().get(key);
+    AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
+    attributeAssertion.getAssertion().accept(assertion);
+
+    return this;
+  }
+
   /** Asserts the span has the given attributes. */
   public SpanDataAssert hasAttributes(Attributes attributes) {
     isNotNull();
-    if (!attributesAreEqual(attributes)) {
+    if (!AssertUtil.attributesAreEqual(actual.getAttributes(), attributes)) {
       failWithActualExpectedAndMessage(
           actual.getAttributes(),
           attributes,
@@ -255,16 +300,40 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return hasAttributes(attributes);
   }
 
-  private boolean attributesAreEqual(Attributes attributes) {
-    // compare as maps, since implementations do not have equals that work correctly across
-    // implementations.
-    return actual.getAttributes().asMap().equals(attributes.asMap());
-  }
-
   /** Asserts the span has attributes satisfying the given condition. */
   public SpanDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
+    return this;
+  }
+
+  /** Asserts the span has attributes matching all {@code assertions} and no more. */
+  public SpanDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the span has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public SpanDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
+    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
+    Set<AttributeKey<?>> checkedKeys = new HashSet<>();
+    for (AttributeAssertion attributeAssertion : assertions) {
+      AttributeKey<?> key = attributeAssertion.getKey();
+      Object value = actual.getAttributes().get(key);
+      if (value != null) {
+        checkedKeys.add(key);
+      }
+      AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
+      attributeAssertion.getAssertion().accept(assertion);
+    }
+
+    assertThat(actualKeys)
+        .as("span [%s] attribute keys", actual.getName())
+        .containsExactlyInAnyOrderElementsOf(checkedKeys);
+
     return this;
   }
 
@@ -383,6 +452,14 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           status,
           actual.getStatus());
     }
+    return this;
+  }
+
+  /** Asserts the span has a status satisfying the given condition. */
+  public SpanDataAssert hasStatusSatisfying(Consumer<StatusDataAssert> condition) {
+    isNotNull();
+    StatusDataAssert statusDataAssert = new StatusDataAssert(actual.getStatus());
+    condition.accept(statusDataAssert);
     return this;
   }
 

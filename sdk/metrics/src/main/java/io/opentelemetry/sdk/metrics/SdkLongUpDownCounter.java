@@ -12,8 +12,6 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
@@ -23,7 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
 final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
-  private static final ObservableLongUpDownCounter NOOP = new ObservableLongUpDownCounter() {};
 
   private final WriteableMetricStorage storage;
 
@@ -83,7 +80,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      this(meterProviderSharedState, meterSharedState, name, "", "1");
+      this(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
     }
 
     Builder(
@@ -114,8 +111,15 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
-      return NOOP;
+      return new SdkObservableInstrument(
+          meterSharedState,
+          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback));
+    }
+
+    @Override
+    public ObservableLongMeasurement buildObserver() {
+      return buildObservableMeasurement(
+          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, InstrumentValueType.LONG);
     }
   }
 }

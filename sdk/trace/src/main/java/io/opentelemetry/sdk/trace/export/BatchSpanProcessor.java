@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -40,6 +41,8 @@ import java.util.logging.Logger;
  * since the last export finished.
  */
 public final class BatchSpanProcessor implements SpanProcessor {
+
+  private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
 
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
@@ -121,6 +124,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     return worker.batch;
   }
 
+  // Visible for testing
+  Queue<ReadableSpan> getQueue() {
+    return worker.queue;
+  }
+
   @Override
   public String toString() {
     return "BatchSpanProcessor{"
@@ -138,8 +146,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   private static final class Worker implements Runnable {
-
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
     private final LongCounter processedSpansCounter;
     private final Attributes droppedAttrs;
@@ -324,8 +330,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } else {
           logger.log(Level.FINE, "Exporter failed");
         }
-      } catch (RuntimeException e) {
-        logger.log(Level.WARNING, "Exporter threw an Exception", e);
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
+        logger.log(Level.WARNING, "Exporter threw an Exception", t);
       } finally {
         batch.clear();
       }

@@ -10,36 +10,33 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * A registry for creating named {@link Meter}s.
  *
- * <p>A MeterProvider represents a configured (or noop) Metric collection system that can be used to
- * instrument code.
- *
  * <p>The name <i>Provider</i> is for consistency with other languages and it is <b>NOT</b> loaded
  * using reflection.
  *
- * @see io.opentelemetry.api.metrics.Meter
+ * @see Meter
+ * @since 1.10.0
  */
 @ThreadSafe
 public interface MeterProvider {
   /**
-   * Gets or creates a named and versioned meter instance.
+   * Gets or creates a named Meter instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @return a meter instance.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
+   * @return a Meter instance.
    */
-  default Meter get(String instrumentationName) {
-    return meterBuilder(instrumentationName).build();
+  default Meter get(String instrumentationScopeName) {
+    return meterBuilder(instrumentationScopeName).build();
   }
 
   /**
-   * Creates a MeterBuilder for a named meter instance.
+   * Creates a MeterBuilder for a named Meter instance.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a MeterBuilder instance.
-   * @since 1.4.0
    */
-  MeterBuilder meterBuilder(String instrumentationName);
+  MeterBuilder meterBuilder(String instrumentationScopeName);
 
   /** Returns a no-op {@link MeterProvider} which provides meters which do not record or emit. */
   static MeterProvider noop() {

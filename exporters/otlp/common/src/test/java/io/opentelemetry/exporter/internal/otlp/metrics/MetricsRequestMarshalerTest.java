@@ -18,10 +18,13 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Exemplar;
 import io.opentelemetry.proto.metrics.v1.ExponentialHistogram;
@@ -29,33 +32,34 @@ import io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,17 +87,20 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    LongPointData.create(
+                    ImmutableLongPointData.create(
                         123,
                         456,
                         KV_ATTR,
                         0,
                         singletonList(
-                            LongExemplarData.create(
+                            ImmutableLongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -122,17 +129,20 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    DoublePointData.create(
+                    ImmutableDoublePointData.create(
                         123,
                         456,
                         KV_ATTR,
                         0,
                         singletonList(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 0))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -165,17 +175,20 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 singletonList(
-                    LongPointData.create(
+                    ImmutableLongPointData.create(
                         123,
                         456,
                         KV_ATTR,
                         5,
                         singletonList(
-                            LongExemplarData.create(
+                            ImmutableLongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -203,8 +216,8 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Attributes.empty(), 5),
-                    LongPointData.create(321, 654, KV_ATTR, 7))))
+                    ImmutableLongPointData.create(123, 456, Attributes.empty(), 5),
+                    ImmutableLongPointData.create(321, 654, KV_ATTR, 7))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -224,7 +237,9 @@ class MetricsRequestMarshalerTest {
   @Test
   void doubleDataPoints() {
     assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
-    assertThat(toNumberDataPoints(singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
+    assertThat(
+            toNumberDataPoints(
+                singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -237,8 +252,8 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toNumberDataPoints(
                 ImmutableList.of(
-                    DoublePointData.create(123, 456, Attributes.empty(), 5.1),
-                    DoublePointData.create(321, 654, KV_ATTR, 7.1))))
+                    ImmutableDoublePointData.create(123, 456, Attributes.empty(), 5.1),
+                    ImmutableDoublePointData.create(321, 654, KV_ATTR, 7.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -260,13 +275,13 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toSummaryDataPoints(
                 singletonList(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         123,
                         456,
                         KV_ATTR,
                         5,
                         14.2,
-                        singletonList(ValueAtPercentile.create(0.0, 1.1))))))
+                        singletonList(ImmutableValueAtQuantile.create(0.0, 1.1))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -285,17 +300,17 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toSummaryDataPoints(
                 ImmutableList.of(
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
-                    DoubleSummaryPointData.create(
+                    ImmutableSummaryPointData.create(
                         321,
                         654,
                         KV_ATTR,
                         9,
                         18.3,
                         ImmutableList.of(
-                            ValueAtPercentile.create(0.0, 1.1),
-                            ValueAtPercentile.create(100.0, 20.3))))))
+                            ImmutableValueAtQuantile.create(0.0, 1.1),
+                            ImmutableValueAtQuantile.create(1.0, 20.3))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -329,21 +344,33 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toHistogramDataPoints(
                 ImmutableList.of(
-                    DoubleHistogramPointData.create(
-                        123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
-                    DoubleHistogramPointData.create(
+                    ImmutableHistogramPointData.create(
+                        123,
+                        456,
+                        KV_ATTR,
+                        14.2,
+                        null,
+                        null,
+                        ImmutableList.of(1.0),
+                        ImmutableList.of(1L, 5L)),
+                    ImmutableHistogramPointData.create(
                         123,
                         456,
                         Attributes.empty(),
                         15.3,
+                        3.3,
+                        12.0,
                         ImmutableList.of(),
                         ImmutableList.of(7L),
                         ImmutableList.of(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
             HistogramDataPoint.newBuilder()
@@ -363,6 +390,8 @@ class MetricsRequestMarshalerTest {
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
+                .setMin(3.3)
+                .setMax(12.0)
                 .addBucketCounts(7)
                 .addExemplars(
                     Exemplar.newBuilder()
@@ -390,19 +419,48 @@ class MetricsRequestMarshalerTest {
                         0,
                         123.4,
                         1,
+                        null,
+                        null,
+                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        123,
+                        456,
+                        Attributes.empty(),
+                        Collections.emptyList()),
+                    ExponentialHistogramPointData.create(
+                        0,
+                        123.4,
+                        1,
+                        3.3,
+                        80.1,
                         new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
                         new TestExponentialHistogramBuckets(0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.of(stringKey("key"), "value"),
                         ImmutableList.of(
-                            DoubleExemplarData.create(
+                            ImmutableDoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
-                                /*spanId=*/ "0000000000000002",
-                                /*traceId=*/ "00000000000000000000000000000001",
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
                                 1.5))))))
         .containsExactly(
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(1)
+                .setScale(0)
+                .setSum(123.4)
+                .setZeroCount(1)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .build(),
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
@@ -412,6 +470,8 @@ class MetricsRequestMarshalerTest {
                         KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
                 .setScale(0)
                 .setSum(123.4)
+                .setMin(3.3)
+                .setMax(80.1)
                 .setZeroCount(1)
                 .setPositive(
                     ExponentialHistogramDataPoint.Buckets.newBuilder()
@@ -442,16 +502,16 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_monotonic() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongSum(
+                ImmutableMetricData.createLongSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    LongSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -477,16 +537,16 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSum(
+                ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    DoubleSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -516,16 +576,16 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_nonMonotonic() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongSum(
+                ImmutableMetricData.createLongSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    LongSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -551,16 +611,16 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSum(
+                ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    DoubleSumData.create(
+                    ImmutableSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -590,14 +650,14 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_gauges() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongGauge(
+                ImmutableMetricData.createLongGauge(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    LongGaugeData.create(
-                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
+                    ImmutableGaugeData.create(
+                        singletonList(ImmutableLongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -621,14 +681,14 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleGauge(
+                ImmutableMetricData.createDoubleGauge(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    DoubleGaugeData.create(
-                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
+                    ImmutableGaugeData.create(
+                        singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -656,23 +716,23 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_summary() {
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSummary(
+                ImmutableMetricData.createDoubleSummary(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    DoubleSummaryData.create(
+                    ImmutableSummaryData.create(
                         singletonList(
-                            DoubleSummaryPointData.create(
+                            ImmutableSummaryPointData.create(
                                 123,
                                 456,
                                 KV_ATTR,
                                 5,
                                 33d,
                                 ImmutableList.of(
-                                    ValueAtPercentile.create(0, 1.1),
-                                    ValueAtPercentile.create(100.0, 20.3))))))))
+                                    ImmutableValueAtQuantile.create(0, 1.1),
+                                    ImmutableValueAtQuantile.create(1.0, 20.3))))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -711,20 +771,22 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_histogram() {
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleHistogram(
+                ImmutableMetricData.createDoubleHistogram(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
-                    DoubleHistogramData.create(
+                    ImmutableHistogramData.create(
                         AggregationTemporality.DELTA,
                         singletonList(
-                            DoubleHistogramPointData.create(
+                            ImmutableHistogramPointData.create(
                                 123,
                                 456,
                                 KV_ATTR,
                                 4.0,
+                                1.0,
+                                3.0,
                                 ImmutableList.of(),
                                 ImmutableList.of(33L)))))))
         .isEqualTo(
@@ -747,6 +809,8 @@ class MetricsRequestMarshalerTest {
                                             .build()))
                                 .setCount(33)
                                 .setSum(4.0)
+                                .setMin(1.0)
+                                .setMax(3.0)
                                 .addBucketCounts(33)
                                 .build())
                         .build())
@@ -757,9 +821,9 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_exponentialHistogram() {
     assertThat(
             toProtoMetric(
-                MetricData.createExponentialHistogram(
+                ImmutableMetricData.createExponentialHistogram(
                     Resource.empty(),
-                    InstrumentationLibraryInfo.empty(),
+                    InstrumentationScopeInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -770,6 +834,8 @@ class MetricsRequestMarshalerTest {
                                 20,
                                 123.4,
                                 257,
+                                20.1,
+                                44.3,
                                 new TestExponentialHistogramBuckets(
                                     -1, ImmutableList.of(0L, 128L, 1L << 32)),
                                 new TestExponentialHistogramBuckets(
@@ -802,6 +868,8 @@ class MetricsRequestMarshalerTest {
                                 .setScale(20)
                                 .setSum(123.4)
                                 .setZeroCount(257)
+                                .setMin(20.1)
+                                .setMax(44.3)
                                 .setPositive(
                                     ExponentialHistogramDataPoint.Buckets.newBuilder()
                                         .setOffset(-1)
@@ -829,12 +897,12 @@ class MetricsRequestMarshalerTest {
             .build();
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("name", "version", "http://url");
-    InstrumentationLibrary instrumentationLibraryProto =
-        InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
-    InstrumentationLibrary emptyInstrumentationLibraryProto =
-        InstrumentationLibrary.newBuilder().setName("").setVersion("").build();
+    InstrumentationScopeInfo instrumentationScopeInfo =
+        InstrumentationScopeInfo.create("name", "version", "http://url");
+    InstrumentationScope scopeProto =
+        InstrumentationScope.newBuilder().setName("name").setVersion("version").build();
+    InstrumentationScope emptyScopeProto =
+        InstrumentationScope.newBuilder().setName("").setVersion("").build();
     Metric metricDoubleSum =
         Metric.newBuilder()
             .setName("name")
@@ -862,72 +930,72 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toProtoResourceMetrics(
                 ImmutableList.of(
-                    MetricData.createDoubleSum(
+                    ImmutableMetricData.createDoubleSum(
                         resource,
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                    ImmutableMetricData.createDoubleSum(
                         resource,
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                    ImmutableMetricData.createDoubleSum(
                         Resource.empty(),
-                        instrumentationLibraryInfo,
+                        instrumentationScopeInfo,
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))),
+                    ImmutableMetricData.createDoubleSum(
                         Resource.empty(),
-                        InstrumentationLibraryInfo.empty(),
+                        InstrumentationScopeInfo.empty(),
                         "name",
                         "description",
                         "1",
-                        DoubleSumData.create(
+                        ImmutableSumData.create(
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
+                                ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
         .satisfiesExactlyInAnyOrder(
             resourceMetrics -> {
               assertThat(resourceMetrics.getResource()).isEqualTo(resourceProto);
               assertThat(resourceMetrics.getSchemaUrl()).isEqualTo("http://resource.url");
-              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+              assertThat(resourceMetrics.getScopeMetricsList())
                   .containsExactlyInAnyOrder(
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(scopeProto)
                           .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
                           .setSchemaUrl("http://url")
                           .build());
             },
             resourceMetrics -> {
               assertThat(resourceMetrics.getResource()).isEqualTo(emptyResourceProto);
-              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+              assertThat(resourceMetrics.getScopeMetricsList())
                   .containsExactlyInAnyOrder(
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(emptyScopeProto)
                           .addAllMetrics(singletonList(metricDoubleSum))
                           .build(),
-                      InstrumentationLibraryMetrics.newBuilder()
-                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                      ScopeMetrics.newBuilder()
+                          .setScope(scopeProto)
                           .addAllMetrics(singletonList(metricDoubleSum))
                           .setSchemaUrl("http://url")
                           .build());
@@ -942,8 +1010,7 @@ class MetricsRequestMarshalerTest {
         .collect(Collectors.toList());
   }
 
-  private static List<SummaryDataPoint> toSummaryDataPoints(
-      Collection<DoubleSummaryPointData> points) {
+  private static List<SummaryDataPoint> toSummaryDataPoints(Collection<SummaryPointData> points) {
     return points.stream()
         .map(
             point ->
@@ -953,7 +1020,7 @@ class MetricsRequestMarshalerTest {
   }
 
   private static List<HistogramDataPoint> toHistogramDataPoints(
-      Collection<DoubleHistogramPointData> points) {
+      Collection<HistogramPointData> points) {
     return points.stream()
         .map(
             point ->

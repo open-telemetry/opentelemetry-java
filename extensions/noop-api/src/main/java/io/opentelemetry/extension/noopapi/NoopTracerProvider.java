@@ -20,12 +20,12 @@ enum NoopTracerProvider implements TracerProvider {
   INSTANCE;
 
   @Override
-  public Tracer get(String instrumentationName) {
+  public Tracer get(String instrumentationScopeName) {
     return NoopTracer.INSTANCE;
   }
 
   @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
+  public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
     return NoopTracer.INSTANCE;
   }
 

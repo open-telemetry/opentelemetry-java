@@ -4,16 +4,8 @@
  */
 
 /**
- * Utilities that allow to export metrics to the OpenTelemetry exporters.
- *
- * <h2>Contents</h2>
- *
- * <ul>
- *   <li>{@link io.opentelemetry.sdk.metrics.export.MetricExporter}
- *   <li>{@link io.opentelemetry.sdk.metrics.export.MetricProducer}
- *   <li>{@link io.opentelemetry.sdk.metrics.export.MetricReader}
- *   <li>{@link io.opentelemetry.sdk.metrics.export.PeriodicMetricReader}
- * </ul>
+ * Utilities that facilitate exporting metrics out of {@link
+ * io.opentelemetry.sdk.metrics.SdkMeterProvider}.
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.metrics.export;

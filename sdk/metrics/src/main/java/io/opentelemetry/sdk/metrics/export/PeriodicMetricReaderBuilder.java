@@ -15,7 +15,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** A builder for {@link PeriodicMetricReader}. */
+/**
+ * Builder for {@link PeriodicMetricReader}.
+ *
+ * @since 1.14.0
+ */
 public final class PeriodicMetricReaderBuilder {
 
   static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 1;
@@ -55,16 +59,13 @@ public final class PeriodicMetricReaderBuilder {
     return this;
   }
 
-  /**
-   * Returns a new {@link MetricReaderFactory} with the configuration of this builder which can be
-   * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
-   */
-  public MetricReaderFactory newMetricReaderFactory() {
+  /** Build a {@link PeriodicMetricReader} with the configuration of this builder. */
+  public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
     if (executor == null) {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReaderFactory(metricExporter, intervalNanos, executor);
+    return new PeriodicMetricReader(metricExporter, intervalNanos, executor);
   }
 }

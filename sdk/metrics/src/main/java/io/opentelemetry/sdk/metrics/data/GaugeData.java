@@ -8,10 +8,9 @@ package io.opentelemetry.sdk.metrics.data;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A gauge metric point.
+ * Data for a {@link MetricDataType#LONG_GAUGE} or {@link MetricDataType#DOUBLE_GAUGE} metric.
  *
- * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#gauge
+ * @since 1.14.0
  */
 @Immutable
 public interface GaugeData<T extends PointData> extends Data<T> {}

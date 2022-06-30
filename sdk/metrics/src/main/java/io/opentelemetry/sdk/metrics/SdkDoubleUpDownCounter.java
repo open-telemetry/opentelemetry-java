@@ -11,8 +11,6 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleUpDownCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
@@ -22,7 +20,6 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
 final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
-  private static final ObservableDoubleUpDownCounter NOOP = new ObservableDoubleUpDownCounter() {};
 
   private final WriteableMetricStorage storage;
 
@@ -101,8 +98,16 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
-      return NOOP;
+      return new SdkObservableInstrument(
+          meterSharedState,
+          registerDoubleAsynchronousInstrument(
+              InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback));
+    }
+
+    @Override
+    public ObservableDoubleMeasurement buildObserver() {
+      return buildObservableMeasurement(
+          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, InstrumentValueType.DOUBLE);
     }
   }
 }

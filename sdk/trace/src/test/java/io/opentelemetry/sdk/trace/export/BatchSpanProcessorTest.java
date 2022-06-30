@@ -450,6 +450,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(10)
+  @SuppressLogger(SdkTracerProvider.class)
   void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
@@ -502,6 +503,29 @@ class BatchSpanProcessorTest {
                 + "scheduleDelayNanos=5000000000, "
                 + "maxExportBatchSize=512, "
                 + "exporterTimeoutNanos=30000000000}");
+  }
+
+  @Test
+  @Timeout(5)
+  @SuppressLogger(BatchSpanProcessor.class)
+  void exporterThrowsNonRuntimeException() {
+    when(mockSpanExporter.export(anyList()))
+        .thenAnswer(
+            invocation -> {
+              throw new Exception("No export for you.");
+            });
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+            .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    createEndedSpan(SPAN_NAME_1);
+    // Assert isEmpty() isTrue(). AbstractIterableAssert#isEmpty() iterates over list and can cause
+    // ConcurrentModificationException
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch().isEmpty()).isTrue());
+    // Continue to export after the exception.
+    createEndedSpan(SPAN_NAME_2);
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {

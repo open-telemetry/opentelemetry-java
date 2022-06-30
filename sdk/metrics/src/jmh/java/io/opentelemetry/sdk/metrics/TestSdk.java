@@ -9,7 +9,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -63,13 +63,13 @@ public enum TestSdk {
   }
 
   public Tracer getTracer() {
-    return sdkBuilder.buildTracer();
+    return SdkBuilder.buildTracer();
   }
 
   private abstract static class SdkBuilder {
     abstract Meter build();
 
-    protected Tracer buildTracer() {
+    protected static Tracer buildTracer() {
       return SdkTracerProvider.builder()
           .setSampler(Sampler.alwaysOn())
           .build()

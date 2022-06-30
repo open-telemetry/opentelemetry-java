@@ -23,6 +23,8 @@ dependencies {
 
   implementation("com.squareup.okhttp3:okhttp")
 
+  compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
+
   // We include helpers shared by gRPC or okhttp exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
@@ -50,7 +52,6 @@ dependencies {
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
   jmhImplementation(project(":sdk:testing"))
-  jmhImplementation(project(":sdk:metrics-testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")

@@ -8,10 +8,22 @@ package io.opentelemetry.api.metrics;
 import java.util.function.Consumer;
 
 /**
- * A reference to an observable metric registered with {@link
+ * A reference to an observable instrument registered with {@link
  * DoubleGaugeBuilder#buildWithCallback(Consumer)}.
  *
- * <p>This interface currently has no methods but may be extended in the future with functionality
- * such as canceling the observable.
+ * @since 1.10.0
  */
-public interface ObservableDoubleGauge {}
+public interface ObservableDoubleGauge extends AutoCloseable {
+
+  /**
+   * Remove the callback registered via {@link DoubleGaugeBuilder#buildWithCallback(Consumer)}.
+   * After this is called, the callback won't be invoked on future collections. Subsequent calls to
+   * {@link #close()} have no effect.
+   *
+   * <p>Note: other callbacks registered to the instrument with the same identity are unaffected.
+   *
+   * @since 1.12.0
+   */
+  @Override
+  default void close() {}
+}

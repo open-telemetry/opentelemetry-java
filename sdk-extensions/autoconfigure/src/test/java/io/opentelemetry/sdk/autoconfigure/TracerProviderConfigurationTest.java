@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -156,26 +157,39 @@ class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureTraceConfig_empty() {
+  void configureSpanLimits() {
     assertThat(TracerProviderConfiguration.configureSpanLimits(EMPTY))
         .isEqualTo(SpanLimits.getDefault());
-  }
-
-  @Test
-  void configureTraceConfig_full() {
-
-    Map<String, String> properties = new HashMap<>();
-    properties.put("otel.traces.sampler", "always_off");
-    properties.put("otel.span.attribute.value.length.limit", "100");
-    properties.put("otel.span.attribute.count.limit", "5");
-    properties.put("otel.span.event.count.limit", "4");
-    properties.put("otel.span.link.count.limit", "3");
 
     SpanLimits config =
         TracerProviderConfiguration.configureSpanLimits(
-            DefaultConfigProperties.createForTest(properties));
+            DefaultConfigProperties.createForTest(
+                ImmutableMap.of(
+                    "otel.attribute.value.length.limit", "100",
+                    "otel.attribute.count.limit", "5")));
     assertThat(config.getMaxAttributeValueLength()).isEqualTo(100);
     assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
+    assertThat(config.getMaxNumberOfAttributesPerEvent()).isEqualTo(5);
+    assertThat(config.getMaxNumberOfAttributesPerLink()).isEqualTo(5);
+    assertThat(config.getMaxNumberOfEvents())
+        .isEqualTo(SpanLimits.getDefault().getMaxNumberOfEvents());
+    assertThat(config.getMaxNumberOfLinks())
+        .isEqualTo(SpanLimits.getDefault().getMaxNumberOfLinks());
+
+    config =
+        TracerProviderConfiguration.configureSpanLimits(
+            DefaultConfigProperties.createForTest(
+                ImmutableMap.of(
+                    "otel.attribute.value.length.limit", "100",
+                    "otel.span.attribute.value.length.limit", "200",
+                    "otel.attribute.count.limit", "5",
+                    "otel.span.attribute.count.limit", "10",
+                    "otel.span.event.count.limit", "4",
+                    "otel.span.link.count.limit", "3")));
+    assertThat(config.getMaxAttributeValueLength()).isEqualTo(200);
+    assertThat(config.getMaxNumberOfAttributes()).isEqualTo(10);
+    assertThat(config.getMaxNumberOfAttributesPerEvent()).isEqualTo(5);
+    assertThat(config.getMaxNumberOfAttributesPerLink()).isEqualTo(5);
     assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
     assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);
   }

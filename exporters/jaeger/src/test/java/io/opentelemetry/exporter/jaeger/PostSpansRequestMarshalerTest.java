@@ -92,7 +92,7 @@ class PostSpansRequestMarshalerTest {
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(jaegerSpan.getDuration()).isEqualTo(Durations.fromMillis(duration));
 
-    assertThat(jaegerSpan.getTagsCount()).isEqualTo(6);
+    assertThat(jaegerSpan.getTagsCount()).isEqualTo(7);
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), KEY_SPAN_KIND);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("server");

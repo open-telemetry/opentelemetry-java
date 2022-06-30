@@ -6,21 +6,20 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
-import javax.annotation.Nullable;
+import io.opentelemetry.api.trace.SpanContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A sample input measurement.
+ * An example measurement.
  *
- * <p>Exemplars also hold information about the environment when the measurement was recorded, for
- * example the span and trace ID of the active span when the exemplar was recorded.
+ * <p>Provides details about a measurement that are normally aggregated away, including the
+ * measurement value, the measurement timestamp, and additional attributes.
  */
 @Immutable
 public interface ExemplarData {
   /**
-   * The set of key/value pairs that were filtered out by the aggregator, but recorded alongside the
-   * original measurement. Only key/value pairs that were filtered out by the aggregator should be
-   * included
+   * Returns the attributes that were recorded alongside the original measurement but filtered out
+   * by the aggregator.
    */
   Attributes getFilteredAttributes();
 
@@ -28,26 +27,9 @@ public interface ExemplarData {
   long getEpochNanos();
 
   /**
-   * (Optional) Span ID of the exemplar trace.
-   *
-   * <p>Span ID may be {@code null} if the measurement is not recorded inside a trace or the trace
-   * was not sampled.
+   * Returns the {@link SpanContext} associated with this exemplar. If the exemplar was not recorded
+   * inside a sampled trace, the {@link SpanContext} will be {@linkplain SpanContext#getInvalid()
+   * invalid}.
    */
-  @Nullable
-  String getSpanId();
-  /**
-   * (Optional) Trace ID of the exemplar trace.
-   *
-   * <p>Trace ID may be {@code null} if the measurement is not recorded inside a trace or if the
-   * trace is not sampled.
-   */
-  @Nullable
-  String getTraceId();
-
-  /**
-   * Coerces this exemplar to a double value.
-   *
-   * <p>Note: This could create a loss of precision from {@code long} measurements.
-   */
-  double getValueAsDouble();
+  SpanContext getSpanContext();
 }

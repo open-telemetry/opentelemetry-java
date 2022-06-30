@@ -12,6 +12,12 @@ dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
 
+  api(project(":exporters:otlp:all"))
+  api(project(":exporters:otlp:logs"))
+
+  // Must be compileOnly so gRPC isn't on the classpath for non-gRPC tests.
+  compileOnly("io.grpc:grpc-stub")
+
   implementation(project(":testing-internal"))
 
   api("io.opentelemetry.proto:opentelemetry-proto")

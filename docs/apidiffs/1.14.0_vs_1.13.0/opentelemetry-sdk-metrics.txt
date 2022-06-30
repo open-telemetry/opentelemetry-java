@@ -1,0 +1,257 @@
+Comparing source compatibility of  against 
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Aggregation  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation defaultAggregation()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation drop()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram(java.util.List)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation lastValue()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation sum()
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality DELTA
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality CUMULATIVE
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality[] values()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.Data  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Collection getPoints()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.DoubleExemplarData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.ExemplarData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getValue()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.DoublePointData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getValue()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.ExemplarData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getEpochNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getFilteredAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.SpanContext getSpanContext()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.GaugeData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.Data
+	+++  NEW SUPERCLASS: java.lang.Object
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.HistogramData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.Data
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Collection getPoints()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.HistogramPointData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getBoundaries()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getCount()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getCounts()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getMax()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getMin()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getSum()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean hasMax()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean hasMin()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.LongExemplarData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.ExemplarData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getValue()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.LongPointData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getValue()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.MetricData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.Data getData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getDescription()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.GaugeData getDoubleGaugeData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SumData getDoubleSumData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.HistogramData getHistogramData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.GaugeData getLongGaugeData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SumData getLongSumData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Resource getResource()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SummaryData getSummaryData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.MetricDataType getType()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getUnit()
+	+++  NEW METHOD: PUBLIC(+) boolean isEmpty()
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType LONG_GAUGE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType SUMMARY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType DOUBLE_SUM
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType EXPONENTIAL_HISTOGRAM
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType HISTOGRAM
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType LONG_SUM
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.data.MetricDataType DOUBLE_GAUGE
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.MetricDataType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.MetricDataType[] values()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.PointData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getEpochNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getExemplars()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getStartEpochNanos()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.SumData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.Data
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isMonotonic()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.SummaryData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.Data
+	+++  NEW SUPERCLASS: java.lang.Object
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.SummaryPointData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getCount()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getSum()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getValues()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.ValueAtQuantile  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getQuantile()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getValue()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector alwaysCumulative()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector deltaPreferred()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW ANNOTATION: java.lang.FunctionalInterface
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.CollectionRegistration  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricExporter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector
+	+++  NEW INTERFACE: java.io.Closeable
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) void close()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricReader  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void register(io.opentelemetry.sdk.metrics.export.CollectionRegistration)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReader  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.export.MetricReader
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder builder(io.opentelemetry.sdk.metrics.export.MetricExporter)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReader create(io.opentelemetry.sdk.metrics.export.MetricExporter)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.AggregationTemporality getAggregationTemporality(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) void register(io.opentelemetry.sdk.metrics.export.CollectionRegistration)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReader build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder setExecutor(java.util.concurrent.ScheduledExecutorService)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder setInterval(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder setInterval(java.time.Duration)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.InstrumentSelector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getInstrumentName()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.InstrumentType getInstrumentType()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getMeterName()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getMeterSchemaUrl()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getMeterVersion()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelector build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setMeterName(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setMeterSchemaUrl(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setMeterVersion(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setName(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setType(io.opentelemetry.sdk.metrics.InstrumentType)
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType OBSERVABLE_COUNTER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType OBSERVABLE_UP_DOWN_COUNTER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType OBSERVABLE_GAUGE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType HISTOGRAM
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType COUNTER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType UP_DOWN_COUNTER
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentType[] values()
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentValueType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentValueType DOUBLE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentValueType LONG
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentValueType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.InstrumentValueType[] values()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.SdkMeterProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) void close()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode forceFlush()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.MeterBuilder meterBuilder(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProvider build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder registerMetricReader(io.opentelemetry.sdk.metrics.export.MetricReader)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder registerView(io.opentelemetry.sdk.metrics.InstrumentSelector, io.opentelemetry.sdk.metrics.View)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder setClock(io.opentelemetry.sdk.common.Clock)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder setResource(io.opentelemetry.sdk.resources.Resource)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.View  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.ViewBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Aggregation getAggregation()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getDescription()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.ViewBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.View build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ViewBuilder setAggregation(io.opentelemetry.sdk.metrics.Aggregation)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ViewBuilder setAttributeFilter(java.util.function.Predicate)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ViewBuilder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ViewBuilder setName(java.lang.String)

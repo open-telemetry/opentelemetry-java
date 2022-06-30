@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -148,10 +149,10 @@ class ResourceTest {
     assertThat(resource.getAttributes().size()).isEqualTo(8);
 
     // Null arrays should be dropped
-    attributes.put(stringArrayKey("NullArrayStringKey"), null);
-    attributes.put(longArrayKey("NullArrayLongKey"), null);
-    attributes.put(doubleArrayKey("NullArrayDoubleKey"), null);
-    attributes.put(booleanArrayKey("NullArrayBooleanKey"), null);
+    attributes.put(stringArrayKey("NullArrayStringKey"), (String[]) null);
+    attributes.put(longArrayKey("NullArrayLongKey"), (Long[]) null);
+    attributes.put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null);
+    attributes.put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
@@ -316,5 +317,58 @@ class ResourceTest {
     assertThat(attributes.get(longKey("int in disguise"))).isEqualTo(21);
     assertThat(attributes.get(stringKey("hello"))).isEqualTo("world");
     assertThat(attributes.get(stringKey("OpenTelemetry"))).isEqualTo("Java");
+  }
+
+  @Test
+  public void toBuilder() {
+
+    Resource resource =
+        Resource.builder().setSchemaUrl("http://example.com").put("foo", "val").build();
+
+    Resource newResource = resource.toBuilder().build();
+
+    assertThat(newResource).isNotSameAs(Resource.getDefault());
+    assertThat(newResource.getAttribute(stringKey("foo"))).isEqualTo("val");
+    assertThat(newResource.getSchemaUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  public void removeIf() {
+    assertThat(Resource.builder().removeIf(unused -> true).build()).isEqualTo(Resource.empty());
+    assertThat(Resource.builder().removeIf(key -> key.getKey().equals("key1")).build())
+        .isEqualTo(Resource.empty());
+    assertThat(
+            Resource.builder()
+                .put("key1", "value1")
+                .removeIf(key -> key.getKey().equals("key1"))
+                .removeIf(key -> key.getKey().equals("key1"))
+                .build())
+        .isEqualTo(Resource.empty());
+    assertThat(
+            Resource.builder()
+                .put("key1", "value1")
+                .put("key1", "value2")
+                .put("key2", "value2")
+                .put("key3", "value3")
+                .removeIf(key -> key.getKey().equals("key1"))
+                .build())
+        .isEqualTo(Resource.builder().put("key2", "value2").put("key3", "value3").build());
+    assertThat(
+            Resource.builder()
+                .put("key1", "value1A")
+                .put("key1", true)
+                .removeIf(
+                    key ->
+                        key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
+                .build())
+        .isEqualTo(Resource.builder().put("key1", true).build());
+    assertThat(
+            Resource.builder()
+                .put("key1", "value1")
+                .put("key2", "value2")
+                .put("foo", "bar")
+                .removeIf(key -> key.getKey().matches("key.*"))
+                .build())
+        .isEqualTo(Resource.builder().put("foo", "bar").build());
   }
 }

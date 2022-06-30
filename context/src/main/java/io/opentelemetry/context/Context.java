@@ -27,6 +27,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -244,5 +249,65 @@ public interface Context {
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
+  }
+
+  /**
+   * Returns a {@link Function} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Function}.
+   */
+  default <T, U> Function<T, U> wrapFunction(Function<T, U> function) {
+    return t -> {
+      try (Scope ignored = makeCurrent()) {
+        return function.apply(t);
+      }
+    };
+  }
+
+  /**
+   * Returns a {@link BiFunction} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link BiFunction}.
+   */
+  default <T, U, V> BiFunction<T, U, V> wrapFunction(BiFunction<T, U, V> function) {
+    return (t, u) -> {
+      try (Scope ignored = makeCurrent()) {
+        return function.apply(t, u);
+      }
+    };
+  }
+
+  /**
+   * Returns a {@link Consumer} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Consumer}.
+   */
+  default <T> Consumer<T> wrapConsumer(Consumer<T> consumer) {
+    return t -> {
+      try (Scope ignored = makeCurrent()) {
+        consumer.accept(t);
+      }
+    };
+  }
+
+  /**
+   * Returns a {@link BiConsumer} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link BiConsumer}.
+   */
+  default <T, U> BiConsumer<T, U> wrapConsumer(BiConsumer<T, U> consumer) {
+    return (t, u) -> {
+      try (Scope ignored = makeCurrent()) {
+        consumer.accept(t, u);
+      }
+    };
+  }
+
+  /**
+   * Returns a {@link Supplier} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Supplier}.
+   */
+  default <T> Supplier<T> wrapSupplier(Supplier<T> supplier) {
+    return () -> {
+      try (Scope ignored = makeCurrent()) {
+        return supplier.get();
+      }
+    };
   }
 }

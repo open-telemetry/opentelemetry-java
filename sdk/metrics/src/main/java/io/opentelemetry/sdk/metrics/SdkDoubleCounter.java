@@ -12,8 +12,6 @@ import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
@@ -102,8 +100,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   static final class Builder extends AbstractInstrumentBuilder<SdkDoubleCounter.Builder>
       implements DoubleCounterBuilder {
 
-    private static final ObservableDoubleCounter NOOP = new ObservableDoubleCounter() {};
-
     Builder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
@@ -127,8 +123,15 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
-      return NOOP;
+      return new SdkObservableInstrument(
+          meterSharedState,
+          registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback));
+    }
+
+    @Override
+    public ObservableDoubleMeasurement buildObserver() {
+      return buildObservableMeasurement(
+          InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.DOUBLE);
     }
   }
 }

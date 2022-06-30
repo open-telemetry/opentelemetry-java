@@ -28,7 +28,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -231,14 +231,16 @@ class ZipkinSpanExporterTest {
   void generateSpan_WithInstrumentationLibraryInfo() {
     SpanData data =
         buildStandardSpan()
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setKind(SpanKind.CLIENT)
             .build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
+                .putTag("otel.scope.name", "io.opentelemetry.auto")
+                .putTag("otel.scope.version", "1.0.0")
                 .putTag("otel.library.name", "io.opentelemetry.auto")
                 .putTag("otel.library.version", "1.0.0")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")

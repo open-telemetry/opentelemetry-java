@@ -5,25 +5,30 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /** Helper to make implementing builders easier. */
-public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
+abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
+
+  static final String DEFAULT_UNIT = "";
 
   private final MeterProviderSharedState meterProviderSharedState;
-  private final MeterSharedState meterSharedState;
-  private final String instrumentName;
   private String description;
   private String unit;
+
+  protected final MeterSharedState meterSharedState;
+  protected final String instrumentName;
 
   AbstractInstrumentBuilder(
       MeterProviderSharedState meterProviderSharedState,
@@ -41,7 +46,13 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    this.unit = unit;
+    if (!ValidationUtil.checkValidInstrumentUnit(
+        unit,
+        " Using \"" + DEFAULT_UNIT + "\" for instrument " + this.instrumentName + " instead.")) {
+      this.unit = DEFAULT_UNIT;
+    } else {
+      this.unit = unit;
+    }
     return getThis();
   }
 
@@ -69,18 +80,31 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
     return instrumentFactory.apply(descriptor, storage);
   }
 
-  final void registerDoubleAsynchronousInstrument(
+  final CallbackRegistration registerDoubleAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
-    InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.DOUBLE);
-    meterSharedState.registerDoubleAsynchronousInstrument(
-        descriptor, meterProviderSharedState, updater);
+    SdkObservableMeasurement sdkObservableMeasurement =
+        buildObservableMeasurement(type, InstrumentValueType.DOUBLE);
+    Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
+    meterSharedState.registerCallback(callbackRegistration);
+    return callbackRegistration;
   }
 
-  final void registerLongAsynchronousInstrument(
+  final CallbackRegistration registerLongAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
-    InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.LONG);
-    meterSharedState.registerLongAsynchronousInstrument(
-        descriptor, meterProviderSharedState, updater);
+    SdkObservableMeasurement sdkObservableMeasurement =
+        buildObservableMeasurement(type, InstrumentValueType.LONG);
+    Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
+    meterSharedState.registerCallback(callbackRegistration);
+    return callbackRegistration;
+  }
+
+  final SdkObservableMeasurement buildObservableMeasurement(
+      InstrumentType type, InstrumentValueType valueType) {
+    return meterSharedState.registerObservableMeasurement(makeDescriptor(type, valueType));
   }
 
   @FunctionalInterface

@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -23,18 +23,18 @@ import org.junit.jupiter.api.Test;
 class SdkTracerTest {
 
   private static final String SPAN_NAME = "span_name";
-  private static final String INSTRUMENTATION_LIBRARY_NAME =
+  private static final String INSTRUMENTATION_SCOPE_NAME =
       "io.opentelemetry.sdk.trace.TracerSdkTest";
-  private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.2.0";
-  private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
-      InstrumentationLibraryInfo.create(
-          INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION, "http://schemaurl");
+  private static final String INSTRUMENTATION_SCOPE_VERSION = "0.2.0";
+  private static final InstrumentationScopeInfo instrumentationScopeInfo =
+      InstrumentationScopeInfo.create(
+          INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION, "http://schemaurl");
   private final SdkTracer tracer =
       (SdkTracer)
           SdkTracerProvider.builder()
               .build()
-              .tracerBuilder(INSTRUMENTATION_LIBRARY_NAME)
-              .setInstrumentationVersion(INSTRUMENTATION_LIBRARY_VERSION)
+              .tracerBuilder(INSTRUMENTATION_SCOPE_NAME)
+              .setInstrumentationVersion(INSTRUMENTATION_SCOPE_VERSION)
               .setSchemaUrl("http://schemaurl")
               .build();
 
@@ -44,14 +44,19 @@ class SdkTracerTest {
   }
 
   @Test
-  void getInstrumentationLibraryInfo() {
-    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+  void getInstrumentationScopeInfo() {
+    assertThat(tracer.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
   }
 
   @Test
-  void propagatesInstrumentationLibraryInfoToSpan() {
+  void propagatesInstrumentationScopeInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
-    assertThat(readableSpan.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+    assertThat(readableSpan.getInstrumentationScopeInfo())
+        .isEqualTo(
+            InstrumentationScopeInfo.create(
+                instrumentationScopeInfo.getName(),
+                instrumentationScopeInfo.getVersion(),
+                instrumentationScopeInfo.getSchemaUrl()));
   }
 
   @Test
@@ -70,7 +75,7 @@ class SdkTracerTest {
         SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     SdkTracer tracer =
         (SdkTracer)
-            sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+            sdkTracerProvider.get(INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -93,7 +98,7 @@ class SdkTracerTest {
         SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     SdkTracer tracer =
         (SdkTracer)
-            sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+            sdkTracerProvider.get(INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);

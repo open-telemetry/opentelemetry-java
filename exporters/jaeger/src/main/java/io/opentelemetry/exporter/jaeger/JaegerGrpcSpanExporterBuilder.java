@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import java.net.URI;
@@ -32,11 +33,11 @@ public final class JaegerGrpcSpanExporterBuilder {
   JaegerGrpcSpanExporterBuilder() {
     delegate =
         GrpcExporter.builder(
+            "jaeger",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerCollectorServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
             GRPC_ENDPOINT_PATH);
   }
 
@@ -93,6 +94,24 @@ public final class JaegerGrpcSpanExporterBuilder {
    */
   public JaegerGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     delegate.setTrustedCertificates(trustedCertificatesPem);
+    return this;
+  }
+
+  /** Sets the client key and chain to use for verifying servers when mTLS is enabled. */
+  public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
+   * will not be collected.
+   *
+   * @since 1.15.0
+   */
+  public JaegerGrpcSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 

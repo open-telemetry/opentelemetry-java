@@ -6,8 +6,9 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -18,13 +19,37 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-abstract class RegisteredView {
-  /** Instrument fitler for applying this view. */
-  abstract InstrumentSelector getInstrumentSelector();
-  /** The view to apply. */
-  abstract View getView();
+public abstract class RegisteredView {
 
-  static RegisteredView create(InstrumentSelector selector, View view) {
-    return new AutoValue_RegisteredView(selector, view);
+  public static RegisteredView create(
+      InstrumentSelector selector,
+      View view,
+      AttributesProcessor viewAttributesProcessor,
+      SourceInfo viewSourceInfo) {
+    return new AutoValue_RegisteredView(selector, view, viewAttributesProcessor, viewSourceInfo);
+  }
+
+  RegisteredView() {}
+
+  /** Instrument filter for applying this view. */
+  public abstract InstrumentSelector getInstrumentSelector();
+
+  /** The view to apply. */
+  public abstract View getView();
+
+  /** The view's {@link AttributesProcessor}. */
+  public abstract AttributesProcessor getViewAttributesProcessor();
+
+  /** The {@link SourceInfo} from where the view was registered. */
+  public abstract SourceInfo getViewSourceInfo();
+
+  @Override
+  public final String toString() {
+    return "RegisteredView{"
+        + "instrumentSelector="
+        + getInstrumentSelector()
+        + ", view="
+        + getView()
+        + "}";
   }
 }

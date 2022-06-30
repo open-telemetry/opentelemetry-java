@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
+
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -19,10 +21,7 @@ import java.util.function.UnaryOperator;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An {@code AttributesProcessor} is used by {@code View}s to define the actual recorded set of
- * attributes.
- *
- * <p>An AttributesProcessor is used to define the actual set of attributes that will be used in a
+ * An AttributesProcessor is used to define the actual set of attributes that will be used in a
  * Metric vs. the inbound set of attributes from a measurement.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
@@ -30,7 +29,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public abstract class AttributesProcessor {
-  private AttributesProcessor() {}
+
+  AttributesProcessor() {}
 
   /**
    * Manipulates a set of attributes, returning the desired set.
@@ -144,8 +144,6 @@ public abstract class AttributesProcessor {
       }
     };
   }
-
-  static final AttributesProcessor NOOP = simple(incoming -> incoming);
 
   /** A {@link AttributesProcessor} that runs a sequence of processors. */
   @Immutable

@@ -73,13 +73,13 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
 
     if (index > endIndex) {
       // Move end, check max size
-      if (index - startIndex + 1 > backing.length()) {
+      if ((long) index - startIndex + 1 > backing.length()) {
         return false;
       }
       endIndex = index;
     } else if (index < startIndex) {
       // Move end, check max size
-      if (endIndex - index + 1 > backing.length()) {
+      if ((long) endIndex - index + 1 > backing.length()) {
         return false;
       }
       startIndex = index;

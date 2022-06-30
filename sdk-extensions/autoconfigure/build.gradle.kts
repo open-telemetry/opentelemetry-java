@@ -17,12 +17,8 @@ dependencies {
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
-  compileOnly(project(":exporters:otlp:metrics"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
-  compileOnly(project(":exporters:otlp-http:trace"))
-  compileOnly(project(":exporters:otlp-http:metrics"))
-  compileOnly(project(":exporters:otlp-http:logs"))
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
 
@@ -45,7 +41,6 @@ testing {
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
@@ -58,7 +53,6 @@ testing {
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
@@ -77,7 +71,6 @@ testing {
       targets {
         all {
           testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
             environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
@@ -97,6 +90,7 @@ testing {
         all {
           testTask {
             environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
       }
@@ -114,16 +108,16 @@ testing {
       targets {
         all {
           testTask {
+            environment("OTEL_METRICS_EXPORTER", "none")
             environment("OTEL_TRACES_EXPORTER", "jaeger")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }
         }
       }
     }
-    val testOtlpGrpc by registering(JvmTestSuite::class) {
+    val testOtlp by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:metrics"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
@@ -131,38 +125,9 @@ testing {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
-          }
-        }
-      }
-    }
-    val testOtlpHttp by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:otlp-http:trace"))
-        implementation(project(":exporters:otlp-http:metrics"))
-        implementation(project(":exporters:otlp-http:logs"))
-        implementation(project(":exporters:otlp:common"))
-        implementation(project(":sdk:testing"))
-
-        implementation("com.google.guava:guava")
-        implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.squareup.okhttp3:okhttp")
         implementation("com.squareup.okhttp3:okhttp-tls")
-        implementation("io.opentelemetry.proto:opentelemetry-proto")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "otlp")
-          }
-        }
+        runtimeOnly("io.grpc:grpc-netty-shaded")
       }
     }
     val testPrometheus by registering(JvmTestSuite::class) {
@@ -224,6 +189,7 @@ testing {
       targets {
         all {
           testTask {
+            environment("OTEL_METRICS_EXPORTER", "none")
             environment("OTEL_TRACES_EXPORTER", "zipkin")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }

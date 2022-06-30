@@ -16,7 +16,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -319,6 +321,7 @@ class OtlpConfigUtilTest {
         value -> {},
         value -> {},
         value -> {},
+        (value1, value2) -> {},
         value -> {});
 
     return endpoint.get();
@@ -329,34 +332,35 @@ class OtlpConfigUtilTest {
     assertThatThrownBy(
             () ->
                 configureAggregationTemporality(
-                    ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "foo")))
+                    ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "foo")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized aggregation temporality:");
 
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "CUMULATIVE")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "CUMULATIVE")))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "cumulative")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "cumulative")))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "DELTA")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "DELTA")))
         .isEqualTo(AggregationTemporality.DELTA);
     assertThat(
             configureAggregationTemporality(
-                ImmutableMap.of("otel.exporter.otlp.metrics.temporality", "delta")))
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "delta")))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
   /** Configure and return the aggregation temporality using the given properties. */
   private static AggregationTemporality configureAggregationTemporality(
       Map<String, String> properties) {
-    AtomicReference<AggregationTemporality> temporalityRef = new AtomicReference<>();
+    AtomicReference<AggregationTemporalitySelector> temporalityRef = new AtomicReference<>();
     OtlpConfigUtil.configureOtlpAggregationTemporality(
         DefaultConfigProperties.createForTest(properties), temporalityRef::set);
-    return temporalityRef.get();
+    // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
+    return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
   }
 }

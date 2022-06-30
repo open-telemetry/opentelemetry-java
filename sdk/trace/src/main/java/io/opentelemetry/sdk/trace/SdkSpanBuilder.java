@@ -20,7 +20,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 final class SdkSpanBuilder implements SpanBuilder {
 
   private final String spanName;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final TracerSharedState tracerSharedState;
   private final SpanLimits spanLimits;
 
@@ -48,11 +48,11 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   SdkSpanBuilder(
       String spanName,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       TracerSharedState tracerSharedState,
       SpanLimits spanLimits) {
     this.spanName = spanName;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.tracerSharedState = tracerSharedState;
     this.spanLimits = spanLimits;
   }
@@ -218,7 +218,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     return SdkSpan.startSpan(
         spanContext,
         spanName,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         spanKind,
         parentSpan,
         parentContext,

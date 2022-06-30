@@ -1,12 +1,10 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.41.0"
-    id("com.github.johnrengelman.shadow") version "7.1.1"
-    id("com.gradle.enterprise") version "3.8"
-    id("de.undercouch.download") version "4.1.2"
+    id("com.github.ben-manes.versions") version "0.42.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.gradle.enterprise") version "3.9"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("nebula.release") version "16.0.0"
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "1.6.20"
   }
 }
 
@@ -43,17 +41,13 @@ include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
 include(":exporters:otlp:common")
 include(":exporters:otlp:logs")
-include(":exporters:otlp:metrics")
 include(":exporters:otlp:testing-internal")
-include(":exporters:otlp:trace")
-include(":exporters:otlp-http:logs")
-include(":exporters:otlp-http:metrics")
-include(":exporters:otlp-http:trace")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
 include(":integration-tests")
 include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")
+include(":micrometer1-shim")
 include(":opencensus-shim")
 include(":opentracing-shim")
 include(":perf-harness")
@@ -69,6 +63,7 @@ include(":sdk:trace-shaded-deps")
 include(":sdk-extensions:autoconfigure")
 include(":sdk-extensions:autoconfigure-spi")
 include(":sdk-extensions:aws")
+include(":sdk-extensions:metric-incubator")
 include(":sdk-extensions:resources")
 include(":sdk-extensions:tracing-incubator")
 include(":sdk-extensions:jaeger-remote-sampler")

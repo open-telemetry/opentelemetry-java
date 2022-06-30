@@ -14,6 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -25,6 +26,8 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -39,25 +42,24 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
+import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
+import io.opentelemetry.sdk.logs.LogEmitter;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -72,19 +74,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Integration test to verify OTLP gRPC and HTTP exporters work. Verifies integration with the
@@ -99,13 +104,19 @@ abstract class OtlpExporterIntegrationTest {
       "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;
+  private static final Integer COLLECTOR_OTLP_GRPC_MTLS_PORT = 5317;
+  private static final Integer COLLECTOR_OTLP_HTTP_MTLS_PORT = 5318;
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
   private static final Resource RESOURCE =
       Resource.getDefault().toBuilder()
           .put(ResourceAttributes.SERVICE_NAME, "integration test")
           .build();
-  private static final Logger LOGGER =
-      Logger.getLogger(OtlpExporterIntegrationTest.class.getName());
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
 
   private static OtlpGrpcServer grpcServer;
   private static GenericContainer<?> collector;
@@ -122,16 +133,29 @@ abstract class OtlpExporterIntegrationTest {
     collector =
         new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
             .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
+            .withCopyFileToContainer(
+                MountableFile.forHostPath(serverTls.certificateFile().toPath(), 0555),
+                "/server.cert")
+            .withCopyFileToContainer(
+                MountableFile.forHostPath(serverTls.privateKeyFile().toPath(), 0555), "/server.key")
+            .withCopyFileToContainer(
+                MountableFile.forHostPath(clientTls.certificateFile().toPath(), 0555),
+                "/client.cert")
             .withEnv(
                 "OTLP_EXPORTER_ENDPOINT", "host.testcontainers.internal:" + grpcServer.httpPort())
+            .withEnv("MTLS_CLIENT_CERTIFICATE", "/client.cert")
+            .withEnv("MTLS_SERVER_CERTIFICATE", "/server.cert")
+            .withEnv("MTLS_SERVER_KEY", "/server.key")
             .withClasspathResourceMapping(
                 "otel-config.yaml", "/otel-config.yaml", BindMode.READ_ONLY)
             .withCommand("--config", "/otel-config.yaml")
-            .withLogConsumer(
-                outputFrame ->
-                    LOGGER.log(Level.INFO, outputFrame.getUtf8String().replace("\n", "")))
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("otel-collector")))
             .withExposedPorts(
-                COLLECTOR_OTLP_GRPC_PORT, COLLECTOR_OTLP_HTTP_PORT, COLLECTOR_HEALTH_CHECK_PORT)
+                COLLECTOR_OTLP_GRPC_PORT,
+                COLLECTOR_OTLP_HTTP_PORT,
+                COLLECTOR_OTLP_GRPC_MTLS_PORT,
+                COLLECTOR_OTLP_HTTP_MTLS_PORT,
+                COLLECTOR_HEALTH_CHECK_PORT)
             .waitingFor(Wait.forHttp("/").forPort(COLLECTOR_HEALTH_CHECK_PORT));
     collector.start();
   }
@@ -167,6 +191,22 @@ abstract class OtlpExporterIntegrationTest {
     testTraceExport(otlpGrpcTraceExporter);
   }
 
+  @Test
+  void testOtlpGrpcTraceExport_mtls() throws Exception {
+    SpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .build();
+
+    testTraceExport(exporter);
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpTraceExport(String compression) {
@@ -182,6 +222,23 @@ abstract class OtlpExporterIntegrationTest {
             .build();
 
     testTraceExport(otlpGrpcTraceExporter);
+  }
+
+  @Test
+  void testOtlpHttpTraceExport_mtls() throws Exception {
+    SpanExporter exporter =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
+                    + "/v1/traces")
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .build();
+
+    testTraceExport(exporter);
   }
 
   private static void testTraceExport(SpanExporter spanExporter) {
@@ -207,6 +264,9 @@ abstract class OtlpExporterIntegrationTest {
     span.addEvent("event");
     span.end();
 
+    // Closing triggers flush of processor
+    tracerProvider.close();
+
     await()
         .atMost(Duration.ofSeconds(30))
         .untilAsserted(() -> assertThat(grpcServer.traceRequests).hasSize(1));
@@ -221,11 +281,10 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
+    assertThat(resourceSpans.getScopeSpansCount()).isEqualTo(1);
 
-    InstrumentationLibrarySpans ilSpans = resourceSpans.getInstrumentationLibrarySpans(0);
-    assertThat(ilSpans.getInstrumentationLibrary().getName())
-        .isEqualTo(OtlpExporterIntegrationTest.class.getName());
+    ScopeSpans ilSpans = resourceSpans.getScopeSpans(0);
+    assertThat(ilSpans.getScope().getName()).isEqualTo(OtlpExporterIntegrationTest.class.getName());
     assertThat(ilSpans.getSpansCount()).isEqualTo(1);
 
     io.opentelemetry.proto.trace.v1.Span protoSpan = ilSpans.getSpans(0);
@@ -265,6 +324,22 @@ abstract class OtlpExporterIntegrationTest {
     testMetricExport(otlpGrpcMetricExporter);
   }
 
+  @Test
+  void testOtlpGrpcMetricExport_mtls() throws Exception {
+    MetricExporter exporter =
+        OtlpGrpcMetricExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .build();
+
+    testMetricExport(exporter);
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpMetricExport(String compression) {
@@ -282,26 +357,44 @@ abstract class OtlpExporterIntegrationTest {
     testMetricExport(otlpGrpcMetricExporter);
   }
 
+  @Test
+  void testOtlpHttpMetricExport_mtls() throws Exception {
+    MetricExporter exporter =
+        OtlpHttpMetricExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
+                    + "/v1/metrics")
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .build();
+
+    testMetricExport(exporter);
+  }
+
   private static void testMetricExport(MetricExporter metricExporter) {
-    MetricReaderFactory reader =
-        PeriodicMetricReader.builder(metricExporter)
-            .setInterval(Duration.ofSeconds(5))
-            .newMetricReaderFactory();
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().setResource(RESOURCE).registerMetricReader(reader).build();
+        SdkMeterProvider.builder()
+            .setResource(RESOURCE)
+            .registerMetricReader(
+                PeriodicMetricReader.builder(metricExporter)
+                    .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+                    .build())
+            .build();
 
     Meter meter = meterProvider.meterBuilder(OtlpExporterIntegrationTest.class.getName()).build();
 
     LongCounter longCounter = meter.counterBuilder("my-counter").build();
     longCounter.add(100, Attributes.builder().put("key", "value").build());
 
-    try {
-      await()
-          .atMost(Duration.ofSeconds(30))
-          .untilAsserted(() -> assertThat(grpcServer.metricRequests).hasSize(1));
-    } finally {
-      meterProvider.close();
-    }
+    // Closing triggers flush of reader
+    meterProvider.close();
+
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(() -> assertThat(grpcServer.metricRequests).hasSize(1));
 
     ExportMetricsServiceRequest request = grpcServer.metricRequests.get(0);
     assertThat(request.getResourceMetricsCount()).isEqualTo(1);
@@ -313,10 +406,10 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceMetrics.getInstrumentationLibraryMetricsCount()).isEqualTo(1);
+    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
 
-    InstrumentationLibraryMetrics ilMetrics = resourceMetrics.getInstrumentationLibraryMetrics(0);
-    assertThat(ilMetrics.getInstrumentationLibrary().getName())
+    ScopeMetrics ilMetrics = resourceMetrics.getScopeMetrics(0);
+    assertThat(ilMetrics.getScope().getName())
         .isEqualTo(OtlpExporterIntegrationTest.class.getName());
     assertThat(ilMetrics.getMetricsCount()).isEqualTo(1);
 
@@ -356,6 +449,22 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpGrpcLogExporter);
   }
 
+  @Test
+  void testOtlpGrpcLogExport_mtls() throws Exception {
+    LogExporter exporter =
+        OtlpGrpcLogExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .build();
+
+    testLogExporter(exporter);
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpLogExport(String compression) {
@@ -373,27 +482,53 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpHttpLogExporter);
   }
 
-  private static void testLogExporter(LogExporter logExporter) {
-    LogData logData =
-        LogDataBuilder.create(
-                RESOURCE,
-                InstrumentationLibraryInfo.create(
-                    OtlpExporterIntegrationTest.class.getName(), null))
-            .setName("log-name")
-            .setBody("log body")
-            .setAttributes(Attributes.builder().put("key", "value").build())
-            .setSeverity(Severity.DEBUG)
-            .setSeverityText("DEBUG")
-            .setEpoch(Instant.now())
-            .setSpanContext(
-                SpanContext.create(
-                    IdGenerator.random().generateTraceId(),
-                    IdGenerator.random().generateSpanId(),
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()))
+  @Test
+  void testOtlpHttpLogExport_mtls() throws Exception {
+    LogExporter exporter =
+        OtlpHttpLogExporter.builder()
+            .setEndpoint(
+                "https://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
+                    + "/v1/logs")
+            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
+            .setTrustedCertificates(serverTls.certificate().getEncoded())
             .build();
 
-    logExporter.export(Collections.singletonList(logData));
+    testLogExporter(exporter);
+  }
+
+  private static void testLogExporter(LogExporter logExporter) {
+    SdkLogEmitterProvider logEmitterProvider =
+        SdkLogEmitterProvider.builder()
+            .setResource(RESOURCE)
+            .addLogProcessor(SimpleLogProcessor.create(logExporter))
+            .build();
+
+    LogEmitter logEmitter = logEmitterProvider.get(OtlpExporterIntegrationTest.class.getName());
+
+    SpanContext spanContext =
+        SpanContext.create(
+            IdGenerator.random().generateTraceId(),
+            IdGenerator.random().generateSpanId(),
+            TraceFlags.getDefault(),
+            TraceState.getDefault());
+
+    try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
+      logEmitter
+          .logBuilder()
+          .setBody("log body")
+          .setAttributes(Attributes.builder().put("key", "value").build())
+          .setSeverity(Severity.DEBUG)
+          .setSeverityText("DEBUG")
+          .setEpoch(Instant.now())
+          .setContext(Context.current())
+          .emit();
+    }
+
+    // Closing triggers flush of processor
+    logEmitterProvider.close();
 
     await()
         .atMost(Duration.ofSeconds(30))
@@ -409,15 +544,13 @@ abstract class OtlpExporterIntegrationTest {
                 .setKey(ResourceAttributes.SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
-    assertThat(resourceLogs.getInstrumentationLibraryLogsCount()).isEqualTo(1);
+    assertThat(resourceLogs.getScopeLogsCount()).isEqualTo(1);
 
-    InstrumentationLibraryLogs ilLogs = resourceLogs.getInstrumentationLibraryLogs(0);
-    assertThat(ilLogs.getInstrumentationLibrary().getName())
-        .isEqualTo(OtlpExporterIntegrationTest.class.getName());
-    assertThat(ilLogs.getLogsCount()).isEqualTo(1);
+    ScopeLogs ilLogs = resourceLogs.getScopeLogs(0);
+    assertThat(ilLogs.getScope().getName()).isEqualTo(OtlpExporterIntegrationTest.class.getName());
+    assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
-    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogs(0);
-    assertThat(protoLog.getName()).isEqualTo("log-name");
+    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);
     assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
     assertThat(protoLog.getAttributesList())
         .isEqualTo(
@@ -427,15 +560,15 @@ abstract class OtlpExporterIntegrationTest {
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
     assertThat(protoLog.getSeverityNumber().getNumber())
-        .isEqualTo(logData.getSeverity().getSeverityNumber());
+        .isEqualTo(Severity.DEBUG.getSeverityNumber());
     assertThat(protoLog.getSeverityText()).isEqualTo("DEBUG");
     assertThat(TraceId.fromBytes(protoLog.getTraceId().toByteArray()))
-        .isEqualTo(logData.getSpanContext().getTraceId());
+        .isEqualTo(spanContext.getTraceId());
     assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
-        .isEqualTo(logData.getSpanContext().getSpanId());
+        .isEqualTo(spanContext.getSpanId());
     assertThat(TraceFlags.fromByte((byte) protoLog.getFlags()))
-        .isEqualTo(logData.getSpanContext().getTraceFlags());
-    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logData.getEpochNanos());
+        .isEqualTo(spanContext.getTraceFlags());
+    assertThat(protoLog.getTimeUnixNano()).isGreaterThan(0);
   }
 
   private static class OtlpGrpcServer extends ServerExtension {

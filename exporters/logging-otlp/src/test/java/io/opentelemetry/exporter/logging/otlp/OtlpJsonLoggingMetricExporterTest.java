@@ -11,12 +11,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,30 +34,32 @@ class OtlpJsonLoggingMetricExporterTest {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final MetricData METRIC1 =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
-          InstrumentationLibraryInfo.create("instrumentation", "1"),
+          InstrumentationScopeInfo.create("instrumentation", "1", null),
           "metric1",
           "metric1 description",
           "m",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(
-                  DoublePointData.create(1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   private static final MetricData METRIC2 =
-      MetricData.createDoubleSum(
+      ImmutableMetricData.createDoubleSum(
           RESOURCE,
-          InstrumentationLibraryInfo.create("instrumentation2", "2"),
+          InstrumentationScopeInfo.create("instrumentation2", "2", null),
           "metric2",
           "metric2 description",
           "s",
-          DoubleSumData.create(
+          ImmutableSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
               Arrays.asList(
-                  DoublePointData.create(1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingMetricExporter.class);
@@ -68,12 +72,14 @@ class OtlpJsonLoggingMetricExporterTest {
   }
 
   @Test
-  void preferredTemporality() {
-    assertThat(OtlpJsonLoggingMetricExporter.create().getPreferredTemporality())
+  void getAggregationTemporality() {
+    assertThat(
+            OtlpJsonLoggingMetricExporter.create()
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA)
-                .getPreferredTemporality())
+                .getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
@@ -94,8 +100,8 @@ class OtlpJsonLoggingMetricExporterTest {
             + "      }"
             + "    }]"
             + "  },"
-            + "  \"instrumentationLibraryMetrics\": [{"
-            + "    \"instrumentationLibrary\": {"
+            + "  \"scopeMetrics\": [{"
+            + "    \"scope\": {"
             + "      \"name\": \"instrumentation2\","
             + "      \"version\": \"2\""
             + "    },"
@@ -118,7 +124,7 @@ class OtlpJsonLoggingMetricExporterTest {
             + "      }"
             + "    }]"
             + "  }, {"
-            + "    \"instrumentationLibrary\": {"
+            + "    \"scope\": {"
             + "      \"name\": \"instrumentation\","
             + "      \"version\": \"1\""
             + "    },"

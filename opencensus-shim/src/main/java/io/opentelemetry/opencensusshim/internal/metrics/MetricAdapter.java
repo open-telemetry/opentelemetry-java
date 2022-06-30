@@ -17,22 +17,33 @@ import io.opencensus.metrics.export.Summary;
 import io.opencensus.metrics.export.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,8 +65,8 @@ public final class MetricAdapter {
   private MetricAdapter() {}
   // All OpenCensus metrics come from this shim.
   // VisibleForTesting.
-  static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.opencensusshim", null);
+  static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
+      InstrumentationScopeInfo.create("io.opentelemetry.opencensusshim");
 
   // Parser for string value of `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
   // // SpanContext{traceId=TraceId{traceId=(id))}, spanId=SpanId{spanId=(id), ...}
@@ -73,57 +84,57 @@ public final class MetricAdapter {
     // auto-value vs. pure interfaces.
     switch (censusMetric.getMetricDescriptor().getType()) {
       case GAUGE_INT64:
-        return MetricData.createLongGauge(
+        return ImmutableMetricData.createLongGauge(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongGauge(censusMetric));
       case GAUGE_DOUBLE:
-        return MetricData.createDoubleGauge(
+        return ImmutableMetricData.createDoubleGauge(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleGauge(censusMetric));
       case CUMULATIVE_INT64:
-        return MetricData.createLongSum(
+        return ImmutableMetricData.createLongSum(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongSum(censusMetric));
       case CUMULATIVE_DOUBLE:
-        return MetricData.createDoubleSum(
+        return ImmutableMetricData.createDoubleSum(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleSum(censusMetric));
       case CUMULATIVE_DISTRIBUTION:
-        return MetricData.createDoubleHistogram(
+        return ImmutableMetricData.createDoubleHistogram(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertHistogram(censusMetric));
       case SUMMARY:
-        return MetricData.createDoubleSummary(
+        return ImmutableMetricData.createDoubleSummary(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertSummary(censusMetric));
       case GAUGE_DISTRIBUTION:
-        return MetricData.createDoubleHistogram(
+        return ImmutableMetricData.createDoubleHistogram(
             otelResource,
-            INSTRUMENTATION_LIBRARY_INFO,
+            INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
@@ -134,36 +145,36 @@ public final class MetricAdapter {
         "Unknown OpenCensus metric type: " + censusMetric.getMetricDescriptor().getType());
   }
 
-  static LongGaugeData convertLongGauge(Metric censusMetric) {
-    return LongGaugeData.create(convertLongPoints(censusMetric));
+  static GaugeData<LongPointData> convertLongGauge(Metric censusMetric) {
+    return ImmutableGaugeData.create(convertLongPoints(censusMetric));
   }
 
-  static DoubleGaugeData convertDoubleGauge(Metric censusMetric) {
-    return DoubleGaugeData.create(convertDoublePoints(censusMetric));
+  static GaugeData<DoublePointData> convertDoubleGauge(Metric censusMetric) {
+    return ImmutableGaugeData.create(convertDoublePoints(censusMetric));
   }
 
-  static LongSumData convertLongSum(Metric censusMetric) {
-    return LongSumData.create(
+  static SumData<LongPointData> convertLongSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertLongPoints(censusMetric));
   }
 
-  static DoubleSumData convertDoubleSum(Metric censusMetric) {
-    return DoubleSumData.create(
+  static SumData<DoublePointData> convertDoubleSum(Metric censusMetric) {
+    return ImmutableSumData.create(
         true, AggregationTemporality.CUMULATIVE, convertDoublePoints(censusMetric));
   }
 
-  static DoubleHistogramData convertHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.CUMULATIVE, convertHistogramPoints(censusMetric));
   }
 
-  static DoubleHistogramData convertGaugeHistogram(Metric censusMetric) {
-    return DoubleHistogramData.create(
+  static HistogramData convertGaugeHistogram(Metric censusMetric) {
+    return ImmutableHistogramData.create(
         AggregationTemporality.DELTA, convertHistogramPoints(censusMetric));
   }
 
-  static DoubleSummaryData convertSummary(Metric censusMetric) {
-    return DoubleSummaryData.create(convertSummaryPoints(censusMetric));
+  static SummaryData convertSummary(Metric censusMetric) {
+    return ImmutableSummaryData.create(convertSummaryPoints(censusMetric));
   }
 
   static Collection<LongPointData> convertLongPoints(Metric censusMetric) {
@@ -175,7 +186,7 @@ public final class MetricAdapter {
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         result.add(
-            LongPointData.create(
+            ImmutableLongPointData.create(
                 startTimestamp, mapTimestamp(point.getTimestamp()), attributes, longValue(point)));
       }
     }
@@ -191,7 +202,7 @@ public final class MetricAdapter {
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         result.add(
-            DoublePointData.create(
+            ImmutableDoublePointData.create(
                 startTimestamp,
                 mapTimestamp(point.getTimestamp()),
                 attributes,
@@ -201,30 +212,32 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleHistogramPointData> convertHistogramPoints(Metric censusMetric) {
+  static Collection<HistogramPointData> convertHistogramPoints(Metric censusMetric) {
     boolean isGauge =
         censusMetric.getMetricDescriptor().getType() == MetricDescriptor.Type.GAUGE_DISTRIBUTION;
     // TODO - preallocate array to correct size.
-    List<DoubleHistogramPointData> result = new ArrayList<>();
+    List<HistogramPointData> result = new ArrayList<>();
     for (TimeSeries ts : censusMetric.getTimeSeriesList()) {
       long startTimestamp = mapTimestamp(ts.getStartTimestamp());
       Attributes attributes =
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
         long endTimestamp = mapTimestamp(point.getTimestamp());
-        DoubleHistogramPointData otelPoint =
+        HistogramPointData otelPoint =
             point
                 .getValue()
                 .match(
                     doubleValue -> null,
                     longValue -> null,
                     distribution ->
-                        DoubleHistogramPointData.create(
+                        ImmutableHistogramPointData.create(
                             // Report Gauge histograms as DELTA with "instantaneous" time window.
                             isGauge ? endTimestamp : startTimestamp,
                             endTimestamp,
                             attributes,
                             distribution.getSum(),
+                            null,
+                            null,
                             mapBoundaries(distribution.getBucketOptions()),
                             mapCounts(distribution.getBuckets()),
                             mapExemplars(distribution.getBuckets())),
@@ -238,14 +251,14 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleSummaryPointData> convertSummaryPoints(Metric censusMetric) {
-    List<DoubleSummaryPointData> result = new ArrayList<>();
+  static Collection<SummaryPointData> convertSummaryPoints(Metric censusMetric) {
+    List<SummaryPointData> result = new ArrayList<>();
     for (TimeSeries ts : censusMetric.getTimeSeriesList()) {
       long startTimestamp = mapTimestamp(ts.getStartTimestamp());
       Attributes attributes =
           mapAttributes(censusMetric.getMetricDescriptor().getLabelKeys(), ts.getLabelValues());
       for (Point point : ts.getPoints()) {
-        DoubleSummaryPointData otelPoint =
+        SummaryPointData otelPoint =
             point
                 .getValue()
                 .match(
@@ -253,7 +266,7 @@ public final class MetricAdapter {
                     lv -> null,
                     distribution -> null,
                     summary ->
-                        DoubleSummaryPointData.create(
+                        ImmutableSummaryPointData.create(
                             startTimestamp,
                             mapTimestamp(point.getTimestamp()),
                             attributes,
@@ -316,8 +329,8 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<ExemplarData> mapExemplars(List<Distribution.Bucket> buckets) {
-    List<ExemplarData> result = new ArrayList<>();
+  static List<DoubleExemplarData> mapExemplars(List<Distribution.Bucket> buckets) {
+    List<DoubleExemplarData> result = new ArrayList<>();
     for (Distribution.Bucket bucket : buckets) {
       Exemplar exemplar = bucket.getExemplar();
       if (exemplar != null) {
@@ -327,10 +340,9 @@ public final class MetricAdapter {
     return result;
   }
 
-  private static ExemplarData mapExemplar(Exemplar exemplar) {
+  private static DoubleExemplarData mapExemplar(Exemplar exemplar) {
     // Look for trace/span id.
-    String spanId = null;
-    String traceId = null;
+    SpanContext spanContext = SpanContext.getInvalid();
     if (exemplar.getAttachments().containsKey("SpanContext")) {
       // We need to use `io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext`
       // The `toString` will be the following:
@@ -340,15 +352,16 @@ public final class MetricAdapter {
       Matcher m = OPENCENSUS_TRACE_ATTACHMENT_PATTERN.matcher(spanContextToString);
       if (m.matches()) {
         MatchResult mr = m.toMatchResult();
-        traceId = mr.group(1);
-        spanId = mr.group(2);
+        String traceId = mr.group(1);
+        String spanId = mr.group(2);
+        spanContext =
+            SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
       }
     }
-    return DoubleExemplarData.create(
+    return ImmutableDoubleExemplarData.create(
         Attributes.empty(),
         mapTimestamp(exemplar.getTimestamp()),
-        spanId,
-        traceId,
+        spanContext,
         exemplar.getValue());
   }
 
@@ -360,11 +373,13 @@ public final class MetricAdapter {
     return TimeUnit.SECONDS.toNanos(time.getSeconds()) + time.getNanos();
   }
 
-  private static List<ValueAtPercentile> mapValueAtPercentiles(
+  private static List<ValueAtQuantile> mapValueAtPercentiles(
       List<Summary.Snapshot.ValueAtPercentile> valueAtPercentiles) {
-    List<ValueAtPercentile> result = new ArrayList<>(valueAtPercentiles.size());
+    List<ValueAtQuantile> result = new ArrayList<>(valueAtPercentiles.size());
     for (Summary.Snapshot.ValueAtPercentile censusValue : valueAtPercentiles) {
-      result.add(ValueAtPercentile.create(censusValue.getPercentile(), censusValue.getValue()));
+      result.add(
+          ImmutableValueAtQuantile.create(
+              censusValue.getPercentile() / 100.0, censusValue.getValue()));
     }
     return result;
   }

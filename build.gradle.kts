@@ -1,10 +1,8 @@
-import nebula.plugin.release.git.opinion.Strategies
 import java.time.Duration
 
 plugins {
   id("com.github.ben-manes.versions")
   id("io.github.gradle-nexus.publish-plugin")
-  id("nebula.release")
 
   id("otel.spotless-conventions")
 }
@@ -18,25 +16,7 @@ if (!JavaVersion.current().isJava11Compatible()) {
   )
 }
 
-// Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
-// out. This supports building from the zip archive downloaded from GitHub.
-var releaseTask: TaskProvider<Task>
-if (file(".git").exists()) {
-  release {
-    defaultVersionStrategy = Strategies.getSNAPSHOT()
-  }
-
-  nebulaRelease {
-    addReleaseBranchPattern("""v\d+\.\d+\.x""")
-  }
-
-  releaseTask = tasks.named("release")
-  releaseTask.configure {
-    mustRunAfter("snapshotSetup", "finalSetup")
-  }
-} else {
-  releaseTask = tasks.register("release")
-}
+apply(from = "version.gradle.kts")
 
 nexusPublishing {
   packageGroup.set("io.opentelemetry")
@@ -73,6 +53,7 @@ tasks {
   register("updateVersionInDocs") {
     group = "documentation"
     doLast {
+      val version = findProperty("release.version")
       val versionParts = version.toString().split('.')
       val minorVersionNumber = Integer.parseInt(versionParts[1])
       val nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"

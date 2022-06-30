@@ -5,11 +5,10 @@
 
 package io.opentelemetry.internal.testing.slf4j;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -26,14 +25,22 @@ public final class LoggerExtension
 
   @Override
   public void beforeTestExecution(ExtensionContext context) {
-    List<Logger> loggers =
-        Stream.concat(
-                Arrays.stream(
-                    context.getRequiredTestMethod().getAnnotationsByType(SuppressLogger.class)),
-                Arrays.stream(
-                    context.getRequiredTestClass().getAnnotationsByType(SuppressLogger.class)))
-            .map(suppression -> Logger.getLogger(suppression.value().getName()))
-            .collect(Collectors.toList());
+    List<SuppressLogger> suppressLoggers = new ArrayList<>();
+    suppressLoggers.addAll(
+        Arrays.asList(context.getRequiredTestMethod().getAnnotationsByType(SuppressLogger.class)));
+    suppressLoggers.addAll(
+        Arrays.asList(context.getRequiredTestClass().getAnnotationsByType(SuppressLogger.class)));
+
+    List<Logger> loggers = new ArrayList<>();
+    for (SuppressLogger suppression : suppressLoggers) {
+      if (!suppression.value().equals(Void.class)) {
+        loggers.add(Logger.getLogger(suppression.value().getName()));
+      }
+      if (!suppression.loggerName().isEmpty()) {
+        loggers.add(Logger.getLogger(suppression.loggerName()));
+      }
+    }
+
     if (loggers.isEmpty()) {
       return;
     }

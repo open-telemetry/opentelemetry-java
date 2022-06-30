@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,8 +37,8 @@ public class SpiUtilTest {
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertNotNull(spiProvider.getByName(SpiExampleProviderImplementation.NAME));
-    assertNull(spiProvider.getByName("invalid-provider"));
+    assertThat(spiProvider.getByName(SpiExampleProviderImplementation.NAME)).isNotNull();
+    assertThat(spiProvider.getByName("invalid-provider")).isNull();
   }
 
   @Test
@@ -82,7 +80,7 @@ public class SpiUtilTest {
 
     SpiExample first = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
     SpiExample second = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
-    assertEquals(first, second);
+    assertThat(second).isEqualTo(first);
   }
 
   @Test
@@ -104,10 +102,9 @@ public class SpiUtilTest {
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertThrows(
-        RuntimeException.class,
-        () -> spiProvider.getByName("init-failure-example"),
-        exceptionMessage);
+    assertThatThrownBy(() -> spiProvider.getByName("init-failure-example"))
+        .withFailMessage(exceptionMessage)
+        .isInstanceOf(RuntimeException.class);
   }
 
   private interface SpiExampleProvider {

@@ -7,9 +7,11 @@ package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import org.junit.jupiter.api.Test;
 
 class MetricDescriptorTest {
@@ -20,12 +22,13 @@ class MetricDescriptorTest {
     InstrumentDescriptor instrument =
         InstrumentDescriptor.create(
             "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
-    MetricDescriptor simple = MetricDescriptor.create(view, instrument);
+    MetricDescriptor simple =
+        MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
     assertThat(simple.getName()).isEqualTo("name");
     assertThat(simple.getDescription()).isEqualTo("description");
-    assertThat(simple.getUnit()).isEqualTo("unit");
-    assertThat(simple.getSourceView()).contains(view);
+    assertThat(simple.getView()).isEqualTo(view);
     assertThat(simple.getSourceInstrument()).isEqualTo(instrument);
+    assertThat(simple.getAggregationName()).isEqualTo("default");
   }
 
   @Test
@@ -34,27 +37,30 @@ class MetricDescriptorTest {
     InstrumentDescriptor instrument =
         InstrumentDescriptor.create(
             "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE);
-    MetricDescriptor simple = MetricDescriptor.create(view, instrument);
+    MetricDescriptor simple =
+        MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
     assertThat(simple.getName()).isEqualTo("new_name");
     assertThat(simple.getDescription()).isEqualTo("new_description");
-    assertThat(simple.getUnit()).isEqualTo("unit");
     assertThat(simple.getSourceInstrument()).isEqualTo(instrument);
-    assertThat(simple.getSourceView()).contains(view);
+    assertThat(simple.getView()).isEqualTo(view);
+    assertThat(simple.getAggregationName()).isEqualTo("default");
   }
 
   @Test
   void metricDescriptor_isCompatible() {
     View view = View.builder().build();
+    InstrumentDescriptor instrument =
+        InstrumentDescriptor.create(
+            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
     MetricDescriptor descriptor =
-        MetricDescriptor.create(
-            view,
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
-    // Same name, description, unit, instrument type, and value type is compatible
+        MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
+    // Same name, description, source name, source description, source unit, source type, and source
+    // value type is compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
-                    view,
+                    View.builder().build(),
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",
@@ -62,11 +68,36 @@ class MetricDescriptorTest {
                         InstrumentType.COUNTER,
                         InstrumentValueType.DOUBLE))))
         .isTrue();
-    // Different name is not compatible
+    // Different name overridden by view is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    View.builder().setName("bar").build(),
+                    SourceInfo.fromCurrentStack(),
+                    instrument)))
+        .isFalse();
+    // Different description overridden by view is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    View.builder().setDescription("foo").build(),
+                    SourceInfo.fromCurrentStack(),
+                    instrument)))
+        .isFalse();
+    // Different aggregation overridden by view is not compatible
+    assertThat(
+            descriptor.isCompatibleWith(
+                MetricDescriptor.create(
+                    View.builder().setAggregation(Aggregation.lastValue()).build(),
+                    SourceInfo.fromCurrentStack(),
+                    instrument)))
+        .isFalse();
+    // Different instrument source name is not compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
                     view,
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "foo",
                         "description",
@@ -74,11 +105,12 @@ class MetricDescriptorTest {
                         InstrumentType.COUNTER,
                         InstrumentValueType.DOUBLE))))
         .isFalse();
-    // Different description is not compatible
+    // Different instrument source description is not compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
                     view,
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "name",
                         "foo",
@@ -86,11 +118,12 @@ class MetricDescriptorTest {
                         InstrumentType.COUNTER,
                         InstrumentValueType.DOUBLE))))
         .isFalse();
-    // Different unit is not compatible
+    // Different instrument source unit is not compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
                     view,
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",
@@ -98,11 +131,12 @@ class MetricDescriptorTest {
                         InstrumentType.COUNTER,
                         InstrumentValueType.DOUBLE))))
         .isFalse();
-    // Different instrument type is not compatible
+    // Different instrument source type is not compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
                     view,
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",
@@ -110,11 +144,12 @@ class MetricDescriptorTest {
                         InstrumentType.HISTOGRAM,
                         InstrumentValueType.DOUBLE))))
         .isFalse();
-    // Different instrument value type is not compatible
+    // Different instrument source value type is not compatible
     assertThat(
             descriptor.isCompatibleWith(
                 MetricDescriptor.create(
                     view,
+                    SourceInfo.fromCurrentStack(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",
@@ -122,26 +157,5 @@ class MetricDescriptorTest {
                         InstrumentType.COUNTER,
                         InstrumentValueType.LONG))))
         .isFalse();
-  }
-
-  @Test
-  @SuppressWarnings("deprecation") // Test deprecated code until removed
-  void isAsync() {
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM).isAsync()).isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER).isAsync())
-        .isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_GAUGE).isAsync()).isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_SUM).isAsync()).isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.OBSERVABLE_COUNTER).isAsync()).isTrue();
-    assertThat(descriptorForInstrument(InstrumentType.HISTOGRAM).isAsync()).isFalse();
-    assertThat(descriptorForInstrument(InstrumentType.COUNTER).isAsync()).isFalse();
-    assertThat(descriptorForInstrument(InstrumentType.UP_DOWN_COUNTER).isAsync()).isFalse();
-  }
-
-  private static MetricDescriptor descriptorForInstrument(InstrumentType instrumentType) {
-    InstrumentDescriptor instrument =
-        InstrumentDescriptor.create(
-            "name", "description", "unit", instrumentType, InstrumentValueType.DOUBLE);
-    return MetricDescriptor.create(View.builder().build(), instrument);
   }
 }

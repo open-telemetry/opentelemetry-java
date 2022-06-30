@@ -6,13 +6,14 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +34,17 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+public final class DoubleLastValueAggregator
+    implements Aggregator<DoubleAccumulation, DoubleExemplarData> {
+  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
 
-  public DoubleLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  public DoubleLastValueAggregator(
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<DoubleAccumulation, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
@@ -58,7 +61,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
   @Override
   public MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
@@ -67,13 +70,13 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
       long epochNanos) {
     // Gauge does not need a start time, but we send one as advised by the data model
     // for identifying resets.
-    return MetricData.createDoubleGauge(
+    return ImmutableMetricData.createDoubleGauge(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
-        descriptor.getUnit(),
-        DoubleGaugeData.create(
+        descriptor.getSourceInstrument().getUnit(),
+        ImmutableGaugeData.create(
             MetricDataUtils.toDoublePointList(
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)
@@ -82,16 +85,16 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation, DoubleExemplarData> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    private Handle(ExemplarReservoir reservoir) {
+    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir) {
       super(reservoir);
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
       return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 

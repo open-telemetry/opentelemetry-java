@@ -27,6 +27,9 @@ import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
+  private static final double DEFAULT_TRACEIDRATIO_SAMPLE_RATIO = 1.0d;
+  private static final String PARENTBASED_ALWAYS_ON = "parentbased_always_on";
+
   static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
@@ -38,10 +41,7 @@ final class TracerProviderConfiguration {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
 
-    String sampler = config.getString("otel.traces.sampler");
-    if (sampler == null) {
-      sampler = "parentbased_always_on";
-    }
+    String sampler = config.getString("otel.traces.sampler", PARENTBASED_ALWAYS_ON);
     tracerProviderBuilder.setSampler(
         samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
 
@@ -106,14 +106,24 @@ final class TracerProviderConfiguration {
   static SpanLimits configureSpanLimits(ConfigProperties config) {
     SpanLimitsBuilder builder = SpanLimits.builder();
 
-    Integer maxLength = config.getInt("otel.span.attribute.value.length.limit");
-    if (maxLength != null) {
-      builder.setMaxAttributeValueLength(maxLength);
+    Integer maxAttrLength = config.getInt("otel.attribute.value.length.limit");
+    if (maxAttrLength != null) {
+      builder.setMaxAttributeValueLength(maxAttrLength);
+    }
+    Integer maxSpanAttrLength = config.getInt("otel.span.attribute.value.length.limit");
+    if (maxSpanAttrLength != null) {
+      builder.setMaxAttributeValueLength(maxSpanAttrLength);
     }
 
-    Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
+    Integer maxAttrs = config.getInt("otel.attribute.count.limit");
     if (maxAttrs != null) {
       builder.setMaxNumberOfAttributes(maxAttrs);
+      builder.setMaxNumberOfAttributesPerEvent(maxAttrs);
+      builder.setMaxNumberOfAttributesPerLink(maxAttrs);
+    }
+    Integer maxSpanAttrs = config.getInt("otel.span.attribute.count.limit");
+    if (maxSpanAttrs != null) {
+      builder.setMaxNumberOfAttributes(maxSpanAttrs);
     }
 
     Integer maxEvents = config.getInt("otel.span.event.count.limit");
@@ -147,22 +157,18 @@ final class TracerProviderConfiguration {
         return Sampler.alwaysOff();
       case "traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
-          if (ratio == null) {
-            ratio = 1.0d;
-          }
+          double ratio =
+              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
           return Sampler.traceIdRatioBased(ratio);
         }
-      case "parentbased_always_on":
+      case PARENTBASED_ALWAYS_ON:
         return Sampler.parentBased(Sampler.alwaysOn());
       case "parentbased_always_off":
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
-          if (ratio == null) {
-            ratio = 1.0d;
-          }
+          double ratio =
+              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:

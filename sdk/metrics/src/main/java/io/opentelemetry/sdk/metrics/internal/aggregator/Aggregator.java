@@ -7,8 +7,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -30,9 +32,9 @@ import javax.annotation.concurrent.Immutable;
  * at any time.
  */
 @Immutable
-public interface Aggregator<T> {
+public interface Aggregator<T, U extends ExemplarData> {
   /** Returns the drop aggregator, an aggregator that drops measurements. */
-  static Aggregator<Object> drop() {
+  static Aggregator<Object, DoubleExemplarData> drop() {
     return DropAggregator.INSTANCE;
   }
 
@@ -42,7 +44,7 @@ public interface Aggregator<T> {
    *
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T> createHandle();
+  AggregatorHandle<T, U> createHandle();
 
   /**
    * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
@@ -54,7 +56,7 @@ public interface Aggregator<T> {
    */
   @Nullable
   default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
-    AggregatorHandle<T> handle = createHandle();
+    AggregatorHandle<T, U> handle = createHandle();
     handle.recordLong(value, attributes, context);
     return handle.accumulateThenReset(attributes);
   }
@@ -69,7 +71,7 @@ public interface Aggregator<T> {
    */
   @Nullable
   default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {
-    AggregatorHandle<T> handle = createHandle();
+    AggregatorHandle<T, U> handle = createHandle();
     handle.recordDouble(value, attributes, context);
     return handle.accumulateThenReset(attributes);
   }
@@ -89,17 +91,21 @@ public interface Aggregator<T> {
   /**
    * Returns a new DELTA aggregation by comparing two cumulative measurements.
    *
+   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
+   *
    * @param previousCumulative the previously captured accumulation.
    * @param currentCumulative the newly captured (cumulative) accumulation.
    * @return The resulting delta accumulation.
    */
-  T diff(T previousCumulative, T currentCumulative);
+  default T diff(T previousCumulative, T currentCumulative) {
+    throw new UnsupportedOperationException("This aggregator does not support diff.");
+  }
 
   /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
    * @param resource the resource producing the metric.
-   * @param instrumentationLibrary the library that instrumented the metric.
+   * @param instrumentationScopeInfo the scope that instrumented the metric.
    * @param metricDescriptor the name, description and unit of the metric.
    * @param accumulationByLabels the map of Labels to Accumulation.
    * @param temporality the temporality of the accumulation.
@@ -109,7 +115,7 @@ public interface Aggregator<T> {
    */
   MetricData toMetricData(
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibrary,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor metricDescriptor,
       Map<Attributes, T> accumulationByLabels,
       AggregationTemporality temporality,

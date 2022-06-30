@@ -1,0 +1,17 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.data.DelegatingSpanData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===* UNCHANGED INTERFACE: io.opentelemetry.sdk.trace.data.SpanData
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.data.SpanData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC ABSTRACT io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.ReadableSpan  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC ABSTRACT io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()

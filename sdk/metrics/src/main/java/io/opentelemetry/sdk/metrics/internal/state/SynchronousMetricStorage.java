@@ -5,12 +5,16 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -31,16 +35,25 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
    *     recorded.
    */
-  static <T> SynchronousMetricStorage create(
-      View view, InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
-    Aggregator<T> aggregator =
-        view.getAggregation().createAggregator(instrumentDescriptor, exemplarFilter);
+  static <T, U extends ExemplarData> SynchronousMetricStorage create(
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter) {
+    View view = registeredView.getView();
+    MetricDescriptor metricDescriptor =
+        MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
+    Aggregator<T, U> aggregator =
+        ((AggregatorFactory) view.getAggregation())
+            .createAggregator(instrumentDescriptor, exemplarFilter);
     // We won't be storing this metric.
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, view.getAttributesProcessor());
+        registeredReader,
+        metricDescriptor,
+        aggregator,
+        registeredView.getViewAttributesProcessor());
   }
 }

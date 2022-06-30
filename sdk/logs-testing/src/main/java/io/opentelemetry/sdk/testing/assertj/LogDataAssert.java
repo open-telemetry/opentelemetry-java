@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,19 +40,17 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /**
-   * Asserts the {@link InstrumentationLibraryInfo} associated with a log matches the expected
-   * value.
+   * Asserts the {@link InstrumentationScopeInfo} associated with a log matches the expected value.
    */
-  public LogDataAssert hasInstrumentationLibrary(
-      InstrumentationLibraryInfo instrumentationLibrary) {
+  public LogDataAssert hasInstrumentationScope(InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
-    if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibrary)) {
+    if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
       failWithActualExpectedAndMessage(
           actual,
-          "instrumentation library: " + instrumentationLibrary,
-          "Expected log to have resource <%s> but found <%s>",
-          instrumentationLibrary,
-          actual.getInstrumentationLibraryInfo());
+          "instrumentation scope: " + instrumentationScopeInfo,
+          "Expected log to have scope <%s> but found <%s>",
+          instrumentationScopeInfo,
+          actual.getInstrumentationScopeInfo());
     }
     return this;
   }
@@ -113,20 +111,6 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
     return this;
   }
 
-  /** Asserts the log has the given name. */
-  public LogDataAssert hasName(String name) {
-    isNotNull();
-    if (!name.equals(actual.getName())) {
-      failWithActualExpectedAndMessage(
-          actual.getName(),
-          name,
-          "Expected log to have name <%s> but was <%s>",
-          name,
-          actual.getName());
-    }
-    return this;
-  }
-
   /** Asserts the log has the given body. */
   public LogDataAssert hasBody(String body) {
     isNotNull();
@@ -149,7 +133,6 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
           actual.getAttributes(),
           attributes,
           "Expected log to have attributes <%s> but was <%s>",
-          actual.getName(),
           attributes,
           actual.getAttributes());
     }

@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.logging;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -37,7 +37,7 @@ public final class LoggingSpanExporter implements SpanExporter {
     StringBuilder sb = new StringBuilder(60);
     for (SpanData span : spans) {
       sb.setLength(0);
-      InstrumentationLibraryInfo instrumentationLibraryInfo = span.getInstrumentationLibraryInfo();
+      InstrumentationScopeInfo instrumentationScopeInfo = span.getInstrumentationScopeInfo();
       sb.append("'")
           .append(span.getName())
           .append("' : ")
@@ -47,12 +47,12 @@ public final class LoggingSpanExporter implements SpanExporter {
           .append(" ")
           .append(span.getKind())
           .append(" [tracer: ")
-          .append(instrumentationLibraryInfo.getName())
+          .append(instrumentationScopeInfo.getName())
           .append(":")
           .append(
-              instrumentationLibraryInfo.getVersion() == null
+              instrumentationScopeInfo.getVersion() == null
                   ? ""
-                  : instrumentationLibraryInfo.getVersion())
+                  : instrumentationScopeInfo.getVersion())
           .append("] ")
           .append(span.getAttributes());
       logger.log(Level.INFO, sb.toString());

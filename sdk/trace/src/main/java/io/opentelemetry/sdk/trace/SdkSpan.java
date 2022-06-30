@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -15,16 +14,15 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,8 +57,8 @@ final class SdkSpan implements ReadWriteSpan {
   private final AnchoredClock clock;
   // The resource associated with this span.
   private final Resource resource;
-  // instrumentation library of the named tracer which created this span
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  // instrumentation scope of the named tracer which created this span
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   // The start time of the span.
   private final long startEpochNanos;
   // Lock used to internally guard the mutable state of this instance
@@ -91,7 +89,7 @@ final class SdkSpan implements ReadWriteSpan {
   private SdkSpan(
       SpanContext context,
       String name,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       SpanKind kind,
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
@@ -103,7 +101,7 @@ final class SdkSpan implements ReadWriteSpan {
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
@@ -126,7 +124,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param name the displayed name for the new span.
    * @param kind the span kind.
    * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
-   * @param spanLimits trace parameters like sampler and probability.
+   * @param spanLimits limits applied to this span.
    * @param spanProcessor handler called when the span starts and ends.
    * @param tracerClock the tracer's clock
    * @param resource the resource associated with this span.
@@ -137,7 +135,7 @@ final class SdkSpan implements ReadWriteSpan {
   static SdkSpan startSpan(
       SpanContext context,
       String name,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       SpanKind kind,
       Span parentSpan,
       Context parentContext,
@@ -176,7 +174,7 @@ final class SdkSpan implements ReadWriteSpan {
         new SdkSpan(
             context,
             name,
-            instrumentationLibraryInfo,
+            instrumentationScopeInfo,
             kind,
             parentSpan.getSpanContext(),
             spanLimits,
@@ -248,16 +246,15 @@ final class SdkSpan implements ReadWriteSpan {
     }
   }
 
-  /**
-   * Returns the instrumentation library specified when creating the tracer which produced this
-   * span.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo} describing the instrumentation
-   *     library
-   */
   @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+  @Deprecated
+  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 
   /**
@@ -401,23 +398,9 @@ final class SdkSpan implements ReadWriteSpan {
     if (additionalAttributes == null) {
       additionalAttributes = Attributes.empty();
     }
-    long timestampNanos = clock.now();
 
-    AttributesBuilder attributes = Attributes.builder();
-    attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
-    if (exception.getMessage() != null) {
-      attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
-    }
-    StringWriter writer = new StringWriter();
-    exception.printStackTrace(new PrintWriter(writer));
-    attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
-    attributes.putAll(additionalAttributes);
-
-    addEvent(
-        SemanticAttributes.EXCEPTION_EVENT_NAME,
-        attributes.build(),
-        timestampNanos,
-        TimeUnit.NANOSECONDS);
+    addTimedEvent(
+        ExceptionEventData.create(spanLimits, clock.now(), exception, additionalAttributes));
     return this;
   }
 

@@ -20,25 +20,25 @@ import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
-  static void configureExporter(
+
+  private static final Duration DEFAULT_EXPORT_INTERVAL = Duration.ofMinutes(1);
+
+  static MetricReader configureExporter(
       String name,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
-      SdkMeterProviderBuilder sdkMeterProviderBuilder,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer) {
     if (name.equals("prometheus")) {
-      sdkMeterProviderBuilder.registerMetricReader(configurePrometheusMetricReader(config));
-      return;
+      return configurePrometheusMetricReader(config);
     }
 
     MetricExporter metricExporter;
@@ -58,8 +58,7 @@ final class MetricExporterConfiguration {
     }
 
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
-    sdkMeterProviderBuilder.registerMetricReader(
-        configurePeriodicMetricReader(config, metricExporter));
+    return configurePeriodicMetricReader(config, metricExporter);
   }
 
   private static MetricExporter configureLoggingExporter() {
@@ -85,21 +84,14 @@ final class MetricExporterConfiguration {
   }
 
   // Visible for testing
-  @Nullable
   static MetricExporter configureOtlpMetrics(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
-    MetricExporter exporter;
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      try {
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
-            "OTLP HTTP Metrics Exporter",
-            "opentelemetry-exporter-otlp-http-metrics");
-      } catch (ConfigurationException e) {
-        // Squash this for now, until metrics are stable
-        return null;
-      }
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
+          "OTLP HTTP Metrics Exporter",
+          "opentelemetry-exporter-otlp-http-metrics");
       OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
@@ -110,22 +102,17 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
-      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
+      OtlpConfigUtil.configureOtlpAggregationTemporality(
+          config, builder::setAggregationTemporalitySelector);
 
-      exporter = builder.build();
+      return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      try {
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-            "OTLP gRPC Metrics Exporter",
-            "opentelemetry-exporter-otlp-metrics");
-      } catch (ConfigurationException e) {
-        // Squash this for now, until metrics are stable and included in the `exporter-otlp`
-        // artifact
-        // by default,
-        return null;
-      }
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+          "OTLP gRPC Metrics Exporter",
+          "opentelemetry-exporter-otlp");
       OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
@@ -136,31 +123,26 @@ final class MetricExporterConfiguration {
           builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates,
+          builder::setClientTls,
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
-      OtlpConfigUtil.configureOtlpAggregationTemporality(config, builder::setPreferredTemporality);
+      OtlpConfigUtil.configureOtlpAggregationTemporality(
+          config, builder::setAggregationTemporalitySelector);
 
-      exporter = builder.build();
+      return builder.build();
     } else {
       throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
-
-    return exporter;
   }
 
-  private static MetricReaderFactory configurePeriodicMetricReader(
+  private static PeriodicMetricReader configurePeriodicMetricReader(
       ConfigProperties config, MetricExporter exporter) {
 
-    Duration exportInterval = config.getDuration("otel.metric.export.interval");
-    if (exportInterval == null) {
-      exportInterval = Duration.ofMinutes(1);
-    }
-
     return PeriodicMetricReader.builder(exporter)
-        .setInterval(exportInterval)
-        .newMetricReaderFactory();
+        .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
+        .build();
   }
 
-  private static MetricReaderFactory configurePrometheusMetricReader(ConfigProperties config) {
+  private static PrometheusHttpServer configurePrometheusMetricReader(ConfigProperties config) {
     ClasspathUtil.checkClassExists(
         "io.opentelemetry.exporter.prometheus.PrometheusHttpServer",
         "Prometheus Metrics Server",
@@ -175,7 +157,7 @@ final class MetricExporterConfiguration {
     if (host != null) {
       prom.setHost(host);
     }
-    return prom.newMetricReaderFactory();
+    return prom.build();
   }
 
   private MetricExporterConfiguration() {}

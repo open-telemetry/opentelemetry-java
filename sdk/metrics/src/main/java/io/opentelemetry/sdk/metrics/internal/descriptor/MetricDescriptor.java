@@ -7,11 +7,13 @@ package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.View;
-import java.util.Objects;
-import java.util.Optional;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
+import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -26,40 +28,66 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricDescriptor {
 
+  private final AtomicReference<SourceInfo> viewSourceInfo = new AtomicReference<>();
+
   /**
-   * Constructs a metric descriptor with no source instrument/view.
+   * Constructs a metric descriptor with no instrument and default view.
    *
    * <p>Used for testing + empty-storage only.
    */
   public static MetricDescriptor create(String name, String description, String unit) {
-    return new AutoValue_MetricDescriptor(
-        name,
-        description,
-        unit,
-        Optional.empty(),
+    return create(
+        View.builder().build(),
+        SourceInfo.fromCurrentStack(),
         InstrumentDescriptor.create(
             name, description, unit, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE));
   }
 
   /** Constructs a metric descriptor for a given View + instrument. */
-  public static MetricDescriptor create(View view, InstrumentDescriptor instrument) {
+  public static MetricDescriptor create(
+      View view, SourceInfo viewSourceInfo, InstrumentDescriptor instrument) {
     String name = (view.getName() == null) ? instrument.getName() : view.getName();
     String description =
         (view.getDescription() == null) ? instrument.getDescription() : view.getDescription();
-    return new AutoValue_MetricDescriptor(
-        name, description, instrument.getUnit(), Optional.of(view), instrument);
+    MetricDescriptor metricDescriptor =
+        new AutoValue_MetricDescriptor(name, description, view, instrument);
+    metricDescriptor.viewSourceInfo.set(viewSourceInfo);
+    return metricDescriptor;
   }
 
+  MetricDescriptor() {}
+
+  /**
+   * The name of the descriptor, equal to {@link View#getName()} if not null, else {@link
+   * InstrumentDescriptor#getName()}.
+   */
   public abstract String getName();
 
+  /**
+   * The description of the descriptor, equal to {@link View#getDescription()} if not null, else
+   * {@link InstrumentDescriptor#getDescription()}.
+   */
   public abstract String getDescription();
 
-  public abstract String getUnit();
+  /** The view that lead to the creation of this metric. */
+  public abstract View getView();
 
-  /** The view that lead to the creation of this metric, if applicable. */
-  public abstract Optional<View> getSourceView();
+  /**
+   * The {@link SourceInfo} from where the view was registered. Ignored from {@link #equals(Object)}
+   * and {@link #toString()}.
+   */
+  public final SourceInfo getViewSourceInfo() {
+    SourceInfo sourceInfo = viewSourceInfo.get();
+    return sourceInfo == null ? SourceInfo.noSourceInfo() : sourceInfo;
+  }
+
   /** The instrument which lead to the creation of this metric. */
   public abstract InstrumentDescriptor getSourceInstrument();
+
+  /** The {@link AggregationUtil#aggregationName(Aggregation)} of the view aggregation. */
+  public String getAggregationName() {
+    return AggregationUtil.aggregationName(getView().getAggregation());
+  }
 
   @Memoized
   @Override
@@ -73,35 +101,24 @@ public abstract class MetricDescriptor {
    * <ul>
    *   <li>{@link #getName()} is equal
    *   <li>{@link #getDescription()} is equal
-   *   <li>{@link #getUnit()} is equal
+   *   <li>{@link #getAggregationName()} is equal
+   *   <li>{@link InstrumentDescriptor#getName()} is equal
+   *   <li>{@link InstrumentDescriptor#getDescription()} is equal
+   *   <li>{@link InstrumentDescriptor#getUnit()} is equal
    *   <li>{@link InstrumentDescriptor#getType()} is equal
    *   <li>{@link InstrumentDescriptor#getValueType()} is equal
    * </ul>
    */
   public boolean isCompatibleWith(MetricDescriptor other) {
-    return Objects.equals(getName(), other.getName())
-        && Objects.equals(getDescription(), other.getDescription())
-        && Objects.equals(getUnit(), other.getUnit())
-        && Objects.equals(getSourceInstrument().getType(), other.getSourceInstrument().getType())
-        && Objects.equals(
-            getSourceInstrument().getValueType(), other.getSourceInstrument().getValueType());
-  }
-
-  /** Returns whether the descriptor describes an async {@link InstrumentType}. */
-  public boolean isAsync() {
-    switch (getSourceInstrument().getType()) {
-      case OBSERVABLE_UP_DOWN_SUM:
-      case OBSERVABLE_UP_DOWN_COUNTER:
-      case OBSERVABLE_GAUGE:
-      case OBSERVABLE_SUM:
-      case OBSERVABLE_COUNTER:
-        return true;
-      case HISTOGRAM:
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-        return false;
-    }
-    throw new IllegalStateException(
-        "Unrecognized instrument type " + getSourceInstrument().getType());
+    return getName().equals(other.getName())
+        && getDescription().equals(other.getDescription())
+        && getAggregationName().equals(other.getAggregationName())
+        && getSourceInstrument().getName().equals(other.getSourceInstrument().getName())
+        && getSourceInstrument()
+            .getDescription()
+            .equals(other.getSourceInstrument().getDescription())
+        && getSourceInstrument().getUnit().equals(other.getSourceInstrument().getUnit())
+        && getSourceInstrument().getType().equals(other.getSourceInstrument().getType())
+        && getSourceInstrument().getValueType().equals(other.getSourceInstrument().getValueType());
   }
 }

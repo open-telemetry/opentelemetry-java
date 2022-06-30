@@ -18,14 +18,14 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterAll;
@@ -42,14 +42,9 @@ class PrometheusHttpServerTest {
 
   @BeforeAll
   static void setUp() {
-    // Apply the SDK metric producer registers with prometheus.
-    prometheusServer =
-        (PrometheusHttpServer)
-            PrometheusHttpServer.builder()
-                .setHost("localhost")
-                .setPort(0)
-                .newMetricReaderFactory()
-                .apply(metricProducer);
+    // Register the SDK metric producer with the prometheus reader.
+    prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
+    prometheusServer.register(metricProducer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
   }
@@ -81,12 +76,12 @@ class PrometheusHttpServerTest {
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
-                + "# HELP http_name_total double_description\n"
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5 0\n");
+                + "# HELP http_name_total double_description\n"
+                + "http_name_total{kp=\"vp\"} 3.5 0\n");
   }
 
   @ParameterizedTest
@@ -125,9 +120,9 @@ class PrometheusHttpServerTest {
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n");
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n");
   }
 
   @Test
@@ -143,12 +138,12 @@ class PrometheusHttpServerTest {
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_ENCODING)).isEqualTo("gzip");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# HELP grpc_name_total long_description\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
-                + "# HELP http_name_total double_description\n"
+            "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5 0\n");
+                + "# HELP http_name_total double_description\n"
+                + "http_name_total{kp=\"vp\"} 3.5 0\n");
   }
 
   @Test
@@ -168,29 +163,37 @@ class PrometheusHttpServerTest {
     assertThat(response.contentUtf8()).isEqualTo("Exporter is Healthy.");
   }
 
+  @Test
+  void stringRepresentation() {
+    assertThat(prometheusServer.toString())
+        .isEqualTo("PrometheusHttpServer{address=" + prometheusServer.getAddress() + "}");
+  }
+
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
-        MetricData.createLongSum(
+        ImmutableMetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("grpc", "version"),
+            InstrumentationScopeInfo.create("grpc", "version", null),
             "grpc.name",
             "long_description",
             "1",
-            LongSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    LongPointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
-        MetricData.createDoubleSum(
+                    ImmutableLongPointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+        ImmutableMetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationLibraryInfo.create("http", "version"),
+            InstrumentationScopeInfo.create("http", "version", null),
             "http.name",
             "double_description",
             "1",
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
+                    ImmutableDoublePointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
   }
 }

@@ -1,0 +1,65 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.micrometer1shim;
+
+import static io.opentelemetry.micrometer1shim.OpenTelemetryMeterRegistryBuilder.INSTRUMENTATION_NAME;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+class CounterTest {
+
+  @RegisterExtension
+  static final MicrometerTestingExtension testing = new MicrometerTestingExtension();
+
+  @Test
+  void testCounter() {
+    Counter counter =
+        Counter.builder("testCounter")
+            .description("This is a test counter")
+            .tags("tag", "value")
+            .baseUnit("items")
+            .register(Metrics.globalRegistry);
+
+    counter.increment();
+    counter.increment(2);
+
+    assertThat(testing.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("testCounter")
+                    .hasInstrumentationScope(
+                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasDescription("This is a test counter")
+                    .hasUnit("items")
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(3)
+                                            .hasAttributes(attributeEntry("tag", "value")))));
+
+    Metrics.globalRegistry.remove(counter);
+    counter.increment();
+
+    // Synchronous instruments will continue to report previous value after removal
+    assertThat(testing.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("testCounter")
+                    .hasDoubleSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(3))));
+  }
+}

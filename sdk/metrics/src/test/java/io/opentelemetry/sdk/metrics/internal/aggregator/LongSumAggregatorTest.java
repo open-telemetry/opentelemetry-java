@@ -5,21 +5,23 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -33,10 +35,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock ExemplarReservoir<LongExemplarData> reservoir;
 
   private static final Resource resource = Resource.getDefault();
-  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
   private static final LongSumAggregator aggregator =
@@ -47,7 +49,7 @@ class LongSumAggregatorTest {
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
-          ExemplarReservoir::noSamples);
+          ExemplarReservoir::longNoSamples);
 
   @Test
   void createHandle() {
@@ -56,7 +58,8 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
@@ -69,7 +72,8 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
@@ -82,7 +86,8 @@ class LongSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
@@ -99,8 +104,17 @@ class LongSumAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
+    List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
         new LongSumAggregator(
@@ -111,7 +125,8 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG),
             () -> reservoir);
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(LongAccumulation.create(0, exemplars));
@@ -119,16 +134,24 @@ class LongSumAggregatorTest {
 
   @Test
   void mergeAndDiff() {
-    ExemplarData exemplar =
-        DoubleExemplarData.create(Attributes.empty(), 2L, "spanid", "traceid", 1);
-    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
+            Attributes.empty(),
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
+    List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         LongSumAggregator aggregator =
             new LongSumAggregator(
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                ExemplarReservoir::noSamples);
+                ExemplarReservoir::longNoSamples);
         LongAccumulation merged =
             aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(merged.getValue())
@@ -153,7 +176,8 @@ class LongSumAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
+        aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -171,23 +195,32 @@ class LongSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasLongSum()
-        .isCumulative()
-        .isMonotonic()
-        .points()
-        .satisfiesExactly(
-            point ->
-                assertThat(point)
-                    .hasStartEpochNanos(0)
-                    .hasEpochNanos(100)
-                    .hasAttributes(Attributes.empty())
-                    .hasValue(10));
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .isMonotonic()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(100)
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
   }
 
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    LongExemplarData exemplar =
+        ImmutableLongExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
@@ -199,8 +232,7 @@ class LongSumAggregatorTest {
                 0,
                 10,
                 100))
-        .hasLongSum()
-        .points()
-        .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));
+        .hasLongSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }
 }

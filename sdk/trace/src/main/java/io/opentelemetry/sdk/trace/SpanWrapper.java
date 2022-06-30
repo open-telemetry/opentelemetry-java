@@ -9,7 +9,8 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -94,8 +95,15 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return delegate().getInstrumentationLibraryInfo();
+  @Deprecated
+  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return InstrumentationScopeUtil.toInstrumentationLibraryInfo(
+        delegate().getInstrumentationScopeInfo());
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return delegate().getInstrumentationScopeInfo();
   }
 
   @Override
@@ -170,8 +178,8 @@ abstract class SpanWrapper implements SpanData {
         + "resource="
         + getResource()
         + ", "
-        + "instrumentationLibraryInfo="
-        + getInstrumentationLibraryInfo()
+        + "instrumentationScopeInfo="
+        + getInstrumentationScopeInfo()
         + ", "
         + "name="
         + getName()

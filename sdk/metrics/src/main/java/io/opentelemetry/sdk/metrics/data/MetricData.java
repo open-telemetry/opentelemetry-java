@@ -5,320 +5,158 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
- * Instrument}.
+ * Metric data represents the aggregated measurements of an instrument.
+ *
+ * @since 1.14.0
  */
 @Immutable
 public interface MetricData {
 
   /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   * Returns the metric {@link Resource}.
    *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
-   */
-  static MetricData createDoubleGauge(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      DoubleGaugeData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.DOUBLE_GAUGE,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
-   */
-  static MetricData createLongGauge(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      LongGaugeData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.LONG_GAUGE,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
-   */
-  static MetricData createDoubleSum(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      DoubleSumData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.DOUBLE_SUM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
-   */
-  static MetricData createLongSum(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      LongSumData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.LONG_SUM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData wih a {@link MetricDataType#SUMMARY} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#SUMMARY} type.
-   */
-  static MetricData createDoubleSummary(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      DoubleSummaryData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.SUMMARY,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
-   */
-  static MetricData createDoubleHistogram(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      DoubleHistogramData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.HISTOGRAM,
-        data);
-  }
-
-  /**
-   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
-   *
-   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
-   */
-  static MetricData createExponentialHistogram(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      ExponentialHistogramData data) {
-    return MetricDataImpl.create(
-        resource,
-        instrumentationLibraryInfo,
-        name,
-        description,
-        unit,
-        MetricDataType.EXPONENTIAL_HISTOGRAM,
-        data);
-  }
-
-  /**
-   * Returns the resource of this {@code MetricData}.
-   *
-   * @return the resource of this {@code MetricData}.
+   * <p>The {@link Resource} is configured via {@link
+   * SdkMeterProviderBuilder#setResource(Resource)}.
    */
   Resource getResource();
 
   /**
-   * Returns the instrumentation library specified when creating the {@code Meter} which created the
-   * {@code Instrument} that produces {@code MetricData}.
+   * Returns the metric {@link InstrumentationScopeInfo}.
    *
-   * @return an instance of {@link InstrumentationLibraryInfo}
+   * <p>The {@link InstrumentationScopeInfo} is determined from the options used when {@link
+   * MeterBuilder#build()}ing the {@link Meter}.
    */
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /**
    * Returns the metric name.
    *
-   * @return the metric name.
+   * <p>The metric name is typically the instrument name, but may be optionally overridden by a
+   * {@link View}.
    */
   String getName();
 
   /**
-   * Returns the description of this metric.
+   * Returns the metric description.
    *
-   * @return the description of this metric.
+   * <p>The metric name is typically the instrument description, but may be optionally overridden by
+   * a {@link View}.
    */
   String getDescription();
 
-  /**
-   * Returns the unit of this metric.
-   *
-   * @return the unit of this metric.
-   */
+  /** Returns the metric unit. */
   String getUnit();
 
-  /**
-   * Returns the type of this metric.
-   *
-   * @return the type of this metric.
-   */
+  /** Returns the type of this metric. */
   MetricDataType getType();
 
+  /**
+   * Returns the unconstrained metric data.
+   *
+   * <p>Most will instead prefer to access the constrained metric data after first checking the
+   * {@link #getType()}:
+   *
+   * <pre>{@code
+   * //  if (metricData.getType() == MetricDataType.LONG_SUM) {
+   * //    SumData<LongPointData> sumData = metricData.getLongSumData();
+   * //    ... // Process long sum data
+   * //  }
+   * }</pre>
+   *
+   * @see #getDoubleGaugeData()
+   * @see #getLongGaugeData()
+   * @see #getDoubleSumData()
+   * @see #getLongSumData()
+   * @see #getHistogramData()
+   * @see #getSummaryData()
+   */
   Data<?> getData();
 
-  /**
-   * Returns {@code true} if there are no points associated with this metric.
-   *
-   * @return {@code true} if there are no points associated with this metric.
-   */
+  /** Returns {@code true} if there are no points associated with this metric. */
   default boolean isEmpty() {
     return getData().getPoints().isEmpty();
   }
 
   /**
-   * Returns the {@code DoubleGaugeData} if type is {@link MetricDataType#DOUBLE_GAUGE}, otherwise a
-   * default empty data.
-   *
-   * @return the {@code DoubleGaugeData} if type is {@link MetricDataType#DOUBLE_GAUGE}, otherwise a
-   *     default empty data.
+   * Returns the {@code double} {@link GaugeData} if type is {@link MetricDataType#DOUBLE_GAUGE},
+   * otherwise a default empty data.
    */
-  default DoubleGaugeData getDoubleGaugeData() {
+  @SuppressWarnings("unchecked")
+  default GaugeData<DoublePointData> getDoubleGaugeData() {
     if (getType() == MetricDataType.DOUBLE_GAUGE) {
-      return (DoubleGaugeData) getData();
+      return (GaugeData<DoublePointData>) getData();
     }
-    return DoubleGaugeData.EMPTY;
+    return ImmutableGaugeData.empty();
   }
 
   /**
-   * Returns the {@code LongGaugeData} if type is {@link MetricDataType#LONG_GAUGE}, otherwise a
-   * default empty data.
-   *
-   * @return the {@code LongGaugeData} if type is {@link MetricDataType#LONG_GAUGE}, otherwise a
-   *     default empty data.
+   * Returns the {@code long} {@link GaugeData} if type is {@link MetricDataType#LONG_GAUGE},
+   * otherwise a default empty data.
    */
-  default LongGaugeData getLongGaugeData() {
+  @SuppressWarnings("unchecked")
+  default GaugeData<LongPointData> getLongGaugeData() {
     if (getType() == MetricDataType.LONG_GAUGE) {
-      return (LongGaugeData) getData();
+      return (GaugeData<LongPointData>) getData();
     }
-    return LongGaugeData.EMPTY;
+    return ImmutableGaugeData.empty();
   }
 
   /**
-   * Returns the {@code DoubleSumData} if type is {@link MetricDataType#DOUBLE_SUM}, otherwise a
-   * default empty data.
-   *
-   * @return the {@code DoubleSumData} if type is {@link MetricDataType#DOUBLE_SUM}, otherwise a
-   *     default empty data.
+   * Returns the {@code double} {@link SumData} if type is {@link MetricDataType#DOUBLE_SUM},
+   * otherwise a default empty data.
    */
-  default DoubleSumData getDoubleSumData() {
+  @SuppressWarnings("unchecked")
+  default SumData<DoublePointData> getDoubleSumData() {
     if (getType() == MetricDataType.DOUBLE_SUM) {
-      return (DoubleSumData) getData();
+      return (ImmutableSumData<DoublePointData>) getData();
     }
-    return DoubleSumData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
-   * Returns the {@code LongSumData} if type is {@link MetricDataType#LONG_SUM}, otherwise a default
-   * empty data.
-   *
-   * @return the {@code LongSumData} if type is {@link MetricDataType#LONG_SUM}, otherwise a default
-   *     empty data.
-   */
-  default LongSumData getLongSumData() {
-    if (getType() == MetricDataType.LONG_SUM) {
-      return (LongSumData) getData();
-    }
-    return LongSumData.EMPTY;
-  }
-
-  /**
-   * Returns the {@code DoubleSummaryData} if type is {@link MetricDataType#SUMMARY}, otherwise a
-   * default empty data.
-   *
-   * @return the {@code DoubleSummaryData} if type is {@link MetricDataType#SUMMARY}, otherwise a
-   *     default * empty data.
-   */
-  default DoubleSummaryData getDoubleSummaryData() {
-    if (getType() == MetricDataType.SUMMARY) {
-      return (DoubleSummaryData) getData();
-    }
-    return DoubleSummaryData.EMPTY;
-  }
-
-  /**
-   * Returns the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
+   * Returns the {@code long} {@link SumData} if type is {@link MetricDataType#LONG_SUM}, otherwise
    * a default empty data.
-   *
-   * @return the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
-   *     a default empty data.
    */
-  default DoubleHistogramData getDoubleHistogramData() {
-    if (getType() == MetricDataType.HISTOGRAM) {
-      return (DoubleHistogramData) getData();
+  @SuppressWarnings("unchecked")
+  default SumData<LongPointData> getLongSumData() {
+    if (getType() == MetricDataType.LONG_SUM) {
+      return (SumData<LongPointData>) getData();
     }
-    return DoubleHistogramData.EMPTY;
+    return ImmutableSumData.empty();
   }
 
   /**
-   * Returns the {@link ExponentialHistogramData} if type is {@link
-   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
-   *
-   * @return the {@link ExponentialHistogramData} if type is {@link
-   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   * Returns the {@link SummaryData} if type is {@link MetricDataType#SUMMARY}, otherwise a default
+   * empty data.
    */
-  default ExponentialHistogramData getExponentialHistogramData() {
-    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
-      return (ExponentialHistogramData) getData();
+  default SummaryData getSummaryData() {
+    if (getType() == MetricDataType.SUMMARY) {
+      return (SummaryData) getData();
     }
-    return DoubleExponentialHistogramData.EMPTY;
+    return ImmutableSummaryData.empty();
+  }
+
+  /**
+   * Returns the {@link HistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise a
+   * default empty data.
+   */
+  default HistogramData getHistogramData() {
+    if (getType() == MetricDataType.HISTOGRAM) {
+      return (HistogramData) getData();
+    }
+    return ImmutableHistogramData.empty();
   }
 }

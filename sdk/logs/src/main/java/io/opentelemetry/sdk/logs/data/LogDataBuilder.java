@@ -10,7 +10,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -20,34 +20,33 @@ import javax.annotation.Nullable;
 public final class LogDataBuilder {
 
   private final Resource resource;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
 
   private long epochNanos;
   private SpanContext spanContext = SpanContext.getInvalid();
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
-  @Nullable private String name;
   private Body body = Body.empty();
   private final Clock clock;
   private Attributes attributes = Attributes.empty();
 
   private LogDataBuilder(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
+      Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, Clock clock) {
     this.resource = resource;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.clock = clock;
   }
 
   /** Returns a new {@link LogDataBuilder} with the default clock. */
   public static LogDataBuilder create(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return create(resource, instrumentationLibraryInfo, Clock.getDefault());
+      Resource resource, InstrumentationScopeInfo instrumentationScopeInfo) {
+    return create(resource, instrumentationScopeInfo, Clock.getDefault());
   }
 
   /** Returns a new {@link LogDataBuilder}. */
   public static LogDataBuilder create(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo, Clock clock) {
-    return new LogDataBuilder(resource, instrumentationLibraryInfo, clock);
+      Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, Clock clock) {
+    return new LogDataBuilder(resource, instrumentationScopeInfo, clock);
   }
 
   /** Set the epoch timestamp using the timestamp and unit. */
@@ -85,12 +84,6 @@ public final class LogDataBuilder {
     return this;
   }
 
-  /** Set the name. */
-  public LogDataBuilder setName(String name) {
-    this.name = name;
-    return this;
-  }
-
   /** Set the body string. */
   public LogDataBuilder setBody(String body) {
     this.body = Body.string(body);
@@ -110,12 +103,11 @@ public final class LogDataBuilder {
     }
     return LogDataImpl.create(
         resource,
-        instrumentationLibraryInfo,
+        instrumentationScopeInfo,
         epochNanos,
         spanContext,
         severity,
         severityText,
-        name,
         body,
         attributes);
   }

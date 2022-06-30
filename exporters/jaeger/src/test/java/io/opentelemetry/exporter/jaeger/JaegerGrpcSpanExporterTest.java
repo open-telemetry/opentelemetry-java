@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.jaeger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -17,6 +17,7 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -26,7 +27,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -88,7 +89,11 @@ class JaegerGrpcSpanExporterTest {
 
   @BeforeAll
   static void setUp() {
-    exporter = JaegerGrpcSpanExporter.builder().setEndpoint(server.httpUri().toString()).build();
+    exporter =
+        JaegerGrpcSpanExporter.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setMeterProvider(MeterProvider.noop())
+            .build();
   }
 
   @AfterAll
@@ -120,8 +125,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -171,8 +176,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -196,8 +201,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setInstrumentationLibraryInfo(
-                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -250,6 +255,12 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.scope.name")
+                .orElseThrow(() -> new AssertionError("otel.scope.name not found"))
+                .getVStr())
+        .isEqualTo("io.opentelemetry.auto");
+
+    assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.name")
                 .orElseThrow(() -> new AssertionError("otel.library.name not found"))
                 .getVStr())
@@ -258,6 +269,12 @@ class JaegerGrpcSpanExporterTest {
     assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.version")
                 .orElseThrow(() -> new AssertionError("otel.library.version not found"))
+                .getVStr())
+        .isEqualTo("1.0.0");
+
+    assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.scope.version")
+                .orElseThrow(() -> new AssertionError("otel.scope.version not found"))
                 .getVStr())
         .isEqualTo("1.0.0");
 
@@ -289,12 +306,22 @@ class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
-  void validConfig() {
+  void validTrustedConfig() {
     assertThatCode(
             () ->
                 JaegerGrpcSpanExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validClientKeyConfig() {
+    assertThatCode(
+            () ->
+                JaegerGrpcSpanExporter.builder()
+                    .setClientTls(
+                        "foobar".getBytes(StandardCharsets.UTF_8),
+                        "foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
   }
 

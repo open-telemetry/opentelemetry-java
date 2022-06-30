@@ -44,6 +44,8 @@ final class Adapter {
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "otel.status_message";
   static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
+  static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
+  static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
@@ -121,13 +123,21 @@ final class Adapter {
     }
 
     tags.add(
+        new Tag(KEY_INSTRUMENTATION_SCOPE_NAME, TagType.STRING)
+            .setVStr(span.getInstrumentationScopeInfo().getName()));
+    // Include instrumentation library name for backwards compatibility
+    tags.add(
         new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
-            .setVStr(span.getInstrumentationLibraryInfo().getName()));
+            .setVStr(span.getInstrumentationScopeInfo().getName()));
 
-    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+    if (span.getInstrumentationScopeInfo().getVersion() != null) {
+      tags.add(
+          new Tag(KEY_INSTRUMENTATION_SCOPE_VERSION, TagType.STRING)
+              .setVStr(span.getInstrumentationScopeInfo().getVersion()));
+      // Include instrumentation library name for backwards compatibility
       tags.add(
           new Tag(KEY_INSTRUMENTATION_LIBRARY_VERSION, TagType.STRING)
-              .setVStr(span.getInstrumentationLibraryInfo().getVersion()));
+              .setVStr(span.getInstrumentationScopeInfo().getVersion()));
     }
 
     if (span.getStatus().getStatusCode() == StatusCode.ERROR) {

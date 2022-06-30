@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -23,8 +23,8 @@ public interface LogData {
   /** Returns the resource of this log. */
   Resource getResource();
 
-  /** Returns the instrumentation library that generated this log. */
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  /** Returns the instrumentation scope that generated this log. */
+  InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /** Returns the epoch timestamp in nanos when the log was recorded. */
   long getEpochNanos();
@@ -38,10 +38,6 @@ public interface LogData {
   /** Returns the severity text for this log, or null if unset. */
   @Nullable
   String getSeverityText();
-
-  /** Returns the name for this log, or null if unset. */
-  @Nullable
-  String getName();
 
   /** Returns the body for this log, or {@link Body#empty()} if unset. */
   Body getBody();

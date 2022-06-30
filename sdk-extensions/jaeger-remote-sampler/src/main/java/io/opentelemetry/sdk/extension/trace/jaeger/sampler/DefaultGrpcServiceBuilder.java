@@ -18,7 +18,6 @@ import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
@@ -41,9 +40,10 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
 
-  /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   // Visible for testing
   DefaultGrpcServiceBuilder(
       String type,
@@ -106,6 +106,13 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   }
 
   @Override
+  public GrpcServiceBuilder<ReqT, ResT> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    this.privateKeyPem = privateKeyPem;
+    this.certificatePem = certificatePem;
+    return this;
+  }
+
+  @Override
   public DefaultGrpcServiceBuilder<ReqT, ResT> addHeader(String key, String value) {
     requireNonNull(key, "key");
     requireNonNull(value, "value");
@@ -142,8 +149,8 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
 
       if (trustedCertificatesPem != null) {
         try {
-          ManagedChannelUtil.setTrustedCertificatesPem(
-              managedChannelBuilder, trustedCertificatesPem);
+          ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
+              managedChannelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
         } catch (SSLException e) {
           throw new IllegalStateException(
               "Could not set trusted certificates for gRPC TLS connection, are they valid "

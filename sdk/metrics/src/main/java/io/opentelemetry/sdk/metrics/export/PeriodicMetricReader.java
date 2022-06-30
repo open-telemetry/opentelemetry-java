@@ -6,7 +6,14 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -16,28 +23,32 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
- * Wraps a {@link MetricExporter} and automatically reads and exports the metrics every export
- * interval. Metrics may also be dropped when it becomes time to export again, and there is an
- * export in progress.
+ * A {@link MetricReader} which wraps a {@link MetricExporter} and automatically reads and exports
+ * the metrics every export interval.
+ *
+ * <p>Register with {@link SdkMeterProvider} via {@link
+ * SdkMeterProviderBuilder#registerMetricReader(MetricReader)}.
+ *
+ * @since 1.14.0
  */
 public final class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
-  private final MetricProducer producer;
   private final MetricExporter exporter;
+  private final long intervalNanos;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
 
+  private volatile MetricProducer metricProducer = MetricProducer.noop();
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Returns a new {@link MetricReaderFactory} which can be registered to a {@link
-   * io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link PeriodicMetricReader}
-   * exporting once every minute on a new daemon thread.
+   * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
+   * minute.
    */
-  public static MetricReaderFactory newMetricReaderFactory(MetricExporter exporter) {
-    return builder(exporter).newMetricReaderFactory();
+  public static PeriodicMetricReader create(MetricExporter exporter) {
+    return builder(exporter).build();
   }
 
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */
@@ -46,21 +57,25 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   PeriodicMetricReader(
-      MetricProducer producer, MetricExporter exporter, ScheduledExecutorService scheduler) {
-    this.producer = producer;
+      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
     this.exporter = exporter;
+    this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
   }
 
   @Override
-  @Nullable
-  public AggregationTemporality getPreferredTemporality() {
-    return exporter.getPreferredTemporality();
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return exporter.getAggregationTemporality(instrumentType);
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return exporter.getDefaultAggregation(instrumentType);
+  }
+
+  @Override
+  public CompletableResultCode forceFlush() {
     return scheduled.doRun();
   }
 
@@ -95,7 +110,23 @@ public final class PeriodicMetricReader implements MetricReader {
     return result;
   }
 
-  void start(long intervalNanos) {
+  @Override
+  public void register(CollectionRegistration registration) {
+    this.metricProducer = MetricProducer.asMetricProducer(registration);
+    start();
+  }
+
+  @Override
+  public String toString() {
+    return "PeriodicMetricReader{"
+        + "exporter="
+        + exporter
+        + ", intervalNanos="
+        + intervalNanos
+        + '}';
+  }
+
+  void start() {
     synchronized (lock) {
       if (scheduledFuture != null) {
         return;
@@ -122,15 +153,22 @@ public final class PeriodicMetricReader implements MetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          CompletableResultCode result = exporter.export(producer.collectAllMetrics());
-          result.whenComplete(
-              () -> {
-                if (!result.isSuccess()) {
-                  logger.log(Level.FINE, "Exporter failed");
-                }
-                flushResult.succeed();
-                exportAvailable.set(true);
-              });
+          Collection<MetricData> metricData = metricProducer.collectAllMetrics();
+          if (metricData.isEmpty()) {
+            logger.log(Level.FINE, "No metric data to export - skipping export.");
+            flushResult.succeed();
+            exportAvailable.set(true);
+          } else {
+            CompletableResultCode result = exporter.export(metricData);
+            result.whenComplete(
+                () -> {
+                  if (!result.isSuccess()) {
+                    logger.log(Level.FINE, "Exporter failed");
+                  }
+                  flushResult.succeed();
+                  exportAvailable.set(true);
+                });
+          }
         } catch (Throwable t) {
           exportAvailable.set(true);
           logger.log(Level.WARNING, "Exporter threw an Exception", t);

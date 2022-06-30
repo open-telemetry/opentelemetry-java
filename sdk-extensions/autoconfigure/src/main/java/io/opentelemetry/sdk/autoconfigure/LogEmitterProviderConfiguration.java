@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.autoconfigure.LogExporterConfiguration.config
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.logs.LogLimits;
+import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
@@ -28,6 +30,9 @@ final class LogEmitterProviderConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
           logExporterCustomizer) {
+
+    logEmitterProviderBuilder.setLogLimits(() -> configureLogLimits(config));
+
     Map<String, LogExporter> exportersByName =
         configureLogExporters(config, meterProvider, logExporterCustomizer);
 
@@ -53,6 +58,23 @@ final class LogEmitterProviderConfiguration {
     }
 
     return logProcessors;
+  }
+
+  // Visible for testing
+  static LogLimits configureLogLimits(ConfigProperties config) {
+    LogLimitsBuilder builder = LogLimits.builder();
+
+    Integer maxAttrLength = config.getInt("otel.attribute.value.length.limit");
+    if (maxAttrLength != null) {
+      builder.setMaxAttributeValueLength(maxAttrLength);
+    }
+
+    Integer maxAttrs = config.getInt("otel.attribute.count.limit");
+    if (maxAttrs != null) {
+      builder.setMaxNumberOfAttributes(maxAttrs);
+    }
+
+    return builder.build();
   }
 
   private LogEmitterProviderConfiguration() {}

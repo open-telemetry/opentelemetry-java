@@ -10,35 +10,24 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A point in the "Metric stream" data model.
+ * A point in the metric data model.
  *
- * <p>This is distinguished from {@code Measurement} in that it may have aggregated data, and has
- * its type defined by the metric data model (no longer an instrument).
+ * <p>A point represents the aggregation of measurements recorded with a particular set of {@link
+ * Attributes} over some time interval.
+ *
+ * @since 1.14.0
  */
 @Immutable
 public interface PointData {
-  /**
-   * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when
-   * the metric was created or an aggregation was enabled.
-   *
-   * @return the start epoch timestamp in nanos.
-   */
+  /** Returns the start time of the aggregation in epoch nanos. */
   long getStartEpochNanos();
 
-  /**
-   * Returns the epoch timestamp in nanos when data were collected, usually it represents the moment
-   * when {@code Instrument.getData()} was called.
-   *
-   * @return the epoch timestamp in nanos.
-   */
+  /** Returns the end time of the aggregation in epoch nanos. */
   long getEpochNanos();
 
-  /**
-   * Returns the attributes associated with this {@code Point}.
-   *
-   * @return the attributes associated with this {@code Point}.
-   */
+  /** Returns the attributes of the aggregation. */
   Attributes getAttributes();
-  /** List of exemplars collected from measurements that were used to form the data point. */
-  List<ExemplarData> getExemplars();
+
+  /** List of exemplars collected from measurements aggregated into this point. */
+  List<? extends ExemplarData> getExemplars();
 }

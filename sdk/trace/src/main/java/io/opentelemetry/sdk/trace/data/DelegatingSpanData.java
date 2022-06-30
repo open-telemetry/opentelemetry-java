@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -66,8 +66,14 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  @Deprecated
+  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return delegate.getInstrumentationLibraryInfo();
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return delegate.getInstrumentationScopeInfo();
   }
 
   @Override
@@ -140,7 +146,7 @@ public abstract class DelegatingSpanData implements SpanData {
       return getSpanContext().equals(that.getSpanContext())
           && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
-          && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
+          && getInstrumentationScopeInfo().equals(that.getInstrumentationScopeInfo())
           && getName().equals(that.getName())
           && getKind().equals(that.getKind())
           && getStartEpochNanos() == that.getStartEpochNanos()
@@ -167,7 +173,7 @@ public abstract class DelegatingSpanData implements SpanData {
     code *= 1000003;
     code ^= getResource().hashCode();
     code *= 1000003;
-    code ^= getInstrumentationLibraryInfo().hashCode();
+    code ^= getInstrumentationScopeInfo().hashCode();
     code *= 1000003;
     code ^= getName().hashCode();
     code *= 1000003;
@@ -207,8 +213,8 @@ public abstract class DelegatingSpanData implements SpanData {
         + "resource="
         + getResource()
         + ", "
-        + "instrumentationLibraryInfo="
-        + getInstrumentationLibraryInfo()
+        + "instrumentationScopeInfo="
+        + getInstrumentationScopeInfo()
         + ", "
         + "name="
         + getName()

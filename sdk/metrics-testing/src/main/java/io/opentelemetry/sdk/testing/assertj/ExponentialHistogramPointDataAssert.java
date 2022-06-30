@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link ExponentialHistogramPointData}. */
@@ -23,8 +23,22 @@ public class ExponentialHistogramPointDataAssert
     return this;
   }
 
-  /** Ensures the {@code totalCount} field matches the expected value. */
-  public ExponentialHistogramPointDataAssert hasTotalCount(long expected) {
+  /** Ensures the {@code min} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasMin(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMin()).as("min").isEqualTo(expected);
+    return this;
+  }
+
+  /** Ensures the {@code min} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasMax(double expected) {
+    isNotNull();
+    Assertions.assertThat(actual.getMax()).as("max").isEqualTo(expected);
+    return this;
+  }
+
+  /** Ensures the {@code count} field matches the expected value. */
+  public ExponentialHistogramPointDataAssert hasCount(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getCount()).as("count").isEqualTo(expected);
     return this;

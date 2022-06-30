@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -30,7 +31,7 @@ import okio.GzipSink;
 import okio.Okio;
 
 /**
- * An exporter for http/protobuf using a signal-specific Marshaler.
+ * An exporter for http/protobuf or http/json using a signal-specific Marshaler.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -47,23 +48,26 @@ public final class OkHttpExporter<T extends Marshaler> {
   private final String endpoint;
   @Nullable private final Headers headers;
   private final boolean compressionEnabled;
+  private final Function<T, RequestBody> requestBodyCreator;
 
   private final ExporterMetrics exporterMetrics;
 
   OkHttpExporter(
+      String exporterName,
       String type,
       OkHttpClient client,
       MeterProvider meterProvider,
       String endpoint,
       @Nullable Headers headers,
-      boolean compressionEnabled) {
+      boolean compressionEnabled,
+      boolean exportAsJson) {
     this.type = type;
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
-
-    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(type, meterProvider);
+    this.requestBodyCreator = exportAsJson ? JsonRequestBody::new : ProtoRequestBody::new;
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf(exporterName, type, meterProvider);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -73,7 +77,7 @@ public final class OkHttpExporter<T extends Marshaler> {
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody = new ProtoRequestBody(exportRequest);
+    RequestBody requestBody = requestBodyCreator.apply(exportRequest);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));

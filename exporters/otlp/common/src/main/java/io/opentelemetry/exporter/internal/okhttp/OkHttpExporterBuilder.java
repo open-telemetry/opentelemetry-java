@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -30,18 +31,23 @@ import okhttp3.OkHttpClient;
 public final class OkHttpExporterBuilder<T extends Marshaler> {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
 
+  private final String exporterName;
   private final String type;
 
   private String endpoint;
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private boolean compressionEnabled = false;
+  private boolean exportAsJson = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
 
-  public OkHttpExporterBuilder(String type, String defaultEndpoint) {
+  public OkHttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
+    this.exporterName = exporterName;
     this.type = type;
 
     endpoint = defaultEndpoint;
@@ -82,6 +88,12 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public OkHttpExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    this.privateKeyPem = privateKeyPem;
+    this.certificatePem = certificatePem;
+    return this;
+  }
+
   public OkHttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
     return this;
@@ -89,6 +101,11 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
   public OkHttpExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
+    return this;
+  }
+
+  public OkHttpExporterBuilder<T> exportAsJson() {
+    this.exportAsJson = true;
     return this;
   }
 
@@ -101,7 +118,12 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     if (trustedCertificatesPem != null) {
       try {
         X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
-        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(trustManager), trustManager);
+        X509KeyManager keyManager = null;
+        if (privateKeyPem != null && certificatePem != null) {
+          keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
+        }
+        clientBuilder.sslSocketFactory(
+            TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
       } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificate for OTLP HTTP connection, are they valid X.509 in PEM format?",
@@ -116,6 +138,13 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     }
 
     return new OkHttpExporter<>(
-        type, clientBuilder.build(), meterProvider, endpoint, headers, compressionEnabled);
+        exporterName,
+        type,
+        clientBuilder.build(),
+        meterProvider,
+        endpoint,
+        headers,
+        compressionEnabled,
+        exportAsJson);
   }
 }

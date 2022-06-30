@@ -8,19 +8,24 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -28,6 +33,7 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,11 +43,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetrySdkTest {
 
+  @Mock private MetricExporter metricExporter;
   @Mock private SdkTracerProvider tracerProvider;
   @Mock private SdkMeterProvider meterProvider;
   @Mock private SdkLogEmitterProvider logEmitterProvider;
   @Mock private ContextPropagators propagators;
-  @Mock private Clock clock;
 
   @AfterEach
   void tearDown() {
@@ -49,7 +55,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testRegisterGlobal() {
+  void buildAndRegisterGlobal() {
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder().setPropagators(propagators).buildAndRegisterGlobal();
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(sdk);
@@ -67,7 +73,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void castingGlobalToSdkFails() {
+  void buildAndRegisterGlobal_castingGlobalToSdkFails() {
     OpenTelemetrySdk.builder().buildAndRegisterGlobal();
 
     assertThatThrownBy(
@@ -79,40 +85,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testShortcutVersions() {
-    assertThat(GlobalOpenTelemetry.getTracer("testTracer1"))
-        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
-    assertThat(GlobalOpenTelemetry.getTracer("testTracer2", "testVersion"))
-        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(
-            GlobalOpenTelemetry.tracerBuilder("testTracer2")
-                .setInstrumentationVersion("testVersion")
-                .setSchemaUrl("https://example.invalid")
-                .build())
-        .isSameAs(
-            GlobalOpenTelemetry.getTracerProvider()
-                .tracerBuilder("testTracer2")
-                .setInstrumentationVersion("testVersion")
-                .setSchemaUrl("https://example.invalid")
-                .build());
-
-    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
-        .isSameAs(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
-    assertThat(
-            GlobalOpenTelemetry.meterBuilder("testMeter2")
-                .setInstrumentationVersion("testVersion")
-                .setSchemaUrl("https://example.invalid")
-                .build())
-        .isSameAs(
-            GlobalOpenTelemetry.getMeterProvider()
-                .meterBuilder("testMeter2")
-                .setInstrumentationVersion("testVersion")
-                .setSchemaUrl("https://example.invalid")
-                .build());
-  }
-
-  @Test
-  void testBuilderDefaults() {
+  void builderDefaults() {
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider())
         .isInstanceOfSatisfying(
@@ -129,7 +102,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void building() {
+  void builder() {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
@@ -151,54 +124,40 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testConfiguration_tracerSettings() {
-    Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
-    IdGenerator idGenerator = mock(IdGenerator.class);
-    SpanLimits spanLimits = SpanLimits.getDefault();
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .setClock(clock)
-                    .setResource(resource)
-                    .setIdGenerator(idGenerator)
-                    .setSpanLimits(spanLimits)
-                    .build())
-            .build();
-    TracerProvider unobfuscatedTracerProvider =
-        ((OpenTelemetrySdk.ObfuscatedTracerProvider) openTelemetry.getTracerProvider())
-            .unobfuscate();
-
-    assertThat(unobfuscatedTracerProvider)
-        .isInstanceOfSatisfying(
-            SdkTracerProvider.class,
-            sdkTracerProvider ->
-                assertThat(sdkTracerProvider.getSpanLimits()).isEqualTo(spanLimits));
-    // Since TracerProvider is in a different package, the only alternative to this reflective
-    // approach would be to make the fields public for testing which is worse than this.
-    assertThat(unobfuscatedTracerProvider)
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("clock", clock)
-        .hasFieldOrPropertyWithValue("resource", resource)
-        .hasFieldOrPropertyWithValue("idGenerator", idGenerator);
+  void getTracer() {
+    assertThat(GlobalOpenTelemetry.getTracer("testTracer1"))
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
+    assertThat(GlobalOpenTelemetry.getTracer("testTracer2", "testVersion"))
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(
+            GlobalOpenTelemetry.tracerBuilder("testTracer2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build())
+        .isSameAs(
+            GlobalOpenTelemetry.getTracerProvider()
+                .tracerBuilder("testTracer2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build());
   }
 
   @Test
-  void testTracerBuilder() {
+  void tracerBuilder() {
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
-  void testTracerBuilderViaProvider() {
+  void tracerBuilder_ViaProvider() {
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
-  void testTracerProviderAccess() {
+  void getTracerProvider() {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
     assertThat(openTelemetry.getTracerProvider())
@@ -210,7 +169,52 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testMeterProviderAccess() {
+  void getMeter() {
+    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
+        .isSameAs(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
+    assertThat(
+            GlobalOpenTelemetry.meterBuilder("testMeter2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build())
+        .isSameAs(
+            GlobalOpenTelemetry.getMeterProvider()
+                .meterBuilder("testMeter2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build());
+  }
+
+  @Test
+  void meterBuilder() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                    .build())
+            .build();
+    assertThat(openTelemetry.meterBuilder("instr"))
+        .isNotSameAs(OpenTelemetry.noop().meterBuilder("instr"));
+  }
+
+  @Test
+  void meterBuilder_ViaProvider() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                    .build())
+            .build();
+    assertThat(openTelemetry.getMeterProvider().meterBuilder("instr"))
+        .isNotSameAs(OpenTelemetry.noop().meterBuilder("instr"));
+  }
+
+  @Test
+  void getMeterProvider() {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
     assertThat(openTelemetry.getMeterProvider())
@@ -225,22 +229,36 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    SpanLimits newConfig = SpanLimits.builder().setMaxNumberOfAttributes(512).build();
-
-    OpenTelemetrySdkBuilder sdkBuilder =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .setSampler(mock(Sampler.class))
-                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                    .setClock(mock(Clock.class))
-                    .setIdGenerator(mock(IdGenerator.class))
-                    .setResource(Resource.empty())
-                    .setSpanLimits(newConfig)
-                    .build());
-
-    sdkBuilder.build();
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
+    OpenTelemetrySdk.builder()
+        .setMeterProvider(
+            SdkMeterProvider.builder()
+                .setResource(Resource.empty())
+                .setClock(mock(Clock.class))
+                .registerMetricReader(
+                    PeriodicMetricReader.builder(metricExporter)
+                        .setInterval(Duration.ofSeconds(10))
+                        .build())
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                .registerView(
+                    InstrumentSelector.builder().setName("name").build(),
+                    View.builder().setName("new-name").build())
+                .registerView(
+                    InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+                    View.builder().setAttributeFilter(key -> key.equals("foo")).build())
+                .build())
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .setSampler(mock(Sampler.class))
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                .setClock(mock(Clock.class))
+                .setIdGenerator(mock(IdGenerator.class))
+                .setResource(Resource.empty())
+                .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(512).build())
+                .build())
+        .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
+        .build();
   }
 
   // This is just a demonstration of the bare minimal required configuration in order to get useful
@@ -248,7 +266,12 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void trivialOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
+        .setMeterProvider(
+            SdkMeterProvider.builder()
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                .build())
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
@@ -261,7 +284,12 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void minimalOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
+        .setMeterProvider(
+            SdkMeterProvider.builder()
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                .build())
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
@@ -271,6 +299,13 @@ class OpenTelemetrySdkTest {
         .build();
 
     OpenTelemetrySdk.builder()
+        .setMeterProvider(
+            SdkMeterProvider.builder()
+                .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                .registerView(
+                    InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+                    View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build())
+                .build())
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
@@ -283,8 +318,10 @@ class OpenTelemetrySdkTest {
 
   @Test
   void stringRepresentation() {
-    SpanExporter exporter = mock(SpanExporter.class);
-    when(exporter.toString()).thenReturn("MockSpanExporter{}");
+    SpanExporter spanExporter = mock(SpanExporter.class);
+    when(spanExporter.toString()).thenReturn("MockSpanExporter{}");
+    when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
+    when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     Resource resource =
         Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
     OpenTelemetrySdk sdk =
@@ -293,7 +330,16 @@ class OpenTelemetrySdkTest {
                 SdkTracerProvider.builder()
                     .setResource(resource)
                     .addSpanProcessor(
-                        SimpleSpanProcessor.create(SpanExporter.composite(exporter, exporter)))
+                        SimpleSpanProcessor.create(
+                            SpanExporter.composite(spanExporter, spanExporter)))
+                    .build())
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .setResource(resource)
+                    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+                    .registerView(
+                        InstrumentSelector.builder().setName("instrument").build(),
+                        View.builder().setName("new-instrument").build())
                     .build())
             .build();
 
@@ -306,6 +352,14 @@ class OpenTelemetrySdkTest {
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
                 + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
                 + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
-                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}}}");
+                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}}"
+                + "}, "
+                + "meterProvider=SdkMeterProvider{"
+                + "clock=SystemClock{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
+                + "metricReaders=[PeriodicMetricReader{exporter=MockMetricExporter{}, intervalNanos=60000000000}], "
+                + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentName=instrument}, view=View{name=new-instrument, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}}]"
+                + "}"
+                + "}");
   }
 }
