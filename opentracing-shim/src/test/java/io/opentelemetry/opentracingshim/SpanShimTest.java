@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,30 +93,15 @@ class SpanShimTest {
   void baggage_multipleThreads() throws Exception {
     ExecutorService executor = Executors.newCachedThreadPool();
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    int baggageItemsCount = 100;
 
-    for (int i = 1; i <= 30; i++) {
-      executor.submit(new SmallTask(spanShim, i));
-    }
+    IntStream.range(0, baggageItemsCount)
+        .forEach(i -> executor.execute(() -> spanShim.setBaggageItem("key-" + i, "value-" + i)));
     executor.shutdown();
     executor.awaitTermination(5, TimeUnit.SECONDS);
 
-    for (int i = 1; i <= 30; i++) {
+    for (int i = 0; i < baggageItemsCount; i++) {
       assertThat(spanShim.getBaggageItem("key-" + i)).isEqualTo("value-" + i);
-    }
-  }
-
-  static class SmallTask implements Runnable {
-    SpanShim spanShim;
-    int number;
-
-    public SmallTask(SpanShim spanShim, int number) {
-      this.spanShim = spanShim;
-      this.number = number;
-    }
-
-    @Override
-    public void run() {
-      spanShim.setBaggageItem("key-" + number, "value-" + number);
     }
   }
 
