@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.internal;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Consumer;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 
@@ -39,6 +40,23 @@ public final class JcTools {
       return ((MessagePassingQueue<?>) queue).capacity();
     } else {
       return (long) ((ArrayBlockingQueue<?>) queue).remainingCapacity() + queue.size();
+    }
+  }
+
+  /**
+   * Remove up to <i>maxExportBatchSize</i> elements from the {@link Queue} and hand to consume.
+   *
+   * @throws IllegalArgumentException c is {@code null}
+   * @throws IllegalArgumentException if limit is negative
+   */
+  public static void drain(Queue<?> queue, int maxExportBatchSize, Consumer<?> consumer) {
+    if (queue instanceof MessagePassingQueue) {
+      ((MessagePassingQueue<?>) queue).drain((MessagePassingQueue.Consumer) consumer, maxExportBatchSize);
+    } else {
+      int polledCount = 0;
+      while (polledCount++ < maxExportBatchSize && (queue.peek()) != null) {
+        consumer.accept(queue.poll());
+      }
     }
   }
 

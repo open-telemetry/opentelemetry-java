@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.internal.JcTools;
-import org.jctools.queues.MessagePassingQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
@@ -29,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -238,13 +238,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        if (queue instanceof MessagePassingQueue) {
-            ((MessagePassingQueue<ReadableSpan>) queue).drain(span -> batch.add(span.toSpanData()), maxExportBatchSize);
-        } else {
-            while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-                batch.add(queue.poll().toSpanData());
-            }
-        }
+
+        JcTools.drain(queue, maxExportBatchSize, (ReadableSpan span) -> batch.add(span.toSpanData()));
+
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
           updateNextExportTime();
