@@ -237,6 +237,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
+        ReadableSpan span;
         while (batch.size() < maxExportBatchSize && (span = queue.poll()) != null) {
           batch.add(span.toSpanData());
         }
