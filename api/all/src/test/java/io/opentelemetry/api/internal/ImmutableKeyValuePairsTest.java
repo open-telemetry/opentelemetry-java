@@ -29,6 +29,9 @@ class ImmutableKeyValuePairsTest {
     assertThat(
             new TestPairs(new Object[] {"one", 55, "two", "b", "one", null, "one", 66}).get("one"))
         .isEqualTo(66);
+    assertThat(
+            new TestPairs(new Object[] {"one", 55, "two", 66, "two", null, "two", 77}).get("two"))
+        .isEqualTo(77);
   }
 
   @Test
@@ -36,6 +39,14 @@ class ImmutableKeyValuePairsTest {
     assertThat(new TestPairs(new Object[0]).size()).isEqualTo(0);
     assertThat(new TestPairs(new Object[] {"one", 55}).size()).isEqualTo(1);
     assertThat(new TestPairs(new Object[] {"one", 55, "two", "b"}).size()).isEqualTo(2);
+    assertThat(new TestPairs(new Object[] {"one", 55, "one", null, "one", 66}).size()).isEqualTo(1);
+    assertThat(new TestPairs(new Object[] {"one", 55, "one", null, "one", 66, "one", null}).size())
+        .isEqualTo(0);
+    assertThat(new TestPairs(new Object[] {"one", 55, "two", "b", "one", null, "one", 66}).size())
+        .isEqualTo(2);
+    assertThat(new TestPairs(new Object[] {"one", 55, "two", 66, "two", null}).size()).isEqualTo(1);
+    assertThat(new TestPairs(new Object[] {"one", 55, "two", 66, "two", null, "two", 77}).size())
+        .isEqualTo(2);
   }
 
   @Test

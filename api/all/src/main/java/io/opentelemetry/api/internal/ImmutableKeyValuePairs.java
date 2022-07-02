@@ -205,14 +205,18 @@ public abstract class ImmutableKeyValuePairs<K, V> {
         continue;
       }
       // If the previously added key is equal with the current key, we overwrite what we have.
-      if (previousKey != null
-          && keyComparator.compare((K) key, (K) previousKey) == 0
-          && size >= 2) {
+      if (previousKey != null && keyComparator.compare((K) key, (K) previousKey) == 0) {
         size -= 2;
       }
       // Skip entries with null value, we do it here because we want them to overwrite and remove
       // entries with same key that we already added.
       if (value == null) {
+        // When the value is null, there are two cases:
+        // 1. next key is the same as the current one, it may cause ArrayIndexOutOfBoundsException,
+        // so we reset the previews key to null to avoid this
+        // 2. next key is different as the current one, previews key is null or not will cause no
+        // different
+        previousKey = null;
         continue;
       }
       previousKey = key;
