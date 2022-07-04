@@ -50,19 +50,18 @@ public final class JcTools {
    * @throws IllegalArgumentException if maxExportBatchSize is negative
    */
   @SuppressWarnings("unchecked")
-  public static <SpanT> void drain(
-      Queue<SpanT> queue, int maxExportBatchSize, Consumer<SpanT> consumer) {
+  public static <T> void drain(Queue<T> queue, int maxExportBatchSize, Consumer<T> consumer) {
     if (queue instanceof MessagePassingQueue) {
-      ((MessagePassingQueue<SpanT>) queue).drain(consumer::accept, maxExportBatchSize);
+      ((MessagePassingQueue<T>) queue).drain(consumer::accept, maxExportBatchSize);
     } else {
       drainNonJcQueue(queue, maxExportBatchSize, consumer);
     }
   }
 
-  private static <SpanT> void drainNonJcQueue(
-      Queue<SpanT> queue, int maxExportBatchSize, Consumer<SpanT> consumer) {
+  private static <T> void drainNonJcQueue(
+      Queue<T> queue, int maxExportBatchSize, Consumer<T> consumer) {
     int polledCount = 0;
-    SpanT span;
+    T span;
     while (polledCount++ < maxExportBatchSize && (span = queue.poll()) != null) {
       consumer.accept(span);
     }
