@@ -213,7 +213,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       if (value == null) {
         // When the value is null, there are two cases:
         // 1. next key is the same as the current one, it may cause ArrayIndexOutOfBoundsException,
-        // so we reset the previews key to null to avoid this
+        // so we reset the previous key to null to avoid this
         // 2. next key is different as the current one, previews key is null or not will cause no
         // different
         previousKey = null;
