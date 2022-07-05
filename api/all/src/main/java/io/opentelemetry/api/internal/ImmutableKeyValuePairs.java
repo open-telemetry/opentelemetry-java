@@ -214,8 +214,8 @@ public abstract class ImmutableKeyValuePairs<K, V> {
         // When the value is null, there are two cases:
         // 1. next key is the same as the current one, it may cause ArrayIndexOutOfBoundsException,
         // so we reset the previous key to null to avoid this
-        // 2. next key is different than the current one; In this case, whether the previous key is null or not will 
-        // have no impact.
+        // 2. next key is different than the current one; In this case, whether the previous key is
+        // null or not will have no impact.
         previousKey = null;
         continue;
       }
