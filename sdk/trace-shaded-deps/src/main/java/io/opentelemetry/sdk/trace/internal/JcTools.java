@@ -44,17 +44,17 @@ public final class JcTools {
   }
 
   /**
-   * Remove up to <i>maxExportBatchSize</i> elements from the {@link Queue} and hand to consume.
+   * Remove up to <i>limit</i> elements from the {@link Queue} and hand to consume.
    *
    * @throws IllegalArgumentException consumer is {@code null}
    * @throws IllegalArgumentException if maxExportBatchSize is negative
    */
   @SuppressWarnings("unchecked")
-  public static <T> void drain(Queue<T> queue, int maxExportBatchSize, Consumer<T> consumer) {
+  public static <T> void drain(Queue<T> queue, int limit, Consumer<T> consumer) {
     if (queue instanceof MessagePassingQueue) {
-      ((MessagePassingQueue<T>) queue).drain(consumer::accept, maxExportBatchSize);
+      ((MessagePassingQueue<T>) queue).drain(consumer::accept, limit);
     } else {
-      drainNonJcQueue(queue, maxExportBatchSize, consumer);
+      drainNonJcQueue(queue, limit, consumer);
     }
   }
 

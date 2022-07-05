@@ -24,7 +24,7 @@ class JcToolsTest {
   ArrayList<String> batch = new ArrayList<>(10);
 
   @Test
-  void drainArrayBlockingQueue() {
+  void drain_ArrayBlockingQueue() {
     // Arrange
     batch.add("Test3");
     Queue<String> queue = new ArrayBlockingQueue<>(10);
@@ -40,7 +40,7 @@ class JcToolsTest {
   }
 
   @Test
-  void drainMessagePassingQueue() {
+  void drain_MessagePassingQueue() {
     // Arrange
     batch.add("Test3");
     Queue<String> queue = new MpscArrayQueue<>(10);
@@ -56,7 +56,7 @@ class JcToolsTest {
   }
 
   @Test
-  void drainMaxBatch() {
+  void drain_MaxBatch() {
     // Arrange
     Queue<String> queue = new MpscArrayQueue<>(10);
     queue.add("Test1");
@@ -71,7 +71,7 @@ class JcToolsTest {
   }
 
   @Test
-  void newFixedSizeMpscQueue() {
+  void newFixedSize_MpscQueue() {
     // Arrange
     int capacity = 10;
 
@@ -83,7 +83,7 @@ class JcToolsTest {
   }
 
   @Test
-  void getCapacityMpscQueue() {
+  void capacity_MpscQueue() {
     // Arrange
     int capacity = 10;
     Queue<Object> queue = JcTools.newFixedSizeQueue(capacity);
@@ -96,7 +96,7 @@ class JcToolsTest {
   }
 
   @Test
-  void getCapacityArrayBlockingQueue() {
+  void capacity_ArrayBlockingQueue() {
     // Arrange
     Queue<String> queue = new ArrayBlockingQueue<>(10);
 
