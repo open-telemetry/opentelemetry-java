@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,9 @@ public final class OtlpHttpMetricExporterBuilder {
   private final OkHttpExporterBuilder<MetricsRequestMarshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
+
+  private DefaultAggregationSelector defaultAggregationSelector =
+      DefaultAggregationSelector.getDefault();
 
   OtlpHttpMetricExporterBuilder() {
     delegate = new OkHttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
@@ -120,6 +124,21 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /**
+   * Set the {@link DefaultAggregationSelector} used for {@link
+   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
+   *
+   * @since 1.16.0
+   */
+  public OtlpHttpMetricExporterBuilder setDefaultAggregationSelector(
+      DefaultAggregationSelector defaultAggregationSelector) {
+    requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
+    this.defaultAggregationSelector = defaultAggregationSelector;
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;
@@ -131,6 +150,7 @@ public final class OtlpHttpMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpMetricExporter build() {
-    return new OtlpHttpMetricExporter(delegate.build(), aggregationTemporalitySelector);
+    return new OtlpHttpMetricExporter(
+        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

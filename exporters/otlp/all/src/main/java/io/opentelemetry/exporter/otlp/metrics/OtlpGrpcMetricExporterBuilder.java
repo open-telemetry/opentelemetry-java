@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
@@ -42,6 +43,9 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
+
+  private DefaultAggregationSelector defaultAggregationSelector =
+      DefaultAggregationSelector.getDefault();
 
   OtlpGrpcMetricExporterBuilder() {
     delegate =
@@ -162,11 +166,27 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Set the {@link DefaultAggregationSelector} used for {@link
+   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
+   *
+   * @since 1.16.0
+   */
+  public OtlpGrpcMetricExporterBuilder setDefaultAggregationSelector(
+      DefaultAggregationSelector defaultAggregationSelector) {
+    requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
+    this.defaultAggregationSelector = defaultAggregationSelector;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpGrpcMetricExporter build() {
-    return new OtlpGrpcMetricExporter(delegate.build(), aggregationTemporalitySelector);
+    return new OtlpGrpcMetricExporter(
+        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

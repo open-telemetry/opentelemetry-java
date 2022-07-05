@@ -8,10 +8,12 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
@@ -26,12 +28,15 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private final OkHttpExporter<MetricsRequestMarshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
+  private final DefaultAggregationSelector defaultAggregationSelector;
 
   OtlpHttpMetricExporter(
       OkHttpExporter<MetricsRequestMarshaler> delegate,
-      AggregationTemporalitySelector aggregationTemporalitySelector) {
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector) {
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
   }
 
   /**
@@ -55,6 +60,11 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
   /**
