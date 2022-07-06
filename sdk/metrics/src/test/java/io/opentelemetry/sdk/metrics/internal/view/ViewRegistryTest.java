@@ -222,7 +222,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     logs.assertContains(
-        "Instrument default aggregation exponential_histogram is incompatible with instrument default of type OBSERVABLE_GAUGE");
+        "Instrument default aggregation exponential_bucket_histogram is incompatible with instrument default of type OBSERVABLE_GAUGE");
   }
 
   @Test
