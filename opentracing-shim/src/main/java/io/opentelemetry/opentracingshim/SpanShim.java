@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -28,14 +29,9 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /*
- * SpanContextShim is not directly stored in the SpanShim,
- * as its changes need to be visible in all threads at *any* moment.
- * By default, the related SpanContextShim will not be created
- * in order to avoid overhead (which would require taking a write lock
- * at creation time).
- *
- * Calling context() or setBaggageItem() will effectively force the creation
- * of SpanContextShim object if none existed yet.
+ * SpanContextShim is directly stored in the SpanShim for simplicity
+ * and performance reasons, as opposed to keeping a global map
+ * link OTel's Span and OT Span/SpanContext.
  */
 final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeyed {
   private static final String DEFAULT_EVENT_NAME = "log";
@@ -44,10 +40,19 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       ContextKey.named("opentracing-shim-key");
 
   private final io.opentelemetry.api.trace.Span span;
+  private final Object spanContextShimLock;
+  private volatile SpanContextShim spanContextShim;
 
   public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span) {
+    this(telemetryInfo, span, Baggage.empty());
+  }
+
+  public SpanShim(
+      TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span, Baggage baggage) {
     super(telemetryInfo);
     this.span = span;
+    this.spanContextShimLock = new Object();
+    this.spanContextShim = new SpanContextShim(telemetryInfo, span.getSpanContext(), baggage);
   }
 
   io.opentelemetry.api.trace.Span getSpan() {
@@ -61,29 +66,14 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
 
   @Override
   public Context storeInContext(Context context) {
-    context = context.with(SPAN_SHIM_KEY, this).with(span);
-
-    SpanContextShim spanContextShim = spanContextTable().get(this);
-    if (spanContextShim != null) {
-      context = context.with(spanContextShim.getBaggage());
-    }
+    context = context.with(SPAN_SHIM_KEY, this).with(span).with(spanContextShim.getBaggage());
 
     return context;
   }
 
   @Override
   public SpanContext context() {
-    /* Read the value using the read lock first. */
-    SpanContextShim contextShim = spanContextTable().get(this);
-
-    /* Switch to the write lock *only* for the relatively exceptional case
-     * of no context being created.
-     * (as we cannot upgrade read->write lock sadly).*/
-    if (contextShim == null) {
-      contextShim = spanContextTable().create(this);
-    }
-
-    return contextShim;
+    return spanContextShim;
   }
 
   @Override
@@ -173,7 +163,9 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       return this;
     }
 
-    spanContextTable().setBaggageItem(this, key, value);
+    synchronized (spanContextShimLock) {
+      spanContextShim = spanContextShim.newWithKeyValue(key, value);
+    }
 
     return this;
   }
@@ -185,7 +177,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       return null;
     }
 
-    return spanContextTable().getBaggageItem(this, key);
+    return spanContextShim.getBaggageItem(key);
   }
 
   @Override

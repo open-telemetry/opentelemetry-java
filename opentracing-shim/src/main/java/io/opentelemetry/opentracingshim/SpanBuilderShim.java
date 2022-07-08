@@ -186,15 +186,14 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    Baggage baggage = null;
+    Baggage baggage = Baggage.empty();
     io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
       builder.setParent(Context.root().with(parentSpan.getSpan()));
-      SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      baggage = contextShim == null ? null : contextShim.getBaggage();
+      baggage = ((SpanContextShim) parentSpan.context()).getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
           Context.root()
@@ -228,12 +227,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setStatus(StatusCode.ERROR);
     }
 
-    SpanShim spanShim = new SpanShim(telemetryInfo(), span);
-
-    if (baggage != null && baggage != telemetryInfo().emptyBaggage()) {
-      spanContextTable().create(spanShim, baggage);
-    }
-
-    return spanShim;
+    return new SpanShim(telemetryInfo(), span, baggage);
   }
 }
