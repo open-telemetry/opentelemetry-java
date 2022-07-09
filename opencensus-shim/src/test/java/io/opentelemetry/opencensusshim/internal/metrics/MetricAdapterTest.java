@@ -194,9 +194,9 @@ class MetricAdapterTest {
 
   @Test
   void convertHistogram() {
-    Map<String, AttachmentValue> exemplarAttachements = new HashMap<>();
+    Map<String, AttachmentValue> exemplarAttachments = new HashMap<>();
     // TODO - Import opencensus util for a code-dependent test on common exemplar-trace usage.
-    exemplarAttachements.put(
+    exemplarAttachments.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
             "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
@@ -226,7 +226,7 @@ class MetricAdapterTest {
                                     Distribution.Bucket.create(
                                         6,
                                         Exemplar.create(
-                                            4.0, Timestamp.fromMillis(1), exemplarAttachements)),
+                                            4.0, Timestamp.fromMillis(1), exemplarAttachments)),
                                     Distribution.Bucket.create(2)))),
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
@@ -311,9 +311,9 @@ class MetricAdapterTest {
 
   @Test
   void convertGaugeHistogram() {
-    Map<String, AttachmentValue> exemplarAttachements = new HashMap<>();
+    Map<String, AttachmentValue> exemplarAttachments = new HashMap<>();
     // TODO - Import opencensus util for a code-dependent test on common exemplar-trace usage.
-    exemplarAttachements.put(
+    exemplarAttachments.put(
         "SpanContext",
         AttachmentValue.AttachmentValueString.create(
             "SpanContext{traceId=TraceId{traceId=00000000000000000000000000000001}, spanId=SpanId{spanId=0000000000000002}, others=stuff}"));
@@ -343,7 +343,7 @@ class MetricAdapterTest {
                                     Distribution.Bucket.create(
                                         6,
                                         Exemplar.create(
-                                            4.0, Timestamp.fromMillis(1), exemplarAttachements)),
+                                            4.0, Timestamp.fromMillis(1), exemplarAttachments)),
                                     Distribution.Bucket.create(2)))),
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
