@@ -298,7 +298,6 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
-- [Anuraag Agrawal](https://github.com/anuraaga), AWS
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Splunk
 
