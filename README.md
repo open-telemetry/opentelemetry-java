@@ -299,7 +299,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
 - [Jack Berg](https://github.com/jack-berg), New Relic
-- [John Watson](https://github.com/jkwatson), Splunk
+- [John Watson](https://github.com/jkwatson), Verta.ai
 
 Maintainers Emeritus:
 
