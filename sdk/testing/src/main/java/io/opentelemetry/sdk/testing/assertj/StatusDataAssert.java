@@ -13,7 +13,11 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for the {@link StatusData} of an exported {@link SpanData}. */
+/**
+ * Assertions for the {@link StatusData} of an exported {@link SpanData}.
+ *
+ * @since 1.16.0
+ */
 public final class StatusDataAssert extends AbstractAssert<StatusDataAssert, StatusData> {
 
   StatusDataAssert(@Nullable StatusData statusData) {
