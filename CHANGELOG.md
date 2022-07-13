@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.16.0 (2022-07-13)
+
 ### API
 
 * Fix bug `ImmutableKeyValuePairs` implementation that causes `ArrayIndexOutOfBoundsException` to be
