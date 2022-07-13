@@ -36,8 +36,13 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
-  static ConfigProperties get(Map<String, String> defaultProperties) {
+  static DefaultConfigProperties get(Map<String, String> defaultProperties) {
     return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
+  }
+
+  static DefaultConfigProperties customize(
+      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
+    return new DefaultConfigProperties(previousProperties, overrides);
   }
 
   // Visible for testing
@@ -55,6 +60,15 @@ final class DefaultConfigProperties implements ConfigProperties {
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
         (key, value) -> config.put(normalize(key.toString()), value.toString()));
+
+    this.config = config;
+  }
+
+  private DefaultConfigProperties(
+      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
+    // previousProperties are already normalized, they can be copied as they are
+    Map<String, String> config = new HashMap<>(previousProperties.config);
+    overrides.forEach((name, value) -> config.put(normalize(name), value));
 
     this.config = config;
   }
