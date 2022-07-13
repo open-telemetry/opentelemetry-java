@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashSet;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -39,7 +38,7 @@ final class ResourceConfiguration {
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
     for (ResourceProvider resourceProvider :
-        ServiceLoader.load(ResourceProvider.class, serviceClassLoader)) {
+        SpiUtil.loadOrdered(ResourceProvider.class, serviceClassLoader)) {
       if (!enabledProviders.isEmpty()
           && !enabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;
