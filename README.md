@@ -3,6 +3,14 @@
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
+## Project Status
+
+| Signal  | Status       | Project |
+| ------- | ------------ | ------- |
+| Traces  | Stable       | N/A     |
+| Metrics | Stable       | N/A     |
+| Logs    | Experimental | N/A     |
+
 ## Getting Started
 
 If you are looking for an all-in-one, easy-to-install **auto-instrumentation
