@@ -5,7 +5,7 @@
 
 ## Project Status
 
-Please refer to [OpenTelemetry Instrumentation for Java][otel-instrumentation-java].
+See [OpenTelemetry Instrumentation for Java][otel-instrumentation-java].
 
 ## Getting Started
 
@@ -330,4 +330,4 @@ Made with [contrib.rocks](https://contrib.rocks).
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
 [opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
 [opentelemetry.io]: https://opentelemetry.io
-[otel-instrumentation-java]: https://opentelemetry.io/docs/instrumentation/java/
+[otel-instrumentation-java]: https://opentelemetry.io/docs/instrumentation/java/#status-and-releases
