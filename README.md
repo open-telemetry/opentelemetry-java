@@ -3,6 +3,10 @@
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
+## Project Status
+
+Please refer to [OpenTelemetry Instrumentation for Java][otel-instrumentation-java].
+
 ## Getting Started
 
 If you are looking for an all-in-one, easy-to-install **auto-instrumentation
@@ -326,3 +330,4 @@ Made with [contrib.rocks](https://contrib.rocks).
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
 [opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
 [opentelemetry.io]: https://opentelemetry.io
+[otel-instrumentation-java]: https://opentelemetry.io/docs/instrumentation/java/
