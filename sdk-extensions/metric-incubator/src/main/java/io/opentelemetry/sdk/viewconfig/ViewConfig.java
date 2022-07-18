@@ -186,7 +186,6 @@ public final class ViewConfig {
   }
 
   // Visible for testing
-  @SuppressWarnings("unchecked")
   static Aggregation toAggregation(String aggregationName, Map<String, Object> aggregationArgs) {
     Aggregation aggregation;
     try {
@@ -195,22 +194,7 @@ public final class ViewConfig {
       throw new ConfigurationException("Error creating aggregation", e);
     }
     if (Aggregation.explicitBucketHistogram().equals(aggregation)) {
-      List<Double> bucketBoundaries =
-          Optional.ofNullable(
-                  ((List<Object>) getAsType(aggregationArgs, "bucket_boundaries", List.class)))
-              .map(
-                  objects ->
-                      objects.stream()
-                          .map(
-                              object1 -> {
-                                if (!(object1 instanceof Number)) {
-                                  throw new ConfigurationException(
-                                      "bucket_boundaries must be an array of numbers");
-                                }
-                                return ((Number) object1).doubleValue();
-                              })
-                          .collect(toList()))
-              .orElse(null);
+      List<Double> bucketBoundaries = getBucketBoundaries(aggregationArgs);
       if (bucketBoundaries != null) {
         return Aggregation.explicitBucketHistogram(bucketBoundaries);
       }
@@ -227,6 +211,25 @@ public final class ViewConfig {
       }
     }
     return aggregation;
+  }
+
+  @Nullable
+  @SuppressWarnings("unchecked")
+  private static List<Double> getBucketBoundaries(Map<String, Object> aggregationArgs) {
+    List<Object> boundaryObjects =
+        ((List<Object>) getAsType(aggregationArgs, "bucket_boundaries", List.class));
+    if (boundaryObjects == null) {
+      return null;
+    }
+    return boundaryObjects.stream()
+        .map(
+            o -> {
+              if (!(o instanceof Number)) {
+                throw new ConfigurationException("bucket_boundaries must be an array of numbers");
+              }
+              return ((Number) o).doubleValue();
+            })
+        .collect(toList());
   }
 
   // Visible for testing
