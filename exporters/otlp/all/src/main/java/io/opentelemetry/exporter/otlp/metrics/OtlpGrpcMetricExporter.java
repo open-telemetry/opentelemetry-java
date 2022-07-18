@@ -8,10 +8,12 @@ package io.opentelemetry.exporter.otlp.metrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
@@ -26,6 +28,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final GrpcExporter<MetricsRequestMarshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
+  private final DefaultAggregationSelector defaultAggregationSelector;
 
   /**
    * Returns a new {@link OtlpGrpcMetricExporter} reading the configuration values from the
@@ -49,14 +52,21 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   OtlpGrpcMetricExporter(
       GrpcExporter<MetricsRequestMarshaler> delegate,
-      AggregationTemporalitySelector aggregationTemporalitySelector) {
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector) {
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
   }
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
   /**

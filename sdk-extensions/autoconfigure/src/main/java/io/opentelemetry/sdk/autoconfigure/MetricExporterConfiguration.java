@@ -106,6 +106,8 @@ final class MetricExporterConfiguration {
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
+      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+          config, builder::setDefaultAggregationSelector);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -127,6 +129,8 @@ final class MetricExporterConfiguration {
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
       OtlpConfigUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
+      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+          config, builder::setDefaultAggregationSelector);
 
       return builder.build();
     } else {

@@ -1,0 +1,11 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasStatusSatisfying(java.util.function.Consumer)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasCode(io.opentelemetry.api.trace.StatusCode)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert hasDescriptionMatching(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert isError()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.StatusDataAssert isOk()

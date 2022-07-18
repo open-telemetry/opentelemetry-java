@@ -1,6 +1,54 @@
 # Changelog
 
-## Version 1.15.0 (Unreleased)
+## Unreleased
+
+## Version 1.16.0 (2022-07-13)
+
+### API
+
+* Fix bug `ImmutableKeyValuePairs` implementation that causes `ArrayIndexOutOfBoundsException` to be
+  thrown under certain conditions.
+
+### SDK
+
+#### Traces
+
+* Optimize `BatchSpanProcessor` using JcTools.
+
+#### Metrics
+
+* Tighten up exponential histogram implementation for alignment with specification: Default to 160
+  positive and negative buckets. Remove ability to configure starting scale. Minimum number of
+  buckets is one instead of zero.
+* Allow `MetricExporter` and `MetricReader` to influence default aggregation. The default
+  aggregation is used when no registered views match an instrument.
+
+#### Exporter
+
+* Fix handling of client keys in PEM format.
+* For OTLP exporters, change behavior to use `OkHttpGrpcExporter` (OkHttp implementation that
+  doesn't use any gRPC dependencies) unless `OtlpGrpc{Signal}Builder#setChannel(ManagedChannel)` is
+  called by user. Previously, `OkHttpGrpcExporter` was used if no gRPC implementation was found on
+  classpath.
+* Add support to configure default aggregation on OTLP metric exporters
+  via `Otlp{Protocol}MetricExporterBuilder#setDefaultAggregationSelector(DefaultAggregationSelector)`.
+
+#### Testing
+
+* Add span status assertions.
+
+#### SDK Extensions
+
+* Autoconfigure properly handles non-string system properties.
+* Autoconfigure normalizes hyphens `-` to periods `.` when accessing `ConfigProperties`.
+
+### OpenTracing Shim
+
+* Add support for span wrappers.
+* Store OpenTracing `SpanContext` in OpenTracing `Span` wrapper.
+* Use `Baggage` of active span.
+
+## Version 1.15.0 (2022-06-10)
 
 ### API
 

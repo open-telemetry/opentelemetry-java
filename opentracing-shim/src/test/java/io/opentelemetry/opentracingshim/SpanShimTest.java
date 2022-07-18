@@ -19,6 +19,10 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,19 +88,21 @@ class SpanShimTest {
     assertThat(contextShim2.baggageItems().iterator()).hasNext(); /* updated, with values */
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   @Test
-  void baggage_differentShimObjs() {
-    SpanShim spanShim1 = new SpanShim(telemetryInfo, span);
-    spanShim1.setBaggageItem("key1", "value1");
+  void baggage_multipleThreads() throws Exception {
+    ExecutorService executor = Executors.newCachedThreadPool();
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    int baggageItemsCount = 100;
 
-    /* Baggage should be synchronized among different SpanShim objects
-     * referring to the same Span.*/
-    SpanShim spanShim2 = new SpanShim(telemetryInfo, span);
-    spanShim2.setBaggageItem("key1", "value2");
-    assertThat(spanShim1.getBaggageItem("key1")).isEqualTo("value2");
-    assertThat(spanShim2.getBaggageItem("key1")).isEqualTo("value2");
-    assertThat(getBaggageMap(spanShim2.context().baggageItems()))
-        .isEqualTo(getBaggageMap(spanShim1.context().baggageItems()));
+    IntStream.range(0, baggageItemsCount)
+        .forEach(i -> executor.execute(() -> spanShim.setBaggageItem("key-" + i, "value-" + i)));
+    executor.shutdown();
+    executor.awaitTermination(5, TimeUnit.SECONDS);
+
+    for (int i = 0; i < baggageItemsCount; i++) {
+      assertThat(spanShim.getBaggageItem("key-" + i)).isEqualTo("value-" + i);
+    }
   }
 
   @Test
