@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -45,7 +46,7 @@ public final class OkHttpExporter<T extends Marshaler> {
 
   private final String type;
   private final OkHttpClient client;
-  private final String endpoint;
+  private final HttpUrl url;
   @Nullable private final Headers headers;
   private final boolean compressionEnabled;
   private final Function<T, RequestBody> requestBodyCreator;
@@ -63,7 +64,7 @@ public final class OkHttpExporter<T extends Marshaler> {
       boolean exportAsJson) {
     this.type = type;
     this.client = client;
-    this.endpoint = endpoint;
+    this.url = HttpUrl.get(endpoint);
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
     this.requestBodyCreator = exportAsJson ? JsonRequestBody::new : ProtoRequestBody::new;
@@ -73,7 +74,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   public CompletableResultCode export(T exportRequest, int numItems) {
     exporterMetrics.addSeen(numItems);
 
-    Request.Builder requestBuilder = new Request.Builder().url(endpoint);
+    Request.Builder requestBuilder = new Request.Builder().url(url);
     if (headers != null) {
       requestBuilder.headers(headers);
     }
