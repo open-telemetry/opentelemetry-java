@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -37,7 +38,7 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
 
   private final String type;
   private final OkHttpClient client;
-  private final String endpoint;
+  private final HttpUrl url;
   private final Headers headers;
   private final boolean compressionEnabled;
 
@@ -50,7 +51,7 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
       boolean compressionEnabled) {
     this.type = type;
     this.client = client;
-    this.endpoint = endpoint;
+    this.url = HttpUrl.get(endpoint);
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
   }
@@ -58,7 +59,7 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
   @Override
   public ResUnMarshalerT execute(
       ReqMarshalerT exportRequest, ResUnMarshalerT responseUnmarshaller) {
-    Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
+    Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
     requestBuilder.post(requestBody);
