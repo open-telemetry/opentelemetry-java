@@ -1,5 +1,6 @@
 pluginManagement {
   plugins {
+    id("biz.aQute.bnd.builder") version "6.3.1"
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.gradle.enterprise") version "3.10.3"
