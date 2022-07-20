@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
   // When updating, update above in plugins too
+  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:6.3.1")
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.4.2")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")

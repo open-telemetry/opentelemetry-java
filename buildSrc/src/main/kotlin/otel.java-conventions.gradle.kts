@@ -8,6 +8,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
