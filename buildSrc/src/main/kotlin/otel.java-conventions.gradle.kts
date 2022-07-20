@@ -117,15 +117,16 @@ tasks {
     bundle {
       bnd(
         """
-        Automatic-Module-Name: \${otelJava.moduleName.get()} \n
-        Built-By: \${System.getProperty("user.name")} \n
-        Built-JDK: \${System.getProperty("java.version")} \n
-        Implementation-Title: \${project.name} \n
-        Implementation-Version: \${project.version} \n
-        """
+        -fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=ignore
+        Automatic-Module-Name: \${otelJava.moduleName.get()}
+        Built-By: \${System.getProperty("user.name")}
+        Built-JDK: \${System.getProperty("java.version")}
+        Implementation-Title: \${project.name}
+        Implementation-Version: \${project.version}
+        """.trimIndent()
       )
     }
-  }
+  }.
 
   afterEvaluate {
     withType<Javadoc>().configureEach {
