@@ -117,7 +117,7 @@ tasks {
     bundle {
       bnd(
         """
-        Automatic-Module-Name: \${'$'}{otelJava.moduleName.get()} \n
+        Automatic-Module-Name: \${otelJava.moduleName.get()} \n
         Built-By: \${System.getProperty("user.name")} \n
         Built-JDK: \${System.getProperty("java.version")} \n
         Implementation-Title: \${project.name} \n
