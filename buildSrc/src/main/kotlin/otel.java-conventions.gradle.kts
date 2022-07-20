@@ -126,7 +126,7 @@ tasks {
         """.trimIndent()
       )
     }
-  }.
+  }
 
   afterEvaluate {
     withType<Javadoc>().configureEach {
