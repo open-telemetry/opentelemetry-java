@@ -8,7 +8,7 @@
 # NOTE if you need to run this script locally, you will need to first:
 #   git fetch upstream main
 #   git push origin upstream/main:main
-#   export GITHUB_REPOSITORY=open-telemetry/opentelemetry-java-instrumentation
+#   export GITHUB_REPOSITORY=open-telemetry/opentelemetry-java
 
 from_version=$1
 
