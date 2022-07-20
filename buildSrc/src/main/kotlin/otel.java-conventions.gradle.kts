@@ -113,16 +113,16 @@ tasks {
     }
   }
 
-  withType<Jar>().configureEach {
-    inputs.property("moduleName", otelJava.moduleName)
-
-    manifest {
-      attributes(
-        "Automatic-Module-Name" to otelJava.moduleName,
-        "Built-By" to System.getProperty("user.name"),
-        "Built-JDK" to System.getProperty("java.version"),
-        "Implementation-Title" to project.name,
-        "Implementation-Version" to project.version
+  named("jar", Jar::class.java) {
+    bundle {
+      bnd(
+        """
+        Automatic-Module-Name: \${'$'}{otelJava.moduleName.get()} \n
+        Built-By: \${System.getProperty("user.name")} \n
+        Built-JDK: \${System.getProperty("java.version")} \n
+        Implementation-Title: \${project.name} \n
+        Implementation-Version: \${project.version} \n
+        """
       )
     }
   }
