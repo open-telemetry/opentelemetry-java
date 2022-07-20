@@ -505,44 +505,17 @@ public class MyExporter implements SpanExporter {
 
 ## Immutability of OpenTelemetry configuration
 
-The above attempts to avoid allowing a built SDK to be mutated, e.g., it is shallow immutable. Allowing mutation can make code
-harder to reason about (any component, even deep in business logic, could update the SDK without
-hindrance), can reduce performance (require volatile read on most operations), and produce thread
-safety issues if not well implemented. In particular, compared to the current state as of writing,
+The OpenTelemetry SDK is intentionally designed to be immutable and its configuration will
+not change during its lifespan.
 
-- `TracerSdkManagement.addSpanProcessor` is not needed. We needed a mutable SDK to allow span
-processors to use global APIs for telemetry, but because we instead push the complexity of handling
-[telemetry within SDK components](#Telemetry within SDK components) to those components, where the
-maintainers will have more domain knowledge. It allows this mutator method to be removed from the
-end-user API.
+Regarding mutability:
 
-- `TracerSdkManagement.updateTraceConfig` - instead of allowing replacing of the config at the top level, we should consider making
-`TraceConfig` an interface, and the SDK default implementation is a simple implementation that always returns
-a constant configuration. It allows the above benefits of immutability to be in place for the common case where dynamic updates are not needed.
-Where dynamic updates are needed, it can be replaced with a mutable implementation instead of making
-the SDK configuration mutable. This keeps update methods out of the end-user APIs and will generally
-give framework developers more control by handling dynamicism themselves without the chance of
-end-users to affect it negatively. For example, spring-boot may wire trace config updates to
-actuator, its admin interface, and does not have to worry about business logic side-stepping this
-mechanism by calling `updateTraceConfig`.
+* It makes code harder to reason about (any component, even deep in business logic, could update the SDK without
+hindrance).
+* It can result in unexpected/unintended side effects in other components.
+* It typically reduces performance (require volatile read on most operations).
+* It can produce thread safety issues if not well implemented.
 
-Some highly buggy code that could be enabled by mutability.
-
-```java
-class SleuthUsingService {
-
-  @Inject
-  private OpenTelemetry openTelemetry;
-
-  public void doLogic() {
-    // My logic is important, so always sample it!
-    OpenTelemetrySdk.getTracerManagement().updateTraceConfig(config -> config.setSampler(ALWAYS_ON));
-    // This service was able to affect other services, even though Sleuth intends to
-    // "manage the SDK". Unlike the javaagent, it can't block access to SDK methods we may provide.
-    doSampledLogicWhileOtherServicesAlsoGetSampled();
-  }
-}
-```
 
 ## Library instrumentation
 
