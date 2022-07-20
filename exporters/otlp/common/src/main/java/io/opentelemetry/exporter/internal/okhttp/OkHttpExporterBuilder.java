@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.okhttp;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -20,6 +21,9 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Route;
 
 /**
  * A builder for {@link OkHttpExporter}.
@@ -45,6 +49,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
   private MeterProvider meterProvider = MeterProvider.noop();
+  @Nullable private Authenticator authenticator;
 
   public OkHttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -80,6 +85,11 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
       headersBuilder = new Headers.Builder();
     }
     headersBuilder.add(key, value);
+    return this;
+  }
+
+  public OkHttpExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
+    this.authenticator = authenticator;
     return this;
   }
 
@@ -135,6 +145,19 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpExporter::isRetryable));
+    }
+
+    if (authenticator != null) {
+      Authenticator finalAuthenticator = authenticator;
+      clientBuilder.authenticator((Route route, Response rspns) -> {
+
+          Request.Builder requestBuilder = rspns.request().newBuilder();
+          finalAuthenticator.getHeaders(ah -> {
+              ah.entrySet().stream()
+                      .forEach(e -> requestBuilder.header(e.getKey(), e.getValue()));
+          });
+          return requestBuilder.build();
+      });
     }
 
     return new OkHttpExporter<>(
