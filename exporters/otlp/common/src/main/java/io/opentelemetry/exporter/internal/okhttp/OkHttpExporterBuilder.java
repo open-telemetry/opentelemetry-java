@@ -149,15 +149,17 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
 
     if (authenticator != null) {
       Authenticator finalAuthenticator = authenticator;
-      clientBuilder.authenticator((Route route, Response rspns) -> {
-
-          Request.Builder requestBuilder = rspns.request().newBuilder();
-          finalAuthenticator.getHeaders(ah -> {
-              ah.entrySet().stream()
+      // Generate and attach OkHttp Authenticator implementation
+      clientBuilder.authenticator(
+          (Route route, Response rspns) -> {
+            Request.Builder requestBuilder = rspns.request().newBuilder();
+            finalAuthenticator.getHeaders(
+                ah -> {
+                  ah.entrySet().stream()
                       .forEach(e -> requestBuilder.header(e.getKey(), e.getValue()));
+                });
+            return requestBuilder.build();
           });
-          return requestBuilder.build();
-      });
     }
 
     return new OkHttpExporter<>(
