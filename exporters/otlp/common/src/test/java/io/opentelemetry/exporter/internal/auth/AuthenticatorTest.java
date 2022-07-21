@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +58,17 @@ class AuthenticatorTest {
     Authenticator authenticator = (Consumer<Map<String, String>> headers) -> {};
 
     assertThatThrownBy(() -> Authenticator.setAuthenticatorOnDelegate(new Object(), authenticator))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                Authenticator.setAuthenticatorOnDelegate(
+                    new WithDelegate(new Object()), authenticator))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                Authenticator.setAuthenticatorOnDelegate(
+                    new WithDelegate(GrpcExporter.builder(null, null, 0, null, null, null)),
+                    authenticator))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
