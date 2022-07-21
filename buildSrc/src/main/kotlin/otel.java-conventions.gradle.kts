@@ -129,7 +129,7 @@ tasks {
 
     bundle {
       bnd("-fixupmessages \"Classes found in the wrong directory\"; restrict:=error; is:=ignore")
-      bnd("Automatic-Module-Name: ${otelJava.moduleName.get()}")
+      bnd(otelJava.moduleName.map { moduleName -> "Automatic-Module-Name: $moduleName" })
     }
   }
 
