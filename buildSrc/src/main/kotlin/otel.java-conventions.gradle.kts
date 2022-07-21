@@ -113,16 +113,25 @@ tasks {
     }
   }
 
+  withType<Jar>().configureEach {
+    inputs.property("moduleName", otelJava.moduleName)
+
+    manifest {
+      attributes(
+        "Built-By" to System.getProperty("user.name"),
+        "Built-JDK" to System.getProperty("java.version"),
+        "Implementation-Title" to project.name,
+        "Implementation-Version" to project.version
+      )
+    }
+  }
+
   named("jar", Jar::class.java) {
     bundle {
       bnd(
         """
         -fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=ignore
         Automatic-Module-Name: \${otelJava.moduleName.get()}
-        Built-By: \${System.getProperty("user.name")}
-        Built-JDK: \${System.getProperty("java.version")}
-        Implementation-Title: \${project.name}
-        Implementation-Version: \${project.version}
         """.trimIndent()
       )
     }
