@@ -114,8 +114,6 @@ tasks {
   }
 
   withType<Jar>().configureEach {
-    inputs.property("moduleName", otelJava.moduleName)
-
     manifest {
       attributes(
         "Built-By" to System.getProperty("user.name"),
@@ -127,6 +125,8 @@ tasks {
   }
 
   named("jar", Jar::class.java) {
+    inputs.property("moduleName", otelJava.moduleName)
+
     bundle {
       bnd(
         """
