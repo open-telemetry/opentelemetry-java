@@ -128,12 +128,8 @@ tasks {
     inputs.property("moduleName", otelJava.moduleName)
 
     bundle {
-      bnd(
-        """
-        -fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=ignore
-        Automatic-Module-Name: \${otelJava.moduleName.get()}
-        """.trimIndent()
-      )
+      bnd("-fixupmessages \"Classes found in the wrong directory\"; restrict:=error; is:=ignore")
+      bnd("Automatic-Module-Name: ${otelJava.moduleName.get()}")
     }
   }
 
