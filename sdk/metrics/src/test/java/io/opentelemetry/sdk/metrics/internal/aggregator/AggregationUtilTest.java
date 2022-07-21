@@ -20,8 +20,10 @@ class AggregationUtilTest {
     assertThat(AggregationUtil.forName("last_value")).isEqualTo(Aggregation.lastValue());
     assertThat(AggregationUtil.forName("explicit_bucket_histogram"))
         .isEqualTo(Aggregation.explicitBucketHistogram());
+    assertThat(AggregationUtil.forName("EXplicit_BUCKet_HISTOGRAM"))
+        .isEqualTo(Aggregation.explicitBucketHistogram());
     assertThat(AggregationUtil.forName("drop")).isEqualTo(Aggregation.drop());
-    assertThat(AggregationUtil.forName("exponential_histogram"))
+    assertThat(AggregationUtil.forName("exponential_bucket_histogram"))
         .isEqualTo(ExponentialHistogramAggregation.getDefault());
     assertThatThrownBy(() -> AggregationUtil.forName("foo"))
         .isInstanceOf(IllegalArgumentException.class)
@@ -38,7 +40,7 @@ class AggregationUtilTest {
     assertThat(AggregationUtil.aggregationName(Aggregation.explicitBucketHistogram()))
         .isEqualTo("explicit_bucket_histogram");
     assertThat(AggregationUtil.aggregationName(ExponentialHistogramAggregation.getDefault()))
-        .isEqualTo("exponential_histogram");
+        .isEqualTo("exponential_bucket_histogram");
     assertThatThrownBy(() -> AggregationUtil.aggregationName(new Aggregation() {}))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Unrecognized aggregation");

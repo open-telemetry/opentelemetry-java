@@ -17,8 +17,10 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ import org.yaml.snakeyaml.Yaml;
  *     view:
  *       name: new-instrument-name
  *       description: new-description
- *       aggregation: histogram
+ *       aggregation: explicit_bucket_histogram
  *       attribute_keys:
  *         - foo
  *         - bar
@@ -63,7 +65,7 @@ import org.yaml.snakeyaml.Yaml;
  *         View.builder()
  *             .setName("new-instrument")
  *             .setDescription("new-description")
- *             .setAggregation(Aggregation.histogram())
+ *             .setAggregation(Aggregation.explicitBucketHistogram())
  *             .setAttributesFilter(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
  *             .build());
  * }</pre>
@@ -129,6 +131,7 @@ public final class ViewConfig {
                         .name(getAsType(viewSpecMap, "name", String.class))
                         .description(getAsType(viewSpecMap, "description", String.class))
                         .aggregation(getAsType(viewSpecMap, "aggregation", String.class))
+                        .aggregationArgs(getAsType(viewSpecMap, "aggregation_args", Map.class))
                         .attributeKeys(attributeKeys)
                         .build())
                 .build());
@@ -168,7 +171,11 @@ public final class ViewConfig {
     }
     String aggregation = viewSpec.getAggregation();
     if (aggregation != null) {
-      builder.setAggregation(toAggregation(aggregation));
+      Map<String, Object> aggregationArgs =
+          viewSpec.getAggregationArgs() == null
+              ? Collections.emptyMap()
+              : viewSpec.getAggregationArgs();
+      builder.setAggregation(toAggregation(aggregation, aggregationArgs));
     }
     List<String> attributeKeys = viewSpec.getAttributeKeys();
     if (attributeKeys != null) {
@@ -179,12 +186,50 @@ public final class ViewConfig {
   }
 
   // Visible for testing
-  static Aggregation toAggregation(String aggregation) {
+  static Aggregation toAggregation(String aggregationName, Map<String, Object> aggregationArgs) {
+    Aggregation aggregation;
     try {
-      return AggregationUtil.forName(aggregation);
+      aggregation = AggregationUtil.forName(aggregationName);
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException("Error creating aggregation", e);
     }
+    if (Aggregation.explicitBucketHistogram().equals(aggregation)) {
+      List<Double> bucketBoundaries = getBucketBoundaries(aggregationArgs);
+      if (bucketBoundaries != null) {
+        return Aggregation.explicitBucketHistogram(bucketBoundaries);
+      }
+    }
+    if (ExponentialHistogramAggregation.getDefault().equals(aggregation)) {
+      Integer maxBuckets;
+      try {
+        maxBuckets = getAsType(aggregationArgs, "max_buckets", Integer.class);
+      } catch (IllegalStateException e) {
+        throw new ConfigurationException("max_buckets must be an integer", e);
+      }
+      if (maxBuckets != null) {
+        return ExponentialHistogramAggregation.create(maxBuckets);
+      }
+    }
+    return aggregation;
+  }
+
+  @Nullable
+  @SuppressWarnings("unchecked")
+  private static List<Double> getBucketBoundaries(Map<String, Object> aggregationArgs) {
+    List<Object> boundaryObjects =
+        ((List<Object>) getAsType(aggregationArgs, "bucket_boundaries", List.class));
+    if (boundaryObjects == null) {
+      return null;
+    }
+    return boundaryObjects.stream()
+        .map(
+            o -> {
+              if (!(o instanceof Number)) {
+                throw new ConfigurationException("bucket_boundaries must be an array of numbers");
+              }
+              return ((Number) o).doubleValue();
+            })
+        .collect(toList());
   }
 
   // Visible for testing

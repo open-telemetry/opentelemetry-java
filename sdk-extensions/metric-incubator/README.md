@@ -20,7 +20,9 @@ For example, suppose `/Users/user123/view.yaml` has the following content:
   view:
     name: new-instrument-name
     description: new-description
-    aggregation: histogram
+    aggregation: explicit_bucket_histogram
+    aggregation_args:
+      bucket_boundaries: [1.0, 2.0, 5.0]
     attribute_keys:
       - foo
       - bar
@@ -41,7 +43,7 @@ SdkMeterProvider.builder()
        View.builder()
            .setName("new-instrument")
            .setDescription("new-description")
-           .setAggregation(Aggregation.histogram())
+           .setAggregation(Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0, 5.0))
            .setAttributesFilter(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
            .build());
 ```
@@ -65,7 +67,18 @@ try (FileInputStream fileInputStream = new FileInputStream("/Users/user123/view.
 }
 ```
 
-Notes on usage:
+The following table describes the set of recognized aggregations:
+
+| Aggregation                      | Arguments                                                                                                                      |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| [`default`]                      | -                                                                                                                              |
+| [`sum`]                          | -                                                                                                                              |
+| [`last_value`]                   | -                                                                                                                              |
+| [`drop`]                         | -                                                                                                                              |
+| [`explicit_bucket_histogram`]    | `bucket_boundaries` (optional): List of inclusive upper boundaries for the histogram buckets, in order from lowest to highest. |
+| [`exponential_bucket_histogram`] | `max_buckets` (optional): The maximum number of buckets to use for positive or negative recordings.                            |
+
+Additional notes on usage:
 
 - Many view configurations can live in one file. The YAML is parsed as an array of view
   configurations.
@@ -76,5 +89,11 @@ Notes on usage:
 - Instrument name selection supports the following wildcard characters: `*` matches 0 or more instances of any character; `?` matches exactly one instance of any character. No other advanced selection criteria is supported.
 
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator.svg
-
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-metric-incubator
+
+[`default`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#default-aggregation
+[`sum`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#sum-aggregation
+[`last_value`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#last-value-aggregation
+[`drop`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#drop-aggregation
+[`explicit_bucket_histogram`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#explicit-bucket-histogram-aggregation
+[`exponential_bucket_histogram`]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#exponential-bucket-histogram-aggregation
