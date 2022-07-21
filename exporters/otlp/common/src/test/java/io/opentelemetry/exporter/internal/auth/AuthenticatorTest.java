@@ -17,10 +17,9 @@ import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
-/** Authenticator tests */
+/** Authenticator tests. */
 class AuthenticatorTest {
 
-  /** Test of getHeaders method, of class Authenticator. */
   @Test
   void testGetHeaders() {
     Map<String, String> input = new HashMap<>();
@@ -36,7 +35,6 @@ class AuthenticatorTest {
     assertEquals(input, result);
   }
 
-  /** Test of setAuthenticatorOnDelegate method, of class Authenticator. */
   @Test
   void testSetAuthenticatorOnDelegate_Success() {
     OkHttpExporterBuilder<?> builder =

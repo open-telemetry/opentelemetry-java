@@ -27,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/** Test Authentication in an exporter. */
 @ExtendWith(MockitoExtension.class)
 class AuthenticatingExporterTest {
 
@@ -66,8 +67,8 @@ class AuthenticatingExporterTest {
     assertTrue(result.isSuccess());
   }
 
+  /** Ensure that exporter gives up if a request is always considered UNAUTHORIZED. */
   @Test
-  @SuppressWarnings("SystemOut")
   void export_giveup() throws Exception {
     OkHttpExporter<Marshaler> exporter =
         new OkHttpExporterBuilder<>("otlp", "test", server.httpUri().toASCIIString())
