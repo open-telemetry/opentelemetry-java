@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.viewconfig;
 
 import com.google.auto.value.AutoValue;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 @AutoValue
@@ -26,6 +27,9 @@ abstract class ViewSpecification {
   abstract String getAggregation();
 
   @Nullable
+  abstract Map<String, Object> getAggregationArgs();
+
+  @Nullable
   abstract List<String> getAttributeKeys();
 
   @AutoValue.Builder
@@ -35,6 +39,8 @@ abstract class ViewSpecification {
     Builder description(@Nullable String description);
 
     Builder aggregation(@Nullable String aggregation);
+
+    Builder aggregationArgs(@Nullable Map<String, Object> aggregationArgs);
 
     Builder attributeKeys(@Nullable List<String> attributeKeys);
 

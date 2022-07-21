@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -65,7 +66,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   private final String type;
   private final ExporterMetrics exporterMetrics;
   private final OkHttpClient client;
-  private final String endpoint;
+  private final HttpUrl url;
   private final Headers headers;
   private final boolean compressionEnabled;
 
@@ -81,7 +82,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
     this.type = type;
     this.exporterMetrics = ExporterMetrics.createGrpcOkHttp(exporterName, type, meterProvider);
     this.client = client;
-    this.endpoint = endpoint;
+    this.url = HttpUrl.get(endpoint);
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
   }
@@ -90,7 +91,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
   public CompletableResultCode export(T exportRequest, int numItems) {
     exporterMetrics.addSeen(numItems);
 
-    Request.Builder requestBuilder = new Request.Builder().url(endpoint).headers(headers);
+    Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
     requestBuilder.post(requestBody);
