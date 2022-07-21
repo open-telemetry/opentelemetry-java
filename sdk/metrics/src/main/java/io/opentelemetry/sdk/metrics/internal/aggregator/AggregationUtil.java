@@ -24,7 +24,7 @@ public class AggregationUtil {
   private static final String AGGREGATION_LAST_VALUE = "last_value";
   private static final String AGGREGATION_DROP = "drop";
   private static final String AGGREGATION_EXPLICIT_BUCKET_HISTOGRAM = "explicit_bucket_histogram";
-  private static final String AGGREGATION_EXPONENTIAL_HISTOGRAM = "exponential_histogram";
+  private static final String AGGREGATION_EXPONENTIAL_HISTOGRAM = "exponential_bucket_histogram";
 
   static {
     aggregationByName = new HashMap<>();
@@ -60,7 +60,7 @@ public class AggregationUtil {
    * @throws IllegalArgumentException if the name is not recognized
    */
   public static Aggregation forName(String name) {
-    Aggregation aggregation = aggregationByName.get(name);
+    Aggregation aggregation = aggregationByName.get(name.toLowerCase());
     if (aggregation == null) {
       throw new IllegalArgumentException("Unrecognized aggregation name " + name);
     }
