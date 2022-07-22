@@ -207,6 +207,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @Override
   public AutoConfiguredOpenTelemetrySdkBuilder addPropertiesCustomizer(
       Function<ConfigProperties, Map<String, String>> propertiesCustomizer) {
+    requireNonNull(propertiesCustomizer, "propertiesCustomizer");
     this.propertiesCustomizers.add(propertiesCustomizer);
     return this;
   }
