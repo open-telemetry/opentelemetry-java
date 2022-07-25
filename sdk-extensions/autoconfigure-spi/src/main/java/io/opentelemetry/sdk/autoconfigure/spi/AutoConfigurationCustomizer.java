@@ -80,6 +80,8 @@ public interface AutoConfigurationCustomizer {
    *
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
+   *
+   * @since 1.17.0
    */
   default AutoConfigurationCustomizer addPropertiesCustomizer(
       Function<ConfigProperties, Map<String, String>> propertiesCustomizer) {
