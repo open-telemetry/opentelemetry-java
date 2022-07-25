@@ -21,7 +21,7 @@ public interface Authenticator {
    * @param headers Consumer callback to be used to propagate headers to the underlying OTLP HTTP
    *     exporter implementation.
    */
-  void getHeaders(Consumer<Map<String, String>> headers);
+  void getHeaders(Consumer<Map<String, String>> headersConsumer);
 
   /**
    * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
