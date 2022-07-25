@@ -30,7 +30,7 @@ public interface Authenticator {
    * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
    *     a supported type.
    */
-  public static void setAuthenticatorOnDelegate(Object builder, Authenticator authenticator) {
+ static void setAuthenticatorOnDelegate(Object builder, Authenticator authenticator) {
     try {
       Field field = builder.getClass().getDeclaredField("delegate");
       field.setAccessible(true);
