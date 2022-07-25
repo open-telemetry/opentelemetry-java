@@ -11,15 +11,20 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/** Internal class to allow users of OTLP-OkHttp exporters to add support for authentication. */
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ *
+ * <p>Allow users of OTLP-OkHttp exporters to add support for authentication.
+ */
 public interface Authenticator {
 
   /**
    * Method called by the exporter to get headers to be used on a request that requires
    * authentication.
    *
-   * @param headers Consumer callback to be used to propagate headers to the underlying OTLP HTTP
-   *     exporter implementation.
+   * @param headersConsumer Consumer callback to be used to propagate headers to the underlying OTLP
+   *     HTTP exporter implementation.
    */
   void getHeaders(Consumer<Map<String, String>> headersConsumer);
 
@@ -27,10 +32,12 @@ public interface Authenticator {
    * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
    * field called "delegate" of the instance, and set the {@link Authenticator}.
    *
+   * @param builder export builder to modify
+   * @param authenticator authenticator to set on builder
    * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
    *     a supported type.
    */
- static void setAuthenticatorOnDelegate(Object builder, Authenticator authenticator) {
+  static void setAuthenticatorOnDelegate(Object builder, Authenticator authenticator) {
     try {
       Field field = builder.getClass().getDeclaredField("delegate");
       field.setAccessible(true);

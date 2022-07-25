@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.internal.auth;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
@@ -22,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class AuthenticatorTest {
 
   @Test
-  void testGetHeaders() {
+  void getHeaders() {
     Map<String, String> input = new HashMap<>();
     input.put("key1", "value1");
     input.put("key2", "value2");
@@ -33,11 +32,11 @@ class AuthenticatorTest {
           headers.accept(input);
         };
     authenticator.getHeaders(result::putAll);
-    assertEquals(input, result);
+    assertThat(result).isEqualTo(input);
   }
 
   @Test
-  void testSetAuthenticatorOnDelegate_Success() {
+  void setAuthenticatorOnDelegate_Success() {
     OkHttpExporterBuilder<?> builder =
         new OkHttpExporterBuilder<>("otlp", "test", "http://localhost:4318/test");
 
@@ -53,7 +52,7 @@ class AuthenticatorTest {
   }
 
   @Test
-  void testSetAuthenticatorOnDelegate_Fail() {
+  void setAuthenticatorOnDelegate_Fail() {
 
     Authenticator authenticator = (Consumer<Map<String, String>> headers) -> {};
 

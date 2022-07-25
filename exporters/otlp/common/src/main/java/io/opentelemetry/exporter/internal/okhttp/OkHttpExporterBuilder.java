@@ -22,8 +22,6 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Route;
 
 /**
  * A builder for {@link OkHttpExporter}.
@@ -152,12 +150,9 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
       // Generate and attach OkHttp Authenticator implementation
       clientBuilder.authenticator(
           (route, response) -> {
-            Request.Builder requestBuilder = rspns.request().newBuilder();
+            Request.Builder requestBuilder = response.request().newBuilder();
             finalAuthenticator.getHeaders(
-                ah -> {
-                  ah.entrySet().stream()
-                      .forEach(e -> requestBuilder.header(e.getKey(), e.getValue()));
-                });
+                authHeaders -> authHeaders.forEach(requestBuilder::header));
             return requestBuilder.build();
           });
     }

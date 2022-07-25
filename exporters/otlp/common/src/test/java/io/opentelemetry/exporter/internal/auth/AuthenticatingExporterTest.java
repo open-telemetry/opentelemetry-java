@@ -5,10 +5,7 @@
 
 package io.opentelemetry.exporter.internal.auth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -60,11 +57,11 @@ class AuthenticatingExporterTest {
 
     CompletableResultCode result = exporter.export(marshaler, 0);
 
-    assertNull(server.takeRequest().request().headers().get("Authorization"));
-    assertEquals("auth", server.takeRequest().request().headers().get("Authorization"));
+    assertThat(server.takeRequest().request().headers().get("Authorization")).isNull();
+    assertThat(server.takeRequest().request().headers().get("Authorization")).isEqualTo("auth");
 
     result.join(1, TimeUnit.MINUTES);
-    assertTrue(result.isSuccess());
+    assertThat(result.isSuccess()).isTrue();
   }
 
   /** Ensure that exporter gives up if a request is always considered UNAUTHORIZED. */
@@ -78,6 +75,6 @@ class AuthenticatingExporterTest {
                 })
             .build();
     server.enqueue(HttpResponse.of(HttpStatus.UNAUTHORIZED));
-    assertFalse(exporter.export(marshaler, 0).join(1, TimeUnit.MINUTES).isSuccess());
+    assertThat(exporter.export(marshaler, 0).join(1, TimeUnit.MINUTES).isSuccess()).isFalse();
   }
 }
