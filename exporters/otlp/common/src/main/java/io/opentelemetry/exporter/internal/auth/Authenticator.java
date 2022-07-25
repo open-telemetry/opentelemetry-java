@@ -25,7 +25,7 @@ public interface Authenticator {
 
   /**
    * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
-   * field called "delegate" of the instance, and set the {@link RetryPolicy}.
+   * field called "delegate" of the instance, and set the {@link Authenticator}.
    *
    * @throws IllegalArgumentException if the instance does not contain a field called "delegate" of
    *     a supported type.
