@@ -52,7 +52,6 @@ class AuthenticatorTest {
 
   @Test
   void setAuthenticatorOnDelegate_Fail() {
-
     Authenticator authenticator = (Consumer<Map<String, String>> headers) -> {};
 
     assertThatThrownBy(() -> Authenticator.setAuthenticatorOnDelegate(new Object(), authenticator))
