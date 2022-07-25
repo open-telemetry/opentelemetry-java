@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
-/** Authenticator tests. */
 class AuthenticatorTest {
 
   @Test
