@@ -18,5 +18,7 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":sdk:logs-testing"))
+
   testImplementation("junit:junit")
 }

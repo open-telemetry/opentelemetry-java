@@ -28,13 +28,13 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 class OtlpGrpcServerExtension extends ServerExtension {
 
@@ -164,8 +165,10 @@ class OtlpGrpcServerExtension extends ServerExtension {
   }
 
   static LogData generateFakeLog() {
-    return LogDataBuilder.create(Resource.empty(), InstrumentationScopeInfo.empty())
-        .setEpoch(Instant.now())
+    return TestLogData.builder()
+        .setResource(Resource.empty())
+        .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
+        .setEpoch(Instant.now().toEpochMilli(), TimeUnit.MILLISECONDS)
         .setBody("log body")
         .build();
   }

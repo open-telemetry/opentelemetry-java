@@ -5,73 +5,112 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SdkLogBuilderTest {
 
+  private static final Resource RESOURCE = Resource.empty();
+  private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
+
+  @Mock LogEmitterSharedState logEmitterSharedState;
+
+  private final AtomicReference<LogData> emittedLog = new AtomicReference<>();
+  private SdkLogBuilder builder;
+
+  @BeforeEach
+  void setup() {
+    when(logEmitterSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
+    when(logEmitterSharedState.getLogProcessor()).thenReturn(emittedLog::set);
+    when(logEmitterSharedState.getResource()).thenReturn(RESOURCE);
+    when(logEmitterSharedState.getClock()).thenReturn(Clock.getDefault());
+
+    builder = new SdkLogBuilder(logEmitterSharedState, SCOPE_INFO);
+  }
+
   @Test
-  void buildAndEmit() {
+  void emit_AllFields() {
     Instant now = Instant.now();
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
     Attributes attrs = Attributes.empty();
-    AtomicReference<LogData> seenLog = new AtomicReference<>();
-    LogProcessor logProcessor = seenLog::set;
+    SpanContext spanContext =
+        SpanContext.create(
+            "33333333333333333333333333333333",
+            "7777777777777777",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
 
-    LogEmitterSharedState state = mock(LogEmitterSharedState.class);
-    LogDataBuilder delegate = mock(LogDataBuilder.class);
-    LogData logData = mock(LogData.class);
-    Context context = mock(Context.class);
-
-    when(state.getLogLimits()).thenReturn(LogLimits.getDefault());
-    when(state.getLogProcessor()).thenReturn(logProcessor);
-    when(delegate.build()).thenReturn(logData);
-
-    SdkLogBuilder builder = new SdkLogBuilder(state, delegate);
     builder.setBody(bodyStr);
-    verify(delegate).setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
-    verify(delegate).setEpoch(123, TimeUnit.SECONDS);
     builder.setEpoch(now);
-    verify(delegate).setEpoch(now);
     builder.setAttributes(attrs);
-    verify(delegate).setAttributes(attrs);
-    builder.setContext(context);
-    verify(delegate).setContext(context);
+    builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
     builder.setSeverity(severity);
-    verify(delegate).setSeverity(severity);
     builder.setSeverityText(sevText);
-    verify(delegate).setSeverityText(sevText);
     builder.emit();
-    assertThat(seenLog.get()).isSameAs(logData);
+    assertThat(emittedLog.get())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(SCOPE_INFO)
+        .hasBody(bodyStr)
+        .hasEpochNanos(TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano())
+        .hasAttributes(attrs)
+        .hasSpanContext(spanContext)
+        .hasSeverity(severity)
+        .hasSeverityText(sevText);
   }
 
   @Test
-  void emitAfterShutdown() {
-    LogEmitterSharedState state = mock(LogEmitterSharedState.class);
-    LogDataBuilder delegate = mock(LogDataBuilder.class);
+  void emit_NoFields() {
+    Clock clock = mock(Clock.class);
+    when(clock.now()).thenReturn(10L);
+    when(logEmitterSharedState.getClock()).thenReturn(clock);
 
-    when(state.hasBeenShutdown()).thenReturn(true);
-
-    SdkLogBuilder builder = new SdkLogBuilder(state, delegate);
     builder.emit();
-    verify(state, never()).getLogProcessor();
-    verifyNoInteractions(delegate);
+
+    assertThat(emittedLog.get())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(SCOPE_INFO)
+        .hasBody(Body.empty().asString())
+        .hasEpochNanos(10L)
+        .hasAttributes(Attributes.empty())
+        .hasSpanContext(SpanContext.getInvalid())
+        .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  @Test
+  void emit_AfterShutdown() {
+    when(logEmitterSharedState.hasBeenShutdown()).thenReturn(true);
+
+    builder.emit();
+
+    assertThat(emittedLog.get()).isNull();
   }
 }

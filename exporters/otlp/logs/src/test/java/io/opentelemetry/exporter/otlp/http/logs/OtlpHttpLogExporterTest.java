@@ -33,9 +33,9 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -339,8 +339,10 @@ class OtlpHttpLogExporterTest {
   }
 
   private static LogData generateFakeLog() {
-    return LogDataBuilder.create(
-            Resource.getDefault(), InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+    return TestLogData.builder()
+        .setResource(Resource.getDefault())
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)

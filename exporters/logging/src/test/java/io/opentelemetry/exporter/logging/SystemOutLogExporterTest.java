@@ -17,9 +17,9 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneOffset;
@@ -51,8 +51,9 @@ class SystemOutLogExporterTest {
   }
 
   private static LogData sampleLog(long timestamp) {
-    return LogDataBuilder.create(
-            Resource.empty(), InstrumentationScopeInfo.create("logTest", "1.0", null))
+    return TestLogData.builder()
+        .setResource(Resource.empty())
+        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("logTest", "1.0", null))
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)

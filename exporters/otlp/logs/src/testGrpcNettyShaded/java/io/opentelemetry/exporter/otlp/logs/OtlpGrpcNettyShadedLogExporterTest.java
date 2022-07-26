@@ -18,12 +18,13 @@ import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.Closeable;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class OtlpGrpcNettyShadedLogExporterTest
@@ -52,10 +53,10 @@ class OtlpGrpcNettyShadedLogExporterTest
 
   @Override
   protected LogData generateFakeTelemetry() {
-    return LogDataBuilder.create(
-            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-            InstrumentationScopeInfo.create("instrumentation", "1", null))
-        .setEpoch(Instant.now())
+    return TestLogData.builder()
+        .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
+        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("instrumentation", "1", null))
+        .setEpoch(Instant.now().toEpochMilli(), TimeUnit.MILLISECONDS)
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
         .setBody("message")
