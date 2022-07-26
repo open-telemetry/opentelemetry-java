@@ -16,7 +16,53 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.9.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.12.0";
+
+  /**
+   * Array of brand name and version separated by a space
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This value is intended to be taken from the <a
+   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a>
+   *       (navigator.userAgentData.brands).
+   * </ul>
+   */
+  public static final AttributeKey<List<String>> BROWSER_BRANDS = stringArrayKey("browser.brands");
+
+  /**
+   * The platform on which the browser is running
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This value is intended to be taken from the <a
+   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a>
+   *       (navigator.userAgentData.platform). If unavailable, the legacy {@code navigator.platform}
+   *       API SHOULD NOT be used instead and this attribute SHOULD be left unset in order for the
+   *       values to be consistent. The list of possible values is defined in the <a
+   *       href="https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform">W3C User-Agent Client
+   *       Hints specification</a>. Note that some (but not all) of these values can overlap with
+   *       values in the <a href="./os.md">os.type and os.name attributes</a>. However, for
+   *       consistency, the values in the {@code browser.platform} attribute should capture the
+   *       exact value that the user agent provides.
+   * </ul>
+   */
+  public static final AttributeKey<String> BROWSER_PLATFORM = stringKey("browser.platform");
+
+  /**
+   * Full user-agent string provided by the browser
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The user-agent value SHOULD be provided only from browsers that do not have a mechanism
+   *       to retrieve brands and platform individually from the User-Agent Client Hints API. To
+   *       retrieve the value, the legacy {@code navigator.userAgent} API can be used.
+   * </ul>
+   */
+  public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
@@ -246,6 +292,14 @@ public final class ResourceAttributes {
    *       usually different from the name of the callback function (which may be stored in the <a
    *       href="../../trace/semantic_conventions/span-general.md#source-code-attributes">{@code
    *       code.namespace}/{@code code.function}</a> span attributes).
+   *   <li>For some cloud providers, the above definition is ambiguous. The following definition of
+   *       function name MUST be used for this attribute (and consequently the span name) for the
+   *       listed cloud providers/products:
+   *   <li><strong>Azure:</strong> The full name {@code <FUNCAPP>/<FUNC>}, i.e., function app name
+   *       followed by a forward slash followed by the function name (this form can also be seen in
+   *       the resource JSON for the function). This means that a span attribute MUST be used, as an
+   *       Azure function app can host multiple functions that would usually share a TracerProvider
+   *       (see also the {@code faas.id} attribute).
    * </ul>
    */
   public static final AttributeKey<String> FAAS_NAME = stringKey("faas.name");
@@ -256,10 +310,12 @@ public final class ResourceAttributes {
    * <p>Notes:
    *
    * <ul>
-   *   <li>Depending on the cloud provider, use:
+   *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
+   *       consider setting {@code faas.id} as a span attribute instead.
+   *   <li>The exact value to use for {@code faas.id} depends on the cloud provider:
    *   <li><strong>AWS Lambda:</strong> The function <a
    *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
-   *   <li>Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
+   *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
    *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
    *       suffix</a> with the resolved function version, as the same runtime instance may be
    *       invokable with multiple different aliases.
@@ -267,12 +323,11 @@ public final class ResourceAttributes {
    *       href="https://cloud.google.com/iam/docs/full-resource-names">URI of the resource</a>
    *   <li><strong>Azure:</strong> The <a
    *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
-   *       Qualified Resource ID</a>.
-   *   <li>On some providers, it may not be possible to determine the full ID at startup, which is
-   *       why this field cannot be made required. For example, on AWS the account ID part of the
-   *       ARN is not available without calling another AWS API which may be deemed too slow for a
-   *       short-running lambda function. As an alternative, consider setting {@code faas.id} as a
-   *       span attribute instead.
+   *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
+   *       the form {@code
+   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+   *       This means that a span attribute MUST be used, as an Azure function app can host multiple
+   *       functions that would usually share a TracerProvider.
    * </ul>
    */
   public static final AttributeKey<String> FAAS_ID = stringKey("faas.id");
@@ -690,7 +745,7 @@ public final class ResourceAttributes {
     public static final String HPUX = "hpux";
     /** AIX (Advanced Interactive eXecutive). */
     public static final String AIX = "aix";
-    /** Oracle Solaris. */
+    /** SunOS, Oracle Solaris. */
     public static final String SOLARIS = "solaris";
     /** IBM z/OS. */
     public static final String Z_OS = "z_os";
