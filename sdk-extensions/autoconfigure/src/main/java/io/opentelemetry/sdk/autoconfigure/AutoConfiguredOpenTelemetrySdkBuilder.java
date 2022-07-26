@@ -334,7 +334,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
       logEmitterProviderBuilder.setResource(resource);
       LogEmitterProviderConfiguration.configureLogEmitterProvider(
-          logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
+          logEmitterProviderBuilder,
+          config,
+          serviceClassLoader,
+          meterProvider,
+          logExporterCustomizer);
       logEmitterProviderBuilder =
           logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
       SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
