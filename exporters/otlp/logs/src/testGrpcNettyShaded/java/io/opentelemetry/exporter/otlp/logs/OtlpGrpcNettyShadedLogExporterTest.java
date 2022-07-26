@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.Closeable;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class OtlpGrpcNettyShadedLogExporterTest
@@ -56,7 +55,7 @@ class OtlpGrpcNettyShadedLogExporterTest
     return TestLogData.builder()
         .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("instrumentation", "1", null))
-        .setEpoch(Instant.now().toEpochMilli(), TimeUnit.MILLISECONDS)
+        .setEpoch(Instant.now())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
         .setBody("message")

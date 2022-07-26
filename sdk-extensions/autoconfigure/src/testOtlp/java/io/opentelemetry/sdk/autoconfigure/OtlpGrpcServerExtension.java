@@ -42,7 +42,6 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 class OtlpGrpcServerExtension extends ServerExtension {
 
@@ -168,7 +167,7 @@ class OtlpGrpcServerExtension extends ServerExtension {
     return TestLogData.builder()
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
-        .setEpoch(Instant.now().toEpochMilli(), TimeUnit.MILLISECONDS)
+        .setEpoch(Instant.now())
         .setBody("log body")
         .build();
   }
