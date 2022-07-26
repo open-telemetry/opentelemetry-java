@@ -36,16 +36,21 @@ public abstract class InstrumentationScopeInfo {
     return InstrumentationScopeInfo.create(name, version, schemaUrl, Attributes.empty());
   }
 
-  /**
-   * Creates a new instance of {@link InstrumentationScopeInfo}.
-   *
-   * @since 1.18.0
-   */
-  public static InstrumentationScopeInfo create(
+  static InstrumentationScopeInfo create(
       String name, @Nullable String version, @Nullable String schemaUrl, Attributes attributes) {
     requireNonNull(name, "name");
     requireNonNull(attributes, "attributes");
     return new AutoValue_InstrumentationScopeInfo(name, version, schemaUrl, attributes);
+  }
+
+  /**
+   * Returns a {@link InstrumentationScopeInfoBuilder builder} for a {@link
+   * InstrumentationScopeInfo}.
+   *
+   * @since 1.18.0
+   */
+  public static InstrumentationScopeInfoBuilder builder(String name) {
+    return new InstrumentationScopeInfoBuilder(name);
   }
 
   /** Returns an "empty" {@link InstrumentationScopeInfo}. */
