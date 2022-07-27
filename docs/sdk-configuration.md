@@ -1,5 +1,5 @@
 # 🚨 Archival Use Only! 	🚨
-> > This is a historical design document and is not updated with evolving APIs. For up-to-date
+> This is a historical design document and is not updated with evolving APIs. For up-to-date
 > examples of SDK configuration see the
 > [documentation](https://opentelemetry.io/docs/java/manual_instrumentation/).
 > This document is maintained here for historical purposes only, and it is intended to
