@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.internal.AttributeUtil;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,8 +17,11 @@ import javax.annotation.Nullable;
 /**
  * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
  * string and array string attribute values to the {@link #lengthLimit}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
-final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
+public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
 
   private static final long serialVersionUID = -5072696312123632376L;
 
@@ -27,12 +29,23 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
   private final int lengthLimit;
   private int totalAddedValues = 0;
 
-  AttributesMap(long capacity, int lengthLimit) {
+  private AttributesMap(long capacity, int lengthLimit) {
     this.capacity = capacity;
     this.lengthLimit = lengthLimit;
   }
 
-  <T> void put(AttributeKey<T> key, T value) {
+  /**
+   * Create an instance.
+   *
+   * @param capacity the max number of attribute entries
+   * @param lengthLimit the maximum length of string attributes
+   */
+  public static AttributesMap create(long capacity, int lengthLimit) {
+    return new AttributesMap(capacity, lengthLimit);
+  }
+
+  /** Add the attribute key value pair, applying capacity and length limits. */
+  public <T> void put(AttributeKey<T> key, T value) {
     totalAddedValues++;
     if (size() >= capacity && !containsKey(key)) {
       return;
@@ -40,7 +53,8 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
     super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
-  int getTotalAddedValues() {
+  /** Get the total number of attributes added, including those dropped for capcity limits. */
+  public int getTotalAddedValues() {
     return totalAddedValues;
   }
 
@@ -86,7 +100,8 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
         + '}';
   }
 
-  Attributes immutableCopy() {
+  /** Create an immutable copy of the attributes in this map. */
+  public Attributes immutableCopy() {
     return Attributes.builder().putAll(this).build();
   }
 }

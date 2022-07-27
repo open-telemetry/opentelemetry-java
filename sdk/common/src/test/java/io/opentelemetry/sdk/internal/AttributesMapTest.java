@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +15,7 @@ class AttributesMapTest {
 
   @Test
   void asMap() {
-    AttributesMap attributesMap = new AttributesMap(2, Integer.MAX_VALUE);
+    AttributesMap attributesMap = AttributesMap.create(2, Integer.MAX_VALUE);
     attributesMap.put(longKey("one"), 1L);
     attributesMap.put(longKey("two"), 2L);
 
