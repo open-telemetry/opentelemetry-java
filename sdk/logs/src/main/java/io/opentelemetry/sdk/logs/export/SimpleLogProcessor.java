@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.Collections;
 import java.util.List;
@@ -57,9 +58,9 @@ public final class SimpleLogProcessor implements LogProcessor {
   }
 
   @Override
-  public void emit(LogData logData) {
+  public void onEmit(ReadWriteLogRecord logRecord) {
     try {
-      List<LogData> logs = Collections.singletonList(logData);
+      List<LogData> logs = Collections.singletonList(logRecord.toLogData());
       CompletableResultCode result = logExporter.export(logs);
       pendingExports.add(result);
       result.whenComplete(

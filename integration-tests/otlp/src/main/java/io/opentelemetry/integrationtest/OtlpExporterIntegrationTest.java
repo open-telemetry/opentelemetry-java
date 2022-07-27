@@ -517,9 +517,9 @@ abstract class OtlpExporterIntegrationTest {
 
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
       logEmitter
-          .logBuilder()
+          .logRecordBuilder()
           .setBody("log body")
-          .setAttributes(Attributes.builder().put("key", "value").build())
+          .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
           .setEpoch(Instant.now())

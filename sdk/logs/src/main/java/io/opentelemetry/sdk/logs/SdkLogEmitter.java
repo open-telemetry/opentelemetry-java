@@ -21,8 +21,8 @@ final class SdkLogEmitter implements LogEmitter {
   }
 
   @Override
-  public LogBuilder logBuilder() {
-    return new SdkLogBuilder(logEmitterSharedState, instrumentationScopeInfo);
+  public LogRecordBuilder logRecordBuilder() {
+    return new SdkLogRecordBuilder(logEmitterSharedState, instrumentationScopeInfo);
   }
 
   // VisibleForTesting

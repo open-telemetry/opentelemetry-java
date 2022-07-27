@@ -17,7 +17,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -229,12 +228,12 @@ class SdkLogEmitterProviderTest {
     long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
-    List<LogData> seenLogs = new ArrayList<>();
+    List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
     logProcessor = seenLogs::add;
     sdkLogEmitterProvider =
         SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
-    sdkLogEmitterProvider.logEmitterBuilder(null).build().logBuilder().emit();
+    sdkLogEmitterProvider.logEmitterBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).getEpochNanos()).isEqualTo(now);
+    assertThat(seenLogs.get(0).toLogData().getEpochNanos()).isEqualTo(now);
   }
 }

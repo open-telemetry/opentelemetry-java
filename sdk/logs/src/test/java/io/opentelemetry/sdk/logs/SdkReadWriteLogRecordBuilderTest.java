@@ -18,7 +18,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -34,15 +33,15 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class SdkLogBuilderTest {
+class SdkReadWriteLogRecordBuilderTest {
 
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
 
   @Mock LogEmitterSharedState logEmitterSharedState;
 
-  private final AtomicReference<LogData> emittedLog = new AtomicReference<>();
-  private SdkLogBuilder builder;
+  private final AtomicReference<ReadWriteLogRecord> emittedLog = new AtomicReference<>();
+  private SdkLogRecordBuilder builder;
 
   @BeforeEach
   void setup() {
@@ -51,7 +50,7 @@ class SdkLogBuilderTest {
     when(logEmitterSharedState.getResource()).thenReturn(RESOURCE);
     when(logEmitterSharedState.getClock()).thenReturn(Clock.getDefault());
 
-    builder = new SdkLogBuilder(logEmitterSharedState, SCOPE_INFO);
+    builder = new SdkLogRecordBuilder(logEmitterSharedState, SCOPE_INFO);
   }
 
   @Test
@@ -71,12 +70,12 @@ class SdkLogBuilderTest {
     builder.setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
     builder.setEpoch(now);
-    builder.setAttributes(attrs);
+    builder.setAllAttributes(attrs);
     builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
     builder.setSeverity(severity);
     builder.setSeverityText(sevText);
     builder.emit();
-    assertThat(emittedLog.get())
+    assertThat(emittedLog.get().toLogData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
@@ -95,7 +94,7 @@ class SdkLogBuilderTest {
 
     builder.emit();
 
-    assertThat(emittedLog.get())
+    assertThat(emittedLog.get().toLogData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())
@@ -103,14 +102,5 @@ class SdkLogBuilderTest {
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
-  }
-
-  @Test
-  void emit_AfterShutdown() {
-    when(logEmitterSharedState.hasBeenShutdown()).thenReturn(true);
-
-    builder.emit();
-
-    assertThat(emittedLog.get()).isNull();
   }
 }

@@ -39,13 +39,13 @@ public final class SdkLogEmitterProviderBuilder {
 
   /**
    * Assign a {@link Supplier} of {@link LogLimits}. {@link LogLimits} will be retrieved each time a
-   * {@link LogEmitter#logBuilder()} is called.
+   * {@link LogEmitter#logRecordBuilder()} is called.
    *
    * <p>The {@code logLimitsSupplier} must be thread-safe and return immediately (no remote calls,
    * as contention free as possible).
    *
    * @param logLimitsSupplier the supplier that will be used to retrieve the {@link LogLimits} for
-   *     every {@link LogBuilder}.
+   *     every {@link LogRecordBuilder}.
    * @return this
    */
   public SdkLogEmitterProviderBuilder setLogLimits(Supplier<LogLimits> logLimitsSupplier) {
@@ -55,8 +55,8 @@ public final class SdkLogEmitterProviderBuilder {
   }
 
   /**
-   * Add a log processor. {@link LogProcessor#emit(LogData)} will be called each time a log is
-   * emitted by {@link LogEmitter} instances obtained from the {@link SdkLogEmitterProvider}.
+   * Add a log processor. {@link LogProcessor#onEmit(ReadWriteLogRecord)} will be called each time a
+   * log is emitted by {@link LogEmitter} instances obtained from the {@link SdkLogEmitterProvider}.
    *
    * @param processor the log processor
    * @return this
