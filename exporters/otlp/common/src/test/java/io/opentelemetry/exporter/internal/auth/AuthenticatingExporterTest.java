@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -45,10 +46,10 @@ class AuthenticatingExporterTest {
     OkHttpExporter<Marshaler> exporter =
         new OkHttpExporterBuilder<>("otlp", "test", server.httpUri().toASCIIString())
             .setAuthenticator(
-                (j) -> {
+                () -> {
                   Map<String, String> headers = new HashMap<>();
                   headers.put("Authorization", "auth");
-                  j.accept(headers);
+                  return headers;
                 })
             .build();
 
@@ -70,8 +71,9 @@ class AuthenticatingExporterTest {
     OkHttpExporter<Marshaler> exporter =
         new OkHttpExporterBuilder<>("otlp", "test", server.httpUri().toASCIIString())
             .setAuthenticator(
-                (j) -> {
+                () -> {
                   server.enqueue(HttpResponse.of(HttpStatus.UNAUTHORIZED));
+                  return Collections.emptyMap();
                 })
             .build();
     server.enqueue(HttpResponse.of(HttpStatus.UNAUTHORIZED));

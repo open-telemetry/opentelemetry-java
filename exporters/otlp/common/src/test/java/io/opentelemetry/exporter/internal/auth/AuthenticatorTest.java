@@ -11,9 +11,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -24,14 +24,9 @@ class AuthenticatorTest {
     Map<String, String> input = new HashMap<>();
     input.put("key1", "value1");
     input.put("key2", "value2");
-    Map<String, String> result = new HashMap<>();
 
-    Authenticator authenticator =
-        (Consumer<Map<String, String>> headers) -> {
-          headers.accept(input);
-        };
-    authenticator.getHeaders(result::putAll);
-    assertThat(result).isEqualTo(input);
+    Authenticator authenticator = () -> new HashMap<>(input);
+    assertThat(authenticator.getHeaders()).isEqualTo(input);
   }
 
   @Test
@@ -41,7 +36,7 @@ class AuthenticatorTest {
 
     assertThat(builder).extracting("authenticator").isNull();
 
-    Authenticator authenticator = (Consumer<Map<String, String>> headers) -> {};
+    Authenticator authenticator = Collections::emptyMap;
 
     Authenticator.setAuthenticatorOnDelegate(new WithDelegate(builder), authenticator);
 
@@ -52,7 +47,7 @@ class AuthenticatorTest {
 
   @Test
   void setAuthenticatorOnDelegate_Fail() {
-    Authenticator authenticator = (Consumer<Map<String, String>> headers) -> {};
+    Authenticator authenticator = Collections::emptyMap;
 
     assertThatThrownBy(() -> Authenticator.setAuthenticatorOnDelegate(new Object(), authenticator))
         .isInstanceOf(IllegalArgumentException.class);

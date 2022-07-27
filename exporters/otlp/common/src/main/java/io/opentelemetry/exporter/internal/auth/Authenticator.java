@@ -9,7 +9,6 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import java.lang.reflect.Field;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -23,10 +22,9 @@ public interface Authenticator {
    * Method called by the exporter to get headers to be used on a request that requires
    * authentication.
    *
-   * @param headersConsumer Consumer callback to be used to propagate headers to the underlying OTLP
-   *     HTTP exporter implementation.
+   * @return Headers to add to the request
    */
-  void getHeaders(Consumer<Map<String, String>> headersConsumer);
+  Map<String, String> getHeaders();
 
   /**
    * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
