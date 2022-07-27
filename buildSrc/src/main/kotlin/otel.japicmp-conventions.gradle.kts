@@ -39,6 +39,11 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // semver.
         continue
       }
+      if (change == JApiCompatibilityChange.METHOD_ABSTRACT_NOW_DEFAULT) {
+        // Adding default implementations to interface methods previously abstract is not a breaking
+        // change.
+        continue
+      }
       if (!change.isBinaryCompatible) {
         return Violation.notBinaryCompatible(member, Severity.error)
       }
@@ -101,7 +106,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
         // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
-        // on interfaces.
+        // on interfaces, and adding default implementations to interface methods previously
+        // abstract.
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)
