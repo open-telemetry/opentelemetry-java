@@ -121,6 +121,7 @@ testing {
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
+        implementation(project(":sdk:logs-testing"))
 
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")

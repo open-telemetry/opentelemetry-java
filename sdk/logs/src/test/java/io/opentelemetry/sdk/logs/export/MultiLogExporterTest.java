@@ -14,7 +14,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.logs.util.TestUtil;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +30,8 @@ class MultiLogExporterTest {
   @Mock private LogExporter logExporter1;
   @Mock private LogExporter logExporter2;
   private static final List<LogData> LOG_LIST =
-      Collections.singletonList(TestUtil.createLogData(Severity.DEBUG, "Message!"));
+      Collections.singletonList(
+          TestLogData.builder().setBody("Message!").setSeverity(Severity.DEBUG).build());
 
   @Test
   void empty() {
