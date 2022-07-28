@@ -1,6 +1,7 @@
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
+import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Severity
 import me.champeau.gradle.japicmp.report.Violation
@@ -44,7 +45,22 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // change.
         continue
       }
-      if (!change.isBinaryCompatible || !change.isSourceCompatible) {
+      if (!change.isSourceCompatible) {
+        if (member is JApiMethod &&
+          member.getjApiClass().getFullyQualifiedName() == "io.opentelemetry.sdk.testing.trace.TestSpanData" &&
+          member.getName() == "getInstrumentationScopeInfo"
+        ) {
+          // TODO(lmolkova) remove in 1.18
+          // SpanData getInstrumentationScopeInfo was initially added as abstract method (which was breaking)
+          // and later on got default implementation as a fix.
+          // TestSpanData is AutoValue and now has to make this method abstract again, which results in
+          // false-positive code incompatibility check comparing to TestSpanData in 1.16.
+          // It should not be a problem with new AutoValues or after 1.17 is released.
+          continue
+        }
+        return Violation.error(member, "Not source compatible")
+      }
+      if (!change.isBinaryCompatible) {
         return Violation.notBinaryCompatible(member, Severity.error)
       }
     }
