@@ -16,6 +16,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -287,7 +288,7 @@ final class SdkSpan implements ReadWriteSpan {
       }
       if (attributes == null) {
         attributes =
-            new AttributesMap(
+            AttributesMap.create(
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       }
 

@@ -14,4 +14,5 @@ dependencies {
   api(project(":sdk:logs"))
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:logs-testing"))
 }

@@ -298,7 +298,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       customized = true;
       mergeSdkTracerProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
-          ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
+          SpiUtil.loadOrdered(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
       }
     }

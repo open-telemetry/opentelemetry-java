@@ -39,6 +39,7 @@ dependencies {
   testImplementation(project(":sdk:trace"))
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:logs-testing"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")

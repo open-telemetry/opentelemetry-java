@@ -27,9 +27,9 @@ import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,8 +53,10 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                LogDataBuilder.create(
-                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
+                TestLogData.builder()
+                    .setResource(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
+                    .setInstrumentationScopeInfo(
                         InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
@@ -84,8 +86,10 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                LogDataBuilder.create(
-                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                TestLogData.builder()
+                    .setResource(
+                        Resource.create(Attributes.builder().put("testKey", "testValue").build()))
+                    .setInstrumentationScopeInfo(
                         InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
@@ -116,8 +120,10 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                LogDataBuilder.create(
-                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                TestLogData.builder()
+                    .setResource(
+                        Resource.create(Attributes.builder().put("testKey", "testValue").build()))
+                    .setInstrumentationScopeInfo(
                         InstrumentationScopeInfo.create("instrumentation", "1", null))
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));

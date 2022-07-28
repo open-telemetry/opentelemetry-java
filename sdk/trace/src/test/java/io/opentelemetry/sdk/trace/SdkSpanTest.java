@@ -29,6 +29,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -1043,7 +1044,7 @@ class SdkSpanTest {
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
     SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
-        new AttributesMap(
+        AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
@@ -1159,8 +1160,8 @@ class SdkSpanTest {
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
-    AttributesMap attributesWithCapacity = new AttributesMap(32, Integer.MAX_VALUE);
-    attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
+    AttributesMap attributesWithCapacity = AttributesMap.create(32, Integer.MAX_VALUE);
+    attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

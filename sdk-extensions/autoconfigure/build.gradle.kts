@@ -35,6 +35,17 @@ dependencies {
 
 testing {
   suites {
+    val testAutoConfigureOrder by registering(JvmTestSuite::class) {
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
+            environment("OTEL_LOGS_EXPORTER", "none")
+          }
+        }
+      }
+    }
     val testConfigError by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":extensions:trace-propagators"))
@@ -121,6 +132,7 @@ testing {
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":sdk:testing"))
+        implementation(project(":sdk:logs-testing"))
 
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")

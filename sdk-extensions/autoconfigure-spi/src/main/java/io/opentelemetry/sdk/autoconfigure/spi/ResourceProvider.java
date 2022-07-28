@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.resources.Resource;
  * A service provider interface (SPI) for providing a {@link Resource} that is merged into the
  * {@linkplain Resource#getDefault() default resource}.
  */
-public interface ResourceProvider {
+public interface ResourceProvider extends Ordered {
 
   Resource createResource(ConfigProperties config);
 }

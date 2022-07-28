@@ -18,10 +18,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,10 @@ class OtlpJsonLoggingLogExporterTest {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final LogData LOG1 =
-      LogDataBuilder.create(RESOURCE, InstrumentationScopeInfo.create("instrumentation", "1", null))
+      TestLogData.builder()
+          .setResource(RESOURCE)
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.create("instrumentation", "1", null))
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -52,8 +55,10 @@ class OtlpJsonLoggingLogExporterTest {
           .build();
 
   private static final LogData LOG2 =
-      LogDataBuilder.create(
-              RESOURCE, InstrumentationScopeInfo.create("instrumentation2", "2", null))
+      TestLogData.builder()
+          .setResource(RESOURCE)
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.create("instrumentation2", "2", null))
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")

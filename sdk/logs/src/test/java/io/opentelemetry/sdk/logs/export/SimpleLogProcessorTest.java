@@ -19,7 +19,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.util.TestUtil;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class SimpleLogProcessorTest {
 
   @Test
   void addLogRecord() {
-    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
     logProcessor.emit(logData);
     verify(logExporter).export(Collections.singletonList(logData));
   }
@@ -61,7 +61,7 @@ class SimpleLogProcessorTest {
   @Test
   @SuppressLogger(SimpleLogProcessor.class)
   void addLogRecord_ExporterError() {
-    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
     when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
     logProcessor.emit(logData);
     logProcessor.emit(logData);
@@ -75,7 +75,7 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
     logProcessor.emit(logData);
     logProcessor.emit(logData);
 
@@ -99,7 +99,7 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogData logData = TestUtil.createLogData(DEBUG, "Log message");
+    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
     logProcessor.emit(logData);
     logProcessor.emit(logData);
 

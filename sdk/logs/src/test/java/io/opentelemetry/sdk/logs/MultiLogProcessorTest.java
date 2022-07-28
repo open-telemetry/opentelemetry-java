@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.logs.util.TestUtil;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,8 @@ class MultiLogProcessorTest {
 
   @Mock private LogProcessor logProcessor1;
   @Mock private LogProcessor logProcessor2;
-  private static final LogData logData = TestUtil.createLogData(Severity.DEBUG, "message");
+  private static final LogData logData =
+      TestLogData.builder().setSeverity(Severity.DEBUG).setBody("message").build();
 
   @BeforeEach
   void setup() {

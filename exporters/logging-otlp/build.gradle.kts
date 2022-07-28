@@ -18,6 +18,7 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:logs-testing"))
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:metrics"))
   testImplementation(project(":sdk:trace"))
