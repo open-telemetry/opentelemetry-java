@@ -13,8 +13,6 @@ import java.util.function.BiFunction;
 
 /** Utilities to help deal w/ {@code Map<Attributes, Accumulation>} in metric storage. */
 final class MetricStorageUtils {
-  /** The max number of metric accumulations for a particular {@link MetricStorage}. */
-  static final int MAX_ACCUMULATIONS = 2000;
 
   private MetricStorageUtils() {}
 

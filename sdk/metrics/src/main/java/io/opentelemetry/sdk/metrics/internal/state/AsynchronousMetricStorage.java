@@ -45,12 +45,14 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private Map<Attributes, T> accumulations = new HashMap<>();
+  private final int maxAccumulations;
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      int maxAccumulations) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     AggregationTemporality aggregationTemporality =
@@ -66,6 +68,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
             metricDescriptor);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.maxAccumulations = maxAccumulations;
   }
 
   /**
@@ -75,7 +78,8 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   static <T, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
       RegisteredReader registeredReader,
       RegisteredView registeredView,
-      InstrumentDescriptor instrumentDescriptor) {
+      InstrumentDescriptor instrumentDescriptor,
+      int maxAccumulations) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -86,7 +90,8 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
         registeredReader,
         metricDescriptor,
         aggregator,
-        registeredView.getViewAttributesProcessor());
+        registeredView.getViewAttributesProcessor(),
+        maxAccumulations);
   }
 
   /** Record callback long measurements from {@link ObservableLongMeasurement}. */
@@ -108,13 +113,13 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private void recordAccumulation(T accumulation, Attributes attributes) {
     Attributes processedAttributes = attributesProcessor.process(attributes, Context.current());
 
-    if (accumulations.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
+    if (accumulations.size() >= maxAccumulations) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed accumulations ("
-              + MetricStorageUtils.MAX_ACCUMULATIONS
+              + maxAccumulations
               + ").");
       return;
     }

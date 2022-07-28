@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,6 +41,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
+  /** The max number of metric accumulations for a particular {@link MetricStorage}. */
+  public static final int MAX_ACCUMULATIONS = 2000;
 
   private final List<RegisteredView> registeredViews;
   private final List<RegisteredReader> registeredReaders;

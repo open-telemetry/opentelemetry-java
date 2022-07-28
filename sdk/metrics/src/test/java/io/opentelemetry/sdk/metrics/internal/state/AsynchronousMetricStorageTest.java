@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.SdkMeterProvider.MAX_ACCUMULATIONS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,7 +71,8 @@ class AsynchronousMetricStorageTest {
                 "description",
                 "unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.LONG));
+                InstrumentValueType.LONG),
+            MAX_ACCUMULATIONS);
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
             registeredReader,
@@ -80,7 +82,8 @@ class AsynchronousMetricStorageTest {
                 "description",
                 "unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE),
+            MAX_ACCUMULATIONS);
   }
 
   @Test
@@ -140,7 +143,8 @@ class AsynchronousMetricStorageTest {
                 AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
                 SourceInfo.noSourceInfo()),
             InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
+            MAX_ACCUMULATIONS);
 
     storage.recordLong(1, Attributes.builder().put("key1", "a").put("key2", "b").build());
 
@@ -158,7 +162,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    for (int i = 0; i <= MetricStorageUtils.MAX_ACCUMULATIONS + 1; i++) {
+    for (int i = 0; i <= MAX_ACCUMULATIONS + 1; i++) {
       longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
 
@@ -166,7 +170,7 @@ class AsynchronousMetricStorageTest {
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
-                    .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS));
+                    .hasSize(MAX_ACCUMULATIONS));
     logs.assertContains("Instrument long-counter has exceeded the maximum allowed accumulations");
   }
 

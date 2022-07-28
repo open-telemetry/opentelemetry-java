@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.SdkMeterProvider.MAX_ACCUMULATIONS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -120,7 +121,7 @@ class TemporalMetricStorageTest {
 
     // Send in new measurement at time 10, with attr1
     Map<Attributes, DoubleAccumulation> measurement1 = new HashMap<>();
-    for (int i = 0; i < MetricStorageUtils.MAX_ACCUMULATIONS; i++) {
+    for (int i = 0; i < MAX_ACCUMULATIONS; i++) {
       Attributes attr1 = Attributes.builder().put("key", "value" + i).build();
       measurement1.put(attr1, DoubleAccumulation.create(3));
     }
@@ -133,7 +134,7 @@ class TemporalMetricStorageTest {
                     .satisfies(
                         sumData ->
                             assertThat(sumData.getPoints())
-                                .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS)
+                                .hasSize(MAX_ACCUMULATIONS)
                                 .allSatisfy(
                                     point -> {
                                       assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -147,7 +148,7 @@ class TemporalMetricStorageTest {
     Map<Attributes, DoubleAccumulation> measurement2 = new HashMap<>();
     Attributes attr2 =
         Attributes.builder()
-            .put("key", "value" + (MetricStorageUtils.MAX_ACCUMULATIONS + 1))
+            .put("key", "value" + (MAX_ACCUMULATIONS + 1))
             .build();
     measurement2.put(attr2, DoubleAccumulation.create(3));
     assertThat(

@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
+import static io.opentelemetry.sdk.metrics.SdkMeterProvider.MAX_ACCUMULATIONS;
+
 /** Stores last reported time and (optional) accumulation for metrics. */
 @ThreadSafe
 class TemporalMetricStorage<T, U extends ExemplarData> {
@@ -59,6 +61,28 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
       Map<Attributes, T> currentAccumulation,
       long startEpochNanos,
       long epochNanos) {
+    return buildMetricFor(resource, instrumentationScopeInfo, currentAccumulation,
+        startEpochNanos, epochNanos, MAX_ACCUMULATIONS);
+  }
+
+  /**
+   * Builds the {@link MetricData} for the {@code currentAccumulation}.
+   *
+   * @param resource The resource to attach these metrics against.
+   * @param instrumentationScopeInfo The instrumentation scope that generated these metrics.
+   * @param currentAccumulation The current accumulation of metric data from instruments. This might
+   *     be delta (for synchronous) or cumulative (for asynchronous).
+   * @param startEpochNanos The timestamp when the metrics SDK started.
+   * @param epochNanos The current collection timestamp.
+   * @return The {@link MetricData} points.
+   */
+  synchronized MetricData buildMetricFor(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      Map<Attributes, T> currentAccumulation,
+      long startEpochNanos,
+      long epochNanos,
+      int maxAccumulations) {
 
     Map<Attributes, T> result = currentAccumulation;
     long lastCollectionEpoch = registeredReader.getLastCollectEpochNanos();
@@ -79,7 +103,7 @@ class TemporalMetricStorage<T, U extends ExemplarData> {
       MetricStorageUtils.mergeAndPreserveInPlace(lastAccumulation, currentAccumulation, aggregator);
       // Note: We allow going over our hard limit on attribute streams when first merging, but
       // preserve after this point.
-      if (lastAccumulation.size() > MetricStorageUtils.MAX_ACCUMULATIONS) {
+      if (lastAccumulation.size() > maxAccumulations) {
         MetricStorageUtils.removeUnseen(lastAccumulation, currentAccumulation);
       }
       result = lastAccumulation;

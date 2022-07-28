@@ -162,7 +162,7 @@ public class MeterSharedState {
 
   /** Register new asynchronous storage associated with a given instrument. */
   public final SdkObservableMeasurement registerObservableMeasurement(
-      InstrumentDescriptor instrumentDescriptor) {
+      InstrumentDescriptor instrumentDescriptor, int maxAccumulations) {
     List<AsynchronousMetricStorage<?, ?>> registeredStorages = new ArrayList<>();
     for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
         readerStorageRegistries.entrySet()) {
@@ -175,7 +175,8 @@ public class MeterSharedState {
         }
         registeredStorages.add(
             registry.register(
-                AsynchronousMetricStorage.create(reader, registeredView, instrumentDescriptor)));
+                AsynchronousMetricStorage.create(
+                    reader, registeredView, instrumentDescriptor, maxAccumulations)));
       }
     }
 

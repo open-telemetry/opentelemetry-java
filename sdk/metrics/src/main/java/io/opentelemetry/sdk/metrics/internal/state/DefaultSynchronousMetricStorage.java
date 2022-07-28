@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.MetricStorageUtils.MAX_ACCUMULATIONS;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -110,13 +108,13 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     // Missing entry or no longer mapped. Try to add a new one if not exceeded cardinality limits.
     aggregatorHandle = aggregator.createHandle();
     while (true) {
-      if (activeCollectionStorage.size() >= this.maxAccumulations) {
+      if (activeCollectionStorage.size() >= maxAccumulations) {
         logger.log(
             Level.WARNING,
             "Instrument "
                 + metricDescriptor.getSourceInstrument().getName()
                 + " has exceeded the maximum allowed accumulations ("
-                + MAX_ACCUMULATIONS
+                + maxAccumulations
                 + ").");
         return NOOP_STORAGE_HANDLE;
       }
