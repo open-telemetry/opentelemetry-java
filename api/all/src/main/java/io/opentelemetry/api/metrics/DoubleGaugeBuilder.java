@@ -33,6 +33,10 @@ public interface DoubleGaugeBuilder {
    */
   DoubleGaugeBuilder setUnit(String unit);
 
+
+
+  DoubleGaugeBuilder setMaxAccumulations(int maxAccumulations);
+
   /** Sets the Gauge for recording {@code long} values. */
   LongGaugeBuilder ofLongs();
 

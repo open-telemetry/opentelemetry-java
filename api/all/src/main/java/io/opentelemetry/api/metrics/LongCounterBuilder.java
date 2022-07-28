@@ -34,6 +34,11 @@ public interface LongCounterBuilder {
    */
   LongCounterBuilder setUnit(String unit);
 
+
+
+
+  LongCounterBuilder setMaxAccumulations(int maxAccumulations);
+
   /** Sets the Counter for recording {@code double} values. */
   DoubleCounterBuilder ofDoubles();
 

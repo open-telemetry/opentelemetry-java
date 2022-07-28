@@ -47,12 +47,14 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
       new ConcurrentHashMap<>();
   private final TemporalMetricStorage<T, U> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
+  private final int maxAccumulations;
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      int maxAccumulations) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     AggregationTemporality aggregationTemporality =
@@ -68,6 +70,7 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
             aggregationTemporality,
             metricDescriptor);
     this.attributesProcessor = attributesProcessor;
+    this.maxAccumulations = maxAccumulations;
   }
 
   // This is a storage handle to use when the attributes processor requires
@@ -107,7 +110,7 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     // Missing entry or no longer mapped. Try to add a new one if not exceeded cardinality limits.
     aggregatorHandle = aggregator.createHandle();
     while (true) {
-      if (activeCollectionStorage.size() >= MAX_ACCUMULATIONS) {
+      if (activeCollectionStorage.size() >= this.maxAccumulations) {
         logger.log(
             Level.WARNING,
             "Instrument "

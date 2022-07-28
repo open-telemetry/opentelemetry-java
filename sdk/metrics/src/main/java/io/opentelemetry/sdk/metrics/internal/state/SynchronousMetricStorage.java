@@ -39,7 +39,8 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       RegisteredReader registeredReader,
       RegisteredView registeredView,
       InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilter exemplarFilter) {
+      ExemplarFilter exemplarFilter,
+      int maxAccumulations) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -54,6 +55,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
         registeredReader,
         metricDescriptor,
         aggregator,
-        registeredView.getViewAttributesProcessor());
+        registeredView.getViewAttributesProcessor(),
+        maxAccumulations);
   }
 }

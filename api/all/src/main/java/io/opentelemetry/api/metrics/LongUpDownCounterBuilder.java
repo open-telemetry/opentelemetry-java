@@ -33,6 +33,10 @@ public interface LongUpDownCounterBuilder {
    */
   LongUpDownCounterBuilder setUnit(String unit);
 
+
+
+  LongUpDownCounterBuilder setMaxAccumulations(int maxAccumulations);
+
   /** Sets the Counter for recording {@code double} values. */
   DoubleUpDownCounterBuilder ofDoubles();
 

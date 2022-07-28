@@ -128,7 +128,9 @@ public class MeterSharedState {
 
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
-      InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
+      InstrumentDescriptor instrument,
+      MeterProviderSharedState meterProviderSharedState,
+      int maxAccumulations) {
 
     List<SynchronousMetricStorage> registeredStorages = new ArrayList<>();
     for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
@@ -146,7 +148,8 @@ public class MeterSharedState {
                     reader,
                     registeredView,
                     instrument,
-                    meterProviderSharedState.getExemplarFilter())));
+                    meterProviderSharedState.getExemplarFilter(),
+                    maxAccumulations)));
       }
     }
 

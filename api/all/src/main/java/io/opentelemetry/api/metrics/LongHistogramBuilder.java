@@ -31,6 +31,11 @@ public interface LongHistogramBuilder {
    */
   LongHistogramBuilder setUnit(String unit);
 
+
+
+
+  LongHistogramBuilder setMaxAccumulations(int maxAccumulations);
+
   /**
    * Builds and returns a Histogram instrument with the configuration.
    *

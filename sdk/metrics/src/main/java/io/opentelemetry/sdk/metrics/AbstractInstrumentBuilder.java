@@ -22,10 +22,12 @@ import java.util.function.Consumer;
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
   static final String DEFAULT_UNIT = "";
+  static final int MAX_ACCUMULATIONS = 2000;
 
   private final MeterProviderSharedState meterProviderSharedState;
   private String description;
   private String unit;
+  private int maxAccumulations;
 
   protected final MeterSharedState meterSharedState;
   protected final String instrumentName;
@@ -35,12 +37,14 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
       MeterSharedState meterSharedState,
       String name,
       String description,
-      String unit) {
+      String unit,
+      int maxAccumulations) {
     this.instrumentName = name;
     this.description = description;
     this.unit = unit;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
+    this.maxAccumulations = maxAccumulations;
   }
 
   protected abstract BuilderT getThis();
@@ -53,6 +57,11 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
     } else {
       this.unit = unit;
     }
+    return getThis();
+  }
+
+  public BuilderT setMaxAccumulations(int maxAccumulations) {
+    this.maxAccumulations = maxAccumulations;
     return getThis();
   }
 
@@ -76,7 +85,9 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
     InstrumentDescriptor descriptor = makeDescriptor(type, valueType);
     WriteableMetricStorage storage =
-        meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
+        meterSharedState.registerSynchronousMetricStorage(descriptor,
+            meterProviderSharedState,
+            maxAccumulations);
     return instrumentFactory.apply(descriptor, storage);
   }
 

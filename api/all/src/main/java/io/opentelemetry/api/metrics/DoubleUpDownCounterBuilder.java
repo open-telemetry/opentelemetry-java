@@ -33,6 +33,10 @@ public interface DoubleUpDownCounterBuilder {
    */
   DoubleUpDownCounterBuilder setUnit(String unit);
 
+
+
+  DoubleUpDownCounterBuilder setMaxAccumulations(int maxAccumulations);
+
   /**
    * Builds and returns an UpDownCounter instrument with the configuration.
    *

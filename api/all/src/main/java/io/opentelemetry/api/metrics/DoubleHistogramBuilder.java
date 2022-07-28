@@ -32,6 +32,10 @@ public interface DoubleHistogramBuilder {
    */
   DoubleHistogramBuilder setUnit(String unit);
 
+
+
+  DoubleHistogramBuilder setMaxAccumulations(int maxAccumulations);
+
   /** Sets the Counter for recording {@code long} values. */
   LongHistogramBuilder ofLongs();
 

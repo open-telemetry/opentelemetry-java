@@ -33,6 +33,9 @@ public interface DoubleCounterBuilder {
    */
   DoubleCounterBuilder setUnit(String unit);
 
+
+  DoubleCounterBuilder setMaxAccumulations(int maxAccumulations);
+
   /**
    * Builds and returns a Counter instrument with the configuration.
    *

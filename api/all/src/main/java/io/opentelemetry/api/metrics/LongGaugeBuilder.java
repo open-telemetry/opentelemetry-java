@@ -33,6 +33,11 @@ public interface LongGaugeBuilder {
    */
   LongGaugeBuilder setUnit(String unit);
 
+
+
+
+  LongGaugeBuilder setMaxAccumulations(int maxAccumulations);
+
   /**
    * Builds an Asynchronous Gauge instrument with the given callback.
    *

@@ -112,6 +112,11 @@ class DefaultMeter implements Meter {
     }
 
     @Override
+    public LongCounterBuilder setMaxAccumulations(int maxAccumulations) {
+      return this;
+    }
+
+    @Override
     public DoubleCounterBuilder ofDoubles() {
       return NOOP_DOUBLE_COUNTER_BUILDER;
     }
@@ -145,6 +150,11 @@ class DefaultMeter implements Meter {
     @Override
     public DoubleCounterBuilder setUnit(String unit) {
       ValidationUtil.checkValidInstrumentUnit(unit);
+      return this;
+    }
+
+    @Override
+    public DoubleCounterBuilder setMaxAccumulations(int maxAccumulations) {
       return this;
     }
 
@@ -206,6 +216,11 @@ class DefaultMeter implements Meter {
     }
 
     @Override
+    public LongUpDownCounterBuilder setMaxAccumulations(int maxAccumulations) {
+      return this;
+    }
+
+    @Override
     public DoubleUpDownCounterBuilder ofDoubles() {
       return NOOP_DOUBLE_UP_DOWN_COUNTER_BUILDER;
     }
@@ -241,6 +256,11 @@ class DefaultMeter implements Meter {
     @Override
     public DoubleUpDownCounterBuilder setUnit(String unit) {
       ValidationUtil.checkValidInstrumentUnit(unit);
+      return this;
+    }
+
+    @Override
+    public DoubleUpDownCounterBuilder setMaxAccumulations(int maxAccumulations) {
       return this;
     }
 
@@ -300,6 +320,11 @@ class DefaultMeter implements Meter {
     }
 
     @Override
+    public DoubleHistogramBuilder setMaxAccumulations(int maxAccumulations) {
+      return this;
+    }
+
+    @Override
     public LongHistogramBuilder ofLongs() {
       return NOOP_LONG_HISTOGRAM_BUILDER;
     }
@@ -325,6 +350,11 @@ class DefaultMeter implements Meter {
     }
 
     @Override
+    public LongHistogramBuilder setMaxAccumulations(int maxAccumulations) {
+      return this;
+    }
+
+    @Override
     public LongHistogram build() {
       return NOOP;
     }
@@ -342,6 +372,11 @@ class DefaultMeter implements Meter {
     @Override
     public DoubleGaugeBuilder setUnit(String unit) {
       ValidationUtil.checkValidInstrumentUnit(unit);
+      return this;
+    }
+
+    @Override
+    public DoubleGaugeBuilder setMaxAccumulations(int maxAccumulations) {
       return this;
     }
 
@@ -372,6 +407,11 @@ class DefaultMeter implements Meter {
     @Override
     public LongGaugeBuilder setUnit(String unit) {
       ValidationUtil.checkValidInstrumentUnit(unit);
+      return this;
+    }
+
+    @Override
+    public LongGaugeBuilder setMaxAccumulations(int maxAccumulations) {
       return this;
     }
 
