@@ -33,7 +33,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class SdkReadWriteLogRecordBuilderTest {
+class SdkLogRecordBuilderTest {
 
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
