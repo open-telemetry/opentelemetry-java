@@ -22,6 +22,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   implementation(project(":semconv"))

@@ -9,6 +9,8 @@ description = "OpenTelemetry Protocol JSON Logging Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.logging.otlp")
 
 dependencies {
+  compileOnly("org.osgi:osgi.annotation")
+
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:logs"))

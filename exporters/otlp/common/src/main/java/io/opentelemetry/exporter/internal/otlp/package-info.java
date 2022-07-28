@@ -10,6 +10,8 @@
  * at any time.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.exporter.internal.otlp;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -20,6 +20,7 @@ dependencies {
   implementation(project(":exporters:otlp:common"))
   implementation(project(":semconv"))
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly("io.grpc:grpc-stub")
 
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")

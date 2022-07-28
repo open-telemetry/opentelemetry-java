@@ -5,6 +5,8 @@
 
 /** Marshaling of OTLP metrics. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

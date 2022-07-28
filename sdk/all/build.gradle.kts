@@ -16,6 +16,8 @@ dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
 
+  compileOnly("org.osgi:osgi.annotation")
+
   // implementation dependency to require users to add the artifact directly to their build to use
   // SdkLogEmitterProvider.
   implementation(project(":sdk:logs"))

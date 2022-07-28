@@ -5,6 +5,8 @@
 
 /** Classes which form the in-memory representation of the OpenTelemetry metrics data model. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.metrics.data;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

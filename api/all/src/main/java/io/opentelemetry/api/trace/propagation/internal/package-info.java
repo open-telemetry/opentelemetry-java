@@ -10,6 +10,8 @@
  * API, and must not be used by users of the OpenTelemetry library.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.api.trace.propagation.internal;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

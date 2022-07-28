@@ -13,6 +13,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.jaeger")
 dependencies {
   api(project(":sdk:all"))
   compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly("org.osgi:osgi.annotation")
 
   implementation(project(":sdk:all"))
 

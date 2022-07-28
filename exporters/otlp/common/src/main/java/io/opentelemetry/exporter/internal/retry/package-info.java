@@ -5,6 +5,8 @@
 
 /** Logic for retrying of export requests. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.exporter.internal.retry;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -99,6 +99,7 @@ val DEPENDENCIES = listOf(
   "org.codehaus.mojo:animal-sniffer-annotations:1.21",
   "org.jctools:jctools-core:3.3.0",
   "org.junit-pioneer:junit-pioneer:1.7.1",
+  "org.osgi:osgi.annotation:8.1.0",
   "org.skyscreamer:jsonassert:1.5.0",
 )
 

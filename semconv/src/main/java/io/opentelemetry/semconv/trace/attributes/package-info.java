@@ -9,6 +9,8 @@
  * @see io.opentelemetry.semconv.trace.attributes.SemanticAttributes
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.semconv.trace.attributes;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

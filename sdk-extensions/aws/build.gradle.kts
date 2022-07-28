@@ -12,6 +12,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:all"))
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly(project(":sdk-extensions:autoconfigure"))
 
   annotationProcessor("com.google.auto.value:auto-value")

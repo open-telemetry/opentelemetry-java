@@ -16,5 +16,6 @@ dependencies {
 
   testImplementation("com.google.guava:guava")
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly("com.sun.net.httpserver:http")
 }

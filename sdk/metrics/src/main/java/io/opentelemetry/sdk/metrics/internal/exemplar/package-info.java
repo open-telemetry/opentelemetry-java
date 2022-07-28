@@ -5,6 +5,8 @@
 
 /** Metric exemplar extension points. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

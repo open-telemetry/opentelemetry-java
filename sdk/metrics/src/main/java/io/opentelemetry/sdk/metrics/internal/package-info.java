@@ -4,13 +4,11 @@
  */
 
 /**
- * The SDK implementation of metrics.
+ * The SDK implementation of metrics internal.
  *
  * @see io.opentelemetry.sdk.metrics.SdkMeterProvider
  */
-@ParametersAreNonnullByDefault
 @Export
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal;
 
 import org.osgi.annotation.bundle.Export;
-import javax.annotation.ParametersAreNonnullByDefault;

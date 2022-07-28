@@ -11,6 +11,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.jaeger.thrift")
 dependencies {
   api(project(":sdk:all"))
 
+  compileOnly("org.osgi:osgi.annotation")
+
   implementation(project(":sdk:all"))
   implementation(project(":semconv"))
 

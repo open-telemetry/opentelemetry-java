@@ -11,6 +11,8 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.logging")
 dependencies {
   api(project(":sdk:common"))
 
+  compileOnly("org.osgi:osgi.annotation")
+
   testImplementation(project(":sdk:logs-testing"))
 
   testImplementation("org.awaitility:awaitility")

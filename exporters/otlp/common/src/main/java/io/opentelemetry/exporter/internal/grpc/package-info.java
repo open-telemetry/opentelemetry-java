@@ -5,6 +5,8 @@
 
 /** Utilities for gRPC exporters. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.exporter.internal.grpc;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

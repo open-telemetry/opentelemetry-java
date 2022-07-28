@@ -10,6 +10,8 @@
  * methods on {@link io.opentelemetry.api.OpenTelemetry}.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.api;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

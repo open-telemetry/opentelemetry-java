@@ -17,6 +17,7 @@ dependencies {
   api(project(":sdk:common"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
+  compileOnly("org.osgi:osgi.annotation")
 
   annotationProcessor("com.google.auto.value:auto-value")
 

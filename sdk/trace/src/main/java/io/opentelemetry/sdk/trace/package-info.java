@@ -9,6 +9,8 @@
  * @see io.opentelemetry.sdk.trace.SdkTracerProvider
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.trace;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

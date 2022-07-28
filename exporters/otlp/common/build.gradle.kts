@@ -17,6 +17,7 @@ dependencies {
 
   api(project(":api:all"))
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))

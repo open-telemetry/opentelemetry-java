@@ -5,6 +5,8 @@
 
 /** OpenTelemetry exporter which sends log data to OpenTelemetry collector via OTLP HTTP. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.exporter.otlp.http.logs;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

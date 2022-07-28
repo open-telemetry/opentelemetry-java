@@ -13,5 +13,7 @@ dependencies {
   api(project(":sdk:metrics"))
   api(project(":sdk:logs"))
 
+  compileOnly("org.osgi:osgi.annotation")
+
   testImplementation(project(":sdk:testing"))
 }

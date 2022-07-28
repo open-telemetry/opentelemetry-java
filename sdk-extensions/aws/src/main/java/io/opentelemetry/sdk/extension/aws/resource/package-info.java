@@ -8,6 +8,8 @@
  * resource information for AWS services.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.extension.aws.resource;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

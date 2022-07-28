@@ -14,6 +14,8 @@ dependencies {
 
   implementation(project(":semconv"))
 
+  compileOnly("org.osgi:osgi.annotation")
+
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))

@@ -9,6 +9,8 @@
  * @see io.opentelemetry.sdk.extension.jfr.JfrSpanProcessor
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.extension.jfr;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

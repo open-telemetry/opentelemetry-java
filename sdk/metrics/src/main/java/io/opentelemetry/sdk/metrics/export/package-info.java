@@ -8,6 +8,8 @@
  * io.opentelemetry.sdk.metrics.SdkMeterProvider}.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.metrics.export;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

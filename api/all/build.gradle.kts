@@ -15,6 +15,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  compileOnly("org.osgi:osgi.annotation")
+
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
 }

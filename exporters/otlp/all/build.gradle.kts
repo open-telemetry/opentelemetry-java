@@ -16,6 +16,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
+  compileOnly("org.osgi:osgi.annotation")
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))

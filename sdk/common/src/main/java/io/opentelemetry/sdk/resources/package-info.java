@@ -17,6 +17,8 @@
  * k8s.io/namespace/name.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.resources;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

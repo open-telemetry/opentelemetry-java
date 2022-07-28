@@ -15,6 +15,8 @@
  */
 // TODO: Add code examples.
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.api.baggage;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

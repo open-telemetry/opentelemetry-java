@@ -15,6 +15,8 @@
  * scenarios where instrumentation authors are unable to obtain one by other means.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.api.metrics;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -12,6 +12,7 @@ dependencies {
   api(project(":sdk:metrics"))
 
   compileOnly("com.sun.net.httpserver:http")
+  compileOnly("org.osgi:osgi.annotation")
 
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")

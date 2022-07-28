@@ -8,6 +8,8 @@
  * metrics.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.autoconfigure.spi.metrics;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

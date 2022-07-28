@@ -1,3 +1,4 @@
+
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -12,6 +13,8 @@ val mrJarVersions = listOf(9)
 
 dependencies {
   api(project(":api:all"))
+
+  compileOnly("org.osgi:osgi.annotation")
 
   implementation(project(":semconv"))
 

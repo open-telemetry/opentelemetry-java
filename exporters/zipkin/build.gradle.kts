@@ -13,6 +13,8 @@ dependencies {
 
   api("io.zipkin.reporter2:zipkin-reporter")
 
+  compileOnly("org.osgi:osgi.annotation")
+
   implementation(project(":semconv"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")

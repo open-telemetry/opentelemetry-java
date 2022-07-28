@@ -10,4 +10,5 @@ otelJava.moduleName.set("io.opentelemetry.semconv")
 
 dependencies {
   api(project(":api:all"))
+  compileOnly("org.osgi:osgi.annotation")
 }

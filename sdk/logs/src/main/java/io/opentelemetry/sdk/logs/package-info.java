@@ -9,6 +9,8 @@
  * @see io.opentelemetry.sdk.logs.SdkLogEmitterProvider
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.logs;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -5,6 +5,8 @@
 
 /** Log exporters. */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.logs.export;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

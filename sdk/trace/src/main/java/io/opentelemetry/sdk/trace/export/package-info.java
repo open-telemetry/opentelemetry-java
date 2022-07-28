@@ -20,6 +20,8 @@
  * environment variables with the use of the opentelemetry-autoconfiguration module.
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.sdk.trace.export;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

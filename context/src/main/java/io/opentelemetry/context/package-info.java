@@ -10,6 +10,8 @@
  * @see io.opentelemetry.context.Context
  */
 @ParametersAreNonnullByDefault
+@Export
 package io.opentelemetry.context;
 
+import org.osgi.annotation.bundle.Export;
 import javax.annotation.ParametersAreNonnullByDefault;

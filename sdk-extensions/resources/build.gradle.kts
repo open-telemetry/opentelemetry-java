@@ -16,6 +16,7 @@ dependencies {
   implementation(project(":semconv"))
 
   compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly("org.osgi:osgi.annotation")
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 }
