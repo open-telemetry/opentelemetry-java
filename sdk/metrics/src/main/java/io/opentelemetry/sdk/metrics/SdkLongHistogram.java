@@ -53,6 +53,11 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     record(value, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundLongHistogram bind(Attributes attributes) {
     return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }

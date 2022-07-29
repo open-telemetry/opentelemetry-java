@@ -54,6 +54,11 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     record(value, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundDoubleHistogram bind(Attributes attributes) {
     return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }

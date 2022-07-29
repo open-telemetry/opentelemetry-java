@@ -120,4 +120,23 @@ public final class SdkObservableMeasurement
       }
     }
   }
+
+
+  @Override
+  public void remove(Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
+    if (activeReader == null) {
+      throttlingLogger.log(
+          Level.FINE,
+          "Measurement recorded for instrument "
+              + instrumentDescriptor.getName()
+              + " outside callback registered to instrument. Dropping measurement.");
+      return;
+    }
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.unbind(attributes);
+      }
+    }
+  }
 }

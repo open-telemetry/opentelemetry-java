@@ -43,6 +43,11 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundDoubleUpDownCounter bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }

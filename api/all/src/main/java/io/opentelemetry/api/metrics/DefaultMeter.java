@@ -80,6 +80,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopDoubleCounter implements DoubleCounter {
@@ -91,6 +94,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
@@ -184,6 +190,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
@@ -195,6 +204,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
@@ -290,6 +302,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(double value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopLongHistogram implements LongHistogram {
@@ -301,6 +316,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {
@@ -432,6 +450,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(double value, Attributes attributes) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 
   private static class NoopObservableLongMeasurement implements ObservableLongMeasurement {
@@ -440,5 +461,8 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value, Attributes attributes) {}
+
+    @Override
+    public void remove(Attributes attributes) {}
   }
 }

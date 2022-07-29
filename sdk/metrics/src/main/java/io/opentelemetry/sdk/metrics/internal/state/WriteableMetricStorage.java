@@ -19,6 +19,8 @@ public interface WriteableMetricStorage {
   /** Bind an efficient storage handle for a set of attributes. */
   BoundStorageHandle bind(Attributes attributes);
 
+  void unBind(Attributes attributes);
+
   /** Records a measurement. */
   default void recordLong(long value, Attributes attributes, Context context) {
     BoundStorageHandle handle = bind(attributes);

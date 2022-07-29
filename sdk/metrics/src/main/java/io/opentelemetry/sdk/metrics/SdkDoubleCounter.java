@@ -56,6 +56,11 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundDoubleCounter bind(Attributes attributes) {
     return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }

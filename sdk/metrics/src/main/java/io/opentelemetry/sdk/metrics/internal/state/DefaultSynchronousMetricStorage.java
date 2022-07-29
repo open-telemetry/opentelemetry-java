@@ -98,6 +98,11 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     return doBind(attributesProcessor.process(attributes, Context.current()));
   }
 
+  @Override
+  public void unBind(Attributes attributes) {
+    activeCollectionStorage.remove(attributes);
+  }
+
   private BoundStorageHandle doBind(Attributes attributes) {
     AggregatorHandle<T, U> aggregatorHandle = activeCollectionStorage.get(attributes);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {

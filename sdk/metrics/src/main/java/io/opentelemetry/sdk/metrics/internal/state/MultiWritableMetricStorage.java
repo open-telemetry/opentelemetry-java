@@ -24,4 +24,11 @@ class MultiWritableMetricStorage implements WriteableMetricStorage {
     }
     return new MultiBoundStorageHandle(handles);
   }
+
+  @Override
+  public void unBind(Attributes attributes) {
+    for (WriteableMetricStorage metric : underlyingMetrics) {
+      metric.unBind(attributes);
+    }
+  }
 }

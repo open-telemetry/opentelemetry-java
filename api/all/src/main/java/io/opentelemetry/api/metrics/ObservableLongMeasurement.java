@@ -28,4 +28,11 @@ public interface ObservableLongMeasurement extends ObservableMeasurement {
    * @param attributes A set of attributes to associate with the value.
    */
   void record(long value, Attributes attributes);
+
+  /**
+   * Remove the handle/measurement from the storage.
+   *
+   * @param attributes A set of attributes.
+   */
+  void remove(Attributes attributes);
 }

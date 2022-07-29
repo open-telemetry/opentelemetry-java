@@ -102,6 +102,11 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
     }
   }
 
+
+  void unbind(Attributes attributes) {
+    this.accumulations.remove(attributes);
+  }
+
   /** Record callback double measurements from {@link ObservableDoubleMeasurement}. */
   void recordDouble(double value, Attributes attributes) {
     T accumulation = aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());

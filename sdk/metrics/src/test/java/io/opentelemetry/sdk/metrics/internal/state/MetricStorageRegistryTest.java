@@ -142,5 +142,8 @@ class MetricStorageRegistryTest {
     public BoundStorageHandle bind(Attributes attributes) {
       return null;
     }
+
+    @Override
+    public void unBind(Attributes attributes) {}
   }
 }

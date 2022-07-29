@@ -45,4 +45,11 @@ public interface LongUpDownCounter {
    * @param context The explicit context to associate with this measurement.
    */
   void add(long value, Attributes attributes, Context context);
+
+  /**
+   * Remove the handle/measurement from the storage.
+   *
+   * @param attributes A set of attributes.
+   */
+  void remove(Attributes attributes);
 }

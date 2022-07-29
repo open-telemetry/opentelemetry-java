@@ -58,6 +58,11 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundLongCounter bind(Attributes attributes) {
     return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
   }

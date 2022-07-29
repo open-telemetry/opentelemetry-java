@@ -84,6 +84,9 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   }
 
   @Override
+  public void unBind(Attributes attributes) {}
+
+  @Override
   public MetricData collectAndReset(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,

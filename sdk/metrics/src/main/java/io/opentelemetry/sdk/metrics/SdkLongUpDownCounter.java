@@ -44,6 +44,12 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     add(increment, Attributes.empty());
   }
 
+
+  @Override
+  public void remove(Attributes attributes) {
+    storage.unBind(attributes);
+  }
+
   BoundLongUpDownCounter bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }

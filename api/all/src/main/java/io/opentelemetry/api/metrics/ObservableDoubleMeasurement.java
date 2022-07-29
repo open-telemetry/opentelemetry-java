@@ -28,4 +28,11 @@ public interface ObservableDoubleMeasurement extends ObservableMeasurement {
    * @param attributes A set of attributes to associate with the value.
    */
   void record(double value, Attributes attributes);
+
+  /**
+   * Remove the handle/measurement from the storage.
+   *
+   * @param attributes A set of attributes.
+   */
+  void remove(Attributes attributes);
 }
