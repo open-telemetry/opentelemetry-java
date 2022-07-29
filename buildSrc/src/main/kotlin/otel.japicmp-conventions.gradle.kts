@@ -44,7 +44,7 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // change.
         continue
       }
-      if (!change.isBinaryCompatible) {
+      if (!change.isBinaryCompatible || !change.isSourceCompatible) {
         return Violation.notBinaryCompatible(member, Severity.error)
       }
     }
