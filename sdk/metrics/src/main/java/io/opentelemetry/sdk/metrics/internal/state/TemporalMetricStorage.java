@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.SdkMeterProvider.MAX_ACCUMULATIONS;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -18,8 +19,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
-
-import static io.opentelemetry.sdk.metrics.SdkMeterProvider.MAX_ACCUMULATIONS;
 
 /** Stores last reported time and (optional) accumulation for metrics. */
 @ThreadSafe
