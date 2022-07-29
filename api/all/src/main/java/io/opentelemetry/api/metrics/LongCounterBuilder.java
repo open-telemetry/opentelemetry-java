@@ -34,9 +34,11 @@ public interface LongCounterBuilder {
    */
   LongCounterBuilder setUnit(String unit);
 
-
-
-
+  /**
+   * Sets the max accumulations.
+   *
+   * @param maxAccumulations Max accumulations for the meter.
+   */
   LongCounterBuilder setMaxAccumulations(int maxAccumulations);
 
   /** Sets the Counter for recording {@code double} values. */

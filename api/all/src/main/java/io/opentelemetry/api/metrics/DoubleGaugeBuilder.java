@@ -33,8 +33,11 @@ public interface DoubleGaugeBuilder {
    */
   DoubleGaugeBuilder setUnit(String unit);
 
-
-
+  /**
+   * Sets the max accumulations.
+   *
+   * @param maxAccumulations Max accumulations for the meter.
+   */
   DoubleGaugeBuilder setMaxAccumulations(int maxAccumulations);
 
   /** Sets the Gauge for recording {@code long} values. */

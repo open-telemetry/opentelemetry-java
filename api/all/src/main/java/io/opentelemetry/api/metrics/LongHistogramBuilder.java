@@ -31,9 +31,11 @@ public interface LongHistogramBuilder {
    */
   LongHistogramBuilder setUnit(String unit);
 
-
-
-
+  /**
+   * Sets the max accumulations.
+   *
+   * @param maxAccumulations Max accumulations for the meter.
+   */
   LongHistogramBuilder setMaxAccumulations(int maxAccumulations);
 
   /**

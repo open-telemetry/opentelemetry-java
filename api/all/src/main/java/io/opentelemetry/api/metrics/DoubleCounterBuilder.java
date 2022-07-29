@@ -33,7 +33,11 @@ public interface DoubleCounterBuilder {
    */
   DoubleCounterBuilder setUnit(String unit);
 
-
+  /**
+   * Sets the max accumulations.
+   *
+   * @param maxAccumulations Max accumulations for the meter.
+   */
   DoubleCounterBuilder setMaxAccumulations(int maxAccumulations);
 
   /**

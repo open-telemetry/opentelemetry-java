@@ -32,8 +32,11 @@ public interface DoubleHistogramBuilder {
    */
   DoubleHistogramBuilder setUnit(String unit);
 
-
-
+  /**
+   * Sets the max accumulations.
+   *
+   * @param maxAccumulations Max accumulations for the meter.
+   */
   DoubleHistogramBuilder setMaxAccumulations(int maxAccumulations);
 
   /** Sets the Counter for recording {@code long} values. */
