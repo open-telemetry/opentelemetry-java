@@ -1,3 +1,4 @@
+import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
@@ -45,19 +46,8 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // change.
         continue
       }
-      if (!change.isSourceCompatible) {
-        if (member is JApiMethod &&
-          member.getjApiClass().getFullyQualifiedName() == "io.opentelemetry.sdk.testing.trace.TestSpanData" &&
-          member.getName() == "getInstrumentationScopeInfo"
-        ) {
-          // TODO(lmolkova) remove in 1.18
-          // SpanData getInstrumentationScopeInfo was initially added as abstract method (which was breaking)
-          // and later on got default implementation as a fix.
-          // TestSpanData is AutoValue and now has to make this method abstract again, which results in
-          // false-positive code incompatibility check comparing to TestSpanData in 1.16.
-          // It should not be a problem with new AutoValues or after 1.17 is released.
-          continue
-        }
+
+      if (!change.isSourceCompatible && !isAbstractMethodOnAutoValue(member, change)) {
         return Violation.error(member, "Not source compatible")
       }
       if (!change.isBinaryCompatible) {
@@ -65,6 +55,18 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
       }
     }
     return null
+  }
+
+  /**
+   * Checks if the change is an abstract method on a class annotated with AutoValue.
+   * AutoValues need to override default interface implementations and declare them abstract again
+   * Which causes METHOD_ABSTRACT_ADDED_TO_CLASS no source-compatible change. It's
+   * false-positive since AutoValue will generate implementation anyway.
+   */
+  fun isAbstractMethodOnAutoValue(member: JApiCompatibility, change: JApiCompatibilityChange): Boolean {
+    return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
+      member is JApiMethod &&
+      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
   }
 }
 
