@@ -61,8 +61,8 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
 
   /**
    * Checks if the change is an abstract method on a class annotated with AutoValue.
-   * AutoValues need to override default interface implementations and declare them abstract again
-   * Which causes METHOD_ABSTRACT_ADDED_TO_CLASS no source-compatible change. It's
+   * AutoValues need to override default interface methods and declare them abstract again.
+   * It causes METHOD_ABSTRACT_ADDED_TO_CLASS - source-incompatible change. It's
    * false-positive since AutoValue will generate implementation anyway.
    */
   fun isAbstractMethodOnAutoValue(member: JApiCompatibility, change: JApiCompatibilityChange): Boolean {
