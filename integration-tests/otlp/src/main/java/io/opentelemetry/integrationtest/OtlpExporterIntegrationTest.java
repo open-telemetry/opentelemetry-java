@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -82,9 +83,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.PullPolicy;
@@ -122,6 +125,8 @@ abstract class OtlpExporterIntegrationTest {
   private static OtlpGrpcServer grpcServer;
   private static GenericContainer<?> collector;
 
+  private static Logger logger = LoggerFactory.getLogger("otel-logger");
+
   @BeforeAll
   static void beforeAll() {
     grpcServer = new OtlpGrpcServer();
@@ -151,7 +156,7 @@ abstract class OtlpExporterIntegrationTest {
             .withClasspathResourceMapping(
                 "otel-config.yaml", "/otel-config.yaml", BindMode.READ_ONLY)
             .withCommand("--config", "/otel-config.yaml")
-            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("otel-collector")))
+            .withLogConsumer(outputFrame -> logger.error(outputFrame.getUtf8String()))
             .withExposedPorts(
                 COLLECTOR_OTLP_GRPC_PORT,
                 COLLECTOR_OTLP_HTTP_PORT,
