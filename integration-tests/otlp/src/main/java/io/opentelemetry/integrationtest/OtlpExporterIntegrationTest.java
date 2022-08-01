@@ -122,7 +122,7 @@ abstract class OtlpExporterIntegrationTest {
   private static OtlpGrpcServer grpcServer;
   private static GenericContainer<?> collector;
 
-  private static Logger logger = LoggerFactory.getLogger("otel-logger");
+  private static final Logger logger = LoggerFactory.getLogger("otel-logger");
 
   @BeforeAll
   static void beforeAll() {
