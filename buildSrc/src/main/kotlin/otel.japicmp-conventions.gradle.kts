@@ -46,8 +46,10 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // change.
         continue
       }
-
-      if (!change.isSourceCompatible && !isAbstractMethodOnAutoValue(member, change)) {
+      if (!isAbstractMethodOnAutoValue(member, change)) {
+        continue;
+      }
+      if (!change.isSourceCompatible) {
         return Violation.error(member, "Not source compatible")
       }
       if (!change.isBinaryCompatible) {
