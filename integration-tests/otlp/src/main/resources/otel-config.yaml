@@ -28,6 +28,7 @@ exporters:
     endpoint: $OTLP_EXPORTER_ENDPOINT
     tls:
       insecure: true
+    compression: none
 service:
   extensions: [health_check]
   pipelines:
