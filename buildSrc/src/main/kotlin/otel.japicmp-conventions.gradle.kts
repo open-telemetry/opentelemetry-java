@@ -1,6 +1,8 @@
+import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
+import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Severity
 import me.champeau.gradle.japicmp.report.Violation
@@ -44,11 +46,29 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // change.
         continue
       }
+      if (isAbstractMethodOnAutoValue(member, change)) {
+        continue
+      }
+      if (!change.isSourceCompatible) {
+        return Violation.error(member, "Not source compatible")
+      }
       if (!change.isBinaryCompatible) {
         return Violation.notBinaryCompatible(member, Severity.error)
       }
     }
     return null
+  }
+
+  /**
+   * Checks if the change is an abstract method on a class annotated with AutoValue.
+   * AutoValues need to override default interface methods and declare them abstract again.
+   * It causes METHOD_ABSTRACT_ADDED_TO_CLASS - source-incompatible change. It's
+   * false-positive since AutoValue will generate implementation anyway.
+   */
+  fun isAbstractMethodOnAutoValue(member: JApiCompatibility, change: JApiCompatibilityChange): Boolean {
+    return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
+      member is JApiMethod &&
+      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
   }
 }
 
