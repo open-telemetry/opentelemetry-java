@@ -40,6 +40,7 @@ class LogEmitterProviderConfigurationTest {
     LogEmitterProviderConfiguration.configureLogEmitterProvider(
         builder,
         DefaultConfigProperties.createForTest(properties),
+        LogEmitterProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
         (a, unused) -> a);
     SdkLogEmitterProvider logEmitterProvider = builder.build();
