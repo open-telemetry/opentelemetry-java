@@ -230,14 +230,14 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API Extensions
 
-| Component                                                     | Description                                                                    | Artifact ID                                 | Version                                                     |
-|---------------------------------------------------------------|--------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
-| [Annotations Extension](./extensions/annotations)             | Instrumentation annotations, used in conjunction with OpenTelemetry java agent | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
-| [AWS Extension](./extensions/aws)                             | AWS Xray propagator                                                            | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
-| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                               | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
-| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                              | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
-| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer          | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.16.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Noop API Extension](./extensions/noop-api)                   | A noop OpenTelemetry implementation which ignores context                      | `opentelemetry-extension-noop-api`          | <!--VERSION_UNSTABLE-->1.16.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                                     | Description                                                                                 | Artifact ID                                 | Version                                                     |
+|---------------------------------------------------------------|---------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
+| [AWS Extension](./extensions/aws)                             | AWS Xray propagator                                                                         | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
+| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                            | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
+| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                           | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
+| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer                       | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.16.0-alpha<!--/VERSION_UNSTABLE--> |
+| [Noop API Extension](./extensions/noop-api)                   | A noop OpenTelemetry implementation which ignores context                                   | `opentelemetry-extension-noop-api`          | <!--VERSION_UNSTABLE-->1.16.0-alpha<!--/VERSION_UNSTABLE--> |
+| [Annotations Extension](./extensions/annotations)             | Instrumentation annotations, used in conjunction with OpenTelemetry java agent (deprecated) | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.16.0<!--/VERSION_STABLE-->           |
 
 ### SDK
 

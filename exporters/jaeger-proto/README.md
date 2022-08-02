@@ -1,6 +1,6 @@
-# OpenTelemetry - Jaeger Proto
+# OpenTelemetry - Jaeger Proto (DEPRECATED)
 
-External use of this artifact is deprecated. It will not have any changes in the future but will continue to be published as is until 2.0.0.
+> **NOTICE**: External use of this artifact is deprecated. It will not have any changes in the future but will continue to be published as is until 2.0.0.
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
