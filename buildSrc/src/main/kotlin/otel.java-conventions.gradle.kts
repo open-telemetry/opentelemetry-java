@@ -186,9 +186,6 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
 
-  errorprone("com.google.errorprone:error_prone_core")
-  errorprone("com.uber.nullaway:nullaway")
-
   annotationProcessor("com.google.guava:guava-beta-checker")
 
   // Workaround for @javax.annotation.Generated

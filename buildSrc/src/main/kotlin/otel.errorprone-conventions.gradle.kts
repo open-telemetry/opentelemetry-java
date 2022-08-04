@@ -7,6 +7,11 @@ plugins {
   id("net.ltgt.nullaway")
 }
 
+dependencies {
+  errorprone("com.google.errorprone:error_prone_core")
+  errorprone("com.uber.nullaway:nullaway")
+}
+
 val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean() ?: false
 
 tasks {
@@ -20,6 +25,9 @@ tasks {
 
         disableWarningsInGeneratedCode.set(true)
         allDisabledChecksAsWarnings.set(true)
+
+        // Ignore warnings for generated and vendored classes
+        excludedPaths.set(".*/build/generated/.*|.*/internal/shaded/.*")
 
         // Still Java 8
         disable("Varifier")
@@ -39,9 +47,6 @@ tasks {
         // Fully qualified names may be necessary when deprecating a class to avoid
         // deprecation warning.
         disable("UnnecessarilyFullyQualified")
-
-        // Ignore warnings for protobuf and jmh generated files.
-        excludedPaths.set(".*generated.*|.*internal.shaded.*")
 
         // We use animal sniffer
         disable("Java7ApiChecker")
