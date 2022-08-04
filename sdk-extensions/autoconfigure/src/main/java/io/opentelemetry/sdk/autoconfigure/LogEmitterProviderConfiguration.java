@@ -27,6 +27,7 @@ final class LogEmitterProviderConfiguration {
   static void configureLogEmitterProvider(
       SdkLogEmitterProviderBuilder logEmitterProviderBuilder,
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
           logExporterCustomizer) {
@@ -34,7 +35,7 @@ final class LogEmitterProviderConfiguration {
     logEmitterProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
     Map<String, LogExporter> exportersByName =
-        configureLogExporters(config, meterProvider, logExporterCustomizer);
+        configureLogExporters(config, serviceClassLoader, meterProvider, logExporterCustomizer);
 
     configureLogProcessors(exportersByName, meterProvider)
         .forEach(logEmitterProviderBuilder::addLogProcessor);

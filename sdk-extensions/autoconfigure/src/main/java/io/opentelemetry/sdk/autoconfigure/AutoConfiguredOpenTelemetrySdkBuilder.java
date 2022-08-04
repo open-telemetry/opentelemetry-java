@@ -298,7 +298,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       customized = true;
       mergeSdkTracerProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
-          ServiceLoader.load(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
+          SpiUtil.loadOrdered(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
         customizer.customize(this);
       }
     }
@@ -334,7 +334,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
       logEmitterProviderBuilder.setResource(resource);
       LogEmitterProviderConfiguration.configureLogEmitterProvider(
-          logEmitterProviderBuilder, config, meterProvider, logExporterCustomizer);
+          logEmitterProviderBuilder,
+          config,
+          serviceClassLoader,
+          meterProvider,
+          logExporterCustomizer);
       logEmitterProviderBuilder =
           logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
       SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();

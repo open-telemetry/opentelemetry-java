@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -236,7 +237,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     AttributesMap attributes = this.attributes;
     if (attributes == null) {
       this.attributes =
-          new AttributesMap(
+          AttributesMap.create(
               spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       attributes = this.attributes;
     }

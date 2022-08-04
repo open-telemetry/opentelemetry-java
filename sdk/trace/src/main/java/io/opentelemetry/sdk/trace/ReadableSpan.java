@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import javax.annotation.Nullable;
 
@@ -68,7 +69,9 @@ public interface ReadableSpan {
    *
    * @return an instance of {@link InstrumentationScopeInfo} describing the instrumentation scope
    */
-  InstrumentationScopeInfo getInstrumentationScopeInfo();
+  default InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return InstrumentationScopeUtil.toInstrumentationScopeInfo(getInstrumentationLibraryInfo());
+  }
 
   /**
    * Returns whether this Span has already been ended.

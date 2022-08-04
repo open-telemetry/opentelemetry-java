@@ -17,9 +17,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,9 @@ public class LogAssertionsTest {
           .build();
 
   private static final LogData LOG_DATA =
-      LogDataBuilder.create(RESOURCE, INSTRUMENTATION_SCOPE_INFO)
+      TestLogData.builder()
+          .setResource(RESOURCE)
+          .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
           .setEpoch(100, TimeUnit.NANOSECONDS)
           .setSpanContext(
               SpanContext.create(

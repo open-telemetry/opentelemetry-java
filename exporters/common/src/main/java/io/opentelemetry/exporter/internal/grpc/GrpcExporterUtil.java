@@ -15,13 +15,13 @@ final class GrpcExporterUtil {
     String envVar;
     switch (type) {
       case "span":
-        envVar = "OTLP_TRACES_EXPORTER";
+        envVar = "OTEL_TRACES_EXPORTER";
         break;
       case "metric":
-        envVar = "OTLP_METRICS_EXPORTER";
+        envVar = "OTEL_METRICS_EXPORTER";
         break;
       case "log":
-        envVar = "OTLP_LOGS_EXPORTER";
+        envVar = "OTEL_LOGS_EXPORTER";
         break;
       default:
         throw new IllegalStateException(

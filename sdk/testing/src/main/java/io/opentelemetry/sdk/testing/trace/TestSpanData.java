@@ -63,6 +63,9 @@ public abstract class TestSpanData implements SpanData {
     return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
   }
 
+  @Override
+  public abstract InstrumentationScopeInfo getInstrumentationScopeInfo();
+
   /** A {@code Builder} class for {@link TestSpanData}. */
   @AutoValue.Builder
   public abstract static class Builder {
