@@ -51,7 +51,9 @@ public final class ValidationUtil {
    * <p>Log includes a stack trace.
    */
   public static void log(String message, Level level) {
-    API_USAGE_LOGGER.log(level, message, new AssertionError());
+    if (API_USAGE_LOGGER.isLoggable(level)) {
+      API_USAGE_LOGGER.log(level, message, new AssertionError());
+    }
   }
 
   /** Check if the instrument name is valid. If invalid, log a warning. */
