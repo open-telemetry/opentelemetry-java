@@ -205,6 +205,12 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
+  void logEmitterBuilder_NoProcessor_UsesNoop() {
+    assertThat(SdkLogEmitterProvider.builder().build().logEmitterBuilder("test"))
+        .isInstanceOf(NoopLogEmitterBuilder.class);
+  }
+
+  @Test
   void forceFlush() {
     sdkLogEmitterProvider.forceFlush();
     verify(logProcessor).forceFlush();
