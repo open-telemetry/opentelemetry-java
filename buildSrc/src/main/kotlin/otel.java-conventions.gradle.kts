@@ -199,10 +199,10 @@ dependencies {
 class TestArgumentsProvider(
   @InputFile
   @PathSensitive(PathSensitivity.RELATIVE)
-  val loggingProperties: File,
+  val loggingProperties: File
 ) : CommandLineArgumentProvider {
   override fun asArguments() = listOf(
-    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
+    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}"
   )
 }
 
