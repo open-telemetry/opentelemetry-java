@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.4.2"
+  id("com.diffplug.spotless") version "6.9.0"
 }
 
 repositories {
@@ -14,7 +14,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.9")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.4.2")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.9.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
@@ -47,7 +47,7 @@ tasks {
 
 spotless {
   kotlinGradle {
-    ktlint().userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
+    ktlint().editorConfigOverride(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
     target("**/*.gradle.kts")
   }
 }
