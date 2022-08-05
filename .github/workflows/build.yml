@@ -65,7 +65,7 @@ jobs:
           then 
             echo "No diff detected."
           else 
-            echo "Diff detected - did you run './gradlew jApiCmp?'?"
+            echo "Diff detected - did you run './gradlew jApiCmp'?"
             echo $(git diff --name-only)
             echo $(git diff)
             exit 1
