@@ -4,6 +4,8 @@ on:
 
 jobs:
   release:
+    outputs:
+      version: ${{ steps.create-github-release.outputs.version }}
     runs-on: ubuntu-20.04
     steps:
       - run: |
@@ -109,7 +111,8 @@ jobs:
           .github/scripts/generate-release-contributors.sh v$PRIOR_VERSION >> /tmp/release-notes.txt
           fi
 
-      - name: Create GitHub release
+      - id: create-github-release
+        name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -118,6 +121,8 @@ jobs:
                             --notes-file /tmp/release-notes.txt \
                             --discussion-category announcements \
                             v$VERSION
+
+          echo "::set-output name=version::$VERSION"
 
       - uses: actions/checkout@v3
         with:
@@ -195,3 +200,11 @@ jobs:
                        --body "$body" \
                        --head $branch \
                        --base main
+
+  create-java-contrib-pull-request:
+    needs: release
+    uses: ./.github/workflows/reusable-create-java-instrumentation-pull-request.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
