@@ -48,6 +48,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -69,6 +70,7 @@ public class OtlpPipelineStressTest {
   public static GenericContainer<?> collectorContainer =
       new GenericContainer<>(
               DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/otel-collector"))
+          .withImagePullPolicy(PullPolicy.alwaysPull())
           .withNetwork(network)
           .withNetworkAliases("otel-collector")
           .withExposedPorts(OTLP_RECEIVER_PORT)
@@ -94,6 +96,7 @@ public class OtlpPipelineStressTest {
   public static GenericContainer<?> toxiproxyContainer =
       new GenericContainer<>(
               DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/toxiproxy"))
+          .withImagePullPolicy(PullPolicy.alwaysPull())
           .withNetwork(network)
           .withNetworkAliases("toxiproxy")
           .withExposedPorts(TOXIPROXY_CONTROL_PORT, COLLECTOR_PROXY_PORT)
