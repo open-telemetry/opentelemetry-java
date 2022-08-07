@@ -27,6 +27,8 @@ dependencies {
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
 
+  testImplementation(project(":sdk:common"))
+
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.squareup.okhttp3:okhttp")
   testImplementation("com.linecorp.armeria:armeria-junit5")

@@ -7,7 +7,7 @@ package io.opentelemetry.opencensusshim;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.stream.Collectors.groupingBy;
 
 import com.google.common.collect.ImmutableList;
 import io.opencensus.common.Duration;
@@ -26,7 +26,6 @@ import io.opencensus.tags.Tags;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,8 +35,8 @@ import org.junit.jupiter.api.Test;
 class OpenTelemetryMetricExporterTest {
 
   @Test
-  @SuppressWarnings({"deprecation", "unchecked"}) // Summary is deprecated in census
-  void testSupportedMetricsExportedCorrectly() throws Exception {
+  @SuppressWarnings({"deprecation"}) // Summary is deprecated in census
+  void testSupportedMetricsExportedCorrectly() {
     Tagger tagger = Tags.getTagger();
     Measure.MeasureLong latency =
         Measure.MeasureLong.create("task_latency", "The task latency in milliseconds", "ms");
@@ -104,11 +103,16 @@ class OpenTelemetryMetricExporterTest {
           .untilAsserted(
               () ->
                   assertThat(
+                          // Filter for metrics with name in allowedMetrics, and dedupe to only one
+                          // metric per unique metric name
                           exporter.getFinishedMetricItems().stream()
                               .filter(metric -> allowedMetrics.contains(metric.getName()))
-                              .sorted(Comparator.comparing(MetricData::getName))
+                              .collect(groupingBy(MetricData::getName))
+                              .values()
+                              .stream()
+                              .map(metricData -> metricData.get(0))
                               .collect(Collectors.toList()))
-                      .satisfiesExactly(
+                      .satisfiesExactlyInAnyOrder(
                           metric ->
                               assertThat(metric)
                                   .hasName("double_gauge")

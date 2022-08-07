@@ -26,7 +26,11 @@ import java.lang.annotation.Target;
  * @see <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry
  *     OpenTelemetry Instrumentation for Java</a>
  * @since 1.4.0
+ * @deprecated Moved to {@code
+ *     io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:<version>} in
+ *     version 1.17.0+.
  */
+@Deprecated
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpanAttribute {

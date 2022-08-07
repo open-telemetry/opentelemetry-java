@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** A builder for customizing OpenTelemetry auto-configuration. */
@@ -71,6 +72,21 @@ public interface AutoConfigurationCustomizer {
    */
   AutoConfigurationCustomizer addPropertiesSupplier(
       Supplier<Map<String, String>> propertiesSupplier);
+
+  /**
+   * Adds a {@link Function} to invoke the with the {@link ConfigProperties} to allow customization.
+   * The return value of the {@link Function} will be merged into the {@link ConfigProperties}
+   * before it is used for auto-configuration, overwriting the properties that are already there.
+   *
+   * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
+   * duplicate keys in earlier ones.
+   *
+   * @since 1.17.0
+   */
+  default AutoConfigurationCustomizer addPropertiesCustomizer(
+      Function<ConfigProperties, Map<String, String>> propertiesCustomizer) {
+    return this;
+  }
 
   /**
    * Adds a {@link BiFunction} to invoke the with the {@link SdkTracerProviderBuilder} to allow
