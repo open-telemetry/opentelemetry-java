@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -59,7 +60,6 @@ class SdkLogRecordBuilderTest {
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
-    Attributes attrs = Attributes.empty();
     SpanContext spanContext =
         SpanContext.create(
             "33333333333333333333333333333333",
@@ -70,7 +70,9 @@ class SdkLogRecordBuilderTest {
     builder.setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
     builder.setEpoch(now);
-    builder.setAllAttributes(attrs);
+    builder.setAttribute(null, null);
+    builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
+    builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
     builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
     builder.setSeverity(severity);
     builder.setSeverityText(sevText);
@@ -80,7 +82,7 @@ class SdkLogRecordBuilderTest {
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
         .hasEpochNanos(TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano())
-        .hasAttributes(attrs)
+        .hasAttributes(Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build())
         .hasSpanContext(spanContext)
         .hasSeverity(severity)
         .hasSeverityText(sevText);
