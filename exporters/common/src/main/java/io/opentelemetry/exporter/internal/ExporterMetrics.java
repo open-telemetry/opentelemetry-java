@@ -59,8 +59,8 @@ public class ExporterMetrics {
   }
 
   /**
-   * Create an instance for recording exporter metrics under the meter "{@code
-   * io.opentelemetry.exporters.}" + {@code exporterName} + "-grpc".
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-grpc}".
    */
   public static ExporterMetrics createGrpc(
       String exporterName, String type, MeterProvider meterProvider) {
@@ -68,8 +68,8 @@ public class ExporterMetrics {
   }
 
   /**
-   * Create an instance for recording exporter metrics under the meter "{@code
-   * io.opentelemetry.exporters.}" + {@code exporterName} + "-grpc-okhttp".
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-grpc-okhttp}".
    */
   public static ExporterMetrics createGrpcOkHttp(
       String exporterName, String type, MeterProvider meterProvider) {
@@ -77,8 +77,8 @@ public class ExporterMetrics {
   }
 
   /**
-   * Create an instance for recording exporter metrics under the meter "{@code
-   * io.opentelemetry.exporters.}" + {@code exporterName} + "-http".
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-http}".
    */
   public static ExporterMetrics createHttpProtobuf(
       String exporterName, String type, MeterProvider meterProvider) {
@@ -86,8 +86,8 @@ public class ExporterMetrics {
   }
 
   /**
-   * Create an instance for recording exporter metrics under the meter "{@code
-   * io.opentelemetry.exporters.}" + {@code exporterName} + "-http-json".
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-http-json}".
    */
   public static ExporterMetrics createHttpJson(
       String exporterName, String type, MeterProvider meterProvider) {
