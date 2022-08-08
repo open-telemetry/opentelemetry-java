@@ -42,6 +42,8 @@ import java.util.logging.Logger;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
+  private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
+
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
@@ -145,8 +147,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
-
     private final LongCounter processedSpansCounter;
     private final Attributes droppedAttrs;
     private final Attributes exportedAttrs;
@@ -237,9 +237,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll().toSpanData());
-        }
+        JcTools.drain(
+            queue, maxExportBatchSize - batch.size(), span -> batch.add(span.toSpanData()));
+
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
           updateNextExportTime();

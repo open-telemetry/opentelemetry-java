@@ -55,11 +55,6 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
     if (span == null) {
       return new ScopeShim(Context.current().with(NOOP_SPANSHIM).makeCurrent());
     }
-    if (!(span instanceof SpanShim)) {
-      throw new IllegalArgumentException("span is not a valid SpanShim object");
-    }
-
-    SpanShim spanShim = (SpanShim) span;
-    return new ScopeShim(Context.current().with(spanShim).makeCurrent());
+    return new ScopeShim(Context.current().with(ShimUtil.getSpanShim(span)).makeCurrent());
   }
 }

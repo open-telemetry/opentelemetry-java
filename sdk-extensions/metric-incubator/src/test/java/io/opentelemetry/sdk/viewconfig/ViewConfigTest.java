@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -20,12 +21,15 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
+import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -40,9 +44,7 @@ class ViewConfigTest {
     ViewConfig.registerViews(builder, resourceFileInputStream("full-config.yaml"));
 
     assertThat(builder)
-        .extracting(
-            "viewRegistryBuilder", as(InstanceOfAssertFactories.type(ViewRegistryBuilder.class)))
-        .extracting("orderedViews", as(InstanceOfAssertFactories.list(Object.class)))
+        .extracting("registeredViews", as(InstanceOfAssertFactories.list(RegisteredView.class)))
         .hasSize(2);
   }
 
@@ -96,6 +98,39 @@ class ViewConfigTest {
   }
 
   @Test
+  void loadViewConfig_AggregationArgs() {
+    List<ViewConfigSpecification> viewConfigSpecs =
+        ViewConfig.loadViewConfig(resourceFileInputStream("aggregation-args.yaml"));
+
+    assertThat(viewConfigSpecs)
+        .satisfiesExactly(
+            viewConfigSpec -> {
+              SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
+              assertThat(selectorSpec.getInstrumentType()).isEqualTo(InstrumentType.HISTOGRAM);
+              ViewSpecification viewSpec = viewConfigSpec.getViewSpecification();
+              assertThat(viewSpec.getAggregation()).isEqualTo("explicit_bucket_histogram");
+              assertThat(viewSpec.getAggregationArgs())
+                  .isEqualTo(ImmutableMap.of("bucket_boundaries", Arrays.asList(1.0, 2.0, 5.0)));
+            },
+            viewConfigSpec -> {
+              SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
+              assertThat(selectorSpec.getInstrumentType()).isEqualTo(InstrumentType.HISTOGRAM);
+              ViewSpecification viewSpec = viewConfigSpec.getViewSpecification();
+              assertThat(viewSpec.getAggregation()).isEqualTo("explicit_bucket_histogram");
+              assertThat(viewSpec.getAggregationArgs())
+                  .isEqualTo(ImmutableMap.of("bucket_boundaries", Arrays.asList(1.0, 2.0, 5.0)));
+            },
+            viewConfigSpec -> {
+              SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
+              assertThat(selectorSpec.getInstrumentType()).isEqualTo(InstrumentType.HISTOGRAM);
+              ViewSpecification viewSpec = viewConfigSpec.getViewSpecification();
+              assertThat(viewSpec.getAggregation()).isEqualTo("exponential_bucket_histogram");
+              assertThat(viewSpec.getAggregationArgs())
+                  .isEqualTo(ImmutableMap.of("max_buckets", 20));
+            });
+  }
+
+  @Test
   void toView_Empty() {
     View view = ViewConfig.toView(ViewSpecification.builder().build());
     assertThat(view).isEqualTo(View.builder().build());
@@ -137,10 +172,66 @@ class ViewConfigTest {
   }
 
   @Test
-  void toAggregation() {
-    assertThatThrownBy(() -> ViewConfig.toAggregation("foo"))
+  void toAggregation_BadConfig() {
+    // Unrecognized aggregation
+    assertThatThrownBy(() -> ViewConfig.toAggregation("foo", Collections.emptyMap()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Error creating aggregation");
+        .hasMessage("Error creating aggregation");
+
+    // Explicit bucket histogram
+    assertThatThrownBy(
+            () ->
+                ViewConfig.toAggregation(
+                    "explicit_bucket_histogram",
+                    ImmutableMap.of("bucket_boundaries", Arrays.asList("seven", "four"))))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("bucket_boundaries must be an array of numbers");
+    assertThatThrownBy(
+            () ->
+                ViewConfig.toAggregation(
+                    "explicit_bucket_histogram",
+                    ImmutableMap.of("bucket_boundaries", Collections.singletonList("2.0,3.0"))))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("bucket_boundaries must be an array of numbers");
+
+    // Exponential histogram
+    assertThatThrownBy(
+            () ->
+                ViewConfig.toAggregation(
+                    "exponential_bucket_histogram", ImmutableMap.of("max_buckets", "four")))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("max_buckets must be an integer");
+  }
+
+  @Test
+  void toAggregation_GoodConfig() {
+    // Explicit bucket histogram
+    assertThat(ViewConfig.toAggregation("explicit_bucket_histogram", Collections.emptyMap()))
+        .isEqualTo(Aggregation.explicitBucketHistogram());
+    assertThat(
+            ViewConfig.toAggregation(
+                "explicit_bucket_histogram",
+                ImmutableMap.of("bucket_boundaries", Arrays.asList(1.0, 2.0))))
+        .isInstanceOf(ExplicitBucketHistogramAggregation.class)
+        .extracting("bucketBoundaries", as(InstanceOfAssertFactories.list(Double.class)))
+        .isEqualTo(Arrays.asList(1.0, 2.0));
+    assertThat(
+            ViewConfig.toAggregation(
+                "explicit_bucket_histogram",
+                ImmutableMap.of("bucket_boundaries", Arrays.asList(1, 2))))
+        .isInstanceOf(ExplicitBucketHistogramAggregation.class)
+        .extracting("bucketBoundaries", as(InstanceOfAssertFactories.list(Double.class)))
+        .isEqualTo(Arrays.asList(1.0, 2.0));
+
+    // Exponential histogram
+    assertThat(ViewConfig.toAggregation("exponential_bucket_histogram", Collections.emptyMap()))
+        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+    assertThat(
+            ViewConfig.toAggregation(
+                "exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
+        .isInstanceOf(ExponentialHistogramAggregation.class)
+        .extracting("maxBuckets", as(InstanceOfAssertFactories.INTEGER))
+        .isEqualTo(20);
   }
 
   @Test

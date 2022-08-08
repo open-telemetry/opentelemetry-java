@@ -17,47 +17,22 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class ContainerResourceTest {
-
-  // Invalid because ID is not a hex string
-  private static final String INVALID_CGROUP_LINE_1 =
-      "13:name=systemd:/podruntime/docker/kubepods/ac679f8a8319c8cf7d38e1adf263bc08d23zzzz";
-
-  // with suffix
-  private static final String CGROUP_LINE_1 =
-      "13:name=systemd:/podruntime/docker/kubepods/ac679f8a8319c8cf7d38e1adf263bc08d23.aaaa";
-  private static final String EXPECTED_CGROUP_1 = "ac679f8a8319c8cf7d38e1adf263bc08d23";
-
-  // with prefix and suffix
-  private static final String CGROUP_LINE_2 =
-      "13:name=systemd:/podruntime/docker/kubepods/crio-dc679f8a8319c8cf7d38e1adf263bc08d23.stuff";
-  private static final String EXPECTED_CGROUP_2 = "dc679f8a8319c8cf7d38e1adf263bc08d23";
-
-  // just container id
-  private static final String CGROUP_LINE_3 =
-      "13:name=systemd:/pod/d86d75589bf6cc254f3e2cc29debdf85dde404998aa128997a819ff991827356";
-  private static final String EXPECTED_CGROUP_3 =
-      "d86d75589bf6cc254f3e2cc29debdf85dde404998aa128997a819ff991827356";
-
-  // with prefix
-  private static final String CGROUP_LINE_4 =
-      "//\n"
-          + "1:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
-          + "2:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
-          + "3:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23";
-
-  private static final String EXPECTED_CGROUP_4 = "dc579f8a8319c8cf7d38e1adf263bc08d23";
-
-  // with two dashes in prefix
-  private static final String CGROUP_LINE_5 =
-      "11:perf_event:/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod4415fd05_2c0f_4533_909b_f2180dca8d7c.slice/cri-containerd-713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c.scope";
-  private static final String EXPECTED_CGROUP_5 =
-      "713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c";
+class ContainerResourceTest {
 
   @Test
-  public void testNegativeCases(@TempDir Path tempFolder) throws IOException {
+  void buildResource_Invalid(@TempDir Path tempFolder) throws IOException {
     // invalid containerId (non-hex)
-    Path cgroup = createCGroup(tempFolder.resolve("cgroup1"), INVALID_CGROUP_LINE_1);
+    Path cgroup =
+        createCGroup(
+            tempFolder.resolve("cgroup1"),
+            "13:name=systemd:/podruntime/docker/kubepods/ac679f8a8319c8cf7d38e1adf263bc08d23zzzz");
+    assertThat(buildResource(cgroup)).isEqualTo(Resource.empty());
+
+    // unrecognized format (last "-" is after last ".")
+    cgroup =
+        createCGroup(
+            tempFolder.resolve("cgroup1"),
+            "13:name=systemd:/podruntime/docker/kubepods/ac679f8.a8319c8cf7d38e1adf263bc08-d23zzzz");
     assertThat(buildResource(cgroup)).isEqualTo(Resource.empty());
 
     // test invalid file
@@ -66,21 +41,49 @@ public class ContainerResourceTest {
   }
 
   @Test
-  public void testContainer(@TempDir Path tempFolder) throws IOException {
-    Path cgroup = createCGroup(tempFolder.resolve("cgroup1"), CGROUP_LINE_1);
-    assertThat(getContainerId(buildResource(cgroup))).isEqualTo(EXPECTED_CGROUP_1);
+  void buildResource_Valid(@TempDir Path tempFolder) throws IOException {
+    // with suffix
+    Path cgroup =
+        createCGroup(
+            tempFolder.resolve("cgroup1"),
+            "13:name=systemd:/podruntime/docker/kubepods/ac679f8a8319c8cf7d38e1adf263bc08d23.aaaa");
+    assertThat(getContainerId(buildResource(cgroup)))
+        .isEqualTo("ac679f8a8319c8cf7d38e1adf263bc08d23");
 
-    Path cgroup2 = createCGroup(tempFolder.resolve("cgroup2"), CGROUP_LINE_2);
-    assertThat(getContainerId(buildResource(cgroup2))).isEqualTo(EXPECTED_CGROUP_2);
+    // with prefix and suffix
+    Path cgroup2 =
+        createCGroup(
+            tempFolder.resolve("cgroup2"),
+            "13:name=systemd:/podruntime/docker/kubepods/crio-dc679f8a8319c8cf7d38e1adf263bc08d23.stuff");
+    assertThat(getContainerId(buildResource(cgroup2)))
+        .isEqualTo("dc679f8a8319c8cf7d38e1adf263bc08d23");
 
-    Path cgroup3 = createCGroup(tempFolder.resolve("cgroup3"), CGROUP_LINE_3);
-    assertThat(getContainerId(buildResource(cgroup3))).isEqualTo(EXPECTED_CGROUP_3);
+    // just container id
+    Path cgroup3 =
+        createCGroup(
+            tempFolder.resolve("cgroup3"),
+            "13:name=systemd:/pod/d86d75589bf6cc254f3e2cc29debdf85dde404998aa128997a819ff991827356");
+    assertThat(getContainerId(buildResource(cgroup3)))
+        .isEqualTo("d86d75589bf6cc254f3e2cc29debdf85dde404998aa128997a819ff991827356");
 
-    Path cgroup4 = createCGroup(tempFolder.resolve("cgroup4"), CGROUP_LINE_4);
-    assertThat(getContainerId(buildResource(cgroup4))).isEqualTo(EXPECTED_CGROUP_4);
+    // with prefix
+    Path cgroup4 =
+        createCGroup(
+            tempFolder.resolve("cgroup4"),
+            "//\n"
+                + "1:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
+                + "2:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
+                + "3:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23");
+    assertThat(getContainerId(buildResource(cgroup4)))
+        .isEqualTo("dc579f8a8319c8cf7d38e1adf263bc08d23");
 
-    Path cgroup5 = createCGroup(tempFolder.resolve("cgroup5"), CGROUP_LINE_5);
-    assertThat(getContainerId(buildResource(cgroup5))).isEqualTo(EXPECTED_CGROUP_5);
+    // with two dashes in prefix
+    Path cgroup5 =
+        createCGroup(
+            tempFolder.resolve("cgroup5"),
+            "11:perf_event:/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod4415fd05_2c0f_4533_909b_f2180dca8d7c.slice/cri-containerd-713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c.scope");
+    assertThat(getContainerId(buildResource(cgroup5)))
+        .isEqualTo("713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c");
   }
 
   private static String getContainerId(Resource resource) {

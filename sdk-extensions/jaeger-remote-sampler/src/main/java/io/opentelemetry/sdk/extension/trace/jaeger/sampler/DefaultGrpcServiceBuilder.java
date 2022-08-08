@@ -18,7 +18,6 @@ import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
@@ -45,7 +44,6 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
 
-  /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
   // Visible for testing
   DefaultGrpcServiceBuilder(
       String type,

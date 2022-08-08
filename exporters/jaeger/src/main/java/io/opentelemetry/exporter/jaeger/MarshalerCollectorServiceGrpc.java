@@ -15,6 +15,7 @@ import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import java.io.InputStream;
+import javax.annotation.Nullable;
 
 // Adapted from the protoc generated code for CollectorServiceGrpc.
 final class MarshalerCollectorServiceGrpc {
@@ -56,8 +57,11 @@ final class MarshalerCollectorServiceGrpc {
               .setResponseMarshaller(RESPONSE_MARSHALER)
               .build();
 
-  static CollectorServiceFutureStub newFutureStub(Channel channel) {
-    return CollectorServiceFutureStub.newStub(CollectorServiceFutureStub::new, channel);
+  static CollectorServiceFutureStub newFutureStub(
+      Channel channel, @Nullable String authorityOverride) {
+    return CollectorServiceFutureStub.newStub(
+        (c, options) -> new CollectorServiceFutureStub(c, options.withAuthority(authorityOverride)),
+        channel);
   }
 
   static final class CollectorServiceFutureStub

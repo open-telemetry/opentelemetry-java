@@ -5,10 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-/** An enumeration which describes the time period over which metrics should be aggregated. */
+/**
+ * Describes the time period over which measurements are aggregated.
+ *
+ * @since 1.14.0
+ */
 public enum AggregationTemporality {
-  /** Metrics will be aggregated only over the most recent collection interval. */
+  /** Measurements are aggregated since the previous collection. */
   DELTA,
-  /** Metrics will be aggregated over the lifetime of the associated Instrument. */
+  /** Measurements are aggregated over the lifetime of the instrument. */
   CUMULATIVE
 }

@@ -23,10 +23,6 @@ abstract class BaseShimObject {
     return telemetryInfo.tracer();
   }
 
-  SpanContextShimTable spanContextTable() {
-    return telemetryInfo.spanContextTable();
-  }
-
   OpenTracingPropagators propagators() {
     return telemetryInfo.propagators();
   }

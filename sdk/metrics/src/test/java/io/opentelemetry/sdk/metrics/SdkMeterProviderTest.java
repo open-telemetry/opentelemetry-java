@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -928,6 +929,7 @@ class SdkMeterProviderTest {
 
   @Test
   void shutdown() {
+    when(metricReader.getDefaultAggregation(any())).thenCallRealMethod();
     when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
 
     CompletableResultCode result =

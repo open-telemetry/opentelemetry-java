@@ -6,18 +6,26 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
-/** A single data point that summarizes the values in a time series of numeric values. */
+/**
+ * Point data for {@link SummaryData}.
+ *
+ * @since 1.14.0
+ */
+@Immutable
 public interface SummaryPointData extends PointData {
-  /** Returns the number of values that are being summarized. */
+  /** Returns the count of measurements. */
   long getCount();
 
-  /** Returns the sum of all the values that are being summarized. */
+  /** Returns the sum of measurements. */
   double getSum();
 
   /**
-   * Returns the values in the summarization. Note: a quantile 0.0 represents the minimum value in
-   * the distribution.
+   * Returns the list of values at different quantiles in the distribution of measurements.
+   *
+   * <p>Note: a quantile 0.0 represents the minimum value in the distribution; a quantile 1.0
+   * represents the maximum value in the distribution.
    */
   List<ValueAtQuantile> getValues();
 }

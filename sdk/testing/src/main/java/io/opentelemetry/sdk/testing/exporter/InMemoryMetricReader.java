@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *   }
  * }
  * </code></pre>
+ *
+ * @since 1.14.0
  */
 public class InMemoryMetricReader implements MetricReader {
   private final AggregationTemporality aggregationTemporality;

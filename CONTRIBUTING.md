@@ -127,7 +127,6 @@ so you still have to run `spotlessApply` from time to time.
 * Each API element should have a `@since` tag specifying the minor version when it was released (or
   the next minor version).
 * There MUST be NO javadoc errors.
-*
 
 See [section 7.3.1](https://google.github.io/styleguide/javaguide.html#s7.3.1-javadoc-exception-self-explanatory)
 in the guide for exceptions to the Javadoc requirement.

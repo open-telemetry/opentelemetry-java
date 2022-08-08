@@ -1,5 +1,111 @@
 # Changelog
 
+## Unreleased
+
+## Version 1.16.0 (2022-07-13)
+
+### API
+
+* Fix bug `ImmutableKeyValuePairs` implementation that causes `ArrayIndexOutOfBoundsException` to be
+  thrown under certain conditions.
+
+### SDK
+
+#### Traces
+
+* Optimize `BatchSpanProcessor` using JcTools.
+
+#### Metrics
+
+* Tighten up exponential histogram implementation for alignment with specification: Default to 160
+  positive and negative buckets. Remove ability to configure starting scale. Minimum number of
+  buckets is one instead of zero.
+* Allow `MetricExporter` and `MetricReader` to influence default aggregation. The default
+  aggregation is used when no registered views match an instrument.
+
+#### Exporter
+
+* Fix handling of client keys in PEM format.
+* For OTLP exporters, change behavior to use `OkHttpGrpcExporter` (OkHttp implementation that
+  doesn't use any gRPC dependencies) unless `OtlpGrpc{Signal}Builder#setChannel(ManagedChannel)` is
+  called by user. Previously, `OkHttpGrpcExporter` was used if no gRPC implementation was found on
+  classpath.
+* Add support to configure default aggregation on OTLP metric exporters
+  via `Otlp{Protocol}MetricExporterBuilder#setDefaultAggregationSelector(DefaultAggregationSelector)`.
+
+#### Testing
+
+* Add span status assertions.
+
+#### SDK Extensions
+
+* Autoconfigure properly handles non-string system properties.
+* Autoconfigure normalizes hyphens `-` to periods `.` when accessing `ConfigProperties`.
+
+### OpenTracing Shim
+
+* Add support for span wrappers.
+* Store OpenTracing `SpanContext` in OpenTracing `Span` wrapper.
+* Use `Baggage` of active span.
+
+## Version 1.15.0 (2022-06-10)
+
+### API
+
+* Add batch callback API, allowing a single callback to record measurements to multiple metric
+  instruments.
+
+### SDK
+
+#### Metrics
+
+* `SdkMeterProvider#toString()` now returns a useful string describing configuration.
+* Fix bug preventing proper function of Metrics SDK when multiple readers are
+  present ([#4436](https://github.com/open-telemetry/opentelemetry-java/pull/4436)).
+* Fix reporting intervals for metrics for delta
+  readers ([#4400](https://github.com/open-telemetry/opentelemetry-java/issues/4400)).
+
+#### Exporter
+
+* BREAKING: merge all stable OTLP exporters into `opentelemetry-exporter-otlp`.
+  `opentelemetry-exporter-otlp-trace`, `opentelemetry-exporter-otlp-metrics`,
+  `opentelemetry-exporter-otlp-http-trace`, and `opentelemetry-exporter-otlp-http-metrics` are no
+  longer published and their contents have been merged into a single artifact.
+* BREAKING: merge log OTLP exporters into `opentelemetry-exporter-otlp-logs`.
+  `opentelemetry-exporter-otlp-http-logs` is no longer published and its contents have been merged
+  into a single artifact.
+* Upgrade to OTLP protobuf version 0.18.0.
+* RetryInterceptor retries on `SocketTimeoutException` with no message.
+* Added `JaegerGrpcSpanExporterBuilder#setMeterProvider()`, enabling support of experimental jaeger
+  span export metrics.
+* DEPRECATION: the `opentelemetry-exporter-jaeger-proto` module containing jaeger proto definitions
+  and corresponding generated classes is deprecated for removal in next major version.
+* OTLP gRPC exporters support overriding `:authority`
+  via `OtlpGrpc*ExporterBuilder#addHeader("host", "my-authority-override")`.
+
+#### SDK Extensions
+
+* BREAKING: Move `ConfigureableMetricExporterProvider`
+  from `opentelemetry-sdk-extension-autoconfigure` to
+  stable `opentelemetry-sdk-extension-autoconfigure-spi`.
+* Autoconfigure now supports multiple values for `otel.metrics.exporter`.
+* Autoconfigure now
+  supports [general attribute limits](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#attribute-limits),
+  applicable to span attributes, span event attributes, span link attributes, and log attributes.
+* Autoconfigure now supports an experimental option to disable the SDK.
+  If `otel.experimental.sdk.enabled=true`, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()`
+  returns a minimal (but not noop) `OpenTelemetrySdk`. The same minimal instance is set
+  to `GlobalOpenTelemetry`.
+* New "get or default" methods have been added to `ConfigProperties`.
+  E.g. `ConfigProperties#getString("otel.metrics.exporter", "otlp")` fetches the value for the
+  property `otel.metrics.exporter` and returns `otlp` if it is not set.
+* Fix bug in `ContainerResource` provider that caused it to throw an exception in some instances
+  when containerd is used.
+
+### Micrometer shim
+
+* Cache descriptions such that metrics with the same name use the first seen description.
+
 ## Version 1.14.0 (2022-05-09)
 
 The metrics SDK is stable! New stable artifacts include:

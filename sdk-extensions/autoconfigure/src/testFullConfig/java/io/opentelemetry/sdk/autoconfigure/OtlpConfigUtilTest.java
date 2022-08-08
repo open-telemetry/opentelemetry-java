@@ -19,6 +19,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -362,5 +364,52 @@ class OtlpConfigUtilTest {
         DefaultConfigProperties.createForTest(properties), temporalityRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
+  }
+
+  @Test
+  void configureOtlpHistogramDefaultAggregation() {
+    assertThatThrownBy(
+            () ->
+                configureHistogramDefaultAggregation(
+                    ImmutableMap.of(
+                        "otel.exporter.otlp.metrics.default.histogram.aggregation", "foo")))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized default histogram aggregation:");
+    assertThat(
+            configureHistogramDefaultAggregation(
+                    ImmutableMap.of(
+                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                        "exponential_bucket_histogram"))
+                .getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+    assertThat(
+            configureHistogramDefaultAggregation(
+                    ImmutableMap.of(
+                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                        "EXPONENTIAL_BUCKET_HISTOGRAM"))
+                .getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+
+    assertThat(
+            configureHistogramDefaultAggregation(
+                ImmutableMap.of(
+                    "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                    "explicit_bucket_histogram")))
+        .isNull();
+    assertThat(
+            configureHistogramDefaultAggregation(
+                ImmutableMap.of(
+                    "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                    "EXPLICIT_BUCKET_HISTOGRAM")))
+        .isNull();
+  }
+
+  private static DefaultAggregationSelector configureHistogramDefaultAggregation(
+      Map<String, String> properties) {
+    AtomicReference<DefaultAggregationSelector> aggregationRef = new AtomicReference<>();
+    OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+        DefaultConfigProperties.createForTest(properties), aggregationRef::set);
+    // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
+    return aggregationRef.get();
   }
 }

@@ -13,7 +13,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for an exported {@link MetricData}. */
+/**
+ * Assertions for an exported {@link MetricData}.
+ *
+ * @since 1.14.0
+ */
 public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData> {
   MetricAssert(@Nullable MetricData actual) {
     super(actual, MetricAssert.class);

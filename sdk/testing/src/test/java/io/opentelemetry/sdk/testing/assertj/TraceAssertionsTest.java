@@ -17,6 +17,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -241,6 +242,13 @@ class TraceAssertionsTest {
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
         .hasStatus(StatusData.ok())
+        .hasStatusSatisfying(
+            status ->
+                status
+                    .isOk()
+                    .hasCode(StatusCode.OK)
+                    .hasDescription("")
+                    .hasDescriptionMatching("^$"))
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
@@ -424,6 +432,16 @@ class TraceAssertionsTest {
             () -> assertThat(SPAN1).hasLinksSatisfying(links -> assertThat(links).isEmpty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasStatus(StatusData.error()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasStatusSatisfying(StatusDataAssert::isError))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(SPAN1).hasStatusSatisfying(status -> status.hasCode(StatusCode.ERROR)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasStatusSatisfying(status -> status.hasDescriptionMatching("test")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10, TimeUnit.NANOSECONDS))

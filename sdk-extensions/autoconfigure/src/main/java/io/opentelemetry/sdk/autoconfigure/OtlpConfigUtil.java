@@ -8,8 +8,11 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,10 +36,10 @@ final class OtlpConfigUtil {
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
     String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
-    if (protocol == null) {
-      protocol = config.getString("otel.exporter.otlp.protocol");
+    if (protocol != null) {
+      return protocol;
     }
-    return (protocol == null) ? PROTOCOL_GRPC : protocol;
+    return config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
   }
 
   static void configureOtlpExporterBuilder(
@@ -123,8 +126,9 @@ final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
-    if (retryEnabled != null && retryEnabled) {
+    boolean retryEnabled =
+        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
+    if (retryEnabled) {
       setRetryPolicy.accept(RetryPolicy.getDefault());
     }
   }
@@ -148,6 +152,24 @@ final class OtlpConfigUtil {
             ? AggregationTemporalitySelector.alwaysCumulative()
             : AggregationTemporalitySelector.deltaPreferred();
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
+  }
+
+  static void configureOtlpHistogramDefaultAggregation(
+      ConfigProperties config,
+      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
+    String defaultHistogramAggregation =
+        config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
+    if (defaultHistogramAggregation == null) {
+      return;
+    }
+    if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")) {
+      defaultAggregationSelectorConsumer.accept(
+          DefaultAggregationSelector.getDefault()
+              .with(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
+    } else if (!defaultHistogramAggregation.equalsIgnoreCase("EXPLICIT_BUCKET_HISTOGRAM")) {
+      throw new ConfigurationException(
+          "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
+    }
   }
 
   private static URL createUrl(URL context, String spec) {
@@ -207,12 +229,14 @@ final class OtlpConfigUtil {
   private static String determinePropertyByType(
       ConfigProperties config, String prefix, String dataType, String suffix) {
     String propertyToRead = prefix + "." + dataType + "." + suffix;
-    String value = config.getString(propertyToRead);
-    if (value == null) {
-      return prefix + "." + suffix;
-    } else {
+    if (configContainsKey(config, propertyToRead)) {
       return propertyToRead;
     }
+    return prefix + "." + suffix;
+  }
+
+  private static boolean configContainsKey(ConfigProperties config, String propertyToRead) {
+    return config.getString(propertyToRead) != null;
   }
 
   private static String signalPath(String dataType) {

@@ -36,8 +36,13 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
-  static ConfigProperties get(Map<String, String> defaultProperties) {
+  static DefaultConfigProperties get(Map<String, String> defaultProperties) {
     return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
+  }
+
+  static DefaultConfigProperties customize(
+      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
+    return new DefaultConfigProperties(previousProperties, overrides);
   }
 
   // Visible for testing
@@ -50,13 +55,20 @@ final class DefaultConfigProperties implements ConfigProperties {
       Map<String, String> environmentVariables,
       Map<String, String> defaultProperties) {
     Map<String, String> config = new HashMap<>();
-    defaultProperties.forEach(
-        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('-', '.'), value));
+    defaultProperties.forEach((name, value) -> config.put(normalize(name), value));
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
-        (key, value) ->
-            config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
+        (key, value) -> config.put(normalize(key.toString()), value.toString()));
+
+    this.config = config;
+  }
+
+  private DefaultConfigProperties(
+      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
+    // previousProperties are already normalized, they can be copied as they are
+    Map<String, String> config = new HashMap<>(previousProperties.config);
+    overrides.forEach((name, value) -> config.put(normalize(name), value));
 
     this.config = config;
   }
@@ -64,13 +76,13 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Override
   @Nullable
   public String getString(String name) {
-    return config.get(name);
+    return config.get(normalize(name));
   }
 
   @Override
   @Nullable
   public Boolean getBoolean(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -81,7 +93,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Integer getInt(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -96,7 +108,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Long getLong(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -111,7 +123,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Double getDouble(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -126,7 +138,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Duration getDuration(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -155,7 +167,7 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public List<String> getList(String name) {
-    String value = config.get(name);
+    String value = config.get(normalize(name));
     if (value == null) {
       return Collections.emptyList();
     }
@@ -169,7 +181,7 @@ final class DefaultConfigProperties implements ConfigProperties {
    * @throws ConfigurationException if {@code name} contains duplicate entries
    */
   static Set<String> getSet(ConfigProperties config, String name) {
-    List<String> list = config.getList(name);
+    List<String> list = config.getList(normalize(name));
     Set<String> set = new HashSet<>(list);
     if (set.size() != list.size()) {
       String duplicates =
@@ -187,7 +199,7 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public Map<String, String> getMap(String name) {
-    return getList(name).stream()
+    return getList(normalize(name)).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
             splitKeyValuePairs -> {
@@ -253,5 +265,9 @@ final class DefaultConfigProperties implements ConfigProperties {
     }
     // Pull everything after the last digit.
     return rawValue.substring(lastDigitIndex + 1);
+  }
+
+  private static String normalize(String propertyName) {
+    return propertyName.toLowerCase(Locale.ROOT).replace('-', '.');
   }
 }

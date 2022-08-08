@@ -2,7 +2,7 @@ pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.gradle.enterprise") version "3.9"
+    id("com.gradle.enterprise") version "3.10.3"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.6.20"
   }
@@ -33,6 +33,7 @@ include(":extensions:aws")
 include(":extensions:kotlin")
 include(":extensions:noop-api")
 include(":extensions:trace-propagators")
+include(":exporters:common")
 include(":exporters:jaeger")
 include(":exporters:jaeger-proto")
 include(":exporters:jaeger-thrift")
@@ -42,9 +43,6 @@ include(":exporters:otlp:all")
 include(":exporters:otlp:common")
 include(":exporters:otlp:logs")
 include(":exporters:otlp:testing-internal")
-include(":exporters:otlp-http:logs")
-include(":exporters:otlp-http:metrics")
-include(":exporters:otlp-http:trace")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
 include(":integration-tests")

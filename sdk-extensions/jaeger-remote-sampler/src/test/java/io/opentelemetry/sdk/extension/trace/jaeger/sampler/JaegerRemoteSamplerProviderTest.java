@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.HashMap;
 import java.util.ServiceLoader;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 
 public class JaegerRemoteSamplerProviderTest {
@@ -53,9 +54,10 @@ public class JaegerRemoteSamplerProviderTest {
                 assertThat(s).extracting("serviceName").isEqualTo("test_service");
                 assertThat(s)
                     .extracting("delegate")
-                    .extracting("endpoint")
+                    .extracting("url")
                     .isEqualTo(
-                        "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy");
+                        HttpUrl.get(
+                            "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
               }
             });
   }

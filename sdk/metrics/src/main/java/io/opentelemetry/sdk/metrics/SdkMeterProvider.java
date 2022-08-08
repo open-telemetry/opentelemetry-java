@@ -14,10 +14,12 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
@@ -29,37 +31,43 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-/** SDK implementation for {@link MeterProvider}. */
+/**
+ * SDK implementation for {@link MeterProvider}.
+ *
+ * @since 1.14.0
+ */
 public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
 
+  private final List<RegisteredView> registeredViews;
   private final List<RegisteredReader> registeredReaders;
   private final MeterProviderSharedState sharedState;
   private final ComponentRegistry<SdkMeter> registry;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
-  /**
-   * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
-   *
-   * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
-   */
+  /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
   public static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
   }
 
   SdkMeterProvider(
-      List<RegisteredReader> registeredReaders,
+      List<RegisteredView> registeredViews,
+      List<MetricReader> metricReaders,
       Clock clock,
       Resource resource,
-      ViewRegistry viewRegistry,
       ExemplarFilter exemplarFilter) {
     long startEpochNanos = clock.now();
-    this.registeredReaders = registeredReaders;
+    this.registeredViews = registeredViews;
+    this.registeredReaders =
+        metricReaders.stream()
+            .map(
+                reader ->
+                    RegisteredReader.create(reader, ViewRegistry.create(reader, registeredViews)))
+            .collect(toList());
     this.sharedState =
-        MeterProviderSharedState.create(
-            clock, resource, viewRegistry, exemplarFilter, startEpochNanos);
+        MeterProviderSharedState.create(clock, resource, exemplarFilter, startEpochNanos);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
@@ -83,7 +91,12 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     return new SdkMeterBuilder(registry, instrumentationScopeName);
   }
 
-  /** Reset the provider, clearing all registered instruments. */
+  /**
+   * Reset the provider, clearing all registered instruments.
+   *
+   * <p>Note: not currently stable but available for experimental use via {@link
+   * SdkMeterProviderUtil#resetForTest(SdkMeterProvider)}.
+   */
   void resetForTest() {
     registry.getComponents().forEach(SdkMeter::resetForTest);
   }
@@ -138,7 +151,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + ", metricReaders="
         + registeredReaders.stream().map(RegisteredReader::getReader).collect(toList())
         + ", views="
-        + sharedState.getViewRegistry().getViews()
+        + registeredViews
         + "}";
   }
 

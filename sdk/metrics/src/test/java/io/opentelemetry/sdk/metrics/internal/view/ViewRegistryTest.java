@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DEFAULT_REGISTERED_VIEW;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,8 +17,11 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -28,184 +32,216 @@ class ViewRegistryTest {
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create("name", "version", "schema_url");
 
+  private static RegisteredView registeredView(InstrumentSelector instrumentSelector, View view) {
+    return RegisteredView.create(
+        instrumentSelector, view, AttributesProcessor.noop(), SourceInfo.fromCurrentStack());
+  }
+
   @Test
   void findViews_SelectionOnType() {
-    View view = View.builder().build();
-
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+            View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
-                view,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .build();
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .extracting(RegisteredView::getView)
-        .isEqualTo(view);
+        .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
   void findViews_SelectionOnName() {
-    View view = View.builder().build();
-
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setName("overridden").build(),
+            View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setName("overridden").build(),
-                view,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .build();
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .extracting(RegisteredView::getView)
-        .isSameAs(view);
+        .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
   void findViews_MultipleMatchingViews() {
-    View view1 = View.builder().setAggregation(Aggregation.sum()).build();
-    View view2 = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
+    RegisteredView registeredView1 =
+        registeredView(
+            InstrumentSelector.builder().setName("overridden").build(),
+            View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
+    RegisteredView registeredView2 =
+        registeredView(
+            InstrumentSelector.builder().setName("*").build(),
+            View.builder().setAggregation(Aggregation.sum()).build());
 
     ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setName("overridden").build(),
-                view2,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .addView(
-                InstrumentSelector.builder().setName("*").build(),
-                view1,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .build();
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(),
+            Arrays.asList(registeredView1, registeredView2));
 
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(2)
-        .element(0)
-        .extracting(RegisteredView::getView)
-        .isEqualTo(view2);
+        .isEqualTo(Arrays.asList(registeredView1, registeredView2));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .extracting(RegisteredView::getView)
-        .isEqualTo(view1);
+        .isEqualTo(Collections.singletonList(registeredView2));
 
     assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
   void findViews_SelectionTypeAndName() {
-    View view = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
-
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder()
+                .setType(InstrumentType.COUNTER)
+                .setName("overrides")
+                .build(),
+            View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
     ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder()
-                    .setType(InstrumentType.COUNTER)
-                    .setName("overrides")
-                    .build(),
-                view,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .build();
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .extracting(RegisteredView::getView)
-        .isEqualTo(view);
+        .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
   }
 
   @Test
   @SuppressLogger(ViewRegistry.class)
-  void findViews_IncompatibleViewIgnored() {
-    View view = View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build();
+  void findViews_DefaultAggregationSelector() {
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setName("overridden").build(),
+            View.builder().setDescription("description").build());
+    // Configure a default aggregation selector that defaults to exponential histogram aggregation
+    // for histogram and gauge instruments. Note, gauges are incompatible with exponential
+    // histograms.
+    DefaultAggregationSelector defaultAggregationSelector =
+        instrumentType ->
+            instrumentType == InstrumentType.HISTOGRAM
+                    || instrumentType == InstrumentType.OBSERVABLE_GAUGE
+                ? ExponentialHistogramAggregation.getDefault()
+                : Aggregation.defaultAggregation();
 
     ViewRegistry viewRegistry =
-        ViewRegistry.builder()
-            .addView(
-                InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_COUNTER).build(),
-                view,
-                AttributesProcessor.noop(),
-                SourceInfo.fromCurrentStack())
-            .build();
+        ViewRegistry.create(defaultAggregationSelector, Collections.singletonList(registeredView));
+
+    // Counter instrument should result in default view
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "test", "", "", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
+    // Histogram instrument named overridden should match the registered view, for which the
+    // aggregation is explicit bucket histogram
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "overridden", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(registeredView));
+    // Histogram instrument named default should match no views, and should receive a default view
+    // with the exponential histogram aggregation as dictated by the default aggregation
+    // selector
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "default", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(
+            Collections.singletonList(
+                registeredView(
+                    InstrumentSelector.builder().setName("*").build(),
+                    View.builder()
+                        .setAggregation(ExponentialHistogramAggregation.getDefault())
+                        .build())));
+    // At this point, no warning logs should have been produced.
+    assertThat(logs.getEvents()).hasSize(0);
+    // Gauge instrument matches no views, and should receive a default view with the exponential
+    // histogram aggregation as dictated by the default aggregation selector. However, gauge is
+    // incompatible with exponential histogram aggregation and the default view should be returned.
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "default", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
+    logs.assertContains(
+        "Instrument default aggregation exponential_bucket_histogram is incompatible with instrument default of type OBSERVABLE_GAUGE");
+  }
+
+  @Test
+  @SuppressLogger(ViewRegistry.class)
+  void findViews_IncompatibleViewIgnored() {
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setType(InstrumentType.OBSERVABLE_COUNTER).build(),
+            View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
+    ViewRegistry viewRegistry =
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "test", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isEqualTo(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     logs.assertContains(
         "View aggregation explicit_bucket_histogram is incompatible with instrument test of type OBSERVABLE_COUNTER");
@@ -213,47 +249,37 @@ class ViewRegistryTest {
 
   @Test
   void defaults() {
-    ViewRegistry viewRegistry = ViewRegistry.builder().build();
+    ViewRegistry viewRegistry = ViewRegistry.create();
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
@@ -263,9 +289,7 @@ class ViewRegistryTest {
                     InstrumentType.OBSERVABLE_UP_DOWN_COUNTER,
                     InstrumentValueType.LONG),
                 INSTRUMENTATION_SCOPE_INFO))
-        .hasSize(1)
-        .element(0)
-        .isSameAs(ViewRegistry.DEFAULT_REGISTERED_VIEW);
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
   }

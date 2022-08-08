@@ -1,6 +1,9 @@
-> This is a design document and is not necessarily updated with evolving APIs. For up-to-date
+# 🚨 Archival Use Only! 	🚨
+> This is a historical design document and is not updated with evolving APIs. For up-to-date
 > examples of SDK configuration see the
 > [documentation](https://opentelemetry.io/docs/java/manual_instrumentation/).
+> This document is maintained here for historical purposes only, and it is intended to
+> help future readers to understand the rationale behind certain design decisions.
 
 # Design for configuring the SDK
 

@@ -221,6 +221,75 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void testEmptyQueue() {
+    // Arrange
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1);
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(waitingSpanExporter)
+            .setMaxExportBatchSize(10)
+            .setScheduleDelay(10, TimeUnit.SECONDS)
+            .setMaxQueueSize(10_000)
+            .build();
+    // Act
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+
+    // Assert
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(0);
+  }
+
+  @Test
+  void testQueueSizeSmallerThanMaxBatch() {
+    // Arrange
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1);
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(waitingSpanExporter)
+            .setMaxExportBatchSize(11)
+            .setScheduleDelay(10, TimeUnit.SECONDS)
+            .setMaxQueueSize(10_000)
+            .build();
+    // Act
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    for (int i = 0; i < 10; i++) {
+      createEndedSpan("notExported");
+    }
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+
+    // Assert
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(0);
+  }
+
+  @Test
+  void testQueueSizeSmallerThanMaxBatchWithForceFlush() {
+    // Arrange
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1);
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(waitingSpanExporter)
+            .setMaxExportBatchSize(11)
+            .setScheduleDelay(10, TimeUnit.SECONDS)
+            .setMaxQueueSize(10_000)
+            .build();
+    // Act
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+    for (int i = 0; i < 10; i++) {
+      createEndedSpan("notExported");
+    }
+    batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+
+    // Assert
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(10);
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
+  }
+
+  @Test
   void exportSpansToMultipleExporters() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
@@ -507,6 +576,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(5)
+  @SuppressLogger(BatchSpanProcessor.class)
   void exporterThrowsNonRuntimeException() {
     when(mockSpanExporter.export(anyList()))
         .thenAnswer(
@@ -519,7 +589,9 @@ class BatchSpanProcessorTest {
             .build();
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
     createEndedSpan(SPAN_NAME_1);
-    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch()).isEmpty());
+    // Assert isEmpty() isTrue(). AbstractIterableAssert#isEmpty() iterates over list and can cause
+    // ConcurrentModificationException
+    await().untilAsserted(() -> assertThat(batchSpanProcessor.getBatch().isEmpty()).isTrue());
     // Continue to export after the exception.
     createEndedSpan(SPAN_NAME_2);
     await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());

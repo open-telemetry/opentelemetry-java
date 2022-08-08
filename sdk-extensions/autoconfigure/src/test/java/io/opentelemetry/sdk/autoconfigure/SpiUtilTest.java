@@ -5,10 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -16,7 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class SpiUtilTest {
@@ -39,8 +40,8 @@ public class SpiUtilTest {
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertNotNull(spiProvider.getByName(SpiExampleProviderImplementation.NAME));
-    assertNull(spiProvider.getByName("invalid-provider"));
+    assertThat(spiProvider.getByName(SpiExampleProviderImplementation.NAME)).isNotNull();
+    assertThat(spiProvider.getByName("invalid-provider")).isNull();
   }
 
   @Test
@@ -82,7 +83,7 @@ public class SpiUtilTest {
 
     SpiExample first = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
     SpiExample second = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
-    assertEquals(first, second);
+    assertThat(second).isEqualTo(first);
   }
 
   @Test
@@ -104,10 +105,29 @@ public class SpiUtilTest {
             SpiUtilTest.class.getClassLoader(),
             mockFinder);
 
-    assertThrows(
-        RuntimeException.class,
-        () -> spiProvider.getByName("init-failure-example"),
-        exceptionMessage);
+    assertThatThrownBy(() -> spiProvider.getByName("init-failure-example"))
+        .withFailMessage(exceptionMessage)
+        .isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  void loadsOrderedSpi() {
+    ResourceProvider spi1 = mock(ResourceProvider.class);
+    ResourceProvider spi2 = mock(ResourceProvider.class);
+    ResourceProvider spi3 = mock(ResourceProvider.class);
+
+    when(spi1.order()).thenReturn(2);
+    when(spi2.order()).thenReturn(0);
+    when(spi3.order()).thenReturn(1);
+
+    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
+    when(mockFinder.load(ResourceProvider.class, SpiUtil.class.getClassLoader()))
+        .thenReturn(asList(spi1, spi2, spi3));
+
+    List<ResourceProvider> loadedSpi =
+        SpiUtil.loadOrdered(ResourceProvider.class, SpiUtil.class.getClassLoader(), mockFinder);
+
+    assertThat(loadedSpi).containsExactly(spi2, spi3, spi1);
   }
 
   private interface SpiExampleProvider {

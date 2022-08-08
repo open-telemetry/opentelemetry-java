@@ -18,6 +18,7 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ class LogExporterConfiguration {
   // Visible for test
   static Map<String, LogExporter> configureLogExporters(
       ConfigProperties config,
+      ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
           logExporterCustomizer) {
@@ -51,9 +53,17 @@ class LogExporterConfiguration {
       return Collections.emptyMap();
     }
 
+    NamedSpiManager<LogExporter> spiExportersManager =
+        SpiUtil.loadConfigurable(
+            ConfigurableLogExporterProvider.class,
+            ConfigurableLogExporterProvider::getName,
+            ConfigurableLogExporterProvider::createExporter,
+            config,
+            serviceClassLoader);
+
     Map<String, LogExporter> exportersByName = new HashMap<>();
     for (String name : exporterNames) {
-      LogExporter logExporter = configureExporter(name, config, meterProvider);
+      LogExporter logExporter = configureExporter(name, config, spiExportersManager, meterProvider);
       if (logExporter != null) {
         LogExporter customizedLogExporter = logExporterCustomizer.apply(logExporter, config);
         exportersByName.put(name, customizedLogExporter);
@@ -66,7 +76,10 @@ class LogExporterConfiguration {
   // Visible for testing
   @Nullable
   static LogExporter configureExporter(
-      String name, ConfigProperties config, MeterProvider meterProvider) {
+      String name,
+      ConfigProperties config,
+      NamedSpiManager<LogExporter> spiExportersManager,
+      MeterProvider meterProvider) {
     switch (name) {
       case "otlp":
         return configureOtlpLogs(config, meterProvider);
@@ -77,7 +90,11 @@ class LogExporterConfiguration {
             "opentelemetry-exporter-logging");
         return SystemOutLogExporter.create();
       default:
-        throw new ConfigurationException("Unrecognized value for otel.logs.exporter: " + name);
+        LogExporter spiExporter = spiExportersManager.getByName(name);
+        if (spiExporter == null) {
+          throw new ConfigurationException("Unrecognized value for otel.logs.exporter: " + name);
+        }
+        return spiExporter;
     }
   }
 

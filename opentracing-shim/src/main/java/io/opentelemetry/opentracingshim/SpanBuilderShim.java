@@ -56,7 +56,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Verify we handle a no-op Span
-    SpanShim spanShim = getSpanShim(parent);
+    SpanShim spanShim = ShimUtil.getSpanShim(parent);
 
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = spanShim;
@@ -79,7 +79,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Use referenceType
-    SpanContextShim contextShim = getContextShim(referencedContext);
+    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
 
     if (parentSpan == null && parentSpanContext == null) {
       parentSpanContext = contextShim;
@@ -186,20 +186,21 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    Baggage baggage = null;
+    Baggage baggage = Baggage.empty();
     io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
       builder.setParent(Context.root().with(parentSpan.getSpan()));
-      SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      baggage = contextShim == null ? null : contextShim.getBaggage();
+      baggage = ((SpanContextShim) parentSpan.context()).getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
           Context.root()
               .with(io.opentelemetry.api.trace.Span.wrap(parentSpanContext.getSpanContext())));
       baggage = parentSpanContext.getBaggage();
+    } else {
+      baggage = Baggage.current();
     }
 
     for (io.opentelemetry.api.trace.SpanContext link : parentLinks) {
@@ -228,28 +229,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setStatus(StatusCode.ERROR);
     }
 
-    SpanShim spanShim = new SpanShim(telemetryInfo(), span);
-
-    if (baggage != null && baggage != telemetryInfo().emptyBaggage()) {
-      spanContextTable().create(spanShim, baggage);
-    }
-
-    return spanShim;
-  }
-
-  private static SpanShim getSpanShim(Span span) {
-    if (!(span instanceof SpanShim)) {
-      throw new IllegalArgumentException("span is not a valid SpanShim object");
-    }
-
-    return (SpanShim) span;
-  }
-
-  private static SpanContextShim getContextShim(SpanContext context) {
-    if (!(context instanceof SpanContextShim)) {
-      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
-    }
-
-    return (SpanContextShim) context;
+    return new SpanShim(telemetryInfo(), span, baggage);
   }
 }

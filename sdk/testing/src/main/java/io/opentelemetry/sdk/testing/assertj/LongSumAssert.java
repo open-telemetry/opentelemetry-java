@@ -14,7 +14,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
-/** Test assertions for long {@link SumData}. */
+/**
+ * Test assertions for long {@link SumData}.
+ *
+ * @since 1.14.0
+ */
 public final class LongSumAssert extends AbstractAssert<LongSumAssert, SumData<LongPointData>> {
   LongSumAssert(SumData<LongPointData> actual) {
     super(actual, LongSumAssert.class);

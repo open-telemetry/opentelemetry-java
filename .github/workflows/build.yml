@@ -59,6 +59,18 @@ jobs:
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
 
+      - name: Check for diff
+        run: |
+          if git diff --quiet
+          then 
+            echo "No diff detected."
+          else 
+            echo "Diff detected - did you run './gradlew jApiCmp'?"
+            echo $(git diff --name-only)
+            echo $(git diff)
+            exit 1
+          fi
+
       - uses: codecov/codecov-action@v3
         if: ${{ matrix.coverage }}
 

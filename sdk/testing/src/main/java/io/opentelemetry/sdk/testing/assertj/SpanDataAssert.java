@@ -440,7 +440,11 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has the given {@link StatusData}. */
+  /**
+   * Asserts the span has the given {@link StatusData}.
+   *
+   * @since 1.16.0
+   */
   public SpanDataAssert hasStatus(StatusData status) {
     isNotNull();
     if (!actual.getStatus().equals(status)) {
@@ -452,6 +456,14 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           status,
           actual.getStatus());
     }
+    return this;
+  }
+
+  /** Asserts the span has a status satisfying the given condition. */
+  public SpanDataAssert hasStatusSatisfying(Consumer<StatusDataAssert> condition) {
+    isNotNull();
+    StatusDataAssert statusDataAssert = new StatusDataAssert(actual.getStatus());
+    condition.accept(statusDataAssert);
     return this;
   }
 
