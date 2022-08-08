@@ -23,7 +23,10 @@ class LogExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogExporterConfiguration.configureLogExporters(
-                    config, MeterProvider.noop(), (a, unused) -> a))
+                    config,
+                    LogExporterConfiguration.class.getClassLoader(),
+                    MeterProvider.noop(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
   }
@@ -36,7 +39,10 @@ class LogExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogExporterConfiguration.configureLogExporters(
-                    config, MeterProvider.noop(), (a, unused) -> a))
+                    config,
+                    LogExporterConfiguration.class.getClassLoader(),
+                    MeterProvider.noop(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
   }
@@ -49,7 +55,10 @@ class LogExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogExporterConfiguration.configureLogExporters(
-                    config, MeterProvider.noop(), (a, unused) -> a))
+                    config,
+                    LogExporterConfiguration.class.getClassLoader(),
+                    MeterProvider.noop(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
   }

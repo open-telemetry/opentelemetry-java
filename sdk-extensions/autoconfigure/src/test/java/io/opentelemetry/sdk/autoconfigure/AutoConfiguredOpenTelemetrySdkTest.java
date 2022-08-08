@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -114,8 +115,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     OpenTelemetrySdk sdk =
         builder
-            .addPropertiesSupplier(
-                () -> Collections.singletonMap("otel.propagators", "tracecontext"))
+            .addPropertiesSupplier(() -> singletonMap("otel.propagators", "tracecontext"))
             .addPropagatorCustomizer(
                 (previous, config) -> {
                   assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
@@ -205,18 +205,41 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_addPropertiesSupplier() {
     AutoConfiguredOpenTelemetrySdk autoConfigured =
         builder
-            .addPropertiesSupplier(() -> Collections.singletonMap("key", "valueUnused"))
-            .addPropertiesSupplier(() -> Collections.singletonMap("key", "value"))
-            .addPropertiesSupplier(() -> Collections.singletonMap("otel-key", "otel-value"))
-            .addPropertiesSupplier(
-                () -> Collections.singletonMap("otel.service.name", "test-service"))
-            .setResultAsGlobal(false)
+            .addPropertiesSupplier(() -> singletonMap("key", "valueUnused"))
+            .addPropertiesSupplier(() -> singletonMap("key", "value"))
+            .addPropertiesSupplier(() -> singletonMap("otel-key", "otel-value"))
+            .addPropertiesSupplier(() -> singletonMap("otel.service.name", "test-service"))
             .build();
 
     assertThat(autoConfigured.getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("test-service");
     assertThat(autoConfigured.getConfig().getString("key")).isEqualTo("value");
     assertThat(autoConfigured.getConfig().getString("otel.key")).isEqualTo("otel-value");
+  }
+
+  @Test
+  void builder_addPropertiesCustomizer() {
+    AutoConfiguredOpenTelemetrySdk autoConfigured =
+        builder
+            .addPropertiesSupplier(() -> singletonMap("some-key", "defaultValue"))
+            .addPropertiesSupplier(() -> singletonMap("otel.service.name", "default-service-name"))
+            .addPropertiesCustomizer(
+                config -> {
+                  Map<String, String> overrides = new HashMap<>();
+                  overrides.put("some-key", "override");
+                  overrides.put(
+                      "otel.service.name",
+                      config.getString("otel.service.name", "").replace("default", "overridden"));
+                  return overrides;
+                })
+            .addPropertiesCustomizer(
+                config -> singletonMap("some-key", config.getString("some-key", "") + "-2"))
+            .build();
+
+    assertThat(autoConfigured.getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("overridden-service-name");
+    assertThat(autoConfigured.getConfig().getString("some-key")).isEqualTo("override-2");
+    assertThat(autoConfigured.getConfig().getString("some.key")).isEqualTo("override-2");
   }
 
   @Test
@@ -324,8 +347,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .addPropertiesSupplier(
-                () -> Collections.singletonMap("otel.experimental.sdk.enabled", "false"))
+            .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "false"))
             .addTracerProviderCustomizer(traceCustomizer)
             .addMeterProviderCustomizer(metricCustomizer)
             .addLogEmitterProviderCustomizer(logCustomizer)
@@ -352,9 +374,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
                 })
             .addResourceCustomizer(
                 (resource, config) -> resource.merge(Resource.builder().put("cow", "moo").build()))
-            .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
-            .addPropertiesSupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
-            .addPropertiesSupplier(() -> Collections.singletonMap("otel.logs.exporter", "none"))
+            .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+            .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
             .setResultAsGlobal(false);
 
     AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();

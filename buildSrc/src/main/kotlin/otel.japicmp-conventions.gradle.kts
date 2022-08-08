@@ -1,6 +1,8 @@
+import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
+import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Severity
 import me.champeau.gradle.japicmp.report.Violation
@@ -39,11 +41,34 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
         // semver.
         continue
       }
+      if (change == JApiCompatibilityChange.METHOD_ABSTRACT_NOW_DEFAULT) {
+        // Adding default implementations to interface methods previously abstract is not a breaking
+        // change.
+        continue
+      }
+      if (isAbstractMethodOnAutoValue(member, change)) {
+        continue
+      }
+      if (!change.isSourceCompatible) {
+        return Violation.error(member, "Not source compatible")
+      }
       if (!change.isBinaryCompatible) {
         return Violation.notBinaryCompatible(member, Severity.error)
       }
     }
     return null
+  }
+
+  /**
+   * Checks if the change is an abstract method on a class annotated with AutoValue.
+   * AutoValues need to override default interface methods and declare them abstract again.
+   * It causes METHOD_ABSTRACT_ADDED_TO_CLASS - source-incompatible change. It's
+   * false-positive since AutoValue will generate implementation anyway.
+   */
+  fun isAbstractMethodOnAutoValue(member: JApiCompatibility, change: JApiCompatibilityChange): Boolean {
+    return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
+      member is JApiMethod &&
+      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
   }
 }
 
@@ -101,7 +126,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
         // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
-        // on interfaces.
+        // on interfaces, and adding default implementations to interface methods previously
+        // abstract.
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)

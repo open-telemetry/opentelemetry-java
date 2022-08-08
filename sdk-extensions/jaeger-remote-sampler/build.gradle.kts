@@ -15,10 +15,7 @@ dependencies {
   compileOnly(project(":sdk-extensions:autoconfigure"))
 
   implementation(project(":sdk:all"))
-
-  // TODO(anuraaga): otlp-common has a lot of code not specific to OTLP now. As it's just internal
-  // code, this mysterious dependency is possibly still OK but we may need a rename or splitting.
-  implementation(project(":exporters:otlp:common"))
+  implementation(project(":exporters:common"))
 
   implementation("com.squareup.okhttp3:okhttp")
 
@@ -39,13 +36,14 @@ testing {
     val testGrpcNetty by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":sdk:testing"))
+        implementation(project(":exporters:common"))
+
         implementation("com.google.protobuf:protobuf-java-util")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
         implementation("org.testcontainers:junit-jupiter")
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
-        implementation(project(":exporters:otlp:common"))
       }
     }
   }

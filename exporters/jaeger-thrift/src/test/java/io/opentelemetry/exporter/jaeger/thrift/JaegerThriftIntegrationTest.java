@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -46,6 +47,7 @@ class JaegerThriftIntegrationTest {
   @Container
   public static GenericContainer<?> jaegerContainer =
       new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger:1.32")
+          .withImagePullPolicy(PullPolicy.alwaysPull())
           .withExposedPorts(THRIFT_HTTP_PORT, THRIFT_UDP_PORT, QUERY_PORT, HEALTH_PORT)
           .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("jaeger")))
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));

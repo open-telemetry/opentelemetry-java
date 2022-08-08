@@ -13,6 +13,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":semconv"))
+  implementation(project(":exporters:common"))
 
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
@@ -35,6 +36,17 @@ dependencies {
 
 testing {
   suites {
+    val testAutoConfigureOrder by registering(JvmTestSuite::class) {
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
+            environment("OTEL_LOGS_EXPORTER", "none")
+          }
+        }
+      }
+    }
     val testConfigError by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":extensions:trace-propagators"))

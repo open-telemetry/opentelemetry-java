@@ -22,19 +22,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * <pre>{@code
  * // class MyClassTest {
- * //   private final Tracer tracer = new TracerSdk();
  * //   private final InMemorySpanExporter testExporter = InMemorySpanExporter.create();
- * //
- * //   @Before
- * //   public void setup() {
- * //     tracer.addSpanProcessor(SimpleSampledSpansProcessor.builder(testExporter).build());
- * //   }
+ * //   private final SdkTracerProvider tracerProvider = SdkTracerProvider
+ * //     .builder()
+ * //     .addSpanProcessor(SimpleSpanProcessor.create(testExporter))
+ * //     .build();
  * //
  * //   @Test
  * //   public void getFinishedSpanData() {
+ * //     Tracer tracer = tracerProvider.tracerBuilder("test-scope").build();
  * //     tracer.spanBuilder("span").startSpan().end();
  * //
- * //     List<Span> spanItems = exporter.getFinishedSpanItems();
+ * //     List<SpanData> spanItems = testExporter.getFinishedSpanItems();
  * //     assertThat(spanItems).isNotNull();
  * //     assertThat(spanItems.size()).isEqualTo(1);
  * //     assertThat(spanItems.get(0).getName()).isEqualTo("span");
