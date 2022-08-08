@@ -45,7 +45,6 @@ import zipkin2.reporter.Sender;
  * href="https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin">OpenCensus
  * zipkin exporter</a> code.
  */
-@SuppressWarnings("JavadocLinkAsPlainText")
 public final class ZipkinSpanExporter implements SpanExporter {
 
   public static final Logger baseLogger = Logger.getLogger(ZipkinSpanExporter.class.getName());

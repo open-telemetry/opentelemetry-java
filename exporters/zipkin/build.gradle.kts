@@ -13,9 +13,7 @@ dependencies {
 
   api("io.zipkin.reporter2:zipkin-reporter")
 
-  // TODO(anuraaga): otlp-common has a lot of code not specific to OTLP now. As it's just internal
-  // code, this mysterious dependency is possibly still OK but we may need a rename or splitting.
-  implementation(project(":exporters:otlp:common"))
+  implementation(project(":exporters:common"))
   implementation(project(":semconv"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
