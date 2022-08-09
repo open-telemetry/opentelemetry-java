@@ -34,7 +34,7 @@ import zipkin2.Span;
  * a Zipkin Span. It is based, in part, on code from
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  */
-public class OtelToZipkinSpanTransformer implements Function<SpanData, Span> {
+public final class OtelToZipkinSpanTransformer implements Function<SpanData, Span> {
 
   static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
   static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
