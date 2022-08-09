@@ -58,6 +58,14 @@ public final class ZipkinSpanExporterBuilder {
     return this;
   }
 
+  /**
+   * Sets the Function that is responsible for transforming an OpenTelemetry {@link SpanData} into
+   * an instance of a Zipkin {@link Span}.
+   *
+   * @param transformer the Function used to transform a SpanData to a Zipkin Span instance
+   * @return this
+   * @see OtelToZipkinSpanTransformer
+   */
   public ZipkinSpanExporterBuilder setOtelToZipkinTransformer(
       Function<SpanData, Span> transformer) {
     requireNonNull(transformer, "encoder");
