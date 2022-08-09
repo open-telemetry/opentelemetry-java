@@ -88,6 +88,9 @@ class ZipkinSpanExporterEndToEndHttpTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
+  private static final OtelToZipkinSpanTransformer otelToZipkinTransformer =
+      new OtelToZipkinSpanTransformer(ZipkinTestSpan.localAddressForTesting);
+
   @AfterEach
   void tearDown() {
     sdkMeterProvider.close();
@@ -99,6 +102,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         ZipkinSpanExporter.builder()
             .setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS))
             .setMeterProvider(sdkMeterProvider)
+            .setOtelToZipkinTransformer(otelToZipkinTransformer)
             .build();
     exportAndVerify(exporter);
 
@@ -173,6 +177,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setEncoder(encoder)
         .setMeterProvider(meterProvider)
+        .setOtelToZipkinTransformer(otelToZipkinTransformer)
         .build();
   }
 
@@ -191,9 +196,8 @@ class ZipkinSpanExporterEndToEndHttpTest {
 
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
-    InetAddress address = zipkinSpanExporter.getLocalAddressForTest();
-    assertThat(address).isNotNull();
-    assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan(address, traceId));
+    assertThat(zipkinSpans.get(0))
+        .isEqualTo(buildZipkinSpan(ZipkinTestSpan.localAddressForTesting, traceId));
   }
 
   private static TestSpanData.Builder buildStandardSpan(String traceId) {
@@ -229,7 +233,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .localEndpoint(Endpoint.newBuilder().serviceName(SERVICE_NAME).ip(localAddress).build())
         .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
         .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
-        .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+        .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
         .build();
   }
 

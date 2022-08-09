@@ -9,8 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -21,6 +23,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
+  private Function<SpanData, Span> otelToZipkinTransformer = new OtelToZipkinSpanTransformer();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
@@ -52,6 +55,13 @@ public final class ZipkinSpanExporterBuilder {
   public ZipkinSpanExporterBuilder setEncoder(BytesEncoder<Span> encoder) {
     requireNonNull(encoder, "encoder");
     this.encoder = encoder;
+    return this;
+  }
+
+  public ZipkinSpanExporterBuilder setOtelToZipkinTransformer(
+      Function<SpanData, Span> transformer) {
+    requireNonNull(transformer, "encoder");
+    this.otelToZipkinTransformer = transformer;
     return this;
   }
 
@@ -118,6 +128,6 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(encoder, sender, meterProvider);
+    return new ZipkinSpanExporter(encoder, sender, otelToZipkinTransformer);
   }
 }
