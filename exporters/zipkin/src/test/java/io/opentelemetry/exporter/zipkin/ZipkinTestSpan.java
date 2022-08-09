@@ -39,6 +39,8 @@ public class ZipkinTestSpan {
               EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
               EventData.create(1505855799_459486280L, "SENT", Attributes.empty())));
 
+  private ZipkinTestSpan() {}
+
   static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.builder()
         .setSpanContext(
