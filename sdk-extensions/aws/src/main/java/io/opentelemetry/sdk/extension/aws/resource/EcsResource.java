@@ -15,6 +15,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -73,21 +74,38 @@ public final class EcsResource {
         ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.AWS_ECS);
     try (JsonParser parser = JSON_FACTORY.createParser(json)) {
       parser.nextToken();
-      LogGroupArnBuilder logGroupArnBuilder = new LogGroupArnBuilder();
-      parseResponse(parser, attrBuilders, logGroupArnBuilder);
-      logGroupArnBuilder.putLogGroupArnInAttributesBuilder(attrBuilders);
+      LogArnBuilder logArnBuilder = new LogArnBuilder();
+      parseResponse(parser, attrBuilders, logArnBuilder);
+
+      logArnBuilder
+          .getLogGroupArn()
+          .ifPresent(
+              logGroupArn -> {
+                attrBuilders.put(
+                    ResourceAttributes.AWS_LOG_GROUP_ARNS, Collections.singletonList(logGroupArn));
+              });
+
+      logArnBuilder
+          .getLogStreamArn()
+          .ifPresent(
+              logStreamArn -> {
+                attrBuilders.put(
+                    ResourceAttributes.AWS_LOG_STREAM_ARNS,
+                    Collections.singletonList(logStreamArn));
+              });
     } catch (IOException e) {
       logger.log(Level.WARNING, "Can't get ECS metadata", e);
     }
   }
 
   static void parseResponse(
-      JsonParser parser, AttributesBuilder attrBuilders, LogGroupArnBuilder logGroupArnBuilder)
+      JsonParser parser, AttributesBuilder attrBuilders, LogArnBuilder logArnBuilder)
       throws IOException {
     if (!parser.isExpectedStartObjectToken()) {
       logger.log(Level.WARNING, "Couldn't parse ECS metadata, invalid JSON");
       return;
     }
+
     while (parser.nextToken() != JsonToken.END_OBJECT) {
       String value = parser.nextTextValue();
       switch (parser.getCurrentName()) {
@@ -99,7 +117,7 @@ public final class EcsResource {
           break;
         case "ContainerARN":
           attrBuilders.put(ResourceAttributes.AWS_ECS_CONTAINER_ARN, value);
-          logGroupArnBuilder.setContainerArn(value);
+          logArnBuilder.setContainerArn(value);
           break;
         case "Image":
           DockerImage parsedImage = DockerImage.parse(value);
@@ -113,20 +131,24 @@ public final class EcsResource {
           break;
         case "LogOptions":
           // Recursively parse LogOptions
-          parseResponse(parser, attrBuilders, logGroupArnBuilder);
+          parseResponse(parser, attrBuilders, logArnBuilder);
           break;
         case "awslogs-group":
           attrBuilders.put(ResourceAttributes.AWS_LOG_GROUP_NAMES, value);
-          logGroupArnBuilder.setLogGroupName(value);
+          logArnBuilder.setLogGroupName(value);
           break;
         case "awslogs-stream":
           attrBuilders.put(ResourceAttributes.AWS_LOG_STREAM_NAMES, value);
+          logArnBuilder.setLogStreamName(value);
           break;
         case "awslogs-region":
-          logGroupArnBuilder.setRegion(value);
+          logArnBuilder.setRegion(value);
           break;
         case "TaskARN":
           attrBuilders.put(ResourceAttributes.AWS_ECS_TASK_ARN, value);
+          break;
+        case "LaunchType":
+          attrBuilders.put(ResourceAttributes.AWS_ECS_LAUNCHTYPE, value.toLowerCase());
           break;
         case "Family":
           attrBuilders.put(ResourceAttributes.AWS_ECS_TASK_FAMILY, value);
@@ -144,17 +166,18 @@ public final class EcsResource {
   private EcsResource() {}
 
   /**
-   * This builder can piece together a log group ARN from region, account and group name as the ARN
-   * isn't part of the ECS metadata.
+   * This builder can piece together the ARN of a log group or a log stream from region, account,
+   * group name and stream name as the ARN isn't part of the ECS metadata.
    *
    * <p>If we just set AWS_LOG_GROUP_NAMES then the CloudWatch X-Ray traces view displays "An error
    * occurred fetching your data". That's why it's important we set the ARN.
    */
-  private static class LogGroupArnBuilder {
+  private static class LogArnBuilder {
 
     @Nullable String region;
     @Nullable String account;
     @Nullable String logGroupName;
+    @Nullable String logStreamName;
 
     void setRegion(@Nullable String region) {
       this.region = region;
@@ -164,19 +187,39 @@ public final class EcsResource {
       this.logGroupName = logGroupName;
     }
 
+    void setLogStreamName(@Nullable String logStreamName) {
+      this.logStreamName = logStreamName;
+    }
+
     void setContainerArn(@Nullable String containerArn) {
       if (containerArn != null) {
         account = containerArn.split(":")[4];
       }
     }
 
-    void putLogGroupArnInAttributesBuilder(AttributesBuilder attributesBuilder) {
+    Optional<String> getLogGroupArn() {
       if (region == null || account == null || logGroupName == null) {
-        return;
+        return Optional.empty();
       }
-      attributesBuilder.put(
-          ResourceAttributes.AWS_LOG_GROUP_ARNS,
-          "arn:aws:logs:" + region + ":" + account + ":log-group:" + logGroupName);
+
+      return Optional.of(
+          "arn:aws:logs:" + region + ":" + account + ":log-group:" + logGroupName + ":*");
+    }
+
+    Optional<String> getLogStreamArn() {
+      if (region == null || account == null || logGroupName == null || logStreamName == null) {
+        return Optional.empty();
+      }
+
+      return Optional.of(
+          "arn:aws:logs:"
+              + region
+              + ":"
+              + account
+              + ":log-group:"
+              + logGroupName
+              + ":log-stream:"
+              + logStreamName);
     }
   }
 

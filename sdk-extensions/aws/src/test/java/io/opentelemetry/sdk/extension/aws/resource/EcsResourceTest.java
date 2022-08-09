@@ -104,13 +104,18 @@ class EcsResourceTest {
             entry(
                 ResourceAttributes.AWS_LOG_GROUP_ARNS,
                 Collections.singletonList(
-                    "arn:aws:logs:us-west-2:111122223333:log-group:/ecs/metadata")),
+                    "arn:aws:logs:us-west-2:111122223333:log-group:/ecs/metadata:*")),
             entry(
                 ResourceAttributes.AWS_LOG_STREAM_NAMES,
                 Collections.singletonList("ecs/curl/8f03e41243824aea923aca126495f665")),
             entry(
+                ResourceAttributes.AWS_LOG_STREAM_ARNS,
+                Collections.singletonList(
+                    "arn:aws:logs:us-west-2:111122223333:log-group:/ecs/metadata:log-stream:ecs/curl/8f03e41243824aea923aca126495f665")),
+            entry(
                 ResourceAttributes.AWS_ECS_TASK_ARN,
                 "arn:aws:ecs:us-west-2:111122223333:task/default/158d1c8083dd49d6b527399fd6414f5c"),
+            entry(ResourceAttributes.AWS_ECS_LAUNCHTYPE, "ec2"),
             entry(ResourceAttributes.AWS_ECS_TASK_FAMILY, "curltest"),
             entry(ResourceAttributes.AWS_ECS_TASK_REVISION, "26"));
   }
