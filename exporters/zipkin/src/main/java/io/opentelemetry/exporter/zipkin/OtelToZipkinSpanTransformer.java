@@ -43,7 +43,7 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
   static final String OTEL_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
   static final String OTEL_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String OTEL_STATUS_CODE = "otel.status_code";
-  public static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
+  private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
   @Nullable private final InetAddress localAddress;
 
