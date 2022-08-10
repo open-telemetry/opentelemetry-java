@@ -24,7 +24,7 @@ import java.util.List;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 
-public class ZipkinTestSpan {
+class ZipkinTestSpan {
 
   static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   static final String SPAN_ID = "9cc1e3049173be09";
