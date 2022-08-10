@@ -48,19 +48,18 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
   @Nullable private final InetAddress localAddress;
 
   /**
-   * Creates a new instance of an OtelToZipkinSpanTransformer with the
-   * local IP address fetched from the network interfaces at construction
-   * time.
+   * Creates a new instance of an OtelToZipkinSpanTransformer with the local IP address fetched from
+   * the network interfaces at construction time.
    */
   public OtelToZipkinSpanTransformer() {
     this(produceLocalIp());
   }
 
   /**
-   * Creates a new instance of an OtelToZipkinSpanTransformer with the given
-   * local IP address.
-   * @param localAddress - The local IP address. If not null, the localAddress will be
-   * included in Zipkin spans as part of the localEndpoint.
+   * Creates a new instance of an OtelToZipkinSpanTransformer with the given local IP address.
+   *
+   * @param localAddress - The local IP address. If not null, the localAddress will be included in
+   *     Zipkin spans as part of the localEndpoint.
    */
   public OtelToZipkinSpanTransformer(@Nullable InetAddress localAddress) {
     this.localAddress = localAddress;
