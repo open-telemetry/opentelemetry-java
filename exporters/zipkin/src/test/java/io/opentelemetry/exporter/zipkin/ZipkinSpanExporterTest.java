@@ -37,10 +37,13 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -331,8 +334,39 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_noLocalIp() {
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setLocalIpAddress(null).build();
+
+    SpanData data = buildStandardSpan().build();
+
+    assertThat(exporter.generateSpan(data))
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .localEndpoint(Endpoint.newBuilder().serviceName("tweetiebird").build())
+                .build());
+  }
+
+  @Test
+  void generateSpan_customLocalIp() throws UnknownHostException {
+    InetAddress local = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 0, 1});
+
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setLocalIpAddress(local).build();
+
+    SpanData data = buildStandardSpan().build();
+
+    assertThat(exporter.generateSpan(data))
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .localEndpoint(Endpoint.newBuilder().ip(local).serviceName("tweetiebird").build())
+                .build());
+  }
+
+  @Test
   void testExport() {
-    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
+    ZipkinSpanExporter zipkinSpanExporter =
+        ZipkinSpanExporter.builder().setEncoder(mockEncoder).setSender(mockSender).build();
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(
@@ -359,7 +393,8 @@ class ZipkinSpanExporterTest {
   @Test
   @SuppressLogger(ZipkinSpanExporter.class)
   void testExport_failed() {
-    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
+    ZipkinSpanExporter zipkinSpanExporter =
+        ZipkinSpanExporter.builder().setEncoder(mockEncoder).setSender(mockSender).build();
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(
@@ -421,11 +456,11 @@ class ZipkinSpanExporterTest {
         .setHasEnded(true);
   }
 
-  private Span buildZipkinSpan(Span.Kind kind) {
+  private Span buildZipkinSpan(@Nullable Span.Kind kind) {
     return standardZipkinSpanBuilder(kind).build();
   }
 
-  private Span.Builder standardZipkinSpanBuilder(Span.Kind kind) {
+  private Span.Builder standardZipkinSpanBuilder(@Nullable Span.Kind kind) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)

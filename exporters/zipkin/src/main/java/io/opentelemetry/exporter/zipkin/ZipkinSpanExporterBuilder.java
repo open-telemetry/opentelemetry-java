@@ -8,8 +8,13 @@ package io.opentelemetry.exporter.zipkin;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.time.Duration;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -19,10 +24,15 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
+
+  private static final Logger logger = Logger.getLogger(ZipkinSpanExporterBuilder.class.getName());
+
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
+  @Nullable private InetAddress localIpAddress;
+  private boolean localIpAddressSet = false;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. A {@link
@@ -93,6 +103,20 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
+   * Sets the local IP address that will be set as {@linkplain Span#localEndpoint() local endpoint
+   * address} in each emitted span. Passing {@code null} will cause no IP address to be set on the
+   * exported spans.
+   *
+   * @return this.
+   * @since 1.17.0
+   */
+  public ZipkinSpanExporterBuilder setLocalIpAddress(@Nullable InetAddress localIpAddress) {
+    this.localIpAddress = localIpAddress;
+    this.localIpAddressSet = true;
+    return this;
+  }
+
+  /**
    * Builds a {@link ZipkinSpanExporter}.
    *
    * @return a {@code ZipkinSpanExporter}.
@@ -103,6 +127,29 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(encoder, sender);
+    return new ZipkinSpanExporter(
+        encoder, sender, localIpAddressSet ? localIpAddress : produceLocalIp());
+  }
+
+  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
+  @Nullable
+  private static InetAddress produceLocalIp() {
+    try {
+      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+      while (nics.hasMoreElements()) {
+        NetworkInterface nic = nics.nextElement();
+        Enumeration<InetAddress> addresses = nic.getInetAddresses();
+        while (addresses.hasMoreElements()) {
+          InetAddress address = addresses.nextElement();
+          if (address.isSiteLocalAddress()) {
+            return address;
+          }
+        }
+      }
+    } catch (Exception e) {
+      // don't crash the caller if there was a problem reading nics.
+      logger.log(Level.FINE, "error reading nics", e);
+    }
+    return null;
   }
 }

@@ -23,10 +23,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,32 +59,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final Sender sender;
   @Nullable private final InetAddress localAddress;
 
-  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender) {
+  ZipkinSpanExporter(
+      BytesEncoder<Span> encoder, Sender sender, @Nullable InetAddress localAddress) {
     this.encoder = encoder;
     this.sender = sender;
-    localAddress = produceLocalIp();
-  }
-
-  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
-  @Nullable
-  static InetAddress produceLocalIp() {
-    try {
-      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-      while (nics.hasMoreElements()) {
-        NetworkInterface nic = nics.nextElement();
-        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-          InetAddress address = addresses.nextElement();
-          if (address.isSiteLocalAddress()) {
-            return address;
-          }
-        }
-      }
-    } catch (Exception e) {
-      // don't crash the caller if there was a problem reading nics.
-      baseLogger.log(Level.FINE, "error reading nics", e);
-    }
-    return null;
+    this.localAddress = localAddress;
   }
 
   Span generateSpan(SpanData spanData) {
