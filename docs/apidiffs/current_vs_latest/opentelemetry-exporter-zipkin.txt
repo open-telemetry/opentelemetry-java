@@ -1,4 +1,12 @@
 Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.zipkin.OtelToZipkinSpanTransformer  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.util.function.Function
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) java.util.logging.Logger logger
+	+++  NEW CONSTRUCTOR: PUBLIC(+) OtelToZipkinSpanTransformer()
+	+++  NEW CONSTRUCTOR: PUBLIC(+) OtelToZipkinSpanTransformer(java.net.InetAddress)
+	+++  NEW METHOD: PUBLIC(+) zipkin2.Span apply(io.opentelemetry.sdk.trace.data.SpanData)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setMeterProvider(io.opentelemetry.api.metrics.MeterProvider)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setOtelToZipkinTransformer(java.util.function.Function)
