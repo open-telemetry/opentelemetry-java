@@ -60,7 +60,9 @@ public final class ZipkinSpanExporterBuilder {
 
   /**
    * Sets the Function that is responsible for transforming an OpenTelemetry {@link SpanData} into
-   * an instance of a Zipkin {@link Span}.
+   * an instance of a Zipkin {@link Span}. The default Function is an instance of
+   * {@link OtelToZipkinSpanTransformer} configured with the local IP address at the time
+   * of creation.
    *
    * @param transformer the Function used to transform a SpanData to a Zipkin Span instance
    * @return this
