@@ -9,20 +9,17 @@ import static io.opentelemetry.micrometer1shim.Bridging.baseUnit;
 import static io.opentelemetry.micrometer1shim.Bridging.statisticInstrumentName;
 import static io.opentelemetry.micrometer1shim.Bridging.tagsAsAttributes;
 
+import io.micrometer.core.instrument.AbstractMeter;
 import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.NamingConvention;
-import io.micrometer.core.instrument.util.MeterEquivalence;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 
-@SuppressWarnings("HashCodeToString")
-final class OpenTelemetryMeter implements Meter, RemovableMeter {
+final class OpenTelemetryMeter extends AbstractMeter implements Meter, RemovableMeter {
 
-  private final Id id;
   private final List<AutoCloseable> observableInstruments;
 
   OpenTelemetryMeter(
@@ -30,7 +27,7 @@ final class OpenTelemetryMeter implements Meter, RemovableMeter {
       NamingConvention namingConvention,
       Iterable<Measurement> measurements,
       io.opentelemetry.api.metrics.Meter otelMeter) {
-    this.id = id;
+    super(id);
     Attributes attributes = tagsAsAttributes(id, namingConvention);
 
     List<AutoCloseable> observableInstruments = new ArrayList<>();
@@ -83,11 +80,6 @@ final class OpenTelemetryMeter implements Meter, RemovableMeter {
   }
 
   @Override
-  public Id getId() {
-    return id;
-  }
-
-  @Override
   public Iterable<Measurement> measure() {
     UnsupportedReadLogger.logWarning();
     return Collections.emptyList();
@@ -102,16 +94,5 @@ final class OpenTelemetryMeter implements Meter, RemovableMeter {
     } catch (Exception e) {
       throw new IllegalStateException("SDK instruments should never throw on close()", e);
     }
-  }
-
-  @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-  @Override
-  public boolean equals(@Nullable Object o) {
-    return MeterEquivalence.equals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return MeterEquivalence.hashCode(this);
   }
 }
