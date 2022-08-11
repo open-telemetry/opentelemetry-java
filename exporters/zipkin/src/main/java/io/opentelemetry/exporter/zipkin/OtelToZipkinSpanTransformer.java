@@ -22,7 +22,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -45,24 +47,26 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
   static final String OTEL_STATUS_CODE = "otel.status_code";
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
-  @Nullable private final InetAddress localAddress;
+  private final Supplier<Optional<InetAddress>> ipAddressSupplier;
 
   /**
-   * Creates a new instance of an OtelToZipkinSpanTransformer with the local IP address fetched from
-   * the network interfaces at construction time.
+   * Creates a new instance of an OtelToZipkinSpanTransformer. This version of the constructor will
+   * use a fixed IP address that is fetched from the network interfaces at construction time.
    */
   public OtelToZipkinSpanTransformer() {
-    this(produceLocalIp());
+    Optional<InetAddress> inetAddress = produceLocalIp();
+    this.ipAddressSupplier = () -> inetAddress;
   }
 
   /**
-   * Creates a new instance of an OtelToZipkinSpanTransformer with the given local IP address.
+   * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
+   * an optional InetAddress. This value from this Supplier will be used when creating the local
+   * zipkin Endpoint for each Span.
    *
-   * @param localAddress - The local IP address. If not null, the localAddress will be included in
-   *     Zipkin spans as part of the localEndpoint.
+   * @param ipAddressSupplier - A Supplier of an Optional InetAddress
    */
-  public OtelToZipkinSpanTransformer(@Nullable InetAddress localAddress) {
-    this.localAddress = localAddress;
+  public OtelToZipkinSpanTransformer(Supplier<Optional<InetAddress>> ipAddressSupplier) {
+    this.ipAddressSupplier = ipAddressSupplier;
   }
 
   @Override
@@ -142,7 +146,8 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
   private Endpoint getEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
-    Endpoint.Builder endpoint = Endpoint.newBuilder().ip(localAddress);
+    Endpoint.Builder endpoint = Endpoint.newBuilder();
+    ipAddressSupplier.get().ifPresent(endpoint::ip);
 
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
@@ -206,8 +211,7 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
   }
 
   /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
-  @Nullable
-  static InetAddress produceLocalIp() {
+  static Optional<InetAddress> produceLocalIp() {
     try {
       Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
       while (nics.hasMoreElements()) {
@@ -216,7 +220,7 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
         while (addresses.hasMoreElements()) {
           InetAddress address = addresses.nextElement();
           if (address.isSiteLocalAddress()) {
-            return address;
+            return Optional.of(address);
           }
         }
       }
@@ -224,6 +228,6 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
       // don't crash the caller if there was a problem reading nics.
       logger.log(Level.FINE, "error reading nics", e);
     }
-    return null;
+    return Optional.empty();
   }
 }

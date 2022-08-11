@@ -29,6 +29,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import zipkin2.Endpoint;
 import zipkin2.Span;
@@ -36,7 +37,7 @@ import zipkin2.Span;
 class OtelToZipkinSpanTransformerTest {
 
   private final OtelToZipkinSpanTransformer transformer =
-      new OtelToZipkinSpanTransformer(ZipkinTestSpan.localAddressForTesting);
+      new OtelToZipkinSpanTransformer(() -> Optional.of(ZipkinTestSpan.localAddressForTesting));
 
   @Test
   void generateSpan_remoteParent() {

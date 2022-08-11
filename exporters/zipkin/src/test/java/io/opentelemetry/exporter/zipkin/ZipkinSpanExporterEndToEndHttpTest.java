@@ -33,6 +33,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -89,7 +90,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
   private static final OtelToZipkinSpanTransformer otelToZipkinTransformer =
-      new OtelToZipkinSpanTransformer(ZipkinTestSpan.localAddressForTesting);
+      new OtelToZipkinSpanTransformer(() -> Optional.of(ZipkinTestSpan.localAddressForTesting));
 
   @AfterEach
   void tearDown() {
