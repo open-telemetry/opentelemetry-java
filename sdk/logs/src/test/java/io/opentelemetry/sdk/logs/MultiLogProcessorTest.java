@@ -11,9 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +25,7 @@ class MultiLogProcessorTest {
 
   @Mock private LogProcessor logProcessor1;
   @Mock private LogProcessor logProcessor2;
-  private static final LogData logData =
-      TestLogData.builder().setSeverity(Severity.DEBUG).setBody("message").build();
+  @Mock private ReadWriteLogRecord logRecord;
 
   @BeforeEach
   void setup() {
@@ -43,7 +39,7 @@ class MultiLogProcessorTest {
   void empty() {
     LogProcessor multiLogProcessor = LogProcessor.composite();
     assertThat(multiLogProcessor).isInstanceOf(NoopLogProcessor.class);
-    multiLogProcessor.emit(logData);
+    multiLogProcessor.onEmit(logRecord);
     multiLogProcessor.shutdown();
   }
 
@@ -56,9 +52,9 @@ class MultiLogProcessorTest {
   @Test
   void twoLogProcessor() {
     LogProcessor multiLogProcessor = LogProcessor.composite(logProcessor1, logProcessor2);
-    multiLogProcessor.emit(logData);
-    verify(logProcessor1).emit(same(logData));
-    verify(logProcessor2).emit(same(logData));
+    multiLogProcessor.onEmit(logRecord);
+    verify(logProcessor1).onEmit(same(logRecord));
+    verify(logProcessor2).onEmit(same(logRecord));
 
     multiLogProcessor.forceFlush();
     verify(logProcessor1).forceFlush();

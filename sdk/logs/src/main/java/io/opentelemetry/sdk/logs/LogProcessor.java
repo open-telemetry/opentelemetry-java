@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * {@link LogProcessor} is the interface to allow synchronous hooks for logs emitted by {@link
- * LogEmitter}s.
+ * {@link LogProcessor} is the interface to allow synchronous hooks for log records emitted by
+ * {@link LogEmitter}s.
  */
 @ThreadSafe
 public interface LogProcessor extends Closeable {
@@ -48,11 +47,11 @@ public interface LogProcessor extends Closeable {
   }
 
   /**
-   * Emit a log.
+   * Called when a {@link LogEmitter} {@link LogRecordBuilder#emit()}s a log record.
    *
-   * @param logData the log
+   * @param logRecord the log record
    */
-  void emit(LogData logData);
+  void onEmit(ReadWriteLogRecord logRecord);
 
   /**
    * Shutdown the log processor.
@@ -64,7 +63,7 @@ public interface LogProcessor extends Closeable {
   }
 
   /**
-   * Process all logs that have not yet been processed.
+   * Process all log records that have not yet been processed.
    *
    * @return result
    */
@@ -73,7 +72,8 @@ public interface LogProcessor extends Closeable {
   }
 
   /**
-   * Closes this {@link LogProcessor} after processing any remaining logs, releasing any resources.
+   * Closes this {@link LogProcessor} after processing any remaining log records, releasing any
+   * resources.
    */
   @Override
   default void close() {

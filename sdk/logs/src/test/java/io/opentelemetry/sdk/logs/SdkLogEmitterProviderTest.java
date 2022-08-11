@@ -5,23 +5,31 @@
 
 package io.opentelemetry.sdk.logs;
 
+import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -205,6 +213,54 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
+  void logEmitterBuilder_WithLogProcessor() {
+    Resource resource = Resource.builder().put("r1", "v1").build();
+    AtomicReference<LogData> logData = new AtomicReference<>();
+    sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder()
+            .setResource(resource)
+            .addLogProcessor(
+                logRecord -> {
+                  logRecord.setAttribute(null, null);
+                  // Overwrite k1
+                  logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
+                  // Add new attribute k3
+                  logRecord.setAttribute(AttributeKey.stringKey("k3"), "v3");
+                  logData.set(logRecord.toLogData());
+                })
+            .build();
+
+    SpanContext spanContext =
+        SpanContext.create(
+            "33333333333333333333333333333333",
+            "7777777777777777",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    sdkLogEmitterProvider
+        .get("test")
+        .logRecordBuilder()
+        .setEpoch(100, TimeUnit.NANOSECONDS)
+        .setContext(Span.wrap(spanContext).storeInContext(Context.root()))
+        .setSeverity(Severity.DEBUG)
+        .setSeverityText("debug")
+        .setBody("body")
+        .setAttribute(AttributeKey.stringKey("k1"), "v1")
+        .setAttribute(AttributeKey.stringKey("k2"), "v2")
+        .emit();
+
+    assertThat(logData.get())
+        .hasResource(resource)
+        .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
+        .hasEpochNanos(100)
+        .hasSpanContext(spanContext)
+        .hasSeverity(Severity.DEBUG)
+        .hasSeverityText("debug")
+        .hasBody("body")
+        .hasAttributes(
+            Attributes.builder().put("k1", "new-v1").put("k2", "v2").put("k3", "v3").build());
+  }
+
+  @Test
   void forceFlush() {
     sdkLogEmitterProvider.forceFlush();
     verify(logProcessor).forceFlush();
@@ -229,12 +285,12 @@ class SdkLogEmitterProviderTest {
     long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
-    List<LogData> seenLogs = new ArrayList<>();
+    List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
     logProcessor = seenLogs::add;
     sdkLogEmitterProvider =
         SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
-    sdkLogEmitterProvider.logEmitterBuilder(null).build().logBuilder().emit();
+    sdkLogEmitterProvider.logEmitterBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).getEpochNanos()).isEqualTo(now);
+    assertThat(seenLogs.get(0).toLogData().getEpochNanos()).isEqualTo(now);
   }
 }
