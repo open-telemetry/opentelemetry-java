@@ -113,8 +113,7 @@ class SdkDoubleHistogramTest {
                                             .hasSum(24)
                                             .hasBucketBoundaries(
                                                 0, 5, 10, 25, 50, 75, 100, 250, 500, 1_000)
-                                            .hasBucketCounts(
-                                                0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0))));
+                                            .hasBucketCounts(0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0))));
   }
 
   @Test
@@ -148,8 +147,7 @@ class SdkDoubleHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(3)
                                           .hasSum(566.3d)
-                                          .hasBucketCounts(
-                                              0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0)
+                                          .hasBucketCounts(0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0)
                                           .hasAttributes(attributeEntry("K", "V")),
                                   point ->
                                       point
@@ -157,8 +155,7 @@ class SdkDoubleHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(2)
                                           .hasSum(22.2d)
-                                          .hasBucketCounts(
-                                              0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
                                           .hasAttributes(Attributes.empty()))));
 
       // Histograms are cumulative by default.
@@ -181,8 +178,7 @@ class SdkDoubleHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(4)
                                           .hasSum(788.3)
-                                          .hasBucketCounts(
-                                              0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 0)
+                                          .hasBucketCounts(0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 0)
                                           .hasAttributes(attributeEntry("K", "V")),
                                   point ->
                                       point
@@ -190,8 +186,7 @@ class SdkDoubleHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(3)
                                           .hasSum(39.2)
-                                          .hasBucketCounts(
-                                              0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0)
                                           .hasAttributes(Attributes.empty()))));
     } finally {
       bound.unbind();
@@ -385,8 +380,7 @@ class SdkDoubleHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(4_000)
                                         .hasSum(40_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[0], values[0])),
                                 point ->
                                     point
@@ -394,8 +388,7 @@ class SdkDoubleHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(4_000)
                                         .hasSum(40_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[1], values[1])),
                                 point ->
                                     point
@@ -403,8 +396,7 @@ class SdkDoubleHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(4_000)
                                         .hasSum(40_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[2], values[2])),
                                 point ->
                                     point
@@ -412,8 +404,7 @@ class SdkDoubleHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(4_000)
                                         .hasSum(40_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 
