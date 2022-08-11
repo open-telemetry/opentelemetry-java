@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.SpanKind;
  * WithSpan} annotation together with some explanations. The goal of this class is to serve as an
  * early detection system for inconvenient API and unintended API breakage.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "deprecation"}) // Testing deprecated code
 public class WithSpanUsageExamples {
 
   /**

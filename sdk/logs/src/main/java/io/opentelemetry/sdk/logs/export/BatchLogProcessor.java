@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,11 +80,11 @@ public final class BatchLogProcessor implements LogProcessor {
   }
 
   @Override
-  public void emit(LogData logData) {
-    if (logData == null) {
+  public void onEmit(ReadWriteLogRecord logRecord) {
+    if (logRecord == null) {
       return;
     }
-    worker.addLog(logData);
+    worker.addLog(logRecord);
   }
 
   @Override
@@ -121,7 +122,7 @@ public final class BatchLogProcessor implements LogProcessor {
 
     private long nextExportTime;
 
-    private final Queue<LogData> queue;
+    private final Queue<ReadWriteLogRecord> queue;
     // When waiting on the logs queue, exporter thread sets this atomic to the number of more
     // logs it needs before doing an export. Writer threads would then wait for the queue to reach
     // logsNeeded size before notifying the exporter thread about new entries.
@@ -140,7 +141,7 @@ public final class BatchLogProcessor implements LogProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        Queue<LogData> queue) {
+        Queue<ReadWriteLogRecord> queue) {
       this.logExporter = logExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
@@ -182,7 +183,7 @@ public final class BatchLogProcessor implements LogProcessor {
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
-    private void addLog(LogData logData) {
+    private void addLog(ReadWriteLogRecord logData) {
       if (!queue.offer(logData)) {
         processedLogsCounter.add(1, droppedAttrs);
       } else {
@@ -201,7 +202,7 @@ public final class BatchLogProcessor implements LogProcessor {
           flush();
         }
         while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll());
+          batch.add(queue.poll().toLogData());
         }
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
@@ -226,9 +227,9 @@ public final class BatchLogProcessor implements LogProcessor {
     private void flush() {
       int logsToFlush = queue.size();
       while (logsToFlush > 0) {
-        LogData logData = queue.poll();
-        assert logData != null;
-        batch.add(logData);
+        ReadWriteLogRecord logRecord = queue.poll();
+        assert logRecord != null;
+        batch.add(logRecord.toLogData());
         logsToFlush--;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();

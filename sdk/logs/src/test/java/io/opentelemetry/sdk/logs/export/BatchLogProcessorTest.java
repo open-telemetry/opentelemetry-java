@@ -58,7 +58,7 @@ class BatchLogProcessorTest {
     sdkLogEmitterProvider
         .logEmitterBuilder(getClass().getName())
         .build()
-        .logBuilder()
+        .logRecordBuilder()
         .setBody(message)
         .emit();
   }
@@ -283,11 +283,7 @@ class BatchLogProcessorTest {
   void ignoresNullLogs() {
     BatchLogProcessor processor = BatchLogProcessor.builder(mockLogExporter).build();
     try {
-      assertThatCode(
-              () -> {
-                processor.emit(null);
-              })
-          .doesNotThrowAnyException();
+      assertThatCode(() -> processor.onEmit(null)).doesNotThrowAnyException();
     } finally {
       processor.shutdown();
     }

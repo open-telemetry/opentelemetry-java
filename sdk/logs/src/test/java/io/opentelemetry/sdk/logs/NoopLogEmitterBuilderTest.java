@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -20,8 +20,8 @@ class NoopLogEmitterBuilderTest {
         .setSchemaUrl("http://endpoint")
         .setInstrumentationVersion("1.0.0")
         .build()
-        .logBuilder()
-        .setAttributes(Attributes.empty())
+        .logRecordBuilder()
+        .setAttribute(AttributeKey.stringKey("key"), "value")
         .setEpoch(Instant.now())
         .setEpoch(100, TimeUnit.SECONDS)
         .setSeverity(Severity.DEBUG)

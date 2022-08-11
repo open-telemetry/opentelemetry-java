@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
@@ -44,47 +44,47 @@ class NoopLogEmitterBuilder implements LogEmitterBuilder {
     private NoopLogEmitter() {}
 
     @Override
-    public LogBuilder logBuilder() {
+    public LogRecordBuilder logRecordBuilder() {
       return NOOP_LOG_BUILDER;
     }
   }
 
-  private static class NoopLogBuilder implements LogBuilder {
+  private static class NoopLogBuilder implements LogRecordBuilder {
 
     private NoopLogBuilder() {}
 
     @Override
-    public LogBuilder setEpoch(long timestamp, TimeUnit unit) {
+    public LogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
       return this;
     }
 
     @Override
-    public LogBuilder setEpoch(Instant instant) {
+    public LogRecordBuilder setEpoch(Instant instant) {
       return this;
     }
 
     @Override
-    public LogBuilder setContext(Context context) {
+    public LogRecordBuilder setContext(Context context) {
       return this;
     }
 
     @Override
-    public LogBuilder setSeverity(Severity severity) {
+    public LogRecordBuilder setSeverity(Severity severity) {
       return this;
     }
 
     @Override
-    public LogBuilder setSeverityText(String severityText) {
+    public LogRecordBuilder setSeverityText(String severityText) {
       return this;
     }
 
     @Override
-    public LogBuilder setBody(String body) {
+    public LogRecordBuilder setBody(String body) {
       return this;
     }
 
     @Override
-    public LogBuilder setAttributes(Attributes attributes) {
+    public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
       return this;
     }
 

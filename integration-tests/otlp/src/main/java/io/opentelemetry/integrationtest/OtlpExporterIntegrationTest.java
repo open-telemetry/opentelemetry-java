@@ -87,6 +87,7 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -132,6 +133,7 @@ abstract class OtlpExporterIntegrationTest {
 
     collector =
         new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
             .withCopyFileToContainer(
                 MountableFile.forHostPath(serverTls.certificateFile().toPath(), 0555),
@@ -517,9 +519,9 @@ abstract class OtlpExporterIntegrationTest {
 
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
       logEmitter
-          .logBuilder()
+          .logRecordBuilder()
           .setBody("log body")
-          .setAttributes(Attributes.builder().put("key", "value").build())
+          .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
           .setEpoch(Instant.now())

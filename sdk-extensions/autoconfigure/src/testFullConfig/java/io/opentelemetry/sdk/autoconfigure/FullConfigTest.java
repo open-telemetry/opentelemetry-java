@@ -213,8 +213,8 @@ class FullConfigTest {
 
     LogEmitter logEmitter =
         autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLogEmitterProvider().get("test");
-    logEmitter.logBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
-    logEmitter.logBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
+    logEmitter.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
+    logEmitter.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
