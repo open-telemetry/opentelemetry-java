@@ -213,6 +213,12 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
+  void logEmitterBuilder_NoProcessor_UsesNoop() {
+    assertThat(SdkLogEmitterProvider.builder().build().logEmitterBuilder("test"))
+        .isInstanceOf(NoopLogEmitterBuilder.class);
+  }
+
+  @Test
   void logEmitterBuilder_WithLogProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
     AtomicReference<LogData> logData = new AtomicReference<>();

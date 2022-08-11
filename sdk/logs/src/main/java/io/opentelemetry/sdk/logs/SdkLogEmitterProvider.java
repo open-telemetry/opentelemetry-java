@@ -24,6 +24,7 @@ public final class SdkLogEmitterProvider implements Closeable {
 
   private final LogEmitterSharedState sharedState;
   private final ComponentRegistry<SdkLogEmitter> logEmitterComponentRegistry;
+  private final boolean isNoopLogProcessor;
 
   /**
    * Returns a new {@link SdkLogEmitterProviderBuilder} for {@link SdkLogEmitterProvider}.
@@ -39,10 +40,12 @@ public final class SdkLogEmitterProvider implements Closeable {
       Supplier<LogLimits> logLimitsSupplier,
       List<LogProcessor> processors,
       Clock clock) {
-    this.sharedState = new LogEmitterSharedState(resource, logLimitsSupplier, processors, clock);
+    LogProcessor logProcessor = LogProcessor.composite(processors);
+    this.sharedState = new LogEmitterSharedState(resource, logLimitsSupplier, logProcessor, clock);
     this.logEmitterComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo -> new SdkLogEmitter(sharedState, instrumentationScopeInfo));
+    this.isNoopLogProcessor = logProcessor instanceof NoopLogProcessor;
   }
 
   /**
@@ -63,6 +66,9 @@ public final class SdkLogEmitterProvider implements Closeable {
    * @return a log emitter builder instance
    */
   public LogEmitterBuilder logEmitterBuilder(String instrumentationScopeName) {
+    if (isNoopLogProcessor) {
+      return NoopLogEmitterBuilder.getInstance();
+    }
     if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
       LOGGER.fine("LogEmitter requested without instrumentation scope name.");
       instrumentationScopeName = DEFAULT_EMITTER_NAME;
