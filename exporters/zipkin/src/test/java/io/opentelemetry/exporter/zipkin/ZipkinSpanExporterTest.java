@@ -18,11 +18,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,7 +37,7 @@ class ZipkinSpanExporterTest {
   @Mock private Sender mockSender;
   @Mock private SpanBytesEncoder mockEncoder;
   @Mock private Call<Void> mockZipkinCall;
-  @Mock private Function<SpanData, Span> mockTransformer;
+  @Mock private OtelToZipkinSpanTransformer mockTransformer;
 
   @Test
   void testExport() {
@@ -53,7 +51,7 @@ class ZipkinSpanExporterTest {
         standardZipkinSpanBuilder(Span.Kind.SERVER)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
-    when(mockTransformer.apply(testSpanData)).thenReturn(zipkinSpan);
+    when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     doAnswer(
@@ -83,7 +81,7 @@ class ZipkinSpanExporterTest {
         standardZipkinSpanBuilder(Span.Kind.SERVER)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
-    when(mockTransformer.apply(testSpanData)).thenReturn(zipkinSpan);
+    when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     doAnswer(

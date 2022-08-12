@@ -23,7 +23,6 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +35,7 @@ import zipkin2.Span;
  * a Zipkin Span. It is based, in part, on code from
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  */
-public final class OtelToZipkinSpanTransformer implements Function<SpanData, Span> {
+public final class OtelToZipkinSpanTransformer {
 
   static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
   static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
@@ -69,12 +68,7 @@ public final class OtelToZipkinSpanTransformer implements Function<SpanData, Spa
     this.ipAddressSupplier = ipAddressSupplier;
   }
 
-  @Override
-  public Span apply(SpanData spanData) {
-    return generateSpan(spanData);
-  }
-
-  Span generateSpan(SpanData spanData) {
+  public Span generateSpan(SpanData spanData) {
     Endpoint endpoint = getEndpoint(spanData);
 
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());

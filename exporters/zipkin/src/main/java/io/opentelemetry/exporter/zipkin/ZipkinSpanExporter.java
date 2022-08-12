@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import zipkin2.Callback;
@@ -40,14 +39,14 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final Sender sender;
   private final ExporterMetrics exporterMetrics;
 
-  private final Function<SpanData, Span> transformer;
+  private final OtelToZipkinSpanTransformer transformer;
 
   ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, MeterProvider meterProvider) {
     this(encoder, sender, new OtelToZipkinSpanTransformer());
   }
 
   ZipkinSpanExporter(
-      BytesEncoder<Span> encoder, Sender sender, Function<SpanData, Span> transformer) {
+      BytesEncoder<Span> encoder, Sender sender, OtelToZipkinSpanTransformer transformer) {
     this.encoder = encoder;
     this.sender = sender;
     this.exporterMetrics =
@@ -64,7 +63,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     List<byte[]> encodedSpans = new ArrayList<>(numItems);
     for (SpanData spanData : spanDataList) {
-      Span zipkinSpan = transformer.apply(spanData);
+      Span zipkinSpan = transformer.generateSpan(spanData);
       encodedSpans.add(encoder.encode(zipkinSpan));
     }
 

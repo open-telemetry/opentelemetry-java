@@ -12,7 +12,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -23,7 +22,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
-  private Function<SpanData, Span> transformer = new OtelToZipkinSpanTransformer();
+  private OtelToZipkinSpanTransformer transformer = new OtelToZipkinSpanTransformer();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
@@ -59,16 +58,16 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the Function that is responsible for transforming an OpenTelemetry {@link SpanData} into
-   * an instance of a Zipkin {@link Span}. The default Function is an instance of {@link
+   * Sets the OtelToZipkinSpanTransformer that is responsible for transforming an OpenTelemetry {@link SpanData} into
+   * an instance of a Zipkin {@link Span}. The default is an instance of {@link
    * OtelToZipkinSpanTransformer} configured with the local IP address at the time of creation.
    *
-   * @param transformer the Function used to transform a SpanData to a Zipkin Span instance
+   * @param transformer the OtelToZipkinSpanTransformer used to transform a SpanData to a Zipkin Span instance
    * @return this
    * @see OtelToZipkinSpanTransformer
    */
   public ZipkinSpanExporterBuilder setTransformer(
-      Function<SpanData, Span> transformer) {
+      OtelToZipkinSpanTransformer transformer) {
     requireNonNull(transformer, "encoder");
     this.transformer = transformer;
     return this;
