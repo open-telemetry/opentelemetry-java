@@ -5,10 +5,10 @@
 
 package io.opentelemetry.micrometer1shim;
 
+import io.micrometer.core.instrument.AbstractMeter;
 import io.micrometer.core.instrument.FunctionTimer;
 import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.config.NamingConvention;
-import io.micrometer.core.instrument.util.MeterEquivalence;
 import io.micrometer.core.instrument.util.TimeUtils;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
@@ -18,12 +18,9 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
-import javax.annotation.Nullable;
 
-@SuppressWarnings("HashCodeToString")
-final class OpenTelemetryFunctionTimer<T> implements FunctionTimer, RemovableMeter {
-
-  private final Id id;
+final class OpenTelemetryFunctionTimer<T> extends AbstractMeter
+    implements FunctionTimer, RemovableMeter {
   private final TimeUnit baseTimeUnit;
   private final ObservableLongCounter observableCount;
   private final ObservableDoubleCounter observableTotalTime;
@@ -37,8 +34,7 @@ final class OpenTelemetryFunctionTimer<T> implements FunctionTimer, RemovableMet
       TimeUnit totalTimeFunctionUnit,
       TimeUnit baseTimeUnit,
       Meter otelMeter) {
-
-    this.id = id;
+    super(id);
     this.baseTimeUnit = baseTimeUnit;
 
     String name = Bridging.name(id, namingConvention);
@@ -98,24 +94,8 @@ final class OpenTelemetryFunctionTimer<T> implements FunctionTimer, RemovableMet
   }
 
   @Override
-  public Id getId() {
-    return id;
-  }
-
-  @Override
   public void onRemove() {
     observableCount.close();
     observableTotalTime.close();
-  }
-
-  @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-  @Override
-  public boolean equals(@Nullable Object o) {
-    return MeterEquivalence.equals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return MeterEquivalence.hashCode(this);
   }
 }
