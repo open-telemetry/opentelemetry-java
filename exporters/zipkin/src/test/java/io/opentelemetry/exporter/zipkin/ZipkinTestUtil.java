@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import static org.mockito.Mockito.mock;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -29,8 +27,6 @@ class ZipkinTestUtil {
   static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   static final String SPAN_ID = "9cc1e3049173be09";
   static final String PARENT_SPAN_ID = "8b03ab423da481c5";
-
-  static final InetAddress localAddressForTesting = mock(InetAddress.class);
 
   private static final Attributes attributes = Attributes.empty();
   private static final List<EventData> annotations =
@@ -64,11 +60,11 @@ class ZipkinTestUtil {
         .setHasEnded(true);
   }
 
-  static Span zipkinSpan(Span.Kind kind) {
-    return zipkinSpanBuilder(kind).build();
+  static Span zipkinSpan(Span.Kind kind, InetAddress localIp) {
+    return zipkinSpanBuilder(kind, localIp).build();
   }
 
-  static Span.Builder zipkinSpanBuilder(Span.Kind kind) {
+  static Span.Builder zipkinSpanBuilder(Span.Kind kind, InetAddress localIp) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)
@@ -77,8 +73,7 @@ class ZipkinTestUtil {
         .name("Recv.helloworld.Greeter.SayHello")
         .timestamp(1505855794000000L + 194009601L / 1000)
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
-        .localEndpoint(
-            Endpoint.newBuilder().ip(localAddressForTesting).serviceName("tweetiebird").build())
+        .localEndpoint(Endpoint.newBuilder().ip(localIp).serviceName("tweetiebird").build())
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
   }

@@ -17,6 +17,7 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpan;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -27,17 +28,25 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 
 class OtelToZipkinSpanTransformerTest {
 
-  private final OtelToZipkinSpanTransformer transformer =
-      OtelToZipkinSpanTransformer.create(() -> Optional.of(ZipkinTestUtil.localAddressForTesting));
+  private OtelToZipkinSpanTransformer transformer;
+  private InetAddress localIp;
+
+  @BeforeEach
+  void setup() {
+    localIp = mock(InetAddress.class);
+    transformer = OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp));
+  }
 
   @Test
   void generateSpan_remoteParent() {
@@ -45,7 +54,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(Span.Kind.SERVER)
+            zipkinSpanBuilder(Span.Kind.SERVER, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -59,7 +68,7 @@ class OtelToZipkinSpanTransformerTest {
             .build();
 
     Span expected =
-        zipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER, localIp)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .duration(1)
             .build();
@@ -72,7 +81,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(Span.Kind.SERVER)
+            zipkinSpanBuilder(Span.Kind.SERVER, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -83,7 +92,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(Span.Kind.CLIENT)
+            zipkinSpanBuilder(Span.Kind.CLIENT, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -94,7 +103,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(null)
+            zipkinSpanBuilder(null, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -105,7 +114,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(Span.Kind.CONSUMER)
+            zipkinSpanBuilder(Span.Kind.CONSUMER, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -116,7 +125,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpanBuilder(Span.Kind.PRODUCER)
+            zipkinSpanBuilder(Span.Kind.PRODUCER, localIp)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -128,12 +137,9 @@ class OtelToZipkinSpanTransformerTest {
     SpanData data = spanBuilder().setResource(resource).build();
 
     Endpoint expectedEndpoint =
-        Endpoint.newBuilder()
-            .serviceName("super-zipkin-service")
-            .ip(ZipkinTestUtil.localAddressForTesting)
-            .build();
+        Endpoint.newBuilder().serviceName("super-zipkin-service").ip(localIp).build();
     Span expectedZipkinSpan =
-        zipkinSpan(Span.Kind.SERVER).toBuilder()
+        zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
             .localEndpoint(expectedEndpoint)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
@@ -147,10 +153,10 @@ class OtelToZipkinSpanTransformerTest {
     Endpoint expectedEndpoint =
         Endpoint.newBuilder()
             .serviceName(Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME))
-            .ip(ZipkinTestUtil.localAddressForTesting)
+            .ip(localIp)
             .build();
     Span expectedZipkinSpan =
-        zipkinSpan(Span.Kind.SERVER).toBuilder()
+        zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
             .localEndpoint(expectedEndpoint)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
@@ -180,7 +186,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT, localIp).toBuilder()
                 .putTag("string", "string value")
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
@@ -206,7 +212,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT, localIp).toBuilder()
                 .putTag("otel.scope.name", "io.opentelemetry.auto")
                 .putTag("otel.scope.version", "1.0.0")
                 .putTag("otel.library.name", "io.opentelemetry.auto")
@@ -230,7 +236,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT, localIp).toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
@@ -253,7 +259,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
                 .putTag(OtelToZipkinSpanTransformer.STATUS_ERROR.getKey(), errorMessage)
@@ -273,7 +279,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
                 .putTag(OtelToZipkinSpanTransformer.STATUS_ERROR.getKey(), "")
@@ -293,7 +299,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            zipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .build());
   }

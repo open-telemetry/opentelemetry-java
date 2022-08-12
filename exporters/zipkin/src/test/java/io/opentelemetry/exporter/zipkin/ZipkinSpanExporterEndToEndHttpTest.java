@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.zipkin;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
@@ -89,8 +90,9 @@ class ZipkinSpanExporterEndToEndHttpTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
+  private static final InetAddress localIp = mock(InetAddress.class);
   private static final OtelToZipkinSpanTransformer transformer =
-      OtelToZipkinSpanTransformer.create(() -> Optional.of(ZipkinTestUtil.localAddressForTesting));
+      OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp));
 
   @AfterEach
   void tearDown() {
@@ -178,9 +180,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setEncoder(encoder)
         .setMeterProvider(meterProvider)
-        .setTransformer(
-            OtelToZipkinSpanTransformer.create(
-                () -> Optional.of(ZipkinTestUtil.localAddressForTesting)))
+        .setTransformer(OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp)))
         .build();
   }
 
@@ -199,8 +199,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
 
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
-    assertThat(zipkinSpans.get(0))
-        .isEqualTo(buildZipkinSpan(ZipkinTestUtil.localAddressForTesting, traceId));
+    assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan(localIp, traceId));
   }
 
   private static TestSpanData.Builder buildStandardSpan(String traceId) {

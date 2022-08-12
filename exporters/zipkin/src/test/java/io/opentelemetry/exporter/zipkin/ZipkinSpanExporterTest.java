@@ -19,6 +19,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ class ZipkinSpanExporterTest {
   @Mock private SpanBytesEncoder mockEncoder;
   @Mock private Call<Void> mockZipkinCall;
   @Mock private OtelToZipkinSpanTransformer mockTransformer;
+  @Mock private InetAddress localIp;
 
   @Test
   void testExport() {
@@ -48,7 +50,7 @@ class ZipkinSpanExporterTest {
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
-        zipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER, localIp)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
@@ -73,12 +75,13 @@ class ZipkinSpanExporterTest {
   @SuppressLogger(ZipkinSpanExporter.class)
   void testExport_failed() {
     TestSpanData testSpanData = spanBuilder().build();
+
     ZipkinSpanExporter zipkinSpanExporter =
         new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop(), mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
-        zipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER, localIp)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
