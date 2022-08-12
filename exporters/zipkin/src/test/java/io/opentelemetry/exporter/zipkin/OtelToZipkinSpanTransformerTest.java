@@ -13,9 +13,9 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.exporter.zipkin.ZipkinTestSpan.buildStandardSpan;
-import static io.opentelemetry.exporter.zipkin.ZipkinTestSpan.buildZipkinSpan;
-import static io.opentelemetry.exporter.zipkin.ZipkinTestSpan.standardZipkinSpanBuilder;
+import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
+import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpan;
+import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -37,15 +37,15 @@ import zipkin2.Span;
 class OtelToZipkinSpanTransformerTest {
 
   private final OtelToZipkinSpanTransformer transformer =
-      new OtelToZipkinSpanTransformer(() -> Optional.of(ZipkinTestSpan.localAddressForTesting));
+      OtelToZipkinSpanTransformer.create(() -> Optional.of(ZipkinTestUtil.localAddressForTesting));
 
   @Test
   void generateSpan_remoteParent() {
-    SpanData data = buildStandardSpan().build();
+    SpanData data = spanBuilder().build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(Span.Kind.SERVER)
+            zipkinSpanBuilder(Span.Kind.SERVER)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -53,13 +53,13 @@ class OtelToZipkinSpanTransformerTest {
   @Test
   void generateSpan_subMicroDurations() {
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setStartEpochNanos(1505855794_194009601L)
             .setEndEpochNanos(1505855794_194009999L)
             .build();
 
     Span expected =
-        standardZipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .duration(1)
             .build();
@@ -68,55 +68,55 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_ServerKind() {
-    SpanData data = buildStandardSpan().setKind(SpanKind.SERVER).build();
+    SpanData data = spanBuilder().setKind(SpanKind.SERVER).build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(Span.Kind.SERVER)
+            zipkinSpanBuilder(Span.Kind.SERVER)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
   @Test
   void generateSpan_ClientKind() {
-    SpanData data = buildStandardSpan().setKind(SpanKind.CLIENT).build();
+    SpanData data = spanBuilder().setKind(SpanKind.CLIENT).build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(Span.Kind.CLIENT)
+            zipkinSpanBuilder(Span.Kind.CLIENT)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
   @Test
   void generateSpan_InternalKind() {
-    SpanData data = buildStandardSpan().setKind(SpanKind.INTERNAL).build();
+    SpanData data = spanBuilder().setKind(SpanKind.INTERNAL).build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(null)
+            zipkinSpanBuilder(null)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
   @Test
   void generateSpan_ConsumeKind() {
-    SpanData data = buildStandardSpan().setKind(SpanKind.CONSUMER).build();
+    SpanData data = spanBuilder().setKind(SpanKind.CONSUMER).build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(Span.Kind.CONSUMER)
+            zipkinSpanBuilder(Span.Kind.CONSUMER)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
   @Test
   void generateSpan_ProducerKind() {
-    SpanData data = buildStandardSpan().setKind(SpanKind.PRODUCER).build();
+    SpanData data = spanBuilder().setKind(SpanKind.PRODUCER).build();
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            standardZipkinSpanBuilder(Span.Kind.PRODUCER)
+            zipkinSpanBuilder(Span.Kind.PRODUCER)
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .build());
   }
@@ -125,15 +125,15 @@ class OtelToZipkinSpanTransformerTest {
   void generateSpan_ResourceServiceNameMapping() {
     Resource resource =
         Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "super-zipkin-service"));
-    SpanData data = buildStandardSpan().setResource(resource).build();
+    SpanData data = spanBuilder().setResource(resource).build();
 
     Endpoint expectedEndpoint =
         Endpoint.newBuilder()
             .serviceName("super-zipkin-service")
-            .ip(ZipkinTestSpan.localAddressForTesting)
+            .ip(ZipkinTestUtil.localAddressForTesting)
             .build();
     Span expectedZipkinSpan =
-        buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+        zipkinSpan(Span.Kind.SERVER).toBuilder()
             .localEndpoint(expectedEndpoint)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
@@ -142,15 +142,15 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_defaultResourceServiceName() {
-    SpanData data = buildStandardSpan().setResource(Resource.empty()).build();
+    SpanData data = spanBuilder().setResource(Resource.empty()).build();
 
     Endpoint expectedEndpoint =
         Endpoint.newBuilder()
             .serviceName(Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME))
-            .ip(ZipkinTestSpan.localAddressForTesting)
+            .ip(ZipkinTestUtil.localAddressForTesting)
             .build();
     Span expectedZipkinSpan =
-        buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+        zipkinSpan(Span.Kind.SERVER).toBuilder()
             .localEndpoint(expectedEndpoint)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
@@ -171,7 +171,7 @@ class OtelToZipkinSpanTransformerTest {
             .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
             .build();
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setAttributes(attributes)
             .setTotalAttributeCount(28)
             .setTotalRecordedEvents(3)
@@ -180,7 +180,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("string", "string value")
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
@@ -198,7 +198,7 @@ class OtelToZipkinSpanTransformerTest {
   @Test
   void generateSpan_WithInstrumentationLibraryInfo() {
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setInstrumentationScopeInfo(
                 InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
             .setKind(SpanKind.CLIENT)
@@ -206,7 +206,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("otel.scope.name", "io.opentelemetry.auto")
                 .putTag("otel.scope.version", "1.0.0")
                 .putTag("otel.library.name", "io.opentelemetry.auto")
@@ -221,7 +221,7 @@ class OtelToZipkinSpanTransformerTest {
         Attributes.of(
             SemanticAttributes.HTTP_STATUS_CODE, 404L, stringKey("error"), "A user provided error");
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setAttributes(attributeMap)
             .setKind(SpanKind.CLIENT)
             .setStatus(StatusData.error())
@@ -230,7 +230,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
+            zipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
@@ -245,7 +245,7 @@ class OtelToZipkinSpanTransformerTest {
     String errorMessage = "timeout";
 
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setStatus(StatusData.create(StatusCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
             .setTotalAttributeCount(1)
@@ -253,7 +253,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
                 .putTag(OtelToZipkinSpanTransformer.STATUS_ERROR.getKey(), errorMessage)
@@ -265,7 +265,7 @@ class OtelToZipkinSpanTransformerTest {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setStatus(StatusData.create(StatusCode.ERROR, ""))
             .setAttributes(attributeMap)
             .setTotalAttributeCount(1)
@@ -273,7 +273,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
                 .putTag(OtelToZipkinSpanTransformer.STATUS_ERROR.getKey(), "")
@@ -285,7 +285,7 @@ class OtelToZipkinSpanTransformerTest {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
-        buildStandardSpan()
+        spanBuilder()
             .setStatus(StatusData.create(StatusCode.UNSET, ""))
             .setAttributes(attributeMap)
             .setTotalAttributeCount(1)
@@ -293,7 +293,7 @@ class OtelToZipkinSpanTransformerTest {
 
     assertThat(transformer.generateSpan(data))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            zipkinSpan(Span.Kind.SERVER).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .build());
   }

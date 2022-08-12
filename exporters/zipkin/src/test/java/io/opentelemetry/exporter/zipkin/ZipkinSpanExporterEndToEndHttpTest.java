@@ -90,7 +90,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
   private static final OtelToZipkinSpanTransformer otelToZipkinTransformer =
-      new OtelToZipkinSpanTransformer(() -> Optional.of(ZipkinTestSpan.localAddressForTesting));
+      OtelToZipkinSpanTransformer.create(() -> Optional.of(ZipkinTestUtil.localAddressForTesting));
 
   @AfterEach
   void tearDown() {
@@ -199,7 +199,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
     assertThat(zipkinSpans.get(0))
-        .isEqualTo(buildZipkinSpan(ZipkinTestSpan.localAddressForTesting, traceId));
+        .isEqualTo(buildZipkinSpan(ZipkinTestUtil.localAddressForTesting, traceId));
   }
 
   private static TestSpanData.Builder buildStandardSpan(String traceId) {

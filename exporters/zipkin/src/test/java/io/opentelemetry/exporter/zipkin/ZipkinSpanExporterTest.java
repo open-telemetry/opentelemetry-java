@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import static io.opentelemetry.exporter.zipkin.ZipkinTestSpan.buildStandardSpan;
-import static io.opentelemetry.exporter.zipkin.ZipkinTestSpan.standardZipkinSpanBuilder;
+import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
+import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,14 +41,14 @@ class ZipkinSpanExporterTest {
 
   @Test
   void testExport() {
-    TestSpanData testSpanData = buildStandardSpan().build();
+    TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
         new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop(), mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
-        standardZipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
@@ -72,13 +72,13 @@ class ZipkinSpanExporterTest {
   @Test
   @SuppressLogger(ZipkinSpanExporter.class)
   void testExport_failed() {
-    TestSpanData testSpanData = buildStandardSpan().build();
+    TestSpanData testSpanData = spanBuilder().build();
     ZipkinSpanExporter zipkinSpanExporter =
         new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop(), mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
-        standardZipkinSpanBuilder(Span.Kind.SERVER)
+        zipkinSpanBuilder(Span.Kind.SERVER)
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);

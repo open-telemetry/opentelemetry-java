@@ -24,7 +24,7 @@ import java.util.List;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 
-class ZipkinTestSpan {
+class ZipkinTestUtil {
 
   static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   static final String SPAN_ID = "9cc1e3049173be09";
@@ -39,9 +39,9 @@ class ZipkinTestSpan {
               EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
               EventData.create(1505855799_459486280L, "SENT", Attributes.empty())));
 
-  private ZipkinTestSpan() {}
+  private ZipkinTestUtil() {}
 
-  static TestSpanData.Builder buildStandardSpan() {
+  static TestSpanData.Builder spanBuilder() {
     return TestSpanData.builder()
         .setSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()))
@@ -64,11 +64,11 @@ class ZipkinTestSpan {
         .setHasEnded(true);
   }
 
-  static Span buildZipkinSpan(Span.Kind kind) {
-    return standardZipkinSpanBuilder(kind).build();
+  static Span zipkinSpan(Span.Kind kind) {
+    return zipkinSpanBuilder(kind).build();
   }
 
-  static Span.Builder standardZipkinSpanBuilder(Span.Kind kind) {
+  static Span.Builder zipkinSpanBuilder(Span.Kind kind) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)

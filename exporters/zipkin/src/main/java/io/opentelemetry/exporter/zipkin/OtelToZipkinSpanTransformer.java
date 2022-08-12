@@ -52,9 +52,9 @@ public final class OtelToZipkinSpanTransformer {
    * Creates a new instance of an OtelToZipkinSpanTransformer. This version of the constructor will
    * use a fixed IP address that is fetched from the network interfaces at construction time.
    */
-  public OtelToZipkinSpanTransformer() {
+  public static OtelToZipkinSpanTransformer create() {
     Optional<InetAddress> inetAddress = produceLocalIp();
-    this.ipAddressSupplier = () -> inetAddress;
+    return new OtelToZipkinSpanTransformer(() -> inetAddress);
   }
 
   /**
@@ -64,7 +64,18 @@ public final class OtelToZipkinSpanTransformer {
    *
    * @param ipAddressSupplier - A Supplier of an Optional InetAddress
    */
-  public OtelToZipkinSpanTransformer(Supplier<Optional<InetAddress>> ipAddressSupplier) {
+  public static OtelToZipkinSpanTransformer create(Supplier<Optional<InetAddress>> ipAddressSupplier) {
+    return new OtelToZipkinSpanTransformer(ipAddressSupplier);
+  }
+
+  /**
+   * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
+   * an optional InetAddress. This value from this Supplier will be used when creating the local
+   * zipkin Endpoint for each Span.
+   *
+   * @param ipAddressSupplier - A Supplier of an Optional InetAddress
+   */
+  private OtelToZipkinSpanTransformer(Supplier<Optional<InetAddress>> ipAddressSupplier) {
     this.ipAddressSupplier = ipAddressSupplier;
   }
 
