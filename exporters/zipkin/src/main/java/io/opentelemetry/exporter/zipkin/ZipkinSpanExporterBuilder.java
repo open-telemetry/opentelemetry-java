@@ -9,9 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import java.net.InetAddress;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -22,7 +23,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
-  private OtelToZipkinSpanTransformer transformer = OtelToZipkinSpanTransformer.create();
+  private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.INSTANCE;
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
@@ -58,19 +59,15 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the OtelToZipkinSpanTransformer that is responsible for transforming an OpenTelemetry
-   * {@link SpanData} into an instance of a Zipkin {@link Span}. The default is an instance of
-   * {@link OtelToZipkinSpanTransformer} configured with the local IP address at the time of
-   * creation.
+   * Sets the Supplier of InetAddress. This Supplier will be used by the {@link
+   * OtelToZipkinSpanTransformer} when creating the Zipkin local endpoint.
    *
-   * @param transformer the OtelToZipkinSpanTransformer used to transform a SpanData to a Zipkin
-   *     Span instance
+   * @param supplier - A supplier that returns an InetAddress that may be null.
    * @return this
-   * @see OtelToZipkinSpanTransformer
    */
-  public ZipkinSpanExporterBuilder setTransformer(OtelToZipkinSpanTransformer transformer) {
-    requireNonNull(transformer, "encoder");
-    this.transformer = transformer;
+  public ZipkinSpanExporterBuilder setLocalIpAddressSupplier(Supplier<InetAddress> supplier) {
+    requireNonNull(supplier, "encoder");
+    this.localIpAddressSupplier = supplier;
     return this;
   }
 
@@ -137,6 +134,8 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
+    OtelToZipkinSpanTransformer transformer =
+        OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
     return new ZipkinSpanExporter(encoder, sender, meterProvider, transformer);
   }
 }

@@ -19,13 +19,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import zipkin2.Endpoint;
 import zipkin2.Span;
@@ -44,39 +39,36 @@ public final class OtelToZipkinSpanTransformer {
   static final String OTEL_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
   static final String OTEL_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String OTEL_STATUS_CODE = "otel.status_code";
-  private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
-  private final Supplier<Optional<InetAddress>> ipAddressSupplier;
+  private final Supplier<InetAddress> ipAddressSupplier;
 
   /**
    * Creates a new instance of an OtelToZipkinSpanTransformer. This version of the constructor will
    * use a fixed IP address that is fetched from the network interfaces at construction time.
    */
   public static OtelToZipkinSpanTransformer create() {
-    Optional<InetAddress> inetAddress = produceLocalIp();
-    return new OtelToZipkinSpanTransformer(() -> inetAddress);
+    return new OtelToZipkinSpanTransformer(LocalInetAddressSupplier.INSTANCE);
   }
 
   /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
-   * an optional InetAddress. This value from this Supplier will be used when creating the local
-   * zipkin Endpoint for each Span.
+   * an InetAddress, which may be null. This value from this Supplier will be used when creating the
+   * local zipkin Endpoint for each Span.
    *
-   * @param ipAddressSupplier - A Supplier of an Optional InetAddress
+   * @param ipAddressSupplier - A Supplier of an InetAddress.
    */
-  public static OtelToZipkinSpanTransformer create(
-      Supplier<Optional<InetAddress>> ipAddressSupplier) {
+  public static OtelToZipkinSpanTransformer create(Supplier<InetAddress> ipAddressSupplier) {
     return new OtelToZipkinSpanTransformer(ipAddressSupplier);
   }
 
   /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
-   * an optional InetAddress. This value from this Supplier will be used when creating the local
-   * zipkin Endpoint for each Span.
+   * an InetAddress. Supplier may return null. This value from this Supplier will be used when
+   * creating the local zipkin Endpoint for each Span.
    *
-   * @param ipAddressSupplier - A Supplier of an Optional InetAddress
+   * @param ipAddressSupplier - A Supplier of an InetAddress, which can be null
    */
-  private OtelToZipkinSpanTransformer(Supplier<Optional<InetAddress>> ipAddressSupplier) {
+  private OtelToZipkinSpanTransformer(Supplier<InetAddress> ipAddressSupplier) {
     this.ipAddressSupplier = ipAddressSupplier;
   }
 
@@ -159,7 +151,7 @@ public final class OtelToZipkinSpanTransformer {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     Endpoint.Builder endpoint = Endpoint.newBuilder();
-    ipAddressSupplier.get().ifPresent(endpoint::ip);
+    endpoint.ip(ipAddressSupplier.get());
 
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
@@ -220,26 +212,5 @@ public final class OtelToZipkinSpanTransformer {
       builder.append(value);
     }
     return builder.toString();
-  }
-
-  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
-  static Optional<InetAddress> produceLocalIp() {
-    try {
-      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-      while (nics.hasMoreElements()) {
-        NetworkInterface nic = nics.nextElement();
-        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-          InetAddress address = addresses.nextElement();
-          if (address.isSiteLocalAddress()) {
-            return Optional.of(address);
-          }
-        }
-      }
-    } catch (Exception e) {
-      // don't crash the caller if there was a problem reading nics.
-      logger.log(Level.FINE, "error reading nics", e);
-    }
-    return Optional.empty();
   }
 }

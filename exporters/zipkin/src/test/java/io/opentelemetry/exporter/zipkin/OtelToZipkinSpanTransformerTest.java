@@ -31,7 +31,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import zipkin2.Endpoint;
@@ -45,7 +44,7 @@ class OtelToZipkinSpanTransformerTest {
   @BeforeEach
   void setup() {
     localIp = mock(InetAddress.class);
-    transformer = OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp));
+    transformer = OtelToZipkinSpanTransformer.create(() -> localIp);
   }
 
   @Test

@@ -34,7 +34,6 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -91,8 +90,6 @@ class ZipkinSpanExporterEndToEndHttpTest {
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
   private static final InetAddress localIp = mock(InetAddress.class);
-  private static final OtelToZipkinSpanTransformer transformer =
-      OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp));
 
   @AfterEach
   void tearDown() {
@@ -105,7 +102,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         ZipkinSpanExporter.builder()
             .setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS))
             .setMeterProvider(sdkMeterProvider)
-            .setTransformer(transformer)
+            .setLocalIpAddressSupplier(() -> localIp)
             .build();
     exportAndVerify(exporter);
 
@@ -180,7 +177,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setEncoder(encoder)
         .setMeterProvider(meterProvider)
-        .setTransformer(OtelToZipkinSpanTransformer.create(() -> Optional.of(localIp)))
+        .setLocalIpAddressSupplier(() -> localIp)
         .build();
   }
 
