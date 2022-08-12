@@ -23,7 +23,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
-  private Function<SpanData, Span> otelToZipkinTransformer = new OtelToZipkinSpanTransformer();
+  private Function<SpanData, Span> transformer = new OtelToZipkinSpanTransformer();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
@@ -67,10 +67,10 @@ public final class ZipkinSpanExporterBuilder {
    * @return this
    * @see OtelToZipkinSpanTransformer
    */
-  public ZipkinSpanExporterBuilder setOtelToZipkinTransformer(
+  public ZipkinSpanExporterBuilder setTransformer(
       Function<SpanData, Span> transformer) {
     requireNonNull(transformer, "encoder");
-    this.otelToZipkinTransformer = transformer;
+    this.transformer = transformer;
     return this;
   }
 
@@ -137,6 +137,6 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(encoder, sender, otelToZipkinTransformer);
+    return new ZipkinSpanExporter(encoder, sender, transformer);
   }
 }

@@ -40,21 +40,21 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final Sender sender;
   private final ExporterMetrics exporterMetrics;
 
-  private final Function<SpanData, Span> otelToZipkin;
+  private final Function<SpanData, Span> transformer;
 
   ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, MeterProvider meterProvider) {
     this(encoder, sender, new OtelToZipkinSpanTransformer());
   }
 
   ZipkinSpanExporter(
-      BytesEncoder<Span> encoder, Sender sender, Function<SpanData, Span> otelToZipkin) {
+      BytesEncoder<Span> encoder, Sender sender, Function<SpanData, Span> transformer) {
     this.encoder = encoder;
     this.sender = sender;
     this.exporterMetrics =
         sender.encoding() == Encoding.JSON
             ? ExporterMetrics.createHttpJson("zipkin", "span", meterProvider)
             : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProvider);
-    this.otelToZipkin = otelToZipkin;
+    this.transformer = transformer;
   }
 
   @Override
@@ -64,7 +64,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     List<byte[]> encodedSpans = new ArrayList<>(numItems);
     for (SpanData spanData : spanDataList) {
-      Span zipkinSpan = otelToZipkin.apply(spanData);
+      Span zipkinSpan = transformer.apply(spanData);
       encodedSpans.add(encoder.encode(zipkinSpan));
     }
 

@@ -104,6 +104,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
             .setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS))
             .setMeterProvider(sdkMeterProvider)
             .setOtelToZipkinTransformer(otelToZipkinTransformer)
+            .setTransformer(otelToZipkinTransformer)
             .build();
     exportAndVerify(exporter);
 
