@@ -201,7 +201,7 @@ jobs:
                        --head $branch \
                        --base main
 
-  create-java-contrib-pull-request:
+  create-java-instrumentation-pull-request:
     needs: release
     uses: ./.github/workflows/reusable-create-java-instrumentation-pull-request.yml
     with:
