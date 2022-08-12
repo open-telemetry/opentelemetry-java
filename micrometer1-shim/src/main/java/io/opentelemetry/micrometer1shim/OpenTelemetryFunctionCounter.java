@@ -9,20 +9,18 @@ import static io.opentelemetry.micrometer1shim.Bridging.baseUnit;
 import static io.opentelemetry.micrometer1shim.Bridging.name;
 import static io.opentelemetry.micrometer1shim.Bridging.tagsAsAttributes;
 
+import io.micrometer.core.instrument.AbstractMeter;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.config.NamingConvention;
-import io.micrometer.core.instrument.util.MeterEquivalence;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import java.util.Collections;
 import java.util.function.ToDoubleFunction;
-import javax.annotation.Nullable;
 
-@SuppressWarnings("HashCodeToString")
-final class OpenTelemetryFunctionCounter<T> implements FunctionCounter, RemovableMeter {
+final class OpenTelemetryFunctionCounter<T> extends AbstractMeter
+    implements FunctionCounter, RemovableMeter {
 
-  private final Id id;
   private final ObservableDoubleCounter observableCount;
 
   OpenTelemetryFunctionCounter(
@@ -31,7 +29,7 @@ final class OpenTelemetryFunctionCounter<T> implements FunctionCounter, Removabl
       T obj,
       ToDoubleFunction<T> countFunction,
       Meter otelMeter) {
-    this.id = id;
+    super(id);
 
     String name = name(id, namingConvention);
     observableCount =
@@ -58,23 +56,7 @@ final class OpenTelemetryFunctionCounter<T> implements FunctionCounter, Removabl
   }
 
   @Override
-  public Id getId() {
-    return id;
-  }
-
-  @Override
   public void onRemove() {
     observableCount.close();
-  }
-
-  @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-  @Override
-  public boolean equals(@Nullable Object o) {
-    return MeterEquivalence.equals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return MeterEquivalence.hashCode(this);
   }
 }

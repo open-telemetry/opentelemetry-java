@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -27,11 +26,11 @@ final class LogEmitterSharedState {
   LogEmitterSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
-      List<LogProcessor> logProcessors,
+      LogProcessor logProcessor,
       Clock clock) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
-    this.logProcessor = LogProcessor.composite(logProcessors);
+    this.logProcessor = logProcessor;
     this.clock = clock;
   }
 

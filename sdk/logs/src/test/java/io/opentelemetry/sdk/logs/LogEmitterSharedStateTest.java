@@ -13,8 +13,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class LogEmitterSharedStateTest {
@@ -24,10 +22,9 @@ class LogEmitterSharedStateTest {
     LogProcessor logProcessor = mock(LogProcessor.class);
     CompletableResultCode code = new CompletableResultCode();
     when(logProcessor.shutdown()).thenReturn(code);
-    List<LogProcessor> processors = Collections.singletonList(logProcessor);
     LogEmitterSharedState state =
         new LogEmitterSharedState(
-            Resource.empty(), LogLimits::getDefault, processors, Clock.getDefault());
+            Resource.empty(), LogLimits::getDefault, logProcessor, Clock.getDefault());
     state.shutdown();
     state.shutdown();
     verify(logProcessor, times(1)).shutdown();
