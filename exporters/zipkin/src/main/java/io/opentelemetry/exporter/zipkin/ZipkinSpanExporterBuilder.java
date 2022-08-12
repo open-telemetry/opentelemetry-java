@@ -58,16 +58,17 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the OtelToZipkinSpanTransformer that is responsible for transforming an OpenTelemetry {@link SpanData} into
-   * an instance of a Zipkin {@link Span}. The default is an instance of {@link
-   * OtelToZipkinSpanTransformer} configured with the local IP address at the time of creation.
+   * Sets the OtelToZipkinSpanTransformer that is responsible for transforming an OpenTelemetry
+   * {@link SpanData} into an instance of a Zipkin {@link Span}. The default is an instance of
+   * {@link OtelToZipkinSpanTransformer} configured with the local IP address at the time of
+   * creation.
    *
-   * @param transformer the OtelToZipkinSpanTransformer used to transform a SpanData to a Zipkin Span instance
+   * @param transformer the OtelToZipkinSpanTransformer used to transform a SpanData to a Zipkin
+   *     Span instance
    * @return this
    * @see OtelToZipkinSpanTransformer
    */
-  public ZipkinSpanExporterBuilder setTransformer(
-      OtelToZipkinSpanTransformer transformer) {
+  public ZipkinSpanExporterBuilder setTransformer(OtelToZipkinSpanTransformer transformer) {
     requireNonNull(transformer, "encoder");
     this.transformer = transformer;
     return this;
@@ -136,6 +137,6 @@ public final class ZipkinSpanExporterBuilder {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(encoder, sender, transformer);
+    return new ZipkinSpanExporter(encoder, sender, meterProvider, transformer);
   }
 }

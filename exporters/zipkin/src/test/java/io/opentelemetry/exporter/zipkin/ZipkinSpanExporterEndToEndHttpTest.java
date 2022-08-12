@@ -89,7 +89,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(sdkMeterReader).build();
 
-  private static final OtelToZipkinSpanTransformer otelToZipkinTransformer =
+  private static final OtelToZipkinSpanTransformer transformer =
       OtelToZipkinSpanTransformer.create(() -> Optional.of(ZipkinTestUtil.localAddressForTesting));
 
   @AfterEach
@@ -103,8 +103,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         ZipkinSpanExporter.builder()
             .setEndpoint(zipkinUrl(ENDPOINT_V2_SPANS))
             .setMeterProvider(sdkMeterProvider)
-            .setOtelToZipkinTransformer(otelToZipkinTransformer)
-            .setTransformer(otelToZipkinTransformer)
+            .setTransformer(transformer)
             .build();
     exportAndVerify(exporter);
 
@@ -179,7 +178,9 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setEncoder(encoder)
         .setMeterProvider(meterProvider)
-        .setOtelToZipkinTransformer(otelToZipkinTransformer)
+        .setTransformer(
+            OtelToZipkinSpanTransformer.create(
+                () -> Optional.of(ZipkinTestUtil.localAddressForTesting)))
         .build();
   }
 

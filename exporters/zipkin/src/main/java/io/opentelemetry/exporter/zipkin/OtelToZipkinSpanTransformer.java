@@ -64,7 +64,8 @@ public final class OtelToZipkinSpanTransformer {
    *
    * @param ipAddressSupplier - A Supplier of an Optional InetAddress
    */
-  public static OtelToZipkinSpanTransformer create(Supplier<Optional<InetAddress>> ipAddressSupplier) {
+  public static OtelToZipkinSpanTransformer create(
+      Supplier<Optional<InetAddress>> ipAddressSupplier) {
     return new OtelToZipkinSpanTransformer(ipAddressSupplier);
   }
 

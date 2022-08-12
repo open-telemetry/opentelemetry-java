@@ -78,10 +78,7 @@ class ZipkinTestUtil {
         .timestamp(1505855794000000L + 194009601L / 1000)
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
         .localEndpoint(
-            Endpoint.newBuilder()
-                .ip(localAddressForTesting)
-                .serviceName("tweetiebird")
-                .build())
+            Endpoint.newBuilder().ip(localAddressForTesting).serviceName("tweetiebird").build())
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
   }
