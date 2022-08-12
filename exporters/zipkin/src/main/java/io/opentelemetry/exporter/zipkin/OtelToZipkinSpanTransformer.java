@@ -80,6 +80,12 @@ public final class OtelToZipkinSpanTransformer {
     this.ipAddressSupplier = ipAddressSupplier;
   }
 
+  /**
+   * Creates an instance of a Zipkin Span from an OpenTelemetry SpanData instance
+   *
+   * @param spanData an OpenTelemetry spanData instance
+   * @return a new Zipkin Span
+   */
   public Span generateSpan(SpanData spanData) {
     Endpoint endpoint = getEndpoint(spanData);
 
