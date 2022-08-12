@@ -79,7 +79,6 @@ class ZipkinTestSpan {
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
         .localEndpoint(
             Endpoint.newBuilder()
-                //                .ip(exporter.getLocalAddressForTest())
                 .ip(localAddressForTesting)
                 .serviceName("tweetiebird")
                 .build())
