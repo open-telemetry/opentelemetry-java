@@ -2,6 +2,60 @@
 
 ## Unreleased
 
+### API
+
+#### API Extensions
+
+* DEPRECATION: the `opentelemetry-extension-annotations` module containing `@WithSpan`
+  and `@SpanAttribute` annotations has been deprecated for removal in next major version. A copy of
+  the code will instead be maintained
+  in [opentelemetry-java-instrumentation/instrumentation-annotations](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation-annotations)
+  and published under
+  coordinates `io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:{version}`.
+
+### SDK
+
+#### Traces
+
+* Add default implementation for `SpanData#getInstrumentationScopeInfo()`
+  and `ReadableSpan#getInstrumentationScopeInfo()`. This fixes a previous mistake where those
+  interfaces were extended without default implementation, a breaking change for source
+  compatibility. Stricter checks have been added to ensure this mistake is not repeated.
+
+#### Logs
+
+* BREAKING: delete `LogDataBuilder`. A similar implementation of `LogData` called `TestLogData` has
+  been added to `opentelemetry-sdk-logs-testing`.
+* BREAKING: rename `LogProcessor#emit(LogData)` to `LogProcessor#onEmit(ReadWriteLogRecord)`. The
+  argument change from `LogData` to `ReadWriteLogRecord` allows implementations to mutate logs. To
+  obtain `LogData`, call `ReadWriteLogRecord#toLogData()`.
+* Optimize `SdkLogEmitterProvider` to return noop `LogEmitter` when no `LogProcessor`s are
+  registered.
+
+#### Exporter
+
+* Split out shared and internal exporter classes from `opentelemetry-exporter-otlp-common`
+  to `opentelemetry-exporter-common`.
+* Add experimental support for OTLP header based authentication. To use, add a dependency
+  on `opentelemetry-exporter-common` and
+  call `io.opentelemetry.exporter.internal.auth.Authenticator#setAuthenticatorOnDelegate(OtlpHttp{Signal}Builder, Authenticator)`.
+* Add ability to collect export metrics on `ZipkinSpanExporter`
+  via `ZipkinSpanExporter#setMeterProvider(MeterProvider)`.
+* Minor optimization to OkHttp based exporters to cache endpoint URLs. Applies
+  to `OtlpHttp{Signal}Exporter`, `OtlpGrpc{Signal}Exporter`, and more.
+* Fix diagnostic log message in `OtlpGrpc{Signal}Exporter` to include correct environment variables.
+
+#### SDK Extensions
+
+* Extend View file based configuration with support for specifying explicit bucket histogram bucket
+  boundaries and exponential bucket counts.
+* Extend autoconfigure SPI `AutoConfigurationCustomizerProvider` and `ResourceProvider` with option
+  to specify ordering.
+* Add autoconfigure SPI with `ConfigurableLogExporterProvider`, allowing custom named log exporters
+  to be provided and selected via autoconfigure.
+* Extend autoconfigure SPI with `AutoConfigurationCustomizer#addPropertiesCustomizer`, providing the
+  ability examine current configuration properties and add / overwrite properties.
+
 ## Version 1.16.0 (2022-07-13)
 
 ### API
