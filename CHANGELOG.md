@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.17.0 (2022-08-12)
+
 ### API
 
 #### API Extensions
