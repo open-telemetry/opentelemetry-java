@@ -217,12 +217,12 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_AlreadyHasHttpStatusInfo() {
-    Attributes attributeMap =
+    Attributes attributes =
         Attributes.of(
             SemanticAttributes.HTTP_STATUS_CODE, 404L, stringKey("error"), "A user provided error");
     SpanData data =
         spanBuilder()
-            .setAttributes(attributeMap)
+            .setAttributes(attributes)
             .setKind(SpanKind.CLIENT)
             .setStatus(StatusData.error())
             .setTotalAttributeCount(2)
@@ -240,14 +240,14 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_WithRpcTimeoutErrorStatus_WithTimeoutErrorDescription() {
-    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+    Attributes attributes = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     String errorMessage = "timeout";
 
     SpanData data =
         spanBuilder()
             .setStatus(StatusData.create(StatusCode.ERROR, errorMessage))
-            .setAttributes(attributeMap)
+            .setAttributes(attributes)
             .setTotalAttributeCount(1)
             .build();
 
@@ -262,12 +262,12 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_WithRpcErrorStatus_WithEmptyErrorDescription() {
-    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+    Attributes attributes = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
         spanBuilder()
             .setStatus(StatusData.create(StatusCode.ERROR, ""))
-            .setAttributes(attributeMap)
+            .setAttributes(attributes)
             .setTotalAttributeCount(1)
             .build();
 
@@ -282,12 +282,12 @@ class OtelToZipkinSpanTransformerTest {
 
   @Test
   void generateSpan_WithRpcUnsetStatus() {
-    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+    Attributes attributes = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
         spanBuilder()
             .setStatus(StatusData.create(StatusCode.UNSET, ""))
-            .setAttributes(attributeMap)
+            .setAttributes(attributes)
             .setTotalAttributeCount(1)
             .build();
 
