@@ -9,20 +9,18 @@ import static io.opentelemetry.micrometer1shim.Bridging.baseUnit;
 import static io.opentelemetry.micrometer1shim.Bridging.name;
 import static io.opentelemetry.micrometer1shim.Bridging.tagsAsAttributes;
 
+import io.micrometer.core.instrument.AbstractMeter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.config.NamingConvention;
-import io.micrometer.core.instrument.util.MeterEquivalence;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import java.util.Collections;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("HashCodeToString")
-final class OpenTelemetryGauge<T> implements Gauge, RemovableMeter {
+final class OpenTelemetryGauge<T> extends AbstractMeter implements Gauge, RemovableMeter {
 
-  private final Id id;
   private final ObservableDoubleGauge observableGauge;
 
   OpenTelemetryGauge(
@@ -31,8 +29,7 @@ final class OpenTelemetryGauge<T> implements Gauge, RemovableMeter {
       @Nullable T obj,
       ToDoubleFunction<T> objMetric,
       Meter otelMeter) {
-
-    this.id = id;
+    super(id);
 
     String name = name(id, namingConvention);
     observableGauge =
@@ -58,23 +55,7 @@ final class OpenTelemetryGauge<T> implements Gauge, RemovableMeter {
   }
 
   @Override
-  public Id getId() {
-    return id;
-  }
-
-  @Override
   public void onRemove() {
     observableGauge.close();
-  }
-
-  @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-  @Override
-  public boolean equals(@Nullable Object o) {
-    return MeterEquivalence.equals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return MeterEquivalence.hashCode(this);
   }
 }

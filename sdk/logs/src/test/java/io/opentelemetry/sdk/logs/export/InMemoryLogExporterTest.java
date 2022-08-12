@@ -42,9 +42,9 @@ class InMemoryLogExporterTest {
 
   @Test
   void getFinishedLogItems() {
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 1").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 2").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 3").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
 
     List<LogData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
@@ -56,9 +56,9 @@ class InMemoryLogExporterTest {
 
   @Test
   void reset() {
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 1").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 2").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 3").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
     List<LogData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
@@ -69,9 +69,9 @@ class InMemoryLogExporterTest {
 
   @Test
   void shutdown() {
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 1").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 2").emit();
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 3").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
     List<LogData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
@@ -79,7 +79,7 @@ class InMemoryLogExporterTest {
     exporter.shutdown();
     assertThat(exporter.getFinishedLogItems()).isEmpty();
     // Cannot add new elements after the shutdown.
-    logEmitter.logBuilder().setSeverity(DEBUG).setBody("message 1").emit();
+    logEmitter.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
     assertThat(exporter.getFinishedLogItems()).isEmpty();
   }
 

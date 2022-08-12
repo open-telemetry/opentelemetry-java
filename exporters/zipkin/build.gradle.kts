@@ -13,6 +13,7 @@ dependencies {
 
   api("io.zipkin.reporter2:zipkin-reporter")
 
+  implementation(project(":exporters:common"))
   implementation(project(":semconv"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")

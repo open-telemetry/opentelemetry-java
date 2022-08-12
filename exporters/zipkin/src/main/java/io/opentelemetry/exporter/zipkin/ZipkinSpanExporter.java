@@ -11,7 +11,9 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -35,17 +37,19 @@ import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
+import zipkin2.codec.Encoding;
 import zipkin2.reporter.Sender;
 
 /**
- * This class was based on the OpenCensus zipkin exporter code at
- * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
+ * This class was based on the <a
+ * href="https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin">OpenCensus
+ * zipkin exporter</a> code.
  */
 public final class ZipkinSpanExporter implements SpanExporter {
-  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+
   public static final Logger baseLogger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
+  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
 
   static final String OTEL_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
   static final String OTEL_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
@@ -57,13 +61,20 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
+  private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
+
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
+  private final ExporterMetrics exporterMetrics;
   @Nullable private final InetAddress localAddress;
 
-  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender) {
+  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, MeterProvider meterProvider) {
     this.encoder = encoder;
     this.sender = sender;
+    this.exporterMetrics =
+        sender.encoding() == Encoding.JSON
+            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProvider)
+            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProvider);
     localAddress = produceLocalIp();
   }
 
@@ -83,12 +94,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
         }
       }
     } catch (Exception e) {
-      // don't crash the caller if there was a problem reading nics.
+      // don't crash the caller if there was a problem reading nics
       baseLogger.log(Level.FINE, "error reading nics", e);
     }
     return null;
   }
 
+  // VisibleForTesting
   Span generateSpan(SpanData spanData) {
     Endpoint endpoint = getEndpoint(spanData);
 
@@ -119,13 +131,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     StatusData status = spanData.getStatus();
 
-    // include status code & error.
+    // include status code & error
     if (status.getStatusCode() != StatusCode.UNSET) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
 
-      // add the error tag, if it isn't already in the source span.
+      // add the error tag, if it isn't already in the source span
       if (status.getStatusCode() == StatusCode.ERROR && spanAttributes.get(STATUS_ERROR) == null) {
-        spanBuilder.putTag(STATUS_ERROR.getKey(), nullToEmpty(status.getDescription()));
+        spanBuilder.putTag(STATUS_ERROR.getKey(), status.getDescription());
       }
     }
 
@@ -133,12 +145,12 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     if (!instrumentationScopeInfo.getName().isEmpty()) {
       spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_NAME, instrumentationScopeInfo.getName());
-      // Include instrumentation library name for backwards compatibility
+      // include instrumentation library name for backwards compatibility
       spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationScopeInfo.getName());
     }
     if (instrumentationScopeInfo.getVersion() != null) {
       spanBuilder.putTag(KEY_INSTRUMENTATION_SCOPE_VERSION, instrumentationScopeInfo.getVersion());
-      // Include instrumentation library name for backwards compatibility
+      // include instrumentation library name for backwards compatibility
       spanBuilder.putTag(
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationScopeInfo.getVersion());
     }
@@ -154,21 +166,17 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return spanBuilder.build();
   }
 
-  private static String nullToEmpty(String value) {
-    return value != null ? value : "";
-  }
-
   private Endpoint getEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     Endpoint.Builder endpoint = Endpoint.newBuilder().ip(localAddress);
 
-    // use the service.name from the Resource, if it's been set.
+    // use the service.name from the Resource, if it's been set
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
       serviceNameValue = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
-    // In practice should never be null unless the default Resource spec is changed.
+    // in practice should never be null unless the default Resource spec is changed
     if (serviceNameValue != null) {
       endpoint.serviceName(serviceNameValue);
     }
@@ -226,7 +234,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spanDataList) {
-    List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
+    int numItems = spanDataList.size();
+    exporterMetrics.addSeen(numItems);
+
+    List<byte[]> encodedSpans = new ArrayList<>(numItems);
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData)));
     }
@@ -238,11 +249,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
             new Callback<Void>() {
               @Override
               public void onSuccess(Void value) {
+                exporterMetrics.addSuccess(numItems);
                 result.succeed();
               }
 
               @Override
               public void onError(Throwable t) {
+                exporterMetrics.addFailed(numItems);
                 logger.log(Level.WARNING, "Failed to export spans", t);
                 result.fail();
               }

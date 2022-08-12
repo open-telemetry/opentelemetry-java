@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -332,7 +333,8 @@ class ZipkinSpanExporterTest {
 
   @Test
   void testExport() {
-    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
+    ZipkinSpanExporter zipkinSpanExporter =
+        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop());
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(
@@ -359,7 +361,8 @@ class ZipkinSpanExporterTest {
   @Test
   @SuppressLogger(ZipkinSpanExporter.class)
   void testExport_failed() {
-    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
+    ZipkinSpanExporter zipkinSpanExporter =
+        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop());
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(

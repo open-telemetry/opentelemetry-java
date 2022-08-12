@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static io.opentelemetry.sdk.logs.data.Severity.DEBUG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Collections;
@@ -33,7 +34,10 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SimpleLogProcessorTest {
 
+  private static final LogData LOG_DATA = TestLogData.builder().build();
+
   @Mock private LogExporter logExporter;
+  @Mock private ReadWriteLogRecord readWriteLogRecord;
 
   private LogProcessor logProcessor;
 
@@ -42,6 +46,7 @@ class SimpleLogProcessorTest {
     logProcessor = SimpleLogProcessor.create(logExporter);
     when(logExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
     when(logExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(readWriteLogRecord.toLogData()).thenReturn(LOG_DATA);
   }
 
   @Test
@@ -52,20 +57,18 @@ class SimpleLogProcessorTest {
   }
 
   @Test
-  void addLogRecord() {
-    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
-    logProcessor.emit(logData);
-    verify(logExporter).export(Collections.singletonList(logData));
+  void onEmit() {
+    logProcessor.onEmit(readWriteLogRecord);
+    verify(logExporter).export(Collections.singletonList(LOG_DATA));
   }
 
   @Test
   @SuppressLogger(SimpleLogProcessor.class)
-  void addLogRecord_ExporterError() {
-    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
+  void onEmit_ExporterError() {
     when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
-    logProcessor.emit(logData);
-    logProcessor.emit(logData);
-    verify(logExporter, times(2)).export(Collections.singletonList(logData));
+    logProcessor.onEmit(readWriteLogRecord);
+    logProcessor.onEmit(readWriteLogRecord);
+    verify(logExporter, times(2)).export(anyList());
   }
 
   @Test
@@ -75,11 +78,10 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
-    logProcessor.emit(logData);
-    logProcessor.emit(logData);
+    logProcessor.onEmit(readWriteLogRecord);
+    logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(logData));
+    verify(logExporter, times(2)).export(Collections.singletonList(LOG_DATA));
 
     CompletableResultCode flush = logProcessor.forceFlush();
     assertThat(flush.isDone()).isFalse();
@@ -99,11 +101,10 @@ class SimpleLogProcessorTest {
 
     when(logExporter.export(any())).thenReturn(export1, export2);
 
-    LogData logData = TestLogData.builder().setSeverity(DEBUG).setBody("Log message").build();
-    logProcessor.emit(logData);
-    logProcessor.emit(logData);
+    logProcessor.onEmit(readWriteLogRecord);
+    logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(logData));
+    verify(logExporter, times(2)).export(Collections.singletonList(LOG_DATA));
 
     CompletableResultCode shutdown = logProcessor.shutdown();
     assertThat(shutdown.isDone()).isFalse();
