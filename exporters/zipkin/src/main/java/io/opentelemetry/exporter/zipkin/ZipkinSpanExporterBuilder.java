@@ -97,6 +97,9 @@ public final class ZipkinSpanExporterBuilder {
   /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
    * will not be collected.
+   *
+   * @return this.
+   * @since 1.17.0
    */
   public ZipkinSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");

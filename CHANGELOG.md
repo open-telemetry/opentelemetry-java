@@ -39,6 +39,8 @@
 * Add experimental support for OTLP header based authentication. To use, add a dependency
   on `opentelemetry-exporter-common` and
   call `io.opentelemetry.exporter.internal.auth.Authenticator#setAuthenticatorOnDelegate(OtlpHttp{Signal}Builder, Authenticator)`.
+* Add ability to collect export metrics on `ZipkinSpanExporter`
+  via `ZipkinSpanExporter#setMeterProvider(MeterProvider)`.
 
 #### SDK Extensions
 
