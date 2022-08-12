@@ -41,6 +41,9 @@
   call `io.opentelemetry.exporter.internal.auth.Authenticator#setAuthenticatorOnDelegate(OtlpHttp{Signal}Builder, Authenticator)`.
 * Add ability to collect export metrics on `ZipkinSpanExporter`
   via `ZipkinSpanExporter#setMeterProvider(MeterProvider)`.
+* Minor optimization to OkHttp based exporters to cache endpoint URLs. Applies
+  to `OtlpHttp{Signal}Exporter`, `OtlpGrpc{Signal}Exporter`, and more.
+* Fix diagnostic log message in `OtlpGrpc{Signal}Exporter` to include correct environment variables.
 
 #### SDK Extensions
 
