@@ -81,7 +81,7 @@ public final class OtelToZipkinSpanTransformer {
   }
 
   /**
-   * Creates an instance of a Zipkin Span from an OpenTelemetry SpanData instance
+   * Creates an instance of a Zipkin Span from an OpenTelemetry SpanData instance.
    *
    * @param spanData an OpenTelemetry spanData instance
    * @return a new Zipkin Span
