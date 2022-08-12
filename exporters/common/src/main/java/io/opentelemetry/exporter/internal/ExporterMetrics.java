@@ -58,21 +58,39 @@ public class ExporterMetrics {
     exported.add(value, failedAttrs);
   }
 
-  /** Create an instance for recording gRPC exporter metrics. */
+  /**
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-grpc}".
+   */
   public static ExporterMetrics createGrpc(
       String exporterName, String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider, exporterName, type, "grpc");
   }
 
-  /** Create an instance for recording gRPC OkHttp exporter metrics. */
+  /**
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-grpc-okhttp}".
+   */
   public static ExporterMetrics createGrpcOkHttp(
       String exporterName, String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider, exporterName, type, "grpc-okhttp");
   }
 
-  /** Create an instance for recording http/protobuf exporter metrics. */
+  /**
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-http}".
+   */
   public static ExporterMetrics createHttpProtobuf(
       String exporterName, String type, MeterProvider meterProvider) {
     return new ExporterMetrics(meterProvider, exporterName, type, "http");
+  }
+
+  /**
+   * Create an instance for recording exporter metrics under the meter {@code
+   * "io.opentelemetry.exporters." + exporterName + "-http-json}".
+   */
+  public static ExporterMetrics createHttpJson(
+      String exporterName, String type, MeterProvider meterProvider) {
+    return new ExporterMetrics(meterProvider, exporterName, type, "http-json");
   }
 }
