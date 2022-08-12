@@ -1,0 +1,4 @@
+Comparing source compatibility of  against 
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.trace.TestSpanData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
