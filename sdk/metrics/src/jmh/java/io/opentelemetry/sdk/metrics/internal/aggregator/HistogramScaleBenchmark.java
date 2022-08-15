@@ -26,8 +26,8 @@ import org.openjdk.jmh.annotations.Warmup;
  *
  * <p>This benchmark must be interpreted carefully. We're looking for startup costs of histograms
  * and need to tease out the portion of recorded time from scaling buckets vs. general algorithmic
- * performance. The difference, compared with HistogramScale, is that setup is called before each
- * invocation.
+ * performance. The difference, compared with HistogramBenchmark, is that setup is called before
+ * each invocation.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
