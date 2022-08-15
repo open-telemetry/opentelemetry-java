@@ -23,7 +23,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
-  private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.INSTANCE;
+  private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);

@@ -47,7 +47,7 @@ public final class OtelToZipkinSpanTransformer {
    * use a fixed IP address that is fetched from the network interfaces at construction time.
    */
   public static OtelToZipkinSpanTransformer create() {
-    return new OtelToZipkinSpanTransformer(LocalInetAddressSupplier.INSTANCE);
+    return new OtelToZipkinSpanTransformer(LocalInetAddressSupplier.getInstance());
   }
 
   /**

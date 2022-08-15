@@ -16,7 +16,8 @@ import javax.annotation.Nullable;
 class LocalInetAddressSupplier implements Supplier<InetAddress> {
 
   private static final Logger logger = Logger.getLogger(LocalInetAddressSupplier.class.getName());
-  static final LocalInetAddressSupplier INSTANCE = new LocalInetAddressSupplier(findLocalIp());
+  private static final LocalInetAddressSupplier INSTANCE =
+      new LocalInetAddressSupplier(findLocalIp());
   @Nullable private final InetAddress inetAddress;
 
   private LocalInetAddressSupplier(@Nullable InetAddress inetAddress) {
@@ -49,5 +50,9 @@ class LocalInetAddressSupplier implements Supplier<InetAddress> {
       logger.log(Level.FINE, "error reading nics", e);
     }
     return null;
+  }
+
+  static LocalInetAddressSupplier getInstance() {
+    return INSTANCE;
   }
 }
