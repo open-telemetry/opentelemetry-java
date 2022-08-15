@@ -1,0 +1,7 @@
+Comparing source compatibility of  against 
+===  UNCHANGED ANNOTATION: PUBLIC ABSTRACT io.opentelemetry.extension.annotations.SpanAttribute  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED ANNOTATION: PUBLIC ABSTRACT io.opentelemetry.extension.annotations.WithSpan  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
