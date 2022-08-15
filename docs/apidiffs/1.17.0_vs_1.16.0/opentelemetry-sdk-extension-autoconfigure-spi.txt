@@ -1,0 +1,19 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addPropertiesCustomizer(java.util.function.Function)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.export.LogExporter createExporter(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.Ordered  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) int order()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
