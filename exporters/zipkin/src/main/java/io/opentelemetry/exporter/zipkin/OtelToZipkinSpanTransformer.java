@@ -43,17 +43,10 @@ public final class OtelToZipkinSpanTransformer {
   private final Supplier<InetAddress> ipAddressSupplier;
 
   /**
-   * Creates a new instance of an OtelToZipkinSpanTransformer. This version of the constructor will
-   * use a fixed IP address that is fetched from the network interfaces at construction time.
-   */
-  public static OtelToZipkinSpanTransformer create() {
-    return new OtelToZipkinSpanTransformer(LocalInetAddressSupplier.getInstance());
-  }
-
-  /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
    * an InetAddress, which may be null. This value from this Supplier will be used when creating the
-   * local zipkin Endpoint for each Span.
+   * local zipkin Endpoint for each Span. The default implementation uses
+   * LocalInetAddressSupplier.getInstance().
    *
    * @param ipAddressSupplier - A Supplier of an InetAddress.
    */

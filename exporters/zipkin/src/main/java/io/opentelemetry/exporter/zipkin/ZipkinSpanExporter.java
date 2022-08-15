@@ -41,10 +41,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private final OtelToZipkinSpanTransformer transformer;
 
-  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, MeterProvider meterProvider) {
-    this(encoder, sender, meterProvider, OtelToZipkinSpanTransformer.create());
-  }
-
   ZipkinSpanExporter(
       BytesEncoder<Span> encoder,
       Sender sender,
