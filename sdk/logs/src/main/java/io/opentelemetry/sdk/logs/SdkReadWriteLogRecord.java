@@ -115,7 +115,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           severity,
           severityText,
           body,
-          getImmutableAttributes());
+          getImmutableAttributes(),
+          attributes == null ? 0 : attributes.getTotalAddedValues());
     }
   }
 }

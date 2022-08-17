@@ -65,6 +65,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -98,6 +99,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -111,6 +113,7 @@ class LogsRequestMarshalerTest {
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build());
+    assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 
@@ -135,6 +138,7 @@ class LogsRequestMarshalerTest {
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue("").build());
     assertThat(logRecord.getAttributesList()).isEmpty();
+    assertThat(logRecord.getDroppedAttributesCount()).isZero();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 

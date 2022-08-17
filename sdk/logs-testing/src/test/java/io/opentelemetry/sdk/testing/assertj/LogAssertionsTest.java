@@ -55,6 +55,7 @@ public class LogAssertionsTest {
           .setSeverityText("info")
           .setBody("message")
           .setAttributes(ATTRIBUTES)
+          .setTotalAttributeCount(10)
           .build();
 
   @Test
@@ -109,7 +110,8 @@ public class LogAssertionsTest {
                         attributeEntry("colors", "red", "blue"),
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1)));
+                        attributeEntry("coins", 0.01, 0.05, 0.1)))
+        .hasTotalAttributeCount(10);
   }
 
   @Test
@@ -178,6 +180,8 @@ public class LogAssertionsTest {
                                 .hasEntrySatisfying(
                                     AttributeKey.stringKey("bear"),
                                     value -> assertThat(value).hasSize(2))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
         .isInstanceOf(AssertionError.class);
   }
 }
