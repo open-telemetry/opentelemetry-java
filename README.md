@@ -278,8 +278,7 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | Sampler which obtains sampling configuration from remote Jaeger server    | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.17.0<!--/VERSION_STABLE-->           |
 | [SDK JFR Events Extension](./sdk-extensions/jfr-events)                       | SpanProcessor which records spans as JFR events                           | `opentelemetry-sdk-extension-jfr-events`            | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 | [SDK Metric Incubator Extension](./sdk-extensions/metric-incubator)           | Metrics incubator, including YAML based view configuration                | `opentelemetry-sdk-extension-metric-incubator`      | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK Tracing Incubator Extension](./sdk-extensions/tracing-incubator)         | Trace incubator, including leak detecting SpanProcessor                   | `opentelemetry-sdk-extension-tracing-incubator`     | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
-| [SDK zPages Extension](./sdk-extensions/zpages)                               | SpanProcessor which exposes spans with zPages                             | `opentelemetry-sdk-extension-zpages`                | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
+| [SDK Tracing Incubator Extension](./sdk-extensions/tracing-incubator)         | Trace incubator, including leak detecting SpanProcessor, and zPages       | `opentelemetry-sdk-extension-tracing-incubator`     | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### Shims
 
