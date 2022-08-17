@@ -30,7 +30,7 @@ import zipkin2.Span;
  * a Zipkin Span. It is based, in part, on code from
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  */
-public final class OtelToZipkinSpanTransformer {
+final class OtelToZipkinSpanTransformer {
 
   static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
   static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
@@ -50,7 +50,7 @@ public final class OtelToZipkinSpanTransformer {
    *
    * @param ipAddressSupplier - A Supplier of an InetAddress.
    */
-  public static OtelToZipkinSpanTransformer create(Supplier<InetAddress> ipAddressSupplier) {
+  static OtelToZipkinSpanTransformer create(Supplier<InetAddress> ipAddressSupplier) {
     return new OtelToZipkinSpanTransformer(ipAddressSupplier);
   }
 
@@ -71,7 +71,7 @@ public final class OtelToZipkinSpanTransformer {
    * @param spanData an OpenTelemetry spanData instance
    * @return a new Zipkin Span
    */
-  public Span generateSpan(SpanData spanData) {
+  Span generateSpan(SpanData spanData) {
     Endpoint endpoint = getEndpoint(spanData);
 
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
