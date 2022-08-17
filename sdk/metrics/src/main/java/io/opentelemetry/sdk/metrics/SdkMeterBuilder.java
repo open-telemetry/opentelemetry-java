@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -36,6 +37,7 @@ class SdkMeterBuilder implements MeterBuilder {
 
   @Override
   public Meter build() {
-    return registry.get(instrumentationScopeName, instrumentationScopeVersion, schemaUrl);
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
   }
 }

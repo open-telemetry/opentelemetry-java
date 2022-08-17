@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -36,6 +37,7 @@ class SdkTracerBuilder implements TracerBuilder {
 
   @Override
   public Tracer build() {
-    return registry.get(instrumentationScopeName, instrumentationScopeVersion, schemaUrl);
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
   }
 }

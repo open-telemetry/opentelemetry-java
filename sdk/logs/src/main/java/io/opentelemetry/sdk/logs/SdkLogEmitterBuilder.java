@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
@@ -34,6 +35,7 @@ final class SdkLogEmitterBuilder implements LogEmitterBuilder {
 
   @Override
   public SdkLogEmitter build() {
-    return registry.get(instrumentationScopeName, instrumentationScopeVersion, schemaUrl);
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
   }
 }
