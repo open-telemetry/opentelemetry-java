@@ -60,7 +60,9 @@ public final class ZipkinSpanExporterBuilder {
 
   /**
    * Sets the Supplier of InetAddress. This Supplier will be used by the {@link
-   * OtelToZipkinSpanTransformer} when creating the Zipkin local endpoint.
+   * OtelToZipkinSpanTransformer} when creating the Zipkin local endpoint. The default
+   * implementation uses a Supplier that returns a single unchanging IP address that is captured at
+   * creation time.
    *
    * @param supplier - A supplier that returns an InetAddress that may be null.
    * @return this
