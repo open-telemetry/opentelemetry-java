@@ -60,7 +60,7 @@ class DoubleExponentialHistogramBucketsTest {
     MetricAssertions.assertThat(b)
         .hasTotalCount(3)
         .hasCounts(Arrays.asList(1L, 1L, 1L))
-        .hasOffset(0);
+        .hasOffset(-1);
   }
 
   @ParameterizedTest
@@ -110,6 +110,6 @@ class DoubleExponentialHistogramBucketsTest {
     DoubleExponentialHistogramBuckets b = buckets.newBuckets();
     b.record(1);
     assertThat(b.toString())
-        .isEqualTo("DoubleExponentialHistogramBuckets{scale: 20, offset: 0, counts: {0=1} }");
+        .isEqualTo("DoubleExponentialHistogramBuckets{scale: 20, offset: -1, counts: {-1=1} }");
   }
 }

@@ -68,7 +68,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
   private static int valueToIndex(int scale, double value) {
     double scaleFactor = Math.scalb(1D / Math.log(2), scale);
-    return (int) Math.floor(Math.log(value) * scaleFactor);
+    return (int) Math.ceil(Math.log(value) * scaleFactor) - 1;
   }
 
   private static ExponentialHistogramAccumulation getTestAccumulation(
@@ -362,8 +362,8 @@ class DoubleExponentialHistogramAggregatorTest {
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> handle =
         aggregator.createHandle();
 
-    double min = 1.0 / (1 << 16);
     int n = 1024 * 1024 - 1;
+    double min = 16.0 / n;
     double d = min;
     for (int i = 0; i < n; i++) {
       handle.recordDouble(d);
@@ -393,7 +393,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(0);
     ExponentialHistogramBuckets buckets = acc.getPositiveBuckets();
     assertThat(acc.getSum()).isEqualTo(23.5);
-    assertThat(buckets.getOffset()).isEqualTo(-1);
+    assertThat(buckets.getOffset()).isEqualTo(-2);
     assertThat(buckets.getBucketCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L, 0L, 1L));
     assertThat(buckets.getTotalCount()).isEqualTo(5);
   }
