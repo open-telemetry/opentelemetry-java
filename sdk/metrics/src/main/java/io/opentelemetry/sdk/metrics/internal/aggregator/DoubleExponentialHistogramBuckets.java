@@ -34,7 +34,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.counterFactory = counterFactory;
     this.counts = counterFactory.newCounter(maxBuckets);
     this.scale = startingScale;
-    this.exponentialHistogramIndexer = new ExponentialHistogramIndexer(scale);
+    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(scale);
     this.totalCount = 0;
   }
 
@@ -129,7 +129,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     this.scale = this.scale - by;
-    this.exponentialHistogramIndexer = new ExponentialHistogramIndexer(this.scale);
+    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(this.scale);
   }
 
   /**

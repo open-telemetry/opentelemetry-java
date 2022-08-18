@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -13,8 +15,15 @@ import org.junit.jupiter.api.Test;
 class ExponentialHistogramIndexerTest {
 
   @Test
+  void get_Caches() {
+    assertThat(ExponentialHistogramIndexer.get(1)).isSameAs(ExponentialHistogramIndexer.get(1));
+    assertThat(ExponentialHistogramIndexer.get(2)).isSameAs(ExponentialHistogramIndexer.get(2));
+    assertThat(ExponentialHistogramIndexer.get(1)).isNotSameAs(ExponentialHistogramIndexer.get(2));
+  }
+
+  @Test
   void computeIndex_ScaleOne() {
-    ExponentialHistogramIndexer indexer = new ExponentialHistogramIndexer(1);
+    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(1);
 
     Arrays.asList(
             of(15d, 7),
@@ -34,7 +43,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void computeIndex_ScaleZero() {
-    ExponentialHistogramIndexer indexer = new ExponentialHistogramIndexer(0);
+    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(0);
 
     Arrays.asList(
             // Near +Inf
@@ -68,7 +77,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void computeIndex_ScaleNegOne() {
-    ExponentialHistogramIndexer indexer = new ExponentialHistogramIndexer(-1);
+    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(-1);
 
     Arrays.asList(
             of(17d, 2),
@@ -96,7 +105,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void valueToIndex_ScaleNegFour() {
-    ExponentialHistogramIndexer indexer = new ExponentialHistogramIndexer(-4);
+    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(-4);
 
     Arrays.asList(
             of(0x1p0, -1),
