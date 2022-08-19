@@ -68,7 +68,6 @@ include(":sdk-extensions:metric-incubator")
 include(":sdk-extensions:resources")
 include(":sdk-extensions:tracing-incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
-include(":sdk-extensions:jfr-events")
 include(":testing-internal")
 
 val isCI = System.getenv("CI") != null

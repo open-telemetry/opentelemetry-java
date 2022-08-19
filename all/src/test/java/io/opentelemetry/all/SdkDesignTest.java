@@ -53,7 +53,7 @@ class SdkDesignTest {
   }
 
   static DescribedPredicate<? super JavaMethod> implementOrOverride() {
-    return new DescribedPredicate<>("implement or override a method") {
+    return new DescribedPredicate<JavaMethod>("implement or override a method") {
       @Override
       public boolean apply(JavaMethod input) {
         List<JavaClass> params = input.getRawParameterTypes();
@@ -78,7 +78,7 @@ class SdkDesignTest {
   }
 
   static DescribedPredicate<? super JavaClass> inPackage(String... requiredPackages) {
-    return new DescribedPredicate<>("are in " + Arrays.toString(requiredPackages)) {
+    return new DescribedPredicate<JavaClass>("are in " + Arrays.toString(requiredPackages)) {
       @Override
       public boolean apply(JavaClass member) {
         for (String requiredPackage : requiredPackages) {
