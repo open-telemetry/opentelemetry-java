@@ -2,6 +2,7 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
+  id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 }
 
@@ -17,6 +18,9 @@ dependencies {
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   implementation(project(":semconv"))
+
+  // zPages
+  compileOnly("com.sun.net.httpserver:http")
 
   annotationProcessor("com.google.auto.value:auto-value")
   testImplementation(project(":sdk:testing"))

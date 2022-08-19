@@ -106,16 +106,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      this(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
-    }
-
-    Builder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState sharedState,
-        String name,
-        String description,
-        String unit) {
-      super(meterProviderSharedState, sharedState, name, description, unit);
+      super(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
     }
 
     @Override
