@@ -31,7 +31,7 @@ class ResourceConfigurationTest {
     props.put("otel.service.name", "test-service");
     props.put("otel.resource.attributes", "food=cheesecake,drink=juice");
     props.put("otel.experimental.resource.disabled-keys", "drink");
-
+    
     assertThat(
             ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(props),
