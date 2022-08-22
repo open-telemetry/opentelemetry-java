@@ -163,22 +163,30 @@ class SdkLogEmitterProviderTest {
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
+                .build())
+        .isNotSameAs(
+            sdkLogEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build());
   }
 
   @Test
-  void logEmitterBuilder_SameNameVersionAndSchema() {
+  void logEmitterBuilder_SameNameVersionSchemaAttributes() {
     assertThat(
             sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build())
         .isSameAs(
             sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build());
   }
 

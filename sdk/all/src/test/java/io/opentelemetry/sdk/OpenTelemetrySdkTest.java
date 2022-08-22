@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
@@ -133,12 +134,14 @@ class OpenTelemetrySdkTest {
             GlobalOpenTelemetry.tracerBuilder("testTracer2")
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build())
         .isSameAs(
             GlobalOpenTelemetry.getTracerProvider()
                 .tracerBuilder("testTracer2")
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build());
   }
 
@@ -176,12 +179,14 @@ class OpenTelemetrySdkTest {
             GlobalOpenTelemetry.meterBuilder("testMeter2")
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build())
         .isSameAs(
             GlobalOpenTelemetry.getMeterProvider()
                 .meterBuilder("testMeter2")
                 .setInstrumentationVersion("testVersion")
                 .setSchemaUrl("https://example.invalid")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build());
   }
 

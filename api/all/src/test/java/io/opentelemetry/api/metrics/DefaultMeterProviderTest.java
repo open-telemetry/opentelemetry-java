@@ -5,25 +5,33 @@
 
 package io.opentelemetry.api.metrics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.opentelemetry.api.common.Attributes;
 import org.junit.jupiter.api.Test;
 
 public class DefaultMeterProviderTest {
   @Test
-  void noopMeterProvider_getDoesNotThrow() {
+  void noopMeterProvider_get() {
     MeterProvider provider = MeterProvider.noop();
-    provider.get("user-instrumentation");
+    assertThat(provider.get("user-instrumentation")).isInstanceOf(DefaultMeter.class);
   }
 
   @Test
-  void noopMeterProvider_builderDoesNotThrow() {
+  void noopMeterProvider_builder() {
     MeterProvider provider = MeterProvider.noop();
-    provider.meterBuilder("user-instrumentation").build();
-    provider.meterBuilder("advanced-instrumetnation").setInstrumentationVersion("1.0").build();
-    provider.meterBuilder("schema-instrumentation").setSchemaUrl("myschema://url").build();
+    provider.meterBuilder("test").build();
+    provider.meterBuilder("test").setInstrumentationVersion("1.0").build();
+    provider.meterBuilder("test").setSchemaUrl("myschema://url").build();
     provider
-        .meterBuilder("schema-instrumentation")
+        .meterBuilder("test")
+        .setAttributes(Attributes.builder().put("key", "value").build())
+        .build();
+    provider
+        .meterBuilder("test")
         .setInstrumentationVersion("1.0")
         .setSchemaUrl("myschema://url")
+        .setAttributes(Attributes.builder().put("key", "value").build())
         .build();
   }
 }

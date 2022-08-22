@@ -153,18 +153,20 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void getSameInstanceForSameName_WithVersionAndSchema() {
+  void getSameInstanceForSameName_WithVersionSchemaAttributes() {
     assertThat(
             tracerFactory
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build())
         .isSameAs(
             tracerFactory
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
+                .setAttributes(Attributes.builder().put("key", "value").build())
                 .build());
   }
 

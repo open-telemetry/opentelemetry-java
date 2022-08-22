@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.Attributes;
+
 /** Builder class for creating {@link LogEmitter} instances. */
 public interface LogEmitterBuilder {
 
@@ -23,6 +25,16 @@ public interface LogEmitterBuilder {
    * @return this
    */
   LogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
+
+  /**
+   * Assigns instrumentation scope attributes for the resulting {@link LogEmitter}.
+   *
+   * @param attributes The instrumentation scope attributes.
+   * @return this
+   */
+  default LogEmitterBuilder setAttributes(Attributes attributes) {
+    return this;
+  }
 
   /**
    * Gets or creates a {@link LogEmitter} instance.

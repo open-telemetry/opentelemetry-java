@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -28,6 +29,12 @@ final class SdkLogEmitterBuilder implements LogEmitterBuilder {
   @Override
   public SdkLogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     scopeBuilder.setVersion(instrumentationScopeVersion);
+    return this;
+  }
+
+  @Override
+  public LogEmitterBuilder setAttributes(Attributes attributes) {
+    scopeBuilder.setAttributes(attributes);
     return this;
   }
 

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.api.common.Attributes;
+
 /**
  * Builder class for creating {@link Meter} instances.
  *
@@ -27,6 +29,17 @@ public interface MeterBuilder {
    * @return this
    */
   MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
+
+  /**
+   * Assigns instrumentation scope attributes for the resulting Meter.
+   *
+   * @param attributes The instrumentation scope attributes.
+   * @return this
+   * @since 1.18.0
+   */
+  default MeterBuilder setAttributes(Attributes attributes) {
+    return this;
+  }
 
   /**
    * Gets or creates a {@link Meter} instance.

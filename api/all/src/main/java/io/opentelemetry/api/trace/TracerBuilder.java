@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.common.Attributes;
+
 /**
  * Builder class for creating {@link Tracer} instances.
  *
@@ -27,6 +29,17 @@ public interface TracerBuilder {
    * @return this
    */
   TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion);
+
+  /**
+   * Assigns instrumentation scope attributes for the resulting Tracer.
+   *
+   * @param attributes The instrumentation scope attributes.
+   * @return this
+   * @since 1.18.0
+   */
+  default TracerBuilder setAttributes(Attributes attributes) {
+    return this;
+  }
 
   /**
    * Gets or creates a {@link Tracer} instance.

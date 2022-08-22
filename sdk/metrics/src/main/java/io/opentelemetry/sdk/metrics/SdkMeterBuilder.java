@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -30,6 +31,12 @@ class SdkMeterBuilder implements MeterBuilder {
   @Override
   public MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     scopeBuilder.setVersion(instrumentationScopeVersion);
+    return this;
+  }
+
+  @Override
+  public MeterBuilder setAttributes(Attributes attributes) {
+    scopeBuilder.setAttributes(attributes);
     return this;
   }
 

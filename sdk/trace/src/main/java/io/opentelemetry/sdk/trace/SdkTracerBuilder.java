@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -30,6 +31,12 @@ class SdkTracerBuilder implements TracerBuilder {
   @Override
   public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     scopeBuilder.setVersion(instrumentationScopeVersion);
+    return this;
+  }
+
+  @Override
+  public TracerBuilder setAttributes(Attributes attributes) {
+    scopeBuilder.setAttributes(attributes);
     return this;
   }
 
