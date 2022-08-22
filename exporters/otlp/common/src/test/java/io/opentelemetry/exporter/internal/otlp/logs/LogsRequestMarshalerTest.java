@@ -57,7 +57,11 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+                        InstrumentationScopeInfo.builder("testLib")
+                            .setVersion("1.0")
+                            .setSchemaUrl("http://url")
+                            .setAttributes(Attributes.builder().put("key", "value").build())
+                            .build())
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -77,7 +81,16 @@ class LogsRequestMarshalerTest {
     ScopeLogs instrumentationLibraryLogs = onlyResourceLogs.getScopeLogs(0);
     assertThat(instrumentationLibraryLogs.getSchemaUrl()).isEqualTo("http://url");
     assertThat(instrumentationLibraryLogs.getScope())
-        .isEqualTo(InstrumentationScope.newBuilder().setName("testLib").setVersion("1.0").build());
+        .isEqualTo(
+            InstrumentationScope.newBuilder()
+                .setName("testLib")
+                .setVersion("1.0")
+                .addAttributes(
+                    KeyValue.newBuilder()
+                        .setKey("key")
+                        .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                        .build())
+                .build());
   }
 
   @Test

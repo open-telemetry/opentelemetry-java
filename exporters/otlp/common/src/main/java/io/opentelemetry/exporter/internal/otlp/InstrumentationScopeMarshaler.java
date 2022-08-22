@@ -21,25 +21,26 @@ import java.io.UncheckedIOException;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class InstrumentationScopeMarshaller extends MarshalerWithSize {
+public final class InstrumentationScopeMarshaler extends MarshalerWithSize {
 
-  private static final WeakConcurrentMap<InstrumentationScopeInfo, InstrumentationScopeMarshaller>
+  private static final WeakConcurrentMap<InstrumentationScopeInfo, InstrumentationScopeMarshaler>
       SCOPE_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
 
   private final byte[] serializedBinary;
   private final String serializedJson;
 
   /** Returns a Marshaler for InstrumentationScopeInfo. */
-  public static InstrumentationScopeMarshaller create(InstrumentationScopeInfo scopeInfo) {
-    InstrumentationScopeMarshaller cached = SCOPE_MARSHALER_CACHE.get(scopeInfo);
+  public static InstrumentationScopeMarshaler create(InstrumentationScopeInfo scopeInfo) {
+    InstrumentationScopeMarshaler cached = SCOPE_MARSHALER_CACHE.get(scopeInfo);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
       byte[] name = MarshalerUtil.toBytes(scopeInfo.getName());
       byte[] version = MarshalerUtil.toBytes(scopeInfo.getVersion());
+      KeyValueMarshaler[] attributes = KeyValueMarshaler.createRepeated(scopeInfo.getAttributes());
 
       RealInstrumentationScopeMarshaler realMarshaler =
-          new RealInstrumentationScopeMarshaler(name, version);
+          new RealInstrumentationScopeMarshaler(name, version, attributes);
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
@@ -53,13 +54,13 @@ public final class InstrumentationScopeMarshaller extends MarshalerWithSize {
 
       String json = MarshalerUtil.preserializeJsonFields(realMarshaler);
 
-      cached = new InstrumentationScopeMarshaller(binaryBos.toByteArray(), json);
+      cached = new InstrumentationScopeMarshaler(binaryBos.toByteArray(), json);
       SCOPE_MARSHALER_CACHE.put(scopeInfo, cached);
     }
     return cached;
   }
 
-  private InstrumentationScopeMarshaller(byte[] binary, String json) {
+  private InstrumentationScopeMarshaler(byte[] binary, String json) {
     super(binary.length);
     serializedBinary = binary;
     serializedJson = json;
@@ -74,22 +75,26 @@ public final class InstrumentationScopeMarshaller extends MarshalerWithSize {
 
     private final byte[] name;
     private final byte[] version;
+    private final KeyValueMarshaler[] attributes;
 
-    RealInstrumentationScopeMarshaler(byte[] name, byte[] version) {
-      super(computeSize(name, version));
+    RealInstrumentationScopeMarshaler(byte[] name, byte[] version, KeyValueMarshaler[] attributes) {
+      super(computeSize(name, version, attributes));
       this.name = name;
       this.version = version;
+      this.attributes = attributes;
     }
 
     @Override
     protected void writeTo(Serializer output) throws IOException {
       output.serializeString(InstrumentationScope.NAME, name);
       output.serializeString(InstrumentationScope.VERSION, version);
+      output.serializeRepeatedMessage(InstrumentationScope.ATTRIBUTES, attributes);
     }
 
-    private static int computeSize(byte[] name, byte[] version) {
+    private static int computeSize(byte[] name, byte[] version, KeyValueMarshaler[] attributes) {
       return MarshalerUtil.sizeBytes(InstrumentationScope.NAME, name)
-          + MarshalerUtil.sizeBytes(InstrumentationScope.VERSION, version);
+          + MarshalerUtil.sizeBytes(InstrumentationScope.VERSION, version)
+          + MarshalerUtil.sizeRepeatedMessage(InstrumentationScope.ATTRIBUTES, attributes);
     }
   }
 }
