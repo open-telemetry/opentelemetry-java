@@ -40,8 +40,7 @@ class FunctionCounterTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionCounter")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test function counter")
                     .hasUnit("items")
                     .hasDoubleSumSatisfying(

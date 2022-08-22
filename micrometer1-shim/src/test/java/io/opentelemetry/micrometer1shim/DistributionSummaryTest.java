@@ -38,8 +38,7 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasHistogramSatisfying(
@@ -102,8 +101,7 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasHistogramSatisfying(
@@ -175,8 +173,7 @@ class DistributionSummaryTest {
             metric ->
                 assertThat(metric)
                     .hasName("testSummary")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test distribution summary")
                     .hasUnit("things")
                     .hasHistogramSatisfying(

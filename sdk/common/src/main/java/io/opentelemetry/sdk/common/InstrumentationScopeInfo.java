@@ -30,7 +30,12 @@ public abstract class InstrumentationScopeInfo {
     return InstrumentationScopeInfo.create(name, null, null, Attributes.empty());
   }
 
-  /** Creates a new instance of {@link InstrumentationScopeInfo}. */
+  /**
+   * Creates a new instance of {@link InstrumentationScopeInfo}.
+   *
+   * @deprecated Use {@link #builder(String)}.
+   */
+  @Deprecated
   public static InstrumentationScopeInfo create(
       String name, @Nullable String version, @Nullable String schemaUrl) {
     return InstrumentationScopeInfo.create(name, version, schemaUrl, Attributes.empty());

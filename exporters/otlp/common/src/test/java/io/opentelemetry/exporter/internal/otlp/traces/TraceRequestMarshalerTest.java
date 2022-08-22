@@ -80,7 +80,10 @@ class TraceRequestMarshalerTest {
                     .setEndEpochNanos(12349)
                     .setStatus(StatusData.unset())
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+                        InstrumentationScopeInfo.builder("testLib")
+                            .setVersion("1.0")
+                            .setSchemaUrl("http://url")
+                            .build())
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .build()));

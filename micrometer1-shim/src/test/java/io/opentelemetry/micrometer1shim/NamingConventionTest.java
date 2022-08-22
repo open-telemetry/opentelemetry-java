@@ -67,8 +67,7 @@ class NamingConventionTest {
             metric ->
                 assertThat(metric)
                     .hasName("test.renamedCounter")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDoubleSumSatisfying(
                         sum ->
                             sum.hasPointsSatisfying(

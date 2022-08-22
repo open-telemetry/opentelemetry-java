@@ -46,7 +46,7 @@ class TraceAssertionsTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
-      InstrumentationScopeInfo.create("opentelemetry", "1.0", null);
+      InstrumentationScopeInfo.builder("opentelemetry").setVersion("1.0").build();
 
   private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
   private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");

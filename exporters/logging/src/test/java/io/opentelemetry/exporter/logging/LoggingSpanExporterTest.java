@@ -82,7 +82,8 @@ class LoggingSpanExporterTest {
           .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(SpanKind.CLIENT)
-          .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("tracer2", "1.0", null))
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.builder("tracer2").setVersion("1.0").build())
           .build();
 
   @RegisterExtension

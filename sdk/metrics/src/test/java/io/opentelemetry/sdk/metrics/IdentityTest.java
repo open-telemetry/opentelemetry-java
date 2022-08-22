@@ -173,7 +173,7 @@ class IdentityTest {
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("meter1", "version1", null))
+                        InstrumentationScopeInfo.builder("meter1").setVersion("version1").build())
                     .hasName("counter1")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
@@ -199,14 +199,17 @@ class IdentityTest {
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("meter1", "version1", null))
+                        InstrumentationScopeInfo.builder("meter1").setVersion("version1").build())
                     .hasName("counter1")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))),
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("meter1", "version1", "schema1"))
+                        InstrumentationScopeInfo.builder("meter1")
+                            .setVersion("version1")
+                            .setSchemaUrl("schema1")
+                            .build())
                     .hasName("counter1")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
@@ -566,7 +569,7 @@ class IdentityTest {
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("meter1", "version1", null))
+                        InstrumentationScopeInfo.builder("meter1").setVersion("version1").build())
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSumSatisfying(
@@ -574,7 +577,7 @@ class IdentityTest {
             metricData -> {
               assertThat(metricData)
                   .hasInstrumentationScope(
-                      InstrumentationScopeInfo.create("meter1", "version2", null))
+                      InstrumentationScopeInfo.builder("meter1").setVersion("version2").build())
                   .hasName("counter1")
                   .hasLongSumSatisfying(
                       sum -> sum.hasPointsSatisfying(point -> point.hasValue(10)));
@@ -613,7 +616,7 @@ class IdentityTest {
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create("meter1", null, "schema1"))
+                        InstrumentationScopeInfo.builder("meter1").setSchemaUrl("schema1").build())
                     .hasName("counter1")
                     .hasDescription("description1")
                     .hasLongSumSatisfying(
@@ -621,7 +624,7 @@ class IdentityTest {
             metricData -> {
               assertThat(metricData)
                   .hasInstrumentationScope(
-                      InstrumentationScopeInfo.create("meter1", null, "schema2"))
+                      InstrumentationScopeInfo.builder("meter1").setSchemaUrl("schema2").build())
                   .hasName("counter1")
                   .hasLongSumSatisfying(
                       sum -> sum.hasPointsSatisfying(point -> point.hasValue(10)));

@@ -62,8 +62,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusCounter.items")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test counter")
                     .hasUnit("items")
                     .hasDoubleSumSatisfying(
@@ -96,8 +95,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusSummary.items")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test summary")
                     .hasUnit("items")
                     .hasHistogramSatisfying(
@@ -111,8 +109,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusSummary.items.max")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test summary")
                     .hasUnit("items")
                     .hasDoubleGaugeSatisfying(
@@ -146,8 +143,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusFunctionTimer.seconds.count")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test function timer")
                     .hasUnit("1")
                     .hasLongSumSatisfying(
@@ -161,8 +157,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusFunctionTimer.seconds.sum")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test function timer")
                     .hasUnit("s")
                     .hasDoubleSumSatisfying(
@@ -189,8 +184,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusGauge.items")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test gauge")
                     .hasUnit("items")
                     .hasDoubleGaugeSatisfying(
@@ -220,8 +214,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusLongTaskTimer.seconds.active")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("tasks")
                     .hasLongSumSatisfying(
@@ -235,8 +228,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusLongTaskTimer.seconds.duration")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("s")
                     .hasDoubleSumSatisfying(
@@ -300,8 +292,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusTimer.seconds")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
                     .hasHistogramSatisfying(
@@ -315,8 +306,7 @@ class PrometheusModeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testPrometheusTimer.seconds.max")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("s")
                     .hasDoubleGaugeSatisfying(

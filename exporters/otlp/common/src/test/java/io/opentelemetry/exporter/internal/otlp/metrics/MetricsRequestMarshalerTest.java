@@ -898,7 +898,10 @@ class MetricsRequestMarshalerTest {
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
     InstrumentationScopeInfo instrumentationScopeInfo =
-        InstrumentationScopeInfo.create("name", "version", "http://url");
+        InstrumentationScopeInfo.builder("name")
+            .setVersion("version")
+            .setSchemaUrl("http://url")
+            .build();
     InstrumentationScope scopeProto =
         InstrumentationScope.newBuilder().setName("name").setVersion("version").build();
     InstrumentationScope emptyScopeProto =

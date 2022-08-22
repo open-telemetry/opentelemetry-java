@@ -66,7 +66,8 @@ class OtlpGrpcNettyLogExporterTest
   protected LogData generateFakeTelemetry() {
     return TestLogData.builder()
         .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
-        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("instrumentation", "1", null))
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
         .setEpoch(Instant.now())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")

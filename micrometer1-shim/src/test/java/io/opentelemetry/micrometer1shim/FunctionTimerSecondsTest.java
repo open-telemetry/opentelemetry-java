@@ -57,8 +57,7 @@ class FunctionTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionTimerSeconds.count")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test function timer")
                     .hasUnit("1")
                     .hasLongSumSatisfying(
@@ -72,8 +71,7 @@ class FunctionTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testFunctionTimerSeconds.sum")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test function timer")
                     .hasUnit("s")
                     .hasDoubleSumSatisfying(

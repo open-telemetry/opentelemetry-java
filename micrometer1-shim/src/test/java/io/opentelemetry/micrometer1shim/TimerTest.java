@@ -39,8 +39,7 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(
@@ -137,8 +136,7 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(
@@ -210,8 +208,7 @@ class TimerTest {
             metric ->
                 assertThat(metric)
                     .hasName("testTimer")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(

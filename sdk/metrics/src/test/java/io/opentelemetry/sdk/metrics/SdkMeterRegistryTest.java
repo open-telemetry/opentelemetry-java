@@ -91,7 +91,10 @@ class SdkMeterRegistryTest {
   @Test
   void propagatesInstrumentationScopeInfoToMeter() {
     InstrumentationScopeInfo expected =
-        InstrumentationScopeInfo.create("theName", "theVersion", "http://theschema");
+        InstrumentationScopeInfo.builder("theName")
+            .setVersion("theVersion")
+            .setSchemaUrl("http://theschema")
+            .build();
     SdkMeter meter =
         (SdkMeter)
             meterProvider

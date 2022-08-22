@@ -54,8 +54,7 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.active")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
                     .hasLongSumSatisfying(
@@ -66,8 +65,7 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleSumSatisfying(
@@ -84,8 +82,7 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.histogram")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDoubleGaugeSatisfying(
                         gauge ->
                             gauge.hasPointsSatisfying(
@@ -106,8 +103,7 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.active")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("tasks")
                     .hasLongSumSatisfying(
@@ -118,8 +114,7 @@ class LongTaskTimerHistogramTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerHistogram.duration")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test timer")
                     .hasUnit("ms")
                     .hasDoubleSumSatisfying(

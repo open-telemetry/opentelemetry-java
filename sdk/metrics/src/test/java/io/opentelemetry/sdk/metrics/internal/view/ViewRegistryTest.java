@@ -30,7 +30,10 @@ class ViewRegistryTest {
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ViewRegistry.class);
 
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
-      InstrumentationScopeInfo.create("name", "version", "schema_url");
+      InstrumentationScopeInfo.builder("name")
+          .setVersion("version")
+          .setSchemaUrl("schema_url")
+          .build();
 
   private static RegisteredView registeredView(InstrumentSelector instrumentSelector, View view) {
     return RegisteredView.create(
