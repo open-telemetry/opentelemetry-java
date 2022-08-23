@@ -20,8 +20,9 @@ import javax.annotation.concurrent.Immutable;
  * <p>The bucket boundaries are calculated using both the scale {@link #getScale()}, and the offset
  * {@link ExponentialHistogramBuckets#getOffset()}.
  *
- * <p>See
- * <a href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram">data model</a>.
+ * <p>See <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram">data
+ * model</a>.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
