@@ -33,7 +33,7 @@ public abstract class InstrumentationScopeInfo {
   /**
    * Creates a new instance of {@link InstrumentationScopeInfo}.
    *
-   * @deprecated Use {@link #builder(String)}.
+   * @deprecated Use {@link #builder(String)} or {@link #create(String)}.
    */
   @Deprecated
   public static InstrumentationScopeInfo create(
