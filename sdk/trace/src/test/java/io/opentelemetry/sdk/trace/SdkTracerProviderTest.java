@@ -171,7 +171,10 @@ class SdkTracerProviderTest {
   @Test
   void propagatesInstrumentationScopeInfoToTracer() {
     InstrumentationScopeInfo expected =
-        InstrumentationScopeInfo.create("theName", "theVersion", "http://url");
+        InstrumentationScopeInfo.builder("theName")
+            .setVersion("theVersion")
+            .setSchemaUrl("http://url")
+            .build();
     Tracer tracer =
         tracerFactory
             .tracerBuilder(expected.getName())

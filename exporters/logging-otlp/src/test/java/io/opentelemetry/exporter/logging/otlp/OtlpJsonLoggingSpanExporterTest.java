@@ -86,7 +86,7 @@ class OtlpJsonLoggingSpanExporterTest {
           .setKind(SpanKind.CLIENT)
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
-              InstrumentationScopeInfo.create("instrumentation2", "2", null))
+              InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())
           .build();
 
   @RegisterExtension

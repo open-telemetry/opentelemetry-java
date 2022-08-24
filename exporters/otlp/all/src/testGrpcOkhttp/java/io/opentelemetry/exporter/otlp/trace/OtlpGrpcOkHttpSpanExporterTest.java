@@ -74,7 +74,10 @@ class OtlpGrpcOkHttpSpanExporterTest
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .setInstrumentationScopeInfo(
-            InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+            InstrumentationScopeInfo.builder("testLib")
+                .setVersion("1.0")
+                .setSchemaUrl("http://url")
+                .build())
         .build();
   }
 

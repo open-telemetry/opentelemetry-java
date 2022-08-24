@@ -47,8 +47,7 @@ class LongTaskTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.active")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("tasks")
                     .hasLongSumSatisfying(
@@ -62,8 +61,7 @@ class LongTaskTimerSecondsTest {
             metric ->
                 assertThat(metric)
                     .hasName("testLongTaskTimerSeconds.duration")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test long task timer")
                     .hasUnit("s")
                     .hasDoubleSumSatisfying(

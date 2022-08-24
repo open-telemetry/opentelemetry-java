@@ -342,7 +342,10 @@ class OtlpHttpLogExporterTest {
     return TestLogData.builder()
         .setResource(Resource.getDefault())
         .setInstrumentationScopeInfo(
-            InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+            InstrumentationScopeInfo.builder("testLib")
+                .setVersion("1.0")
+                .setSchemaUrl("http://url")
+                .build())
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)

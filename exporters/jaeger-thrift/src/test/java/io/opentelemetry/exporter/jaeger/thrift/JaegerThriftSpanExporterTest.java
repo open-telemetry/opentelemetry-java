@@ -83,7 +83,9 @@ class JaegerThriftSpanExporterTest {
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
             .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
+                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
+                    .setVersion("1.0.0")
+                    .build())
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -158,7 +160,9 @@ class JaegerThriftSpanExporterTest {
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
             .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
+                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
+                    .setVersion("1.0.0")
+                    .build())
             .setResource(
                 Resource.create(
                     Attributes.of(
@@ -181,7 +185,9 @@ class JaegerThriftSpanExporterTest {
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
             .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
+                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
+                    .setVersion("1.0.0")
+                    .build())
             .setResource(
                 Resource.create(
                     Attributes.of(

@@ -38,8 +38,7 @@ class GaugeTest {
             metric ->
                 assertThat(metric)
                     .hasName("testGauge")
-                    .hasInstrumentationScope(
-                        InstrumentationScopeInfo.create(INSTRUMENTATION_NAME, null, null))
+                    .hasInstrumentationScope(InstrumentationScopeInfo.create(INSTRUMENTATION_NAME))
                     .hasDescription("This is a test gauge")
                     .hasUnit("items")
                     .hasDoubleGaugeSatisfying(

@@ -185,7 +185,10 @@ class SdkLogEmitterProviderTest {
   @Test
   void logEmitterBuilder_PropagatesToEmitter() {
     InstrumentationScopeInfo expected =
-        InstrumentationScopeInfo.create("test", "version", "http://url");
+        InstrumentationScopeInfo.builder("test")
+            .setVersion("version")
+            .setSchemaUrl("http://url")
+            .build();
     assertThat(
             ((SdkLogEmitter)
                     sdkLogEmitterProvider

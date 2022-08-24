@@ -43,7 +43,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "description",
           "1",
@@ -59,7 +59,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "description",
           "1",
@@ -75,7 +75,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -91,7 +91,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -107,7 +107,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -123,7 +123,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -139,7 +139,7 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -155,7 +155,7 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -172,7 +172,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -183,7 +183,7 @@ class SerializerTest {
   private static final MetricData LONG_GAUGE =
       ImmutableMetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -194,7 +194,7 @@ class SerializerTest {
   private static final MetricData SUMMARY =
       ImmutableMetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -212,7 +212,7 @@ class SerializerTest {
   private static final MetricData HISTOGRAM_NO_ATTRIBUTES =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -241,7 +241,7 @@ class SerializerTest {
   private static final MetricData HISTOGRAM_SINGLE_ATTRIBUTE =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -270,7 +270,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",
@@ -281,7 +281,7 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.create("full", "version", null),
+          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
           "instrument.name",
           "unused",
           "1",

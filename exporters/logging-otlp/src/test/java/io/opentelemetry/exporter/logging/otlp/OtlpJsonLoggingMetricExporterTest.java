@@ -53,7 +53,7 @@ class OtlpJsonLoggingMetricExporterTest {
   private static final MetricData METRIC2 =
       ImmutableMetricData.createDoubleSum(
           RESOURCE,
-          InstrumentationScopeInfo.create("instrumentation2", "2", null),
+          InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build(),
           "metric2",
           "metric2 description",
           "s",

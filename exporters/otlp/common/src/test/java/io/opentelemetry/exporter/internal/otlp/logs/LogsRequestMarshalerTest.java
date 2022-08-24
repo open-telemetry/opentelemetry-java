@@ -103,7 +103,7 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("instrumentation", "1", null))
+                        InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -137,7 +137,7 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("instrumentation", "1", null))
+                        InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 

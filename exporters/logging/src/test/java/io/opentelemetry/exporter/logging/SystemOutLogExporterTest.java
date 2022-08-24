@@ -53,7 +53,8 @@ class SystemOutLogExporterTest {
   private static LogData sampleLog(long timestamp) {
     return TestLogData.builder()
         .setResource(Resource.empty())
-        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("logTest", "1.0", null))
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("logTest").setVersion("1.0").build())
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)
