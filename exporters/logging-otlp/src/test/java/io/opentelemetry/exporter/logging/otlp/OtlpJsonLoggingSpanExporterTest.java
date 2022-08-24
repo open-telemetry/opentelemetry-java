@@ -63,7 +63,10 @@ class OtlpJsonLoggingSpanExporterTest {
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
           .setInstrumentationScopeInfo(
-              InstrumentationScopeInfo.create("instrumentation", "1", null))
+              InstrumentationScopeInfo.builder("instrumentation")
+                  .setVersion("1")
+                  .setAttributes(Attributes.builder().put("key", "value").build())
+                  .build())
           .setResource(RESOURCE)
           .build();
 
@@ -133,7 +136,13 @@ class OtlpJsonLoggingSpanExporterTest {
             + "  }, {"
             + "    \"scope\": {"
             + "      \"name\": \"instrumentation\","
-            + "      \"version\": \"1\""
+            + "      \"version\": \"1\","
+            + "      \"attributes\":[{"
+            + "        \"key\":\"key\","
+            + "        \"value\":{"
+            + "          \"stringValue\":\"value\""
+            + "        }"
+            + "      }]"
             + "    },"
             + "    \"spans\": [{"
             + "      \"traceId\": \"12345678876543211234567887654321\","
