@@ -130,8 +130,7 @@ class SdkMeterProviderTest {
                                         .hasAttributes(Attributes.empty())
                                         .hasCount(1)
                                         .hasSum(10.1)
-                                        .hasBucketCounts(
-                                            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
+                                        .hasBucketCounts(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0))),
             metric ->
                 assertThat(metric)
                     .hasName("testDoubleCounter")
@@ -159,8 +158,7 @@ class SdkMeterProviderTest {
                                         .hasAttributes(Attributes.empty())
                                         .hasCount(1)
                                         .hasSum(10)
-                                        .hasBucketCounts(
-                                            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
+                                        .hasBucketCounts(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0))),
             metric ->
                 assertThat(metric)
                     .hasName("testLongUpDownCounter")

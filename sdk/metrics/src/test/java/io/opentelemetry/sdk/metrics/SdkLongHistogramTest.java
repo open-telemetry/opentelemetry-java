@@ -112,10 +112,8 @@ class SdkLongHistogramTest {
                                             .hasCount(2)
                                             .hasSum(24)
                                             .hasBucketBoundaries(
-                                                5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500,
-                                                5_000, 7_500, 10_000)
-                                            .hasBucketCounts(
-                                                0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))));
+                                                0, 5, 10, 25, 50, 75, 100, 250, 500, 1_000)
+                                            .hasBucketCounts(0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0))));
   }
 
   @Test
@@ -149,8 +147,7 @@ class SdkLongHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(3)
                                           .hasSum(445)
-                                          .hasBucketCounts(
-                                              1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0)
                                           .hasAttributes(attributeEntry("K", "V")),
                                   point ->
                                       point
@@ -158,8 +155,7 @@ class SdkLongHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(2)
                                           .hasSum(23)
-                                          .hasBucketCounts(
-                                              0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
                                           .hasAttributes(Attributes.empty()))));
 
       // Histograms are cumulative by default.
@@ -182,8 +178,7 @@ class SdkLongHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(4)
                                           .hasSum(667)
-                                          .hasBucketCounts(
-                                              1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 1, 0, 0, 0, 0, 0, 2, 1, 0, 0)
                                           .hasAttributes(attributeEntry("K", "V")),
                                   point ->
                                       point
@@ -191,8 +186,7 @@ class SdkLongHistogramTest {
                                           .hasEpochNanos(testClock.now())
                                           .hasCount(3)
                                           .hasSum(40)
-                                          .hasBucketCounts(
-                                              0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                          .hasBucketCounts(0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0)
                                           .hasAttributes(Attributes.empty()))));
     } finally {
       bound.unbind();
@@ -387,8 +381,7 @@ class SdkLongHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(2_000)
                                         .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[0], values[0])),
                                 point ->
                                     point
@@ -396,8 +389,7 @@ class SdkLongHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(2_000)
                                         .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[1], values[1])),
                                 point ->
                                     point
@@ -405,8 +397,7 @@ class SdkLongHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(2_000)
                                         .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[2], values[2])),
                                 point ->
                                     point
@@ -414,8 +405,7 @@ class SdkLongHistogramTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasCount(2_000)
                                         .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketCounts(0, 0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0)
                                         .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 
