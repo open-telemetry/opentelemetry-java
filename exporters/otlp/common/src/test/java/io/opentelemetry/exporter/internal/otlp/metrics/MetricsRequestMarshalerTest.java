@@ -901,9 +901,18 @@ class MetricsRequestMarshalerTest {
         InstrumentationScopeInfo.builder("name")
             .setVersion("version")
             .setSchemaUrl("http://url")
+            .setAttributes(Attributes.builder().put("key", "value").build())
             .build();
     InstrumentationScope scopeProto =
-        InstrumentationScope.newBuilder().setName("name").setVersion("version").build();
+        InstrumentationScope.newBuilder()
+            .setName("name")
+            .setVersion("version")
+            .addAttributes(
+                KeyValue.newBuilder()
+                    .setKey("key")
+                    .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                    .build())
+            .build();
     InstrumentationScope emptyScopeProto =
         InstrumentationScope.newBuilder().setName("").setVersion("").build();
     Metric metricDoubleSum =

@@ -36,7 +36,10 @@ class OtlpJsonLoggingMetricExporterTest {
   private static final MetricData METRIC1 =
       ImmutableMetricData.createDoubleSum(
           RESOURCE,
-          InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build(),
+          InstrumentationScopeInfo.builder("instrumentation")
+              .setVersion("1")
+              .setAttributes(Attributes.builder().put("key", "value").build())
+              .build(),
           "metric1",
           "metric1 description",
           "m",
@@ -126,7 +129,13 @@ class OtlpJsonLoggingMetricExporterTest {
             + "  }, {"
             + "    \"scope\": {"
             + "      \"name\": \"instrumentation\","
-            + "      \"version\": \"1\""
+            + "      \"version\": \"1\","
+            + "      \"attributes\":[{"
+            + "        \"key\":\"key\","
+            + "        \"value\":{"
+            + "          \"stringValue\":\"value\""
+            + "        }"
+            + "      }]"
             + "    },"
             + "    \"metrics\": [{"
             + "      \"name\": \"metric1\","

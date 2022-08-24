@@ -83,6 +83,7 @@ class TraceRequestMarshalerTest {
                         InstrumentationScopeInfo.builder("testLib")
                             .setVersion("1.0")
                             .setSchemaUrl("http://url")
+                            .setAttributes(Attributes.builder().put("key", "value").build())
                             .build())
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
@@ -97,7 +98,16 @@ class TraceRequestMarshalerTest {
     ScopeSpans instrumentationLibrarySpans = onlyResourceSpans.getScopeSpans(0);
     assertThat(instrumentationLibrarySpans.getSchemaUrl()).isEqualTo("http://url");
     assertThat(instrumentationLibrarySpans.getScope())
-        .isEqualTo(InstrumentationScope.newBuilder().setName("testLib").setVersion("1.0").build());
+        .isEqualTo(
+            InstrumentationScope.newBuilder()
+                .setName("testLib")
+                .setVersion("1.0")
+                .addAttributes(
+                    KeyValue.newBuilder()
+                        .setKey("key")
+                        .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                        .build())
+                .build());
   }
 
   @Test
