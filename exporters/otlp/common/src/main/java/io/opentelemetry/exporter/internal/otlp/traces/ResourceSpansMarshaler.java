@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaller;
+import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ResourceSpans;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -47,7 +47,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
           entry.getValue().entrySet()) {
         instrumentationScopeSpansMarshalers[posInstrumentation++] =
             new InstrumentationScopeSpansMarshaler(
-                InstrumentationScopeMarshaller.create(entryIs.getKey()),
+                InstrumentationScopeMarshaler.create(entryIs.getKey()),
                 MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
                 entryIs.getValue());
       }

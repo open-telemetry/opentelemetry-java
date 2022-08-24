@@ -993,7 +993,7 @@ class SdkSpanBuilderTest {
                 + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-rc.\\d+)?(-SNAPSHOT)?\"}}, "
                 + "instrumentationScopeInfo=InstrumentationScopeInfo\\{"
-                + "name=SpanBuilderSdkTest, version=null, schemaUrl=null}, "
+                + "name=SpanBuilderSdkTest, version=null, schemaUrl=null, attributes=\\{}}, "
                 + "name=span_name, "
                 + "kind=INTERNAL, "
                 + "startEpochNanos=[0-9]+, "

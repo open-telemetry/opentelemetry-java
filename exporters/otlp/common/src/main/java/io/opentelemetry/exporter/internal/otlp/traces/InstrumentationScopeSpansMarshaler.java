@@ -8,18 +8,18 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaller;
+import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ScopeSpans;
 import java.io.IOException;
 import java.util.List;
 
 final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
-  private final InstrumentationScopeMarshaller instrumentationScope;
+  private final InstrumentationScopeMarshaler instrumentationScope;
   private final List<SpanMarshaler> spanMarshalers;
   private final byte[] schemaUrlUtf8;
 
   InstrumentationScopeSpansMarshaler(
-      InstrumentationScopeMarshaller instrumentationScope,
+      InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
       List<SpanMarshaler> spanMarshalers) {
     super(calculateSize(instrumentationScope, schemaUrlUtf8, spanMarshalers));
@@ -36,7 +36,7 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      InstrumentationScopeMarshaller instrumentationScope,
+      InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
       List<SpanMarshaler> spanMarshalers) {
     int size = 0;

@@ -12,10 +12,10 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 
 /**
- * Base class for all the provider classes (TracerProvider, MeterProvider, etc.).
+ * Component (tracer, meter, etc) registry class for all the provider classes (TracerProvider,
+ * MeterProvider, etc.).
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -32,48 +32,10 @@ public final class ComponentRegistry<V> {
   }
 
   /**
-   * Returns the registered value associated with this name and {@code null} version if any,
-   * otherwise creates a new instance and associates it with the given name and {@code null} version
-   * and schemaUrl.
-   *
-   * @param instrumentationScopeName the name of the instrumentation scope.
-   * @return the registered value associated with this name and {@code null} version.
+   * Returns the registered value associated with this {@link InstrumentationScopeInfo scope} if
+   * any, otherwise creates a new instance and associates it with the given scope.
    */
-  public V get(String instrumentationScopeName) {
-    return get(instrumentationScopeName, null);
-  }
-
-  /**
-   * Returns the registered value associated with this name and version if any, otherwise creates a
-   * new instance and associates it with the given name and version. The schemaUrl will be set to
-   * null.
-   *
-   * @param instrumentationScopeName the name of the instrumentation scope.
-   * @param instrumentationScopeVersion the version of the instrumentation scope.
-   * @return the registered value associated with this name and version.
-   */
-  public V get(String instrumentationScopeName, @Nullable String instrumentationScopeVersion) {
-    return get(instrumentationScopeName, instrumentationScopeVersion, null);
-  }
-
-  /**
-   * Returns the registered value associated with this name and version if any, otherwise creates a
-   * new instance and associates it with the given name and version.
-   *
-   * @param instrumentationScopeName the name of the instrumentation scope.
-   * @param instrumentationScopeVersion the version of the instrumentation scope.
-   * @param schemaUrl the URL of the OpenTelemetry schema used by the instrumentation scope.
-   * @return the registered value associated with this name and version.
-   * @since 1.4.0
-   */
-  public V get(
-      String instrumentationScopeName,
-      @Nullable String instrumentationScopeVersion,
-      @Nullable String schemaUrl) {
-    InstrumentationScopeInfo instrumentationScopeInfo =
-        InstrumentationScopeInfo.create(
-            instrumentationScopeName, instrumentationScopeVersion, schemaUrl);
-
+  public V get(InstrumentationScopeInfo instrumentationScopeInfo) {
     // Optimistic lookup, before creating the new component.
     V component = registry.get(instrumentationScopeInfo);
     if (component != null) {

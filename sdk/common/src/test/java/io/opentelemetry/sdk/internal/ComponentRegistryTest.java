@@ -6,63 +6,100 @@
 package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import org.junit.jupiter.api.Test;
 
 class ComponentRegistryTest {
 
-  private static final String INSTRUMENTATION_NAME = "test_name";
-  private static final String INSTRUMENTATION_VERSION = "version";
+  private static final String NAME = "test_name";
+  private static final String VERSION = "version";
+  private static final String SCHEMA_URL = "http://schema.com";
+  private static final Attributes ATTRIBUTES = Attributes.builder().put("k1", "v1").build();
   private final ComponentRegistry<TestComponent> registry =
-      new ComponentRegistry<>(TestComponent::new);
+      new ComponentRegistry<>(unused -> new TestComponent());
 
   @Test
-  void scopeName_MustNotBeNull() {
-    assertThatThrownBy(() -> registry.get(null, "version"))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("name");
-  }
-
-  @Test
-  void scopeVersion_AllowsNull() {
-    TestComponent testComponent = registry.get(INSTRUMENTATION_NAME, null);
-    assertThat(testComponent).isNotNull();
-    assertThat(testComponent.instrumentationScopeInfo.getName()).isEqualTo(INSTRUMENTATION_NAME);
-    assertThat(testComponent.instrumentationScopeInfo.getVersion()).isNull();
-  }
-
-  @Test
-  void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(registry.get(INSTRUMENTATION_NAME)).isSameAs(registry.get(INSTRUMENTATION_NAME));
-    assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameAs(registry.get(INSTRUMENTATION_NAME, null));
-  }
-
-  @Test
-  void getSameInstanceForSameName_WithVersion() {
-    assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
-  }
-
-  @Test
-  void getDifferentInstancesForDifferentNames() {
-    assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameAs(registry.get(INSTRUMENTATION_NAME + "_2", INSTRUMENTATION_VERSION));
+  void get_SameInstance() {
+    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).build()))
+        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
+    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
+        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()));
+    assertThat(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
+        .isSameAs(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()));
+    assertThat(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
+        .isSameAs(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()));
+    assertThat(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(ATTRIBUTES)
+                    .build()))
+        .isSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(ATTRIBUTES)
+                    .build()));
   }
 
   @Test
-  void getDifferentInstancesForDifferentVersions() {
-    assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION + "_1"));
+  void get_DifferentInstance() {
+    InstrumentationScopeInfo allFields =
+        InstrumentationScopeInfo.builder(NAME)
+            .setVersion(VERSION)
+            .setSchemaUrl(SCHEMA_URL)
+            .setAttributes(ATTRIBUTES)
+            .build();
+
+    assertThat(registry.get(allFields))
+        .isNotSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME + "_1")
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(ATTRIBUTES)
+                    .build()));
+    assertThat(registry.get(allFields))
+        .isNotSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION + "_1")
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(ATTRIBUTES)
+                    .build()));
+    assertThat(registry.get(allFields))
+        .isNotSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL + "_1")
+                    .setAttributes(ATTRIBUTES)
+                    .build()));
+    assertThat(registry.get(allFields))
+        .isNotSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(Attributes.builder().put("k1", "v2").build())
+                    .build()));
+    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
+        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
+    assertThat(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
+        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
+    assertThat(
+            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
+        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
   }
 
-  private static final class TestComponent {
-    private final InstrumentationScopeInfo instrumentationScopeInfo;
-
-    private TestComponent(InstrumentationScopeInfo instrumentationScopeInfo) {
-      this.instrumentationScopeInfo = instrumentationScopeInfo;
-    }
-  }
+  private static final class TestComponent {}
 }
