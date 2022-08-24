@@ -13,8 +13,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.Collections;
 import java.util.Map;
@@ -22,13 +22,13 @@ import java.util.function.Supplier;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
-class LogEmitterProviderConfigurationTest {
+class LoggerProviderConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
 
   @Test
-  void configureLogEmitterProvider() {
+  void configureLoggerProvider() {
     Map<String, String> properties =
         ImmutableMap.of(
             "otel.logs.exporter", "none",
@@ -36,17 +36,17 @@ class LogEmitterProviderConfigurationTest {
 
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
     // are verified in other test sets like testFullConfig.
-    SdkLogEmitterProviderBuilder builder = SdkLogEmitterProvider.builder();
-    LogEmitterProviderConfiguration.configureLogEmitterProvider(
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+    LoggerProviderConfiguration.configureLoggerProvider(
         builder,
         DefaultConfigProperties.createForTest(properties),
-        LogEmitterProviderConfiguration.class.getClassLoader(),
+        LoggerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
         (a, unused) -> a);
-    SdkLogEmitterProvider logEmitterProvider = builder.build();
+    SdkLoggerProvider loggerProvider = builder.build();
 
     try {
-      assertThat(logEmitterProvider)
+      assertThat(loggerProvider)
           .extracting("sharedState")
           .satisfies(
               sharedState -> {
@@ -60,13 +60,13 @@ class LogEmitterProviderConfigurationTest {
                     .isEqualTo(LogLimits.builder().setMaxNumberOfAttributes(5).build());
               });
     } finally {
-      logEmitterProvider.shutdown();
+      loggerProvider.shutdown();
     }
   }
 
   @Test
   void configureSpanLimits() {
-    assertThat(LogEmitterProviderConfiguration.configureLogLimits(EMPTY))
+    assertThat(LoggerProviderConfiguration.configureLogLimits(EMPTY))
         .isEqualTo(LogLimits.getDefault());
 
     SpanLimits config =

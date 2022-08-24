@@ -347,7 +347,7 @@ class OtlpGrpcConfigTest {
         OpenTelemetrySdk sdk = ((OpenTelemetrySdk) delegate);
         sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
         sdk.getSdkMeterProvider().shutdown().join(10, TimeUnit.SECONDS);
-        sdk.getSdkLogEmitterProvider().shutdown().join(10, TimeUnit.SECONDS);
+        sdk.getSdkLoggerProvider().shutdown().join(10, TimeUnit.SECONDS);
       }
     } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
       throw new IllegalStateException("Error shutting down global SDK.", e);

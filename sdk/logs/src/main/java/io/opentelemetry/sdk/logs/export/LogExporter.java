@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -68,8 +68,8 @@ public interface LogExporter extends Closeable {
   CompletableResultCode flush();
 
   /**
-   * Shutdown the log exporter. Called when {@link SdkLogEmitterProvider#shutdown()} is called when
-   * this exporter is registered to the provider via {@link BatchLogProcessor} or {@link
+   * Shutdown the log exporter. Called when {@link SdkLoggerProvider#shutdown()} is called when this
+   * exporter is registered to the provider via {@link BatchLogProcessor} or {@link
    * SimpleLogProcessor}.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes

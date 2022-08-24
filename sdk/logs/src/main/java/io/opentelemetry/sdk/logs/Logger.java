@@ -8,13 +8,13 @@ package io.opentelemetry.sdk.logs;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A {@link LogEmitter} is the entry point into a log pipeline.
+ * A {@link Logger} is the entry point into a log pipeline.
  *
  * <p>Obtain a {@link #logRecordBuilder()}, add properties using the setters, and emit it to
  * downstream {@link LogProcessor}(s) via {@link LogRecordBuilder#emit()}.
  */
 @ThreadSafe
-public interface LogEmitter {
+public interface Logger {
 
   /**
    * Return a {@link LogRecordBuilder} to emit a log record.

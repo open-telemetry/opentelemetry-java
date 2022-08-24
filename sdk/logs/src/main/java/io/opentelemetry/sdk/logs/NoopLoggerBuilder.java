@@ -11,37 +11,37 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-class NoopLogEmitterBuilder implements LogEmitterBuilder {
+class NoopLoggerBuilder implements LoggerBuilder {
 
-  private static final NoopLogEmitterBuilder INSTANCE = new NoopLogEmitterBuilder();
-  private static final NoopLogEmitter NOOP_LOG_EMITTER = new NoopLogEmitter();
+  private static final NoopLoggerBuilder INSTANCE = new NoopLoggerBuilder();
+  private static final NoopLogger NOOP_LOGGER = new NoopLogger();
 
-  private NoopLogEmitterBuilder() {}
+  private NoopLoggerBuilder() {}
 
-  static LogEmitterBuilder getInstance() {
+  static LoggerBuilder getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public LogEmitterBuilder setSchemaUrl(String schemaUrl) {
+  public LoggerBuilder setSchemaUrl(String schemaUrl) {
     return this;
   }
 
   @Override
-  public LogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+  public LoggerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     return this;
   }
 
   @Override
-  public LogEmitter build() {
-    return NOOP_LOG_EMITTER;
+  public Logger build() {
+    return NOOP_LOGGER;
   }
 
-  private static class NoopLogEmitter implements LogEmitter {
+  private static class NoopLogger implements Logger {
 
-    private static final NoopLogBuilder NOOP_LOG_BUILDER = new NoopLogBuilder();
+    private static final NoopLogRecordBuilder NOOP_LOG_BUILDER = new NoopLogRecordBuilder();
 
-    private NoopLogEmitter() {}
+    private NoopLogger() {}
 
     @Override
     public LogRecordBuilder logRecordBuilder() {
@@ -49,9 +49,9 @@ class NoopLogEmitterBuilder implements LogEmitterBuilder {
     }
   }
 
-  private static class NoopLogBuilder implements LogRecordBuilder {
+  private static class NoopLogRecordBuilder implements LogRecordBuilder {
 
-    private NoopLogBuilder() {}
+    private NoopLogRecordBuilder() {}
 
     @Override
     public LogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {

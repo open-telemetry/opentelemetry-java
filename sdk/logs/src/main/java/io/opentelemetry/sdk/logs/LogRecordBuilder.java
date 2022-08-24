@@ -13,10 +13,10 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Used to construct and emit logs from a {@link LogEmitter}.
+ * Used to construct and emit logs from a {@link Logger}.
  *
- * <p>Obtain a {@link LogEmitter#logRecordBuilder()}, add properties using the setters, and emit the
- * log to downstream {@link LogProcessor}(s) by calling {@link #emit()}.
+ * <p>Obtain a {@link Logger#logRecordBuilder()}, add properties using the setters, and emit the log
+ * to downstream {@link LogProcessor}(s) by calling {@link #emit()}.
  */
 public interface LogRecordBuilder {
 

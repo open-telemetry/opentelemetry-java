@@ -14,9 +14,8 @@ import javax.annotation.concurrent.Immutable;
  * Class that holds limits enforced during log recording.
  *
  * <p>Note: To allow dynamic updates of {@link LogLimits} you should register a {@link
- * java.util.function.Supplier} with {@link
- * io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder#setLogLimits(Supplier)} which supplies
- * dynamic configs when queried.
+ * java.util.function.Supplier} with {@link SdkLoggerProviderBuilder#setLogLimits(Supplier)} which
+ * supplies dynamic configs when queried.
  */
 @AutoValue
 @Immutable

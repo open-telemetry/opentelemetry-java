@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.SystemOutLogExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
@@ -22,23 +22,23 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class LogEmitterProviderConfigurationTest {
+class LoggerProviderConfigurationTest {
 
   @Test
-  void configureLogEmitterProvider() {
+  void configureLoggerProvider() {
     Map<String, String> properties = Collections.singletonMap("otel.logs.exporter", "otlp");
 
-    SdkLogEmitterProviderBuilder builder = SdkLogEmitterProvider.builder();
-    LogEmitterProviderConfiguration.configureLogEmitterProvider(
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+    LoggerProviderConfiguration.configureLoggerProvider(
         builder,
         DefaultConfigProperties.createForTest(properties),
-        LogEmitterProviderConfiguration.class.getClassLoader(),
+        LoggerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
         (a, unused) -> a);
-    SdkLogEmitterProvider logEmitterProvider = builder.build();
+    SdkLoggerProvider loggerProvider = builder.build();
 
     try {
-      assertThat(logEmitterProvider)
+      assertThat(loggerProvider)
           .extracting("sharedState")
           .satisfies(
               sharedState ->
@@ -62,7 +62,7 @@ class LogEmitterProviderConfigurationTest {
                                     queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
                           }));
     } finally {
-      logEmitterProvider.shutdown();
+      loggerProvider.shutdown();
     }
   }
 
@@ -72,7 +72,7 @@ class LogEmitterProviderConfigurationTest {
     LogExporter otlpExporter = OtlpGrpcLogExporter.builder().build();
 
     assertThat(
-            LogEmitterProviderConfiguration.configureLogProcessors(
+            LoggerProviderConfiguration.configureLogProcessors(
                 ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter),
                 MeterProvider.noop()))
         .hasSize(2)

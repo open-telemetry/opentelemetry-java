@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 final class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  private final LogEmitterSharedState logEmitterSharedState;
+  private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -32,10 +32,9 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
-      LogEmitterSharedState logEmitterSharedState,
-      InstrumentationScopeInfo instrumentationScopeInfo) {
-    this.logEmitterSharedState = logEmitterSharedState;
-    this.logLimits = logEmitterSharedState.getLogLimits();
+      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+    this.loggerSharedState = loggerSharedState;
+    this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
@@ -91,19 +90,17 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public void emit() {
-    if (logEmitterSharedState.hasBeenShutdown()) {
+    if (loggerSharedState.hasBeenShutdown()) {
       return;
     }
-    logEmitterSharedState
+    loggerSharedState
         .getLogProcessor()
         .onEmit(
             SdkReadWriteLogRecord.create(
-                logEmitterSharedState.getLogLimits(),
-                logEmitterSharedState.getResource(),
+                loggerSharedState.getLogLimits(),
+                loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                this.epochNanos == 0
-                    ? this.logEmitterSharedState.getClock().now()
-                    : this.epochNanos,
+                this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
                 spanContext,
                 severity,
                 severityText,

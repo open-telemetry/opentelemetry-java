@@ -39,19 +39,19 @@ class SdkLogRecordBuilderTest {
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
 
-  @Mock LogEmitterSharedState logEmitterSharedState;
+  @Mock LoggerSharedState loggerSharedState;
 
   private final AtomicReference<ReadWriteLogRecord> emittedLog = new AtomicReference<>();
   private SdkLogRecordBuilder builder;
 
   @BeforeEach
   void setup() {
-    when(logEmitterSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
-    when(logEmitterSharedState.getLogProcessor()).thenReturn(emittedLog::set);
-    when(logEmitterSharedState.getResource()).thenReturn(RESOURCE);
-    when(logEmitterSharedState.getClock()).thenReturn(Clock.getDefault());
+    when(loggerSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
+    when(loggerSharedState.getLogProcessor()).thenReturn(emittedLog::set);
+    when(loggerSharedState.getResource()).thenReturn(RESOURCE);
+    when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
 
-    builder = new SdkLogRecordBuilder(logEmitterSharedState, SCOPE_INFO);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
   }
 
   @Test
@@ -92,7 +92,7 @@ class SdkLogRecordBuilderTest {
   void emit_NoFields() {
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(10L);
-    when(logEmitterSharedState.getClock()).thenReturn(clock);
+    when(loggerSharedState.getClock()).thenReturn(clock);
 
     builder.emit();
 

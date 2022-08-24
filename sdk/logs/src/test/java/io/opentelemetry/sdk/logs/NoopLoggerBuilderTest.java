@@ -12,11 +12,11 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class NoopLogEmitterBuilderTest {
+class NoopLoggerBuilderTest {
 
   @Test
   void buildAndEmit() {
-    NoopLogEmitterBuilder.getInstance()
+    NoopLoggerBuilder.getInstance()
         .setSchemaUrl("http://endpoint")
         .setInstrumentationVersion("1.0.0")
         .build()

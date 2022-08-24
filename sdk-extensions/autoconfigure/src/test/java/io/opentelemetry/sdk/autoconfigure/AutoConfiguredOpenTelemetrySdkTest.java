@@ -28,8 +28,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -264,19 +264,19 @@ class AutoConfiguredOpenTelemetrySdkTest {
   // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
 
   @Test
-  void builder_addLogEmitterProviderCustomizer() {
+  void builder_addLoggerProviderCustomizer() {
     Mockito.lenient().when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
 
-    SdkLogEmitterProvider sdkLogEmitterProvider =
+    SdkLoggerProvider sdkLoggerProvider =
         builder
-            .addLogEmitterProviderCustomizer(
-                (logEmitterProviderBuilder, configProperties) ->
-                    logEmitterProviderBuilder.addLogProcessor(logProcessor))
+            .addLoggerProviderCustomizer(
+                (loggerProviderBuilder, configProperties) ->
+                    loggerProviderBuilder.addLogProcessor(logProcessor))
             .build()
             .getOpenTelemetrySdk()
-            .getSdkLogEmitterProvider();
-    sdkLogEmitterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+            .getSdkLoggerProvider();
+    sdkLoggerProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
     verify(logProcessor).forceFlush();
   }
@@ -331,26 +331,22 @@ class AutoConfiguredOpenTelemetrySdkTest {
                     return builder;
                   }
                 });
-    BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
-        logCustomizer =
-            spy(
-                new BiFunction<
-                    SdkLogEmitterProviderBuilder,
-                    ConfigProperties,
-                    SdkLogEmitterProviderBuilder>() {
-                  @Override
-                  public SdkLogEmitterProviderBuilder apply(
-                      SdkLogEmitterProviderBuilder builder, ConfigProperties config) {
-                    return builder;
-                  }
-                });
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        spy(
+            new BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>() {
+              @Override
+              public SdkLoggerProviderBuilder apply(
+                  SdkLoggerProviderBuilder builder, ConfigProperties config) {
+                return builder;
+              }
+            });
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "false"))
             .addTracerProviderCustomizer(traceCustomizer)
             .addMeterProviderCustomizer(metricCustomizer)
-            .addLogEmitterProviderCustomizer(logCustomizer)
+            .addLoggerProviderCustomizer(logCustomizer)
             .build();
 
     assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
