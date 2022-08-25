@@ -14,7 +14,8 @@ class ExplicitBucketHistogramUtilsTest {
 
   /**
    * {@link ExplicitBucketHistogramUtils#getDefaultBucketBoundaries()} returns different values when
-   * {@code otel.java.histogram.legacy.buckets.enabled=true}.
+   * {@code otel.java.histogram.legacy.buckets.enabled=true}, which is set for this test in
+   * {@code build.gradle.kts}.
    */
   @Test
   void defaultBucketBoundaries() {
