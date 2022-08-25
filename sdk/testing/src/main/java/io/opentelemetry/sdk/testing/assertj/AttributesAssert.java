@@ -196,11 +196,10 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
 
   /** Asserts the attributes do not contain the given key. */
   public AttributesAssert doesNotContainKey(String key) {
-    Optional<AttributeKey<?>> resolved =
+    boolean containsKey =
         actual.asMap().keySet().stream()
-            .filter(attributeKey -> attributeKey.getKey().equals(key))
-            .findFirst();
-    if (resolved.isPresent()) {
+            .anyMatch(attributeKey -> attributeKey.getKey().equals(key));
+    if (containsKey) {
       failWithMessage(
           ShouldNotContainKeys.shouldNotContainKeys(actual, Collections.singleton(key))
               .create(info.description(), info.representation()));
