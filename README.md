@@ -276,7 +276,6 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [SDK Resources Extension](./sdk-extensions/resources)                         | Resource providers, including container, host, os, and process                                 | `opentelemetry-sdk-extension-resources`             | <!--VERSION_STABLE-->1.17.0<!--/VERSION_STABLE-->           |
 | [SDK AWS Extension](./sdk-extensions/aws)                                     | AWS resource providers, including beanstalk, ec2, ecs, eks, and lambda                         | `opentelemetry-sdk-extension-aws`                   | <!--VERSION_STABLE-->1.17.0<!--/VERSION_STABLE-->           |
 | [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | Sampler which obtains sampling configuration from remote Jaeger server                         | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.17.0<!--/VERSION_STABLE-->           |
-| [SDK JFR Events Extension](./sdk-extensions/jfr-events)                       | SpanProcessor which records spans as JFR events                                                | `opentelemetry-sdk-extension-jfr-events`            | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 | [SDK Incubator](./sdk-extensions/incubator)                                   | SDK incubator, including YAML based view configuration, LeakDetectingSpanProcessor, and zPages | `opentelemetry-sdk-extension-incubator`             | TODO: add version when published                            |
 
 ### Shims

@@ -67,7 +67,6 @@ include(":sdk-extensions:aws")
 include(":sdk-extensions:resources")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
-include(":sdk-extensions:jfr-events")
 include(":testing-internal")
 
 val isCI = System.getenv("CI") != null
