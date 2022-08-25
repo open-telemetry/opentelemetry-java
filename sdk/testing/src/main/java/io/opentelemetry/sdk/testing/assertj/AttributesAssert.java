@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.error.ShouldContainKeys;
+import org.assertj.core.error.ShouldNotContainKeys;
 
 /** Assertions for {@link Attributes}. */
 public final class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
@@ -178,6 +179,30 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     if (!resolved.isPresent()) {
       failWithMessage(
           ShouldContainKeys.shouldContainKeys(actual, Collections.singleton(key))
+              .create(info.description(), info.representation()));
+    }
+    return this;
+  }
+
+  /** Asserts the attributes do not contain the given key. */
+  public AttributesAssert doesNotContainKey(AttributeKey<?> key) {
+    if (actual.get(key) != null) {
+      failWithMessage(
+          ShouldNotContainKeys.shouldNotContainKeys(actual, Collections.singleton(key))
+              .create(info.description(), info.representation()));
+    }
+    return this;
+  }
+
+  /** Asserts the attributes do not contain the given key. */
+  public AttributesAssert doesNotContainKey(String key) {
+    Optional<AttributeKey<?>> resolved =
+        actual.asMap().keySet().stream()
+            .filter(attributeKey -> attributeKey.getKey().equals(key))
+            .findFirst();
+    if (resolved.isPresent()) {
+      failWithMessage(
+          ShouldNotContainKeys.shouldNotContainKeys(actual, Collections.singleton(key))
               .create(info.description(), info.representation()));
     }
     return this;
