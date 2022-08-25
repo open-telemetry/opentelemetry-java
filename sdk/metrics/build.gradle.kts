@@ -32,11 +32,11 @@ dependencies {
 
 testing {
   suites {
-    val debugEnabledTest by registering(JvmTestSuite::class) {
+    val configurationTest by registering(JvmTestSuite::class) {
       targets {
         all {
           testTask.configure {
-            jvmArgs("-Dotel.experimental.sdk.metrics.debug=true")
+            jvmArgs("-Dotel.experimental.sdk.metrics.debug=true", "-Dotel.java.histogram.legacy.buckets.enabled=true")
           }
         }
       }

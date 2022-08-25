@@ -64,7 +64,7 @@ public enum HistogramValueGenerator {
     // Add minimal recording value.
     fixedBoundaries.add(0.0);
     // Add the bucket LE bucket boundaries (starts at 5).
-    fixedBoundaries.addAll(ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+    fixedBoundaries.addAll(ExplicitBucketHistogramUtils.getDefaultBucketBoundaries());
     // Add Double max value as our other extreme.
     fixedBoundaries.add(Double.MAX_VALUE);
     return ExplicitBucketHistogramUtils.createBoundaryArray(fixedBoundaries);

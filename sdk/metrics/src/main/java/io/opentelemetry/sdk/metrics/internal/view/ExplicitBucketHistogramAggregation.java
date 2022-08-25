@@ -27,7 +27,7 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
 
   private static final Aggregation DEFAULT =
       new ExplicitBucketHistogramAggregation(
-          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+          ExplicitBucketHistogramUtils.getDefaultBucketBoundaries());
 
   public static Aggregation getDefault() {
     return DEFAULT;
