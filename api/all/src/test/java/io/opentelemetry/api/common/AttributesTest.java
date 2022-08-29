@@ -105,8 +105,8 @@ class AttributesTest {
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(map::clear).isInstanceOf(UnsupportedOperationException.class);
 
-    assertThat(map.keySet().contains(stringKey("key1"))).isTrue();
-    assertThat(map.keySet().contains(stringKey("key3"))).isFalse();
+    assertThat(map.containsKey(stringKey("key1"))).isTrue();
+    assertThat(map.containsKey(stringKey("key3"))).isFalse();
     assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key2"))))
         .isTrue();
     assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key3"))))
@@ -125,7 +125,7 @@ class AttributesTest {
     assertThat(keys).isEmpty(); // Didn't use input array.
     assertThatThrownBy(() -> map.keySet().iterator().remove())
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThat(map.keySet().containsAll(singletonList(stringKey("key1")))).isTrue();
+    assertThat(map.containsKey(stringKey("key1"))).isTrue();
     assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), stringKey("key3"))))
         .isFalse();
     assertThat(map.keySet().isEmpty()).isFalse();
@@ -133,7 +133,7 @@ class AttributesTest {
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> map.keySet().remove(stringKey("key1")))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().addAll(Collections.singletonList(stringKey("key3"))))
+    assertThatThrownBy(() -> map.keySet().add(stringKey("key3")))
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> map.keySet().retainAll(Collections.singletonList(stringKey("key3"))))
         .isInstanceOf(UnsupportedOperationException.class);
@@ -142,8 +142,8 @@ class AttributesTest {
     assertThatThrownBy(() -> map.keySet().clear())
         .isInstanceOf(UnsupportedOperationException.class);
 
-    assertThat(map.values().contains("value1")).isTrue();
-    assertThat(map.values().contains("value3")).isFalse();
+    assertThat(map.containsValue("value1")).isTrue();
+    assertThat(map.containsValue("value3")).isFalse();
 
     assertThat(map.toString()).isEqualTo("ReadOnlyArrayMap{key1=value1,key2=333}");
 
