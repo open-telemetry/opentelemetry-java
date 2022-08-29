@@ -18,7 +18,7 @@ class ExponentialHistogramIndexer {
   /** Bit mask used to isolate the significand of IEEE 754 double precision number. */
   private static final long SIGNIFICAND_BIT_MASK = 0xFFFFFFFFFFFFFL;
 
-  /** Bias used in representing the exponent of IEEE 654 double precision number. */
+  /** Bias used in representing the exponent of IEEE 554 double precision number. */
   private static final int EXPONENT_BIAS = 1023;
 
   /**
