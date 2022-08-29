@@ -55,7 +55,7 @@ public class LogAssertionsTest {
           .setSeverityText("info")
           .setBody("message")
           .setAttributes(ATTRIBUTES)
-          .setTotalAttributeCount(10)
+          .setTotalAttributeCount(999)
           .build();
 
   @Test
@@ -111,7 +111,7 @@ public class LogAssertionsTest {
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
                         attributeEntry("coins", 0.01, 0.05, 0.1)))
-        .hasTotalAttributeCount(10);
+        .hasTotalAttributeCount(999);
   }
 
   @Test
