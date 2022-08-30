@@ -104,7 +104,7 @@ class EcsResourceTest {
             entry(
                 ResourceAttributes.AWS_LOG_GROUP_ARNS,
                 Collections.singletonList(
-                    "arn:aws:logs:us-west-2:111122223333:log-group:/ecs/metadata:*")),
+                    "arn:aws:logs:us-west-2:111122223333:log-group:/ecs/metadata")),
             entry(
                 ResourceAttributes.AWS_LOG_STREAM_NAMES,
                 Collections.singletonList("ecs/curl/8f03e41243824aea923aca126495f665")),

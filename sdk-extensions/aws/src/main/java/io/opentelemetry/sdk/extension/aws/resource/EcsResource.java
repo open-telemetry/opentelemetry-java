@@ -202,8 +202,7 @@ public final class EcsResource {
         return Optional.empty();
       }
 
-      return Optional.of(
-          "arn:aws:logs:" + region + ":" + account + ":log-group:" + logGroupName + ":*");
+      return Optional.of("arn:aws:logs:" + region + ":" + account + ":log-group:" + logGroupName);
     }
 
     Optional<String> getLogStreamArn() {
