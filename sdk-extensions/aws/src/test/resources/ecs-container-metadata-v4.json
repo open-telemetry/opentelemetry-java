@@ -1,7 +1,7 @@
 {
   "DockerId": "ea32192c8553fbff06c9340478a2ff089b2bb5646fb718b4ee206641c9086d66",
   "Name": "curl",
-  "DockerName": "ecs-curltest-24-curl-cca48e8dcadd97805600",
+  "DockerName": "ecs-curltest-26-curl-cca48e8dcadd97805600",
   "Image": "111122223333.dkr.ecr.us-west-2.amazonaws.com/curltest:latest",
   "ImageID": "sha256:d691691e9652791a60114e67b365688d20d19940dde7c4736ea30e660d8d3553",
   "Labels": {
@@ -9,7 +9,7 @@
     "com.amazonaws.ecs.container-name": "curl",
     "com.amazonaws.ecs.task-arn": "arn:aws:ecs:us-west-2:111122223333:task/default/8f03e41243824aea923aca126495f665",
     "com.amazonaws.ecs.task-definition-family": "curltest",
-    "com.amazonaws.ecs.task-definition-version": "24"
+    "com.amazonaws.ecs.task-definition-version": "26"
   },
   "DesiredStatus": "RUNNING",
   "KnownStatus": "RUNNING",

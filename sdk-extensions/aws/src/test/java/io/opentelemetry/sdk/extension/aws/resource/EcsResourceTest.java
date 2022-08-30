@@ -85,7 +85,7 @@ class EcsResourceTest {
         .containsOnly(
             entry(ResourceAttributes.CLOUD_PROVIDER, "aws"),
             entry(ResourceAttributes.CLOUD_PLATFORM, "aws_ecs"),
-            entry(ResourceAttributes.CONTAINER_NAME, "ecs-curltest-24-curl-cca48e8dcadd97805600"),
+            entry(ResourceAttributes.CONTAINER_NAME, "ecs-curltest-26-curl-cca48e8dcadd97805600"),
             entry(
                 ResourceAttributes.CONTAINER_ID,
                 "ea32192c8553fbff06c9340478a2ff089b2bb5646fb718b4ee206641c9086d66"),
