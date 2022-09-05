@@ -86,19 +86,30 @@ public final class ContainerResource {
       return null;
     }
 
+    String containerId;
+
     String lastSection = line.substring(lastSlashIdx + 1);
-    int startIdx = lastSection.lastIndexOf('-');
-    int endIdx = lastSection.lastIndexOf('.');
+    int colonIdx = lastSection.lastIndexOf(':');
 
-    startIdx = startIdx == -1 ? 0 : startIdx + 1;
-    if (endIdx == -1) {
-      endIdx = lastSection.length();
-    }
-    if (startIdx > endIdx) {
-      return null;
+    if (colonIdx != -1) {
+      // since k8s v1.24+, containerId is divided by the last colon when container is containerd and cgroupDriver is systemd
+      // case: '11:devices:/system.slice/containerd.service/kubepods-pod87a18a64_b74a_454a_b10b_a4a36059d0a3.slice:cri-containerd:05c48c82caff3be3d7f1e896981dd410e81487538936914f32b624d168de9db0'
+      containerId = lastSection.substring(colonIdx+1);
+    } else {
+      int startIdx = lastSection.lastIndexOf('-');
+      int endIdx = lastSection.lastIndexOf('.');
+
+      startIdx = startIdx == -1 ? 0 : startIdx + 1;
+      if (endIdx == -1) {
+        endIdx = lastSection.length();
+      }
+      if (startIdx > endIdx) {
+        return null;
+      }
+
+      containerId = lastSection.substring(startIdx, endIdx);
     }
 
-    String containerId = lastSection.substring(startIdx, endIdx);
     if (OtelEncodingUtils.isValidBase16String(containerId) && !containerId.isEmpty()) {
       return containerId;
     } else {
