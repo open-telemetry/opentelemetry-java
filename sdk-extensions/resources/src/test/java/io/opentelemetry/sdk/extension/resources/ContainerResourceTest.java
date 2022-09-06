@@ -84,6 +84,14 @@ class ContainerResourceTest {
             "11:perf_event:/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod4415fd05_2c0f_4533_909b_f2180dca8d7c.slice/cri-containerd-713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c.scope");
     assertThat(getContainerId(buildResource(cgroup5)))
         .isEqualTo("713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c");
+
+    // with colon, env: k8s v1.24.0, the cgroupDriver by systemd(default), and container is cri-containerd(default)
+    Path cgroup6 =
+        createCGroup(
+            tempFolder.resolve("cgroup6"),
+            "11:devices:/system.slice/containerd.service/kubepods-pod87a18a64_b74a_454a_b10b_a4a36059d0a3.slice:cri-containerd:05c48c82caff3be3d7f1e896981dd410e81487538936914f32b624d168de9db0");
+    assertThat(getContainerId(buildResource(cgroup6)))
+        .isEqualTo("05c48c82caff3be3d7f1e896981dd410e81487538936914f32b624d168de9db0");
   }
 
   private static String getContainerId(Resource resource) {
