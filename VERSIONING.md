@@ -35,7 +35,7 @@ A stable artifact may depend on an `-alpha` artifact, and expose classes, interf
 the `-alpha` artifact as part of its public API. In these cases, the stable artifact will place
 an [implementation](https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_separation)
 dependency (as opposed to an api dependency) on the `-alpha` artifact. In order to consume the
-portions of the API related to the `-alpha` artifact, a user must place its own implementation
+portions of the API related to the `-alpha` artifact, a user must place their own implementation
 dependency on it. In adding the implementation dependency, the user has opted into to using
 an `-alpha` artifact, and we reserve the right to change the portions of the API pertaining to
 the `-alpha` artifact. This includes changing the names of methods, return types, argument types, etc.
@@ -53,8 +53,8 @@ new artifact which requires adding the new artifact to dependency declarations.
 On rare occasions we may deprecate an entire stable artifact, with the intent of stopping functional
 changes or enhancements. In these situations we may stop publishing additional `MINOR` or `MAJOR`
 versions of the artifact. However, if necessary, we'll publish security fixes via `PATCH` releases.
-Despite stopping publishing, the BOM will continue to reference the last published version of the
-artifact, and the API of the last published version will remain stable.
+Despite stopping publishing, new versions of the BOM will continue to reference the last published
+version of the artifact, and the API of the last published version will remain stable.
 
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
 you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that
