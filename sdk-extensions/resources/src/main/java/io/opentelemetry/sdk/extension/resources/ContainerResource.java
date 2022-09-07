@@ -92,7 +92,8 @@ public final class ContainerResource {
     int colonIdx = lastSection.lastIndexOf(':');
 
     if (colonIdx != -1) {
-      // since containerd v1.5.0+, containerId is divided by the last colon when the cgroupDriver is systemd:
+      // since containerd v1.5.0+, containerId is divided by the last colon when the cgroupDriver is
+      // systemd:
       // https://github.com/containerd/containerd/blob/release/1.5/pkg/cri/server/helpers_linux.go#L64
       containerId = lastSection.substring(colonIdx + 1);
     } else {
