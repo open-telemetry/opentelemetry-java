@@ -92,9 +92,11 @@ public final class ContainerResource {
     int colonIdx = lastSection.lastIndexOf(':');
 
     if (colonIdx != -1) {
-      // since k8s v1.24+, containerId is divided by the last colon when container is containerd and cgroupDriver is systemd
-      // case: 'kubepods-pod87a18a64_b74a_454a_b10b_a4a36059d0a3.slice:cri-containerd:05c48c82caff3be3d7f1e896981dd410e81487538936914f32b624d168de9db0'
-      containerId = lastSection.substring(colonIdx+1);
+      // since k8s v1.24+, containerId is divided by the last colon when container is containerd and
+      // cgroupDriver is systemd
+      // case:
+      // 'kubepods-pod87a18a64_b74a_454a_b10b_a4a36059d0a3.slice:cri-containerd:05c48c82caff3be3d7f1e896981dd410e81487538936914f32b624d168de9db0'
+      containerId = lastSection.substring(colonIdx + 1);
     } else {
       int startIdx = lastSection.lastIndexOf('-');
       int endIdx = lastSection.lastIndexOf('.');

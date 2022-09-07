@@ -85,7 +85,8 @@ class ContainerResourceTest {
     assertThat(getContainerId(buildResource(cgroup5)))
         .isEqualTo("713a77a26fe2a38ebebd5709604a048c3d380db1eb16aa43aca0b2499e54733c");
 
-    // with colon, env: k8s v1.24.0, the cgroupDriver by systemd(default), and container is cri-containerd(default)
+    // with colon, env: k8s v1.24.0, the cgroupDriver by systemd(default), and container is
+    // cri-containerd v1.6.8
     Path cgroup6 =
         createCGroup(
             tempFolder.resolve("cgroup6"),
