@@ -184,7 +184,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     return this;
   }
 
-  /** Asserts the attributes do not contain the given key. */
+  /**
+   * Asserts the attributes do not contain the given key.
+   *
+   * @since 1.18.0
+   */
   public AttributesAssert doesNotContainKey(AttributeKey<?> key) {
     if (actual.get(key) != null) {
       failWithMessage(
@@ -194,7 +198,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     return this;
   }
 
-  /** Asserts the attributes do not contain the given key. */
+  /**
+   * Asserts the attributes do not contain the given key.
+   *
+   * @since 1.18.0
+   */
   public AttributesAssert doesNotContainKey(String key) {
     boolean containsKey =
         actual.asMap().keySet().stream()
