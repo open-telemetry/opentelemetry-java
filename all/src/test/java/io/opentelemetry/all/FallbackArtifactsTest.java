@@ -12,12 +12,12 @@ class FallbackArtifactsTest {
 
   @Test
   void exporterJaegerProto() {
-    classAvailable(io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.class);
-    classAvailable(io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc.class);
-    classAvailable(io.opentelemetry.exporter.jaeger.proto.api_v2.Model.class);
+    classAvailable("io.opentelemetry.exporter.jaeger.proto.api_v2.Collector");
+    classAvailable("io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc");
+    classAvailable("io.opentelemetry.exporter.jaeger.proto.api_v2.Model");
   }
 
-  private static void classAvailable(Class<?> clazz) {
-    Assertions.assertThatCode(() -> Class.forName(clazz.getName())).doesNotThrowAnyException();
+  private static void classAvailable(String fqcn) {
+    Assertions.assertThatCode(() -> Class.forName(fqcn)).doesNotThrowAnyException();
   }
 }

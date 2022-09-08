@@ -12,7 +12,7 @@ import java.util.function.Predicate
 
 abstract class OtelBomExtension {
   abstract val projectFilter: Property<Predicate<Project>>
-  var fallbacks: MutableSet<String> = hashSetOf()
+  val fallbacks: MutableSet<String> = hashSetOf()
 
   fun addFallback(artifactId: String, version: String) {
     this.fallbacks.add("io.opentelemetry:" + artifactId + ":" + version)
