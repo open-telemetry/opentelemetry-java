@@ -15,7 +15,7 @@ public enum HistogramAggregationParam {
   EXPLICIT_DEFAULT_BUCKET(
       new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(
-              ExplicitBucketHistogramUtils.getDefaultBucketBoundaries()),
+              ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES),
           ExemplarReservoir::doubleNoSamples)),
   EXPLICIT_SINGLE_BUCKET(
       new DoubleExplicitBucketHistogramAggregator(
