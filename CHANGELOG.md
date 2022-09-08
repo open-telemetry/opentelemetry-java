@@ -37,8 +37,8 @@
   `opentelemetry-sdk-extension-tracing-incubator`, and `opentelemetry-sdk-extension-zpages` merged
   into `opentelemetry-sdk-extension-incubator`.
 * BREAKING: Move `opentelemetry-sdk-extension-jfr-events`
-  to [opentelemetry-java-contrib/jfr-events](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jfr-events). 
-  It will now be published under the 
+  to [opentelemetry-java-contrib/jfr-events](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jfr-events).
+  It will now be published under the
   coordinates `io.opentelemetry.contrib:opentelemetry-jfr-events:{version}`.
 * BREAKING: Move `opentelemetry-extension-noop-api`
   to [opentelemetry-java-contrib/noop-api](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/noop-api).
