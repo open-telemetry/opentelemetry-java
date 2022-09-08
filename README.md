@@ -47,7 +47,6 @@ This project contains the following top level components:
 * [sdk-extensions](sdk-extensions/) defines additional SDK extensions, which are not part of the core SDK.
 * [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [OpenCensus shim](opencensus-shim/) defines a bridge layer from OpenCensus to the OpenTelemetry API.
-* [Micrometer shim](micrometer1-shim/) defines a bridge layer from Micrometer to the OpenTelemetry API.
 
 This project publishes a lot of artifacts, listed in [releases](#releases).
 [`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom) (BOM =
@@ -280,7 +279,6 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 | Component                              | Description                                                  | Artifact ID                      | Version                                                     |
 |----------------------------------------|--------------------------------------------------------------|----------------------------------|-------------------------------------------------------------|
-| [Micrometer Shim](./micrometer1-shim)  | Bridge micrometer metrics into the OpenTelemetry metrics API | `opentelemetry-micrometer1-shim` | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 | [OpenCensus Shim](./opencensus-shim)   | Bridge opencensus metrics into the OpenTelemetry metrics SDK | `opentelemetry-opencensus-shim`  | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 | [OpenTracing Shim](./opentracing-shim) | Bridge opentracing spans into the OpenTelemetry trace API    | `opentelemetry-opentracing-shim` | <!--VERSION_UNSTABLE-->1.17.0-alpha<!--/VERSION_UNSTABLE--> |
 
