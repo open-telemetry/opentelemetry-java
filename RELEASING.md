@@ -10,6 +10,11 @@ When preparing the change log, you can use
 or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/)
 to view a summary of all commits since last release as a reference.
 
+## Release cadence
+
+This repository roughly targets monthly minor releases from the `main` branch on the Friday after
+the first Monday of the month.
+
 ## Preparing a new major or minor release
 
 * Close the release milestone if there is one.
