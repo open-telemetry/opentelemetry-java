@@ -68,7 +68,4 @@ public interface MetricExporter
   default void close() {
     shutdown().join(10, TimeUnit.SECONDS);
   }
-
-  /** Do nothing. **/
-  default void doNothing() {}
 }
