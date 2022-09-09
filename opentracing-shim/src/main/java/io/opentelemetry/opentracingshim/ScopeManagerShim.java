@@ -27,26 +27,24 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   @Nullable
   public Span activeSpan() {
     SpanShim spanShim = SpanShim.current();
-    io.opentelemetry.api.trace.Span span = null;
-    if (spanShim == null) {
-      span = io.opentelemetry.api.trace.Span.current();
-    } else {
-      span = spanShim.getSpan();
-    }
+    io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.current();
+    io.opentelemetry.api.baggage.Baggage baggage = io.opentelemetry.api.baggage.Baggage.current();
 
-    // As OpenTracing simply returns null when no active instance is available,
-    // we need to do map an invalid OpenTelemetry span to null here.
     if (!span.getSpanContext().isValid()) {
-      return null;
+      if (baggage.isEmpty()) {
+        return null;
+      }
+
+      return new SpanShim(telemetryInfo(), baggage);
     }
 
     // If there's a SpanShim for the *actual* active Span, simply return it.
-    if (spanShim != null && span == io.opentelemetry.api.trace.Span.current()) {
+    if (spanShim != null && spanShim.getSpan() == span) {
       return spanShim;
     }
 
     // Span was activated from outside the Shim layer unfortunately.
-    return new SpanShim(telemetryInfo(), span);
+    return new SpanShim(telemetryInfo(), span, baggage);
   }
 
   @Override

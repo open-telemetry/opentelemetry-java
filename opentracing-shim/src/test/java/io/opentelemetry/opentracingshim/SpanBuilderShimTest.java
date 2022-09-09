@@ -80,6 +80,31 @@ class SpanBuilderShimTest {
   }
 
   @Test
+  void baggage_spanWithInvalidSpan() {
+    io.opentelemetry.api.baggage.Baggage baggage =
+        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+    SpanShim span =
+        new SpanShim(telemetryInfo, io.opentelemetry.api.trace.Span.getInvalid(), baggage);
+
+    SpanShim childSpan =
+        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(span).start();
+    assertThat(childSpan.getBaggage()).isEqualTo(baggage);
+  }
+
+  @Test
+  void baggage_spanContextWithInvalidSpan() {
+    io.opentelemetry.api.baggage.Baggage baggage =
+        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+    SpanContextShim spanContext =
+        new SpanContextShim(
+            telemetryInfo, io.opentelemetry.api.trace.Span.getInvalid().getSpanContext(), baggage);
+
+    SpanShim childSpan =
+        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(spanContext).start();
+    assertThat(childSpan.getBaggage()).isEqualTo(baggage);
+  }
+
+  @Test
   void parent_NullContextShim() {
     /* SpanContextShim is null until Span.context() or Span.getBaggageItem() are called.
      * Verify a null SpanContextShim in the parent is handled properly. */
