@@ -66,6 +66,7 @@ public final class ZipkinSpanExporterBuilder {
    *
    * @param supplier - A supplier that returns an InetAddress that may be null.
    * @return this
+   * @since 1.18.0
    */
   public ZipkinSpanExporterBuilder setLocalIpAddressSupplier(Supplier<InetAddress> supplier) {
     requireNonNull(supplier, "encoder");
