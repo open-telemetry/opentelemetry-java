@@ -2,6 +2,12 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
+> **NOTICE**: This artifact is deprecated and its contents have been moved
+> to [io.opentelemetry.instrumentation:opentelemetry-resources](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources).
+> Version 1.19.0 will be the last minor version published. However, it will continue to receive
+> patches for security vulnerabilities, and `io.opentelemetry:opentelemetry-bom` will reference the
+> last published version.
+
 This package includes some standard `ResourceProvider`s for filling in attributes related to
 common environments. Currently the resources provide the following semantic conventions
 
