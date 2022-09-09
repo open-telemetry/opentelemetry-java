@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import static io.opentelemetry.sdk.extension.aws.resource.EksResource.AUTH_CONFIGMAP_PATH;
-import static io.opentelemetry.sdk.extension.aws.resource.EksResource.CW_CONFIGMAP_PATH;
-import static io.opentelemetry.sdk.extension.aws.resource.EksResource.K8S_SVC_URL;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@SuppressWarnings("deprecation") // Moved to contrib
 @ExtendWith(MockitoExtension.class)
 public class EksResourceTest {
 
@@ -47,9 +45,21 @@ public class EksResourceTest {
     String truststore = "truststore123";
     Files.write(truststore.getBytes(Charsets.UTF_8), mockK8sKeystoreFile);
 
-    when(httpClient.fetchString(any(), Mockito.eq(K8S_SVC_URL + AUTH_CONFIGMAP_PATH), any(), any()))
+    when(httpClient.fetchString(
+            any(),
+            Mockito.eq(
+                io.opentelemetry.sdk.extension.aws.resource.EksResource.K8S_SVC_URL
+                    + io.opentelemetry.sdk.extension.aws.resource.EksResource.AUTH_CONFIGMAP_PATH),
+            any(),
+            any()))
         .thenReturn("not empty");
-    when(httpClient.fetchString(any(), Mockito.eq(K8S_SVC_URL + CW_CONFIGMAP_PATH), any(), any()))
+    when(httpClient.fetchString(
+            any(),
+            Mockito.eq(
+                io.opentelemetry.sdk.extension.aws.resource.EksResource.K8S_SVC_URL
+                    + io.opentelemetry.sdk.extension.aws.resource.EksResource.CW_CONFIGMAP_PATH),
+            any(),
+            any()))
         .thenReturn("{\"data\":{\"cluster.name\":\"my-cluster\"}}");
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
 

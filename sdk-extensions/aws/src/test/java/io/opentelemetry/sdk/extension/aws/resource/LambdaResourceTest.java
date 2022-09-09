@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Moved to contrib
 class LambdaResourceTest {
   @Test
   void shouldNotCreateResourceForNotLambda() {

@@ -23,7 +23,11 @@ import java.util.logging.Logger;
 /**
  * A factory for a {@link Resource} which provides information about the current EC2 instance if
  * running on AWS EC2.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources">io.opentelemetry.contrib:opentelemetry-aws-resources</a>.
  */
+@Deprecated
 public final class Ec2Resource {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());

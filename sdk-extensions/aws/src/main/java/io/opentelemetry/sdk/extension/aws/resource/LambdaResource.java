@@ -12,7 +12,13 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Stream;
 
-/** A factory for a {@link Resource} which provides information about the AWS Lambda function. */
+/**
+ * A factory for a {@link Resource} which provides information about the AWS Lambda function.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources">io.opentelemetry.contrib:opentelemetry-aws-resources</a>.
+ */
+@Deprecated
 public final class LambdaResource {
 
   private static final Resource INSTANCE = buildResource();

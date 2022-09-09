@@ -21,6 +21,7 @@ import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@SuppressWarnings("deprecation") // Moved to contrib
 class BeanstalkResourceTest {
 
   @Test
