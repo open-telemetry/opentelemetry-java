@@ -35,17 +35,6 @@ val latestReleasedVersion: String by lazy {
 class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
     for (change in member.compatibilityChanges) {
-      if (change == JApiCompatibilityChange.METHOD_NEW_DEFAULT) {
-        // JApiCmp treats this as incompatible for the situation where an existing subclass may have
-        // a method with the same name and different signature. We accept this corner case for
-        // semver.
-        continue
-      }
-      if (change == JApiCompatibilityChange.METHOD_ABSTRACT_NOW_DEFAULT) {
-        // Adding default implementations to interface methods previously abstract is not a breaking
-        // change.
-        continue
-      }
       if (isAbstractMethodOnAutoValue(member, change)) {
         continue
       }
@@ -128,6 +117,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
         // on interfaces, and adding default implementations to interface methods previously
         // abstract.
+        // compatibilityChangeExcludes.set(listOf("METHOD_NEW_DEFAULT", "METHOD_ABSTRACT_NOW_DEFAULT"))
+
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)
