@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.18.0 (2022-09-09)
+
 ### SDK
 
 * Added scope attributes to `InstrumentationScopeInfo` accessible
