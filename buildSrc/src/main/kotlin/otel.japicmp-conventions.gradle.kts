@@ -114,11 +114,10 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         )
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
-        // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
-        // on interfaces, and adding default implementations to interface methods previously
-        // abstract.
-        // compatibilityChangeExcludes.set(listOf("METHOD_NEW_DEFAULT", "METHOD_ABSTRACT_NOW_DEFAULT"))
-
+        // but allow new default methods on interfaces, adding default implementations to
+        // interface methods previously abstract, and select additional customizations defined in
+        // AllowDefaultMethodRule.
+        compatibilityChangeExcludes.set(listOf("METHOD_NEW_DEFAULT", "METHOD_ABSTRACT_NOW_DEFAULT"))
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)
