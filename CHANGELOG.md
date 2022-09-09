@@ -7,7 +7,7 @@
 * Added scope attributes to `InstrumentationScopeInfo` accessible
   via `InstrumentationScopeInfo#getAttributes()`. Will add the ability to specify scope attributes
   in Meter, Tracer, and Logger in a future version.
-* DEPRECATION: the `InstrumentationScopeInfo#create(String, String, String)` method has been 
+* DEPRECATION: The `InstrumentationScopeInfo#create(String, String, String)` method has been
   deprecated in favor of
   `InstrumentationScopeInfo#builer(String).setVersion(String).setSchemaUrl(String).build()`.
 * Optimize `Resource#merge(Resource)` by returning early if the other resource is empty.
