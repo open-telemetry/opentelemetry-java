@@ -60,6 +60,34 @@ After you submit a PR, it will be reviewed by the project maintainers and approv
 maintainers need to review a particular PR, but merging to the base branch is authorized to
 restricted members (administrators).
 
+## Project Scope
+
+`opentelemetry-java` is one of several repositories which comprise the OpenTelemetry java ecosystem,
+and contains the core components upon which instrumentation and extensions are built. In order to
+prevent sprawl and maintain a high level of quality, we limit the project scope to components which
+implement concepts defined in
+the [opentelemetry-specification](https://github.com/open-telemetry/opentelemetry-specification),
+with a few exceptions / comments:
+
+* The [API incubator](./extensions/incubator) and [SDK incubator](./extensions/incubator)
+  contain prototypes which have been discussed in the specification
+  or [oteps](https://github.com/open-telemetry/oteps) and have a reasonable chance of becoming part
+  of the specification, subject to maintainers' discretion.
+* The [Kotlin Extension](./extensions/kotlin) contains code which assists with context propagation
+  for an important part of the Java ecosystem.
+* The [semconv](./semconv) module contains generated classes representing
+  the [semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/main/semantic_conventions). 
+  As a general rule, components which use these semantic conventions belongs elsewhere.
+
+Other repositories in the OpenTelemetry java ecosystem include:
+
+* [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)
+  contains instrumentation.
+* [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
+  contains extensions, prototypes, and instrumentation, including vendor specific components.
+* [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs) contains
+  working code snippets demonstrating various concepts.
+
 ## Style guideline
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). Our
