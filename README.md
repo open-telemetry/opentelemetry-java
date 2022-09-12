@@ -235,7 +235,6 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                            | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                           | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer                       | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Annotations Extension](./extensions/annotations)             | Instrumentation annotations, used in conjunction with OpenTelemetry java agent (deprecated) | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 
 ### SDK
 
