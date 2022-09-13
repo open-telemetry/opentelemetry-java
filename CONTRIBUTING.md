@@ -62,10 +62,10 @@ restricted members (administrators).
 
 ## Project Scope
 
-`opentelemetry-java` is one of several repositories which comprise the OpenTelemetry java ecosystem,
+`opentelemetry-java` is one of several repositories which comprise the OpenTelemetry Java ecosystem,
 and contains the core components upon which instrumentation and extensions are built. In order to
-prevent sprawl and maintain a high level of quality, we limit the project scope to components which
-implement concepts defined in
+prevent sprawl and maintain a high level of quality, we limit this repository's scope to components
+which implement concepts defined in
 the [opentelemetry-specification](https://github.com/open-telemetry/opentelemetry-specification),
 with a few exceptions / comments:
 
@@ -76,10 +76,10 @@ with a few exceptions / comments:
 * The [Kotlin Extension](./extensions/kotlin) contains code which assists with context propagation
   for an important part of the Java ecosystem.
 * The [semconv](./semconv) module contains generated classes representing
-  the [semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/main/semantic_conventions). 
-  As a general rule, components which use these semantic conventions belongs elsewhere.
+  the [semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/main/semantic_conventions).
+* As a general rule, components which implement semantic conventions belong elsewhere.
 
-Other repositories in the OpenTelemetry java ecosystem include:
+Other repositories in the OpenTelemetry Java ecosystem include:
 
 * [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)
   contains instrumentation.
