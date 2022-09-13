@@ -209,6 +209,8 @@ class TraceAssertionsTest {
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
                     .containsKey(AttributeKey.stringKey("bear"))
                     .containsKey("bear")
+                    .doesNotContainKey(AttributeKey.stringKey("cat"))
+                    .doesNotContainKey("cat")
                     .containsOnly(
                         attributeEntry("bear", "mya"),
                         attributeEntry("warm", true),
@@ -350,6 +352,20 @@ class TraceAssertionsTest {
                 assertThat(SPAN1)
                     .hasAttributesSatisfying(
                         attributes -> assertThat(attributes).containsKey("cat")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .doesNotContainKey(AttributeKey.stringKey("bear"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes -> assertThat(attributes).doesNotContainKey("bear")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->

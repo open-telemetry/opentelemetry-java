@@ -77,7 +77,11 @@ public abstract class InstrumentationScopeInfo {
   @Nullable
   public abstract String getSchemaUrl();
 
-  /** Returns the attributes of this instrumentation scope. */
+  /**
+   * Returns the attributes of this instrumentation scope.
+   *
+   * @since 1.18.0
+   */
   public abstract Attributes getAttributes();
 
   InstrumentationScopeInfo() {}

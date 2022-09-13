@@ -86,19 +86,31 @@ public final class ContainerResource {
       return null;
     }
 
+    String containerId;
+
     String lastSection = line.substring(lastSlashIdx + 1);
-    int startIdx = lastSection.lastIndexOf('-');
-    int endIdx = lastSection.lastIndexOf('.');
+    int colonIdx = lastSection.lastIndexOf(':');
 
-    startIdx = startIdx == -1 ? 0 : startIdx + 1;
-    if (endIdx == -1) {
-      endIdx = lastSection.length();
-    }
-    if (startIdx > endIdx) {
-      return null;
+    if (colonIdx != -1) {
+      // since containerd v1.5.0+, containerId is divided by the last colon when the cgroupDriver is
+      // systemd:
+      // https://github.com/containerd/containerd/blob/release/1.5/pkg/cri/server/helpers_linux.go#L64
+      containerId = lastSection.substring(colonIdx + 1);
+    } else {
+      int startIdx = lastSection.lastIndexOf('-');
+      int endIdx = lastSection.lastIndexOf('.');
+
+      startIdx = startIdx == -1 ? 0 : startIdx + 1;
+      if (endIdx == -1) {
+        endIdx = lastSection.length();
+      }
+      if (startIdx > endIdx) {
+        return null;
+      }
+
+      containerId = lastSection.substring(startIdx, endIdx);
     }
 
-    String containerId = lastSection.substring(startIdx, endIdx);
     if (OtelEncodingUtils.isValidBase16String(containerId) && !containerId.isEmpty()) {
       return containerId;
     } else {

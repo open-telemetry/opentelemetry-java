@@ -35,17 +35,6 @@ val latestReleasedVersion: String by lazy {
 class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
     for (change in member.compatibilityChanges) {
-      if (change == JApiCompatibilityChange.METHOD_NEW_DEFAULT) {
-        // JApiCmp treats this as incompatible for the situation where an existing subclass may have
-        // a method with the same name and different signature. We accept this corner case for
-        // semver.
-        continue
-      }
-      if (change == JApiCompatibilityChange.METHOD_ABSTRACT_NOW_DEFAULT) {
-        // Adding default implementations to interface methods previously abstract is not a breaking
-        // change.
-        continue
-      }
       if (isAbstractMethodOnAutoValue(member, change)) {
         continue
       }
@@ -77,7 +66,7 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
   /**
    * Check if the change is related to LogEmitterProvider name change to LoggerProvider.
    */
-  // TODO(jack-berg): remove after 1.18.0.
+  // TODO(jack-berg): remove after 1.19.0.
   fun isLogEmitterProvider(member: JApiCompatibility): Boolean {
     try {
       return member is JApiMethod &&
@@ -141,9 +130,10 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         )
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
-        // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
-        // on interfaces, and adding default implementations to interface methods previously
-        // abstract.
+        // but allow new default methods on interfaces, adding default implementations to
+        // interface methods previously abstract, and select additional customizations defined in
+        // AllowDefaultMethodRule.
+        compatibilityChangeExcludes.set(listOf("METHOD_NEW_DEFAULT", "METHOD_ABSTRACT_NOW_DEFAULT"))
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)

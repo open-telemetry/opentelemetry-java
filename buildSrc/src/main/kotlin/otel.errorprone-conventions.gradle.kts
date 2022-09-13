@@ -78,6 +78,10 @@ tasks {
         // Only used in comments, but couldn't SuppressWarnings for some reason
         disable("UnicodeEscape")
 
+        // We make liberal use of builders returning "this" which can be safely ignored. Annotating
+        // every one of these methods is too noisy.
+        disable("CanIgnoreReturnValueSuggester")
+
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")

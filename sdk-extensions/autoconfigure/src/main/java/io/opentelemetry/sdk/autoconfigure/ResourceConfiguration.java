@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -44,6 +45,10 @@ final class ResourceConfiguration {
         continue;
       }
       if (disabledProviders.contains(resourceProvider.getClass().getName())) {
+        continue;
+      }
+      if (resourceProvider instanceof ConditionalResourceProvider
+          && !((ConditionalResourceProvider) resourceProvider).shouldApply(config, result)) {
         continue;
       }
       result = result.merge(resourceProvider.createResource(config));

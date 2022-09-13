@@ -2,6 +2,64 @@
 
 ## Unreleased
 
+## Version 1.18.0 (2022-09-09)
+
+### SDK
+
+* Added scope attributes to `InstrumentationScopeInfo` accessible
+  via `InstrumentationScopeInfo#getAttributes()`. Will add the ability to specify scope attributes
+  in Meter, Tracer, and Logger in a future version.
+* DEPRECATION: The `InstrumentationScopeInfo#create(String, String, String)` method has been
+  deprecated in favor of
+  `InstrumentationScopeInfo#builer(String).setVersion(String).setSchemaUrl(String).build()`.
+* Optimize `Resource#merge(Resource)` by returning early if the other resource is empty.
+
+#### Logs
+
+* Fix module name of `opentelemetry-sdk-logs` by changing
+  from `io.opentelemetry.sdk.extension.logging` to `io.opentelemetry.sdk.logs`.
+
+#### Testing
+
+* Add methods to assert attributes do not contain keys via `AttributeAssert#doesNotContainKey()`.
+
+#### Exporter
+
+* Added ability to specify local IP address in `ZipkinSpanExporter`
+  via `ZipkinSpanExporterBuilder#setLocalIpAddressSupplier(Supplier<InetAddress>)`.
+* Upgrade to OTLP protobuf version 0.19.0.
+* OTLP exporters now serialize `InstrumentationScopeInfo#getAttributes()`.
+* Stop publishing `opentelemetry-exporter-jaeger-proto`. The `opentelemetry-bom` will include a
+  constraint on the last published version `1.17.0`. If security issues are discovered, patches will
+  be published to `1.17.x`.
+
+#### SDK Extensions
+
+* BREAKING: `opentelemetry-sdk-extension-metric-incubator`,
+  `opentelemetry-sdk-extension-tracing-incubator`, and `opentelemetry-sdk-extension-zpages` merged
+  into `opentelemetry-sdk-extension-incubator`.
+* BREAKING: Move `opentelemetry-sdk-extension-jfr-events`
+  to [opentelemetry-java-contrib/jfr-events](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jfr-events).
+  It will now be published under the
+  coordinates `io.opentelemetry.contrib:opentelemetry-jfr-events:{version}`.
+* BREAKING: Move `opentelemetry-extension-noop-api`
+  to [opentelemetry-java-contrib/noop-api](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/noop-api).
+  It will now be published under the
+  coordinates `io.opentelemetry.contrib:opentelemetry-noop-api:{version}`.
+* Improve ECS resource detection to include `aws.ecs.container.arn`, `container.image.name`,
+  `container.image.tag`, `aws.ecs.container.image.id`, `aws.log.group.arns`, `aws.log.group.names`,
+  `aws.log.steam.names`, `aws.ecs.task.arn`, `aws.ecs.task.family`, and `aws.ecs.task.revision`.
+* Fix resource `container.id` detection when using k8s with containerd v1.5.0+.
+* Add experimental `ConditionalResourceProvider` SPI, for conditionally applying resource providers
+  based on current config and resource.
+
+### Micrometer shim
+
+* BREAKING: Move `opentelemetry-micrometer1-shim`
+  to [opentelemetry-java-instrumentation/instrumentation/micrometer/micrometer-1.5/library](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library).
+  It will now be published under the
+  coordinates `io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:{version}`.
+
 ## Version 1.17.0 (2022-08-12)
 
 ### API
