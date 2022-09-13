@@ -30,6 +30,7 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc")
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 }

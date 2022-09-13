@@ -18,9 +18,8 @@
  * the License.
  */
 
-package io.opentelemetry.api.baggage.propagation;
+package io.opentelemetry.api.internal;
 
-import io.opentelemetry.api.internal.TemporaryBuffers;
 import javax.annotation.CheckForNull;
 
 /**
@@ -59,10 +58,13 @@ import javax.annotation.CheckForNull;
  * <p><b>Note:</b> This escaper produces <a
  * href="https://url.spec.whatwg.org/#percent-encode">uppercase</a> hexadecimal sequences.
  *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
  * @author David Beaumont
  * @since 15.0
  */
-final class PercentEscaper {
+public final class PercentEscaper {
 
   /** The amount of padding (chars) to use when growing the escape buffer. */
   private static final int DEST_PAD = 32;
@@ -86,7 +88,7 @@ final class PercentEscaper {
   private static final boolean[] safeOctets = createSafeOctets(SAFE_CHARS);
 
   /** The default {@link PercentEscaper} which will *not* replace spaces with plus signs. */
-  static PercentEscaper create() {
+  public static PercentEscaper create() {
     return new PercentEscaper();
   }
 
@@ -109,7 +111,7 @@ final class PercentEscaper {
   }
 
   /** Escape the provided String, using percent-style URL Encoding. */
-  String escape(String s) {
+  public String escape(String s) {
     int slen = s.length();
     for (int index = 0; index < slen; index++) {
       char c = s.charAt(index);
