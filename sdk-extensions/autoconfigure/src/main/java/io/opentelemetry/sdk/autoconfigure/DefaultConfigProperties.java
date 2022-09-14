@@ -46,8 +46,15 @@ final class DefaultConfigProperties implements ConfigProperties {
   }
 
   // Visible for testing
-  static ConfigProperties createForTest(Map<String, String> properties) {
-    return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
+  static ConfigProperties createForTest(Map<String, String> systemProperties) {
+    return createForTest(systemProperties, Collections.emptyMap());
+  }
+
+  // Visible for testing
+  static ConfigProperties createForTest(
+      Map<String, String> systemProperties, Map<String, String> environmentVariables) {
+    return new DefaultConfigProperties(
+        systemProperties, environmentVariables, Collections.emptyMap());
   }
 
   private DefaultConfigProperties(
@@ -59,9 +66,25 @@ final class DefaultConfigProperties implements ConfigProperties {
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
-        (key, value) -> config.put(normalize(key.toString()), value.toString()));
+        (key, value) -> {
+          Object valueToWrite = getValueToWriteAppendingResourceAttributes(config, key, value);
+          config.put(normalize(key.toString()), valueToWrite.toString());
+        });
 
     this.config = config;
+  }
+
+  private Object getValueToWriteAppendingResourceAttributes(
+      Map<String, String> config, Object key, Object value) {
+    String normalizedKey = normalize(key.toString());
+    if (normalizedKey.equals(ResourceConfiguration.ATTRIBUTE_PROPERTY)
+        && config.containsKey(ResourceConfiguration.ATTRIBUTE_PROPERTY)
+        && value.toString().trim().length() > 0
+        && config.get(ResourceConfiguration.ATTRIBUTE_PROPERTY).trim().length() > 0) {
+      String existingValue = config.get(ResourceConfiguration.ATTRIBUTE_PROPERTY);
+      return existingValue.trim() + "," + value;
+    }
+    return value;
   }
 
   private DefaultConfigProperties(
