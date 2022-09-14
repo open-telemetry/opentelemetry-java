@@ -35,7 +35,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
         return null;
       }
 
-      return new SpanShim(telemetryInfo(), baggage);
+      return new SpanShim(telemetryInfo(), io.opentelemetry.api.trace.Span.getInvalid(), baggage);
     }
 
     // If there's a SpanShim for the *actual* active Span, simply return it.
