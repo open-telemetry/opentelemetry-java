@@ -74,7 +74,16 @@ final class DefaultConfigProperties implements ConfigProperties {
     this.config = config;
   }
 
-  private Object getValueToWriteAppendingResourceAttributes(
+  private DefaultConfigProperties(
+      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
+    // previousProperties are already normalized, they can be copied as they are
+    Map<String, String> config = new HashMap<>(previousProperties.config);
+    overrides.forEach((name, value) -> config.put(normalize(name), value));
+
+    this.config = config;
+  }
+
+  private static Object getValueToWriteAppendingResourceAttributes(
       Map<String, String> config, Object key, Object value) {
     String normalizedKey = normalize(key.toString());
     if (normalizedKey.equals(ResourceConfiguration.ATTRIBUTE_PROPERTY)
@@ -85,15 +94,6 @@ final class DefaultConfigProperties implements ConfigProperties {
       return existingValue.trim() + "," + value;
     }
     return value;
-  }
-
-  private DefaultConfigProperties(
-      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
-    // previousProperties are already normalized, they can be copied as they are
-    Map<String, String> config = new HashMap<>(previousProperties.config);
-    overrides.forEach((name, value) -> config.put(normalize(name), value));
-
-    this.config = config;
   }
 
   @Override
