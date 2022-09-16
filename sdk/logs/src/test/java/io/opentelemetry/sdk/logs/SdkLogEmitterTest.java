@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -105,23 +106,18 @@ class SdkLogEmitterTest {
             .build();
 
     LogRecordBuilder builder = logEmitterProvider.get("test").logRecordBuilder();
+    AttributesBuilder expectedAttributes = Attributes.builder();
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
-      builder.setAttribute(AttributeKey.longKey("key" + i), (long) i);
+      AttributeKey<Long> key = AttributeKey.longKey("key" + i);
+      builder.setAttribute(key, (long) i);
+      if (i < maxNumberOfAttrs) {
+        expectedAttributes.put(key, (long) i);
+      }
     }
     builder.emit();
 
     assertThat(seenLog.get().toLogData())
-        .hasAttributes(
-            Attributes.builder()
-                .put("key0", 0L)
-                .put("key1", 1L)
-                .put("key2", 2L)
-                .put("key3", 3L)
-                .put("key4", 4L)
-                .put("key5", 5L)
-                .put("key6", 6L)
-                .put("key7", 7L)
-                .build())
+        .hasAttributes(expectedAttributes.build())
         .hasTotalAttributeCount(maxNumberOfAttrs * 2);
   }
 
