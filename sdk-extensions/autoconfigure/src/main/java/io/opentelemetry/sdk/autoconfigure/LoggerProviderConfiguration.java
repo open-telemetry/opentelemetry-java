@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
@@ -22,23 +22,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-final class LogEmitterProviderConfiguration {
+final class LoggerProviderConfiguration {
 
-  static void configureLogEmitterProvider(
-      SdkLogEmitterProviderBuilder logEmitterProviderBuilder,
+  static void configureLoggerProvider(
+      SdkLoggerProviderBuilder loggerProviderBuilder,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
           logExporterCustomizer) {
 
-    logEmitterProviderBuilder.setLogLimits(() -> configureLogLimits(config));
+    loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
     Map<String, LogExporter> exportersByName =
         configureLogExporters(config, serviceClassLoader, meterProvider, logExporterCustomizer);
 
     configureLogProcessors(exportersByName, meterProvider)
-        .forEach(logEmitterProviderBuilder::addLogProcessor);
+        .forEach(loggerProviderBuilder::addLogProcessor);
   }
 
   // Visible for testing
@@ -78,5 +78,5 @@ final class LogEmitterProviderConfiguration {
     return builder.build();
   }
 
-  private LogEmitterProviderConfiguration() {}
+  private LoggerProviderConfiguration() {}
 }

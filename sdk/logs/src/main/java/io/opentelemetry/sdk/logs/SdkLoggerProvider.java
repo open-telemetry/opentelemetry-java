@@ -14,66 +14,66 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/** SDK registry for creating {@link LogEmitter}s. */
-public final class SdkLogEmitterProvider implements Closeable {
+/** SDK registry for creating {@link Logger}s. */
+public final class SdkLoggerProvider implements Closeable {
 
-  static final String DEFAULT_EMITTER_NAME = "unknown";
-  private static final Logger LOGGER = Logger.getLogger(SdkLogEmitterProvider.class.getName());
+  static final String DEFAULT_LOGGER_NAME = "unknown";
+  private static final java.util.logging.Logger LOGGER =
+      java.util.logging.Logger.getLogger(SdkLoggerProvider.class.getName());
 
-  private final LogEmitterSharedState sharedState;
-  private final ComponentRegistry<SdkLogEmitter> logEmitterComponentRegistry;
+  private final LoggerSharedState sharedState;
+  private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
   private final boolean isNoopLogProcessor;
 
   /**
-   * Returns a new {@link SdkLogEmitterProviderBuilder} for {@link SdkLogEmitterProvider}.
+   * Returns a new {@link SdkLoggerProviderBuilder} for {@link SdkLoggerProvider}.
    *
    * @return a new builder instance
    */
-  public static SdkLogEmitterProviderBuilder builder() {
-    return new SdkLogEmitterProviderBuilder();
+  public static SdkLoggerProviderBuilder builder() {
+    return new SdkLoggerProviderBuilder();
   }
 
-  SdkLogEmitterProvider(
+  SdkLoggerProvider(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       List<LogProcessor> processors,
       Clock clock) {
     LogProcessor logProcessor = LogProcessor.composite(processors);
-    this.sharedState = new LogEmitterSharedState(resource, logLimitsSupplier, logProcessor, clock);
-    this.logEmitterComponentRegistry =
+    this.sharedState = new LoggerSharedState(resource, logLimitsSupplier, logProcessor, clock);
+    this.loggerComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationScopeInfo -> new SdkLogEmitter(sharedState, instrumentationScopeInfo));
+            instrumentationScopeInfo -> new SdkLogger(sharedState, instrumentationScopeInfo));
     this.isNoopLogProcessor = logProcessor instanceof NoopLogProcessor;
   }
 
   /**
-   * Gets or creates a named log emitter instance.
+   * Gets or creates a named logger instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
-   * @return a log emitter instance
+   * @return a logger instance
    */
-  public LogEmitter get(String instrumentationScopeName) {
-    return logEmitterBuilder(instrumentationScopeName).build();
+  public Logger get(String instrumentationScopeName) {
+    return loggerBuilder(instrumentationScopeName).build();
   }
 
   /**
-   * Creates a {@link LogEmitterBuilder} instance.
+   * Creates a {@link LoggerBuilder} instance.
    *
    * @param instrumentationScopeName the name of the instrumentation scope
-   * @return a log emitter builder instance
+   * @return a logger builder instance
    */
-  public LogEmitterBuilder logEmitterBuilder(String instrumentationScopeName) {
+  public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
     if (isNoopLogProcessor) {
-      return NoopLogEmitterBuilder.getInstance();
+      return NoopLoggerBuilder.getInstance();
     }
     if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
-      LOGGER.fine("LogEmitter requested without instrumentation scope name.");
-      instrumentationScopeName = DEFAULT_EMITTER_NAME;
+      LOGGER.fine("Logger requested without instrumentation scope name.");
+      instrumentationScopeName = DEFAULT_LOGGER_NAME;
     }
-    return new SdkLogEmitterBuilder(logEmitterComponentRegistry, instrumentationScopeName);
+    return new SdkLoggerBuilder(loggerComponentRegistry, instrumentationScopeName);
   }
 
   /**

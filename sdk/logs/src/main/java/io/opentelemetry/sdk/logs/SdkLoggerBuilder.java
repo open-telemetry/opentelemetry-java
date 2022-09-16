@@ -9,30 +9,30 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 
-final class SdkLogEmitterBuilder implements LogEmitterBuilder {
+final class SdkLoggerBuilder implements LoggerBuilder {
 
-  private final ComponentRegistry<SdkLogEmitter> registry;
+  private final ComponentRegistry<SdkLogger> registry;
   private final InstrumentationScopeInfoBuilder scopeBuilder;
 
-  SdkLogEmitterBuilder(ComponentRegistry<SdkLogEmitter> registry, String instrumentationScopeName) {
+  SdkLoggerBuilder(ComponentRegistry<SdkLogger> registry, String instrumentationScopeName) {
     this.registry = registry;
     this.scopeBuilder = InstrumentationScopeInfo.builder(instrumentationScopeName);
   }
 
   @Override
-  public SdkLogEmitterBuilder setSchemaUrl(String schemaUrl) {
+  public SdkLoggerBuilder setSchemaUrl(String schemaUrl) {
     scopeBuilder.setSchemaUrl(schemaUrl);
     return this;
   }
 
   @Override
-  public SdkLogEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+  public SdkLoggerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
     scopeBuilder.setVersion(instrumentationScopeVersion);
     return this;
   }
 
   @Override
-  public SdkLogEmitter build() {
+  public SdkLogger build() {
     return registry.get(scopeBuilder.build());
   }
 }

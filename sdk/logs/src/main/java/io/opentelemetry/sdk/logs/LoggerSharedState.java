@@ -12,10 +12,10 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Represents shared state and config between all {@link SdkLogEmitter}s created by the same {@link
- * SdkLogEmitterProvider}.
+ * Represents shared state and config between all {@link SdkLogger}s created by the same {@link
+ * SdkLoggerProvider}.
  */
-final class LogEmitterSharedState {
+final class LoggerSharedState {
   private final Object lock = new Object();
   private final Resource resource;
   private final Supplier<LogLimits> logLimitsSupplier;
@@ -23,7 +23,7 @@ final class LogEmitterSharedState {
   private final Clock clock;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
-  LogEmitterSharedState(
+  LoggerSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       LogProcessor logProcessor,

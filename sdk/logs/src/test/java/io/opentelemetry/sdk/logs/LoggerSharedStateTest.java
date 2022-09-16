@@ -15,15 +15,15 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
-class LogEmitterSharedStateTest {
+class LoggerSharedStateTest {
 
   @Test
   void shutdown() {
     LogProcessor logProcessor = mock(LogProcessor.class);
     CompletableResultCode code = new CompletableResultCode();
     when(logProcessor.shutdown()).thenReturn(code);
-    LogEmitterSharedState state =
-        new LogEmitterSharedState(
+    LoggerSharedState state =
+        new LoggerSharedState(
             Resource.empty(), LogLimits::getDefault, logProcessor, Clock.getDefault());
     state.shutdown();
     state.shutdown();

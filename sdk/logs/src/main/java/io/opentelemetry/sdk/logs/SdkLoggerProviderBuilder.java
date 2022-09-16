@@ -14,24 +14,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Builder class for {@link SdkLogEmitterProvider} instances. */
-public final class SdkLogEmitterProviderBuilder {
+/** Builder class for {@link SdkLoggerProvider} instances. */
+public final class SdkLoggerProviderBuilder {
 
   private final List<LogProcessor> logProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
 
-  SdkLogEmitterProviderBuilder() {}
+  SdkLoggerProviderBuilder() {}
 
   /**
-   * Assign a {@link Resource} to be attached to all {@link LogData} created by {@link LogEmitter}s
-   * obtained from the {@link SdkLogEmitterProvider}.
+   * Assign a {@link Resource} to be attached to all {@link LogData} created by {@link Logger}s
+   * obtained from the {@link SdkLoggerProvider}.
    *
    * @param resource the resource
    * @return this
    */
-  public SdkLogEmitterProviderBuilder setResource(Resource resource) {
+  public SdkLoggerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
     this.resource = resource;
     return this;
@@ -39,7 +39,7 @@ public final class SdkLogEmitterProviderBuilder {
 
   /**
    * Assign a {@link Supplier} of {@link LogLimits}. {@link LogLimits} will be retrieved each time a
-   * {@link LogEmitter#logRecordBuilder()} is called.
+   * {@link Logger#logRecordBuilder()} is called.
    *
    * <p>The {@code logLimitsSupplier} must be thread-safe and return immediately (no remote calls,
    * as contention free as possible).
@@ -48,7 +48,7 @@ public final class SdkLogEmitterProviderBuilder {
    *     every {@link LogRecordBuilder}.
    * @return this
    */
-  public SdkLogEmitterProviderBuilder setLogLimits(Supplier<LogLimits> logLimitsSupplier) {
+  public SdkLoggerProviderBuilder setLogLimits(Supplier<LogLimits> logLimitsSupplier) {
     requireNonNull(logLimitsSupplier, "logLimitsSupplier");
     this.logLimitsSupplier = logLimitsSupplier;
     return this;
@@ -56,12 +56,12 @@ public final class SdkLogEmitterProviderBuilder {
 
   /**
    * Add a log processor. {@link LogProcessor#onEmit(ReadWriteLogRecord)} will be called each time a
-   * log is emitted by {@link LogEmitter} instances obtained from the {@link SdkLogEmitterProvider}.
+   * log is emitted by {@link Logger} instances obtained from the {@link SdkLoggerProvider}.
    *
    * @param processor the log processor
    * @return this
    */
-  public SdkLogEmitterProviderBuilder addLogProcessor(LogProcessor processor) {
+  public SdkLoggerProviderBuilder addLogProcessor(LogProcessor processor) {
     requireNonNull(processor, "processor");
     logProcessors.add(processor);
     return this;
@@ -77,18 +77,18 @@ public final class SdkLogEmitterProviderBuilder {
    * @param clock The clock to use for all temporal needs.
    * @return this
    */
-  public SdkLogEmitterProviderBuilder setClock(Clock clock) {
+  public SdkLoggerProviderBuilder setClock(Clock clock) {
     requireNonNull(clock, "clock");
     this.clock = clock;
     return this;
   }
 
   /**
-   * Create a {@link SdkLogEmitterProvider} instance.
+   * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
-  public SdkLogEmitterProvider build() {
-    return new SdkLogEmitterProvider(resource, logLimitsSupplier, logProcessors, clock);
+  public SdkLoggerProvider build() {
+    return new SdkLoggerProvider(resource, logLimitsSupplier, logProcessors, clock);
   }
 }

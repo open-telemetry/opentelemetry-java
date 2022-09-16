@@ -7,22 +7,21 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 
-/** SDK implementation of {@link LogEmitter}. */
-final class SdkLogEmitter implements LogEmitter {
+/** SDK implementation of {@link Logger}. */
+final class SdkLogger implements Logger {
 
-  private final LogEmitterSharedState logEmitterSharedState;
+  private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
 
-  SdkLogEmitter(
-      LogEmitterSharedState logEmitterSharedState,
-      InstrumentationScopeInfo instrumentationScopeInfo) {
-    this.logEmitterSharedState = logEmitterSharedState;
+  SdkLogger(
+      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+    this.loggerSharedState = loggerSharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
   @Override
   public LogRecordBuilder logRecordBuilder() {
-    return new SdkLogRecordBuilder(logEmitterSharedState, instrumentationScopeInfo);
+    return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
   }
 
   // VisibleForTesting

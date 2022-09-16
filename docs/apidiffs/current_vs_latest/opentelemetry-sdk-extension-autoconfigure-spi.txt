@@ -1,2 +1,5 @@
 Comparing source compatibility of  against 
-No changes.
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogEmitterProviderCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLoggerProviderCustomizer(java.util.function.BiFunction)

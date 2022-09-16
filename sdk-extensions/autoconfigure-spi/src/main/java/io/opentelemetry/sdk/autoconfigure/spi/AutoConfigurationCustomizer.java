@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -137,13 +137,13 @@ public interface AutoConfigurationCustomizer {
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke the with the {@link SdkLogEmitterProviderBuilder} to allow
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkLoggerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  default AutoConfigurationCustomizer addLogEmitterProviderCustomizer(
-      BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
+  default AutoConfigurationCustomizer addLoggerProviderCustomizer(
+      BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
           meterProviderCustomizer) {
     return this;
   }

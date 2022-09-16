@@ -38,6 +38,9 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
       if (isAbstractMethodOnAutoValue(member, change)) {
         continue
       }
+      if (isLogEmitterProvider(member)) {
+        continue
+      }
       if (!change.isSourceCompatible) {
         return Violation.error(member, "Not source compatible")
       }
@@ -58,6 +61,19 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
     return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
       member is JApiMethod &&
       member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
+  }
+
+  /**
+   * Check if the change is related to LogEmitterProvider name change to LoggerProvider.
+   */
+  // TODO(jack-berg): remove after 1.19.0.
+  fun isLogEmitterProvider(member: JApiCompatibility): Boolean {
+    try {
+      return member is JApiMethod &&
+        member.oldMethod.get().methodInfo.name.matches("(getSdk|set|add)LogEmitterProvider(.*)".toRegex())
+    } catch (e: IllegalStateException) {
+      return false
+    }
   }
 }
 

@@ -41,24 +41,24 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class SdkLogEmitterProviderTest {
+class SdkLoggerProviderTest {
 
   @Mock private LogProcessor logProcessor;
 
-  private SdkLogEmitterProvider sdkLogEmitterProvider;
+  private SdkLoggerProvider sdkLoggerProvider;
 
   @BeforeEach
   void setup() {
-    sdkLogEmitterProvider = SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    sdkLoggerProvider = SdkLoggerProvider.builder().addLogProcessor(logProcessor).build();
     when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
   void builder_defaultResource() {
-    assertThat(SdkLogEmitterProvider.builder().build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getResource)
+    assertThat(SdkLoggerProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getResource)
         .isEqualTo(Resource.getDefault());
   }
 
@@ -66,25 +66,25 @@ class SdkLogEmitterProviderTest {
   void builder_resourceProvided() {
     Resource resource = Resource.create(Attributes.builder().put("key", "value").build());
 
-    assertThat(SdkLogEmitterProvider.builder().setResource(resource).build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getResource)
+    assertThat(SdkLoggerProvider.builder().setResource(resource).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getResource)
         .isEqualTo(resource);
   }
 
   @Test
   void builder_noProcessor() {
-    assertThat(SdkLogEmitterProvider.builder().build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getLogProcessor)
+    assertThat(SdkLoggerProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getLogProcessor)
         .isSameAs(NoopLogProcessor.getInstance());
   }
 
   @Test
   void builder_defaultLogLimits() {
-    assertThat(SdkLogEmitterProvider.builder().build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getLogLimits)
+    assertThat(SdkLoggerProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getLogLimits)
         .isSameAs(LogLimits.getDefault());
   }
 
@@ -92,38 +92,38 @@ class SdkLogEmitterProviderTest {
   void builder_logLimitsProvided() {
     LogLimits logLimits =
         LogLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(1).build();
-    assertThat(SdkLogEmitterProvider.builder().setLogLimits(() -> logLimits).build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getLogLimits)
+    assertThat(SdkLoggerProvider.builder().setLogLimits(() -> logLimits).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getLogLimits)
         .isSameAs(logLimits);
   }
 
   @Test
   void builder_defaultClock() {
-    assertThat(SdkLogEmitterProvider.builder().build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getClock)
+    assertThat(SdkLoggerProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getClock)
         .isSameAs(Clock.getDefault());
   }
 
   @Test
   void builder_clockProvided() {
     Clock clock = mock(Clock.class);
-    assertThat(SdkLogEmitterProvider.builder().setClock(clock).build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getClock)
+    assertThat(SdkLoggerProvider.builder().setClock(clock).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getClock)
         .isSameAs(clock);
   }
 
   @Test
   void builder_multipleProcessors() {
     assertThat(
-            SdkLogEmitterProvider.builder()
+            SdkLoggerProvider.builder()
                 .addLogProcessor(logProcessor)
                 .addLogProcessor(logProcessor)
                 .build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
-        .extracting(LogEmitterSharedState::getLogProcessor)
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
+        .extracting(LoggerSharedState::getLogProcessor)
         .satisfies(
             activeLogProcessor -> {
               assertThat(activeLogProcessor).isInstanceOf(MultiLogProcessor.class);
@@ -135,64 +135,54 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
-  void logEmitterBuilder_SameName() {
-    assertThat(sdkLogEmitterProvider.logEmitterBuilder("test").build())
-        .isSameAs(sdkLogEmitterProvider.get("test"))
-        .isSameAs(sdkLogEmitterProvider.logEmitterBuilder("test").build())
+  void loggerBuilder_SameName() {
+    assertThat(sdkLoggerProvider.loggerBuilder("test").build())
+        .isSameAs(sdkLoggerProvider.get("test"))
+        .isSameAs(sdkLoggerProvider.loggerBuilder("test").build())
         .isNotSameAs(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
-                .setInstrumentationVersion("version")
-                .build());
+            sdkLoggerProvider.loggerBuilder("test").setInstrumentationVersion("version").build());
   }
 
   @Test
-  void logEmitterBuilder_SameNameAndVersion() {
-    assertThat(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
-                .setInstrumentationVersion("version")
-                .build())
+  void loggerBuilder_SameNameAndVersion() {
+    assertThat(sdkLoggerProvider.loggerBuilder("test").setInstrumentationVersion("version").build())
         .isSameAs(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
-                .setInstrumentationVersion("version")
-                .build())
+            sdkLoggerProvider.loggerBuilder("test").setInstrumentationVersion("version").build())
         .isNotSameAs(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
+            sdkLoggerProvider
+                .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build());
   }
 
   @Test
-  void logEmitterBuilder_SameNameVersionAndSchema() {
+  void loggerBuilder_SameNameVersionAndSchema() {
     assertThat(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
+            sdkLoggerProvider
+                .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build())
         .isSameAs(
-            sdkLogEmitterProvider
-                .logEmitterBuilder("test")
+            sdkLoggerProvider
+                .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build());
   }
 
   @Test
-  void logEmitterBuilder_PropagatesToEmitter() {
+  void loggerBuilder_PropagatesToLogger() {
     InstrumentationScopeInfo expected =
         InstrumentationScopeInfo.builder("test")
             .setVersion("version")
             .setSchemaUrl("http://url")
             .build();
     assertThat(
-            ((SdkLogEmitter)
-                    sdkLogEmitterProvider
-                        .logEmitterBuilder("test")
+            ((SdkLogger)
+                    sdkLoggerProvider
+                        .loggerBuilder("test")
                         .setInstrumentationVersion("version")
                         .setSchemaUrl("http://url")
                         .build())
@@ -201,32 +191,32 @@ class SdkLogEmitterProviderTest {
   }
 
   @Test
-  void logEmitterBuilder_DefaultEmitterName() {
+  void loggerBuilder_DefaultLoggerName() {
     assertThat(
-            ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder(null).build())
+            ((SdkLogger) sdkLoggerProvider.loggerBuilder(null).build())
                 .getInstrumentationScopeInfo()
                 .getName())
-        .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
+        .isEqualTo(SdkLoggerProvider.DEFAULT_LOGGER_NAME);
 
     assertThat(
-            ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder("").build())
+            ((SdkLogger) sdkLoggerProvider.loggerBuilder("").build())
                 .getInstrumentationScopeInfo()
                 .getName())
-        .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
+        .isEqualTo(SdkLoggerProvider.DEFAULT_LOGGER_NAME);
   }
 
   @Test
-  void logEmitterBuilder_NoProcessor_UsesNoop() {
-    assertThat(SdkLogEmitterProvider.builder().build().logEmitterBuilder("test"))
-        .isInstanceOf(NoopLogEmitterBuilder.class);
+  void loggerBuilder_NoProcessor_UsesNoop() {
+    assertThat(SdkLoggerProvider.builder().build().loggerBuilder("test"))
+        .isInstanceOf(NoopLoggerBuilder.class);
   }
 
   @Test
-  void logEmitterBuilder_WithLogProcessor() {
+  void loggerBuilder_WithLogProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
     AtomicReference<LogData> logData = new AtomicReference<>();
-    sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             .setResource(resource)
             .addLogProcessor(
                 logRecord -> {
@@ -245,7 +235,7 @@ class SdkLogEmitterProviderTest {
             "7777777777777777",
             TraceFlags.getSampled(),
             TraceState.getDefault());
-    sdkLogEmitterProvider
+    sdkLoggerProvider
         .get("test")
         .logRecordBuilder()
         .setEpoch(100, TimeUnit.NANOSECONDS)
@@ -271,21 +261,21 @@ class SdkLogEmitterProviderTest {
 
   @Test
   void forceFlush() {
-    sdkLogEmitterProvider.forceFlush();
+    sdkLoggerProvider.forceFlush();
     verify(logProcessor).forceFlush();
   }
 
   @Test
-  @SuppressLogger(SdkLogEmitterProvider.class)
+  @SuppressLogger(SdkLoggerProvider.class)
   void shutdown() {
-    sdkLogEmitterProvider.shutdown();
-    sdkLogEmitterProvider.shutdown();
+    sdkLoggerProvider.shutdown();
+    sdkLoggerProvider.shutdown();
     verify(logProcessor, times(1)).shutdown();
   }
 
   @Test
   void close() {
-    sdkLogEmitterProvider.close();
+    sdkLoggerProvider.close();
     verify(logProcessor).shutdown();
   }
 
@@ -296,9 +286,9 @@ class SdkLogEmitterProviderTest {
     when(clock.now()).thenReturn(now);
     List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
     logProcessor = seenLogs::add;
-    sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
-    sdkLogEmitterProvider.logEmitterBuilder(null).build().logRecordBuilder().emit();
+    sdkLoggerProvider =
+        SdkLoggerProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
+    sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
     assertThat(seenLogs.get(0).toLogData().getEpochNanos()).isEqualTo(now);
   }

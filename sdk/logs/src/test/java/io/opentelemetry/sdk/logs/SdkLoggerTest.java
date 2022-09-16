@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
-class SdkLogEmitterTest {
+class SdkLoggerTest {
 
   @Test
   void logRecordBuilder() {
-    LogEmitterSharedState state = mock(LogEmitterSharedState.class);
+    LoggerSharedState state = mock(LoggerSharedState.class);
     InstrumentationScopeInfo info = InstrumentationScopeInfo.create("foo");
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     LogProcessor logProcessor = seenLog::set;
@@ -45,8 +45,8 @@ class SdkLogEmitterTest {
     when(state.getLogProcessor()).thenReturn(logProcessor);
     when(state.getClock()).thenReturn(clock);
 
-    SdkLogEmitter emitter = new SdkLogEmitter(state, info);
-    LogRecordBuilder logRecordBuilder = emitter.logRecordBuilder();
+    SdkLogger logger = new SdkLogger(state, info);
+    LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
     logRecordBuilder.setBody("foo");
 
     // Have to test through the builder
@@ -58,12 +58,12 @@ class SdkLogEmitterTest {
   void logRecordBuilder_maxAttributeLength() {
     int maxLength = 25;
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    SdkLogEmitterProvider logEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(seenLog::set)
             .setLogLimits(() -> LogLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
-    LogRecordBuilder logRecordBuilder = logEmitterProvider.get("test").logRecordBuilder();
+    LogRecordBuilder logRecordBuilder = loggerProvider.get("test").logRecordBuilder();
     String strVal = StringUtils.padLeft("", maxLength);
     String tooLongStrVal = strVal + strVal;
 
@@ -98,14 +98,14 @@ class SdkLogEmitterTest {
   void logRecordBuilder_maxAttributes() {
     int maxNumberOfAttrs = 8;
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    SdkLogEmitterProvider logEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(seenLog::set)
             .setLogLimits(
                 () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build())
             .build();
 
-    LogRecordBuilder builder = logEmitterProvider.get("test").logRecordBuilder();
+    LogRecordBuilder builder = loggerProvider.get("test").logRecordBuilder();
     AttributesBuilder expectedAttributes = Attributes.builder();
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
       AttributeKey<Long> key = AttributeKey.longKey("key" + i);
@@ -125,11 +125,11 @@ class SdkLogEmitterTest {
   void logRecordBuilder_AfterShutdown() {
     LogProcessor logProcessor = mock(LogProcessor.class);
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    SdkLogEmitterProvider logEmitterProvider =
-        SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogProcessor(logProcessor).build();
 
-    logEmitterProvider.shutdown().join(10, TimeUnit.SECONDS);
-    logEmitterProvider.get("test").logRecordBuilder().emit();
+    loggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+    loggerProvider.get("test").logRecordBuilder().emit();
 
     verify(logProcessor, never()).onEmit(any());
   }
