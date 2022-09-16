@@ -17,6 +17,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
@@ -104,20 +105,20 @@ class SdkLogEmitterTest {
                 () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build())
             .build();
 
-    AttributesBuilder attributesBuilder = Attributes.builder();
+    LogRecordBuilder builder = logEmitterProvider.get("test").logRecordBuilder();
+    AttributesBuilder expectedAttributes = Attributes.builder();
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
-      attributesBuilder.put("key" + i, i);
+      AttributeKey<Long> key = AttributeKey.longKey("key" + i);
+      builder.setAttribute(key, (long) i);
+      if (i < maxNumberOfAttrs) {
+        expectedAttributes.put(key, (long) i);
+      }
     }
+    builder.emit();
 
-    logEmitterProvider
-        .get("test")
-        .logRecordBuilder()
-        .setAllAttributes(attributesBuilder.build())
-        .emit();
-
-    // NOTE: cannot guarantee which attributes are retained, only that there are no more that the
-    // max
-    assertThat(seenLog.get().toLogData().getAttributes()).hasSize(maxNumberOfAttrs);
+    assertThat(seenLog.get().toLogData())
+        .hasAttributes(expectedAttributes.build())
+        .hasTotalAttributeCount(maxNumberOfAttrs * 2);
   }
 
   @Test

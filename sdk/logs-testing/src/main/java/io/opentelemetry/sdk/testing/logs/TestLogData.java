@@ -31,7 +31,8 @@ public abstract class TestLogData implements LogData {
         .setSpanContext(SpanContext.getInvalid())
         .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
         .setBody("")
-        .setAttributes(Attributes.empty());
+        .setAttributes(Attributes.empty())
+        .setTotalAttributeCount(0);
   }
 
   TestLogData() {}
@@ -86,5 +87,8 @@ public abstract class TestLogData implements LogData {
 
     /** Set the attributes. */
     public abstract Builder setAttributes(Attributes attributes);
+
+    /** Set the total attribute count. */
+    public abstract Builder setTotalAttributeCount(int totalAttributeCount);
   }
 }

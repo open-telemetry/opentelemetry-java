@@ -163,4 +163,17 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
     // implementations.
     return actual.getAttributes().asMap().equals(attributes.asMap());
   }
+
+  /** Asserts the log has the given total attributes. */
+  public LogDataAssert hasTotalAttributeCount(int totalAttributeCount) {
+    isNotNull();
+    if (actual.getTotalAttributeCount() != totalAttributeCount) {
+      failWithActualExpectedAndMessage(
+          actual.getTotalAttributeCount(),
+          totalAttributeCount,
+          "Expected log to have recorded <%s> total attributes but did not",
+          totalAttributeCount);
+    }
+    return this;
+  }
 }

@@ -50,8 +50,7 @@ final class LogMarshaler extends MarshalerWithSize {
         MarshalerUtil.toBytes(logData.getSeverityText()),
         anyValueMarshaler,
         attributeMarshalers,
-        // TODO (trask) implement droppedAttributesCount in LogRecord
-        0,
+        logData.getTotalAttributeCount() - logData.getAttributes().size(),
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
