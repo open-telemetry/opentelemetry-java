@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.Closeable;
 import java.util.ArrayList;

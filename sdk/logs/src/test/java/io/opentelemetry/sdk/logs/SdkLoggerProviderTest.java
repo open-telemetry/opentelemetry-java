@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -24,7 +26,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -208,7 +209,7 @@ class SdkLoggerProviderTest {
   @Test
   void loggerBuilder_NoProcessor_UsesNoop() {
     assertThat(SdkLoggerProvider.builder().build().loggerBuilder("test"))
-        .isInstanceOf(NoopLoggerBuilder.class);
+        .isSameAs(LoggerProvider.noop().loggerBuilder("test"));
   }
 
   @Test

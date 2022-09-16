@@ -3,20 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs;
+package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Used to construct and emit logs from a {@link Logger}.
+ * Used to construct and emit log records from a {@link Logger}.
  *
  * <p>Obtain a {@link Logger#logRecordBuilder()}, add properties using the setters, and emit the log
- * to downstream {@link LogProcessor}(s) by calling {@link #emit()}.
+ * record by calling {@link #emit()}.
  */
 public interface LogRecordBuilder {
 
@@ -55,6 +54,6 @@ public interface LogRecordBuilder {
   /** Sets an attribute. */
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
 
-  /** Emit the log to downstream {@link LogProcessor}(s). */
+  /** Emit the log record. */
   void emit();
 }
