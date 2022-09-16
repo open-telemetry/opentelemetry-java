@@ -43,4 +43,18 @@ class DefaultConfigPropertiesTest {
 
     assertThat(props.getString("otel.resource.attributes")).isEqualTo(expected);
   }
+
+  @Test
+  void resourceAttributesEmptySyspropCanClobber() {
+    Map<String, String> environment = new HashMap<>();
+    Map<String, String> system = new HashMap<>();
+
+    environment.put("OTEL_RESOURCE_ATTRIBUTES", "service.name=foo,deployment.environment=blah");
+    system.put("otel.resource.attributes", "deployment.environment=");
+    String expected = "service.name=foo,deployment.environment=blah,deployment.environment=";
+
+    ConfigProperties props = DefaultConfigProperties.createForTest(system, environment);
+
+    assertThat(props.getString("otel.resource.attributes")).isEqualTo(expected);
+  }
 }
