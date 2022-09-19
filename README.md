@@ -287,8 +287,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
-- [Christian Neumüller](https://github.com/Oberon00), Dynatrace
-- [Jakub Wach](https://github.com/kubawach), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 - [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
