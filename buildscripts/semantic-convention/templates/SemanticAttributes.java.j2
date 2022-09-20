@@ -124,6 +124,23 @@ public final class {{class}} {
   @Deprecated
   public static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
 
+  /**
+   * The size of the uncompressed request payload body after transport decoding. Not set if
+   * transport encoding not used.
+   *
+   * @deprecated  this item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HTTP_REQUEST_CONTENT_LENGTH} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
+      longKey("http.request_content_length_uncompressed");
+
+  /**
+   * @deprecated this item has been removed as of 1.13.0 of the semantic conventions. Please use
+   *     {@link SemanticAttributes#NET_HOST_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_SERVER_NAME = stringKey("http.server_name");
+
   {% endif %}
 
   private {{class}}() {}
