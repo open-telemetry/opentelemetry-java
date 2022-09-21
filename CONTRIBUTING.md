@@ -73,8 +73,9 @@ with a few exceptions / comments:
   contain prototypes which have been discussed in the specification
   or [oteps](https://github.com/open-telemetry/oteps) and have a reasonable chance of becoming part
   of the specification, subject to maintainers' discretion.
-* The [Kotlin Extension](./extensions/kotlin) contains code which assists with context propagation
-  for an important part of the Java ecosystem.
+* Components like the [Kotlin Extension](./extensions/kotlin) are included which are required for
+  the API / SDK to function in key areas of the Java ecosystem. Inclusion is subject to maintainers'
+  discretion.
 * The [semconv](./semconv) module contains generated classes representing
   the [semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/main/semantic_conventions).
 * As a general rule, components which implement semantic conventions belong elsewhere.
