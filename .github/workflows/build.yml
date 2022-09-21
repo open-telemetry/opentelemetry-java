@@ -98,7 +98,9 @@ jobs:
     #
     # and the name is updated when the steps below are skipped which makes what's happening clearer
     # in the GitHub UI
-    name: publish-snapshots${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' && '' || ' (skipped)' }}
+    #
+    # note: need to use single space ' ' below since empty string '' resolves to false
+    name: publish-snapshots${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' && ' ' || ' (skipped)' }}
     # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
     runs-on: ubuntu-20.04
