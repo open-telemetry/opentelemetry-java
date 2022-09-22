@@ -18,7 +18,7 @@ class ExponentialHistogramIndexer {
   /** Bit mask used to isolate the significand of IEEE 754 double precision number. */
   private static final long SIGNIFICAND_BIT_MASK = 0xFFFFFFFFFFFFFL;
 
-  /** Bias used in representing the exponent of IEEE 554 double precision number. */
+  /** Bias used in representing the exponent of IEEE 754 double precision number. */
   private static final int EXPONENT_BIAS = 1023;
 
   /**
@@ -26,6 +26,11 @@ class ExponentialHistogramIndexer {
    * excluding the implicit bit.
    */
   private static final int SIGNIFICAND_WIDTH = 52;
+
+  /**
+   * The number of bits used to represent the exponent of IEEE 754 double precision number.
+   */
+  private static final int EXPONENT_WIDTH = 11;
 
   private static final double LOG_BASE2_E = 1D / Math.log(2);
 
@@ -72,6 +77,9 @@ class ExponentialHistogramIndexer {
     long rawBits = Double.doubleToLongBits(value);
     long rawExponent = (rawBits & EXPONENT_BIT_MASK) >> SIGNIFICAND_WIDTH;
     long rawSignificand = rawBits & SIGNIFICAND_BIT_MASK;
+    if (rawExponent == 0) {
+      rawExponent -= Long.numberOfLeadingZeros(rawSignificand - 1) - EXPONENT_WIDTH - 1;
+    }
     int ieeeExponent = (int) (rawExponent - EXPONENT_BIAS);
     if (rawSignificand == 0) {
       return ieeeExponent - 1;

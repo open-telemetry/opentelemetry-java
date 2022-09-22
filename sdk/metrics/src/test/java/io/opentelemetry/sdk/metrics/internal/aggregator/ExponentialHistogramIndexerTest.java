@@ -26,6 +26,20 @@ class ExponentialHistogramIndexerTest {
     ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(1);
 
     Arrays.asList(
+            // Near +Inf
+            of(Double.MAX_VALUE, 2047),
+            of(0x1p1023, 2045),
+            of(0x1.1p1023, 2046),
+            of(0x1p1022, 2043),
+            of(0x1.1p1022, 2044),
+            // Near 0
+            of(0x1p-1022, -2045),
+            of(0x1.1p-1022, -2044),
+            of(0x1p-1021, -2043),
+            of(0x1.1p-1021, -2042),
+            of(Double.MIN_NORMAL, -2045),
+            of(Double.MIN_VALUE, -2149),
+            // Near 1
             of(15d, 7),
             of(9d, 6),
             of(7d, 5),
@@ -58,7 +72,7 @@ class ExponentialHistogramIndexerTest {
             of(0x1p-1021, -1022),
             of(0x1.1p-1021, -1021),
             of(Double.MIN_NORMAL, -1023),
-            of(Double.MIN_VALUE, -1023),
+            of(Double.MIN_VALUE, -1075),
             // Near 1
             of(4, 1),
             of(3, 1),
@@ -162,15 +176,15 @@ class ExponentialHistogramIndexerTest {
             of(0x1p0991, 61),
 
             // Min and subnormal values
-            of(0x1p-1074, -64),
-            of(0x1p-1073, -64),
-            of(0x1p-1072, -64),
-            of(0x1p-1057, -64),
-            of(0x1p-1056, -64),
-            of(0x1p-1041, -64),
-            of(0x1p-1040, -64),
-            of(0x1p-1025, -64),
-            of(0x1p-1024, -64),
+            of(0x1p-1074, -68),
+            of(0x1p-1073, -68),
+            of(0x1p-1072, -68),
+            of(0x1p-1057, -67),
+            of(0x1p-1056, -67),
+            of(0x1p-1041, -66),
+            of(0x1p-1040, -66),
+            of(0x1p-1025, -65),
+            of(0x1p-1024, -65),
             of(0x1p-1023, -64),
             of(0x1p-1022, -64),
             of(0x1p-1009, -64),
