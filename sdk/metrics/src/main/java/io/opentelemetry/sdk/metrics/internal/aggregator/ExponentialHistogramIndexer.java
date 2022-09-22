@@ -27,9 +27,7 @@ class ExponentialHistogramIndexer {
    */
   private static final int SIGNIFICAND_WIDTH = 52;
 
-  /**
-   * The number of bits used to represent the exponent of IEEE 754 double precision number.
-   */
+  /** The number of bits used to represent the exponent of IEEE 754 double precision number. */
   private static final int EXPONENT_WIDTH = 11;
 
   private static final double LOG_BASE2_E = 1D / Math.log(2);
