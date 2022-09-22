@@ -52,7 +52,7 @@ class SdkLoggerTest {
 
     // Have to test through the builder
     logRecordBuilder.emit();
-    assertThat(seenLog.get().toLogData()).hasBody("foo").hasEpochNanos(5);
+    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasEpochNanos(5);
   }
 
   @Test
@@ -82,7 +82,7 @@ class SdkLoggerTest {
                 .build())
         .emit();
 
-    Attributes attributes = seenLog.get().toLogData().getAttributes();
+    Attributes attributes = seenLog.get().toLogRecordData().getAttributes();
 
     assertThat(attributes)
         .containsEntry("string", strVal)
@@ -117,7 +117,7 @@ class SdkLoggerTest {
     }
     builder.emit();
 
-    assertThat(seenLog.get().toLogData())
+    assertThat(seenLog.get().toLogRecordData())
         .hasAttributes(expectedAttributes.build())
         .hasTotalAttributeCount(maxNumberOfAttrs * 2);
   }

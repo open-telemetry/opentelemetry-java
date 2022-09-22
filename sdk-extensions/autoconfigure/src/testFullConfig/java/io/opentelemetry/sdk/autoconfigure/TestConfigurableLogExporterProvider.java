@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.Collection;
 
@@ -32,7 +32,7 @@ public class TestConfigurableLogExporterProvider implements ConfigurableLogExpor
     }
 
     @Override
-    public CompletableResultCode export(Collection<LogData> logs) {
+    public CompletableResultCode export(Collection<LogRecordData> logs) {
       return CompletableResultCode.ofSuccess();
     }
 

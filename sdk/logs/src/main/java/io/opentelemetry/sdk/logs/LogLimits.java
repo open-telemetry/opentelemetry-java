@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
 
@@ -40,9 +40,9 @@ public abstract class LogLimits {
   LogLimits() {}
 
   /**
-   * Returns the max number of attributes per {@link LogData}.
+   * Returns the max number of attributes per {@link LogRecordData}.
    *
-   * @return the max number of attributes per {@link LogData}.
+   * @return the max number of attributes per {@link LogRecordData}.
    */
   public abstract int getMaxNumberOfAttributes();
 

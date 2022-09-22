@@ -19,15 +19,16 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.Closeable;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData, ResourceLogs> {
+class OtlpGrpcLogExporterTest
+    extends AbstractGrpcTelemetryExporterTest<LogRecordData, ResourceLogs> {
 
   OtlpGrpcLogExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
@@ -50,13 +51,13 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
   }
 
   @Override
-  protected TelemetryExporterBuilder<LogData> exporterBuilder() {
+  protected TelemetryExporterBuilder<LogRecordData> exporterBuilder() {
     return TelemetryExporterBuilder.wrap(OtlpGrpcLogExporter.builder());
   }
 
   @Override
-  protected LogData generateFakeTelemetry() {
-    return TestLogData.builder()
+  protected LogRecordData generateFakeTelemetry() {
+    return TestLogRecordData.builder()
         .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
         .setInstrumentationScopeInfo(
             InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
@@ -69,7 +70,7 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
   }
 
   @Override
-  protected Marshaler[] toMarshalers(List<LogData> telemetry) {
+  protected Marshaler[] toMarshalers(List<LogRecordData> telemetry) {
     return ResourceLogsMarshaler.create(telemetry);
   }
 }

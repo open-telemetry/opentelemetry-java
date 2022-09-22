@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.logs.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * An exporter is responsible for taking a collection of {@link LogData}s and transmitting them to
- * their ultimate destination.
+ * An exporter is responsible for taking a collection of {@link LogRecordData}s and transmitting
+ * them to their ultimate destination.
  */
 public interface LogExporter extends Closeable {
 
@@ -53,15 +53,15 @@ public interface LogExporter extends Closeable {
   }
 
   /**
-   * Exports the collections of given {@link LogData}.
+   * Exports the collections of given {@link LogRecordData}.
    *
-   * @param logs the collection of {@link LogData} to be exported
+   * @param logs the collection of {@link LogRecordData} to be exported
    * @return the result of the export, which is often an asynchronous operation
    */
-  CompletableResultCode export(Collection<LogData> logs);
+  CompletableResultCode export(Collection<LogRecordData> logs);
 
   /**
-   * Exports the collection of {@link LogData} that have not yet been exported.
+   * Exports the collection of {@link LogRecordData} that have not yet been exported.
    *
    * @return the result of the flush, which is often an asynchronous operation
    */

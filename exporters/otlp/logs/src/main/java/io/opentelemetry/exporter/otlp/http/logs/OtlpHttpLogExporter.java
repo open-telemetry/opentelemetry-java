@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.otlp.http.logs;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
@@ -48,7 +48,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
    * @return the result of the operation
    */
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);
     return delegate.export(exportRequest, logs.size());
   }

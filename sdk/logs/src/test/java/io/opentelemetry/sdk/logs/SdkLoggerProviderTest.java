@@ -25,7 +25,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -215,7 +215,7 @@ class SdkLoggerProviderTest {
   @Test
   void loggerBuilder_WithLogProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
-    AtomicReference<LogData> logData = new AtomicReference<>();
+    AtomicReference<LogRecordData> logRecordData = new AtomicReference<>();
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .setResource(resource)
@@ -226,7 +226,7 @@ class SdkLoggerProviderTest {
                   logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
                   // Add new attribute k3
                   logRecord.setAttribute(AttributeKey.stringKey("k3"), "v3");
-                  logData.set(logRecord.toLogData());
+                  logRecordData.set(logRecord.toLogRecordData());
                 })
             .build();
 
@@ -248,7 +248,7 @@ class SdkLoggerProviderTest {
         .setAttribute(AttributeKey.stringKey("k2"), "v2")
         .emit();
 
-    assertThat(logData.get())
+    assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
         .hasEpochNanos(100)
@@ -291,6 +291,6 @@ class SdkLoggerProviderTest {
         SdkLoggerProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
     sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).toLogData().getEpochNanos()).isEqualTo(now);
+    assertThat(seenLogs.get(0).toLogRecordData().getEpochNanos()).isEqualTo(now);
   }
 }

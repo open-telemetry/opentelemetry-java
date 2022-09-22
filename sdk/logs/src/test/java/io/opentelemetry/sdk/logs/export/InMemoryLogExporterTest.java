@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.testing.assertj.LogAssertions;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -44,7 +44,7 @@ class InMemoryLogExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
 
-    List<LogData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     LogAssertions.assertThat(logItems.get(0)).hasBody("message 1");
@@ -57,7 +57,7 @@ class InMemoryLogExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
-    List<LogData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     // Reset then expect no items in memory.
@@ -70,7 +70,7 @@ class InMemoryLogExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
-    List<LogData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     // Shutdown then expect no items in memory.
@@ -83,13 +83,14 @@ class InMemoryLogExporterTest {
 
   @Test
   void export_ReturnCode() {
-    LogData logData = TestLogData.builder().setBody("message 1").setSeverity(DEBUG).build();
-    assertThat(exporter.export(Collections.singletonList(logData)).isSuccess()).isTrue();
+    LogRecordData logRecordData =
+        TestLogRecordData.builder().setBody("message 1").setSeverity(DEBUG).build();
+    assertThat(exporter.export(Collections.singletonList(logRecordData)).isSuccess()).isTrue();
     exporter.shutdown();
     // After shutdown no more export.
-    assertThat(exporter.export(Collections.singletonList(logData)).isSuccess()).isFalse();
+    assertThat(exporter.export(Collections.singletonList(logRecordData)).isSuccess()).isFalse();
     exporter.reset();
     // Reset does not do anything if already shutdown.
-    assertThat(exporter.export(Collections.singletonList(logData)).isSuccess()).isFalse();
+    assertThat(exporter.export(Collections.singletonList(logRecordData)).isSuccess()).isFalse();
   }
 }

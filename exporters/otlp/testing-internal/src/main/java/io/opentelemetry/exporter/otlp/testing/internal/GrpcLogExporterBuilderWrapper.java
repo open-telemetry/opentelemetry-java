@@ -9,11 +9,11 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-final class GrpcLogExporterBuilderWrapper implements TelemetryExporterBuilder<LogData> {
+final class GrpcLogExporterBuilderWrapper implements TelemetryExporterBuilder<LogRecordData> {
   private final OtlpGrpcLogExporterBuilder builder;
 
   GrpcLogExporterBuilderWrapper(OtlpGrpcLogExporterBuilder builder) {
@@ -21,63 +21,63 @@ final class GrpcLogExporterBuilderWrapper implements TelemetryExporterBuilder<Lo
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setEndpoint(String endpoint) {
+  public TelemetryExporterBuilder<LogRecordData> setEndpoint(String endpoint) {
     builder.setEndpoint(endpoint);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setTimeout(long timeout, TimeUnit unit) {
+  public TelemetryExporterBuilder<LogRecordData> setTimeout(long timeout, TimeUnit unit) {
     builder.setTimeout(timeout, unit);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setTimeout(Duration timeout) {
+  public TelemetryExporterBuilder<LogRecordData> setTimeout(Duration timeout) {
     builder.setTimeout(timeout);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setCompression(String compression) {
+  public TelemetryExporterBuilder<LogRecordData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> addHeader(String key, String value) {
+  public TelemetryExporterBuilder<LogRecordData> addHeader(String key, String value) {
     builder.addHeader(key, value);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setTrustedCertificates(byte[] certificates) {
+  public TelemetryExporterBuilder<LogRecordData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setClientTls(
+  public TelemetryExporterBuilder<LogRecordData> setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     builder.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 
   @Override
-  public TelemetryExporterBuilder<LogData> setRetryPolicy(RetryPolicy retryPolicy) {
+  public TelemetryExporterBuilder<LogRecordData> setRetryPolicy(RetryPolicy retryPolicy) {
     RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
     return this;
   }
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<LogData> setChannel(ManagedChannel channel) {
+  public TelemetryExporterBuilder<LogRecordData> setChannel(ManagedChannel channel) {
     builder.setChannel(channel);
     return this;
   }
 
   @Override
-  public TelemetryExporter<LogData> build() {
+  public TelemetryExporter<LogRecordData> build() {
     return TelemetryExporter.wrap(builder.build());
   }
 }
