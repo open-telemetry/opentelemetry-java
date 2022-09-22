@@ -114,7 +114,8 @@ class OtlpGrpcConfigTest {
       assertThat(logExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(logExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
           .anyMatch(
@@ -227,7 +228,8 @@ class OtlpGrpcConfigTest {
       assertThat(logExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(logExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
           .anyMatch(

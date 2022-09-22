@@ -102,7 +102,8 @@ class OtlpGrpcRetryTest {
         LogExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
-      testRetryableStatusCodes(() -> LOG_RECORD_DATA, logExporter::export, server.logRequests::size);
+      testRetryableStatusCodes(
+          () -> LOG_RECORD_DATA, logExporter::export, server.logRequests::size);
       testDefaultRetryPolicy(() -> LOG_RECORD_DATA, logExporter::export, server.logRequests::size);
     }
   }
