@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static io.opentelemetry.sdk.logs.data.Severity.DEBUG;
+import static io.opentelemetry.api.logs.Severity.DEBUG;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.logs.Logger;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.testing.assertj.LogAssertions;

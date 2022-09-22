@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.Collection;
 import java.util.stream.Collectors;

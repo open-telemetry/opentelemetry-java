@@ -221,11 +221,12 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API
 
-| Component                         | Description                                                    | Artifact ID             | Version                                                     |
-|-----------------------------------|----------------------------------------------------------------|-------------------------|-------------------------------------------------------------|
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context | `opentelemetry-api`     | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
-| [Context API](./context)          | OpenTelemetry context API                                      | `opentelemetry-context` | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
-| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions          | `opentelemetry-semconv` | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                         | Description                                                                                                                                        | Artifact ID              | Version                                                                          |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|----------------------------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                     | `opentelemetry-api`      | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->                                |
+| [Logs API](./api/logs)            | OpenTelemetry Log API for emitting events and bridging log frameworks (NOT a replacement for application logging frameworks like SLF4J, JUL, etc.) | `opentelemetry-api-logs` | <!--VERSION_UNSTABLE-->TODO: add version after published<!--/VERSION_UNSTABLE--> |
+| [Context API](./context)          | OpenTelemetry context API                                                                                                                          | `opentelemetry-context`  | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->                                |
+| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                                              | `opentelemetry-semconv`  | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE-->                      |
 
 ### API Extensions
 
