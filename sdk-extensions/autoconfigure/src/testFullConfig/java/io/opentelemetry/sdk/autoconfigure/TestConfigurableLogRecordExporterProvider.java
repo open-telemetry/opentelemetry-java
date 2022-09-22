@@ -6,17 +6,18 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 
-public class TestConfigurableLogExporterProvider implements ConfigurableLogExporterProvider {
+public class TestConfigurableLogRecordExporterProvider
+    implements ConfigurableLogRecordExporterProvider {
 
   @Override
-  public LogExporter createExporter(ConfigProperties config) {
-    return new TestLogExporter(config);
+  public LogRecordExporter createExporter(ConfigProperties config) {
+    return new TestLogRecordExporter(config);
   }
 
   @Override
@@ -24,10 +25,10 @@ public class TestConfigurableLogExporterProvider implements ConfigurableLogExpor
     return "testExporter";
   }
 
-  public static class TestLogExporter implements LogExporter {
+  public static class TestLogRecordExporter implements LogRecordExporter {
     private final ConfigProperties config;
 
-    public TestLogExporter(ConfigProperties config) {
+    public TestLogRecordExporter(ConfigProperties config) {
       this.config = config;
     }
 

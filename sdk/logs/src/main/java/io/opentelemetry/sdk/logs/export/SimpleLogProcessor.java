@@ -33,13 +33,13 @@ public final class SimpleLogProcessor implements LogProcessor {
 
   private static final Logger logger = Logger.getLogger(SimpleLogProcessor.class.getName());
 
-  private final LogExporter logExporter;
+  private final LogRecordExporter logRecordExporter;
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Returns a new {@link SimpleLogProcessor} which exports logs to the {@link LogExporter}
+   * Returns a new {@link SimpleLogProcessor} which exports logs to the {@link LogRecordExporter}
    * synchronously.
    *
    * <p>This processor will cause all logs to be exported directly as they finish, meaning each
@@ -48,20 +48,20 @@ public final class SimpleLogProcessor implements LogProcessor {
    * BatchLogProcessor} instead, including in special environments such as serverless runtimes.
    * {@link SimpleLogProcessor} is generally meant to for testing only.
    */
-  public static LogProcessor create(LogExporter exporter) {
+  public static LogProcessor create(LogRecordExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleLogProcessor(exporter);
   }
 
-  SimpleLogProcessor(LogExporter logExporter) {
-    this.logExporter = requireNonNull(logExporter, "logExporter");
+  SimpleLogProcessor(LogRecordExporter logRecordExporter) {
+    this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
   }
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
     try {
       List<LogData> logs = Collections.singletonList(logRecord.toLogData());
-      CompletableResultCode result = logExporter.export(logs);
+      CompletableResultCode result = logRecordExporter.export(logs);
       pendingExports.add(result);
       result.whenComplete(
           () -> {
@@ -85,7 +85,7 @@ public final class SimpleLogProcessor implements LogProcessor {
     CompletableResultCode flushResult = forceFlush();
     flushResult.whenComplete(
         () -> {
-          CompletableResultCode shutdownResult = logExporter.shutdown();
+          CompletableResultCode shutdownResult = logRecordExporter.shutdown();
           shutdownResult.whenComplete(
               () -> {
                 if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {

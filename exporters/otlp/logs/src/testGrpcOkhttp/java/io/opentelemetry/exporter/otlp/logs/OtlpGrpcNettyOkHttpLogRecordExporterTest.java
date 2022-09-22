@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
@@ -14,8 +13,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.ManagedChannelTelemetryExporterBuilder;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -29,27 +26,18 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class OtlpGrpcNettyLogExporterTest
+class OtlpGrpcNettyOkHttpLogRecordExporterTest
     extends AbstractGrpcTelemetryExporterTest<LogData, ResourceLogs> {
 
-  OtlpGrpcNettyLogExporterTest() {
+  OtlpGrpcNettyOkHttpLogRecordExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
-  }
-
-  @Test
-  void testSetRetryPolicyOnDelegate() {
-    assertThatCode(
-            () ->
-                RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpGrpcLogExporter.builder(), RetryPolicy.getDefault()))
-        .doesNotThrowAnyException();
   }
 
   @Test
   @SuppressWarnings("deprecation") // testing deprecated feature
   void usingGrpc() throws Exception {
     try (Closeable exporter =
-        OtlpGrpcLogExporter.builder()
+        OtlpGrpcLogRecordExporter.builder()
             .setChannel(InProcessChannelBuilder.forName("test").build())
             .build()) {
       assertThat(exporter).extracting("delegate").isInstanceOf(UpstreamGrpcExporter.class);
@@ -59,7 +47,7 @@ class OtlpGrpcNettyLogExporterTest
   @Override
   protected TelemetryExporterBuilder<LogData> exporterBuilder() {
     return ManagedChannelTelemetryExporterBuilder.wrap(
-        TelemetryExporterBuilder.wrap(OtlpGrpcLogExporter.builder()));
+        TelemetryExporterBuilder.wrap(OtlpGrpcLogRecordExporter.builder()));
   }
 
   @Override

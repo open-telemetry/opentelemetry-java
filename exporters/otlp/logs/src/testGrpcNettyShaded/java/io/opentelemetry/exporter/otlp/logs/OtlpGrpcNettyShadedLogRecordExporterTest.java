@@ -26,10 +26,10 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class OtlpGrpcNettyShadedLogExporterTest
+class OtlpGrpcNettyShadedLogRecordExporterTest
     extends AbstractGrpcTelemetryExporterTest<LogData, ResourceLogs> {
 
-  OtlpGrpcNettyShadedLogExporterTest() {
+  OtlpGrpcNettyShadedLogRecordExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
   }
 
@@ -37,7 +37,7 @@ class OtlpGrpcNettyShadedLogExporterTest
   @SuppressWarnings("deprecation") // testing deprecated feature
   void usingGrpc() throws Exception {
     try (Closeable exporter =
-        OtlpGrpcLogExporter.builder()
+        OtlpGrpcLogRecordExporter.builder()
             .setChannel(InProcessChannelBuilder.forName("test").build())
             .build()) {
       assertThat(exporter).extracting("delegate").isInstanceOf(UpstreamGrpcExporter.class);
@@ -47,7 +47,7 @@ class OtlpGrpcNettyShadedLogExporterTest
   @Override
   protected TelemetryExporterBuilder<LogData> exporterBuilder() {
     return ManagedChannelTelemetryExporterBuilder.wrap(
-        TelemetryExporterBuilder.wrap(OtlpGrpcLogExporter.builder()));
+        TelemetryExporterBuilder.wrap(OtlpGrpcLogRecordExporter.builder()));
   }
 
   @Override

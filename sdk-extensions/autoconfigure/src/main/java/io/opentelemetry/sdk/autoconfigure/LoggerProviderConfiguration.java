@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.sdk.autoconfigure.LogExporterConfiguration.configureLogExporters;
+import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.configureLogRecordExporters;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,13 +29,14 @@ final class LoggerProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
-      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
-          logExporterCustomizer) {
+      BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+          logRecordExporterCustomizer) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
-    Map<String, LogExporter> exportersByName =
-        configureLogExporters(config, serviceClassLoader, meterProvider, logExporterCustomizer);
+    Map<String, LogRecordExporter> exportersByName =
+        configureLogRecordExporters(
+            config, serviceClassLoader, meterProvider, logRecordExporterCustomizer);
 
     configureLogProcessors(exportersByName, meterProvider)
         .forEach(loggerProviderBuilder::addLogProcessor);
@@ -43,19 +44,22 @@ final class LoggerProviderConfiguration {
 
   // Visible for testing
   static List<LogProcessor> configureLogProcessors(
-      Map<String, LogExporter> exportersByName, MeterProvider meterProvider) {
-    Map<String, LogExporter> exportersByNameCopy = new HashMap<>(exportersByName);
+      Map<String, LogRecordExporter> exportersByName, MeterProvider meterProvider) {
+    Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<LogProcessor> logProcessors = new ArrayList<>();
 
-    LogExporter exporter = exportersByNameCopy.remove("logging");
+    LogRecordExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
       logProcessors.add(SimpleLogProcessor.create(exporter));
     }
 
     if (!exportersByNameCopy.isEmpty()) {
-      LogExporter compositeLogExporter = LogExporter.composite(exportersByNameCopy.values());
+      LogRecordExporter compositeLogRecordExporter =
+          LogRecordExporter.composite(exportersByNameCopy.values());
       logProcessors.add(
-          BatchLogProcessor.builder(compositeLogExporter).setMeterProvider(meterProvider).build());
+          BatchLogProcessor.builder(compositeLogRecordExporter)
+              .setMeterProvider(meterProvider)
+              .build());
     }
 
     return logProcessors;

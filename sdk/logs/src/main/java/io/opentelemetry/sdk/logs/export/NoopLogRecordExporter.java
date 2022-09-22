@@ -9,11 +9,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.Collection;
 
-final class NoopLogExporter implements LogExporter {
+final class NoopLogRecordExporter implements LogRecordExporter {
 
-  private static final LogExporter INSTANCE = new NoopLogExporter();
+  private static final LogRecordExporter INSTANCE = new NoopLogRecordExporter();
 
-  static LogExporter getInstance() {
+  static LogRecordExporter getInstance() {
     return INSTANCE;
   }
 
