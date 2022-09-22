@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.logs.export;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.Collections;
@@ -20,18 +20,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An implementation of the {@link LogProcessor} that passes {@link LogData} directly to the
+ * An implementation of the {@link LogRecordProcessor} that passes {@link LogData} directly to the
  * configured exporter.
  *
  * <p>This processor will cause all logs to be exported directly as they finish, meaning each export
  * request will have a single log. Most backends will not perform well with a single log per request
- * so unless you know what you're doing, strongly consider using {@link BatchLogProcessor} instead,
- * including in special environments such as serverless runtimes. {@link SimpleLogProcessor} is
- * generally meant to for testing only.
+ * so unless you know what you're doing, strongly consider using {@link BatchLogRecordProcessor}
+ * instead, including in special environments such as serverless runtimes. {@link
+ * SimpleLogRecordProcessor} is generally meant to for testing only.
  */
-public final class SimpleLogProcessor implements LogProcessor {
+public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
-  private static final Logger logger = Logger.getLogger(SimpleLogProcessor.class.getName());
+  private static final Logger logger = Logger.getLogger(SimpleLogRecordProcessor.class.getName());
 
   private final LogExporter logExporter;
   private final Set<CompletableResultCode> pendingExports =
@@ -39,21 +39,21 @@ public final class SimpleLogProcessor implements LogProcessor {
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Returns a new {@link SimpleLogProcessor} which exports logs to the {@link LogExporter}
+   * Returns a new {@link SimpleLogRecordProcessor} which exports logs to the {@link LogExporter}
    * synchronously.
    *
    * <p>This processor will cause all logs to be exported directly as they finish, meaning each
    * export request will have a single log. Most backends will not perform well with a single log
    * per request so unless you know what you're doing, strongly consider using {@link
-   * BatchLogProcessor} instead, including in special environments such as serverless runtimes.
-   * {@link SimpleLogProcessor} is generally meant to for testing only.
+   * BatchLogRecordProcessor} instead, including in special environments such as serverless
+   * runtimes. {@link SimpleLogRecordProcessor} is generally meant to for testing only.
    */
-  public static LogProcessor create(LogExporter exporter) {
+  public static LogRecordProcessor create(LogExporter exporter) {
     requireNonNull(exporter, "exporter");
-    return new SimpleLogProcessor(exporter);
+    return new SimpleLogRecordProcessor(exporter);
   }
 
-  SimpleLogProcessor(LogExporter logExporter) {
+  SimpleLogRecordProcessor(LogExporter logExporter) {
     this.logExporter = requireNonNull(logExporter, "logExporter");
   }
 

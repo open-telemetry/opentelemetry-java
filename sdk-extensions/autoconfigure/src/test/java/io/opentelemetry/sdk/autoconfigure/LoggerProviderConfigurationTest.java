@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -51,8 +51,8 @@ class LoggerProviderConfigurationTest {
           .satisfies(
               sharedState -> {
                 assertThat(sharedState)
-                    .extracting("logProcessor")
-                    .isEqualTo(LogProcessor.composite());
+                    .extracting("logRecordProcessor")
+                    .isEqualTo(LogRecordProcessor.composite());
                 assertThat(sharedState)
                     .extracting(
                         "logLimitsSupplier", as(InstanceOfAssertFactories.type(Supplier.class)))

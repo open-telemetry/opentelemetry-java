@@ -56,7 +56,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.attributes = attributes;
   }
 
-  /** Create the log record with the given configuration and emit it to the {@code logProcessor}. */
+  /** Create the log record with the given configuration. */
   static SdkReadWriteLogRecord create(
       LogLimits logLimits,
       Resource resource,

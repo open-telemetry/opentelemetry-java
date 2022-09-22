@@ -38,12 +38,12 @@ class SdkLoggerTest {
     LoggerSharedState state = mock(LoggerSharedState.class);
     InstrumentationScopeInfo info = InstrumentationScopeInfo.create("foo");
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    LogProcessor logProcessor = seenLog::set;
+    LogRecordProcessor logRecordProcessor = seenLog::set;
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(5L);
 
     when(state.getResource()).thenReturn(Resource.getDefault());
-    when(state.getLogProcessor()).thenReturn(logProcessor);
+    when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
     when(state.getClock()).thenReturn(clock);
 
     SdkLogger logger = new SdkLogger(state, info);
@@ -61,7 +61,7 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLogProcessor(seenLog::set)
+            .addLogRecordProcessor(seenLog::set)
             .setLogLimits(() -> LogLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
     LogRecordBuilder logRecordBuilder = loggerProvider.get("test").logRecordBuilder();
@@ -101,7 +101,7 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLogProcessor(seenLog::set)
+            .addLogRecordProcessor(seenLog::set)
             .setLogLimits(
                 () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build())
             .build();
@@ -124,14 +124,14 @@ class SdkLoggerTest {
 
   @Test
   void logRecordBuilder_AfterShutdown() {
-    LogProcessor logProcessor = mock(LogProcessor.class);
-    when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
+    when(logRecordProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder().addLogProcessor(logProcessor).build();
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
 
     loggerProvider.shutdown().join(10, TimeUnit.SECONDS);
     loggerProvider.get("test").logRecordBuilder().emit();
 
-    verify(logProcessor, never()).onEmit(any());
+    verify(logRecordProcessor, never()).onEmit(any());
   }
 }

@@ -44,15 +44,16 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkLoggerProviderTest {
 
-  @Mock private LogProcessor logProcessor;
+  @Mock private LogRecordProcessor logRecordProcessor;
 
   private SdkLoggerProvider sdkLoggerProvider;
 
   @BeforeEach
   void setup() {
-    sdkLoggerProvider = SdkLoggerProvider.builder().addLogProcessor(logProcessor).build();
-    when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
-    when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+    when(logRecordProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(logRecordProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
@@ -77,8 +78,8 @@ class SdkLoggerProviderTest {
   void builder_noProcessor() {
     assertThat(SdkLoggerProvider.builder().build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
-        .extracting(LoggerSharedState::getLogProcessor)
-        .isSameAs(NoopLogProcessor.getInstance());
+        .extracting(LoggerSharedState::getLogRecordProcessor)
+        .isSameAs(NoopLogRecordProcessor.getInstance());
   }
 
   @Test
@@ -120,17 +121,18 @@ class SdkLoggerProviderTest {
   void builder_multipleProcessors() {
     assertThat(
             SdkLoggerProvider.builder()
-                .addLogProcessor(logProcessor)
-                .addLogProcessor(logProcessor)
+                .addLogRecordProcessor(logRecordProcessor)
+                .addLogRecordProcessor(logRecordProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
-        .extracting(LoggerSharedState::getLogProcessor)
+        .extracting(LoggerSharedState::getLogRecordProcessor)
         .satisfies(
-            activeLogProcessor -> {
-              assertThat(activeLogProcessor).isInstanceOf(MultiLogProcessor.class);
-              assertThat(activeLogProcessor)
+            activeLogRecordProcessor -> {
+              assertThat(activeLogRecordProcessor).isInstanceOf(MultiLogRecordProcessor.class);
+              assertThat(activeLogRecordProcessor)
                   .extracting(
-                      "logProcessors", as(InstanceOfAssertFactories.list(LogProcessor.class)))
+                      "logRecordProcessors",
+                      as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
                   .hasSize(2);
             });
   }
@@ -213,13 +215,13 @@ class SdkLoggerProviderTest {
   }
 
   @Test
-  void loggerBuilder_WithLogProcessor() {
+  void loggerBuilder_WithLogRecordProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
     AtomicReference<LogData> logData = new AtomicReference<>();
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .setResource(resource)
-            .addLogProcessor(
+            .addLogRecordProcessor(
                 logRecord -> {
                   logRecord.setAttribute(null, null);
                   // Overwrite k1
@@ -263,7 +265,7 @@ class SdkLoggerProviderTest {
   @Test
   void forceFlush() {
     sdkLoggerProvider.forceFlush();
-    verify(logProcessor).forceFlush();
+    verify(logRecordProcessor).forceFlush();
   }
 
   @Test
@@ -271,13 +273,13 @@ class SdkLoggerProviderTest {
   void shutdown() {
     sdkLoggerProvider.shutdown();
     sdkLoggerProvider.shutdown();
-    verify(logProcessor, times(1)).shutdown();
+    verify(logRecordProcessor, times(1)).shutdown();
   }
 
   @Test
   void close() {
     sdkLoggerProvider.close();
-    verify(logProcessor).shutdown();
+    verify(logRecordProcessor).shutdown();
   }
 
   @Test
@@ -286,9 +288,12 @@ class SdkLoggerProviderTest {
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
     List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
-    logProcessor = seenLogs::add;
+    logRecordProcessor = seenLogs::add;
     sdkLoggerProvider =
-        SdkLoggerProvider.builder().setClock(clock).addLogProcessor(logProcessor).build();
+        SdkLoggerProvider.builder()
+            .setClock(clock)
+            .addLogRecordProcessor(logRecordProcessor)
+            .build();
     sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
     assertThat(seenLogs.get(0).toLogData().getEpochNanos()).isEqualTo(now);

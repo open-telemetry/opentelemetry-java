@@ -12,8 +12,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder class for {@link BatchLogProcessor}. */
-public final class BatchLogProcessorBuilder {
+/** Builder class for {@link BatchLogRecordProcessor}. */
+public final class BatchLogRecordProcessorBuilder {
 
   // Visible for testing
   static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
@@ -31,7 +31,7 @@ public final class BatchLogProcessorBuilder {
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private MeterProvider meterProvider = MeterProvider.noop();
 
-  BatchLogProcessorBuilder(LogExporter logExporter) {
+  BatchLogRecordProcessorBuilder(LogExporter logExporter) {
     this.logExporter = requireNonNull(logExporter, "logExporter");
   }
 
@@ -39,7 +39,7 @@ public final class BatchLogProcessorBuilder {
    * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
    * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
    */
-  public BatchLogProcessorBuilder setScheduleDelay(long delay, TimeUnit unit) {
+  public BatchLogRecordProcessorBuilder setScheduleDelay(long delay, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(delay >= 0, "delay must be non-negative");
     scheduleDelayNanos = unit.toNanos(delay);
@@ -50,7 +50,7 @@ public final class BatchLogProcessorBuilder {
    * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
    * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
    */
-  public BatchLogProcessorBuilder setScheduleDelay(Duration delay) {
+  public BatchLogRecordProcessorBuilder setScheduleDelay(Duration delay) {
     requireNonNull(delay, "delay");
     return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
   }
@@ -64,7 +64,7 @@ public final class BatchLogProcessorBuilder {
    * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
    * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
-  public BatchLogProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
+  public BatchLogRecordProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
     exporterTimeoutNanos = unit.toNanos(timeout);
@@ -75,7 +75,7 @@ public final class BatchLogProcessorBuilder {
    * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
    * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
-  public BatchLogProcessorBuilder setExporterTimeout(Duration timeout) {
+  public BatchLogRecordProcessorBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
@@ -94,9 +94,9 @@ public final class BatchLogProcessorBuilder {
    * @param maxQueueSize the maximum number of Logs that are kept in the queue before start
    *     dropping.
    * @return this.
-   * @see BatchLogProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
+   * @see BatchLogRecordProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
-  public BatchLogProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+  public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -114,9 +114,9 @@ public final class BatchLogProcessorBuilder {
    *
    * @param maxExportBatchSize the maximum batch size for every export.
    * @return this.
-   * @see BatchLogProcessorBuilder#DEFAULT_MAX_EXPORT_BATCH_SIZE
+   * @see BatchLogRecordProcessorBuilder#DEFAULT_MAX_EXPORT_BATCH_SIZE
    */
-  public BatchLogProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
+  public BatchLogRecordProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
@@ -126,7 +126,7 @@ public final class BatchLogProcessorBuilder {
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
    */
-  public BatchLogProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
+  public BatchLogRecordProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
     return this;
@@ -138,13 +138,13 @@ public final class BatchLogProcessorBuilder {
   }
 
   /**
-   * Returns a new {@link BatchLogProcessor} that batches, then forwards them to the given {@code
-   * logExporter}.
+   * Returns a new {@link BatchLogRecordProcessor} that batches, then forwards them to the given
+   * {@code logExporter}.
    *
-   * @return a new {@link BatchLogProcessor}.
+   * @return a new {@link BatchLogRecordProcessor}.
    */
-  public BatchLogProcessor build() {
-    return new BatchLogProcessor(
+  public BatchLogRecordProcessor build() {
+    return new BatchLogRecordProcessor(
         logExporter,
         meterProvider,
         scheduleDelayNanos,

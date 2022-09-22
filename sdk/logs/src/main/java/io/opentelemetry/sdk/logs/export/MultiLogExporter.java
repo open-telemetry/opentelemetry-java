@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * {@link LogExporter} that forwards all received logs to a list of {@link LogExporter}.
  *
  * <p>Can be used to export to multiple backends using the same {@link LogExporter} like a {@link
- * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+ * SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
  */
 final class MultiLogExporter implements LogExporter {
   private static final Logger logger = Logger.getLogger(MultiLogExporter.class.getName());

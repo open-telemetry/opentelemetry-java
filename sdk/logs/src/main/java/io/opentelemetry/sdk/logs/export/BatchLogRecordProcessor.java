@@ -12,7 +12,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
@@ -28,39 +28,40 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of the {@link LogProcessor} that batches logs exported by the SDK then pushes them
- * to the exporter pipeline.
+ * Implementation of the {@link LogRecordProcessor} that batches logs exported by the SDK then
+ * pushes them to the exporter pipeline.
  *
  * <p>All logs reported by the SDK implementation are first added to a synchronized queue (with a
  * {@code maxQueueSize} maximum size, if queue is full logs are dropped). Logs are exported either
  * when there are {@code maxExportBatchSize} pending logs or {@code scheduleDelayNanos} has passed
  * since the last export finished.
  */
-public final class BatchLogProcessor implements LogProcessor {
+public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   private static final String WORKER_THREAD_NAME =
-      BatchLogProcessor.class.getSimpleName() + "_WorkerThread";
-  private static final AttributeKey<String> LOG_PROCESSOR_TYPE_LABEL =
-      AttributeKey.stringKey("logProcessorType");
-  private static final AttributeKey<Boolean> LOG_PROCESSOR_DROPPED_LABEL =
+      BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
+  private static final AttributeKey<String> LOG_RECORD_PROCESSOR_TYPE_LABEL =
+      AttributeKey.stringKey("logRecordProcessorType");
+  private static final AttributeKey<Boolean> LOG_RECORD_PROCESSOR_DROPPED_LABEL =
       AttributeKey.booleanKey("dropped");
-  private static final String LOG_PROCESSOR_TYPE_VALUE = BatchLogProcessor.class.getSimpleName();
+  private static final String LOG_RECORD_PROCESSOR_TYPE_VALUE =
+      BatchLogRecordProcessor.class.getSimpleName();
 
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Returns a new Builder for {@link BatchLogProcessor}.
+   * Returns a new Builder for {@link BatchLogRecordProcessor}.
    *
    * @param logExporter the {@link LogExporter} to which the Logs are pushed
-   * @return a new {@link BatchLogProcessorBuilder}.
+   * @return a new {@link BatchLogRecordProcessorBuilder}.
    * @throws NullPointerException if the {@code logExporter} is {@code null}.
    */
-  public static BatchLogProcessorBuilder builder(LogExporter logExporter) {
-    return new BatchLogProcessorBuilder(logExporter);
+  public static BatchLogRecordProcessorBuilder builder(LogExporter logExporter) {
+    return new BatchLogRecordProcessorBuilder(logExporter);
   }
 
-  BatchLogProcessor(
+  BatchLogRecordProcessor(
       LogExporter logExporter,
       MeterProvider meterProvider,
       long scheduleDelayNanos,
@@ -158,26 +159,27 @@ public final class BatchLogProcessor implements LogProcessor {
               result ->
                   result.record(
                       queue.size(),
-                      Attributes.of(LOG_PROCESSOR_TYPE_LABEL, LOG_PROCESSOR_TYPE_VALUE)));
+                      Attributes.of(
+                          LOG_RECORD_PROCESSOR_TYPE_LABEL, LOG_RECORD_PROCESSOR_TYPE_VALUE)));
       processedLogsCounter =
           meter
               .counterBuilder("processedLogs")
               .setUnit("1")
               .setDescription(
-                  "The number of logs processed by the BatchLogProcessor. "
+                  "The number of logs processed by the BatchLogRecordProcessor. "
                       + "[dropped=true if they were dropped due to high throughput]")
               .build();
       droppedAttrs =
           Attributes.of(
-              LOG_PROCESSOR_TYPE_LABEL,
-              LOG_PROCESSOR_TYPE_VALUE,
-              LOG_PROCESSOR_DROPPED_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_VALUE,
+              LOG_RECORD_PROCESSOR_DROPPED_LABEL,
               true);
       exportedAttrs =
           Attributes.of(
-              LOG_PROCESSOR_TYPE_LABEL,
-              LOG_PROCESSOR_TYPE_VALUE,
-              LOG_PROCESSOR_DROPPED_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_VALUE,
+              LOG_RECORD_PROCESSOR_DROPPED_LABEL,
               false);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);

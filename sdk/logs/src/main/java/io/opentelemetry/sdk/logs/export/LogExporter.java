@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.io.Closeable;
@@ -25,8 +25,8 @@ public interface LogExporter extends Closeable {
   /**
    * Returns a {@link LogExporter} which delegates all exports to the {@code exporters} in order.
    *
-   * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
-   * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link LogRecordProcessor} like a
+   * {@link SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
    */
   static LogExporter composite(LogExporter... exporters) {
     return composite(Arrays.asList(exporters));
@@ -35,8 +35,8 @@ public interface LogExporter extends Closeable {
   /**
    * Returns a {@link LogExporter} which delegates all exports to the {@code exporters} in order.
    *
-   * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
-   * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link LogRecordProcessor} like a
+   * {@link SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
    */
   static LogExporter composite(Iterable<LogExporter> exporters) {
     List<LogExporter> exportersList = new ArrayList<>();
@@ -69,8 +69,8 @@ public interface LogExporter extends Closeable {
 
   /**
    * Shutdown the log exporter. Called when {@link SdkLoggerProvider#shutdown()} is called when this
-   * exporter is registered to the provider via {@link BatchLogProcessor} or {@link
-   * SimpleLogProcessor}.
+   * exporter is registered to the provider via {@link BatchLogRecordProcessor} or {@link
+   * SimpleLogRecordProcessor}.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes
    */

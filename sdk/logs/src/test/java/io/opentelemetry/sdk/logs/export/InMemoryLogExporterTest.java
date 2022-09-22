@@ -29,7 +29,9 @@ class InMemoryLogExporterTest {
   @BeforeEach
   void setup() {
     loggerProvider =
-        SdkLoggerProvider.builder().addLogProcessor(SimpleLogProcessor.create(exporter)).build();
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
     logger = loggerProvider.loggerBuilder("logger").build();
   }
 

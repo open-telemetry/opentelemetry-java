@@ -11,11 +11,11 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,28 +37,30 @@ final class LoggerProviderConfiguration {
     Map<String, LogExporter> exportersByName =
         configureLogExporters(config, serviceClassLoader, meterProvider, logExporterCustomizer);
 
-    configureLogProcessors(exportersByName, meterProvider)
-        .forEach(loggerProviderBuilder::addLogProcessor);
+    configureLogRecordProcessors(exportersByName, meterProvider)
+        .forEach(loggerProviderBuilder::addLogRecordProcessor);
   }
 
   // Visible for testing
-  static List<LogProcessor> configureLogProcessors(
+  static List<LogRecordProcessor> configureLogRecordProcessors(
       Map<String, LogExporter> exportersByName, MeterProvider meterProvider) {
     Map<String, LogExporter> exportersByNameCopy = new HashMap<>(exportersByName);
-    List<LogProcessor> logProcessors = new ArrayList<>();
+    List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
     LogExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
-      logProcessors.add(SimpleLogProcessor.create(exporter));
+      logRecordProcessors.add(SimpleLogRecordProcessor.create(exporter));
     }
 
     if (!exportersByNameCopy.isEmpty()) {
       LogExporter compositeLogExporter = LogExporter.composite(exportersByNameCopy.values());
-      logProcessors.add(
-          BatchLogProcessor.builder(compositeLogExporter).setMeterProvider(meterProvider).build());
+      logRecordProcessors.add(
+          BatchLogRecordProcessor.builder(compositeLogExporter)
+              .setMeterProvider(meterProvider)
+              .build());
     }
 
-    return logProcessors;
+    return logRecordProcessors;
   }
 
   // Visible for testing

@@ -16,36 +16,36 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * {@link LogProcessor} is the interface to allow synchronous hooks for log records emitted by
+ * {@link LogRecordProcessor} is the interface to allow synchronous hooks for log records emitted by
  * {@link Logger}s.
  */
 @ThreadSafe
-public interface LogProcessor extends Closeable {
+public interface LogRecordProcessor extends Closeable {
 
   /**
-   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
+   * Returns a {@link LogRecordProcessor} which simply delegates to all processing to the {@code
    * processors} in order.
    */
-  static LogProcessor composite(LogProcessor... processors) {
+  static LogRecordProcessor composite(LogRecordProcessor... processors) {
     return composite(Arrays.asList(processors));
   }
 
   /**
-   * Returns a {@link LogProcessor} which simply delegates to all processing to the {@code
+   * Returns a {@link LogRecordProcessor} which simply delegates to all processing to the {@code
    * processors} in order.
    */
-  static LogProcessor composite(Iterable<LogProcessor> processors) {
-    List<LogProcessor> processorList = new ArrayList<>();
-    for (LogProcessor processor : processors) {
+  static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
+    List<LogRecordProcessor> processorList = new ArrayList<>();
+    for (LogRecordProcessor processor : processors) {
       processorList.add(processor);
     }
     if (processorList.isEmpty()) {
-      return NoopLogProcessor.getInstance();
+      return NoopLogRecordProcessor.getInstance();
     }
     if (processorList.size() == 1) {
       return processorList.get(0);
     }
-    return MultiLogProcessor.create(processorList);
+    return MultiLogRecordProcessor.create(processorList);
   }
 
   /**
@@ -74,8 +74,8 @@ public interface LogProcessor extends Closeable {
   }
 
   /**
-   * Closes this {@link LogProcessor} after processing any remaining log records, releasing any
-   * resources.
+   * Closes this {@link LogRecordProcessor} after processing any remaining log records, releasing
+   * any resources.
    */
   @Override
   default void close() {
