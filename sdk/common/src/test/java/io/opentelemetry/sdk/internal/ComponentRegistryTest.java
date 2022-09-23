@@ -25,15 +25,25 @@ class ComponentRegistryTest {
     assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).build()))
         .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
     assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
-        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()));
+        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
+        .isSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setAttributes(ATTRIBUTES)
+                    .build()));
     assertThat(
             registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
         .isSameAs(
             registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()));
     assertThat(
             registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
+        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()))
         .isSameAs(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()));
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setAttributes(Attributes.builder().put("k1", "v2").build())
+                    .build()));
     assertThat(
             registry.get(
                 InstrumentationScopeInfo.builder(NAME)
@@ -47,6 +57,19 @@ class ComponentRegistryTest {
                     .setVersion(VERSION)
                     .setSchemaUrl(SCHEMA_URL)
                     .setAttributes(ATTRIBUTES)
+                    .build()))
+        .isSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
+                    .setAttributes(Attributes.builder().put("k1", "v2").build())
+                    .build()))
+        .isSameAs(
+            registry.get(
+                InstrumentationScopeInfo.builder(NAME)
+                    .setVersion(VERSION)
+                    .setSchemaUrl(SCHEMA_URL)
                     .build()));
   }
 
@@ -83,21 +106,10 @@ class ComponentRegistryTest {
                     .setSchemaUrl(SCHEMA_URL + "_1")
                     .setAttributes(ATTRIBUTES)
                     .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(Attributes.builder().put("k1", "v2").build())
-                    .build()));
     assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
         .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
     assertThat(
             registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
         .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
   }
 

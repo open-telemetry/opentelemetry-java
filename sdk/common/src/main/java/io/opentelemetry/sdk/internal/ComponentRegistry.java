@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.internal;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * Component (tracer, meter, etc) registry class for all the provider classes (TracerProvider,
@@ -24,7 +26,7 @@ import java.util.function.Function;
  */
 public final class ComponentRegistry<V> {
 
-  private final ConcurrentMap<InstrumentationScopeInfo, V> registry = new ConcurrentHashMap<>();
+  private final ConcurrentMap<ScopeKey, V> registry = new ConcurrentHashMap<>();
   private final Function<InstrumentationScopeInfo, V> factory;
 
   public ComponentRegistry(Function<InstrumentationScopeInfo, V> factory) {
@@ -36,14 +38,16 @@ public final class ComponentRegistry<V> {
    * any, otherwise creates a new instance and associates it with the given scope.
    */
   public V get(InstrumentationScopeInfo instrumentationScopeInfo) {
+    ScopeKey scopeKey = toScopeKey(instrumentationScopeInfo);
+
     // Optimistic lookup, before creating the new component.
-    V component = registry.get(instrumentationScopeInfo);
+    V component = registry.get(scopeKey);
     if (component != null) {
       return component;
     }
 
     V newComponent = factory.apply(instrumentationScopeInfo);
-    V oldComponent = registry.putIfAbsent(instrumentationScopeInfo, newComponent);
+    V oldComponent = registry.putIfAbsent(scopeKey, newComponent);
     return oldComponent != null ? oldComponent : newComponent;
   }
 
@@ -54,5 +58,28 @@ public final class ComponentRegistry<V> {
    */
   public Collection<V> getComponents() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
+  }
+
+  private static ScopeKey toScopeKey(InstrumentationScopeInfo instrumentationScopeInfo) {
+    return new AutoValue_ComponentRegistry_ScopeKey(
+        instrumentationScopeInfo.getName(),
+        instrumentationScopeInfo.getVersion(),
+        instrumentationScopeInfo.getSchemaUrl());
+  }
+
+  /**
+   * Encapsulates the {@link InstrumentationScopeInfo} fields which identify a unique component
+   * (Tracer, Meter, Logger).
+   */
+  @AutoValue
+  abstract static class ScopeKey {
+
+    abstract String getName();
+
+    @Nullable
+    abstract String getVersion();
+
+    @Nullable
+    abstract String getSchemaUrl();
   }
 }
