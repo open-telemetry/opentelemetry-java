@@ -7,29 +7,41 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.Attributes;
 
-/** Builder class for creating {@link Logger} instances. */
+/**
+ * Builder class for creating {@link Logger} instances.
+ *
+ * <p>{@link Logger}s are identified by their scope name, version, and schema URL. These identifying
+ * fields, along with attributes, combine to for the instrumentation scope, which is attached to all
+ * log records produced by the {@link Logger}.
+ */
 public interface LoggerBuilder {
 
   /**
-   * Assign an OpenTelemetry schema URL to the resulting {@link Logger}.
+   * Set the scope schema URL of the resulting {@link Logger}. Schema URL is part of {@link Logger}
+   * identity.
    *
-   * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation scope
+   * @param schemaUrl The schema URL.
    * @return this
    */
   LoggerBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assign a version to the instrumentation scope that is using the resulting {@link Logger}.
+   * Sets the scope instrumentation version of the resulting {@link Logger}. Version is part of
+   * {@link Logger} identity.
    *
-   * @param instrumentationScopeVersion the version of the instrumentation scope
+   * @param instrumentationScopeVersion The instrumentation version.
    * @return this
    */
   LoggerBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
-   * Assigns instrumentation scope attributes for the resulting {@link Logger}.
+   * Sets the scope attributes of the resulting {@link Logger}. Attributes are not part of {@link
+   * Logger} identity.
    *
-   * @param attributes The instrumentation scope attributes.
+   * <p>Obtaining multiple {@link Logger}s which have the same name, version, and schema URL, but
+   * different attributes is not advised and the behavior is unspecified.
+   *
+   * @param attributes The scope attributes.
    * @return this
    */
   LoggerBuilder setAttributes(Attributes attributes);
@@ -37,7 +49,7 @@ public interface LoggerBuilder {
   /**
    * Gets or creates a {@link Logger} instance.
    *
-   * @return a logger instance configured with the provided options
+   * @return a {@link Logger} instance configured with the provided options.
    */
   Logger build();
 }

@@ -10,30 +10,40 @@ import io.opentelemetry.api.common.Attributes;
 /**
  * Builder class for creating {@link Meter} instances.
  *
+ * <p>{@link Meter}s are identified by their scope name, version, and schema URL. These identifying
+ * fields, along with attributes, combine to for the instrumentation scope, which is attached to all
+ * metrics produced by the {@link Meter}.
+ *
  * @since 1.10.0
  */
 public interface MeterBuilder {
 
   /**
-   * Assigns an OpenTelemetry schema URL to the resulting Meter.
+   * Set the scope schema URL of the resulting {@link Meter}. Schema URL is part of {@link Meter}
+   * identity.
    *
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
+   * @param schemaUrl The schema URL.
    * @return this
    */
   MeterBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assigns a version to the instrumentation scope that is using the resulting Meter.
+   * Sets the scope instrumentation version of the resulting {@link Meter}. Version is part of
+   * {@link Meter} identity.
    *
-   * @param instrumentationScopeVersion The version of the instrumentation scope.
+   * @param instrumentationScopeVersion The instrumentation version.
    * @return this
    */
   MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
 
   /**
-   * Assigns instrumentation scope attributes for the resulting Meter.
+   * Sets the scope attributes of the resulting {@link Meter}. Attributes are not part of {@link
+   * Meter} identity.
    *
-   * @param attributes The instrumentation scope attributes.
+   * <p>Obtaining multiple {@link Meter}s which have the same name, version, and schema URL, but
+   * different attributes is not advised and the behavior is unspecified.
+   *
+   * @param attributes The scope attributes.
    * @return this
    * @since 1.18.0
    */
