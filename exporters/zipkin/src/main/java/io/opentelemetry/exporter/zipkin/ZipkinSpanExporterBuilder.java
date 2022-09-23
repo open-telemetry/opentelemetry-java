@@ -26,11 +26,14 @@ public final class ZipkinSpanExporterBuilder {
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
+  // compression is enabled by default, because this is the default of OkHttpSender,
+  // which is created when no custom sender is set (see OkHttpSender.Builder)
+  private boolean compressionEnabled = true;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
   private MeterProvider meterProvider = MeterProvider.noop();
 
   /**
-   * Sets the Zipkin sender. Implements the client side of the span transport. A {@link
+   * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
    * OkHttpSender} is a good default.
    *
    * <p>The {@link Sender#close()} method will be called when the exporter is shut down.
@@ -75,7 +78,7 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the zipkin endpoint. This will use the endpoint to assign a {@link OkHttpSender} instance
+   * Sets the zipkin endpoint. This will use the endpoint to assign an {@link OkHttpSender} instance
    * to this builder.
    *
    * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
@@ -85,6 +88,26 @@ public final class ZipkinSpanExporterBuilder {
   public ZipkinSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
     this.endpoint = endpoint;
+    return this;
+  }
+
+  /**
+   * Sets the method used to compress payloads. If unset, compression is enabled. Currently
+   * supported compression methods include "gzip" and "none".
+   *
+   * <p>The compression method is ignored when a custom Zipkin sender is set via {@link
+   * #setSender(Sender)}.
+   *
+   * @param compressionMethod The compression method, ex. "gzip".
+   * @return this.
+   * @see OkHttpSender
+   */
+  public ZipkinSpanExporterBuilder setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
+    this.compressionEnabled = compressionMethod.equals("gzip");
     return this;
   }
 
@@ -135,7 +158,11 @@ public final class ZipkinSpanExporterBuilder {
     Sender sender = this.sender;
     if (sender == null) {
       sender =
-          OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
+          OkHttpSender.newBuilder()
+              .endpoint(endpoint)
+              .compressionEnabled(compressionEnabled)
+              .readTimeout((int) readTimeoutMillis)
+              .build();
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
