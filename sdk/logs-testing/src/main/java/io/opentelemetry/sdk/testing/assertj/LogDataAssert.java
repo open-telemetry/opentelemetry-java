@@ -10,10 +10,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -162,5 +162,18 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
     // compare as maps, since implementations do not have equals that work correctly across
     // implementations.
     return actual.getAttributes().asMap().equals(attributes.asMap());
+  }
+
+  /** Asserts the log has the given total attributes. */
+  public LogDataAssert hasTotalAttributeCount(int totalAttributeCount) {
+    isNotNull();
+    if (actual.getTotalAttributeCount() != totalAttributeCount) {
+      failWithActualExpectedAndMessage(
+          actual.getTotalAttributeCount(),
+          totalAttributeCount,
+          "Expected log to have recorded <%s> total attributes but did not",
+          totalAttributeCount);
+    }
+    return this;
   }
 }

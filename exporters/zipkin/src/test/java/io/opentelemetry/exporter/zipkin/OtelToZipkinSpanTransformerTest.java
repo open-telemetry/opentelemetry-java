@@ -205,7 +205,9 @@ class OtelToZipkinSpanTransformerTest {
     SpanData data =
         spanBuilder()
             .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.create("io.opentelemetry.auto", "1.0.0", null))
+                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
+                    .setVersion("1.0.0")
+                    .build())
             .setKind(SpanKind.CLIENT)
             .build();
 

@@ -63,7 +63,7 @@ class LoggingMetricExporterTest {
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
     InstrumentationScopeInfo instrumentationScopeInfo =
-        InstrumentationScopeInfo.create("manualInstrumentation", "1.0", null);
+        InstrumentationScopeInfo.builder("manualInstrumentation").setVersion("1.0").build();
     exporter.export(
         Arrays.asList(
             ImmutableMetricData.createDoubleSummary(

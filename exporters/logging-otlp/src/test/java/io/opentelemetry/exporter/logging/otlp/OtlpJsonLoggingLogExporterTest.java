@@ -12,13 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
@@ -40,7 +40,10 @@ class OtlpJsonLoggingLogExporterTest {
       TestLogData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
-              InstrumentationScopeInfo.create("instrumentation", "1", null))
+              InstrumentationScopeInfo.builder("instrumentation")
+                  .setVersion("1")
+                  .setAttributes(Attributes.builder().put("key", "value").build())
+                  .build())
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -58,7 +61,7 @@ class OtlpJsonLoggingLogExporterTest {
       TestLogData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
-              InstrumentationScopeInfo.create("instrumentation2", "2", null))
+              InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
@@ -91,77 +94,69 @@ class OtlpJsonLoggingLogExporterTest {
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     String message = logs.getEvents().get(0).getMessage();
     JSONAssert.assertEquals(
-        "{\n"
-            + "   \"resource\":{\n"
-            + "      \"attributes\":[\n"
-            + "         {\n"
-            + "            \"key\":\"key\",\n"
-            + "            \"value\":{\n"
-            + "               \"stringValue\":\"value\"\n"
-            + "            }\n"
-            + "         }\n"
-            + "      ]\n"
-            + "   },\n"
-            + "   \"scopeLogs\":[\n"
-            + "      {\n"
-            + "         \"scope\":{\n"
-            + "            \"name\":\"instrumentation2\",\n"
-            + "            \"version\":\"2\"\n"
-            + "         },\n"
-            + "         \"logRecords\":[\n"
-            + "            {\n"
-            + "               \"timeUnixNano\":\"1631533710000000\",\n"
-            + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
-            + "               \"severityText\":\"INFO\",\n"
-            + "               \"body\":{\n"
-            + "                  \"stringValue\":\"body2\"\n"
-            + "               },\n"
-            + "               \"attributes\":[\n"
-            + "                  {\n"
-            + "                     \"key\":\"important\",\n"
-            + "                     \"value\":{\n"
-            + "                        \"boolValue\":true\n"
-            + "                     }\n"
-            + "                  }\n"
-            + "               ],\n"
-            + "               \"traceId\":\"12345678876543211234567887654322\",\n"
-            + "               \"spanId\":\"8765432112345875\"\n"
-            + "            }\n"
-            + "         ]\n"
-            + "      },\n"
-            + "      {\n"
-            + "         \"scope\":{\n"
-            + "            \"name\":\"instrumentation\",\n"
-            + "            \"version\":\"1\"\n"
-            + "         },\n"
-            + "         \"logRecords\":[\n"
-            + "            {\n"
-            + "               \"timeUnixNano\":\"1631533710000000\",\n"
-            + "               \"severityNumber\":\"SEVERITY_NUMBER_INFO\",\n"
-            + "               \"severityText\":\"INFO\",\n"
-            + "               \"body\":{\n"
-            + "                  \"stringValue\":\"body1\"\n"
-            + "               },\n"
-            + "               \"attributes\":[\n"
-            + "                  {\n"
-            + "                     \"key\":\"animal\",\n"
-            + "                     \"value\":{\n"
-            + "                        \"stringValue\":\"cat\"\n"
-            + "                     }\n"
-            + "                  },\n"
-            + "                  {\n"
-            + "                     \"key\":\"lives\",\n"
-            + "                     \"value\":{\n"
-            + "                        \"intValue\":\"9\"\n"
-            + "                     }\n"
-            + "                  }\n"
-            + "               ],\n"
-            + "               \"traceId\":\"12345678876543211234567887654322\",\n"
-            + "               \"spanId\":\"8765432112345876\"\n"
-            + "            }\n"
-            + "         ]\n"
-            + "      }\n"
-            + "   ]\n"
+        "{"
+            + "   \"resource\": {"
+            + "     \"attributes\": [{"
+            + "       \"key\":\"key\","
+            + "       \"value\": {"
+            + "          \"stringValue\":\"value\""
+            + "       }"
+            + "     }]"
+            + "   },"
+            + "   \"scopeLogs\": [{"
+            + "     \"scope\":{"
+            + "       \"name\":\"instrumentation2\","
+            + "       \"version\":\"2\""
+            + "     },"
+            + "     \"logRecords\": [{"
+            + "       \"timeUnixNano\":\"1631533710000000\","
+            + "       \"severityNumber\":\"SEVERITY_NUMBER_INFO\","
+            + "       \"severityText\":\"INFO\","
+            + "       \"body\": {"
+            + "         \"stringValue\":\"body2\""
+            + "       },"
+            + "       \"attributes\": [{"
+            + "         \"key\":\"important\","
+            + "         \"value\": {"
+            + "           \"boolValue\":true"
+            + "         }"
+            + "       }],"
+            + "       \"traceId\":\"12345678876543211234567887654322\","
+            + "       \"spanId\":\"8765432112345875\""
+            + "     }]"
+            + "     }, {"
+            + "     \"scope\": {"
+            + "       \"name\":\"instrumentation\","
+            + "       \"version\":\"1\","
+            + "       \"attributes\": [{"
+            + "         \"key\":\"key\","
+            + "         \"value\": {"
+            + "           \"stringValue\":\"value\""
+            + "         }"
+            + "       }]"
+            + "     },"
+            + "     \"logRecords\": [{"
+            + "       \"timeUnixNano\":\"1631533710000000\","
+            + "       \"severityNumber\":\"SEVERITY_NUMBER_INFO\","
+            + "       \"severityText\":\"INFO\","
+            + "       \"body\": {"
+            + "         \"stringValue\":\"body1\""
+            + "       },"
+            + "       \"attributes\": [{"
+            + "         \"key\":\"animal\","
+            + "         \"value\": {"
+            + "           \"stringValue\":\"cat\""
+            + "         }"
+            + "       }, {"
+            + "         \"key\":\"lives\","
+            + "         \"value\":{"
+            + "           \"intValue\":\"9\""
+            + "         }"
+            + "       }],"
+            + "       \"traceId\":\"12345678876543211234567887654322\","
+            + "       \"spanId\":\"8765432112345876\""
+            + "     }]"
+            + "   }]"
             + "}",
         message,
         /* strict= */ false);

@@ -30,7 +30,12 @@ public abstract class InstrumentationScopeInfo {
     return InstrumentationScopeInfo.create(name, null, null, Attributes.empty());
   }
 
-  /** Creates a new instance of {@link InstrumentationScopeInfo}. */
+  /**
+   * Creates a new instance of {@link InstrumentationScopeInfo}.
+   *
+   * @deprecated Use {@link #builder(String)} or {@link #create(String)}.
+   */
+  @Deprecated
   public static InstrumentationScopeInfo create(
       String name, @Nullable String version, @Nullable String schemaUrl) {
     return InstrumentationScopeInfo.create(name, version, schemaUrl, Attributes.empty());
@@ -72,7 +77,11 @@ public abstract class InstrumentationScopeInfo {
   @Nullable
   public abstract String getSchemaUrl();
 
-  /** Returns the attributes of this instrumentation scope. */
+  /**
+   * Returns the attributes of this instrumentation scope.
+   *
+   * @since 1.18.0
+   */
   public abstract Attributes getAttributes();
 
   InstrumentationScopeInfo() {}

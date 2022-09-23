@@ -5,10 +5,11 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry Contrib Logging Support"
-otelJava.moduleName.set("io.opentelemetry.sdk.extension.logging")
+description = "OpenTelemetry Log SDK"
+otelJava.moduleName.set("io.opentelemetry.sdk.logs")
 
 dependencies {
+  api(project(":api:logs"))
   api(project(":sdk:common"))
 
   testImplementation(project(":sdk:logs-testing"))

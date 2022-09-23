@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -27,10 +28,15 @@ public final class InstrumentationScopeUtil {
   @SuppressWarnings("deprecation") // Utility method for compatibility
   public static InstrumentationScopeInfo toInstrumentationScopeInfo(
       io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return InstrumentationScopeInfo.create(
-        instrumentationLibraryInfo.getName(),
-        instrumentationLibraryInfo.getVersion(),
-        instrumentationLibraryInfo.getSchemaUrl());
+    InstrumentationScopeInfoBuilder builder =
+        InstrumentationScopeInfo.builder(instrumentationLibraryInfo.getName());
+    if (instrumentationLibraryInfo.getVersion() != null) {
+      builder.setVersion(instrumentationLibraryInfo.getVersion());
+    }
+    if (instrumentationLibraryInfo.getSchemaUrl() != null) {
+      builder.setSchemaUrl(instrumentationLibraryInfo.getSchemaUrl());
+    }
+    return builder.build();
   }
 
   private InstrumentationScopeUtil() {}

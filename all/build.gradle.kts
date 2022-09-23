@@ -8,10 +8,10 @@ otelJava.moduleName.set("io.opentelemetry.all")
 tasks {
   // We don't compile much here, just some API boundary tests. This project is mostly for
   // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
-  // highest supported Java version in any of our projects. Most of our projects target
-  // Java 8, except for jfr-events.
+  // highest supported Java version in any of our projects. All of our projects target
+  // Java 8.
   withType(JavaCompile::class) {
-    options.release.set(11)
+    options.release.set(8)
   }
 
   val testJavaVersion: String? by project
@@ -38,6 +38,17 @@ dependencies {
       }
     }
   }
+
+  // For testing BOM references to artifacts that were previously published
+  testImplementation(platform(project(":bom")))
+  // The io.grpc.grpc-* dependencies are transitive dependencies of opentelemetry-exporter-jaeger-proto
+  // which must be provided by the user
+  testImplementation("io.opentelemetry:opentelemetry-exporter-jaeger-proto")
+  testImplementation("io.grpc:grpc-api")
+  testImplementation("io.grpc:grpc-protobuf")
+  testImplementation("io.grpc:grpc-stub")
+  testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
+
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
@@ -83,9 +94,7 @@ tasks.named<JacocoReport>("jacocoTestReport") {
           !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/internal/protobuf/") &&
           !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
           !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
-          !it.absolutePath.contains("AutoValue_") &&
-          // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
-          !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
+          !it.absolutePath.contains("AutoValue_")
       }
     )
   }

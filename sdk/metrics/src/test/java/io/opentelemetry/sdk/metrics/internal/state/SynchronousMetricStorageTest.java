@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class SynchronousMetricStorageTest {
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
-      InstrumentationScopeInfo.create("test", "1.0", null);
+      InstrumentationScopeInfo.builder("test").setVersion("1.0").build();
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);

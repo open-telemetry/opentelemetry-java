@@ -39,6 +39,11 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: ./.github/scripts/update-sdk-version.sh $VERSION
 
+      - name: Update license report
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: generateLicenseReport
+
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-github-bot.sh
 

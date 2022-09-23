@@ -11,13 +11,13 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.time.LocalDateTime;
@@ -53,7 +53,8 @@ class SystemOutLogExporterTest {
   private static LogData sampleLog(long timestamp) {
     return TestLogData.builder()
         .setResource(Resource.empty())
-        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("logTest", "1.0", null))
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("logTest").setVersion("1.0").build())
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)

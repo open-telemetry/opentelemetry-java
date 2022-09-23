@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
@@ -18,7 +19,6 @@ import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.Closeable;
@@ -54,7 +54,8 @@ class OtlpGrpcNettyShadedLogExporterTest
   protected LogData generateFakeTelemetry() {
     return TestLogData.builder()
         .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
-        .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("instrumentation", "1", null))
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
         .setEpoch(Instant.now())
         .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")

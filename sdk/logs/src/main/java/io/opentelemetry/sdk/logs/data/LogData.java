@@ -6,8 +6,10 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -44,4 +46,13 @@ public interface LogData {
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();
+
+  /**
+   * Returns the total number of attributes that were recorded on this log.
+   *
+   * <p>This number may be larger than the number of attributes that are attached to this log, if
+   * the total number recorded was greater than the configured maximum value. See {@link
+   * LogLimits#getMaxNumberOfAttributes()}.
+   */
+  int getTotalAttributeCount();
 }

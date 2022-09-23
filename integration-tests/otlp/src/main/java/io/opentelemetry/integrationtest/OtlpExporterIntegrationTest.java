@@ -18,6 +18,8 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
@@ -53,9 +55,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
-import io.opentelemetry.sdk.logs.LogEmitter;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -502,13 +502,13 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testLogExporter(LogExporter logExporter) {
-    SdkLogEmitterProvider logEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
             .setResource(RESOURCE)
             .addLogProcessor(SimpleLogProcessor.create(logExporter))
             .build();
 
-    LogEmitter logEmitter = logEmitterProvider.get(OtlpExporterIntegrationTest.class.getName());
+    Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
 
     SpanContext spanContext =
         SpanContext.create(
@@ -518,7 +518,7 @@ abstract class OtlpExporterIntegrationTest {
             TraceState.getDefault());
 
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
-      logEmitter
+      logger
           .logRecordBuilder()
           .setBody("log body")
           .setAllAttributes(Attributes.builder().put("key", "value").build())
@@ -530,7 +530,7 @@ abstract class OtlpExporterIntegrationTest {
     }
 
     // Closing triggers flush of processor
-    logEmitterProvider.close();
+    loggerProvider.close();
 
     await()
         .atMost(Duration.ofSeconds(30))

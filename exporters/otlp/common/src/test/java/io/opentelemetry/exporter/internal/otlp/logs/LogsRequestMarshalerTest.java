@@ -14,6 +14,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -27,7 +28,6 @@ import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.ByteArrayOutputStream;
@@ -57,7 +57,11 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+                        InstrumentationScopeInfo.builder("testLib")
+                            .setVersion("1.0")
+                            .setSchemaUrl("http://url")
+                            .setAttributes(Attributes.builder().put("key", "value").build())
+                            .build())
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -65,6 +69,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -77,7 +82,16 @@ class LogsRequestMarshalerTest {
     ScopeLogs instrumentationLibraryLogs = onlyResourceLogs.getScopeLogs(0);
     assertThat(instrumentationLibraryLogs.getSchemaUrl()).isEqualTo("http://url");
     assertThat(instrumentationLibraryLogs.getScope())
-        .isEqualTo(InstrumentationScope.newBuilder().setName("testLib").setVersion("1.0").build());
+        .isEqualTo(
+            InstrumentationScope.newBuilder()
+                .setName("testLib")
+                .setVersion("1.0")
+                .addAttributes(
+                    KeyValue.newBuilder()
+                        .setKey("key")
+                        .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                        .build())
+                .build());
   }
 
   @Test
@@ -90,7 +104,7 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("instrumentation", "1", null))
+                        InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -98,6 +112,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -111,6 +126,7 @@ class LogsRequestMarshalerTest {
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build());
+    assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 
@@ -124,7 +140,7 @@ class LogsRequestMarshalerTest {
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.create("instrumentation", "1", null))
+                        InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -135,6 +151,7 @@ class LogsRequestMarshalerTest {
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue("").build());
     assertThat(logRecord.getAttributesList()).isEmpty();
+    assertThat(logRecord.getDroppedAttributesCount()).isZero();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 

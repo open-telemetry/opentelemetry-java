@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import java.util.ArrayList;
@@ -54,9 +54,9 @@ class BatchLogProcessorTest {
     when(mockLogExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
-  private void emitLog(SdkLogEmitterProvider sdkLogEmitterProvider, String message) {
-    sdkLogEmitterProvider
-        .logEmitterBuilder(getClass().getName())
+  private void emitLog(SdkLoggerProvider sdkLoggerProvider, String message) {
+    sdkLoggerProvider
+        .loggerBuilder(getClass().getName())
         .build()
         .logRecordBuilder()
         .setBody(message)
@@ -110,16 +110,16 @@ class BatchLogProcessorTest {
   void emitMultipleLogs() {
     WaitingLogExporter waitingLogExporter =
         new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
-    SdkLogEmitterProvider logEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(waitingLogExporter)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
-    emitLog(logEmitterProvider, LOG_MESSAGE_1);
-    emitLog(logEmitterProvider, LOG_MESSAGE_2);
+    emitLog(loggerProvider, LOG_MESSAGE_1);
+    emitLog(loggerProvider, LOG_MESSAGE_2);
     List<LogData> exported = waitingLogExporter.waitForExport();
     assertThat(exported)
         .satisfiesExactly(
@@ -131,8 +131,8 @@ class BatchLogProcessorTest {
   void emitMoreLogsThanBufferSize() {
     CompletableLogExporter logExporter = new CompletableLogExporter();
 
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(logExporter)
                     .setMaxQueueSize(6)
@@ -141,12 +141,12 @@ class BatchLogProcessorTest {
                     .build())
             .build();
 
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
 
     logExporter.succeed();
 
@@ -171,17 +171,17 @@ class BatchLogProcessorTest {
             .setScheduleDelay(10, TimeUnit.SECONDS)
             .build();
 
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder().addLogProcessor(batchLogProcessor).build();
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogProcessor(batchLogProcessor).build();
     for (int i = 0; i < 50; i++) {
-      emitLog(sdkLogEmitterProvider, "notExported");
+      emitLog(sdkLoggerProvider, "notExported");
     }
     List<LogData> exported = waitingLogExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(49);
 
     for (int i = 0; i < 50; i++) {
-      emitLog(sdkLogEmitterProvider, "notExported");
+      emitLog(sdkLoggerProvider, "notExported");
     }
     exported = waitingLogExporter.waitForExport();
     assertThat(exported).isNotNull();
@@ -199,8 +199,8 @@ class BatchLogProcessorTest {
         new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
     WaitingLogExporter waitingLogExporter2 =
         new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(
                         LogExporter.composite(
@@ -209,8 +209,8 @@ class BatchLogProcessorTest {
                     .build())
             .build();
 
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_2);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
     List<LogData> exported1 = waitingLogExporter1.waitForExport();
     List<LogData> exported2 = waitingLogExporter2.waitForExport();
     assertThat(exported1)
@@ -231,8 +231,8 @@ class BatchLogProcessorTest {
     BlockingLogExporter blockingLogExporter = new BlockingLogExporter();
     WaitingLogExporter waitingLogExporter =
         new WaitingLogExporter(maxQueuedLogs, CompletableResultCode.ofSuccess());
-    SdkLogEmitterProvider sdkTracerProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider sdkTracerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(
                         LogExporter.composite(
@@ -297,8 +297,8 @@ class BatchLogProcessorTest {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockLogExporter)
         .export(anyList());
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(
                         LogExporter.composite(Arrays.asList(mockLogExporter, waitingLogExporter)))
@@ -306,12 +306,12 @@ class BatchLogProcessorTest {
                     .build())
             .build();
 
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     List<LogData> exported = waitingLogExporter.waitForExport();
     assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_1));
     waitingLogExporter.reset();
     // Continue to export after the exception was received.
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_2);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
     exported = waitingLogExporter.waitForExport();
     assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
   }
@@ -326,8 +326,7 @@ class BatchLogProcessorTest {
             .setScheduleDelay(1, TimeUnit.MILLISECONDS)
             .setMaxQueueSize(1)
             .build();
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder().addLogProcessor(blp).build();
+    SdkLoggerProvider sdkLoggerProvider = SdkLoggerProvider.builder().addLogProcessor(blp).build();
 
     CountDownLatch exported = new CountDownLatch(1);
     // We return a result we never complete, meaning it will timeout.
@@ -340,7 +339,7 @@ class BatchLogProcessorTest {
                   return true;
                 })))
         .thenReturn(new CompletableResultCode());
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_1);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     exported.await();
     // Timed out so the log was dropped.
     await().untilAsserted(() -> assertThat(blp.getBatch()).isEmpty());
@@ -358,7 +357,7 @@ class BatchLogProcessorTest {
                   return true;
                 })))
         .thenReturn(CompletableResultCode.ofSuccess());
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_2);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
     exported.await();
     await().untilAsserted(() -> assertThat(blp.getBatch()).isEmpty());
   }
@@ -370,22 +369,21 @@ class BatchLogProcessorTest {
         new WaitingLogExporter(1, CompletableResultCode.ofSuccess());
     // Set the export delay to large value, in order to confirm the #flush() below works
 
-    SdkLogEmitterProvider sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             .addLogProcessor(
                 BatchLogProcessor.builder(waitingLogExporter)
                     .setScheduleDelay(10, TimeUnit.SECONDS)
                     .build())
             .build();
 
-    emitLog(sdkLogEmitterProvider, LOG_MESSAGE_2);
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
 
     // Force a shutdown, which forces processing of all remaining logs.
-    sdkLogEmitterProvider.shutdown().join(10, TimeUnit.SECONDS);
+    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<LogData> exported = waitingLogExporter.getExported();
     assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
-    ;
     assertThat(waitingLogExporter.shutDownCalled.get()).isTrue();
   }
 

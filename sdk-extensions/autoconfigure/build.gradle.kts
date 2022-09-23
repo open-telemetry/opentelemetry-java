@@ -47,6 +47,21 @@ testing {
         }
       }
     }
+    val testConditionalResourceProvider by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":semconv"))
+      }
+
+      targets {
+        all {
+          testTask {
+            environment("OTEL_TRACES_EXPORTER", "none")
+            environment("OTEL_METRICS_EXPORTER", "none")
+            environment("OTEL_LOGS_EXPORTER", "none")
+          }
+        }
+      }
+    }
     val testConfigError by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":extensions:trace-propagators"))

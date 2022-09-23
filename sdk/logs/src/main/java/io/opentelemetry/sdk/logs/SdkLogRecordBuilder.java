@@ -6,13 +6,14 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.Severity;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -20,7 +21,7 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 final class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  private final LogEmitterSharedState logEmitterSharedState;
+  private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -32,10 +33,9 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
-      LogEmitterSharedState logEmitterSharedState,
-      InstrumentationScopeInfo instrumentationScopeInfo) {
-    this.logEmitterSharedState = logEmitterSharedState;
-    this.logLimits = logEmitterSharedState.getLogLimits();
+      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+    this.loggerSharedState = loggerSharedState;
+    this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
@@ -91,19 +91,17 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public void emit() {
-    if (logEmitterSharedState.hasBeenShutdown()) {
+    if (loggerSharedState.hasBeenShutdown()) {
       return;
     }
-    logEmitterSharedState
+    loggerSharedState
         .getLogProcessor()
         .onEmit(
             SdkReadWriteLogRecord.create(
-                logEmitterSharedState.getLogLimits(),
-                logEmitterSharedState.getResource(),
+                loggerSharedState.getLogLimits(),
+                loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                this.epochNanos == 0
-                    ? this.logEmitterSharedState.getClock().now()
-                    : this.epochNanos,
+                this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
                 spanContext,
                 severity,
                 severityText,

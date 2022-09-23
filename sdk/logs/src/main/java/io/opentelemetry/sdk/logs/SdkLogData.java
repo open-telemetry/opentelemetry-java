@@ -7,11 +7,11 @@ package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -31,7 +31,8 @@ abstract class SdkLogData implements LogData {
       Severity severity,
       @Nullable String severityText,
       Body body,
-      Attributes attributes) {
+      Attributes attributes,
+      int totalAttributeCount) {
     return new AutoValue_SdkLogData(
         resource,
         instrumentationScopeInfo,
@@ -40,6 +41,7 @@ abstract class SdkLogData implements LogData {
         severity,
         severityText,
         body,
-        attributes);
+        attributes,
+        totalAttributeCount);
   }
 }

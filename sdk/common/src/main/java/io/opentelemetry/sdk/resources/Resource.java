@@ -155,7 +155,7 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
-    if (other == null) {
+    if (other == null || other == EMPTY) {
       return this;
     }
 

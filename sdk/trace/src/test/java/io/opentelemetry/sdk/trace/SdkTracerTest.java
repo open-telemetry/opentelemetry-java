@@ -27,8 +27,10 @@ class SdkTracerTest {
       "io.opentelemetry.sdk.trace.TracerSdkTest";
   private static final String INSTRUMENTATION_SCOPE_VERSION = "0.2.0";
   private static final InstrumentationScopeInfo instrumentationScopeInfo =
-      InstrumentationScopeInfo.create(
-          INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION, "http://schemaurl");
+      InstrumentationScopeInfo.builder(INSTRUMENTATION_SCOPE_NAME)
+          .setVersion(INSTRUMENTATION_SCOPE_VERSION)
+          .setSchemaUrl("http://schemaurl")
+          .build();
   private final SdkTracer tracer =
       (SdkTracer)
           SdkTracerProvider.builder()
@@ -51,12 +53,7 @@ class SdkTracerTest {
   @Test
   void propagatesInstrumentationScopeInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
-    assertThat(readableSpan.getInstrumentationScopeInfo())
-        .isEqualTo(
-            InstrumentationScopeInfo.create(
-                instrumentationScopeInfo.getName(),
-                instrumentationScopeInfo.getVersion(),
-                instrumentationScopeInfo.getSchemaUrl()));
+    assertThat(readableSpan.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
   }
 
   @Test

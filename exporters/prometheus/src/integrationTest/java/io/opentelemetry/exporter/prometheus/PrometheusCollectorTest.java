@@ -79,7 +79,7 @@ class PrometheusCollectorTest {
     return ImmutableList.of(
         ImmutableMetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationScopeInfo.create("grpc", "version", null),
+            InstrumentationScopeInfo.builder("grpc").setVersion("version").build(),
             "grpc.name",
             "long_description",
             "1",
@@ -94,7 +94,7 @@ class PrometheusCollectorTest {
                         5)))),
         ImmutableMetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
-            InstrumentationScopeInfo.create("http", "version", null),
+            InstrumentationScopeInfo.builder("http").setVersion("version").build(),
             "http.name",
             "double_description",
             "1",

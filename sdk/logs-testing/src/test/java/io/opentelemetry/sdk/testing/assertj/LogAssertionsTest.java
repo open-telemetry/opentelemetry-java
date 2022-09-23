@@ -12,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.util.Arrays;
@@ -55,6 +55,7 @@ public class LogAssertionsTest {
           .setSeverityText("info")
           .setBody("message")
           .setAttributes(ATTRIBUTES)
+          .setTotalAttributeCount(999)
           .build();
 
   @Test
@@ -109,7 +110,8 @@ public class LogAssertionsTest {
                         attributeEntry("colors", "red", "blue"),
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1)));
+                        attributeEntry("coins", 0.01, 0.05, 0.1)))
+        .hasTotalAttributeCount(999);
   }
 
   @Test
@@ -178,6 +180,8 @@ public class LogAssertionsTest {
                                 .hasEntrySatisfying(
                                     AttributeKey.stringKey("bear"),
                                     value -> assertThat(value).hasSize(2))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
         .isInstanceOf(AssertionError.class);
   }
 }

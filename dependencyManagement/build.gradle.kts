@@ -14,16 +14,15 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.13.3",
   "com.google.guava:guava-bom:31.1-jre",
-  "com.google.protobuf:protobuf-bom:3.21.2",
-  "com.linecorp.armeria:armeria-bom:1.17.1",
+  "com.google.protobuf:protobuf-bom:3.21.5",
+  "com.linecorp.armeria:armeria-bom:1.18.0",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.47.0",
-  "io.micrometer:micrometer-bom:1.9.2",
-  "io.zipkin.brave:brave-bom:5.13.10",
+  "io.grpc:grpc-bom:1.49.0",
+  "io.zipkin.brave:brave-bom:5.13.11",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
-  "org.junit:junit-bom:5.8.2",
+  "org.junit:junit-bom:5.9.0",
   "org.testcontainers:testcontainers-bom:1.17.3",
-  "org.yaml:snakeyaml:1.30"
+  "org.yaml:snakeyaml:1.32"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -34,7 +33,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.14.0",
+    "2.15.0",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
@@ -65,12 +64,12 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.mockito",
-    "4.6.1",
+    "4.7.0",
     listOf("mockito-core", "mockito-junit-jupiter")
   ),
   DependencySet(
     "org.slf4j",
-    "1.7.36",
+    "2.0.0",
     listOf("jul-to-slf4j", "slf4j-simple")
   ),
 )
@@ -83,7 +82,7 @@ val DEPENDENCIES = listOf(
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:0.23.1",
-  "com.uber.nullaway:nullaway:0.9.8",
+  "com.uber.nullaway:nullaway:0.9.9",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
@@ -92,11 +91,11 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.10",
+  "nl.jqno.equalsverifier:equalsverifier:3.10.1",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.21",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.22",
   "org.jctools:jctools-core:3.3.0",
   "org.junit-pioneer:junit-pioneer:1.7.1",
   "org.skyscreamer:jsonassert:1.5.1",

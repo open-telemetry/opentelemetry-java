@@ -7,11 +7,11 @@ package io.opentelemetry.sdk.testing.logs;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,8 @@ public abstract class TestLogData implements LogData {
         .setSpanContext(SpanContext.getInvalid())
         .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
         .setBody("")
-        .setAttributes(Attributes.empty());
+        .setAttributes(Attributes.empty())
+        .setTotalAttributeCount(0);
   }
 
   TestLogData() {}
@@ -86,5 +87,8 @@ public abstract class TestLogData implements LogData {
 
     /** Set the attributes. */
     public abstract Builder setAttributes(Attributes attributes);
+
+    /** Set the total attribute count. */
+    public abstract Builder setTotalAttributeCount(int totalAttributeCount);
   }
 }

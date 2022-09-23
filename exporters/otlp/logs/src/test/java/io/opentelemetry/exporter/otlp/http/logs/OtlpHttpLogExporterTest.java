@@ -22,6 +22,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -33,7 +34,6 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogData;
 import java.io.ByteArrayOutputStream;
@@ -342,7 +342,10 @@ class OtlpHttpLogExporterTest {
     return TestLogData.builder()
         .setResource(Resource.getDefault())
         .setInstrumentationScopeInfo(
-            InstrumentationScopeInfo.create("testLib", "1.0", "http://url"))
+            InstrumentationScopeInfo.builder("testLib")
+                .setVersion("1.0")
+                .setSchemaUrl("http://url")
+                .build())
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)
