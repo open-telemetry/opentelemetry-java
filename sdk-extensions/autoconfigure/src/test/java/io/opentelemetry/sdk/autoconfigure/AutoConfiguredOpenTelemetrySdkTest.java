@@ -282,7 +282,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(logProcessor).forceFlush();
   }
 
-  // TODO: add test for addLogExporterCustomizer once OTLP export is enabled by default
+  // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
 
   @Test
   void builder_setResultAsGlobalFalse() {

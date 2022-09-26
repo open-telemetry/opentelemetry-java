@@ -14,20 +14,22 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/** A {@link LogExporter} implementation that can be used to test OpenTelemetry integration. */
-public final class InMemoryLogExporter implements LogExporter {
+/**
+ * A {@link LogRecordExporter} implementation that can be used to test OpenTelemetry integration.
+ */
+public final class InMemoryLogRecordExporter implements LogRecordExporter {
   private final Queue<LogData> finishedLogItems = new ConcurrentLinkedQueue<>();
   private boolean isStopped = false;
 
-  private InMemoryLogExporter() {}
+  private InMemoryLogRecordExporter() {}
 
   /**
-   * Returns a new instance of the {@code InMemoryLogExporter}.
+   * Returns a new instance of the {@link InMemoryLogRecordExporter}.
    *
-   * @return a new instance of the {@code InMemoryLogExporter}.
+   * @return a new instance of the {@link InMemoryLogRecordExporter}.
    */
-  public static InMemoryLogExporter create() {
-    return new InMemoryLogExporter();
+  public static InMemoryLogRecordExporter create() {
+    return new InMemoryLogRecordExporter();
   }
 
   /**
@@ -70,7 +72,7 @@ public final class InMemoryLogExporter implements LogExporter {
   /**
    * Clears the internal {@code List} of finished {@code Log}s.
    *
-   * <p>Any subsequent call to export() function on this LogExporter, will return {@code
+   * <p>Any subsequent call to export() function on this exporter, will return {@code
    * CompletableResultCode.ofFailure()}
    */
   @Override

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.spi.logs;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
  * A service provider interface (SPI) for providing additional exporters that can be used with the
@@ -16,13 +16,13 @@ import io.opentelemetry.sdk.logs.export.LogExporter;
  *
  * @since 1.17.0
  */
-public interface ConfigurableLogExporterProvider {
+public interface ConfigurableLogRecordExporterProvider {
 
   /**
-   * Returns a {@link LogExporter} that can be registered to OpenTelemetry by providing the property
-   * value specified by {@link #getName()}.
+   * Returns a {@link LogRecordExporter} that can be registered to OpenTelemetry by providing the
+   * property value specified by {@link #getName()}.
    */
-  LogExporter createExporter(ConfigProperties config);
+  LogRecordExporter createExporter(ConfigProperties config);
 
   /**
    * Returns the name of this exporter, which can be specified with the {@code otel.logs.exporter}

@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
-public class ThrowingConfigurableLogExporterProvider implements ConfigurableLogExporterProvider {
+public class ThrowingConfigurableLogRecordExporterProvider
+    implements ConfigurableLogRecordExporterProvider {
   @Override
-  public LogExporter createExporter(ConfigProperties config) {
+  public LogRecordExporter createExporter(ConfigProperties config) {
     throw new IllegalStateException("always throws");
   }
 

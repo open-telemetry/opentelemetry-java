@@ -13,18 +13,18 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import org.junit.jupiter.api.Test;
 
-class LogExporterConfigurationTest {
+class LogRecordExporterConfigurationTest {
 
   @Test
-  void configureLogExporters_duplicates() {
+  void configureLogRecordExporters_duplicates() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,otlp"));
 
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureLogExporters(
+                LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
-                    LogExporterConfiguration.class.getClassLoader(),
+                    LogRecordExporterConfiguration.class.getClassLoader(),
                     MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
@@ -32,15 +32,15 @@ class LogExporterConfigurationTest {
   }
 
   @Test
-  void configureLogExporters_unrecognized() {
+  void configureLogRecordExporters_unrecognized() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "foo"));
 
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureLogExporters(
+                LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
-                    LogExporterConfiguration.class.getClassLoader(),
+                    LogRecordExporterConfiguration.class.getClassLoader(),
                     MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
@@ -48,15 +48,15 @@ class LogExporterConfigurationTest {
   }
 
   @Test
-  void configureLogExporters_multipleWithNone() {
+  void configureLogRecordExporters_multipleWithNone() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,none"));
 
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureLogExporters(
+                LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
-                    LogExporterConfiguration.class.getClassLoader(),
+                    LogRecordExporterConfiguration.class.getClassLoader(),
                     MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
@@ -67,7 +67,7 @@ class LogExporterConfigurationTest {
   void configureOtlpLogs_unsupportedProtocol() {
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureOtlpLogs(
+                LogRecordExporterConfiguration.configureOtlpLogs(
                     DefaultConfigProperties.createForTest(
                         ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
                     MeterProvider.noop()))

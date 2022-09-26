@@ -27,9 +27,10 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData, ResourceLogs> {
+class OtlpGrpcLogRecordExporterTest
+    extends AbstractGrpcTelemetryExporterTest<LogData, ResourceLogs> {
 
-  OtlpGrpcLogExporterTest() {
+  OtlpGrpcLogRecordExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
   }
 
@@ -38,20 +39,20 @@ class OtlpGrpcLogExporterTest extends AbstractGrpcTelemetryExporterTest<LogData,
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpGrpcLogExporter.builder(), RetryPolicy.getDefault()))
+                    OtlpGrpcLogRecordExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 
   @Test
   void usingOkHttp() throws Exception {
-    try (Closeable exporter = OtlpGrpcLogExporter.builder().build()) {
+    try (Closeable exporter = OtlpGrpcLogRecordExporter.builder().build()) {
       assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
     }
   }
 
   @Override
   protected TelemetryExporterBuilder<LogData> exporterBuilder() {
-    return TelemetryExporterBuilder.wrap(OtlpGrpcLogExporter.builder());
+    return TelemetryExporterBuilder.wrap(OtlpGrpcLogRecordExporter.builder());
   }
 
   @Override

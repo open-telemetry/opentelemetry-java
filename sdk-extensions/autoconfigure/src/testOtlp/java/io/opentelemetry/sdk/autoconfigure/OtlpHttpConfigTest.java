@@ -19,7 +19,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -67,8 +67,8 @@ class OtlpHttpConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop());
     MetricExporter metricExporter = MetricExporterConfiguration.configureOtlpMetrics(properties);
-    LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
+    LogRecordExporter logRecordExporter =
+        LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop());
 
     assertThat(spanExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -106,12 +106,12 @@ class OtlpHttpConfigTest {
                     && headers.contains("header-key", "header-value")
                     && headers.contains("content-encoding", "gzip"));
 
-    assertThat(logExporter)
+    assertThat(logRecordExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
-            logExporter
+            logRecordExporter
                 .export(Lists.newArrayList(generateFakeLog()))
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
@@ -219,7 +219,7 @@ class OtlpHttpConfigTest {
   }
 
   @Test
-  public void configureLogExporter() {
+  public void configureLogRecordExporter() {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
@@ -238,16 +238,16 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.logs.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.logs.compression", "gzip");
     props.put("otel.exporter.otlp.logs.timeout", "15s");
-    LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(
+    LogRecordExporter logRecordExporter =
+        LogRecordExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop());
 
-    assertThat(logExporter)
+    assertThat(logRecordExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
-            logExporter
+            logRecordExporter
                 .export(Lists.newArrayList(generateFakeLog()))
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
@@ -279,7 +279,8 @@ class OtlpHttpConfigTest {
         .hasMessageContaining("Invalid OTLP certificate/key path:");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate/key path:");
   }
@@ -303,7 +304,8 @@ class OtlpHttpConfigTest {
         .hasMessageContaining("Client key provided but certification chain is missing");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key provided but certification chain is missing");
   }
@@ -327,7 +329,8 @@ class OtlpHttpConfigTest {
         .hasMessageContaining("Client key chain provided but key is missing");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
   }

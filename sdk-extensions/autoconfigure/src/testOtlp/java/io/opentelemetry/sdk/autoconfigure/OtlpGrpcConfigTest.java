@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -81,8 +81,8 @@ class OtlpGrpcConfigTest {
                 "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop());
         MetricExporter metricExporter =
             MetricExporterConfiguration.configureOtlpMetrics(properties);
-        LogExporter logExporter =
-            LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
+        LogRecordExporter logRecordExporter =
+            LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
       assertThat(spanExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
@@ -111,10 +111,11 @@ class OtlpGrpcConfigTest {
                       && headers.contains("header-key", "header-value")
                       && headers.contains("grpc-encoding", "gzip"));
 
-      assertThat(logExporter)
+      assertThat(logRecordExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(logRecordExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
           .anyMatch(
@@ -205,7 +206,7 @@ class OtlpGrpcConfigTest {
   }
 
   @Test
-  public void configureLogExporter() {
+  public void configureLogRecordExporter() {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
@@ -220,14 +221,15 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.logs.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.logs.compression", "gzip");
     props.put("otel.exporter.otlp.logs.timeout", "15s");
-    try (LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(
+    try (LogRecordExporter logRecordExporter =
+        LogRecordExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
 
-      assertThat(logExporter)
+      assertThat(logRecordExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(logRecordExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+          .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
           .anyMatch(
@@ -257,7 +259,8 @@ class OtlpGrpcConfigTest {
         .hasMessageContaining("Invalid OTLP certificate/key path:");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate/key path:");
   }
@@ -280,7 +283,8 @@ class OtlpGrpcConfigTest {
         .hasMessageContaining("Client key provided but certification chain is missing");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key provided but certification chain is missing");
   }
@@ -303,7 +307,8 @@ class OtlpGrpcConfigTest {
         .hasMessageContaining("Client key chain provided but key is missing");
 
     assertThatThrownBy(
-            () -> LogExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
   }

@@ -14,33 +14,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@link LogExporter} that forwards all received logs to a list of {@link LogExporter}.
+ * {@link LogRecordExporter} that forwards all received logs to a list of {@link LogRecordExporter}.
  *
- * <p>Can be used to export to multiple backends using the same {@link LogExporter} like a {@link
- * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+ * <p>Can be used to export to multiple backends using the same {@link LogRecordExporter} like a
+ * {@link SimpleLogProcessor} or a {@link BatchLogProcessor}.
  */
-final class MultiLogExporter implements LogExporter {
-  private static final Logger logger = Logger.getLogger(MultiLogExporter.class.getName());
+final class MultiLogRecordExporter implements LogRecordExporter {
+  private static final Logger logger = Logger.getLogger(MultiLogRecordExporter.class.getName());
 
-  private final LogExporter[] logExporters;
+  private final LogRecordExporter[] logRecordExporters;
 
   /**
    * Constructs and returns an instance of this class.
    *
-   * @param logExporters the exporters logs should be sent to
+   * @param logRecordExporters the exporters logs should be sent to
    * @return the aggregate log exporter
    */
-  static LogExporter create(List<LogExporter> logExporters) {
-    return new MultiLogExporter(logExporters.toArray(new LogExporter[0]));
+  static LogRecordExporter create(List<LogRecordExporter> logRecordExporters) {
+    return new MultiLogRecordExporter(logRecordExporters.toArray(new LogRecordExporter[0]));
   }
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
-    for (LogExporter logExporter : logExporters) {
+    List<CompletableResultCode> results = new ArrayList<>(logRecordExporters.length);
+    for (LogRecordExporter logRecordExporter : logRecordExporters) {
       CompletableResultCode exportResult;
       try {
-        exportResult = logExporter.export(logs);
+        exportResult = logRecordExporter.export(logs);
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the export.", e);
@@ -53,17 +53,17 @@ final class MultiLogExporter implements LogExporter {
   }
 
   /**
-   * Flushes the data of all registered {@link LogExporter}s.
+   * Flushes the data of all registered {@link LogRecordExporter}s.
    *
    * @return the result of the operation
    */
   @Override
   public CompletableResultCode flush() {
-    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
-    for (LogExporter logExporter : logExporters) {
+    List<CompletableResultCode> results = new ArrayList<>(logRecordExporters.length);
+    for (LogRecordExporter logRecordExporter : logRecordExporters) {
       CompletableResultCode flushResult;
       try {
-        flushResult = logExporter.flush();
+        flushResult = logRecordExporter.flush();
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the flush.", e);
@@ -77,11 +77,11 @@ final class MultiLogExporter implements LogExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    List<CompletableResultCode> results = new ArrayList<>(logExporters.length);
-    for (LogExporter logExporter : logExporters) {
+    List<CompletableResultCode> results = new ArrayList<>(logRecordExporters.length);
+    for (LogRecordExporter logRecordExporter : logRecordExporters) {
       CompletableResultCode shutdownResult;
       try {
-        shutdownResult = logExporter.shutdown();
+        shutdownResult = logRecordExporter.shutdown();
       } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the shutdown.", e);
@@ -93,7 +93,7 @@ final class MultiLogExporter implements LogExporter {
     return CompletableResultCode.ofAll(results);
   }
 
-  private MultiLogExporter(LogExporter[] logExporters) {
-    this.logExporters = logExporters;
+  private MultiLogRecordExporter(LogRecordExporter[] logRecordExporters) {
+    this.logRecordExporters = logRecordExporters;
   }
 }

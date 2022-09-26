@@ -11,15 +11,15 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.logging.SystemOutLogExporter;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporterBuilder;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,17 +27,17 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
-class LogExporterConfiguration {
+class LogRecordExporterConfiguration {
 
   private static final String EXPORTER_NONE = "none";
 
   // Visible for test
-  static Map<String, LogExporter> configureLogExporters(
+  static Map<String, LogRecordExporter> configureLogRecordExporters(
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
-      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
-          logExporterCustomizer) {
+      BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+          logRecordExporterCustomizer) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.logs.exporter");
 
     // Default to no exporter
@@ -53,20 +53,22 @@ class LogExporterConfiguration {
       return Collections.emptyMap();
     }
 
-    NamedSpiManager<LogExporter> spiExportersManager =
+    NamedSpiManager<LogRecordExporter> spiExportersManager =
         SpiUtil.loadConfigurable(
-            ConfigurableLogExporterProvider.class,
-            ConfigurableLogExporterProvider::getName,
-            ConfigurableLogExporterProvider::createExporter,
+            ConfigurableLogRecordExporterProvider.class,
+            ConfigurableLogRecordExporterProvider::getName,
+            ConfigurableLogRecordExporterProvider::createExporter,
             config,
             serviceClassLoader);
 
-    Map<String, LogExporter> exportersByName = new HashMap<>();
+    Map<String, LogRecordExporter> exportersByName = new HashMap<>();
     for (String name : exporterNames) {
-      LogExporter logExporter = configureExporter(name, config, spiExportersManager, meterProvider);
-      if (logExporter != null) {
-        LogExporter customizedLogExporter = logExporterCustomizer.apply(logExporter, config);
-        exportersByName.put(name, customizedLogExporter);
+      LogRecordExporter logRecordExporter =
+          configureExporter(name, config, spiExportersManager, meterProvider);
+      if (logRecordExporter != null) {
+        LogRecordExporter customizedLogRecordExporter =
+            logRecordExporterCustomizer.apply(logRecordExporter, config);
+        exportersByName.put(name, customizedLogRecordExporter);
       }
     }
 
@@ -75,22 +77,22 @@ class LogExporterConfiguration {
 
   // Visible for testing
   @Nullable
-  static LogExporter configureExporter(
+  static LogRecordExporter configureExporter(
       String name,
       ConfigProperties config,
-      NamedSpiManager<LogExporter> spiExportersManager,
+      NamedSpiManager<LogRecordExporter> spiExportersManager,
       MeterProvider meterProvider) {
     switch (name) {
       case "otlp":
         return configureOtlpLogs(config, meterProvider);
       case "logging":
         ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.logging.SystemOutLogExporter",
+            "io.opentelemetry.exporter.logging.SystemOutLogRecordExporter",
             "Logging Log Exporter",
             "opentelemetry-exporter-logging");
-        return SystemOutLogExporter.create();
+        return SystemOutLogRecordExporter.create();
       default:
-        LogExporter spiExporter = spiExportersManager.getByName(name);
+        LogRecordExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.logs.exporter: " + name);
         }
@@ -100,20 +102,20 @@ class LogExporterConfiguration {
 
   // Visible for testing
   @Nullable
-  static LogExporter configureOtlpLogs(ConfigProperties config, MeterProvider meterProvider) {
+  static LogRecordExporter configureOtlpLogs(ConfigProperties config, MeterProvider meterProvider) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_LOGS, config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       try {
         ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter",
+            "io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter",
             "OTLP HTTP Log Exporter",
             "opentelemetry-exporter-otlp-http-logs");
       } catch (ConfigurationException e) {
         // Squash this for now until logs are stable
         return null;
       }
-      OtlpHttpLogExporterBuilder builder = OtlpHttpLogExporter.builder();
+      OtlpHttpLogRecordExporterBuilder builder = OtlpHttpLogRecordExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
@@ -132,14 +134,14 @@ class LogExporterConfiguration {
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       try {
         ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter",
+            "io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter",
             "OTLP gRPC Log Exporter",
             "opentelemetry-exporter-otlp-logs");
       } catch (ConfigurationException e) {
         // Squash this for now until logs are stable
         return null;
       }
-      OtlpGrpcLogExporterBuilder builder = OtlpGrpcLogExporter.builder();
+      OtlpGrpcLogRecordExporterBuilder builder = OtlpGrpcLogRecordExporter.builder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
@@ -159,5 +161,5 @@ class LogExporterConfiguration {
     }
   }
 
-  private LogExporterConfiguration() {}
+  private LogRecordExporterConfiguration() {}
 }

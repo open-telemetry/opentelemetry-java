@@ -10,35 +10,29 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 /**
- * A {@link LogExporter} implementation that outputs log records to standard out. The output is not
- * intended to be comprehensive, but just usable for debugging.
+ * A {@link LogRecordExporter} implementation that outputs log records to standard out. The output
+ * is not intended to be comprehensive, but just usable for debugging.
  *
  * <p>Note: this doesn't use a {@code java.util.logging Logger}, as that could result in
  * logging-loops if an OTel appender is configured for {@code java.util.logging}.
  */
 @SuppressWarnings("SystemOut")
-public class SystemOutLogExporter implements LogExporter {
+public class SystemOutLogRecordExporter implements LogRecordExporter {
   private static final DateTimeFormatter ISO_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
 
-  /** Returns a new {@link SystemOutLogExporter}. */
-  public static SystemOutLogExporter create() {
-    return new SystemOutLogExporter();
+  /** Returns a new {@link SystemOutLogRecordExporter}. */
+  public static SystemOutLogRecordExporter create() {
+    return new SystemOutLogRecordExporter();
   }
 
-  /**
-   * Class constructor.
-   *
-   * @deprecated Use {@link #create()}.
-   */
-  @Deprecated
-  public SystemOutLogExporter() {}
+  private SystemOutLogRecordExporter() {}
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {

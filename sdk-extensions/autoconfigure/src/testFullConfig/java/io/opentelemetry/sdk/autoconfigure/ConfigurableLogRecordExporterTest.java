@@ -12,24 +12,24 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class ConfigurableLogExporterTest {
+class ConfigurableLogRecordExporterTest {
 
   @Test
-  void configureLogExporters_spiExporter() {
+  void configureLogRecordExporters_spiExporter() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.logs.exporter", "testExporter"));
-    Map<String, LogExporter> exportersByName =
-        LogExporterConfiguration.configureLogExporters(
+    Map<String, LogRecordExporter> exportersByName =
+        LogRecordExporterConfiguration.configureLogRecordExporters(
             config,
-            LogExporterConfiguration.class.getClassLoader(),
+            LogRecordExporterConfiguration.class.getClassLoader(),
             MeterProvider.noop(),
             (a, unused) -> a);
 
@@ -37,19 +37,19 @@ class ConfigurableLogExporterTest {
         .hasSize(1)
         .containsKey("testExporter")
         .extracting(map -> map.get("testExporter"))
-        .isInstanceOf(TestConfigurableLogExporterProvider.TestLogExporter.class)
+        .isInstanceOf(TestConfigurableLogRecordExporterProvider.TestLogRecordExporter.class)
         .extracting("config")
         .isSameAs(config);
   }
 
   @Test
-  void configureLogExporters_emptyClassLoader() {
+  void configureLogRecordExporters_emptyClassLoader() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.logs.exporter", "testExporter"));
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureLogExporters(
+                LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
                     new URLClassLoader(new URL[0], null),
                     MeterProvider.noop(),
@@ -62,7 +62,7 @@ class ConfigurableLogExporterTest {
   void configureExporter_NotFound() {
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureExporter(
+                LogRecordExporterConfiguration.configureExporter(
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     NamedSpiManager.createEmpty(),

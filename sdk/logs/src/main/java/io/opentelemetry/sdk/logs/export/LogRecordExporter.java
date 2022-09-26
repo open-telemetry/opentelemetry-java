@@ -20,36 +20,38 @@ import java.util.concurrent.TimeUnit;
  * An exporter is responsible for taking a collection of {@link LogData}s and transmitting them to
  * their ultimate destination.
  */
-public interface LogExporter extends Closeable {
+public interface LogRecordExporter extends Closeable {
 
   /**
-   * Returns a {@link LogExporter} which delegates all exports to the {@code exporters} in order.
+   * Returns a {@link LogRecordExporter} which delegates all exports to the {@code exporters} in
+   * order.
    *
    * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
    * SimpleLogProcessor} or a {@link BatchLogProcessor}.
    */
-  static LogExporter composite(LogExporter... exporters) {
+  static LogRecordExporter composite(LogRecordExporter... exporters) {
     return composite(Arrays.asList(exporters));
   }
 
   /**
-   * Returns a {@link LogExporter} which delegates all exports to the {@code exporters} in order.
+   * Returns a {@link LogRecordExporter} which delegates all exports to the {@code exporters} in
+   * order.
    *
    * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
    * SimpleLogProcessor} or a {@link BatchLogProcessor}.
    */
-  static LogExporter composite(Iterable<LogExporter> exporters) {
-    List<LogExporter> exportersList = new ArrayList<>();
-    for (LogExporter exporter : exporters) {
+  static LogRecordExporter composite(Iterable<LogRecordExporter> exporters) {
+    List<LogRecordExporter> exportersList = new ArrayList<>();
+    for (LogRecordExporter exporter : exporters) {
       exportersList.add(exporter);
     }
     if (exportersList.isEmpty()) {
-      return NoopLogExporter.getInstance();
+      return NoopLogRecordExporter.getInstance();
     }
     if (exportersList.size() == 1) {
       return exportersList.get(0);
     }
-    return MultiLogExporter.create(exportersList);
+    return MultiLogRecordExporter.create(exportersList);
   }
 
   /**
@@ -76,7 +78,7 @@ public interface LogExporter extends Closeable {
    */
   CompletableResultCode shutdown();
 
-  /** Closes this {@link LogExporter}, releasing any resources. */
+  /** Closes this {@link LogRecordExporter}, releasing any resources. */
   @Override
   default void close() {
     shutdown().join(10, TimeUnit.SECONDS);
