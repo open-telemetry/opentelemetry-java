@@ -9,7 +9,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -21,8 +21,8 @@ public class LogRecordExporterCustomizer implements AutoConfigurationCustomizerP
         (delegate, config) ->
             new LogRecordExporter() {
               @Override
-              public CompletableResultCode export(Collection<LogData> logs) {
-                Collection<LogData> filtered =
+              public CompletableResultCode export(Collection<LogRecordData> logs) {
+                Collection<LogRecordData> filtered =
                     logs.stream()
                         .filter(
                             log ->

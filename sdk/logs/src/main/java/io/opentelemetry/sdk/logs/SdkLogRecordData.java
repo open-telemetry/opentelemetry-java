@@ -11,7 +11,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -19,11 +19,11 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @AutoValue.CopyAnnotations
 @Immutable
-abstract class SdkLogData implements LogData {
+abstract class SdkLogRecordData implements LogRecordData {
 
-  SdkLogData() {}
+  SdkLogRecordData() {}
 
-  static SdkLogData create(
+  static SdkLogRecordData create(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
@@ -33,7 +33,7 @@ abstract class SdkLogData implements LogData {
       Body body,
       Attributes attributes,
       int totalAttributeCount) {
-    return new AutoValue_SdkLogData(
+    return new AutoValue_SdkLogRecordData(
         resource,
         instrumentationScopeInfo,
         epochNanos,

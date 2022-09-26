@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An implementation of the {@link LogProcessor} that passes {@link LogData} directly to the
+ * An implementation of the {@link LogProcessor} that passes {@link LogRecordData} directly to the
  * configured exporter.
  *
  * <p>This processor will cause all logs to be exported directly as they finish, meaning each export
@@ -60,7 +60,7 @@ public final class SimpleLogProcessor implements LogProcessor {
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
     try {
-      List<LogData> logs = Collections.singletonList(logRecord.toLogData());
+      List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
       CompletableResultCode result = logRecordExporter.export(logs);
       pendingExports.add(result);
       result.whenComplete(

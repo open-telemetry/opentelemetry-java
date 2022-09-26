@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
@@ -26,7 +26,7 @@ public interface TelemetryExporterBuilder<T> {
     return new GrpcMetricExporterBuilderWrapper(builder);
   }
 
-  static TelemetryExporterBuilder<LogData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
+  static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
     return new GrpcLogRecordExporterBuilderWrapper(builder);
   }
 

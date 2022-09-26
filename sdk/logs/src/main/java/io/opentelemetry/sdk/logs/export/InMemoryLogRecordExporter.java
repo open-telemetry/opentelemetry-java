@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * A {@link LogRecordExporter} implementation that can be used to test OpenTelemetry integration.
  */
 public final class InMemoryLogRecordExporter implements LogRecordExporter {
-  private final Queue<LogData> finishedLogItems = new ConcurrentLinkedQueue<>();
+  private final Queue<LogRecordData> finishedLogItems = new ConcurrentLinkedQueue<>();
   private boolean isStopped = false;
 
   private InMemoryLogRecordExporter() {}
@@ -37,7 +37,7 @@ public final class InMemoryLogRecordExporter implements LogRecordExporter {
    *
    * @return a {@code List} of the finished {@code Log}s.
    */
-  public List<LogData> getFinishedLogItems() {
+  public List<LogRecordData> getFinishedLogItems() {
     return Collections.unmodifiableList(new ArrayList<>(finishedLogItems));
   }
 
@@ -56,7 +56,7 @@ public final class InMemoryLogRecordExporter implements LogRecordExporter {
    * <p>If this is called after {@code shutdown}, this will return {@code ResultCode.FAILURE}.
    */
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     if (isStopped) {
       return CompletableResultCode.ofFailure();
     }

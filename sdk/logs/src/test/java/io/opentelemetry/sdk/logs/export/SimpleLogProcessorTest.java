@@ -19,8 +19,8 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SimpleLogProcessorTest {
 
-  private static final LogData LOG_DATA = TestLogData.builder().build();
+  private static final LogRecordData LOG_RECORD_DATA = TestLogRecordData.builder().build();
 
   @Mock private LogRecordExporter logRecordExporter;
   @Mock private ReadWriteLogRecord readWriteLogRecord;
@@ -46,7 +46,7 @@ class SimpleLogProcessorTest {
     logProcessor = SimpleLogProcessor.create(logRecordExporter);
     when(logRecordExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
     when(logRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(readWriteLogRecord.toLogData()).thenReturn(LOG_DATA);
+    when(readWriteLogRecord.toLogRecordData()).thenReturn(LOG_RECORD_DATA);
   }
 
   @Test
@@ -59,7 +59,7 @@ class SimpleLogProcessorTest {
   @Test
   void onEmit() {
     logProcessor.onEmit(readWriteLogRecord);
-    verify(logRecordExporter).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter).export(Collections.singletonList(LOG_RECORD_DATA));
   }
 
   @Test
@@ -81,7 +81,7 @@ class SimpleLogProcessorTest {
     logProcessor.onEmit(readWriteLogRecord);
     logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode flush = logProcessor.forceFlush();
     assertThat(flush.isDone()).isFalse();
@@ -104,7 +104,7 @@ class SimpleLogProcessorTest {
     logProcessor.onEmit(readWriteLogRecord);
     logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode shutdown = logProcessor.shutdown();
     assertThat(shutdown.isDone()).isFalse();

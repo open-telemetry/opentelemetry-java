@@ -9,7 +9,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -35,10 +35,10 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
   private SystemOutLogRecordExporter() {}
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     StringBuilder stringBuilder = new StringBuilder(60);
 
-    for (LogData log : logs) {
+    for (LogRecordData log : logs) {
       stringBuilder.setLength(0);
       formatLog(stringBuilder, log);
       System.out.println(stringBuilder);
@@ -52,7 +52,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
   }
 
   // VisibleForTesting
-  static void formatLog(StringBuilder stringBuilder, LogData log) {
+  static void formatLog(StringBuilder stringBuilder, LogRecordData log) {
     InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
     stringBuilder
         .append(

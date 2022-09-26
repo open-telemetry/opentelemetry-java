@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
@@ -101,7 +101,7 @@ public final class BatchLogProcessor implements LogProcessor {
   }
 
   // Visible for testing
-  ArrayList<LogData> getBatch() {
+  ArrayList<LogRecordData> getBatch() {
     return worker.batch;
   }
 
@@ -134,7 +134,7 @@ public final class BatchLogProcessor implements LogProcessor {
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
-    private final ArrayList<LogData> batch;
+    private final ArrayList<LogRecordData> batch;
 
     private Worker(
         LogRecordExporter logRecordExporter,
@@ -203,7 +203,7 @@ public final class BatchLogProcessor implements LogProcessor {
           flush();
         }
         while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll().toLogData());
+          batch.add(queue.poll().toLogRecordData());
         }
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
@@ -230,7 +230,7 @@ public final class BatchLogProcessor implements LogProcessor {
       while (logsToFlush > 0) {
         ReadWriteLogRecord logRecord = queue.poll();
         assert logRecord != null;
-        batch.add(logRecord.toLogData());
+        batch.add(logRecord.toLogRecordData());
         logsToFlush--;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();

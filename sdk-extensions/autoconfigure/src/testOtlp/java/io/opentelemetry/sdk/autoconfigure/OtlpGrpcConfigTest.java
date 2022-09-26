@@ -20,7 +20,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -44,7 +44,7 @@ class OtlpGrpcConfigTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
   private static final List<MetricData> METRIC_DATA = Lists.newArrayList(generateFakeMetric());
-  private static final List<LogData> LOG_DATA = Lists.newArrayList(generateFakeLog());
+  private static final List<LogRecordData> LOG_RECORD_DATA = Lists.newArrayList(generateFakeLog());
 
   @RegisterExtension
   @Order(1)
@@ -114,7 +114,7 @@ class OtlpGrpcConfigTest {
       assertThat(logRecordExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logRecordExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+      assertThat(logRecordExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess())
           .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)
@@ -228,7 +228,7 @@ class OtlpGrpcConfigTest {
       assertThat(logRecordExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
-      assertThat(logRecordExporter.export(LOG_DATA).join(15, TimeUnit.SECONDS).isSuccess())
+      assertThat(logRecordExporter.export(LOG_RECORD_DATA).join(15, TimeUnit.SECONDS).isSuccess())
           .isTrue();
       assertThat(server.logRequests).hasSize(1);
       assertThat(server.requestHeaders)

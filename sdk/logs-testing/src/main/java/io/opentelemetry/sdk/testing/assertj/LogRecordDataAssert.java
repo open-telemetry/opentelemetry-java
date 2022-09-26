@@ -13,20 +13,20 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
-/** Test assertions for {@link LogData}. */
-public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
-  protected LogDataAssert(LogData actual) {
-    super(actual, LogDataAssert.class);
+/** Test assertions for {@link LogRecordData}. */
+public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, LogRecordData> {
+  protected LogRecordDataAssert(LogRecordData actual) {
+    super(actual, LogRecordDataAssert.class);
   }
 
   /** Asserts the {@link Resource} associated with a log matches the expected value. */
-  public LogDataAssert hasResource(Resource resource) {
+  public LogRecordDataAssert hasResource(Resource resource) {
     isNotNull();
     if (!actual.getResource().equals(resource)) {
       failWithActualExpectedAndMessage(
@@ -42,7 +42,8 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   /**
    * Asserts the {@link InstrumentationScopeInfo} associated with a log matches the expected value.
    */
-  public LogDataAssert hasInstrumentationScope(InstrumentationScopeInfo instrumentationScopeInfo) {
+  public LogRecordDataAssert hasInstrumentationScope(
+      InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
     if (!actual.getInstrumentationScopeInfo().equals(instrumentationScopeInfo)) {
       failWithActualExpectedAndMessage(
@@ -56,7 +57,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given epoch timestamp. */
-  public LogDataAssert hasEpochNanos(long epochNanos) {
+  public LogRecordDataAssert hasEpochNanos(long epochNanos) {
     isNotNull();
     if (actual.getEpochNanos() != epochNanos) {
       failWithActualExpectedAndMessage(
@@ -70,7 +71,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given span context. */
-  public LogDataAssert hasSpanContext(SpanContext spanContext) {
+  public LogRecordDataAssert hasSpanContext(SpanContext spanContext) {
     isNotNull();
     if (!actual.getSpanContext().equals(spanContext)) {
       failWithActualExpectedAndMessage(
@@ -84,7 +85,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given severity. */
-  public LogDataAssert hasSeverity(Severity severity) {
+  public LogRecordDataAssert hasSeverity(Severity severity) {
     isNotNull();
     if (actual.getSeverity() != severity) {
       failWithActualExpectedAndMessage(
@@ -98,7 +99,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given severity text. */
-  public LogDataAssert hasSeverityText(String severityText) {
+  public LogRecordDataAssert hasSeverityText(String severityText) {
     isNotNull();
     if (!severityText.equals(actual.getSeverityText())) {
       failWithActualExpectedAndMessage(
@@ -112,7 +113,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given body. */
-  public LogDataAssert hasBody(String body) {
+  public LogRecordDataAssert hasBody(String body) {
     isNotNull();
     if (!actual.getBody().asString().equals(body)) {
       failWithActualExpectedAndMessage(
@@ -126,7 +127,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given attributes. */
-  public LogDataAssert hasAttributes(Attributes attributes) {
+  public LogRecordDataAssert hasAttributes(Attributes attributes) {
     isNotNull();
     if (!attributesAreEqual(attributes)) {
       failWithActualExpectedAndMessage(
@@ -142,7 +143,8 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   /** Asserts the log has the given attributes. */
   @SuppressWarnings({"rawtypes", "unchecked"})
   @SafeVarargs
-  public final LogDataAssert hasAttributes(Map.Entry<? extends AttributeKey<?>, ?>... entries) {
+  public final LogRecordDataAssert hasAttributes(
+      Map.Entry<? extends AttributeKey<?>, ?>... entries) {
     AttributesBuilder attributesBuilder = Attributes.builder();
     for (Map.Entry<? extends AttributeKey<?>, ?> attr : entries) {
       attributesBuilder.put((AttributeKey) attr.getKey(), attr.getValue());
@@ -152,7 +154,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has attributes satisfying the given condition. */
-  public LogDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
+  public LogRecordDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return this;
@@ -165,7 +167,7 @@ public class LogDataAssert extends AbstractAssert<LogDataAssert, LogData> {
   }
 
   /** Asserts the log has the given total attributes. */
-  public LogDataAssert hasTotalAttributeCount(int totalAttributeCount) {
+  public LogRecordDataAssert hasTotalAttributeCount(int totalAttributeCount) {
     isNotNull();
     if (actual.getTotalAttributeCount() != totalAttributeCount) {
       failWithActualExpectedAndMessage(

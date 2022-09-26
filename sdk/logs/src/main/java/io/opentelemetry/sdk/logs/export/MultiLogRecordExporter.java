@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +35,7 @@ final class MultiLogRecordExporter implements LogRecordExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     List<CompletableResultCode> results = new ArrayList<>(logRecordExporters.length);
     for (LogRecordExporter logRecordExporter : logRecordExporters) {
       CompletableResultCode exportResult;

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.util.Collection;
@@ -19,8 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link LogRecordExporter} which writes {@linkplain LogData logs} to a {@link Logger} in OTLP
- * JSON format. Each log line will include a single {@code ResourceLogs}.
+ * A {@link LogRecordExporter} which writes {@linkplain LogRecordData logs} to a {@link Logger} in
+ * OTLP JSON format. Each log line will include a single {@code ResourceLogs}.
  */
 public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter {
 
@@ -35,7 +35,7 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   private OtlpJsonLoggingLogRecordExporter() {}
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     ResourceLogsMarshaler[] allResourceLogs = ResourceLogsMarshaler.create(logs);
     for (ResourceLogsMarshaler resourceLogs : allResourceLogs) {
       SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());

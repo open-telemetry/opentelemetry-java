@@ -20,7 +20,7 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -41,7 +41,7 @@ class OtlpHttpRetryTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
   private static final List<MetricData> METRIC_DATA = Lists.newArrayList(generateFakeMetric());
-  private static final List<LogData> LOG_DATA = Lists.newArrayList(generateFakeLog());
+  private static final List<LogRecordData> LOG_RECORD_DATA = Lists.newArrayList(generateFakeLog());
 
   @RegisterExtension
   public static final OtlpHttpServerExtension server = new OtlpHttpServerExtension();
@@ -107,9 +107,10 @@ class OtlpHttpRetryTest {
     try (LogRecordExporter logRecordExporter =
         LogRecordExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
-
-      testRetryableStatusCodes(() -> LOG_DATA, logRecordExporter::export, server.logRequests::size);
-      testDefaultRetryPolicy(() -> LOG_DATA, logRecordExporter::export, server.logRequests::size);
+      testRetryableStatusCodes(
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
+      testDefaultRetryPolicy(
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
     }
   }
 

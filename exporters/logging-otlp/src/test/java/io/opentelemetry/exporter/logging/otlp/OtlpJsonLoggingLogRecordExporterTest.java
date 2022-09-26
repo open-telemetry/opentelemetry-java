@@ -18,10 +18,10 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +36,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
 
-  private static final LogData LOG1 =
-      TestLogData.builder()
+  private static final LogRecordData LOG1 =
+      TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("instrumentation")
@@ -57,8 +57,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
                   TraceState.getDefault()))
           .build();
 
-  private static final LogData LOG2 =
-      TestLogData.builder()
+  private static final LogRecordData LOG2 =
+      TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())

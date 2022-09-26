@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +27,8 @@ public final class SdkLoggerProviderBuilder {
   SdkLoggerProviderBuilder() {}
 
   /**
-   * Assign a {@link Resource} to be attached to all {@link LogData} created by {@link Logger}s
-   * obtained from the {@link SdkLoggerProvider}.
+   * Assign a {@link Resource} to be attached to all {@link LogRecordData} created by {@link
+   * Logger}s obtained from the {@link SdkLoggerProvider}.
    *
    * @param resource the resource
    * @return this

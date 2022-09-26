@@ -11,20 +11,20 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.Immutable;
 
-/** Immutable representation of {@link LogData}. */
+/** Immutable representation of {@link LogRecordData}. */
 @Immutable
 @AutoValue
-public abstract class TestLogData implements LogData {
+public abstract class TestLogRecordData implements LogRecordData {
 
-  /** Creates a new Builder for creating an {@link LogData} instance. */
+  /** Creates a new Builder for creating an {@link LogRecordData} instance. */
   public static Builder builder() {
-    return new AutoValue_TestLogData.Builder()
+    return new AutoValue_TestLogRecordData.Builder()
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
         .setEpoch(0, TimeUnit.NANOSECONDS)
@@ -35,16 +35,16 @@ public abstract class TestLogData implements LogData {
         .setTotalAttributeCount(0);
   }
 
-  TestLogData() {}
+  TestLogRecordData() {}
 
-  /** A {@code Builder} class for {@link TestLogData}. */
+  /** A {@code Builder} class for {@link TestLogRecordData}. */
   @AutoValue.Builder
   public abstract static class Builder {
 
-    abstract TestLogData autoBuild();
+    abstract TestLogRecordData autoBuild();
 
-    /** Create a new {@link LogData} instance from the data in this. */
-    public TestLogData build() {
+    /** Create a new {@link LogRecordData} instance from the data in this. */
+    public TestLogRecordData build() {
       return autoBuild();
     }
 

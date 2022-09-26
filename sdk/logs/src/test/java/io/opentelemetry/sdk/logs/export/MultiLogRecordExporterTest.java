@@ -13,8 +13,8 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,9 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class MultiLogRecordExporterTest {
   @Mock private LogRecordExporter logRecordExporter1;
   @Mock private LogRecordExporter logRecordExporter2;
-  private static final List<LogData> LOG_LIST =
+  private static final List<LogRecordData> LOG_LIST =
       Collections.singletonList(
-          TestLogData.builder().setBody("Message!").setSeverity(Severity.DEBUG).build());
+          TestLogRecordData.builder().setBody("Message!").setSeverity(Severity.DEBUG).build());
 
   @Test
   void empty() {

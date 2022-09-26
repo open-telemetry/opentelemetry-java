@@ -33,9 +33,9 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -317,7 +317,7 @@ class OtlpHttpLogRecordExporterTest {
 
   private static ExportLogsServiceRequest exportAndAssertResult(
       OtlpHttpLogRecordExporter otlpHttpLogRecordExporter, boolean expectedResult) {
-    List<LogData> logs = Collections.singletonList(generateFakeLog());
+    List<LogRecordData> logs = Collections.singletonList(generateFakeLog());
     CompletableResultCode resultCode = otlpHttpLogRecordExporter.export(logs);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
@@ -347,8 +347,8 @@ class OtlpHttpLogRecordExporterTest {
     return HttpResponse.of(httpStatus, APPLICATION_PROTOBUF, message.toByteArray());
   }
 
-  private static LogData generateFakeLog() {
-    return TestLogData.builder()
+  private static LogRecordData generateFakeLog() {
+    return TestLogRecordData.builder()
         .setResource(Resource.getDefault())
         .setInstrumentationScopeInfo(
             InstrumentationScopeInfo.builder("testLib")

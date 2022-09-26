@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
  * Log Data Model</a>.
  */
 @Immutable
-public interface LogData {
+public interface LogRecordData {
 
   /** Returns the resource of this log. */
   Resource getResource();

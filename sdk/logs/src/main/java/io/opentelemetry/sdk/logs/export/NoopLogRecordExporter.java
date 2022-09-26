@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.Collection;
 
 final class NoopLogRecordExporter implements LogRecordExporter {
@@ -18,7 +18,7 @@ final class NoopLogRecordExporter implements LogRecordExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     return CompletableResultCode.ofSuccess();
   }
 
