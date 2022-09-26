@@ -216,6 +216,14 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     List<U> expectedResourceTelemetry = toProto(telemetry);
     assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    // Assert request contains OTLP spec compliant User-Agent header
+    assertThat(httpRequests)
+        .singleElement()
+        .satisfies(
+            req -> {
+              assertThat(req.headers().get("User-Agent")).matches("OTel OTLP Exporter Java/1.*");
+            });
   }
 
   @Test

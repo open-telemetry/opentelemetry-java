@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.URI;
@@ -51,6 +52,10 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     if (!uri.getScheme().equals("https")) {
       channelBuilder.usePlaintext();
     }
+    // User-Agent can only be set at the channel level with upstream gRPC client. If a user wants
+    // the User-Agent to be spec compliant they must add manually set the user agent when building
+    // their channel.
+    channelBuilder.userAgent(OtlpUserAgent.getUserAgent());
     return this;
   }
 
