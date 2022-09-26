@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.io.Closeable;
@@ -26,8 +26,8 @@ public interface LogRecordExporter extends Closeable {
    * Returns a {@link LogRecordExporter} which delegates all exports to the {@code exporters} in
    * order.
    *
-   * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
-   * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link LogRecordProcessor} like a
+   * {@link SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
    */
   static LogRecordExporter composite(LogRecordExporter... exporters) {
     return composite(Arrays.asList(exporters));
@@ -37,8 +37,8 @@ public interface LogRecordExporter extends Closeable {
    * Returns a {@link LogRecordExporter} which delegates all exports to the {@code exporters} in
    * order.
    *
-   * <p>Can be used to export to multiple backends using the same {@link LogProcessor} like a {@link
-   * SimpleLogProcessor} or a {@link BatchLogProcessor}.
+   * <p>Can be used to export to multiple backends using the same {@link LogRecordProcessor} like a
+   * {@link SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
    */
   static LogRecordExporter composite(Iterable<LogRecordExporter> exporters) {
     List<LogRecordExporter> exportersList = new ArrayList<>();
@@ -71,8 +71,8 @@ public interface LogRecordExporter extends Closeable {
 
   /**
    * Shutdown the log exporter. Called when {@link SdkLoggerProvider#shutdown()} is called when this
-   * exporter is registered to the provider via {@link BatchLogProcessor} or {@link
-   * SimpleLogProcessor}.
+   * exporter is registered to the provider via {@link BatchLogRecordProcessor} or {@link
+   * SimpleLogRecordProcessor}.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes
    */

@@ -19,18 +19,18 @@ final class LoggerSharedState {
   private final Object lock = new Object();
   private final Resource resource;
   private final Supplier<LogLimits> logLimitsSupplier;
-  private final LogProcessor logProcessor;
+  private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
-      LogProcessor logProcessor,
+      LogRecordProcessor logRecordProcessor,
       Clock clock) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
-    this.logProcessor = logProcessor;
+    this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
   }
 
@@ -42,8 +42,8 @@ final class LoggerSharedState {
     return logLimitsSupplier.get();
   }
 
-  LogProcessor getLogProcessor() {
-    return logProcessor;
+  LogRecordProcessor getLogRecordProcessor() {
+    return logRecordProcessor;
   }
 
   Clock getClock() {
@@ -59,7 +59,7 @@ final class LoggerSharedState {
       if (shutdownResult != null) {
         return shutdownResult;
       }
-      shutdownResult = logProcessor.shutdown();
+      shutdownResult = logRecordProcessor.shutdown();
       return shutdownResult;
     }
   }

@@ -13,15 +13,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class NoopLogProcessorTest {
+class NoopLogRecordProcessorTest {
 
   @Mock private ReadWriteLogRecord logRecord;
 
   @Test
   void noCrash() {
-    LogProcessor logProcessor = NoopLogProcessor.getInstance();
-    logProcessor.onEmit(logRecord);
-    assertThat(logProcessor.forceFlush().isSuccess()).isEqualTo(true);
-    assertThat(logProcessor.shutdown().isSuccess()).isEqualTo(true);
+    LogRecordProcessor logRecordProcessor = NoopLogRecordProcessor.getInstance();
+    logRecordProcessor.onEmit(logRecord);
+    assertThat(logRecordProcessor.forceFlush().isSuccess()).isEqualTo(true);
+    assertThat(logRecordProcessor.shutdown().isSuccess()).isEqualTo(true);
   }
 }

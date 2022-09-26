@@ -27,7 +27,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   private final LoggerSharedState sharedState;
   private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
-  private final boolean isNoopLogProcessor;
+  private final boolean isNoopLogRecordProcessor;
 
   /**
    * Returns a new {@link SdkLoggerProviderBuilder} for {@link SdkLoggerProvider}.
@@ -41,14 +41,15 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
   SdkLoggerProvider(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
-      List<LogProcessor> processors,
+      List<LogRecordProcessor> processors,
       Clock clock) {
-    LogProcessor logProcessor = LogProcessor.composite(processors);
-    this.sharedState = new LoggerSharedState(resource, logLimitsSupplier, logProcessor, clock);
+    LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
+    this.sharedState =
+        new LoggerSharedState(resource, logLimitsSupplier, logRecordProcessor, clock);
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo -> new SdkLogger(sharedState, instrumentationScopeInfo));
-    this.isNoopLogProcessor = logProcessor instanceof NoopLogProcessor;
+    this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
   }
 
   /**
@@ -71,7 +72,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
    */
   @Override
   public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
-    if (isNoopLogProcessor) {
+    if (isNoopLogRecordProcessor) {
       return LoggerProvider.noop().loggerBuilder(instrumentationScopeName);
     }
     if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
@@ -87,7 +88,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
    * @return a {@link CompletableResultCode} which is completed when the flush is finished
    */
   public CompletableResultCode forceFlush() {
-    return sharedState.getLogProcessor().forceFlush();
+    return sharedState.getLogRecordProcessor().forceFlush();
   }
 
   /**

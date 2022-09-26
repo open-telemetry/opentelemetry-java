@@ -28,7 +28,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -73,7 +73,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
   @Mock private MetricReader metricReader;
-  @Mock private LogProcessor logProcessor;
+  @Mock private LogRecordProcessor logRecordProcessor;
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;
 
@@ -266,20 +266,22 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_addLoggerProviderCustomizer() {
-    Mockito.lenient().when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    Mockito.lenient()
+        .when(logRecordProcessor.shutdown())
+        .thenReturn(CompletableResultCode.ofSuccess());
+    when(logRecordProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
 
     SdkLoggerProvider sdkLoggerProvider =
         builder
             .addLoggerProviderCustomizer(
                 (loggerProviderBuilder, configProperties) ->
-                    loggerProviderBuilder.addLogProcessor(logProcessor))
+                    loggerProviderBuilder.addLogRecordProcessor(logRecordProcessor))
             .build()
             .getOpenTelemetrySdk()
             .getSdkLoggerProvider();
     sdkLoggerProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
-    verify(logProcessor).forceFlush();
+    verify(logRecordProcessor).forceFlush();
   }
 
   // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default

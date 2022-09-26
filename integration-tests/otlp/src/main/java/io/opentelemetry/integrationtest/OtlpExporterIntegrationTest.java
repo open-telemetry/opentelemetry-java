@@ -57,7 +57,7 @@ import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -505,7 +505,7 @@ abstract class OtlpExporterIntegrationTest {
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
             .setResource(RESOURCE)
-            .addLogProcessor(SimpleLogProcessor.create(logRecordExporter))
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
             .build();
 
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());

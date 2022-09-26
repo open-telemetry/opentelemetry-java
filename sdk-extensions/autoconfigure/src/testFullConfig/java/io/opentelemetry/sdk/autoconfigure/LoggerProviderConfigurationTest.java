@@ -13,9 +13,9 @@ import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,8 +43,8 @@ class LoggerProviderConfigurationTest {
           .satisfies(
               sharedState ->
                   assertThat(sharedState)
-                      .extracting("logProcessor")
-                      .isInstanceOf(BatchLogProcessor.class)
+                      .extracting("logRecordProcessor")
+                      .isInstanceOf(BatchLogRecordProcessor.class)
                       .extracting("worker")
                       .satisfies(
                           worker -> {
@@ -67,16 +67,16 @@ class LoggerProviderConfigurationTest {
   }
 
   @Test
-  void configureSpanProcessors_multipleExportersWithLogging() {
+  void configureLogRecordProcessors_multipleExportersWithLogging() {
     LogRecordExporter loggingExporter = SystemOutLogRecordExporter.create();
     LogRecordExporter otlpExporter = OtlpGrpcLogRecordExporter.builder().build();
 
     assertThat(
-            LoggerProviderConfiguration.configureLogProcessors(
+            LoggerProviderConfiguration.configureLogRecordProcessors(
                 ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter),
                 MeterProvider.noop()))
         .hasSize(2)
-        .hasAtLeastOneElementOfType(SimpleLogProcessor.class)
-        .hasAtLeastOneElementOfType(BatchLogProcessor.class);
+        .hasAtLeastOneElementOfType(SimpleLogRecordProcessor.class)
+        .hasAtLeastOneElementOfType(BatchLogRecordProcessor.class);
   }
 }

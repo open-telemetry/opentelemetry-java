@@ -95,7 +95,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
       return;
     }
     loggerSharedState
-        .getLogProcessor()
+        .getLogRecordProcessor()
         .onEmit(
             SdkReadWriteLogRecord.create(
                 loggerSharedState.getLogLimits(),
