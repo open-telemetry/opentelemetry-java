@@ -28,8 +28,7 @@ class ProcessResourceTest {
     Attributes attributes = resource.getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isGreaterThan(1);
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH))
-        .matches(".*[/\\\\]java");
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).matches(".*[/\\\\]java");
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
         .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
   }
