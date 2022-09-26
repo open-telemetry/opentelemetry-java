@@ -91,6 +91,16 @@ public final class {{class}} {
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
       public static final {{ type }} {{ member.member_id | to_const_name }} = {{ print_value(type, member.value) }};
     {%- endfor %}
+
+    {%- if class_name == "NetTransportValues" %}
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
+    @Deprecated
+    public static final String IP = "ip";
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
+    @Deprecated
+    public static final String UNIX = "unix";
+    {%- endif %}
+
       private {{ class_name }}() {}
   }
 
@@ -149,13 +159,13 @@ public final class {{class}} {
   public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
 
   /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. .
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
    */
   @Deprecated
   public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
 
   /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. .
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
    */
   @Deprecated
   public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
