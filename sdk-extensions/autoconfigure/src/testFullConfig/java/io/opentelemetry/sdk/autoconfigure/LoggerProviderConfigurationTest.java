@@ -9,12 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.logging.SystemOutLogExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.util.Collections;
 import java.util.Map;
@@ -68,8 +68,8 @@ class LoggerProviderConfigurationTest {
 
   @Test
   void configureLogRecordProcessors_multipleExportersWithLogging() {
-    LogExporter loggingExporter = SystemOutLogExporter.create();
-    LogExporter otlpExporter = OtlpGrpcLogExporter.builder().build();
+    LogRecordExporter loggingExporter = SystemOutLogRecordExporter.create();
+    LogRecordExporter otlpExporter = OtlpGrpcLogRecordExporter.builder().build();
 
     assertThat(
             LoggerProviderConfiguration.configureLogRecordProcessors(

@@ -29,7 +29,7 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,7 +53,7 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .setInstrumentationScopeInfo(
@@ -100,7 +100,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
@@ -136,7 +136,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(

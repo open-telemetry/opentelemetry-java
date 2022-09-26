@@ -19,7 +19,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,11 +47,11 @@ class BatchLogRecordProcessorTest {
   private static final String LOG_MESSAGE_2 = "Hello world 2!";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
 
-  @Mock private LogExporter mockLogExporter;
+  @Mock private LogRecordExporter mockLogRecordExporter;
 
   @BeforeEach
   void setUp() {
-    when(mockLogExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   private void emitLog(SdkLoggerProvider sdkLoggerProvider, String message) {
@@ -65,7 +65,7 @@ class BatchLogRecordProcessorTest {
 
   @Test
   void builderDefaults() {
-    BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(mockLogExporter);
+    BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(mockLogRecordExporter);
     assertThat(builder.getScheduleDelayNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(
@@ -84,63 +84,64 @@ class BatchLogRecordProcessorTest {
   void builderInvalidConfig() {
     assertThatThrownBy(
             () ->
-                BatchLogRecordProcessor.builder(mockLogExporter)
+                BatchLogRecordProcessor.builder(mockLogRecordExporter)
                     .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("delay must be non-negative");
     assertThatThrownBy(
-            () -> BatchLogRecordProcessor.builder(mockLogExporter).setScheduleDelay(1, null))
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setScheduleDelay(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
     assertThatThrownBy(
-            () -> BatchLogRecordProcessor.builder(mockLogExporter).setScheduleDelay(null))
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setScheduleDelay(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("delay");
     assertThatThrownBy(
             () ->
-                BatchLogRecordProcessor.builder(mockLogExporter)
+                BatchLogRecordProcessor.builder(mockLogRecordExporter)
                     .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
     assertThatThrownBy(
-            () -> BatchLogRecordProcessor.builder(mockLogExporter).setExporterTimeout(1, null))
+            () ->
+                BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
     assertThatThrownBy(
-            () -> BatchLogRecordProcessor.builder(mockLogExporter).setExporterTimeout(null))
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
   }
 
   @Test
   void emitMultipleLogs() {
-    WaitingLogExporter waitingLogExporter =
-        new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
+    WaitingLogRecordExporter waitingLogRecordExporter =
+        new WaitingLogRecordExporter(2, CompletableResultCode.ofSuccess());
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
-                BatchLogRecordProcessor.builder(waitingLogExporter)
+                BatchLogRecordProcessor.builder(waitingLogRecordExporter)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
     emitLog(loggerProvider, LOG_MESSAGE_1);
     emitLog(loggerProvider, LOG_MESSAGE_2);
-    List<LogData> exported = waitingLogExporter.waitForExport();
+    List<LogRecordData> exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported)
         .satisfiesExactly(
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1),
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
   void emitMoreLogsThanBufferSize() {
-    CompletableLogExporter logExporter = new CompletableLogExporter();
+    CompletableLogRecordExporter logRecordExporter = new CompletableLogRecordExporter();
 
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
-                BatchLogRecordProcessor.builder(logExporter)
+                BatchLogRecordProcessor.builder(logRecordExporter)
                     .setMaxQueueSize(6)
                     .setMaxExportBatchSize(2)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
@@ -154,22 +155,22 @@ class BatchLogRecordProcessorTest {
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
 
-    logExporter.succeed();
+    logRecordExporter.succeed();
 
     await()
         .untilAsserted(
             () ->
-                assertThat(logExporter.getExported())
+                assertThat(logRecordExporter.getExported())
                     .hasSize(6)
-                    .allSatisfy(logData -> assertThat(logData).hasBody(LOG_MESSAGE_1)));
+                    .allSatisfy(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1)));
   }
 
   @Test
   void forceEmit() {
-    WaitingLogExporter waitingLogExporter =
-        new WaitingLogExporter(100, CompletableResultCode.ofSuccess(), 1);
+    WaitingLogRecordExporter waitingLogRecordExporter =
+        new WaitingLogRecordExporter(100, CompletableResultCode.ofSuccess(), 1);
     BatchLogRecordProcessor batchLogRecordProcessor =
-        BatchLogRecordProcessor.builder(waitingLogExporter)
+        BatchLogRecordProcessor.builder(waitingLogRecordExporter)
             .setMaxQueueSize(10_000)
             // Force flush should send all logs, make sure the number of logs we check here is
             // not divisible by the batch size.
@@ -182,67 +183,67 @@ class BatchLogRecordProcessorTest {
     for (int i = 0; i < 50; i++) {
       emitLog(sdkLoggerProvider, "notExported");
     }
-    List<LogData> exported = waitingLogExporter.waitForExport();
+    List<LogRecordData> exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(49);
 
     for (int i = 0; i < 50; i++) {
       emitLog(sdkLoggerProvider, "notExported");
     }
-    exported = waitingLogExporter.waitForExport();
+    exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(49);
 
     batchLogRecordProcessor.forceFlush().join(10, TimeUnit.SECONDS);
-    exported = waitingLogExporter.getExported();
+    exported = waitingLogRecordExporter.getExported();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(2);
   }
 
   @Test
   void emitLogsToMultipleExporters() {
-    WaitingLogExporter waitingLogExporter1 =
-        new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
-    WaitingLogExporter waitingLogExporter2 =
-        new WaitingLogExporter(2, CompletableResultCode.ofSuccess());
+    WaitingLogRecordExporter waitingLogRecordExporter1 =
+        new WaitingLogRecordExporter(2, CompletableResultCode.ofSuccess());
+    WaitingLogRecordExporter waitingLogRecordExporter2 =
+        new WaitingLogRecordExporter(2, CompletableResultCode.ofSuccess());
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
                 BatchLogRecordProcessor.builder(
-                        LogExporter.composite(
-                            Arrays.asList(waitingLogExporter1, waitingLogExporter2)))
+                        LogRecordExporter.composite(
+                            Arrays.asList(waitingLogRecordExporter1, waitingLogRecordExporter2)))
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
-    List<LogData> exported1 = waitingLogExporter1.waitForExport();
-    List<LogData> exported2 = waitingLogExporter2.waitForExport();
+    List<LogRecordData> exported1 = waitingLogRecordExporter1.waitForExport();
+    List<LogRecordData> exported2 = waitingLogRecordExporter2.waitForExport();
     assertThat(exported1)
         .hasSize(2)
         .satisfiesExactly(
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1),
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
     assertThat(exported2)
         .hasSize(2)
         .satisfiesExactly(
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_1),
-            logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1),
+            logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
   void emitMoreLogsThanTheMaximumLimit() {
     int maxQueuedLogs = 8;
-    BlockingLogExporter blockingLogExporter = new BlockingLogExporter();
-    WaitingLogExporter waitingLogExporter =
-        new WaitingLogExporter(maxQueuedLogs, CompletableResultCode.ofSuccess());
+    BlockingLogRecordExporter blockingLogRecordExporter = new BlockingLogRecordExporter();
+    WaitingLogRecordExporter waitingLogRecordExporter =
+        new WaitingLogRecordExporter(maxQueuedLogs, CompletableResultCode.ofSuccess());
     SdkLoggerProvider sdkTracerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
                 BatchLogRecordProcessor.builder(
-                        LogExporter.composite(
-                            Arrays.asList(blockingLogExporter, waitingLogExporter)))
+                        LogRecordExporter.composite(
+                            Arrays.asList(blockingLogRecordExporter, waitingLogRecordExporter)))
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .setMaxQueueSize(maxQueuedLogs)
                     .setMaxExportBatchSize(maxQueuedLogs / 2)
@@ -253,7 +254,7 @@ class BatchLogRecordProcessorTest {
     // can be removed from the queue. Need to add a log to trigger the export otherwise the
     // pipeline is never called.
     emitLog(sdkTracerProvider, "blocking log");
-    blockingLogExporter.waitUntilIsBlocked();
+    blockingLogRecordExporter.waitUntilIsBlocked();
 
     for (int i = 0; i < maxQueuedLogs; i++) {
       // First export maxQueuedLogs, the worker thread is blocked so all items should be queued.
@@ -266,28 +267,29 @@ class BatchLogRecordProcessorTest {
     }
 
     // Release the blocking exporter
-    blockingLogExporter.unblock();
+    blockingLogRecordExporter.unblock();
 
     // While we wait for maxQueuedLogs we ensure that the queue is also empty after this.
-    List<LogData> exported = waitingLogExporter.waitForExport();
+    List<LogRecordData> exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).hasSize(maxQueuedLogs + 1);
 
     // Clear, reset, add another batch of logs, and confirm they are exported
     exported.clear();
-    waitingLogExporter.reset();
+    waitingLogRecordExporter.reset();
     for (int i = 0; i < maxQueuedLogs; i++) {
       emitLog(sdkTracerProvider, "log_3_" + i);
     }
 
-    exported = waitingLogExporter.waitForExport();
+    exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).hasSize(maxQueuedLogs);
   }
 
   @Test
   void ignoresNullLogs() {
-    BatchLogRecordProcessor processor = BatchLogRecordProcessor.builder(mockLogExporter).build();
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
     try {
       assertThatCode(() -> processor.onEmit(null)).doesNotThrowAnyException();
     } finally {
@@ -296,30 +298,34 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
-  @SuppressLogger(MultiLogExporter.class)
+  @SuppressLogger(MultiLogRecordExporter.class)
   void exporterThrowsException() {
-    WaitingLogExporter waitingLogExporter =
-        new WaitingLogExporter(1, CompletableResultCode.ofSuccess());
+    WaitingLogRecordExporter waitingLogRecordExporter =
+        new WaitingLogRecordExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
-        .when(mockLogExporter)
+        .when(mockLogRecordExporter)
         .export(anyList());
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
                 BatchLogRecordProcessor.builder(
-                        LogExporter.composite(Arrays.asList(mockLogExporter, waitingLogExporter)))
+                        LogRecordExporter.composite(
+                            Arrays.asList(mockLogRecordExporter, waitingLogRecordExporter)))
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
-    List<LogData> exported = waitingLogExporter.waitForExport();
-    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_1));
-    waitingLogExporter.reset();
+
+    List<LogRecordData> exported = waitingLogRecordExporter.waitForExport();
+    assertThat(exported)
+        .satisfiesExactly(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1));
+    waitingLogRecordExporter.reset();
     // Continue to export after the exception was received.
     emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
-    exported = waitingLogExporter.waitForExport();
-    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
+    exported = waitingLogRecordExporter.waitForExport();
+    assertThat(exported)
+        .satisfiesExactly(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
   }
 
   @Test
@@ -327,7 +333,7 @@ class BatchLogRecordProcessorTest {
   public void continuesIfExporterTimesOut() throws InterruptedException {
     int exporterTimeoutMillis = 10;
     BatchLogRecordProcessor blp =
-        BatchLogRecordProcessor.builder(mockLogExporter)
+        BatchLogRecordProcessor.builder(mockLogRecordExporter)
             .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
             .setScheduleDelay(1, TimeUnit.MILLISECONDS)
             .setMaxQueueSize(1)
@@ -337,7 +343,7 @@ class BatchLogRecordProcessorTest {
 
     CountDownLatch exported = new CountDownLatch(1);
     // We return a result we never complete, meaning it will timeout.
-    when(mockLogExporter.export(
+    when(mockLogRecordExporter.export(
             argThat(
                 logs -> {
                   assertThat(logs)
@@ -353,9 +359,9 @@ class BatchLogRecordProcessorTest {
 
     // Still processing new logs.
     CountDownLatch exportedAgain = new CountDownLatch(1);
-    reset(mockLogExporter);
-    when(mockLogExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(mockLogExporter.export(
+    reset(mockLogRecordExporter);
+    when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockLogRecordExporter.export(
             argThat(
                 logs -> {
                   assertThat(logs)
@@ -372,14 +378,14 @@ class BatchLogRecordProcessorTest {
   @Test
   @Timeout(10)
   void shutdownFlushes() {
-    WaitingLogExporter waitingLogExporter =
-        new WaitingLogExporter(1, CompletableResultCode.ofSuccess());
+    WaitingLogRecordExporter waitingLogRecordExporter =
+        new WaitingLogRecordExporter(1, CompletableResultCode.ofSuccess());
     // Set the export delay to large value, in order to confirm the #flush() below works
 
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
-                BatchLogRecordProcessor.builder(waitingLogExporter)
+                BatchLogRecordProcessor.builder(waitingLogRecordExporter)
                     .setScheduleDelay(10, TimeUnit.SECONDS)
                     .build())
             .build();
@@ -389,14 +395,16 @@ class BatchLogRecordProcessorTest {
     // Force a shutdown, which forces processing of all remaining logs.
     sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
-    List<LogData> exported = waitingLogExporter.getExported();
-    assertThat(exported).satisfiesExactly(logData -> assertThat(logData).hasBody(LOG_MESSAGE_2));
-    assertThat(waitingLogExporter.shutDownCalled.get()).isTrue();
+    List<LogRecordData> exported = waitingLogRecordExporter.getExported();
+    assertThat(exported)
+        .satisfiesExactly(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
+    assertThat(waitingLogRecordExporter.shutDownCalled.get()).isTrue();
   }
 
   @Test
   void shutdownPropagatesSuccess() {
-    BatchLogRecordProcessor processor = BatchLogRecordProcessor.builder(mockLogExporter).build();
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isTrue();
@@ -404,14 +412,15 @@ class BatchLogRecordProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
-    when(mockLogExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    BatchLogRecordProcessor processor = BatchLogRecordProcessor.builder(mockLogExporter).build();
+    when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
   }
 
-  private static final class BlockingLogExporter implements LogExporter {
+  private static final class BlockingLogRecordExporter implements LogRecordExporter {
 
     final Object monitor = new Object();
 
@@ -425,7 +434,7 @@ class BatchLogRecordProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public CompletableResultCode export(Collection<LogData> logs) {
+    public CompletableResultCode export(Collection<LogRecordData> logs) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -472,15 +481,15 @@ class BatchLogRecordProcessorTest {
     }
   }
 
-  private static class CompletableLogExporter implements LogExporter {
+  private static class CompletableLogRecordExporter implements LogRecordExporter {
 
     private final List<CompletableResultCode> results = new ArrayList<>();
 
-    private final List<LogData> exported = new ArrayList<>();
+    private final List<LogRecordData> exported = new ArrayList<>();
 
     private volatile boolean succeeded;
 
-    List<LogData> getExported() {
+    List<LogRecordData> getExported() {
       return exported;
     }
 
@@ -490,7 +499,7 @@ class BatchLogRecordProcessorTest {
     }
 
     @Override
-    public CompletableResultCode export(Collection<LogData> logs) {
+    public CompletableResultCode export(Collection<LogRecordData> logs) {
       exported.addAll(logs);
       if (succeeded) {
         return CompletableResultCode.ofSuccess();
@@ -515,41 +524,42 @@ class BatchLogRecordProcessorTest {
     }
   }
 
-  static class WaitingLogExporter implements LogExporter {
+  static class WaitingLogRecordExporter implements LogRecordExporter {
 
-    private final List<LogData> logDataList = new ArrayList<>();
+    private final List<LogRecordData> logRecordDataList = new ArrayList<>();
     private final int numberToWaitFor;
     private final CompletableResultCode exportResultCode;
     private CountDownLatch countDownLatch;
     private int timeout = 10;
     private final AtomicBoolean shutDownCalled = new AtomicBoolean(false);
 
-    WaitingLogExporter(int numberToWaitFor, CompletableResultCode exportResultCode) {
+    WaitingLogRecordExporter(int numberToWaitFor, CompletableResultCode exportResultCode) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
       this.exportResultCode = exportResultCode;
     }
 
-    WaitingLogExporter(int numberToWaitFor, CompletableResultCode exportResultCode, int timeout) {
+    WaitingLogRecordExporter(
+        int numberToWaitFor, CompletableResultCode exportResultCode, int timeout) {
       this(numberToWaitFor, exportResultCode);
       this.timeout = timeout;
     }
 
-    List<LogData> getExported() {
-      List<LogData> result = new ArrayList<>(logDataList);
-      logDataList.clear();
+    List<LogRecordData> getExported() {
+      List<LogRecordData> result = new ArrayList<>(logRecordDataList);
+      logRecordDataList.clear();
       return result;
     }
 
     /**
      * Waits until we received {@link #numberToWaitFor} logs to export. Returns the list of exported
-     * {@link LogData} objects, otherwise {@code null} if the current thread is interrupted.
+     * {@link LogRecordData} objects, otherwise {@code null} if the current thread is interrupted.
      *
-     * @return the list of exported {@link LogData} objects, otherwise {@code null} if the current
-     *     thread is interrupted.
+     * @return the list of exported {@link LogRecordData} objects, otherwise {@code null} if the
+     *     current thread is interrupted.
      */
     @Nullable
-    List<LogData> waitForExport() {
+    List<LogRecordData> waitForExport() {
       try {
         countDownLatch.await(timeout, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
@@ -561,8 +571,8 @@ class BatchLogRecordProcessorTest {
     }
 
     @Override
-    public CompletableResultCode export(Collection<LogData> logs) {
-      this.logDataList.addAll(logs);
+    public CompletableResultCode export(Collection<LogRecordData> logs) {
+      this.logRecordDataList.addAll(logs);
       for (int i = 0; i < logs.size(); i++) {
         countDownLatch.countDown();
       }

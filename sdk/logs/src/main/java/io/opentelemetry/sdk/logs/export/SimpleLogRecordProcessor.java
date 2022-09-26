@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,8 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An implementation of the {@link LogRecordProcessor} that passes {@link LogData} directly to the
- * configured exporter.
+ * An implementation of the {@link LogRecordProcessor} that passes {@link LogRecordData} directly to
+ * the configured exporter.
  *
  * <p>This processor will cause all logs to be exported directly as they finish, meaning each export
  * request will have a single log. Most backends will not perform well with a single log per request
@@ -33,14 +33,14 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
   private static final Logger logger = Logger.getLogger(SimpleLogRecordProcessor.class.getName());
 
-  private final LogExporter logExporter;
+  private final LogRecordExporter logRecordExporter;
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Returns a new {@link SimpleLogRecordProcessor} which exports logs to the {@link LogExporter}
-   * synchronously.
+   * Returns a new {@link SimpleLogRecordProcessor} which exports logs to the {@link
+   * LogRecordExporter} synchronously.
    *
    * <p>This processor will cause all logs to be exported directly as they finish, meaning each
    * export request will have a single log. Most backends will not perform well with a single log
@@ -48,20 +48,20 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
    * BatchLogRecordProcessor} instead, including in special environments such as serverless
    * runtimes. {@link SimpleLogRecordProcessor} is generally meant to for testing only.
    */
-  public static LogRecordProcessor create(LogExporter exporter) {
+  public static LogRecordProcessor create(LogRecordExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleLogRecordProcessor(exporter);
   }
 
-  SimpleLogRecordProcessor(LogExporter logExporter) {
-    this.logExporter = requireNonNull(logExporter, "logExporter");
+  SimpleLogRecordProcessor(LogRecordExporter logRecordExporter) {
+    this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
   }
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
     try {
-      List<LogData> logs = Collections.singletonList(logRecord.toLogData());
-      CompletableResultCode result = logExporter.export(logs);
+      List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
+      CompletableResultCode result = logRecordExporter.export(logs);
       pendingExports.add(result);
       result.whenComplete(
           () -> {
@@ -85,7 +85,7 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     CompletableResultCode flushResult = forceFlush();
     flushResult.whenComplete(
         () -> {
-          CompletableResultCode shutdownResult = logExporter.shutdown();
+          CompletableResultCode shutdownResult = logRecordExporter.shutdown();
           shutdownResult.whenComplete(
               () -> {
                 if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {

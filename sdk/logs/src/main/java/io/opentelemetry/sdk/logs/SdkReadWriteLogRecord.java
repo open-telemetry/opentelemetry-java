@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -105,9 +105,9 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   }
 
   @Override
-  public LogData toLogData() {
+  public LogRecordData toLogRecordData() {
     synchronized (lock) {
-      return SdkLogData.create(
+      return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
           epochNanos,

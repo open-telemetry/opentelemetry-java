@@ -19,8 +19,8 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,19 +34,19 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SimpleLogRecordProcessorTest {
 
-  private static final LogData LOG_DATA = TestLogData.builder().build();
+  private static final LogRecordData LOG_RECORD_DATA = TestLogRecordData.builder().build();
 
-  @Mock private LogExporter logExporter;
+  @Mock private LogRecordExporter logRecordExporter;
   @Mock private ReadWriteLogRecord readWriteLogRecord;
 
   private LogRecordProcessor logRecordProcessor;
 
   @BeforeEach
   void setUp() {
-    logRecordProcessor = SimpleLogRecordProcessor.create(logExporter);
-    when(logExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
-    when(logExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(readWriteLogRecord.toLogData()).thenReturn(LOG_DATA);
+    logRecordProcessor = SimpleLogRecordProcessor.create(logRecordExporter);
+    when(logRecordExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
+    when(logRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(readWriteLogRecord.toLogRecordData()).thenReturn(LOG_RECORD_DATA);
   }
 
   @Test
@@ -59,16 +59,16 @@ class SimpleLogRecordProcessorTest {
   @Test
   void onEmit() {
     logRecordProcessor.onEmit(readWriteLogRecord);
-    verify(logExporter).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter).export(Collections.singletonList(LOG_RECORD_DATA));
   }
 
   @Test
   @SuppressLogger(SimpleLogRecordProcessor.class)
   void onEmit_ExporterError() {
-    when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
+    when(logRecordExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
     logRecordProcessor.onEmit(readWriteLogRecord);
     logRecordProcessor.onEmit(readWriteLogRecord);
-    verify(logExporter, times(2)).export(anyList());
+    verify(logRecordExporter, times(2)).export(anyList());
   }
 
   @Test
@@ -76,12 +76,12 @@ class SimpleLogRecordProcessorTest {
     CompletableResultCode export1 = new CompletableResultCode();
     CompletableResultCode export2 = new CompletableResultCode();
 
-    when(logExporter.export(any())).thenReturn(export1, export2);
+    when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
     logRecordProcessor.onEmit(readWriteLogRecord);
     logRecordProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode flush = logRecordProcessor.forceFlush();
     assertThat(flush.isDone()).isFalse();
@@ -99,23 +99,23 @@ class SimpleLogRecordProcessorTest {
     CompletableResultCode export1 = new CompletableResultCode();
     CompletableResultCode export2 = new CompletableResultCode();
 
-    when(logExporter.export(any())).thenReturn(export1, export2);
+    when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
     logRecordProcessor.onEmit(readWriteLogRecord);
     logRecordProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(LOG_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode shutdown = logRecordProcessor.shutdown();
     assertThat(shutdown.isDone()).isFalse();
 
     export1.succeed();
     assertThat(shutdown.isDone()).isFalse();
-    verify(logExporter, never()).shutdown();
+    verify(logRecordExporter, never()).shutdown();
 
     export2.succeed();
     assertThat(shutdown.isDone()).isTrue();
     assertThat(shutdown.isSuccess()).isTrue();
-    verify(logExporter).shutdown();
+    verify(logRecordExporter).shutdown();
   }
 }

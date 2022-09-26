@@ -77,7 +77,7 @@ class SdkLogRecordBuilderTest {
     builder.setSeverity(severity);
     builder.setSeverityText(sevText);
     builder.emit();
-    assertThat(emittedLog.get().toLogData())
+    assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
@@ -96,7 +96,7 @@ class SdkLogRecordBuilderTest {
 
     builder.emit();
 
-    assertThat(emittedLog.get().toLogData())
+    assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())

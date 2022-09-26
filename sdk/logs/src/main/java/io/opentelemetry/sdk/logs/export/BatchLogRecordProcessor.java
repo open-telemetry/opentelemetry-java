@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
@@ -53,16 +53,16 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
   /**
    * Returns a new Builder for {@link BatchLogRecordProcessor}.
    *
-   * @param logExporter the {@link LogExporter} to which the Logs are pushed
-   * @return a new {@link BatchLogRecordProcessorBuilder}.
-   * @throws NullPointerException if the {@code logExporter} is {@code null}.
+   * @param logRecordExporter the {@link LogRecordExporter} to which the Logs are pushed
+   * @return a new {@link BatchLogRecordProcessor}.
+   * @throws NullPointerException if the {@code logRecordExporter} is {@code null}.
    */
-  public static BatchLogRecordProcessorBuilder builder(LogExporter logExporter) {
-    return new BatchLogRecordProcessorBuilder(logExporter);
+  public static BatchLogRecordProcessorBuilder builder(LogRecordExporter logRecordExporter) {
+    return new BatchLogRecordProcessorBuilder(logRecordExporter);
   }
 
   BatchLogRecordProcessor(
-      LogExporter logExporter,
+      LogRecordExporter logRecordExporter,
       MeterProvider meterProvider,
       long scheduleDelayNanos,
       int maxQueueSize,
@@ -70,7 +70,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       long exporterTimeoutNanos) {
     this.worker =
         new Worker(
-            logExporter,
+            logRecordExporter,
             meterProvider,
             scheduleDelayNanos,
             maxExportBatchSize,
@@ -102,11 +102,12 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
   }
 
   // Visible for testing
-  ArrayList<LogData> getBatch() {
+  ArrayList<LogRecordData> getBatch() {
     return worker.batch;
   }
 
-  // Worker is a thread that batches multiple logs and calls the registered LogExporter to export
+  // Worker is a thread that batches multiple logs and calls the registered LogRecordExporter to
+  // export
   // the data.
   private static final class Worker implements Runnable {
 
@@ -116,7 +117,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final Attributes droppedAttrs;
     private final Attributes exportedAttrs;
 
-    private final LogExporter logExporter;
+    private final LogRecordExporter logRecordExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
@@ -134,16 +135,16 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
-    private final ArrayList<LogData> batch;
+    private final ArrayList<LogRecordData> batch;
 
     private Worker(
-        LogExporter logExporter,
+        LogRecordExporter logRecordExporter,
         MeterProvider meterProvider,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         Queue<ReadWriteLogRecord> queue) {
-      this.logExporter = logExporter;
+      this.logRecordExporter = logRecordExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
@@ -204,7 +205,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           flush();
         }
         while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll().toLogData());
+          batch.add(queue.poll().toLogRecordData());
         }
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
@@ -231,7 +232,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       while (logsToFlush > 0) {
         ReadWriteLogRecord logRecord = queue.poll();
         assert logRecord != null;
-        batch.add(logRecord.toLogData());
+        batch.add(logRecord.toLogRecordData());
         logsToFlush--;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();
@@ -256,7 +257,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       flushResult.whenComplete(
           () -> {
             continueWork = false;
-            CompletableResultCode shutdownResult = logExporter.shutdown();
+            CompletableResultCode shutdownResult = logRecordExporter.shutdown();
             shutdownResult.whenComplete(
                 () -> {
                   if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
@@ -289,7 +290,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       }
 
       try {
-        CompletableResultCode result = logExporter.export(Collections.unmodifiableList(batch));
+        CompletableResultCode result =
+            logRecordExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           processedLogsCounter.add(batch.size(), exportedAttrs);

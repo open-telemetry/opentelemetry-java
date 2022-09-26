@@ -30,10 +30,10 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
@@ -56,7 +56,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -438,8 +438,8 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpGrpcLogExport(String compression) {
-    LogExporter otlpGrpcLogExporter =
-        OtlpGrpcLogExporter.builder()
+    LogRecordExporter otlpGrpcLogRecordExporter =
+        OtlpGrpcLogRecordExporter.builder()
             .setEndpoint(
                 "http://"
                     + collector.getHost()
@@ -448,13 +448,13 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testLogExporter(otlpGrpcLogExporter);
+    testLogRecordExporter(otlpGrpcLogRecordExporter);
   }
 
   @Test
   void testOtlpGrpcLogExport_mtls() throws Exception {
-    LogExporter exporter =
-        OtlpGrpcLogExporter.builder()
+    LogRecordExporter exporter =
+        OtlpGrpcLogRecordExporter.builder()
             .setEndpoint(
                 "https://"
                     + collector.getHost()
@@ -464,14 +464,14 @@ abstract class OtlpExporterIntegrationTest {
             .setTrustedCertificates(serverTls.certificate().getEncoded())
             .build();
 
-    testLogExporter(exporter);
+    testLogRecordExporter(exporter);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpLogExport(String compression) {
-    LogExporter otlpHttpLogExporter =
-        OtlpHttpLogExporter.builder()
+    LogRecordExporter otlpHttpLogRecordExporter =
+        OtlpHttpLogRecordExporter.builder()
             .setEndpoint(
                 "http://"
                     + collector.getHost()
@@ -481,13 +481,13 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testLogExporter(otlpHttpLogExporter);
+    testLogRecordExporter(otlpHttpLogRecordExporter);
   }
 
   @Test
   void testOtlpHttpLogExport_mtls() throws Exception {
-    LogExporter exporter =
-        OtlpHttpLogExporter.builder()
+    LogRecordExporter exporter =
+        OtlpHttpLogRecordExporter.builder()
             .setEndpoint(
                 "https://"
                     + collector.getHost()
@@ -498,14 +498,14 @@ abstract class OtlpExporterIntegrationTest {
             .setTrustedCertificates(serverTls.certificate().getEncoded())
             .build();
 
-    testLogExporter(exporter);
+    testLogRecordExporter(exporter);
   }
 
-  private static void testLogExporter(LogExporter logExporter) {
+  private static void testLogRecordExporter(LogRecordExporter logRecordExporter) {
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
             .setResource(RESOURCE)
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logExporter))
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
             .build();
 
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
