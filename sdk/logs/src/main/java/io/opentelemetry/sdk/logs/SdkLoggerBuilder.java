@@ -9,15 +9,23 @@ import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import javax.annotation.Nullable;
 
 final class SdkLoggerBuilder implements LoggerBuilder {
 
   private final ComponentRegistry<SdkLogger> registry;
   private final InstrumentationScopeInfoBuilder scopeBuilder;
+  @Nullable private String eventDomain;
 
   SdkLoggerBuilder(ComponentRegistry<SdkLogger> registry, String instrumentationScopeName) {
     this.registry = registry;
     this.scopeBuilder = InstrumentationScopeInfo.builder(instrumentationScopeName);
+  }
+
+  @Override
+  public LoggerBuilder setEventDomain(String eventDomain) {
+    this.eventDomain = eventDomain;
+    return this;
   }
 
   @Override
@@ -34,6 +42,7 @@ final class SdkLoggerBuilder implements LoggerBuilder {
 
   @Override
   public SdkLogger build() {
-    return registry.get(scopeBuilder.build());
+    SdkLogger logger = registry.get(scopeBuilder.build());
+    return eventDomain == null ? logger : logger.withEventDomain(eventDomain);
   }
 }

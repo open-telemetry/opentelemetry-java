@@ -12,14 +12,28 @@ import java.util.concurrent.TimeUnit;
 
 class DefaultLogger implements Logger {
 
-  private static final Logger INSTANCE = new DefaultLogger();
+  private static final Logger INSTANCE_WITH_DOMAIN = new DefaultLogger(/* hasDomain= */ true);
+  private static final Logger INSTANCE_NO_DOMAIN = new DefaultLogger(/* hasDomain= */ false);
 
-  private static final LogRecordBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
+  private static final EventBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
 
-  private DefaultLogger() {}
+  private final boolean hasDomain;
 
-  static Logger getInstance() {
-    return INSTANCE;
+  private DefaultLogger(boolean hasDomain) {
+    this.hasDomain = hasDomain;
+  }
+
+  static Logger getInstance(boolean hasDomain) {
+    return hasDomain ? INSTANCE_WITH_DOMAIN : INSTANCE_NO_DOMAIN;
+  }
+
+  @Override
+  public EventBuilder eventBuilder(String name) {
+    if (!hasDomain) {
+      throw new IllegalStateException(
+          "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger.");
+    }
+    return NOOP_LOG_RECORD_BUILDER;
   }
 
   @Override
@@ -27,7 +41,7 @@ class DefaultLogger implements Logger {
     return NOOP_LOG_RECORD_BUILDER;
   }
 
-  private static final class NoopLogRecordBuilder implements LogRecordBuilder {
+  private static final class NoopLogRecordBuilder implements EventBuilder {
 
     private NoopLogRecordBuilder() {}
 

@@ -9,6 +9,19 @@ package io.opentelemetry.api.logs;
 public interface LoggerBuilder {
 
   /**
+   * Set the event domain of the resulting {@link Logger}.
+   *
+   * <p><b>NOTE:</b> Event domain is required to use {@link Logger#eventBuilder(String)}.
+   *
+   * <p>The event domain will be included in the {@code event.domain} attribute of every event
+   * produced by the resulting {@link Logger}.
+   *
+   * @param eventDomain The event domain.
+   * @return this
+   */
+  LoggerBuilder setEventDomain(String eventDomain);
+
+  /**
    * Assign an OpenTelemetry schema URL to the resulting {@link Logger}.
    *
    * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation scope

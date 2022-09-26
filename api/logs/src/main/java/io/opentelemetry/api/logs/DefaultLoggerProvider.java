@@ -8,7 +8,10 @@ package io.opentelemetry.api.logs;
 class DefaultLoggerProvider implements LoggerProvider {
 
   private static final LoggerProvider INSTANCE = new DefaultLoggerProvider();
-  private static final LoggerBuilder NOOP_BUILDER = new NoopLoggerBuilder();
+  private static final LoggerBuilder NOOP_BUILDER_WITH_DOMAIN =
+      new NoopLoggerBuilder(/* hasDomain= */ true);
+  private static final LoggerBuilder NOOP_BUILDER_NO_DOMAIN =
+      new NoopLoggerBuilder(/* hasDomain= */ false);
 
   private DefaultLoggerProvider() {}
 
@@ -18,12 +21,22 @@ class DefaultLoggerProvider implements LoggerProvider {
 
   @Override
   public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
-    return NOOP_BUILDER;
+    return NOOP_BUILDER_NO_DOMAIN;
   }
 
   private static class NoopLoggerBuilder implements LoggerBuilder {
 
-    private NoopLoggerBuilder() {}
+    private final boolean hasDomain;
+
+    private NoopLoggerBuilder(boolean hasDomain) {
+      this.hasDomain = hasDomain;
+    }
+
+    @Override
+    @SuppressWarnings("BuilderReturnThis")
+    public LoggerBuilder setEventDomain(String eventDomain) {
+      return eventDomain == null ? NOOP_BUILDER_NO_DOMAIN : NOOP_BUILDER_WITH_DOMAIN;
+    }
 
     @Override
     public LoggerBuilder setSchemaUrl(String schemaUrl) {
@@ -37,7 +50,7 @@ class DefaultLoggerProvider implements LoggerProvider {
 
     @Override
     public Logger build() {
-      return DefaultLogger.getInstance();
+      return DefaultLogger.getInstance(hasDomain);
     }
   }
 }

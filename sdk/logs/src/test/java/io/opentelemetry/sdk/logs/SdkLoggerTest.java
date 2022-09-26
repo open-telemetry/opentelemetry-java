@@ -11,6 +11,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -133,5 +134,33 @@ class SdkLoggerTest {
     loggerProvider.get("test").logRecordBuilder().emit();
 
     verify(logRecordProcessor, never()).onEmit(any());
+  }
+
+  @Test
+  void eventBuilder() {
+    AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(seenLog::set).build();
+
+    assertThatThrownBy(() -> loggerProvider.get("test").eventBuilder("event-name"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger.");
+    assertThat(seenLog.get()).isNull();
+
+    // Emit event from logger with same name, and add event domain
+    loggerProvider
+        .loggerBuilder("test")
+        .setEventDomain("event-domain")
+        .build()
+        .eventBuilder("event-name")
+        .emit();
+
+    assertThat(seenLog.get().toLogRecordData())
+        .hasAttributes(
+            Attributes.builder()
+                .put("event.domain", "event-domain")
+                .put("event.name", "event-name")
+                .build());
   }
 }

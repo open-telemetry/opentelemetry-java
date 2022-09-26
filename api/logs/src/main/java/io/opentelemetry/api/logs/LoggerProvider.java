@@ -18,8 +18,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *       SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via {@link Logger#logRecordBuilder()}.
  *       It is <b>NOT</b> a replacement log framework.
  *   <li>Enable emitting structured <a
- *       href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md">events</a>.
- *       TODO: add link when event API is added.
+ *       href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md">events</a>
+ *       via {@link Logger#eventBuilder(String)}. Requires assigning an {@link
+ *       LoggerBuilder#setEventDomain(String) event domain} to the {@link Logger}.
  * </ol>
  *
  * @see Logger
