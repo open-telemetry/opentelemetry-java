@@ -29,8 +29,7 @@ class ProcessResourceTest {
 
     assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isGreaterThan(1);
     assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH))
-        .contains("java")
-        .doesNotEndWith(".exe");
+        .matches(".*[/\\\\]java");
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
         .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
   }
@@ -44,8 +43,7 @@ class ProcessResourceTest {
 
     assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isGreaterThan(1);
     assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH))
-        .contains("java")
-        .endsWith(".exe");
+        .matches(".*[/\\\\]java\\.exe");
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
         .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
   }
