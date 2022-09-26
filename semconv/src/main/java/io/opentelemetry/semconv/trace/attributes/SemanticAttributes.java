@@ -1385,11 +1385,27 @@ public final class SemanticAttributes {
       longKey("http.request_content_length_uncompressed");
 
   /**
-   * @deprecated this item has been removed as of 1.13.0 of the semantic conventions. Please use
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
    *     {@link SemanticAttributes#NET_HOST_NAME} instead.
    */
   @Deprecated
   public static final AttributeKey<String> HTTP_SERVER_NAME = stringKey("http.server_name");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
+   *     {@link SemanticAttributes#NET_HOST_NAME} instead.
+   */
+  @Deprecated public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. .
+   */
+  @Deprecated public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. .
+   */
+  @Deprecated public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
 
   private SemanticAttributes() {}
 }
