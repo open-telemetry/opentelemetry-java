@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -26,8 +26,8 @@ public interface TelemetryExporterBuilder<T> {
     return new GrpcMetricExporterBuilderWrapper(builder);
   }
 
-  static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogExporterBuilder builder) {
-    return new GrpcLogExporterBuilderWrapper(builder);
+  static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
+    return new GrpcLogRecordExporterBuilderWrapper(builder);
   }
 
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);

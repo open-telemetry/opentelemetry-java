@@ -17,8 +17,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder for {@link OtlpGrpcLogExporter}. */
-public final class OtlpGrpcLogExporterBuilder {
+/** Builder for {@link OtlpGrpcLogRecordExporter}. */
+public final class OtlpGrpcLogRecordExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME =
       "opentelemetry.proto.collector.logs.v1.LogsService";
@@ -32,7 +32,7 @@ public final class OtlpGrpcLogExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<LogsRequestMarshaler> delegate;
 
-  OtlpGrpcLogExporterBuilder() {
+  OtlpGrpcLogRecordExporterBuilder() {
     delegate =
         GrpcExporter.builder(
             "otlp",
@@ -53,7 +53,7 @@ public final class OtlpGrpcLogExporterBuilder {
    *     methods on this builder, please file an issue to let us know what it is.
    */
   @Deprecated
-  public OtlpGrpcLogExporterBuilder setChannel(ManagedChannel channel) {
+  public OtlpGrpcLogRecordExporterBuilder setChannel(ManagedChannel channel) {
     delegate.setChannel(channel);
     return this;
   }
@@ -62,7 +62,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
    * defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  public OtlpGrpcLogExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+  public OtlpGrpcLogRecordExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
     delegate.setTimeout(timeout, unit);
@@ -73,7 +73,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
    * defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  public OtlpGrpcLogExporterBuilder setTimeout(Duration timeout) {
+  public OtlpGrpcLogRecordExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     delegate.setTimeout(timeout);
     return this;
@@ -83,7 +83,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
    * endpoint must start with either http:// or https://.
    */
-  public OtlpGrpcLogExporterBuilder setEndpoint(String endpoint) {
+  public OtlpGrpcLogRecordExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
     delegate.setEndpoint(endpoint);
     return this;
@@ -93,7 +93,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets the method used to compress payloads. If unset, compression is disabled. Currently
    * supported compression methods include "gzip" and "none".
    */
-  public OtlpGrpcLogExporterBuilder setCompression(String compressionMethod) {
+  public OtlpGrpcLogRecordExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     checkArgument(
         compressionMethod.equals("gzip") || compressionMethod.equals("none"),
@@ -107,7 +107,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
    * use the system default trusted certificates.
    */
-  public OtlpGrpcLogExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public OtlpGrpcLogRecordExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     delegate.setTrustedCertificates(trustedCertificatesPem);
     return this;
   }
@@ -116,20 +116,21 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
    */
-  public OtlpGrpcLogExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+  public OtlpGrpcLogRecordExporterBuilder setClientTls(
+      byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);
     return this;
   }
 
   /**
    * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcLogExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * OtlpGrpcLogRecordExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    *
    * @param key header key
    * @param value header value
    * @return this builder's instance
    */
-  public OtlpGrpcLogExporterBuilder addHeader(String key, String value) {
+  public OtlpGrpcLogRecordExporterBuilder addHeader(String key, String value) {
     delegate.addHeader(key, value);
     return this;
   }
@@ -138,7 +139,7 @@ public final class OtlpGrpcLogExporterBuilder {
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
    * will not be collected.
    */
-  public OtlpGrpcLogExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+  public OtlpGrpcLogRecordExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
     delegate.setMeterProvider(meterProvider);
     return this;
@@ -149,7 +150,7 @@ public final class OtlpGrpcLogExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public OtlpGrpcLogExporter build() {
-    return new OtlpGrpcLogExporter(delegate.build());
+  public OtlpGrpcLogRecordExporter build() {
+    return new OtlpGrpcLogRecordExporter(delegate.build());
   }
 }

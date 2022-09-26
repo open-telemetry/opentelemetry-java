@@ -19,9 +19,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link InMemoryLogExporter}. */
-class InMemoryLogExporterTest {
-  private final InMemoryLogExporter exporter = InMemoryLogExporter.create();
+/** Unit tests for {@link InMemoryLogRecordExporter}. */
+class InMemoryLogRecordExporterTest {
+  private final InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
 
   private SdkLoggerProvider loggerProvider;
   private Logger logger;

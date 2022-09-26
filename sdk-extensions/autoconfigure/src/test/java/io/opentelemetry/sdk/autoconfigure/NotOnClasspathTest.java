@@ -100,7 +100,7 @@ class NotOnClasspathTest {
   void loggingLogs() {
     assertThatThrownBy(
             () ->
-                LogExporterConfiguration.configureExporter(
+                LogRecordExporterConfiguration.configureExporter(
                     "logging", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
@@ -171,7 +171,7 @@ class NotOnClasspathTest {
   void otlpGrpcLogs() {
     assertThatCode(
             () ->
-                LogExporterConfiguration.configureExporter(
+                LogRecordExporterConfiguration.configureExporter(
                     "otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .doesNotThrowAnyException();
   }
@@ -183,7 +183,7 @@ class NotOnClasspathTest {
             Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
     assertThatCode(
             () ->
-                LogExporterConfiguration.configureExporter(
+                LogRecordExporterConfiguration.configureExporter(
                     "otlp", config, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .doesNotThrowAnyException();
   }

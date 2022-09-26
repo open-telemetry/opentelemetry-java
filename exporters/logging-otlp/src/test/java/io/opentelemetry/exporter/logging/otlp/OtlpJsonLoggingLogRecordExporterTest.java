@@ -19,7 +19,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Arrays;
@@ -30,8 +30,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.event.Level;
 
-@SuppressLogger(OtlpJsonLoggingLogExporter.class)
-class OtlpJsonLoggingLogExporterTest {
+@SuppressLogger(OtlpJsonLoggingLogRecordExporter.class)
+class OtlpJsonLoggingLogRecordExporterTest {
 
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
@@ -76,13 +76,13 @@ class OtlpJsonLoggingLogExporterTest {
           .build();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingLogExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingLogRecordExporter.class);
 
-  LogExporter exporter;
+  LogRecordExporter exporter;
 
   @BeforeEach
   void setUp() {
-    exporter = OtlpJsonLoggingLogExporter.create();
+    exporter = OtlpJsonLoggingLogRecordExporter.create();
   }
 
   @Test

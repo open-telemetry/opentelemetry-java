@@ -12,26 +12,27 @@ import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link LogExporter} which writes {@linkplain LogRecordData logs} to a {@link Logger} in OTLP
- * JSON format. Each log line will include a single {@code ResourceLogs}.
+ * A {@link LogRecordExporter} which writes {@linkplain LogRecordData logs} to a {@link Logger} in
+ * OTLP JSON format. Each log line will include a single {@code ResourceLogs}.
  */
-public final class OtlpJsonLoggingLogExporter implements LogExporter {
+public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter {
 
-  private static final Logger logger = Logger.getLogger(OtlpJsonLoggingLogExporter.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName());
 
-  /** Returns a new {@link OtlpJsonLoggingLogExporter}. */
-  public static LogExporter create() {
-    return new OtlpJsonLoggingLogExporter();
+  /** Returns a new {@link OtlpJsonLoggingLogRecordExporter}. */
+  public static LogRecordExporter create() {
+    return new OtlpJsonLoggingLogRecordExporter();
   }
 
-  private OtlpJsonLoggingLogExporter() {}
+  private OtlpJsonLoggingLogRecordExporter() {}
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {

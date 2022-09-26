@@ -9,24 +9,24 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class OtlpGrpcLogExporter implements LogExporter {
+public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
   private final GrpcExporter<LogsRequestMarshaler> delegate;
 
   /**
-   * Returns a new {@link OtlpGrpcLogExporter} reading the configuration values from the environment
-   * and from system properties. System properties override values defined in the environment. If a
-   * configuration value is missing, it uses the default value.
+   * Returns a new {@link OtlpGrpcLogRecordExporter} reading the configuration values from the
+   * environment and from system properties. System properties override values defined in the
+   * environment. If a configuration value is missing, it uses the default value.
    *
-   * @return a new {@link OtlpGrpcLogExporter} instance.
+   * @return a new {@link OtlpGrpcLogRecordExporter} instance.
    */
-  public static OtlpGrpcLogExporter getDefault() {
+  public static OtlpGrpcLogRecordExporter getDefault() {
     return builder().build();
   }
 
@@ -35,11 +35,11 @@ public final class OtlpGrpcLogExporter implements LogExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static OtlpGrpcLogExporterBuilder builder() {
-    return new OtlpGrpcLogExporterBuilder();
+  public static OtlpGrpcLogRecordExporterBuilder builder() {
+    return new OtlpGrpcLogRecordExporterBuilder();
   }
 
-  OtlpGrpcLogExporter(GrpcExporter<LogsRequestMarshaler> delegate) {
+  OtlpGrpcLogRecordExporter(GrpcExporter<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
   }
 

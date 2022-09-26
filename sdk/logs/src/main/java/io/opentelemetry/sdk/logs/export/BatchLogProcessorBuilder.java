@@ -24,15 +24,15 @@ public final class BatchLogProcessorBuilder {
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
-  private final LogExporter logExporter;
+  private final LogRecordExporter logRecordExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private MeterProvider meterProvider = MeterProvider.noop();
 
-  BatchLogProcessorBuilder(LogExporter logExporter) {
-    this.logExporter = requireNonNull(logExporter, "logExporter");
+  BatchLogProcessorBuilder(LogRecordExporter logRecordExporter) {
+    this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
   }
 
   /**
@@ -139,13 +139,13 @@ public final class BatchLogProcessorBuilder {
 
   /**
    * Returns a new {@link BatchLogProcessor} that batches, then forwards them to the given {@code
-   * logExporter}.
+   * logRecordExporter}.
    *
    * @return a new {@link BatchLogProcessor}.
    */
   public BatchLogProcessor build() {
     return new BatchLogProcessor(
-        logExporter,
+        logRecordExporter,
         meterProvider,
         scheduleDelayNanos,
         maxQueueSize,

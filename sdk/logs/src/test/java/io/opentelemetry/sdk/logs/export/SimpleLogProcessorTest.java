@@ -36,16 +36,16 @@ class SimpleLogProcessorTest {
 
   private static final LogRecordData LOG_RECORD_DATA = TestLogRecordData.builder().build();
 
-  @Mock private LogExporter logExporter;
+  @Mock private LogRecordExporter logRecordExporter;
   @Mock private ReadWriteLogRecord readWriteLogRecord;
 
   private LogProcessor logProcessor;
 
   @BeforeEach
   void setUp() {
-    logProcessor = SimpleLogProcessor.create(logExporter);
-    when(logExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
-    when(logExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    logProcessor = SimpleLogProcessor.create(logRecordExporter);
+    when(logRecordExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
+    when(logRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(readWriteLogRecord.toLogRecordData()).thenReturn(LOG_RECORD_DATA);
   }
 
@@ -59,16 +59,16 @@ class SimpleLogProcessorTest {
   @Test
   void onEmit() {
     logProcessor.onEmit(readWriteLogRecord);
-    verify(logExporter).export(Collections.singletonList(LOG_RECORD_DATA));
+    verify(logRecordExporter).export(Collections.singletonList(LOG_RECORD_DATA));
   }
 
   @Test
   @SuppressLogger(SimpleLogProcessor.class)
   void onEmit_ExporterError() {
-    when(logExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
+    when(logRecordExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
     logProcessor.onEmit(readWriteLogRecord);
     logProcessor.onEmit(readWriteLogRecord);
-    verify(logExporter, times(2)).export(anyList());
+    verify(logRecordExporter, times(2)).export(anyList());
   }
 
   @Test
@@ -76,12 +76,12 @@ class SimpleLogProcessorTest {
     CompletableResultCode export1 = new CompletableResultCode();
     CompletableResultCode export2 = new CompletableResultCode();
 
-    when(logExporter.export(any())).thenReturn(export1, export2);
+    when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
     logProcessor.onEmit(readWriteLogRecord);
     logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode flush = logProcessor.forceFlush();
     assertThat(flush.isDone()).isFalse();
@@ -99,23 +99,23 @@ class SimpleLogProcessorTest {
     CompletableResultCode export1 = new CompletableResultCode();
     CompletableResultCode export2 = new CompletableResultCode();
 
-    when(logExporter.export(any())).thenReturn(export1, export2);
+    when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
     logProcessor.onEmit(readWriteLogRecord);
     logProcessor.onEmit(readWriteLogRecord);
 
-    verify(logExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
+    verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
     CompletableResultCode shutdown = logProcessor.shutdown();
     assertThat(shutdown.isDone()).isFalse();
 
     export1.succeed();
     assertThat(shutdown.isDone()).isFalse();
-    verify(logExporter, never()).shutdown();
+    verify(logRecordExporter, never()).shutdown();
 
     export2.succeed();
     assertThat(shutdown.isDone()).isTrue();
     assertThat(shutdown.isSuccess()).isTrue();
-    verify(logExporter).shutdown();
+    verify(logRecordExporter).shutdown();
   }
 }

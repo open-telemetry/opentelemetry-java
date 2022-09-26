@@ -20,7 +20,7 @@ import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -92,19 +92,19 @@ class OtlpGrpcRetryTest {
 
   @Test
   @SuppressLogger(OkHttpGrpcExporter.class)
-  void configureLogExporterRetryPolicy() {
+  void configureLogRecordExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.endpoint", "https://localhost:" + server.httpsPort());
     props.put(
         "otel.exporter.otlp.logs.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    try (LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(
+    try (LogRecordExporter logRecordExporter =
+        LogRecordExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
-
       testRetryableStatusCodes(
-          () -> LOG_RECORD_DATA, logExporter::export, server.logRequests::size);
-      testDefaultRetryPolicy(() -> LOG_RECORD_DATA, logExporter::export, server.logRequests::size);
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
+      testDefaultRetryPolicy(
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
     }
   }
 

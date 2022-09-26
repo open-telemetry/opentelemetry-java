@@ -9,26 +9,26 @@ import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via HTTP, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class OtlpHttpLogExporter implements LogExporter {
+public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
   private final OkHttpExporter<LogsRequestMarshaler> delegate;
 
-  OtlpHttpLogExporter(OkHttpExporter<LogsRequestMarshaler> delegate) {
+  OtlpHttpLogRecordExporter(OkHttpExporter<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
   }
 
   /**
-   * Returns a new {@link OtlpHttpLogExporter} using the default values.
+   * Returns a new {@link OtlpHttpLogRecordExporter} using the default values.
    *
-   * @return a new {@link OtlpHttpLogExporter} instance.
+   * @return a new {@link OtlpHttpLogRecordExporter} instance.
    */
-  public static OtlpHttpLogExporter getDefault() {
+  public static OtlpHttpLogRecordExporter getDefault() {
     return builder().build();
   }
 
@@ -37,8 +37,8 @@ public final class OtlpHttpLogExporter implements LogExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static OtlpHttpLogExporterBuilder builder() {
-    return new OtlpHttpLogExporterBuilder();
+  public static OtlpHttpLogRecordExporterBuilder builder() {
+    return new OtlpHttpLogRecordExporterBuilder();
   }
 
   /**

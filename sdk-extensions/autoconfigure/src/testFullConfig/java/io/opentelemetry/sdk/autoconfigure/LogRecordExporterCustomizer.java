@@ -10,16 +10,16 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class LogExporterCustomizer implements AutoConfigurationCustomizerProvider {
+public class LogRecordExporterCustomizer implements AutoConfigurationCustomizerProvider {
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    autoConfiguration.addLogExporterCustomizer(
+    autoConfiguration.addLogRecordExporterCustomizer(
         (delegate, config) ->
-            new LogExporter() {
+            new LogRecordExporter() {
               @Override
               public CompletableResultCode export(Collection<LogRecordData> logs) {
                 Collection<LogRecordData> filtered =

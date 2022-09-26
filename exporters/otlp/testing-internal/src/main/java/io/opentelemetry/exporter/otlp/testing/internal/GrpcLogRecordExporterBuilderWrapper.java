@@ -8,15 +8,15 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-final class GrpcLogExporterBuilderWrapper implements TelemetryExporterBuilder<LogRecordData> {
-  private final OtlpGrpcLogExporterBuilder builder;
+final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuilder<LogRecordData> {
+  private final OtlpGrpcLogRecordExporterBuilder builder;
 
-  GrpcLogExporterBuilderWrapper(OtlpGrpcLogExporterBuilder builder) {
+  GrpcLogRecordExporterBuilderWrapper(OtlpGrpcLogRecordExporterBuilder builder) {
     this.builder = builder;
   }
 

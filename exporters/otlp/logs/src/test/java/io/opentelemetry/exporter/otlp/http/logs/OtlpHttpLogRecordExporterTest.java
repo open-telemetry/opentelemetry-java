@@ -58,7 +58,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-class OtlpHttpLogExporterTest {
+class OtlpHttpLogRecordExporterTest {
 
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
@@ -91,12 +91,12 @@ class OtlpHttpLogExporterTest {
 
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
 
-  private OtlpHttpLogExporterBuilder builder;
+  private OtlpHttpLogRecordExporterBuilder builder;
 
   @BeforeEach
   void setup() {
     builder =
-        OtlpHttpLogExporter.builder()
+        OtlpHttpLogRecordExporter.builder()
             .setEndpoint("http://" + canonicalHostName + ":" + server.httpPort() + "/v1/logs")
             .addHeader("foo", "bar");
   }
@@ -104,49 +104,54 @@ class OtlpHttpLogExporterTest {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setTimeout(Duration.ofMillis(0)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setTimeout(Duration.ofMillis(10)))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
     assertThatCode(
             () ->
-                OtlpHttpLogExporter.builder().setEndpoint("http://" + canonicalHostName + ":4317"))
-        .doesNotThrowAnyException();
-    assertThatCode(
-            () -> OtlpHttpLogExporter.builder().setEndpoint("http://" + canonicalHostName + ""))
-        .doesNotThrowAnyException();
-    assertThatCode(
-            () -> OtlpHttpLogExporter.builder().setEndpoint("https://" + canonicalHostName + ""))
+                OtlpHttpLogRecordExporter.builder()
+                    .setEndpoint("http://" + canonicalHostName + ":4317"))
         .doesNotThrowAnyException();
     assertThatCode(
             () ->
-                OtlpHttpLogExporter.builder()
+                OtlpHttpLogRecordExporter.builder().setEndpoint("http://" + canonicalHostName + ""))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                OtlpHttpLogRecordExporter.builder()
+                    .setEndpoint("https://" + canonicalHostName + ""))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                OtlpHttpLogRecordExporter.builder()
                     .setEndpoint("http://foo:bar@" + canonicalHostName + ""))
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setCompression("gzip"))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setCompression("gzip"))
         .doesNotThrowAnyException();
-    assertThatCode(() -> OtlpHttpLogExporter.builder().setCompression("none"))
-        .doesNotThrowAnyException();
-
-    assertThatCode(
-            () -> OtlpHttpLogExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+    assertThatCode(() -> OtlpHttpLogRecordExporter.builder().setCompression("none"))
         .doesNotThrowAnyException();
 
     assertThatCode(
             () ->
-                OtlpHttpLogExporter.builder()
+                OtlpHttpLogRecordExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpHttpLogRecordExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .doesNotThrowAnyException();
 
     assertThatCode(
             () ->
-                OtlpHttpLogExporter.builder()
+                OtlpHttpLogRecordExporter.builder()
                     .setClientTls(
                         "foobar".getBytes(StandardCharsets.UTF_8),
                         "foobar".getBytes(StandardCharsets.UTF_8)))
@@ -156,39 +161,43 @@ class OtlpHttpLogExporterTest {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(
+            () -> OtlpHttpLogRecordExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setTimeout(1, null))
+    assertThatThrownBy(() -> OtlpHttpLogRecordExporter.builder().setTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setTimeout(null))
+    assertThatThrownBy(() -> OtlpHttpLogRecordExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
 
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint(null))
+    assertThatThrownBy(() -> OtlpHttpLogRecordExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
     assertThatThrownBy(
-            () -> OtlpHttpLogExporter.builder().setEndpoint("😺://" + canonicalHostName + ""))
+            () -> OtlpHttpLogRecordExporter.builder().setEndpoint("😺://" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must be a URL: 😺://" + canonicalHostName + "");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setEndpoint("" + canonicalHostName + ""))
+    assertThatThrownBy(
+            () -> OtlpHttpLogRecordExporter.builder().setEndpoint("" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Invalid endpoint, must start with http:// or https://: " + canonicalHostName + "");
     assertThatThrownBy(
-            () -> OtlpHttpLogExporter.builder().setEndpoint("gopher://" + canonicalHostName + ""))
+            () ->
+                OtlpHttpLogRecordExporter.builder()
+                    .setEndpoint("gopher://" + canonicalHostName + ""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Invalid endpoint, must start with http:// or https://: gopher://"
                 + canonicalHostName
                 + "");
 
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setCompression(null))
+    assertThatThrownBy(() -> OtlpHttpLogRecordExporter.builder().setCompression(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("compressionMethod");
-    assertThatThrownBy(() -> OtlpHttpLogExporter.builder().setCompression("foo"))
+    assertThatThrownBy(() -> OtlpHttpLogRecordExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compression method. Supported compression methods include: gzip, none.");
@@ -199,14 +208,14 @@ class OtlpHttpLogExporterTest {
     assertThatCode(
             () ->
                 RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpHttpLogExporter.builder(), RetryPolicy.getDefault()))
+                    OtlpHttpLogRecordExporter.builder(), RetryPolicy.getDefault()))
         .doesNotThrowAnyException();
   }
 
   @Test
   void testExportUncompressed() {
     server.enqueue(successResponse());
-    OtlpHttpLogExporter exporter = builder.build();
+    OtlpHttpLogRecordExporter exporter = builder.build();
 
     ExportLogsServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
     RecordedRequest recorded = server.takeRequest();
@@ -221,7 +230,7 @@ class OtlpHttpLogExporterTest {
   @Test
   void testExportTls() {
     server.enqueue(successResponse());
-    OtlpHttpLogExporter exporter =
+    OtlpHttpLogRecordExporter exporter =
         builder
             .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/logs")
             .setTrustedCertificates(
@@ -241,7 +250,7 @@ class OtlpHttpLogExporterTest {
   @Test
   void testExportGzipCompressed() {
     server.enqueue(successResponse());
-    OtlpHttpLogExporter exporter = builder.setCompression("gzip").build();
+    OtlpHttpLogRecordExporter exporter = builder.setCompression("gzip").build();
 
     ExportLogsServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
     AggregatedHttpRequest request = server.takeRequest().request();
@@ -283,7 +292,7 @@ class OtlpHttpLogExporterTest {
         buildResponse(
             HttpStatus.INTERNAL_SERVER_ERROR,
             Status.newBuilder().setMessage("Server error!").build()));
-    OtlpHttpLogExporter exporter = builder.build();
+    OtlpHttpLogRecordExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
@@ -297,7 +306,7 @@ class OtlpHttpLogExporterTest {
   void testServerErrorParseError() {
     server.enqueue(
         HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, APPLICATION_PROTOBUF, "Server error!"));
-    OtlpHttpLogExporter exporter = builder.build();
+    OtlpHttpLogRecordExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
@@ -307,9 +316,9 @@ class OtlpHttpLogExporterTest {
   }
 
   private static ExportLogsServiceRequest exportAndAssertResult(
-      OtlpHttpLogExporter otlpHttpLogExporter, boolean expectedResult) {
+      OtlpHttpLogRecordExporter otlpHttpLogRecordExporter, boolean expectedResult) {
     List<LogRecordData> logs = Collections.singletonList(generateFakeLog());
-    CompletableResultCode resultCode = otlpHttpLogExporter.export(logs);
+    CompletableResultCode resultCode = otlpHttpLogRecordExporter.export(logs);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
     List<ResourceLogs> resourceLogs =
