@@ -26,6 +26,26 @@ class DefaultLoggerProviderTest {
                     .setSchemaUrl("http://schema.com")
                     .build())
         .doesNotThrowAnyException();
-    ;
+
+    assertThatCode(() -> provider.loggerBuilder("scope-name").build().logRecordBuilder())
+        .doesNotThrowAnyException();
+    assertThatCode(() -> provider.loggerBuilder("scope-name").build().eventBuilder("event-name"))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                provider
+                    .loggerBuilder("scope-name")
+                    .setEventDomain("event-domain")
+                    .build()
+                    .logRecordBuilder())
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                provider
+                    .loggerBuilder("scope-name")
+                    .setEventDomain("event-domain")
+                    .build()
+                    .eventBuilder("event-name"))
+        .doesNotThrowAnyException();
   }
 }

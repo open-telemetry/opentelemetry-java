@@ -14,12 +14,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>The OpenTelemetry logging API exists to satisfy two use cases:
  *
  * <ol>
+ *   <li>Enable emitting structured <a
+ *       href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md">events</a>
+ *       via {@link Logger#eventBuilder(String)}. Requires assigning an {@link
+ *       LoggerBuilder#setEventDomain(String) event domain} to the {@link Logger}.
  *   <li>Enable the creation of log appenders, which bridge logs from other log frameworks (e.g.
  *       SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via {@link Logger#logRecordBuilder()}.
  *       It is <b>NOT</b> a replacement log framework.
- *   <li>Enable emitting structured <a
- *       href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md">events</a>.
- *       TODO: add link when event API is added.
  * </ol>
  *
  * @see Logger
