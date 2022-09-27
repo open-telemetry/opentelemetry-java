@@ -18,7 +18,7 @@ dependencies {
   api(project(":api:all"))
 
   compileOnly("org.jetbrains.kotlin:kotlin-stdlib-common")
-  compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+  compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
   testImplementation(project(":sdk:testing"))
   testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
