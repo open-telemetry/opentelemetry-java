@@ -16,7 +16,8 @@ public interface LoggerBuilder {
    * <p>The event domain will be included in the {@code event.domain} attribute of every event
    * produced by the resulting {@link Logger}.
    *
-   * @param eventDomain The event domain.
+   * @param eventDomain The event domain, which acts as a namespace for event names. Within a
+   *     particular event domain, event name defines a particular class or type of event.
    * @return this
    */
   LoggerBuilder setEventDomain(String eventDomain);

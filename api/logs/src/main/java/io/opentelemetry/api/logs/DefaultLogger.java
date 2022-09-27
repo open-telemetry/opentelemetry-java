@@ -6,9 +6,11 @@
 package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 class DefaultLogger implements Logger {
 
@@ -28,10 +30,11 @@ class DefaultLogger implements Logger {
   }
 
   @Override
-  public EventBuilder eventBuilder(String name) {
+  public EventBuilder eventBuilder(String eventName) {
     if (!hasDomain) {
-      throw new IllegalStateException(
-          "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger.");
+      ValidationUtil.log(
+          "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger.",
+          Level.WARNING);
     }
     return NOOP_LOG_RECORD_BUILDER;
   }

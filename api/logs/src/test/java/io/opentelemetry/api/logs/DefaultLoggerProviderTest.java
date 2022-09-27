@@ -7,7 +7,6 @@ package io.opentelemetry.api.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,9 +29,8 @@ class DefaultLoggerProviderTest {
 
     assertThatCode(() -> provider.loggerBuilder("scope-name").build().logRecordBuilder())
         .doesNotThrowAnyException();
-    assertThatThrownBy(
-            () -> provider.loggerBuilder("scope-name").build().eventBuilder("event-name"))
-        .isInstanceOf(IllegalStateException.class);
+    assertThatCode(() -> provider.loggerBuilder("scope-name").build().eventBuilder("event-name"))
+        .doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider

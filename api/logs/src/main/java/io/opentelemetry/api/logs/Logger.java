@@ -12,6 +12,27 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Obtain a {@link EventBuilder} or {@link #logRecordBuilder()}, add properties using the
  * setters, and emit it via {@link LogRecordBuilder#emit()}.
+ *
+ * <p>Example usage emitting events:
+ *
+ * <pre>{@code
+ * class MyClass {
+ *   private final Logger eventLogger = openTelemetryLoggerProvider.loggerBuilder("instrumentation-library-name")
+ *     .setInstrumentationVersion("1.0.0")
+ *     .setEventDomain("acme.observability")
+ *     .build();
+ *
+ *   void doWork() {
+ *     eventLogger.eventBuilder("my-event")
+ *       .setAllAttributes(Attributes.builder()
+ *         .put("key1", "value1")
+ *         .put("key2", "value2")
+ *         .build())
+ *       .emit();
+ *     // do work
+ *   }
+ * }
+ * }</pre>
  */
 @ThreadSafe
 public interface Logger {
@@ -19,16 +40,16 @@ public interface Logger {
   /**
    * Return a {@link EventBuilder} to emit an event.
    *
-   * <p><b>NOTE:</b> this API can only be called on {@link Logger}s which have been assigned an
+   * <p><b>NOTE:</b> this API MUST only be called on {@link Logger}s which have been assigned an
    * {@link LoggerBuilder#setEventDomain(String) event domain}.
    *
    * <p>Build the event using the {@link EventBuilder} setters, and emit via {@link
    * EventBuilder#emit()}.
    *
-   * @throws IllegalStateException if called on a {@link Logger} that was not assigned a {@link
-   *     LoggerBuilder#setEventDomain(String) event domain}.
+   * @param eventName the event name, which acts as a classifier for events. Within a particular
+   *     event domain, event name defines a particular class or type of event.
    */
-  EventBuilder eventBuilder(String name);
+  EventBuilder eventBuilder(String eventName);
 
   /**
    * Return a {@link LogRecordBuilder} to emit a log record.
