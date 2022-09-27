@@ -18,3 +18,5 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "edu.berkeley.cs.jqf:jqf-fuzz"
