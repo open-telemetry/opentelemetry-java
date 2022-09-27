@@ -12,17 +12,17 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.13.3",
+  "com.fasterxml.jackson:jackson-bom:2.13.4",
   "com.google.guava:guava-bom:31.1-jre",
-  "com.google.protobuf:protobuf-bom:3.21.5",
+  "com.google.protobuf:protobuf-bom:3.21.6",
   "com.linecorp.armeria:armeria-bom:1.19.0",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.49.0",
+  "io.grpc:grpc-bom:1.49.1",
   "io.zipkin.brave:brave-bom:5.13.11",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.9.0",
   "org.testcontainers:testcontainers-bom:1.17.3",
-  "org.yaml:snakeyaml:1.32"
+  "org.yaml:snakeyaml:1.33"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -96,7 +96,7 @@ val DEPENDENCIES = listOf(
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.22",
-  "org.jctools:jctools-core:3.3.0",
+  "org.jctools:jctools-core:4.0.1",
   "org.junit-pioneer:junit-pioneer:1.7.1",
   "org.skyscreamer:jsonassert:1.5.1",
 )
