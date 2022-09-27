@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 
@@ -15,18 +14,12 @@ import java.util.function.BiConsumer;
  */
 public class OtlpUserAgent {
 
-  private static final String userAgent;
-
-  static {
-    userAgent = "OTel OTLP Exporter Java/" + readVersion();
-  }
+  private static final String userAgent = "OTel OTLP Exporter Java/" + readVersion();
 
   private static String readVersion() {
     Properties properties = new Properties();
     try {
-      properties.load(
-          Resource.class.getResourceAsStream(
-              "/io/opentelemetry/exporter/internal/otlp/version.properties"));
+      properties.load(OtlpUserAgent.class.getResourceAsStream("version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
       return "unknown";

@@ -53,7 +53,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
       channelBuilder.usePlaintext();
     }
     // User-Agent can only be set at the channel level with upstream gRPC client. If a user wants
-    // the User-Agent to be spec compliant they must add manually set the user agent when building
+    // the User-Agent to be spec compliant they must manually set the user agent when building
     // their channel.
     channelBuilder.userAgent(OtlpUserAgent.getUserAgent());
     return this;
