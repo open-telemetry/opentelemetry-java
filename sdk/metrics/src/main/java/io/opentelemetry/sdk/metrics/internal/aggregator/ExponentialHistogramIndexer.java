@@ -49,7 +49,7 @@ class ExponentialHistogramIndexer {
    * Compute the index for the given value.
    *
    * <p>The algorithm to retrieve the index is specified in the <a
-   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponential-buckets">OpenTelemetry
+   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#exponential-buckets">OpenTelemetry
    * specification</a>.
    *
    * @param value Measured value (must be non-zero).
@@ -57,20 +57,38 @@ class ExponentialHistogramIndexer {
    */
   int computeIndex(double value) {
     double absValue = Math.abs(value);
+    // For positive scales, compute the index by logarithm, which is simpler but may be
+    // inaccurate near bucket boundaries
     if (scale > 0) {
       return getIndexByLogarithm(absValue);
     }
+    // For scale zero, compute the exact index by extracting the exponent
     if (scale == 0) {
       return mapToIndexScaleZero(absValue);
     }
-    // scale < 0
+    // For negative scales, compute the exact index by extracting the exponent and shifting it to
+    // the right by -scale
     return mapToIndexScaleZero(absValue) >> -scale;
   }
 
+  /**
+   * Compute the bucket index using a logarithm based approach.
+   *
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#all-scales-use-the-logarithm-function">All
+   *     Scales: Use the Logarithm Function</a>
+   */
   private int getIndexByLogarithm(double value) {
     return (int) Math.ceil(Math.log(value) * scaleFactor) - 1;
   }
 
+  /**
+   * Compute the exact bucket index for scale zero by extracting the exponent.
+   *
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#scale-zero-extract-the-exponent">Scale
+   *     Zero: Extract the Exponent</a>
+   */
   private static int mapToIndexScaleZero(double value) {
     long rawBits = Double.doubleToLongBits(value);
     long rawExponent = (rawBits & EXPONENT_BIT_MASK) >> SIGNIFICAND_WIDTH;
