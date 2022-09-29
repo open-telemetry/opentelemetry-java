@@ -16,6 +16,7 @@ import static org.awaitility.Awaitility.await;
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -58,6 +59,7 @@ class OtlpGrpcConfigTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
   }
 
   @AfterEach
@@ -65,6 +67,7 @@ class OtlpGrpcConfigTest {
     server.reset();
     shutdownGlobalSdk();
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
   }
 
   @Test
