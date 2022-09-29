@@ -1394,6 +1394,14 @@ public final class SemanticAttributes {
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
+   *     {@link SemanticAttributes#HTTP_RESPONSE_CONTENT_LENGTH} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
+      longKey("http.response_content_length_uncompressed");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
    *     {@link SemanticAttributes#NET_HOST_NAME} instead.
    */
   @Deprecated
