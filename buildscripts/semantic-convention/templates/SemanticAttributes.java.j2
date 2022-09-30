@@ -91,6 +91,16 @@ public final class {{class}} {
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
       public static final {{ type }} {{ member.member_id | to_const_name }} = {{ print_value(type, member.value) }};
     {%- endfor %}
+
+    {%- if class_name == "NetTransportValues" %}
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
+    @Deprecated
+    public static final String IP = "ip";
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
+    @Deprecated
+    public static final String UNIX = "unix";
+    {%- endif %}
+
       private {{ class_name }}() {}
   }
 
@@ -123,6 +133,49 @@ public final class {{class}} {
    */
   @Deprecated
   public static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
+
+  /**
+   * The size of the uncompressed request payload body after transport decoding. Not set if
+   * transport encoding not used.
+   *
+   * @deprecated  this item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HTTP_REQUEST_CONTENT_LENGTH} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
+      longKey("http.request_content_length_uncompressed");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HTTP_RESPONSE_CONTENT_LENGTH} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
+        longKey("http.response_content_length_uncompressed");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
+   *     {@link SemanticAttributes#NET_HOST_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_SERVER_NAME = stringKey("http.server_name");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
+   *     {@link SemanticAttributes#NET_HOST_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
+
+  /**
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
 
   {% endif %}
 
