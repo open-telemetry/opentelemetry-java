@@ -11,7 +11,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
-/** Factory of a {@link Resource} which provides information about the current operating system. */
+/**
+ * Factory of a {@link Resource} which provides information about the current operating system.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources">io.opentelemetry.instrumentation:opentelemetry-resources</a>.
+ */
+@Deprecated
 public final class OsResource {
 
   private static final Resource INSTANCE = buildResource();

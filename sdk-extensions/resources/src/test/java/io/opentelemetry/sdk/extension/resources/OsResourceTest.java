@@ -17,6 +17,7 @@ import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
+@SuppressWarnings("deprecation") // Moved to instrumentation
 class OsResourceTest {
 
   @Test

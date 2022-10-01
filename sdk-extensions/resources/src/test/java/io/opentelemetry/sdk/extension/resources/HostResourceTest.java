@@ -17,6 +17,7 @@ import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+@SuppressWarnings("deprecation") // Moved to instrumentation
 class HostResourceTest {
   @Test
   void shouldCreateRuntimeAttributes() {
