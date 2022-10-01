@@ -9,7 +9,13 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-/** {@link ResourceProvider} for automatically configuring {@link EcsResource}. */
+/**
+ * {@link ResourceProvider} for automatically configuring {@link EcsResource}.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources">io.opentelemetry.contrib:opentelemetry-aws-resources</a>.
+ */
+@Deprecated
 public final class EcsResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
