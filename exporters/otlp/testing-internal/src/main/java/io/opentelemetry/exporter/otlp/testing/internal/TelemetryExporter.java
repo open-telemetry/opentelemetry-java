@@ -6,8 +6,8 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -46,11 +46,11 @@ public interface TelemetryExporter<T> {
     };
   }
 
-  /** Wraps a LogExporter. */
-  static TelemetryExporter<LogData> wrap(LogExporter exporter) {
-    return new TelemetryExporter<LogData>() {
+  /** Wraps a LogRecordExporter. */
+  static TelemetryExporter<LogRecordData> wrap(LogRecordExporter exporter) {
+    return new TelemetryExporter<LogRecordData>() {
       @Override
-      public CompletableResultCode export(Collection<LogData> items) {
+      public CompletableResultCode export(Collection<LogRecordData> items) {
         return exporter.export(items);
       }
 

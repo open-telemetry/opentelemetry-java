@@ -47,6 +47,7 @@ dependencies {
   testImplementation("io.grpc:grpc-api")
   testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-stub")
+  testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }

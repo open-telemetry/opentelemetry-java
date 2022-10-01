@@ -221,11 +221,12 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API
 
-| Component                         | Description                                                    | Artifact ID             | Version                                                     |
-|-----------------------------------|----------------------------------------------------------------|-------------------------|-------------------------------------------------------------|
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context | `opentelemetry-api`     | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
-| [Context API](./context)          | OpenTelemetry context API                                      | `opentelemetry-context` | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
-| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions          | `opentelemetry-semconv` | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                         | Description                                                                                                                                        | Artifact ID              | Version                                                                          |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|----------------------------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                     | `opentelemetry-api`      | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->                                |
+| [Logs API](./api/logs)            | OpenTelemetry Log API for emitting events and bridging log frameworks (NOT a replacement for application logging frameworks like SLF4J, JUL, etc.) | `opentelemetry-api-logs` | <!--VERSION_UNSTABLE-->TODO: add version after published<!--/VERSION_UNSTABLE--> |
+| [Context API](./context)          | OpenTelemetry context API                                                                                                                          | `opentelemetry-context`  | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->                                |
+| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                                              | `opentelemetry-semconv`  | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE-->                      |
 
 ### API Extensions
 
@@ -235,7 +236,6 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                            | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                           | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer                       | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Annotations Extension](./extensions/annotations)             | Instrumentation annotations, used in conjunction with OpenTelemetry java agent (deprecated) | `opentelemetry-extension-annotations`       | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 
 ### SDK
 
@@ -270,7 +270,7 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 |-------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------|
 | [SDK Autoconfigure Extension](./sdk-extensions/autoconfigure)                 | Autoconfigure OpenTelemetry SDK from env vars, system properties, and SPI                      | `opentelemetry-sdk-extension-autoconfigure`         | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
 | [SDK Autoconfigure SPI](./sdk-extensions/autoconfigure-spi)                   | Service Provider Interface (SPI) definitions for autoconfigure                                 | `opentelemetry-sdk-extension-autoconfigure-spi`     | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
-| [SDK Resources Extension](./sdk-extensions/resources)                         | Resource providers, including container, host, os, and process                                 | `opentelemetry-sdk-extension-resources`             | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
+| [SDK Resources Extension](./sdk-extensions/resources)                         | Resource providers, including container, host, os, and process (deprecated)                    | `opentelemetry-sdk-extension-resources`             | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [SDK AWS Extension](./sdk-extensions/aws)                                     | AWS resource providers, including beanstalk, ec2, ecs, eks, and lambda (deprecated)            | `opentelemetry-sdk-extension-aws`                   | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | Sampler which obtains sampling configuration from remote Jaeger server                         | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.18.0<!--/VERSION_STABLE-->           |
 | [SDK Incubator](./sdk-extensions/incubator)                                   | SDK incubator, including YAML based view configuration, LeakDetectingSpanProcessor, and zPages | `opentelemetry-sdk-extension-incubator`             | <!--VERSION_UNSTABLE-->1.18.0-alpha<!--/VERSION_UNSTABLE--> |
@@ -288,9 +288,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
-- [Christian Neumüller](https://github.com/Oberon00), Dynatrace
-- [Jakub Wach](https://github.com/kubawach), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
+- [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Splunk
+- [Trask Stalnaker](https://github.com/trask), Microsoft
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 

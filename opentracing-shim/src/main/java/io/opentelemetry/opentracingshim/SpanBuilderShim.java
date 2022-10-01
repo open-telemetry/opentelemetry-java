@@ -200,6 +200,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
               .with(io.opentelemetry.api.trace.Span.wrap(parentSpanContext.getSpanContext())));
       baggage = parentSpanContext.getBaggage();
     } else {
+      // No explicit parent Span, but extracted baggage may be available.
       baggage = Baggage.current();
     }
 

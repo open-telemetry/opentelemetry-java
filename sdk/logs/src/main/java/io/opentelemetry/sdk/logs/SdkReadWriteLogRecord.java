@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -56,7 +56,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.attributes = attributes;
   }
 
-  /** Create the log record with the given configuration and emit it to the {@code logProcessor}. */
+  /** Create the log record with the given configuration. */
   static SdkReadWriteLogRecord create(
       LogLimits logLimits,
       Resource resource,
@@ -105,9 +105,9 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   }
 
   @Override
-  public LogData toLogData() {
+  public LogRecordData toLogRecordData() {
     synchronized (lock) {
-      return SdkLogData.create(
+      return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
           epochNanos,
@@ -115,7 +115,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           severity,
           severityText,
           body,
-          getImmutableAttributes());
+          getImmutableAttributes(),
+          attributes == null ? 0 : attributes.getTotalAddedValues());
     }
   }
 }

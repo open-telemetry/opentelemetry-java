@@ -59,6 +59,10 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     return span;
   }
 
+  io.opentelemetry.api.baggage.Baggage getBaggage() {
+    return spanContextShim.getBaggage();
+  }
+
   @Nullable
   public static SpanShim current() {
     return Context.current().get(SPAN_SHIM_KEY);

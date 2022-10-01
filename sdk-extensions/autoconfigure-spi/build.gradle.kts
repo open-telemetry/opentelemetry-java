@@ -13,6 +13,6 @@ dependencies {
   // SdkMeterProviderBuilder.
   implementation(project(":sdk:metrics"))
   // implementation dependency to require users to add the artifact directly to their build to use
-  // SdkLogEmitterProviderBuilder.
+  // SdkLoggerProviderBuilder.
   implementation(project(":sdk:logs"))
 }

@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.Collection;
@@ -32,7 +32,7 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
   private final InstrumentationScopeLogsMarshaler[] instrumentationScopeLogsMarshalers;
 
   /** Returns Marshalers of ResourceLogs created by grouping the provided logRecords. */
-  public static ResourceLogsMarshaler[] create(Collection<LogData> logs) {
+  public static ResourceLogsMarshaler[] create(Collection<LogRecordData> logs) {
     Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> resourceAndScopeMap =
         groupByResourceAndScope(logs);
 
@@ -93,13 +93,13 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
   }
 
   private static Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>>
-      groupByResourceAndScope(Collection<LogData> logs) {
+      groupByResourceAndScope(Collection<LogRecordData> logs) {
     return MarshalerUtil.groupByResourceAndScope(
         logs,
         // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
         // two.
-        LogData::getResource,
-        LogData::getInstrumentationScopeInfo,
+        LogRecordData::getResource,
+        LogRecordData::getInstrumentationScopeInfo,
         LogMarshaler::create);
   }
 }

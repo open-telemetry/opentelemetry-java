@@ -98,7 +98,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     String grpcServiceName;
-    if (delegate instanceof GrpcLogExporterBuilderWrapper) {
+    if (delegate instanceof GrpcLogRecordExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.logs.v1.LogsService";
     } else if (delegate instanceof GrpcMetricExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.metrics.v1.MetricsService";

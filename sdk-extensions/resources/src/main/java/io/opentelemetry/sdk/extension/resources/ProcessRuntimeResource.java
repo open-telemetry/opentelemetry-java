@@ -13,7 +13,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
-/** Factory of a {@link Resource} which provides information about the Java runtime. */
+/**
+ * Factory of a {@link Resource} which provides information about the Java runtime.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources">io.opentelemetry.instrumentation:opentelemetry-resources</a>.
+ */
+@Deprecated
 public final class ProcessRuntimeResource {
 
   private static final Resource INSTANCE = buildResource();

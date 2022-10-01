@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -16,9 +17,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -68,10 +69,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
       metricExporterCustomizer = (a, unused) -> a;
 
-  private BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
-      logEmitterProviderCustomizer = (a, unused) -> a;
-  private BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
-      logExporterCustomizer = (a, unused) -> a;
+  private BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
+      loggerProviderCustomizer = (a, unused) -> a;
+  private BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+      logRecordExporterCustomizer = (a, unused) -> a;
 
   private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
@@ -246,34 +247,35 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke the with the {@link SdkLogEmitterProviderBuilder} to allow
+   * Adds a {@link BiFunction} to invoke the with the {@link SdkLoggerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredOpenTelemetrySdkBuilder addLogEmitterProviderCustomizer(
-      BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
-          logEmitterProviderCustomizer) {
-    requireNonNull(logEmitterProviderCustomizer, "logEmitterProviderCustomizer");
-    this.logEmitterProviderCustomizer =
-        mergeCustomizer(this.logEmitterProviderCustomizer, logEmitterProviderCustomizer);
+  public AutoConfiguredOpenTelemetrySdkBuilder addLoggerProviderCustomizer(
+      BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
+          loggerProviderCustomizer) {
+    requireNonNull(loggerProviderCustomizer, "loggerProviderCustomizer");
+    this.loggerProviderCustomizer =
+        mergeCustomizer(this.loggerProviderCustomizer, loggerProviderCustomizer);
     return this;
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogExporter} to
-   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogRecordExporter}
+   * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredOpenTelemetrySdkBuilder addLogExporterCustomizer(
-      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
-          logExporterCustomizer) {
-    requireNonNull(logExporterCustomizer, "logExporterCustomizer");
-    this.logExporterCustomizer = mergeCustomizer(this.logExporterCustomizer, logExporterCustomizer);
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogRecordExporterCustomizer(
+      BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+          logRecordExporterCustomizer) {
+    requireNonNull(logRecordExporterCustomizer, "logRecordExporterCustomizer");
+    this.logRecordExporterCustomizer =
+        mergeCustomizer(this.logRecordExporterCustomizer, logRecordExporterCustomizer);
     return this;
   }
 
@@ -352,17 +354,16 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
       SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
 
-      SdkLogEmitterProviderBuilder logEmitterProviderBuilder = SdkLogEmitterProvider.builder();
-      logEmitterProviderBuilder.setResource(resource);
-      LogEmitterProviderConfiguration.configureLogEmitterProvider(
-          logEmitterProviderBuilder,
+      SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+      loggerProviderBuilder.setResource(resource);
+      LoggerProviderConfiguration.configureLoggerProvider(
+          loggerProviderBuilder,
           config,
           serviceClassLoader,
           meterProvider,
-          logExporterCustomizer);
-      logEmitterProviderBuilder =
-          logEmitterProviderCustomizer.apply(logEmitterProviderBuilder, config);
-      SdkLogEmitterProvider logEmitterProvider = logEmitterProviderBuilder.build();
+          logRecordExporterCustomizer);
+      loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
+      SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
 
       if (registerShutdownHook) {
         Runtime.getRuntime()
@@ -372,7 +373,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                       List<CompletableResultCode> shutdown = new ArrayList<>();
                       shutdown.add(tracerProvider.shutdown());
                       shutdown.add(meterProvider.shutdown());
-                      shutdown.add(logEmitterProvider.shutdown());
+                      shutdown.add(loggerProvider.shutdown());
                       CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
                     }));
       }
@@ -384,7 +385,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       OpenTelemetrySdkBuilder sdkBuilder =
           OpenTelemetrySdk.builder()
               .setTracerProvider(tracerProvider)
-              .setLogEmitterProvider(logEmitterProvider)
+              .setLoggerProvider(loggerProvider)
               .setMeterProvider(meterProvider)
               .setPropagators(propagators);
 
@@ -393,6 +394,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
+      GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
       logger.log(
           Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
     }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -17,7 +18,7 @@ import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
@@ -35,23 +36,22 @@ final class LogMarshaler extends MarshalerWithSize {
   @Nullable private final String traceId;
   @Nullable private final String spanId;
 
-  static LogMarshaler create(io.opentelemetry.sdk.logs.data.LogData logData) {
+  static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(logData.getAttributes());
+        KeyValueMarshaler.createRepeated(logRecordData.getAttributes());
 
     // For now, map all the bodies to String AnyValue.
     StringAnyValueMarshaler anyValueMarshaler =
-        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logData.getBody().asString()));
+        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecordData.getBody().asString()));
 
-    SpanContext spanContext = logData.getSpanContext();
+    SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
-        logData.getEpochNanos(),
-        toProtoSeverityNumber(logData.getSeverity()),
-        MarshalerUtil.toBytes(logData.getSeverityText()),
+        logRecordData.getEpochNanos(),
+        toProtoSeverityNumber(logRecordData.getSeverity()),
+        MarshalerUtil.toBytes(logRecordData.getSeverityText()),
         anyValueMarshaler,
         attributeMarshalers,
-        // TODO (trask) implement droppedAttributesCount in LogRecord
-        0,
+        logRecordData.getTotalAttributeCount() - logRecordData.getAttributes().size(),
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());

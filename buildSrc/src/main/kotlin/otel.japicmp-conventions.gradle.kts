@@ -1,7 +1,9 @@
 import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
+import japicmp.model.JApiClass
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
+import japicmp.model.JApiConstructor
 import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Severity
@@ -38,6 +40,9 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
       if (isAbstractMethodOnAutoValue(member, change)) {
         continue
       }
+      if (isLogRename(member)) {
+        continue
+      }
       if (!change.isSourceCompatible) {
         return Violation.error(member, "Not source compatible")
       }
@@ -58,6 +63,35 @@ class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
     return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
       member is JApiMethod &&
       member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
+  }
+
+  /**
+   * Check if the change is related to log related renames.
+   */
+  // TODO(jack-berg): remove after 1.19.0.
+  fun isLogRename(member: JApiCompatibility): Boolean {
+    try {
+      if (member is JApiMethod) {
+        val longName = member.oldMethod.get().longName
+        return longName.matches(".*OpenTelemetrySdk\\.getSdkLogEmitterProvider.*".toRegex()) ||
+          longName.matches(".*OpenTelemetrySdkBuilder\\.setLogEmitterProvider.*".toRegex()) ||
+          longName.matches(".*AutoConfigurationCustomizer\\.addLogExporterCustomizer.*".toRegex()) ||
+          longName.matches(".*AutoConfigurationCustomizer\\.addLogEmitterProviderCustomizer.*".toRegex()) ||
+          longName.matches(".*ConfigurableLogExporterProvider.*".toRegex()) ||
+          longName.matches(".*SystemOutLogExporter.*".toRegex()) ||
+          longName.matches(".*OtlpJsonLoggingLogExporter.*".toRegex())
+      } else if (member is JApiClass) {
+        val fqcn = member.fullyQualifiedName
+        return fqcn.matches(".*SystemOutLogExporter".toRegex()) ||
+          fqcn.matches(".*ConfigurableLogExporterProvider".toRegex()) ||
+          fqcn.matches(".*OtlpJsonLoggingLogExporter".toRegex())
+      } else if (member is JApiConstructor) {
+        return member.oldConstructor.get().longName.matches(".*SystemOutLogExporter.*".toRegex())
+      }
+      return false
+    } catch (e: IllegalStateException) {
+      return false
+    }
   }
 }
 

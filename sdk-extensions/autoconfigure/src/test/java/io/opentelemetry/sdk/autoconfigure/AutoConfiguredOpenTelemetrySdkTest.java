@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -27,9 +28,9 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -72,7 +73,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
   @Mock private MetricReader metricReader;
-  @Mock private LogProcessor logProcessor;
+  @Mock private LogRecordProcessor logRecordProcessor;
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;
 
@@ -264,32 +265,35 @@ class AutoConfiguredOpenTelemetrySdkTest {
   // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
 
   @Test
-  void builder_addLogEmitterProviderCustomizer() {
-    Mockito.lenient().when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+  void builder_addLoggerProviderCustomizer() {
+    Mockito.lenient()
+        .when(logRecordProcessor.shutdown())
+        .thenReturn(CompletableResultCode.ofSuccess());
+    when(logRecordProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
 
-    SdkLogEmitterProvider sdkLogEmitterProvider =
+    SdkLoggerProvider sdkLoggerProvider =
         builder
-            .addLogEmitterProviderCustomizer(
-                (logEmitterProviderBuilder, configProperties) ->
-                    logEmitterProviderBuilder.addLogProcessor(logProcessor))
+            .addLoggerProviderCustomizer(
+                (loggerProviderBuilder, configProperties) ->
+                    loggerProviderBuilder.addLogRecordProcessor(logRecordProcessor))
             .build()
             .getOpenTelemetrySdk()
-            .getSdkLogEmitterProvider();
-    sdkLogEmitterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+            .getSdkLoggerProvider();
+    sdkLoggerProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
-    verify(logProcessor).forceFlush();
+    verify(logRecordProcessor).forceFlush();
   }
 
-  // TODO: add test for addLogExporterCustomizer once OTLP export is enabled by default
+  // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
 
   @Test
   void builder_setResultAsGlobalFalse() {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
 
-    OpenTelemetry openTelemetry = builder.setResultAsGlobal(false).build().getOpenTelemetrySdk();
+    OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal(false).build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
+    assertThat(GlobalLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -297,6 +301,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal(true).build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
+    assertThat(GlobalLoggerProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {
@@ -331,26 +336,22 @@ class AutoConfiguredOpenTelemetrySdkTest {
                     return builder;
                   }
                 });
-    BiFunction<SdkLogEmitterProviderBuilder, ConfigProperties, SdkLogEmitterProviderBuilder>
-        logCustomizer =
-            spy(
-                new BiFunction<
-                    SdkLogEmitterProviderBuilder,
-                    ConfigProperties,
-                    SdkLogEmitterProviderBuilder>() {
-                  @Override
-                  public SdkLogEmitterProviderBuilder apply(
-                      SdkLogEmitterProviderBuilder builder, ConfigProperties config) {
-                    return builder;
-                  }
-                });
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        spy(
+            new BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>() {
+              @Override
+              public SdkLoggerProviderBuilder apply(
+                  SdkLoggerProviderBuilder builder, ConfigProperties config) {
+                return builder;
+              }
+            });
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "false"))
             .addTracerProviderCustomizer(traceCustomizer)
             .addMeterProviderCustomizer(metricCustomizer)
-            .addLogEmitterProviderCustomizer(logCustomizer)
+            .addLoggerProviderCustomizer(logCustomizer)
             .build();
 
     assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);

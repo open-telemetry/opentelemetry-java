@@ -20,7 +20,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
-/** Factory for {@link Resource} retrieving Container ID information. */
+/**
+ * Factory for {@link Resource} retrieving Container ID information.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources">io.opentelemetry.instrumentation:opentelemetry-resources</a>.
+ */
+@Deprecated
 public final class ContainerResource {
 
   private static final Logger logger = Logger.getLogger(ContainerResource.class.getName());

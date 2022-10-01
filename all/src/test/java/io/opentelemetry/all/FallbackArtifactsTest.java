@@ -17,6 +17,12 @@ class FallbackArtifactsTest {
     classAvailable("io.opentelemetry.exporter.jaeger.proto.api_v2.Model");
   }
 
+  @Test
+  void extensionAnnotations() {
+    classAvailable("io.opentelemetry.extension.annotations.WithSpan");
+    classAvailable("io.opentelemetry.extension.annotations.SpanAttribute");
+  }
+
   private static void classAvailable(String fqcn) {
     Assertions.assertThatCode(() -> Class.forName(fqcn)).doesNotThrowAnyException();
   }

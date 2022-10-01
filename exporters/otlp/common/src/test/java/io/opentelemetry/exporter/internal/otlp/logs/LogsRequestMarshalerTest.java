@@ -14,6 +14,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -27,9 +28,8 @@ import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,7 +53,7 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .setInstrumentationScopeInfo(
@@ -69,6 +69,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -99,7 +100,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
@@ -111,6 +112,7 @@ class LogsRequestMarshalerTest {
                         SpanContext.create(
                             TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setTotalAttributeCount(2)
                     .setEpoch(12345, TimeUnit.NANOSECONDS)
                     .build()));
 
@@ -124,6 +126,7 @@ class LogsRequestMarshalerTest {
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build());
+    assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 
@@ -133,7 +136,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                TestLogData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
@@ -148,6 +151,7 @@ class LogsRequestMarshalerTest {
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue("").build());
     assertThat(logRecord.getAttributesList()).isEmpty();
+    assertThat(logRecord.getDroppedAttributesCount()).isZero();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
 

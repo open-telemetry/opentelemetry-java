@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
 
@@ -14,9 +14,8 @@ import javax.annotation.concurrent.Immutable;
  * Class that holds limits enforced during log recording.
  *
  * <p>Note: To allow dynamic updates of {@link LogLimits} you should register a {@link
- * java.util.function.Supplier} with {@link
- * io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder#setLogLimits(Supplier)} which supplies
- * dynamic configs when queried.
+ * java.util.function.Supplier} with {@link SdkLoggerProviderBuilder#setLogLimits(Supplier)} which
+ * supplies dynamic configs when queried.
  */
 @AutoValue
 @Immutable
@@ -41,9 +40,9 @@ public abstract class LogLimits {
   LogLimits() {}
 
   /**
-   * Returns the max number of attributes per {@link LogData}.
+   * Returns the max number of attributes per {@link LogRecordData}.
    *
-   * @return the max number of attributes per {@link LogData}.
+   * @return the max number of attributes per {@link LogRecordData}.
    */
   public abstract int getMaxNumberOfAttributes();
 
