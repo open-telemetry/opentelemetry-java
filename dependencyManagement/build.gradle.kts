@@ -17,7 +17,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:3.21.7",
   "com.linecorp.armeria:armeria-bom:1.19.0",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.49.1",
+  "io.grpc:grpc-bom:1.49.2",
   "io.zipkin.brave:brave-bom:5.14.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.9.1",
@@ -76,7 +76,7 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.9.4",
+  "com.google.api.grpc:proto-google-common-protos:2.9.6",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
