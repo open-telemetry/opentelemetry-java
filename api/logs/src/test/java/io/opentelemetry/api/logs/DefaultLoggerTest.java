@@ -13,6 +13,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ class DefaultLoggerTest {
   LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
 
   @Test
+  @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
   void buildAndEmit() {
     // Logger with no event.domain
     assertThatCode(
