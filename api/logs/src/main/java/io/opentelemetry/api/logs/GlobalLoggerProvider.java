@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
  * This class provides a temporary global accessor for {@link LoggerProvider} until the log API is
  * marked stable. It will eventually be merged into {@link GlobalOpenTelemetry}.
  */
-// We intentionally assign to be use for error reporting.
+// We intentionally assign to be used for error reporting.
 @SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalLoggerProvider {
 
