@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class OtlpUserAgent {
+public final class OtlpUserAgent {
 
   private static final String userAgent = "OTel OTLP Exporter Java/" + readVersion();
 
