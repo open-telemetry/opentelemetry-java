@@ -126,6 +126,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)

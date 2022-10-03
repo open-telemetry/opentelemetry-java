@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
   }
 
   @Test
