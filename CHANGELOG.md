@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Autoconfigure now supports an option to disable the SDK.
+  If `otel.sdk.disabled=true`, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()`
+  returns a minimal (but not noop) `OpenTelemetrySdk` with noop tracing, metric and logging providers. The same minimal instance is set
+  to `GlobalOpenTelemetry`. The now deprecated property `otel.experimental.sdk.enabled` will continue to work in the same way during a transition period.
+
 ## Version 1.18.0 (2022-09-09)
 
 ### SDK

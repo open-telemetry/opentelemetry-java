@@ -77,6 +77,52 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   private AutoConfiguredOpenTelemetrySdkBuilder builder;
 
+  private static BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+      getTracerProviderBuilderSpy() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer =
+            spy(
+                new BiFunction<
+                    SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>() {
+                  @Override
+                  public SdkTracerProviderBuilder apply(
+                      SdkTracerProviderBuilder builder, ConfigProperties config) {
+                    return builder;
+                  }
+                });
+    return traceCustomizer;
+  }
+
+  private static BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+      getMeterProviderBuilderSpy() {
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer =
+            spy(
+                new BiFunction<
+                    SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>() {
+                  @Override
+                  public SdkMeterProviderBuilder apply(
+                      SdkMeterProviderBuilder builder, ConfigProperties config) {
+                    return builder;
+                  }
+                });
+    return metricCustomizer;
+  }
+
+  private static BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
+      getLoggerProviderBuilderSpy() {
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        spy(
+            new BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>() {
+              @Override
+              public SdkLoggerProviderBuilder apply(
+                  SdkLoggerProviderBuilder builder, ConfigProperties config) {
+                return builder;
+              }
+            });
+    return logCustomizer;
+  }
+
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
@@ -313,42 +359,68 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void disableSdk() {
+  void disableSdkLegacyProperty() {
     BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
-        traceCustomizer =
-            spy(
-                new BiFunction<
-                    SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>() {
-                  @Override
-                  public SdkTracerProviderBuilder apply(
-                      SdkTracerProviderBuilder builder, ConfigProperties config) {
-                    return builder;
-                  }
-                });
+        traceCustomizer = getTracerProviderBuilderSpy();
     BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
-        metricCustomizer =
-            spy(
-                new BiFunction<
-                    SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>() {
-                  @Override
-                  public SdkMeterProviderBuilder apply(
-                      SdkMeterProviderBuilder builder, ConfigProperties config) {
-                    return builder;
-                  }
-                });
+        metricCustomizer = getMeterProviderBuilderSpy();
     BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
-        spy(
-            new BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>() {
-              @Override
-              public SdkLoggerProviderBuilder apply(
-                  SdkLoggerProviderBuilder builder, ConfigProperties config) {
-                return builder;
-              }
-            });
+        getLoggerProviderBuilderSpy();
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "false"))
+            .addTracerProviderCustomizer(traceCustomizer)
+            .addMeterProviderCustomizer(metricCustomizer)
+            .addLoggerProviderCustomizer(logCustomizer)
+            .build();
+
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
+
+    // When the SDK is disabled, configuration is skipped and none of the customizers are called
+    verify(traceCustomizer, never()).apply(any(), any());
+    verify(metricCustomizer, never()).apply(any(), any());
+    verify(logCustomizer, never()).apply(any(), any());
+  }
+
+  @Test
+  void disableSdk() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer = getTracerProviderBuilderSpy();
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer = getMeterProviderBuilderSpy();
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        getLoggerProviderBuilderSpy();
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+            .addTracerProviderCustomizer(traceCustomizer)
+            .addMeterProviderCustomizer(metricCustomizer)
+            .addLoggerProviderCustomizer(logCustomizer)
+            .build();
+
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
+
+    // When the SDK is disabled, configuration is skipped and none of the customizers are called
+    verify(traceCustomizer, never()).apply(any(), any());
+    verify(metricCustomizer, never()).apply(any(), any());
+    verify(logCustomizer, never()).apply(any(), any());
+  }
+
+  @Test
+  void disableSdkNewPropertyWins() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer = getTracerProviderBuilderSpy();
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer = getMeterProviderBuilderSpy();
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        getLoggerProviderBuilderSpy();
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+            .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "true"))
             .addTracerProviderCustomizer(traceCustomizer)
             .addMeterProviderCustomizer(metricCustomizer)
             .addLoggerProviderCustomizer(logCustomizer)
