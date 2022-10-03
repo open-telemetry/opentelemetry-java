@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -333,13 +332,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
     boolean sdkEnabled =
-        Optional.ofNullable(config.getBoolean("otel.sdk.disabled"))
-            // default is false, therefore enabled
-            .map(disabled -> !disabled)
-            .orElseGet(
-                () ->
-                    Optional.ofNullable(config.getBoolean("otel.experimental.sdk.enabled"))
-                        .orElse(true));
+        !config.getBoolean(
+            "otel.sdk.disabled", !config.getBoolean("otel.experimental.sdk.enabled", true));
+
     if (sdkEnabled) {
       SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
       meterProviderBuilder.setResource(resource);
