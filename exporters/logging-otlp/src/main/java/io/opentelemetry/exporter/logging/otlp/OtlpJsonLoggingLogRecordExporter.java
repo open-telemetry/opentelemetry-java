@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 /**
  * A {@link LogRecordExporter} which writes {@linkplain LogRecordData logs} to a {@link Logger} in
  * OTLP JSON format. Each log line will include a single {@code ResourceLogs}.
+ *
+ * @since 1.19.0
  */
 public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter {
 
