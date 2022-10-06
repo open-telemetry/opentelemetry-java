@@ -5,11 +5,11 @@
 This release contains a large number of changes to the log signal following a series of significant
 changes to
 the [log specification](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/logs).
-The changes include renaming key classes like `LogExporter` to `LogRecordExporter`, `LogProcessor`
-to `LogRecordProcessor`, and `LogEmitter` to `Logger`, and more. Additionally, a log API component
-has been added for emitting events and for writing log appenders. Note, the log API is not a
-substitute for traditional log frameworks like Log4j, JUL, SLF4J, or Logback. While the event
-portion of the API is intended for instrumentation authors and end users, the API for emitting
+The changes include renaming key classes like `LogExporter` to `LogRecordExporter`,
+and `LogProcessor` to `LogRecordProcessor`, and `LogEmitter` to `Logger`, and more. Additionally, a
+log API component has been added for emitting events and for writing log appenders. Note, the log
+API is not a substitute for traditional log frameworks like Log4j, JUL, SLF4J, or Logback. While the
+event portion of the API is intended for instrumentation authors and end users, the API for emitting
 LogRecords is not.
 See [LoggerProvider](./api/logs/src/main/java/io/opentelemetry/api/logs/LoggerProvider.java)
 and [Logger](./api/logs/src/main/java/io/opentelemetry/api/logs/Logger.java) javadoc for more
