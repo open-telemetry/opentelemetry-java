@@ -38,6 +38,11 @@ details.
 
 ### SDK
 
+#### Metrics
+
+* Change exponential histogram bucket boundaries to be lower exclusive / upper inclusive, instead of
+  lower inclusive / upper exclusive.
+
 #### Logs
 
 * BREAKING: Rename `SdkLogEmitterProvider` to `SdkLoggerProvider`.
