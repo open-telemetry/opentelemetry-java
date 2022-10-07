@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.19.0 (2022-10-07)
 
 This release contains a large number of changes to the log signal following a series of significant
 changes to
