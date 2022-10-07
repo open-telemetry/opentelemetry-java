@@ -28,8 +28,8 @@ details.
   to [opentelemetry-java-instrumentation/instrumentation-annotations](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation-annotations),
   which is published under
   coordinates `io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:{version}`.
-  We will push security patches to `0.18.x` as needed. The latest `opentelemetry-bom` will point
-  to the latest published version, currently `0.18.0`.
+  We will push security patches to `1.18.x` as needed. The latest `opentelemetry-bom` will point
+  to the latest published version, currently `1.18.0`.
 
 #### Logs
 
