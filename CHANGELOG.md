@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.19.0 (2022-10-07)
+
 This release contains a large number of changes to the log signal following a series of significant
 changes to
 the [log specification](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/logs).
