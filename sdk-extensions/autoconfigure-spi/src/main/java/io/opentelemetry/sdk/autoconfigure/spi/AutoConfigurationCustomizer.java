@@ -141,6 +141,8 @@ public interface AutoConfigurationCustomizer {
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.19.0
    */
   default AutoConfigurationCustomizer addLoggerProviderCustomizer(
       BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
@@ -154,6 +156,8 @@ public interface AutoConfigurationCustomizer {
    * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.19.0
    */
   default AutoConfigurationCustomizer addLogRecordExporterCustomizer(
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>

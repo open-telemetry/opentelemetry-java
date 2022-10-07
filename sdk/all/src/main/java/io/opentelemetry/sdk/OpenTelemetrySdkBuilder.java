@@ -57,6 +57,7 @@ public final class OpenTelemetrySdkBuilder {
    * returning the instance created by a {@link SdkLoggerProviderBuilder}.
    *
    * @see SdkLoggerProvider#builder()
+   * @since 1.19.0
    */
   public OpenTelemetrySdkBuilder setLoggerProvider(SdkLoggerProvider loggerProvider) {
     this.loggerProvider = loggerProvider;

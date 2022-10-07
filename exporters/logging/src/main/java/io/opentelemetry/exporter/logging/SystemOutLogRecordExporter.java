@@ -22,6 +22,8 @@ import java.util.Collection;
  *
  * <p>Note: this doesn't use a {@code java.util.logging Logger}, as that could result in
  * logging-loops if an OTel appender is configured for {@code java.util.logging}.
+ *
+ * @since 1.19.0
  */
 @SuppressWarnings("SystemOut")
 public class SystemOutLogRecordExporter implements LogRecordExporter {

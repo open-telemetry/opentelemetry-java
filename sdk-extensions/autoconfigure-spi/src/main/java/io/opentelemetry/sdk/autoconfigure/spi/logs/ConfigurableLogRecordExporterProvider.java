@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * returned by {@link #getName()}, the exporter returned by {@link
  * #createExporter(ConfigProperties)} will be enabled and added to the SDK.
  *
- * @since 1.17.0
+ * @since 1.19.0
  */
 public interface ConfigurableLogRecordExporterProvider {
 
