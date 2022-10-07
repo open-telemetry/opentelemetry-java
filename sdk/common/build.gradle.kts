@@ -20,7 +20,6 @@ dependencies {
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
-  testImplementation(project(":sdk-extensions:resources"))
   testImplementation("com.google.guava:guava-testlib")
 }
 

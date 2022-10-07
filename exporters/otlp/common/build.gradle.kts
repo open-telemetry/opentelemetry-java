@@ -34,7 +34,6 @@ dependencies {
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   jmhImplementation(project(":sdk:testing"))
-  jmhImplementation(project(":sdk-extensions:resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhImplementation("io.grpc:grpc-netty")
