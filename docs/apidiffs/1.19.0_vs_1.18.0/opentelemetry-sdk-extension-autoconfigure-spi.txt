@@ -1,0 +1,17 @@
+Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogEmitterProviderCustomizer(java.util.function.BiFunction)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogExporterCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLoggerProviderCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogRecordExporterCustomizer(java.util.function.BiFunction)
+---! REMOVED INTERFACE: PUBLIC(-) ABSTRACT(-) io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogExporterProvider  (not serializable)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED SUPERCLASS: java.lang.Object
+	---! REMOVED METHOD: PUBLIC(-) ABSTRACT(-) io.opentelemetry.sdk.logs.export.LogExporter createExporter(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	---! REMOVED METHOD: PUBLIC(-) ABSTRACT(-) java.lang.String getName()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.export.LogRecordExporter createExporter(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()

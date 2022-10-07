@@ -1,0 +1,31 @@
+Comparing source compatibility of  against 
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.ContainerResource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC io.opentelemetry.sdk.extension.resources.ContainerResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.HostResource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.HostResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.OsResource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.OsResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.ProcessResource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.ProcessResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.ProcessRuntimeResource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
