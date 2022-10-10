@@ -120,6 +120,10 @@ class OtlpGrpcRetryTest {
 
       CompletableResultCode resultCode =
           exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+      assertThat(resultCode.isDone())
+          .as("Exporter didn't complete in time. Consider increasing join timeout?")
+          .isTrue();
+
       boolean retryable =
           RetryUtil.retryableGrpcStatusCodes().contains(String.valueOf(code.value()));
       boolean expectedResult = retryable || code == Status.Code.OK;
