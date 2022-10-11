@@ -129,6 +129,10 @@ class OtlpHttpRetryTest {
 
       CompletableResultCode resultCode =
           exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+      assertThat(resultCode.isDone())
+          .as("Exporter didn't complete in time. Consider increasing join timeout?")
+          .isTrue();
+
       boolean retryable = code != 200 && RetryUtil.retryableHttpResponseCodes().contains(code);
       boolean expectedResult = retryable || code == 200;
       assertThat(resultCode.isSuccess())
@@ -159,6 +163,9 @@ class OtlpHttpRetryTest {
     // Result should be failure, sever should have received maxAttempts requests
     CompletableResultCode resultCode =
         exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isDone())
+        .as("Exporter didn't complete in time. Consider increasing join timeout?")
+        .isTrue();
     assertThat(resultCode.isSuccess()).isFalse();
     assertThat(serverRequestCountSupplier.get()).isEqualTo(maxAttempts);
   }
