@@ -156,6 +156,9 @@ class OtlpGrpcRetryTest {
     // Result should be failure, sever should have received maxAttempts requests
     CompletableResultCode resultCode =
         exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isDone())
+        .as("Exporter didn't complete in time. Consider increasing join timeout?")
+        .isTrue();
     assertThat(resultCode.isSuccess()).isFalse();
     assertThat(serverRequestCountSupplier.get()).isEqualTo(maxAttempts);
   }
