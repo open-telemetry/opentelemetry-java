@@ -1,72 +1,6 @@
 [
   {
     "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.BaseLinkedQueueConsumerNodeRef"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.BaseLinkedQueueConsumerNodeRef",
-    "fields": [
-      {
-        "name": "consumerNode"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.BaseLinkedQueueProducerNodeRef"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.BaseLinkedQueueProducerNodeRef",
-    "fields": [
-      {
-        "name": "producerNode"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields",
-    "fields": [
-      {
-        "name": "producerLimit"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields",
-    "fields": [
-      {
-        "name": "consumerIndex"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueProducerFields"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.BaseMpscLinkedArrayQueueProducerFields",
-    "fields": [
-      {
-        "name": "producerIndex"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.LinkedQueueNode"
-    },
-    "name": "io.opentelemetry.internal.shaded.jctools.queues.LinkedQueueNode",
-    "fields": [
-      {
-        "name": "next"
-      }
-    ]
-  },
-  {
-    "condition": {
       "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueueConsumerIndexField"
     },
     "name": "io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueueConsumerIndexField",
@@ -95,35 +29,6 @@
     "fields": [
       {
         "name": "producerLimit"
-      }
-    ]
-  },
-  {
-    "condition": {
-      "typeReachable": "io.opentelemetry.internal.shaded.jctools.queues.UnsafeAccess"
-    },
-    "name": "sun.misc.Unsafe",
-    "fields": [
-      {
-        "name": "theUnsafe"
-      }
-    ],
-    "queriedMethods": [
-      {
-        "name": "getAndAddLong",
-        "parameterTypes": [
-          "java.lang.Object",
-          "long",
-          "long"
-        ]
-      },
-      {
-        "name": "getAndSetObject",
-        "parameterTypes": [
-          "java.lang.Object",
-          "long",
-          "java.lang.Object"
-        ]
       }
     ]
   }
