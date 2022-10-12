@@ -1,7 +1,7 @@
 plugins {
   id("otel.java-conventions")
   id("java-library")
-  id("org.graalvm.buildtools.native") version "0.9.8"
+  id("org.graalvm.buildtools.native") version "0.9.14"
 }
 
 description = "OpenTelemetry Graal Integration Tests"
