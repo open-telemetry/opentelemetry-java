@@ -26,10 +26,7 @@ graalvmNative {
       verbose.set(true)
     }
   }
-}
-
-tasks.withType<org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask>().configureEach {
-  disableToolchainDetection.set(true)
+  toolchainDetection.set(false)
 }
 
 tasks.test {
