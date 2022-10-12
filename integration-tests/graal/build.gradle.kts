@@ -1,7 +1,7 @@
 plugins {
   id("otel.java-conventions")
   id("java-library")
-  id("org.graalvm.buildtools.native") version "0.9.7.1"
+  id("org.graalvm.buildtools.native") version "0.9.8"
 }
 
 description = "OpenTelemetry Graal Integration Tests"
@@ -26,6 +26,10 @@ graalvmNative {
       verbose.set(true)
     }
   }
+}
+
+tasks.withType<org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask>().configureEach {
+  disableToolchainDetection.set(true)
 }
 
 tasks.test {
