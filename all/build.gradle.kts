@@ -49,6 +49,7 @@ dependencies {
   testImplementation("io.grpc:grpc-stub")
   testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
   testImplementation("io.opentelemetry:opentelemetry-sdk-extension-resources")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-aws")
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }

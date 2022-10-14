@@ -2,7 +2,7 @@ pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.gradle.enterprise") version "3.11.1"
+    id("com.gradle.enterprise") version "3.11.2"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.7.20"
   }
@@ -61,7 +61,6 @@ include(":sdk:trace")
 include(":sdk:trace-shaded-deps")
 include(":sdk-extensions:autoconfigure")
 include(":sdk-extensions:autoconfigure-spi")
-include(":sdk-extensions:aws")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")

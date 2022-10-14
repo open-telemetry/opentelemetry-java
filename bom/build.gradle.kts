@@ -12,3 +12,4 @@ otelBom.projectFilter.set { !it.hasProperty("otel.release") }
 otelBom.addFallback("opentelemetry-exporter-jaeger-proto", "1.17.0")
 otelBom.addFallback("opentelemetry-extension-annotations", "1.18.0")
 otelBom.addFallback("opentelemetry-sdk-extension-resources", "1.19.0")
+otelBom.addFallback("opentelemetry-sdk-extension-aws", "1.19.0")

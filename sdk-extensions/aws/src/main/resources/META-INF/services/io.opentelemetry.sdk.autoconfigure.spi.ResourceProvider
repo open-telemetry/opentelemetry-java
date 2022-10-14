@@ -1,5 +1,0 @@
-io.opentelemetry.sdk.extension.aws.resource.BeanstalkResourceProvider
-io.opentelemetry.sdk.extension.aws.resource.Ec2ResourceProvider
-io.opentelemetry.sdk.extension.aws.resource.EcsResourceProvider
-io.opentelemetry.sdk.extension.aws.resource.EksResourceProvider
-io.opentelemetry.sdk.extension.aws.resource.LambdaResourceProvider
