@@ -14,7 +14,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.9")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.9.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.11.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
@@ -26,7 +26,7 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.6")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.3.0")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.5.4")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
