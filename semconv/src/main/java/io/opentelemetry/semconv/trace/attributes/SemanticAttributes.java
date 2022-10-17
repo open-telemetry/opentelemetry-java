@@ -1415,13 +1415,13 @@ public final class SemanticAttributes {
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
-   *     {@link SemanticAttributes.NET_SOCK_PEER_ADDR} instead.
+   *     {@link SemanticAttributes#NET_SOCK_PEER_ADDR} instead.
    */
   @Deprecated public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
-   *     {@link SemanticAttributes.NET_SOCK_HOST_ADDR} instead.
+   *     {@link SemanticAttributes#NET_SOCK_HOST_ADDR} instead.
    */
   @Deprecated public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
 
