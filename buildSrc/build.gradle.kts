@@ -26,7 +26,7 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.6")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.3.0")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.5.4")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
