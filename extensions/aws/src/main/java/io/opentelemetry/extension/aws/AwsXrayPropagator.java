@@ -41,7 +41,11 @@ import javax.annotation.Nullable;
  *             AWSXrayPropagator.getInstance())))
  *    .build();
  * }</pre>
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator">io.opentelemetry.contrib:opentelemetry-aws-xray-propagator</a>.
  */
+@Deprecated
 public final class AwsXrayPropagator implements TextMapPropagator {
 
   // Visible for testing

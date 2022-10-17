@@ -8,7 +8,6 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -258,53 +257,6 @@ public class PropagatorContextExtractBenchmark {
     @Override
     protected Context doExtract() {
       return b3Propagator.extract(Context.current(), getCarrier(), getter);
-    }
-
-    @Override
-    protected List<Map<String, String>> getHeaders() {
-      return traceHeaders;
-    }
-  }
-
-  /** Benchmark for extracting context from AWS X-Ray trace header. */
-  public static class AwsXrayHeaderContextExtractBenchmark extends AbstractContextExtractBenchmark {
-
-    private static final List<Map<String, String>> traceHeaders =
-        Arrays.asList(
-            Collections.singletonMap(
-                "X-Amzn-Trace-Id",
-                "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1"),
-            Collections.singletonMap(
-                "X-Amzn-Trace-Id",
-                "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0"),
-            Collections.singletonMap(
-                "X-Amzn-Trace-Id",
-                "Parent=53995c3f42cd8ad8;Sampled=1;Root=1-8a3c60f7-d188f8fa79d48a391a778fa6"),
-            Collections.singletonMap(
-                "X-Amzn-Trace-Id",
-                "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=53995c3f42cd8ad8;Sampled=1"),
-            Collections.singletonMap(
-                "X-Amzn-Trace-Id",
-                "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=12345c3f42cd8ad8;Sampled=0"));
-
-    private final TextMapGetter<Map<String, String>> getter =
-        new TextMapGetter<Map<String, String>>() {
-          @Override
-          public Iterable<String> keys(Map<String, String> carrier) {
-            return carrier.keySet();
-          }
-
-          @Override
-          public String get(Map<String, String> carrier, String key) {
-            return carrier.get(key);
-          }
-        };
-
-    private final AwsXrayPropagator xrayPropagator = AwsXrayPropagator.getInstance();
-
-    @Override
-    protected Context doExtract() {
-      return xrayPropagator.extract(Context.current(), getCarrier(), getter);
     }
 
     @Override

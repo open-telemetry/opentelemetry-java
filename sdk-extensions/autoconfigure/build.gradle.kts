@@ -75,7 +75,6 @@ testing {
     }
     val testFullConfig by registering(JvmTestSuite::class) {
       dependencies {
-        implementation(project(":extensions:aws"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
@@ -100,7 +99,7 @@ testing {
           testTask {
             environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-            environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
+            environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
             environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
