@@ -23,7 +23,7 @@ dependencies {
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.1")
-  implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.6")
+  implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.8")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.4.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
