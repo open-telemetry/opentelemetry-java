@@ -8,12 +8,17 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -68,7 +73,20 @@ final class ResourceConfiguration {
   // visible for testing
   static Attributes getAttributes(ConfigProperties configProperties) {
     AttributesBuilder resourceAttributes = Attributes.builder();
-    configProperties.getMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
+    try {
+      for (Map.Entry<String, String> entry :
+          configProperties.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
+        resourceAttributes.put(
+            entry.getKey(),
+            // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
+            // characters outside the baggage-octet range are percent encoded
+            // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
+            URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.displayName()));
+      }
+    } catch (UnsupportedEncodingException e) {
+      // Should not happen since always using standard charset
+      throw new ConfigurationException("Unable to decode resource attributes.", e);
+    }
     String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
       resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);

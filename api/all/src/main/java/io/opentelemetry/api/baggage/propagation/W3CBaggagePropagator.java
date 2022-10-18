@@ -10,6 +10,7 @@ import static java.util.Collections.singletonList;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntry;
+import io.opentelemetry.api.internal.PercentEscaper;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
