@@ -49,6 +49,10 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
    *
+   * <p>Note: calling this overrides the spec compliant {@code User-Agent} header. To ensure spec
+   * compliance, set {@link io.grpc.ManagedChannelBuilder#userAgent(String)} to {@link
+   * OtlpUserAgent#getUserAgent()} when building the channel.
+   *
    * @param channel the channel to use
    * @return this builder's instance
    * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
