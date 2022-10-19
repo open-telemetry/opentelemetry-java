@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 
 /** Builder for {@link LogLimits}. */
 public final class LogLimitsBuilder {
@@ -20,9 +20,9 @@ public final class LogLimitsBuilder {
   LogLimitsBuilder() {}
 
   /**
-   * Sets the max number of attributes per {@link LogData}.
+   * Sets the max number of attributes per {@link LogRecordData}.
    *
-   * @param maxNumberOfAttributes the max number of attributes per {@link LogData}. Must be
+   * @param maxNumberOfAttributes the max number of attributes per {@link LogRecordData}. Must be
    *     positive.
    * @return this.
    * @throws IllegalArgumentException if {@code maxNumberOfAttributes} is not positive.

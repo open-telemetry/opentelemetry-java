@@ -7,7 +7,9 @@ package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -232,6 +234,21 @@ class TracerShimTest {
   }
 
   @Test
+  void activeSpan_onlyBaggage() {
+    io.opentelemetry.api.baggage.Baggage baggage =
+        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+
+    try (io.opentelemetry.context.Scope scope = Context.root().with(baggage).makeCurrent()) {
+      Span span = tracerShim.activeSpan();
+      assertThat(span).isNotNull();
+
+      SpanShim spanShim = (SpanShim) span;
+      assertThat(spanShim.getSpan()).isSameAs(INVALID_SPAN);
+      assertThat(spanShim.getBaggage()).isSameAs(baggage);
+    }
+  }
+
+  @Test
   void extract_nullContext() {
     SpanContext result =
         tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.emptyMap()));
@@ -323,6 +340,25 @@ class TracerShimTest {
     tracerShim.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(map));
     assertThat(textMapPropagator.isExtracted()).isFalse();
     assertThat(httpHeadersPropagator.isExtracted()).isTrue();
+  }
+
+  @Test
+  void extract_onlyBaggage() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    tracerShim =
+        new TracerShim(
+            new TelemetryInfo(
+                tracer, OpenTracingPropagators.builder().setTextMap(propagator).build()));
+
+    io.opentelemetry.api.baggage.Baggage baggage =
+        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+    Map<String, String> map = new HashMap<>();
+    propagator.inject(Context.root().with(baggage), map, Map::put);
+
+    SpanContext spanContext = tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
+    SpanContextShim spanContextShim = (SpanContextShim) spanContext;
+    assertThat(spanContextShim.getSpanContext().isValid()).isFalse();
+    assertThat(spanContextShim.getBaggage()).isEqualTo(baggage);
   }
 
   @Test

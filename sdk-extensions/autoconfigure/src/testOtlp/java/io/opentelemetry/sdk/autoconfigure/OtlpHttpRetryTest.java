@@ -20,8 +20,8 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -41,7 +41,7 @@ class OtlpHttpRetryTest {
 
   private static final List<SpanData> SPAN_DATA = Lists.newArrayList(generateFakeSpan());
   private static final List<MetricData> METRIC_DATA = Lists.newArrayList(generateFakeMetric());
-  private static final List<LogData> LOG_DATA = Lists.newArrayList(generateFakeLog());
+  private static final List<LogRecordData> LOG_RECORD_DATA = Lists.newArrayList(generateFakeLog());
 
   @RegisterExtension
   public static final OtlpHttpServerExtension server = new OtlpHttpServerExtension();
@@ -95,7 +95,7 @@ class OtlpHttpRetryTest {
 
   @Test
   @SuppressLogger(OkHttpGrpcExporter.class)
-  void configureLogExporterRetryPolicy() {
+  void configureLogRecordExporterRetryPolicy() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.logs.protocol", "http/protobuf");
     props.put(
@@ -104,12 +104,13 @@ class OtlpHttpRetryTest {
         "otel.exporter.otlp.logs.certificate",
         server.selfSignedCertificate.certificate().getPath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
-    try (LogExporter logExporter =
-        LogExporterConfiguration.configureOtlpLogs(
+    try (LogRecordExporter logRecordExporter =
+        LogRecordExporterConfiguration.configureOtlpLogs(
             DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
-
-      testRetryableStatusCodes(() -> LOG_DATA, logExporter::export, server.logRequests::size);
-      testDefaultRetryPolicy(() -> LOG_DATA, logExporter::export, server.logRequests::size);
+      testRetryableStatusCodes(
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
+      testDefaultRetryPolicy(
+          () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
     }
   }
 
@@ -128,6 +129,10 @@ class OtlpHttpRetryTest {
 
       CompletableResultCode resultCode =
           exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+      assertThat(resultCode.isDone())
+          .as("Exporter didn't complete in time. Consider increasing join timeout?")
+          .isTrue();
+
       boolean retryable = code != 200 && RetryUtil.retryableHttpResponseCodes().contains(code);
       boolean expectedResult = retryable || code == 200;
       assertThat(resultCode.isSuccess())
@@ -158,6 +163,9 @@ class OtlpHttpRetryTest {
     // Result should be failure, sever should have received maxAttempts requests
     CompletableResultCode resultCode =
         exporter.apply(dataSupplier.get()).join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isDone())
+        .as("Exporter didn't complete in time. Consider increasing join timeout?")
+        .isTrue();
     assertThat(resultCode.isSuccess()).isFalse();
     assertThat(serverRequestCountSupplier.get()).isEqualTo(maxAttempts);
   }

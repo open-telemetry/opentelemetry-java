@@ -6,17 +6,17 @@
 package io.opentelemetry.all;
 
 import com.tngtech.archunit.base.DescribedPredicate;
-import com.tngtech.archunit.base.Optional;
-import com.tngtech.archunit.base.PackageMatcher;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.PackageMatcher;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.lang.syntax.elements.MethodsShouldConjunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class SdkDesignTest {
@@ -55,7 +55,7 @@ class SdkDesignTest {
   static DescribedPredicate<? super JavaMethod> implementOrOverride() {
     return new DescribedPredicate<JavaMethod>("implement or override a method") {
       @Override
-      public boolean apply(JavaMethod input) {
+      public boolean test(JavaMethod input) {
         List<JavaClass> params = input.getRawParameterTypes();
         Class<?>[] paramsType = new Class<?>[params.size()];
         for (int i = 0, n = params.size(); i < n; i++) {
@@ -80,7 +80,7 @@ class SdkDesignTest {
   static DescribedPredicate<? super JavaClass> inPackage(String... requiredPackages) {
     return new DescribedPredicate<JavaClass>("are in " + Arrays.toString(requiredPackages)) {
       @Override
-      public boolean apply(JavaClass member) {
+      public boolean test(JavaClass member) {
         for (String requiredPackage : requiredPackages) {
           if (PackageMatcher.of(requiredPackage).matches(member.getPackageName())) {
             return true;

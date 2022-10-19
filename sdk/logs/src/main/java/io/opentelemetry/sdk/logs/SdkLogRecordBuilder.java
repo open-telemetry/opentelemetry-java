@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.logs.EventBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -18,8 +19,8 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** SDK implementation of {@link LogRecordBuilder}. */
-final class SdkLogRecordBuilder implements LogRecordBuilder {
+/** SDK implementation of {@link EventBuilder} and {@link LogRecordBuilder}. */
+final class SdkLogRecordBuilder implements EventBuilder {
 
   private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
@@ -40,43 +41,43 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
-  public LogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
+  public SdkLogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
     this.epochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
-  public LogRecordBuilder setEpoch(Instant instant) {
+  public SdkLogRecordBuilder setEpoch(Instant instant) {
     this.epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
   }
 
   @Override
-  public LogRecordBuilder setContext(Context context) {
+  public SdkLogRecordBuilder setContext(Context context) {
     this.spanContext = Span.fromContext(context).getSpanContext();
     return this;
   }
 
   @Override
-  public LogRecordBuilder setSeverity(Severity severity) {
+  public SdkLogRecordBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
 
   @Override
-  public LogRecordBuilder setSeverityText(String severityText) {
+  public SdkLogRecordBuilder setSeverityText(String severityText) {
     this.severityText = severityText;
     return this;
   }
 
   @Override
-  public LogRecordBuilder setBody(String body) {
+  public SdkLogRecordBuilder setBody(String body) {
     this.body = Body.string(body);
     return this;
   }
 
   @Override
-  public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> SdkLogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -95,7 +96,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
       return;
     }
     loggerSharedState
-        .getLogProcessor()
+        .getLogRecordProcessor()
         .onEmit(
             SdkReadWriteLogRecord.create(
                 loggerSharedState.getLogLimits(),

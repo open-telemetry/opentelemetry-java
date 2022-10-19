@@ -11,8 +11,10 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 ## Contents
 
 * [General notes](#general-notes)
+* [Disabling OpenTelemetrySdk](#disabling-opentelemetrysdk)
 * [Exporters](#exporters)
   + [OTLP exporter (span, metric, and log exporters)](#otlp-exporter-span-metric-and-log-exporters)
+    + [OTLP exporter retry](#otlp-exporter-retry)
   + [Jaeger exporter](#jaeger-exporter)
   + [Zipkin exporter](#zipkin-exporter)
   + [Prometheus exporter](#prometheus-exporter)
@@ -23,8 +25,11 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders)
 * [Batch span processor](#batch-span-processor)
 * [Sampler](#sampler)
+* [Attribute limits](#attribute-limits)
 * [Span limits](#span-limits)
+* [Exemplars](#exemplars)
 * [Periodic Metric Reader](#periodic-metric-reader)
+* [Batch log record processor](#batch-log-record-processor)
 * [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
 
 ## General notes
@@ -39,9 +44,9 @@ for more details.
 
 The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return a minimally configured instance (i.e. `OpenTelemetrySdk.builder().build()`).
 
-| System property               | Environment variable          | Purpose                                                        |
-|-------------------------------|-------------------------------|----------------------------------------------------------------|
-| otel.experimental.sdk.enabled | OTEL_EXPERIMENTAL_SDK_ENABLED | If `false`, disable the OpenTelemetry SDK. Defaults to `true`. |
+| System property   | Environment variable | Purpose                                                                                                                                                                                      |
+|-------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. The now legacy property `otel.experimental.sdk.enabled` will continue to work with default `true` during a transition period. |
 
 ## Exporters
 
@@ -193,11 +198,17 @@ If not specified, SDK defaults the service name to `unknown_service:java`.
 
 ### Resource Provider SPI
 
-The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi),
-part of the SDK extensions, provides a convenient ResourceProvider SPI that adds
-[common resource attributes](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/resources) automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
-[common cloud vendor resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/aws/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
-or you can create your own.
+The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi)
+SDK extension provides a ResourceProvider SPI that allows libraries to automatically provide
+Resources, which are merged into a single Resource by the autoconfiguration module. You can create
+your own ResourceProvider, or optionally use an artifact that includes built-in ResourceProviders:
+
+* [io.opentelemetry.instrumentation:opentelemetry-resources](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources)
+  includes providers for
+  a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library/src/main/java/io/opentelemetry/instrumentation/resources)
+* [io.opentelemetry.contrib:opentelemetry-aws-resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources)
+  includes providers
+  for [common AWS resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources/src/main/java/io/opentelemetry/contrib/aws/resource)
 
 ### Disabling Automatic ResourceProviders
 
@@ -275,6 +286,15 @@ These properties can be used to control the maximum size of spans by placing lim
 | System property             | Environment variable        | Description                                                                                  |
 |-----------------------------|-----------------------------|----------------------------------------------------------------------------------------------|
 | otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`. |
+
+## Batch log record processor
+
+| System property                 | Environment variable            | Description                                                                        |
+|---------------------------------|---------------------------------|------------------------------------------------------------------------------------|
+| otel.blrp.schedule.delay        | OTEL_BLRP_SCHEDULE_DELAY        | The interval, in milliseconds, between two consecutive exports. Default is `5000`. |
+| otel.blrp.max.queue.size        | OTEL_BLRP_MAX_QUEUE_SIZE        | The maximum queue size. Default is `2048`.                                         |
+| otel.blrp.max.export.batch.size | OTEL_BLRP_MAX_EXPORT_BATCH_SIZE | The maximum batch size. Default is `512`.                                          |
+| otel.blrp.export.timeout        | OTEL_BLRP_EXPORT_TIMEOUT        | The maximum allowed time, in milliseconds, to export data. Default is `30000`.     |
 
 ## Customizing the OpenTelemetry SDK
 

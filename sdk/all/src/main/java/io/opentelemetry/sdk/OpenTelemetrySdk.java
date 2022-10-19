@@ -64,7 +64,11 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return meterProvider.unobfuscate();
   }
 
-  /** Returns the {@link SdkLoggerProvider} for this {@link OpenTelemetrySdk}. */
+  /**
+   * Returns the {@link SdkLoggerProvider} for this {@link OpenTelemetrySdk}.
+   *
+   * @since 1.19.0
+   */
   public SdkLoggerProvider getSdkLoggerProvider() {
     return loggerProvider;
   }

@@ -2,6 +2,102 @@
 
 ## Unreleased
 
+## Version 1.19.0 (2022-10-07)
+
+This release contains a large number of changes to the log signal following a series of significant
+changes to
+the [log specification](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/logs).
+The changes include renaming key classes like `LogExporter` to `LogRecordExporter`,
+and `LogProcessor` to `LogRecordProcessor`, and `LogEmitter` to `Logger`, and more. Additionally, a
+log API component has been added for emitting events and for writing log appenders. Note, the log
+API is not a substitute for traditional log frameworks like Log4j, JUL, SLF4J, or Logback. While the
+event portion of the API is intended for instrumentation authors and end users, the API for emitting
+LogRecords is not.
+See [LoggerProvider](./api/logs/src/main/java/io/opentelemetry/api/logs/LoggerProvider.java)
+and [Logger](./api/logs/src/main/java/io/opentelemetry/api/logs/Logger.java) javadoc for more
+details.
+
+### General
+
+* Add `opentelemetry-bom` as a dependency to `opentelemetry-bom-alpha`, ensuring synchronization
+  between alpha and stable artifact versions.
+
+### API
+
+#### API Extensions
+
+* WARNING: `opentelemetry-extension-annotations` has been removed following its relocation
+  to [opentelemetry-java-instrumentation/instrumentation-annotations](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation-annotations),
+  which is published under
+  coordinates `io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:{version}`.
+  We will push security patches to `1.18.x` as needed. The latest `opentelemetry-bom` will point
+  to the latest published version, currently `1.18.0`.
+
+#### Logs
+
+* Introduce log API for emitting events and writing log appenders. The artifact is available at
+  coordinates `io.opentelemetry:opentelemetry-api-logs:1.19.0-alpha`.
+
+### SDK
+
+#### Metrics
+
+* Change exponential histogram bucket boundaries to be lower exclusive / upper inclusive, instead of
+  lower inclusive / upper exclusive.
+
+#### Logs
+
+* BREAKING: Rename `SdkLogEmitterProvider` to `SdkLoggerProvider`.
+  `OpenTelemetrySdkBuilder#setLogEmitterProvider` has changed
+  to `OpenTelemetrySdkBuilder#setLoggerProvider`. `OpenTelemetrySdk#getSdkLogEmitterProvider` has
+  changed to `OpenTelemetrySdk#getSdkLoggerProvider`.
+  `AutoConfigurationCustomizer#addLogEmitterProviderCustomizer` has changed
+  to `AutoConfigurationCustomizer#addLoggerProviderCustomizer`.
+* BREAKING: Rename `LogEmitter` to `Logger`.
+* BREAKING: Rename `LogExporter` to `LogRecordExporter`. `SystemOutLogExporter` has changed
+  to `SystemOutLogRecordExporter`. `OtlpJsonLoggingLogExporter` has changed
+  to `OtlpJsonLoggingLogRecordExporter`. `OtlpHttpLogExporter` has changed
+  to `OtlpHttpLogRecordExporter`. `OtlpGrpcLogExporter` has changed to `OtlpGrpcLogRecordExporter`.
+  `InMemoryLogExporter` has changed to `InMemoryLogRecordExporter`.
+  ConfigurableLogExporterProvider` has changed to `ConfigurableLogRecordExporterProvider`.
+* BREAKING: Rename `LogData` to `LogRecordData`. `TestLogData` has changed to `TestLogRecordData`.
+* BREAKING: Rename `LogProcessor` to `LogRecordProcessor`. `BatchLogProcessor` has changed
+  to `BatchLogRecordProcessor`. `SimpleLogProcessor` has changed to `SimpleLogRecordProcessor`.
+
+#### Exporter
+
+* OTLP log record exporters now
+  include [dropped_attributes_count](https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/logs/v1/logs.proto#L157).
+
+#### SDK Extensions
+
+* Autoconfigure now supports an option to disable the SDK. If `otel.sdk.disabled=true`,
+  `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` returns a minimal (but not
+  noop) `OpenTelemetrySdk` with noop tracing, metric and logging providers. The same minimal
+  instance is set to `GlobalOpenTelemetry`. The now deprecated
+  property `otel.experimental.sdk.enabled` will continue to work in the same way during a transition
+  period.
+* Fix `ProcessResource` directory separator to use `/` or `\` instead of `:` or `;`.
+* DEPRECATION: the `opentelemetry-sdk-extension-resource` module containing
+  various `ResourceProvider` implementations has been deprecated for removal in next major version.
+  A copy of the code will instead be maintained
+  in [opentelemetry-java-instrumentation/instrumentation/resources/library](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library)
+  and published under
+  coordinates `io.opentelemetry.instrumentation:opentelemetry-resources:{version}`.
+* DEPRECATION: the `opentelemetry-sdk-extension-aws` module containing AWS `ResourceProvider`
+  implementations has been deprecated for removal in next major version. A copy of the code will
+  instead be maintained
+  in [opentelemetry-java-contrib/aws-resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources)
+  and published under coordinates `io.opentelemetry.contrib:opentelemetry-aws-resources:{version}`.
+
+### OpenTracing Shim
+
+* Fully support Baggage-only propagation.
+
+### Semantic conventions
+
+* The semantic conventions have been updated to 1.13.0.
+
 ## Version 1.18.0 (2022-09-09)
 
 ### SDK

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 
 /** A log record that can be read from and written to. */
 public interface ReadWriteLogRecord {
@@ -21,10 +21,10 @@ public interface ReadWriteLogRecord {
 
   // TODO: add additional setters
 
-  /** Return an immutable {@link LogData} instance representing this log record. */
-  LogData toLogData();
+  /** Return an immutable {@link LogRecordData} instance representing this log record. */
+  LogRecordData toLogRecordData();
 
   // TODO: add additional log record accessors. Currently, all fields can be accessed indirectly via
-  // #toLogData() with at the expense of additional allocations.
+  // #toLogRecordData() with at the expense of additional allocations.
 
 }

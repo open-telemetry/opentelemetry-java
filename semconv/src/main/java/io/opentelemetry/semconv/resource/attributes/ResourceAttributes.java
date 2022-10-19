@@ -16,7 +16,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.12.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.13.0";
 
   /**
    * Array of brand name and version separated by a space
@@ -492,6 +492,9 @@ public final class ResourceAttributes {
 
   /** Process identifier (PID). */
   public static final AttributeKey<Long> PROCESS_PID = longKey("process.pid");
+
+  /** Parent Process identifier (PID). */
+  public static final AttributeKey<Long> PROCESS_PARENT_PID = longKey("process.parent_pid");
 
   /**
    * The name of the process executable. On Linux based systems, can be set to the {@code Name} in

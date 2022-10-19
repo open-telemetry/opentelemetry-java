@@ -9,7 +9,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Exporter"
-otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
+otelJava.moduleName.set("io.opentelemetry.exporter.internal.otlp")
 
 val versions: Map<String, String> by project
 dependencies {
@@ -48,7 +48,7 @@ wire {
   )
 
   custom {
-    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+    schemaHandlerFactoryClass = "io.opentelemetry.gradle.ProtoFieldsWireHandlerFactory"
   }
 }
 

@@ -43,7 +43,7 @@ final class JsonSerializer extends Serializer {
 
   @Override
   protected void writeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) throws IOException {
-    generator.writeStringField(field.getJsonName(), enumValue.getJsonName());
+    generator.writeNumberField(field.getJsonName(), enumValue.getEnumNumber());
   }
 
   @Override

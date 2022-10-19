@@ -5,17 +5,19 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.sdk.autoconfigure.LogExporterConfiguration.configureLogExporters;
+import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.configureLogRecordExporters;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,36 +31,69 @@ final class LoggerProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
-      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter>
-          logExporterCustomizer) {
+      BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+          logRecordExporterCustomizer) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
-    Map<String, LogExporter> exportersByName =
-        configureLogExporters(config, serviceClassLoader, meterProvider, logExporterCustomizer);
+    Map<String, LogRecordExporter> exportersByName =
+        configureLogRecordExporters(
+            config, serviceClassLoader, meterProvider, logRecordExporterCustomizer);
 
-    configureLogProcessors(exportersByName, meterProvider)
-        .forEach(loggerProviderBuilder::addLogProcessor);
+    configureLogRecordProcessors(config, exportersByName, meterProvider)
+        .forEach(loggerProviderBuilder::addLogRecordProcessor);
   }
 
   // Visible for testing
-  static List<LogProcessor> configureLogProcessors(
-      Map<String, LogExporter> exportersByName, MeterProvider meterProvider) {
-    Map<String, LogExporter> exportersByNameCopy = new HashMap<>(exportersByName);
-    List<LogProcessor> logProcessors = new ArrayList<>();
+  static List<LogRecordProcessor> configureLogRecordProcessors(
+      ConfigProperties config,
+      Map<String, LogRecordExporter> exportersByName,
+      MeterProvider meterProvider) {
+    Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
+    List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
-    LogExporter exporter = exportersByNameCopy.remove("logging");
+    LogRecordExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
-      logProcessors.add(SimpleLogProcessor.create(exporter));
+      logRecordProcessors.add(SimpleLogRecordProcessor.create(exporter));
     }
 
     if (!exportersByNameCopy.isEmpty()) {
-      LogExporter compositeLogExporter = LogExporter.composite(exportersByNameCopy.values());
-      logProcessors.add(
-          BatchLogProcessor.builder(compositeLogExporter).setMeterProvider(meterProvider).build());
+      LogRecordExporter compositeLogRecordExporter =
+          LogRecordExporter.composite(exportersByNameCopy.values());
+      logRecordProcessors.add(
+          configureBatchLogRecordProcessor(config, compositeLogRecordExporter, meterProvider));
     }
 
-    return logProcessors;
+    return logRecordProcessors;
+  }
+
+  // VisibleForTesting
+  static BatchLogRecordProcessor configureBatchLogRecordProcessor(
+      ConfigProperties config, LogRecordExporter exporter, MeterProvider meterProvider) {
+    BatchLogRecordProcessorBuilder builder =
+        BatchLogRecordProcessor.builder(exporter).setMeterProvider(meterProvider);
+
+    Duration scheduleDelay = config.getDuration("otel.blrp.schedule.delay");
+    if (scheduleDelay != null) {
+      builder.setScheduleDelay(scheduleDelay);
+    }
+
+    Integer maxQueue = config.getInt("otel.blrp.max.queue.size");
+    if (maxQueue != null) {
+      builder.setMaxQueueSize(maxQueue);
+    }
+
+    Integer maxExportBatch = config.getInt("otel.blrp.max.export.batch.size");
+    if (maxExportBatch != null) {
+      builder.setMaxExportBatchSize(maxExportBatch);
+    }
+
+    Duration timeout = config.getDuration("otel.blrp.export.timeout");
+    if (timeout != null) {
+      builder.setExporterTimeout(timeout);
+    }
+
+    return builder.build();
   }
 
   // Visible for testing

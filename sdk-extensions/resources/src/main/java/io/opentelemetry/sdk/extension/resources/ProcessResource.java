@@ -14,7 +14,13 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
-/** Factory of a {@link Resource} which provides information about the current running process. */
+/**
+ * Factory of a {@link Resource} which provides information about the current running process.
+ *
+ * @deprecated Moved to <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources">io.opentelemetry.instrumentation:opentelemetry-resources</a>.
+ */
+@Deprecated
 public final class ProcessResource {
 
   private static final Resource INSTANCE = buildResource();
@@ -61,9 +67,9 @@ public final class ProcessResource {
     if (javaHome != null) {
       StringBuilder executablePath = new StringBuilder(javaHome);
       executablePath
-          .append(File.pathSeparatorChar)
+          .append(File.separatorChar)
           .append("bin")
-          .append(File.pathSeparatorChar)
+          .append(File.separatorChar)
           .append("java");
       if (osName != null && osName.toLowerCase().startsWith("windows")) {
         executablePath.append(".exe");

@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 /** Builder class for {@link SdkLoggerProvider} instances. */
 public final class SdkLoggerProviderBuilder {
 
-  private final List<LogProcessor> logProcessors = new ArrayList<>();
+  private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
@@ -27,8 +27,8 @@ public final class SdkLoggerProviderBuilder {
   SdkLoggerProviderBuilder() {}
 
   /**
-   * Assign a {@link Resource} to be attached to all {@link LogData} created by {@link Logger}s
-   * obtained from the {@link SdkLoggerProvider}.
+   * Assign a {@link Resource} to be attached to all {@link LogRecordData} created by {@link
+   * Logger}s obtained from the {@link SdkLoggerProvider}.
    *
    * @param resource the resource
    * @return this
@@ -57,15 +57,15 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Add a log processor. {@link LogProcessor#onEmit(ReadWriteLogRecord)} will be called each time a
-   * log is emitted by {@link Logger} instances obtained from the {@link SdkLoggerProvider}.
+   * Add a log processor. {@link LogRecordProcessor#onEmit(ReadWriteLogRecord)} will be called each
+   * time a log is emitted by {@link Logger} instances obtained from the {@link SdkLoggerProvider}.
    *
    * @param processor the log processor
    * @return this
    */
-  public SdkLoggerProviderBuilder addLogProcessor(LogProcessor processor) {
+  public SdkLoggerProviderBuilder addLogRecordProcessor(LogRecordProcessor processor) {
     requireNonNull(processor, "processor");
-    logProcessors.add(processor);
+    logRecordProcessors.add(processor);
     return this;
   }
 
@@ -91,6 +91,6 @@ public final class SdkLoggerProviderBuilder {
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
-    return new SdkLoggerProvider(resource, logLimitsSupplier, logProcessors, clock);
+    return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
   }
 }

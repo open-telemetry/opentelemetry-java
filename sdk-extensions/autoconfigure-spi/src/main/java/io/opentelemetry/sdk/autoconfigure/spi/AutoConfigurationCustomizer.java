@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -141,6 +141,8 @@ public interface AutoConfigurationCustomizer {
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.19.0
    */
   default AutoConfigurationCustomizer addLoggerProviderCustomizer(
       BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
@@ -149,14 +151,17 @@ public interface AutoConfigurationCustomizer {
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogExporter} to
-   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogRecordExporter}
+   * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.19.0
    */
-  default AutoConfigurationCustomizer addLogExporterCustomizer(
-      BiFunction<? super LogExporter, ConfigProperties, ? extends LogExporter> exporterCustomizer) {
+  default AutoConfigurationCustomizer addLogRecordExporterCustomizer(
+      BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
+          exporterCustomizer) {
     return this;
   }
 }

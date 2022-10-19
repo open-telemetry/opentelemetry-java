@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -38,6 +39,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   OtlpHttpMetricExporterBuilder() {
     delegate = new OkHttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**

@@ -47,7 +47,7 @@ class SdkLogRecordBuilderTest {
   @BeforeEach
   void setup() {
     when(loggerSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
-    when(loggerSharedState.getLogProcessor()).thenReturn(emittedLog::set);
+    when(loggerSharedState.getLogRecordProcessor()).thenReturn(emittedLog::set);
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
 
@@ -77,7 +77,7 @@ class SdkLogRecordBuilderTest {
     builder.setSeverity(severity);
     builder.setSeverityText(sevText);
     builder.emit();
-    assertThat(emittedLog.get().toLogData())
+    assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
@@ -96,7 +96,7 @@ class SdkLogRecordBuilderTest {
 
     builder.emit();
 
-    assertThat(emittedLog.get().toLogData())
+    assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())

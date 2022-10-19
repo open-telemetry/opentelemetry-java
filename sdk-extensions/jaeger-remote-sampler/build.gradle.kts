@@ -57,7 +57,7 @@ tasks {
 
 wire {
   custom {
-    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+    schemaHandlerFactoryClass = "io.opentelemetry.gradle.ProtoFieldsWireHandlerFactory"
   }
 }
 

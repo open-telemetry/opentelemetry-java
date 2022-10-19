@@ -19,14 +19,14 @@ class LoggerSharedStateTest {
 
   @Test
   void shutdown() {
-    LogProcessor logProcessor = mock(LogProcessor.class);
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
     CompletableResultCode code = new CompletableResultCode();
-    when(logProcessor.shutdown()).thenReturn(code);
+    when(logRecordProcessor.shutdown()).thenReturn(code);
     LoggerSharedState state =
         new LoggerSharedState(
-            Resource.empty(), LogLimits::getDefault, logProcessor, Clock.getDefault());
+            Resource.empty(), LogLimits::getDefault, logRecordProcessor, Clock.getDefault());
     state.shutdown();
     state.shutdown();
-    verify(logProcessor, times(1)).shutdown();
+    verify(logRecordProcessor, times(1)).shutdown();
   }
 }
