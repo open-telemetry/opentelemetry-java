@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -76,8 +77,9 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     SamplingResult samplingResult =
         sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     // If there are no attributes in the result, then the sampler is not PerOperation based. Add
-    // the service level result attributes
-    if (samplingResult.getAttributes().isEmpty()) {
+    // the service level result attributes only if this is a root span (i.e) no valid parent context
+    if (!Span.fromContext(parentContext).getSpanContext().isValid()
+        && samplingResult.getAttributes().isEmpty()) {
       return SamplingResult.create(samplingResult.getDecision(), resultAttributes);
     }
     return samplingResult;
@@ -107,30 +109,22 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       return Sampler.parentBased(
           new PerOperationSampler(defaultSampler, operationSampling.strategies));
     }
-    Sampler serviceLevelSampler;
+    Sampler rootSampler;
     switch (response.strategyType) {
       case PROBABILISTIC:
-        serviceLevelSampler =
-            Sampler.parentBased(
-                Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate));
+        rootSampler =
+            Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate);
         resultAttributes =
             Attributes.of(
-                SAMPLER_TYPE,
-                TYPE,
-                SAMPLER_PARAM,
-                "level=service;" + serviceLevelSampler.getDescription());
-        return serviceLevelSampler;
+                SAMPLER_TYPE, TYPE, SAMPLER_PARAM, "level=service;" + rootSampler.getDescription());
+        return Sampler.parentBased(rootSampler);
       case RATE_LIMITING:
-        serviceLevelSampler =
-            Sampler.parentBased(
-                new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond));
+        rootSampler =
+            new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond);
         resultAttributes =
             Attributes.of(
-                SAMPLER_TYPE,
-                TYPE,
-                SAMPLER_PARAM,
-                "level=service;" + serviceLevelSampler.getDescription());
-        return serviceLevelSampler;
+                SAMPLER_TYPE, TYPE, SAMPLER_PARAM, "level=service;" + rootSampler.getDescription());
+        return Sampler.parentBased(rootSampler);
       case UNRECOGNIZED:
         throw new AssertionError("unrecognized sampler type");
     }

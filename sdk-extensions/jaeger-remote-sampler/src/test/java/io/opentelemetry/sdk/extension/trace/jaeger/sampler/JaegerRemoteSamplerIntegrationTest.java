@@ -89,6 +89,23 @@ class JaegerRemoteSamplerIntegrationTest {
           .atMost(Duration.ofSeconds(10))
           .untilAsserted(samplerIsType(remoteSampler, RateLimitingSampler.class));
       assertThat(remoteSampler.getDescription()).contains("RateLimitingSampler{150.00}");
+      SamplingResult samplingResult =
+          SamplingResult.create(
+              SamplingDecision.RECORD_AND_SAMPLE,
+              Attributes.of(
+                  AttributeKey.stringKey("sampler.type"),
+                  "ratelimiting",
+                  AttributeKey.doubleKey("sampler.param"),
+                  150.0));
+      assertThat(
+              remoteSampler.shouldSample(
+                  Context.current(),
+                  TraceId.getInvalid(),
+                  "op0",
+                  SpanKind.CLIENT,
+                  Attributes.empty(),
+                  ImmutableList.of()))
+          .isEqualTo(samplingResult);
     }
   }
 
@@ -106,6 +123,23 @@ class JaegerRemoteSamplerIntegrationTest {
                   assertThat(remoteSampler.getDescription())
                       .contains("TraceIdRatioBased")
                       .contains("0.8"));
+      SamplingResult samplingResult =
+          SamplingResult.create(
+              SamplingDecision.RECORD_AND_SAMPLE,
+              Attributes.of(
+                  AttributeKey.stringKey("sampler.type"),
+                  "Remote",
+                  AttributeKey.stringKey("sampler.description"),
+                  "level=service;TraceIdRatioBased{0.800000}"));
+      assertThat(
+              remoteSampler.shouldSample(
+                  Context.current(),
+                  TraceId.getInvalid(),
+                  "op0",
+                  SpanKind.CLIENT,
+                  Attributes.empty(),
+                  ImmutableList.of()))
+          .isEqualTo(samplingResult);
     }
   }
 }

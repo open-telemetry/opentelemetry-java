@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -73,7 +74,10 @@ class PerOperationSampler implements Sampler {
     }
     SamplingResult samplingResult =
         sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-    if (null == resultAttributes) {
+
+    // If there is parent span, then the sampling decision is carried forward from the parent, do
+    // not add the sampling attributes
+    if (null == resultAttributes || Span.fromContext(parentContext).getSpanContext().isValid()) {
       return samplingResult;
     }
     return SamplingResult.create(samplingResult.getDecision(), resultAttributes);
