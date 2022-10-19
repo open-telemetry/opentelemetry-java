@@ -221,21 +221,21 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API
 
-| Component                         | Description                                                                                                                                        | Artifact ID              | Version                                                                          |
-|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|----------------------------------------------------------------------------------|
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                     | `opentelemetry-api`      | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->                                |
+| Component                         | Description                                                                                                                                        | Artifact ID              | Version                                                     |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|-------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                     | `opentelemetry-api`      | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
 | [Logs API](./api/logs)            | OpenTelemetry Log API for emitting events and bridging log frameworks (NOT a replacement for application logging frameworks like SLF4J, JUL, etc.) | `opentelemetry-api-logs` | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Context API](./context)          | OpenTelemetry context API                                                                                                                          | `opentelemetry-context`  | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->                                |
-| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                                              | `opentelemetry-semconv`  | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE-->                      |
+| [Context API](./context)          | OpenTelemetry context API                                                                                                                          | `opentelemetry-context`  | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                                              | `opentelemetry-semconv`  | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### API Extensions
 
-| Component                                                     | Description                                                                                 | Artifact ID                                 | Version                                                     |
-|---------------------------------------------------------------|---------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
-| [AWS Extension](./extensions/aws)                             | AWS Xray propagator                                                                         | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                            | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                           | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer                       | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                                     | Description                                                           | Artifact ID                                 | Version                                                     |
+|---------------------------------------------------------------|-----------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
+| [AWS Extension](./extensions/aws)                             | AWS Xray propagator (deprecated)                                      | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                      | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                     | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### SDK
 
