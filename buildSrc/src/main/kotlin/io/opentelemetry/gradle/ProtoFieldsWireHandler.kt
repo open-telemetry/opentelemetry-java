@@ -7,7 +7,6 @@ import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import com.squareup.wire.WireCompiler
 import com.squareup.wire.WireLogger
-import com.squareup.wire.schema.CustomHandlerBeta
 import com.squareup.wire.schema.EnumType
 import com.squareup.wire.schema.Extend
 import com.squareup.wire.schema.Field
@@ -16,6 +15,7 @@ import com.squareup.wire.schema.ProfileLoader
 import com.squareup.wire.schema.ProtoFile
 import com.squareup.wire.schema.ProtoType
 import com.squareup.wire.schema.Schema
+import com.squareup.wire.schema.SchemaHandler
 import com.squareup.wire.schema.Service
 import com.squareup.wire.schema.Target
 import com.squareup.wire.schema.Type
@@ -33,51 +33,57 @@ import javax.lang.model.element.Modifier.STATIC
 // generated protoc code.
 //
 // Inspired by https://github.com/square/wire/blob/5fac94f86879fdd7e412cddbeb51e09a708b2b64/wire-library/wire-compiler/src/main/java/com/squareup/wire/schema/Target.kt#L152
-class ProtoFieldsWireHandler : CustomHandlerBeta {
-  override fun newHandler(
-    schema: Schema,
-    fs: FileSystem,
-    outDirectory: String,
-    logger: WireLogger,
-    profileLoader: ProfileLoader
-  ): Target.SchemaHandler {
-    val modulePath = outDirectory.toPath()
-    fs.createDirectories(modulePath)
-    val javaGenerator = JavaGenerator.get(schema)
+class ProtoFieldsWireHandler : SchemaHandler() {
 
-    return object : Target.SchemaHandler {
-      override fun handle(extend: Extend, field: Field): Path? = null
-      override fun handle(service: Service): List<Path> = emptyList()
-      override fun handle(type: Type): Path? {
-        val typeSpec = javaGenerator.generateType(type, false)
-        val javaTypeName = javaGenerator.generatedTypeName(type)
+  private var schema: Schema?= null
+  private var javaGenerator: JavaGenerator?= null
 
-        if (typeSpec == null) {
-          return null
-        }
-
-        val javaFile = JavaFile.builder(javaTypeName.packageName(), typeSpec)
-          .addFileComment("\$L", WireCompiler.CODE_GENERATED_BY_WIRE)
-          .addFileComment("\nSource: \$L in \$L", type.type, type.location.withPathOnly())
-          .build()
-        val generatedFilePath = modulePath / javaFile.packageName / "${javaFile.typeSpec.name}.java"
-
-        val filePath = modulePath /
-          javaFile.packageName.replace(".", "/") /
-          "${javaTypeName.simpleName()}.java"
-
-        try {
-          fs.createDirectories(filePath.parent!!)
-          fs.write(filePath) {
-            writeUtf8(javaFile.toString())
-          }
-        } catch (e: IOException) {
-          throw IOException("Error emitting ${javaFile.packageName}.${javaFile.typeSpec.name} " +
-            "to $outDirectory", e)
-        }
-        return generatedFilePath
-      }
+  override fun handle(schema: Schema, context: Context) {
+    if (this.schema != null && this.schema != schema) {
+      throw IllegalStateException("Cannot use same handler with multiple schemas")
     }
+    if (this.schema == null) {
+      this.schema = schema
+      this.javaGenerator = JavaGenerator.get(schema)
+    }
+    super.handle(schema, context)
+  }
+
+  override fun handle(service: Service, context: Context): List<Path> = emptyList()
+
+  override fun handle(extend: Extend, field: Field, context: Context): Path? = null
+
+  override fun handle(type: Type, context: Context): Path? {
+    val fs = context.fileSystem
+    val outDirectory = context.outDirectory
+
+    val typeSpec = javaGenerator!!.generateType(type, false)
+    val javaTypeName = javaGenerator!!.generatedTypeName(type)
+
+    if (typeSpec == null) {
+      return null
+    }
+
+    val javaFile = JavaFile.builder(javaTypeName.packageName(), typeSpec)
+      .addFileComment("\$L", WireCompiler.CODE_GENERATED_BY_WIRE)
+      .addFileComment("\nSource: \$L in \$L", type.type, type.location.withPathOnly())
+      .build()
+    val generatedFilePath = outDirectory / javaFile.packageName / "${javaFile.typeSpec.name}.java"
+
+    val filePath = outDirectory /
+      javaFile.packageName.replace(".", "/") /
+      "${javaTypeName.simpleName()}.java"
+
+    try {
+      fs.createDirectories(filePath.parent!!)
+      fs.write(filePath) {
+        writeUtf8(javaFile.toString())
+      }
+    } catch (e: IOException) {
+      throw IOException("Error emitting ${javaFile.packageName}.${javaFile.typeSpec.name} " +
+        "to $outDirectory", e)
+    }
+    return generatedFilePath
   }
 
   private class JavaGenerator(private val schema: Schema, private val typeToJavaName: Map<ProtoType, TypeName>) {

@@ -11,6 +11,7 @@ import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
+import io.opentelemetry.api.internal.PercentEscaper;
 import java.net.URLDecoder;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.Result;
