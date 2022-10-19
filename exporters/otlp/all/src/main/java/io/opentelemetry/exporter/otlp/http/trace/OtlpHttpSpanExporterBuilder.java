@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   OtlpHttpSpanExporterBuilder() {
     delegate = new OkHttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**

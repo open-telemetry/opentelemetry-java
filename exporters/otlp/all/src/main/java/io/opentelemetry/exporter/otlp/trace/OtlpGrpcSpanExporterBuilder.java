@@ -12,6 +12,7 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.net.URI;
 import java.time.Duration;
@@ -41,11 +42,16 @@ public final class OtlpGrpcSpanExporterBuilder {
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH);
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
+   *
+   * <p>Note: calling this overrides the spec compliant {@code User-Agent} header. To ensure spec
+   * compliance, set {@link io.grpc.ManagedChannelBuilder#userAgent(String)} to {@link
+   * OtlpUserAgent#getUserAgent()} when building the channel.
    *
    * @param channel the channel to use
    * @return this builder's instance
