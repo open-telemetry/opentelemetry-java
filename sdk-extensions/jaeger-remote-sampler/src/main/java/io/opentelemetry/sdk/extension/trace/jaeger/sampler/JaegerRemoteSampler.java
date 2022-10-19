@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -26,6 +29,9 @@ import javax.annotation.Nullable;
 public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
+  private static final String TYPE = "Remote";
+  private static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
+  private static final AttributeKey<String> SAMPLER_PARAM = stringKey("sampler.description");
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
 
@@ -35,6 +41,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private final ScheduledFuture<?> pollFuture;
 
   private volatile Sampler sampler;
+  private volatile Attributes resultAttributes;
 
   private final GrpcService<
           SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
@@ -49,6 +56,9 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     this.serviceName = serviceName != null ? serviceName : "";
     this.delegate = delegate;
     this.sampler = initialSampler;
+    this.resultAttributes =
+        Attributes.of(
+            SAMPLER_TYPE, TYPE, SAMPLER_PARAM, "level=service;" + initialSampler.getDescription());
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
         pollExecutor.scheduleWithFixedDelay(
@@ -63,7 +73,14 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+    SamplingResult samplingResult =
+        sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+    // If there are no attributes in the result, then the sampler is not PerOperation based. Add
+    // the service level result attributes
+    if (samplingResult.getAttributes().isEmpty()) {
+      return SamplingResult.create(samplingResult.getDecision(), resultAttributes);
+    }
+    return samplingResult;
   }
 
   private void getAndUpdateSampler() {
@@ -81,7 +98,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     }
   }
 
-  private static Sampler updateSampler(SamplingStrategyResponse response) {
+  private Sampler updateSampler(SamplingStrategyResponse response) {
     SamplingStrategyResponse.PerOperationSamplingStrategies operationSampling =
         response.perOperationSamplingStrategies;
     if (operationSampling.strategies.size() > 0) {
@@ -90,13 +107,30 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       return Sampler.parentBased(
           new PerOperationSampler(defaultSampler, operationSampling.strategies));
     }
+    Sampler serviceLevelSampler;
     switch (response.strategyType) {
       case PROBABILISTIC:
-        return Sampler.parentBased(
-            Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate));
+        serviceLevelSampler =
+            Sampler.parentBased(
+                Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate));
+        resultAttributes =
+            Attributes.of(
+                SAMPLER_TYPE,
+                TYPE,
+                SAMPLER_PARAM,
+                "level=service;" + serviceLevelSampler.getDescription());
+        return serviceLevelSampler;
       case RATE_LIMITING:
-        return Sampler.parentBased(
-            new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond));
+        serviceLevelSampler =
+            Sampler.parentBased(
+                new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond));
+        resultAttributes =
+            Attributes.of(
+                SAMPLER_TYPE,
+                TYPE,
+                SAMPLER_PARAM,
+                "level=service;" + serviceLevelSampler.getDescription());
+        return serviceLevelSampler;
       case UNRECOGNIZED:
         throw new AssertionError("unrecognized sampler type");
     }
