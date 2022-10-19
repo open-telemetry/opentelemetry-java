@@ -5,7 +5,7 @@ pluginManagement {
     id("com.gradle.enterprise") version "3.11.2"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.7.20"
-    id("org.graalvm.buildtools.native") version "0.9.14"
+    id("org.graalvm.buildtools.native") version "0.9.15"
   }
 }
 
