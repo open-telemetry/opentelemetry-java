@@ -1,4 +1,4 @@
-# OpenTelemetry for Java
+# OpenTelemetry Java
 [![Continuous Build][ci-image]][ci-url]
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
