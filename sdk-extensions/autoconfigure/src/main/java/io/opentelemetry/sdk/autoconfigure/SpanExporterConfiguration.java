@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -98,6 +99,12 @@ final class SpanExporterConfiguration {
             "Logging Trace Exporter",
             "opentelemetry-exporter-logging");
         return LoggingSpanExporter.create();
+      case "logging-otlp":
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter",
+            "OTLP JSON Logging Trace Exporter",
+            "opentelemetry-exporter-logging-otlp");
+        return OtlpJsonLoggingSpanExporter.create();
       default:
         SpanExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {

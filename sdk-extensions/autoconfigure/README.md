@@ -159,6 +159,16 @@ The logging exporter prints the name of the span along with its attributes to st
 | otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
 | otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
 
+### Logging OTLP JSON exporter
+
+The logging-otlp exporter writes the telemetry data to the JUL logger in OLTP JSON form. It's a more verbose output mainly used for testing and debugging.
+
+| System property                    | Environment variable               | Description                                        |
+|------------------------------------|------------------------------------|----------------------------------------------------|
+| otel.traces.exporter=logging-otlp  | OTEL_TRACES_EXPORTER=logging-otlp  | Select the logging OTLP JSON exporter for tracing  |
+| otel.metrics.exporter=logging-otlp | OTEL_METRICS_EXPORTER=logging-otlp | Select the logging OTLP JSON exporter for metrics  |
+| otel.logs.exporter=logging-otlp    | OTEL_LOGS_EXPORTER=logging-otlp    | Select the logging OTLP JSON exporter for logs     |
+
 ## Propagator
 
 The propagators determine which distributed tracing header formats are used, and which baggage propagation header formats are used.

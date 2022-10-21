@@ -17,6 +17,7 @@ dependencies {
 
   compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:logging"))
+  compileOnly(project(":exporters:logging-otlp"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))

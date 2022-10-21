@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
+import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -91,6 +92,12 @@ class LogRecordExporterConfiguration {
             "Logging Log Exporter",
             "opentelemetry-exporter-logging");
         return SystemOutLogRecordExporter.create();
+      case "logging-otlp":
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter",
+            "OTLP JSON Logging Log Exporter",
+            "opentelemetry-exporter-logging-otlp");
+        return OtlpJsonLoggingLogRecordExporter.create();
       default:
         LogRecordExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
