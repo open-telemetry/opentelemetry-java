@@ -108,7 +108,7 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
    */
   public LongExemplarAssert hasFilteredAttributesSatisfying(
       Iterable<AttributeAssertion> assertions) {
-    AssertUtil.assertAttributes(actual.getFilteredAttributes(), assertions);
+    AssertUtil.assertAttributesExactly(actual.getFilteredAttributes(), assertions);
     return myself;
   }
 }

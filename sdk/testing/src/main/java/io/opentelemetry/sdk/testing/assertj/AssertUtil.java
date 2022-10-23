@@ -46,6 +46,22 @@ final class AssertUtil {
       attributeAssertion.getAssertion().accept(assertion);
     }
 
+    assertThat(actualKeys).as("attribute keys").containsAll(checkedKeys);
+  }
+
+  static void assertAttributesExactly(Attributes actual, Iterable<AttributeAssertion> assertions) {
+    Set<AttributeKey<?>> actualKeys = actual.asMap().keySet();
+    Set<AttributeKey<?>> checkedKeys = new HashSet<>();
+    for (AttributeAssertion attributeAssertion : assertions) {
+      AttributeKey<?> key = attributeAssertion.getKey();
+      Object value = actual.get(key);
+      if (value != null) {
+        checkedKeys.add(key);
+      }
+      AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
+      attributeAssertion.getAssertion().accept(assertion);
+    }
+
     assertThat(actualKeys).as("attribute keys").containsExactlyInAnyOrderElementsOf(checkedKeys);
   }
 
