@@ -299,11 +299,7 @@ class MetricAssertionsTest {
                                             equalTo(BEAR, "mya"),
                                             equalTo(WARM, true),
                                             equalTo(TEMPERATURE, 30),
-                                            equalTo(LENGTH, 1.2),
-                                            equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)))
+                                            equalTo(LENGTH, 1.2))
                                         .hasFilteredAttributesSatisfying(
                                             satisfies(BEAR, val -> val.startsWith("mya")),
                                             satisfies(WARM, val -> val.isTrue()),
@@ -321,6 +317,15 @@ class MetricAssertionsTest {
                                         // Demonstrates common usage of many exact matches and one
                                         // needing a loose one.
                                         .hasFilteredAttributesSatisfying(
+                                            equalTo(BEAR, "mya"),
+                                            equalTo(WARM, true),
+                                            equalTo(TEMPERATURE, 30L),
+                                            equalTo(COLORS, Arrays.asList("red", "blue")),
+                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
+                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
+                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                                        .hasFilteredAttributesSatisfyingExactly(
                                             equalTo(BEAR, "mya"),
                                             equalTo(WARM, true),
                                             equalTo(TEMPERATURE, 30L),
@@ -554,6 +559,37 @@ class MetricAssertionsTest {
                     .hasDoubleGaugeSatisfying(
                         gauge ->
                             gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasExemplarsSatisfying(
+                                        exemplar ->
+                                            // Extra CAT
+                                            exemplar.hasFilteredAttributesSatisfyingExactly(
+                                                satisfies(WARM, val -> val.isTrue()),
+                                                satisfies(
+                                                    TEMPERATURE,
+                                                    val -> val.isGreaterThanOrEqualTo(30)),
+                                                satisfies(
+                                                    LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                                                satisfies(
+                                                    COLORS,
+                                                    val -> val.containsExactly("red", "blue")),
+                                                satisfies(
+                                                    CONDITIONS,
+                                                    val -> val.containsExactly(false, true)),
+                                                satisfies(
+                                                    SCORES, val -> val.containsExactly(0L, 1L)),
+                                                satisfies(
+                                                    COINS,
+                                                    val -> val.containsExactly(0.01, 0.05, 0.1))),
+                                        exemplar -> {}),
+                                point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
                                 point -> point.hasAttributes(Attributes.empty()),
                                 point -> point.hasAttribute(CAT, "garfield"))))
         .isInstanceOf(AssertionError.class);
@@ -606,7 +642,26 @@ class MetricAssertionsTest {
                         point
                             .hasValue(Long.MAX_VALUE)
                             .hasExemplarsSatisfying(
-                                exemplar -> exemplar.hasValue(2), exemplar -> exemplar.hasValue(1)),
+                                exemplar -> exemplar.hasValue(2),
+                                exemplar ->
+                                    exemplar
+                                        .hasValue(1)
+                                        .hasFilteredAttributesSatisfying(
+                                            equalTo(BEAR, "mya"),
+                                            equalTo(WARM, true),
+                                            equalTo(TEMPERATURE, 30L),
+                                            equalTo(COLORS, Arrays.asList("red", "blue")),
+                                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                                        .hasFilteredAttributesSatisfyingExactly(
+                                            equalTo(BEAR, "mya"),
+                                            equalTo(WARM, true),
+                                            equalTo(TEMPERATURE, 30L),
+                                            equalTo(COLORS, Arrays.asList("red", "blue")),
+                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
+                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
+                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                            satisfies(
+                                                LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
                     point -> point.hasValue(1)));
   }
 
@@ -651,10 +706,38 @@ class MetricAssertionsTest {
                                         exemplar -> exemplar.hasValue(100), exemplar -> {}),
                                 point -> point.hasValue(1))))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasExemplarsSatisfying(
+                                        exemplar ->
+                                            exemplar.hasFilteredAttributesSatisfying(
+                                                equalTo(CAT, "mya"), equalTo(WARM, true))))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point.hasExemplarsSatisfying(
+                                        exemplar ->
+                                            exemplar.hasFilteredAttributesSatisfyingExactly(
+                                                equalTo(BEAR, "mya"),
+                                                equalTo(WARM, true),
+                                                satisfies(
+                                                    LENGTH,
+                                                    val -> val.isCloseTo(1, offset(0.3))))))))
+        .isInstanceOf(AssertionError.class);
   }
 
   @Test
-  void duobleSum() {
+  void doubleSum() {
     assertThat(DOUBLE_SUM_METRIC)
         .hasDoubleSumSatisfying(
             sum -> sum.isMonotonic().isCumulative().hasPointsSatisfying(point -> {}, point -> {}));
@@ -875,4 +958,10 @@ class MetricAssertionsTest {
                                 point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
         .isInstanceOf(AssertionError.class);
   }
+
+  //  private static <T> AttributeAssertion attributeAssertion(AttributeKey<T> attributeKey, T
+  // value) {
+  //    return AttributeAssertion.create(attributeKey,
+  //        abstractAssert -> abstractAssert.isEqualTo(value));
+  //  }
 }

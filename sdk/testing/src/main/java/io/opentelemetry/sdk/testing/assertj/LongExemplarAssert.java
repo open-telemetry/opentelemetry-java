@@ -96,8 +96,25 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
     return hasFilteredAttributes(attributes);
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /** Asserts the exemplar has filtered attributes matching all {@code assertions}. */
   public LongExemplarAssert hasFilteredAttributesSatisfying(AttributeAssertion... assertions) {
+    return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public LongExemplarAssert hasFilteredAttributesSatisfying(
+      Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributes(actual.getFilteredAttributes(), assertions);
+    return myself;
+  }
+
+  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  public LongExemplarAssert hasFilteredAttributesSatisfyingExactly(
+      AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
   }
 
@@ -106,9 +123,9 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
    * Assertions can be created using methods like {@link
    * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
    */
-  public LongExemplarAssert hasFilteredAttributesSatisfying(
+  public LongExemplarAssert hasFilteredAttributesSatisfyingExactly(
       Iterable<AttributeAssertion> assertions) {
-    AssertUtil.assertAttributes(actual.getFilteredAttributes(), assertions);
+    AssertUtil.assertAttributesExactly(actual.getFilteredAttributes(), assertions);
     return myself;
   }
 }
