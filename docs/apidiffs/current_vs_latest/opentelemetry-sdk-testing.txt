@@ -13,3 +13,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfying(java.lang.Iterable)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LongExemplarAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfyingExactly(java.lang.Iterable)

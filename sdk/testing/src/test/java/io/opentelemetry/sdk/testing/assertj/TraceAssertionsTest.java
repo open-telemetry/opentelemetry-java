@@ -234,6 +234,15 @@ class TraceAssertionsTest {
                   .hasAttributesSatisfying(
                       attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
+              assertThat(events.get(2))
+                  .hasAttributesSatisfying(
+                      equalTo(
+                          SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException"))
+                  .hasAttributesSatisfyingExactly(
+                      equalTo(
+                          SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException"),
+                      equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument"),
+                      equalTo(SemanticAttributes.EXCEPTION_STACKTRACE, "some obfuscated stack"));
             })
         .hasEventsSatisfyingExactly(
             event -> event.hasName("event"),
@@ -434,6 +443,18 @@ class TraceAssertionsTest {
                                 .hasAttributesSatisfying(
                                     attributes ->
                                         assertThat(attributes).containsEntry("dogs", "meow"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(2))
+                                .hasAttributesSatisfyingExactly(
+                                    equalTo(
+                                        SemanticAttributes.EXCEPTION_TYPE,
+                                        "java.lang.IllegalArgumentException"),
+                                    equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasException(new IllegalStateException("bad argument")))
