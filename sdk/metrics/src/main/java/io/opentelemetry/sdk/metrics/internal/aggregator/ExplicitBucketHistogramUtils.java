@@ -21,7 +21,7 @@ public final class ExplicitBucketHistogramUtils {
   public static final List<Double> DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES =
       Collections.unmodifiableList(
           Arrays.asList(
-              5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
+              0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
               10_000d));
 
   /** Converts bucket boundary "convenient" configuration into the "more efficient" array. */
