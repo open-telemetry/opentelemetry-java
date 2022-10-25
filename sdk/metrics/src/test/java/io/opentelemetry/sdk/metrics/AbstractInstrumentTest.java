@@ -25,8 +25,8 @@ class AbstractInstrumentTest {
   @Test
   void testToString() {
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
-    assertThat(testInstrument.toString())
-        .isEqualTo("TestInstrument{descriptor=" + INSTRUMENT_DESCRIPTOR + "}");
+    assertThat(testInstrument)
+        .hasToString("TestInstrument{descriptor=" + INSTRUMENT_DESCRIPTOR + "}");
   }
 
   private static final class TestInstrument extends AbstractInstrument {
