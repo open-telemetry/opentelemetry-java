@@ -9,8 +9,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.EventBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -27,7 +25,7 @@ final class SdkLogRecordBuilder implements EventBuilder {
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private long epochNanos;
-  private SpanContext spanContext = SpanContext.getInvalid();
+  @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   private Body body = Body.empty();
@@ -54,7 +52,7 @@ final class SdkLogRecordBuilder implements EventBuilder {
 
   @Override
   public SdkLogRecordBuilder setContext(Context context) {
-    this.spanContext = Span.fromContext(context).getSpanContext();
+    this.context = context;
     return this;
   }
 
@@ -103,7 +101,7 @@ final class SdkLogRecordBuilder implements EventBuilder {
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
                 this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
-                spanContext,
+                this.context == null ? Context.current() : this.context,
                 severity,
                 severityText,
                 body,

@@ -9,7 +9,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.Body;
@@ -25,7 +26,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final long epochNanos;
-  private final SpanContext spanContext;
+  private final Context context;
   private final Severity severity;
   @Nullable private final String severityText;
   private final Body body;
@@ -40,7 +41,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
-      SpanContext spanContext,
+      Context context,
       Severity severity,
       @Nullable String severityText,
       Body body,
@@ -49,7 +50,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.epochNanos = epochNanos;
-    this.spanContext = spanContext;
+    this.context = context;
     this.severity = severity;
     this.severityText = severityText;
     this.body = body;
@@ -62,7 +63,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
-      SpanContext spanContext,
+      Context context,
       Severity severity,
       @Nullable String severityText,
       Body body,
@@ -72,7 +73,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         resource,
         instrumentationScopeInfo,
         epochNanos,
-        spanContext,
+        context,
         severity,
         severityText,
         body,
@@ -111,12 +112,17 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           resource,
           instrumentationScopeInfo,
           epochNanos,
-          spanContext,
+          Span.fromContext(context).getSpanContext(),
           severity,
           severityText,
           body,
           getImmutableAttributes(),
           attributes == null ? 0 : attributes.getTotalAddedValues());
     }
+  }
+
+  @Override
+  public Context getContext() {
+    return context;
   }
 }
