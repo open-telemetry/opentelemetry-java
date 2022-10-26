@@ -2,6 +2,7 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
+  id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 }
 
