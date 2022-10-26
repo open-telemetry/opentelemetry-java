@@ -54,7 +54,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
 
   TraceIdRatioBasedSampler(double ratio, long idUpperBound) {
     this.idUpperBound = idUpperBound;
-    description = String.format("TraceIdRatioBased{%s}", decimalFormat(ratio));
+    description = "TraceIdRatioBased{" + decimalFormat(ratio) + "}";
   }
 
   @Override

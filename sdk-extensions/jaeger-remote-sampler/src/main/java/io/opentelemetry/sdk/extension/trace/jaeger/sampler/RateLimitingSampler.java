@@ -64,7 +64,7 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return String.format("RateLimitingSampler{%s}", decimalFormat(maxTracesPerSecond));
+    return "RateLimitingSampler{" + decimalFormat(maxTracesPerSecond) + "}";
   }
 
   @Override
