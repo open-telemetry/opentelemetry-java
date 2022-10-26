@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -57,8 +58,9 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Add a log processor. {@link LogRecordProcessor#onEmit(ReadWriteLogRecord)} will be called each
-   * time a log is emitted by {@link Logger} instances obtained from the {@link SdkLoggerProvider}.
+   * Add a log processor. {@link LogRecordProcessor#onEmit(ReadWriteLogRecord, Context)} will be
+   * called each time a log is emitted by {@link Logger} instances obtained from the {@link
+   * SdkLoggerProvider}.
    *
    * @param processor the log processor
    * @return this

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,7 +21,7 @@ class NoopLogRecordProcessorTest {
   @Test
   void noCrash() {
     LogRecordProcessor logRecordProcessor = NoopLogRecordProcessor.getInstance();
-    logRecordProcessor.onEmit(logRecord);
+    logRecordProcessor.onEmit(logRecord, Context.current());
     assertThat(logRecordProcessor.forceFlush().isSuccess()).isEqualTo(true);
     assertThat(logRecordProcessor.shutdown().isSuccess()).isEqualTo(true);
   }

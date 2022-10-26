@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.context.Context;
+
 final class NoopLogRecordProcessor implements LogRecordProcessor {
   private static final NoopLogRecordProcessor INSTANCE = new NoopLogRecordProcessor();
 
@@ -15,5 +17,5 @@ final class NoopLogRecordProcessor implements LogRecordProcessor {
   private NoopLogRecordProcessor() {}
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {}
+  public void onEmit(ReadWriteLogRecord logRecord, Context context) {}
 }

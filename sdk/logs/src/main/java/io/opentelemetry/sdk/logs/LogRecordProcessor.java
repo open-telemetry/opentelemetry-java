@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -52,8 +53,10 @@ public interface LogRecordProcessor extends Closeable {
    * Called when a {@link Logger} {@link LogRecordBuilder#emit()}s a log record.
    *
    * @param logRecord the log record
+   * @param context the context set via {@link LogRecordBuilder#setContext(Context)}, or {@link
+   *     Context#current()} if not explicitly set
    */
-  void onEmit(ReadWriteLogRecord logRecord);
+  void onEmit(ReadWriteLogRecord logRecord, Context context);
 
   /**
    * Shutdown the log processor.

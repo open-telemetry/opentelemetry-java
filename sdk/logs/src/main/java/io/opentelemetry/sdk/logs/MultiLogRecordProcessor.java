@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +34,9 @@ final class MultiLogRecordProcessor implements LogRecordProcessor {
   }
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
+  public void onEmit(ReadWriteLogRecord logRecord, Context context) {
     for (LogRecordProcessor logRecordProcessor : logRecordProcessors) {
-      logRecordProcessor.onEmit(logRecord);
+      logRecordProcessor.onEmit(logRecord, context);
     }
   }
 

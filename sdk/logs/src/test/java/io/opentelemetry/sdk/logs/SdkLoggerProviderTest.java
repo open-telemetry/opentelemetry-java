@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -21,6 +22,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -29,6 +32,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -222,7 +226,7 @@ class SdkLoggerProviderTest {
         SdkLoggerProvider.builder()
             .setResource(resource)
             .addLogRecordProcessor(
-                logRecord -> {
+                (logRecord, unused) -> {
                   logRecord.setAttribute(null, null);
                   // Overwrite k1
                   logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
@@ -263,6 +267,50 @@ class SdkLoggerProviderTest {
   }
 
   @Test
+  void loggerBuilder_ProcessorWithContext() {
+    ContextKey<String> contextKey = ContextKey.named("my-context-key");
+    AtomicReference<LogRecordData> logRecordData = new AtomicReference<>();
+
+    sdkLoggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(
+                (logRecord, context) ->
+                    logRecord.setAttribute(
+                        AttributeKey.stringKey("my-context-key"),
+                        Optional.ofNullable(context.get(contextKey)).orElse("")))
+            .addLogRecordProcessor(
+                (logRecord, unused) -> logRecordData.set(logRecord.toLogRecordData()))
+            .build();
+
+    // With implicit context
+    try (Scope unused = Context.current().with(contextKey, "context-value1").makeCurrent()) {
+      sdkLoggerProvider
+          .loggerBuilder("test")
+          .build()
+          .logRecordBuilder()
+          .setBody("log message1")
+          .emit();
+    }
+    assertThat(logRecordData.get())
+        .hasBody("log message1")
+        .hasAttributes(entry(AttributeKey.stringKey("my-context-key"), "context-value1"));
+
+    // With explicit context
+    try (Scope unused = Context.current().with(contextKey, "context-value2").makeCurrent()) {
+      sdkLoggerProvider
+          .loggerBuilder("test")
+          .build()
+          .logRecordBuilder()
+          .setContext(Context.current())
+          .setBody("log message2")
+          .emit();
+    }
+    assertThat(logRecordData.get())
+        .hasBody("log message2")
+        .hasAttributes(entry(AttributeKey.stringKey("my-context-key"), "context-value2"));
+  }
+
+  @Test
   void forceFlush() {
     sdkLoggerProvider.forceFlush();
     verify(logRecordProcessor).forceFlush();
@@ -288,7 +336,7 @@ class SdkLoggerProviderTest {
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
     List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
-    logRecordProcessor = seenLogs::add;
+    logRecordProcessor = (logRecord, context) -> seenLogs.add(logRecord);
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .setClock(clock)
