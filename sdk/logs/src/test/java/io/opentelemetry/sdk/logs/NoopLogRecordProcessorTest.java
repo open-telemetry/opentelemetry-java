@@ -21,7 +21,7 @@ class NoopLogRecordProcessorTest {
   @Test
   void noCrash() {
     LogRecordProcessor logRecordProcessor = NoopLogRecordProcessor.getInstance();
-    logRecordProcessor.onEmit(logRecord, Context.current());
+    logRecordProcessor.onEmit(Context.current(), logRecord);
     assertThat(logRecordProcessor.forceFlush().isSuccess()).isEqualTo(true);
     assertThat(logRecordProcessor.shutdown().isSuccess()).isEqualTo(true);
   }

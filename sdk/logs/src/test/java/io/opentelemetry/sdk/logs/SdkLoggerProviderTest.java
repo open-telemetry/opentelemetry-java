@@ -226,7 +226,7 @@ class SdkLoggerProviderTest {
         SdkLoggerProvider.builder()
             .setResource(resource)
             .addLogRecordProcessor(
-                (logRecord, unused) -> {
+                (unused, logRecord) -> {
                   logRecord.setAttribute(null, null);
                   // Overwrite k1
                   logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
@@ -274,12 +274,12 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
-                (logRecord, context) ->
+                (context, logRecord) ->
                     logRecord.setAttribute(
                         AttributeKey.stringKey("my-context-key"),
                         Optional.ofNullable(context.get(contextKey)).orElse("")))
             .addLogRecordProcessor(
-                (logRecord, unused) -> logRecordData.set(logRecord.toLogRecordData()))
+                (unused, logRecord) -> logRecordData.set(logRecord.toLogRecordData()))
             .build();
 
     // With implicit context
@@ -336,7 +336,7 @@ class SdkLoggerProviderTest {
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(now);
     List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
-    logRecordProcessor = (logRecord, context) -> seenLogs.add(logRecord);
+    logRecordProcessor = (context, logRecord) -> seenLogs.add(logRecord);
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .setClock(clock)

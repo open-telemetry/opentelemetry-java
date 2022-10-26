@@ -48,7 +48,7 @@ class SdkLogRecordBuilderTest {
   void setup() {
     when(loggerSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
     when(loggerSharedState.getLogRecordProcessor())
-        .thenReturn((logRecord, context) -> emittedLog.set(logRecord));
+        .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
 

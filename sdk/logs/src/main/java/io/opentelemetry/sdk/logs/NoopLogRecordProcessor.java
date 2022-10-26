@@ -17,5 +17,5 @@ final class NoopLogRecordProcessor implements LogRecordProcessor {
   private NoopLogRecordProcessor() {}
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord, Context context) {}
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {}
 }

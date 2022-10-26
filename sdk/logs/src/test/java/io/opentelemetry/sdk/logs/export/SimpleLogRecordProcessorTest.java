@@ -59,7 +59,7 @@ class SimpleLogRecordProcessorTest {
 
   @Test
   void onEmit() {
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     verify(logRecordExporter).export(Collections.singletonList(LOG_RECORD_DATA));
   }
 
@@ -67,8 +67,8 @@ class SimpleLogRecordProcessorTest {
   @SuppressLogger(SimpleLogRecordProcessor.class)
   void onEmit_ExporterError() {
     when(logRecordExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     verify(logRecordExporter, times(2)).export(anyList());
   }
 
@@ -79,8 +79,8 @@ class SimpleLogRecordProcessorTest {
 
     when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
 
     verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
@@ -102,8 +102,8 @@ class SimpleLogRecordProcessorTest {
 
     when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
-    logRecordProcessor.onEmit(readWriteLogRecord, Context.current());
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
 
     verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 

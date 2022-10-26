@@ -98,6 +98,7 @@ final class SdkLogRecordBuilder implements EventBuilder {
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(
+            context,
             SdkReadWriteLogRecord.create(
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
@@ -107,7 +108,6 @@ final class SdkLogRecordBuilder implements EventBuilder {
                 severity,
                 severityText,
                 body,
-                attributes),
-            context);
+                attributes));
   }
 }

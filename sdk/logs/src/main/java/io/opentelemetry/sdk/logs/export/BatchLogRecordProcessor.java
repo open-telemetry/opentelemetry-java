@@ -82,7 +82,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
   }
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord, Context context) {
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     if (logRecord == null) {
       return;
     }

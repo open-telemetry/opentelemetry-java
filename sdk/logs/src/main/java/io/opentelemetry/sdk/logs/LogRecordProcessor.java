@@ -52,11 +52,11 @@ public interface LogRecordProcessor extends Closeable {
   /**
    * Called when a {@link Logger} {@link LogRecordBuilder#emit()}s a log record.
    *
-   * @param logRecord the log record
    * @param context the context set via {@link LogRecordBuilder#setContext(Context)}, or {@link
    *     Context#current()} if not explicitly set
+   * @param logRecord the log record
    */
-  void onEmit(ReadWriteLogRecord logRecord, Context context);
+  void onEmit(Context context, ReadWriteLogRecord logRecord);
 
   /**
    * Shutdown the log processor.

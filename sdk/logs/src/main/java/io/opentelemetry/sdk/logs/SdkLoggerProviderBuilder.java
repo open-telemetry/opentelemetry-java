@@ -58,7 +58,7 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Add a log processor. {@link LogRecordProcessor#onEmit(ReadWriteLogRecord, Context)} will be
+   * Add a log processor. {@link LogRecordProcessor#onEmit(Context, ReadWriteLogRecord)} will be
    * called each time a log is emitted by {@link Logger} instances obtained from the {@link
    * SdkLoggerProvider}.
    *

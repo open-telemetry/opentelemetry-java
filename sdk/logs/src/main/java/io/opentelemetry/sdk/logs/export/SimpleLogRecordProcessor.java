@@ -59,7 +59,7 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
   }
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord, Context context) {
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     try {
       List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
       CompletableResultCode result = logRecordExporter.export(logs);

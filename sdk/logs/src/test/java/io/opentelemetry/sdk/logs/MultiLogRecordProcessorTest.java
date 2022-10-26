@@ -40,7 +40,7 @@ class MultiLogRecordProcessorTest {
   void empty() {
     LogRecordProcessor multiLogRecordProcessor = LogRecordProcessor.composite();
     assertThat(multiLogRecordProcessor).isInstanceOf(NoopLogRecordProcessor.class);
-    multiLogRecordProcessor.onEmit(logRecord, Context.current());
+    multiLogRecordProcessor.onEmit(Context.current(), logRecord);
     multiLogRecordProcessor.shutdown();
   }
 
@@ -55,9 +55,9 @@ class MultiLogRecordProcessorTest {
     LogRecordProcessor multiLogRecordProcessor =
         LogRecordProcessor.composite(logRecordProcessor1, logRecordProcessor2);
     Context context = Context.current();
-    multiLogRecordProcessor.onEmit(logRecord, context);
-    verify(logRecordProcessor1).onEmit(same(logRecord), same(context));
-    verify(logRecordProcessor2).onEmit(same(logRecord), same(context));
+    multiLogRecordProcessor.onEmit(context, logRecord);
+    verify(logRecordProcessor1).onEmit(same(context), same(logRecord));
+    verify(logRecordProcessor2).onEmit(same(context), same(logRecord));
 
     multiLogRecordProcessor.forceFlush();
     verify(logRecordProcessor1).forceFlush();
