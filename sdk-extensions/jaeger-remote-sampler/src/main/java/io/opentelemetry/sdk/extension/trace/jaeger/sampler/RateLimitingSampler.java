@@ -18,6 +18,8 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 
 /**
@@ -62,11 +64,19 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return String.format("RateLimitingSampler{%.2f}", maxTracesPerSecond);
+    return String.format("RateLimitingSampler{%s}", decimalFormat(maxTracesPerSecond));
   }
 
   @Override
   public String toString() {
     return getDescription();
+  }
+
+  private static String decimalFormat(double value) {
+    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+    decimalFormatSymbols.setDecimalSeparator('.');
+
+    DecimalFormat decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
+    return decimalFormat.format(value);
   }
 }
