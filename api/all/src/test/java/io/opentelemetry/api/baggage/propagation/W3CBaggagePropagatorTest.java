@@ -476,7 +476,8 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void shouldAllowBase64SpecialCharacters() {
-    String encodedInBase64 = "MngJIFNQIAkhCSIJIwkkCSUJJgknCSgJKQkqCSsJLAktCS4JLwozeAkwCTEJMgkzCTQJNQk2CTcJOAk5CToJOwk8CT0JPgk/CjR4CUAJQQlCCUMJRAlFCUYJRwlICUkJSglLCUwJTQlOCU8KNXgJUAlRCVIJUwlUCVUJVglXCVgJWQlaCVsJXAldCV4JXwo2eAlgCWEJYgljCWQJZQlmCWcJaAlpCWoJawlsCW0JbglvCjd4CXAJcQlyCXMJdAl1CXYJdwl4CXkJegl7CXwJfQl+CQo4eAkJCQkJCQkJCQkJCQkJCQkKOXgJCQkJCQkJCQkJCQkJCQkJCkF4CU5CU1AJwqEJwqIJwqMJwqQJwqUJwqYJwqcJwqgJwqkJwqoJwqsJwqwJU0hZCcKuCcKvCkJ4CcKwCcKxCcKyCcKzCcK0CcK1CcK2CcK3CcK4CcK5CcK6CcK7CcK8CcK9CcK+CcK/CkN4CcOACcOBCcOCCcODCcOECcOFCcOGCcOHCcOICcOJCcOKCcOLCcOMCcONCcOOCcOPCkR4CcOQCcORCcOSCcOTCcOUCcOVCcOWCcOXCcOYCcOZCcOaCcObCcOcCcOdCcOeCcOfCkV4CcOgCcOhCcOiCcOjCcOkCcOlCcOmCcOnCcOoCcOpCcOqCcOrCcOsCcOtCcOuCcOvCkZ4CcOwCcOxCcOyCcOzCcO0CcO1CcO2CcO3CcO4CcO5CcO6CcO7CcO8CcO9CcO+CcO/Cgo=";
+    String encodedInBase64 =
+        "MngJIFNQIAkhCSIJIwkkCSUJJgknCSgJKQkqCSsJLAktCS4JLwozeAkwCTEJMgkzCTQJNQk2CTcJOAk5CToJOwk8CT0JPgk/CjR4CUAJQQlCCUMJRAlFCUYJRwlICUkJSglLCUwJTQlOCU8KNXgJUAlRCVIJUwlUCVUJVglXCVgJWQlaCVsJXAldCV4JXwo2eAlgCWEJYgljCWQJZQlmCWcJaAlpCWoJawlsCW0JbglvCjd4CXAJcQlyCXMJdAl1CXYJdwl4CXkJegl7CXwJfQl+CQo4eAkJCQkJCQkJCQkJCQkJCQkKOXgJCQkJCQkJCQkJCQkJCQkJCkF4CU5CU1AJwqEJwqIJwqMJwqQJwqUJwqYJwqcJwqgJwqkJwqoJwqsJwqwJU0hZCcKuCcKvCkJ4CcKwCcKxCcKyCcKzCcK0CcK1CcK2CcK3CcK4CcK5CcK6CcK7CcK8CcK9CcK+CcK/CkN4CcOACcOBCcOCCcODCcOECcOFCcOGCcOHCcOICcOJCcOKCcOLCcOMCcONCcOOCcOPCkR4CcOQCcORCcOSCcOTCcOUCcOVCcOWCcOXCcOYCcOZCcOaCcObCcOcCcOdCcOeCcOfCkV4CcOgCcOhCcOiCcOjCcOkCcOlCcOmCcOnCcOoCcOpCcOqCcOrCcOsCcOtCcOuCcOvCkZ4CcOwCcOxCcOyCcOzCcO0CcO1CcO2CcO3CcO4CcO5CcO6CcO7CcO8CcO9CcO+CcO/Cgo=";
 
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -486,7 +487,8 @@ class W3CBaggagePropagatorTest {
             ImmutableMap.of(
                 "baggage",
                 "key1= value1; metadata-key = value; othermetadata, "
-                    + "key2 =value2 , key3 =\tvalue3 , foo="+encodedInBase64),
+                    + "key2 =value2 , key3 =\tvalue3 , foo="
+                    + encodedInBase64),
             getter);
 
     Baggage expectedBaggage =
@@ -500,6 +502,5 @@ class W3CBaggagePropagatorTest {
             .put("foo", encodedInBase64)
             .build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
-
   }
 }

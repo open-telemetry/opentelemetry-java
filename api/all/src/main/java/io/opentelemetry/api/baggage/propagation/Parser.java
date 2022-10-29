@@ -154,7 +154,8 @@ class Parser {
   }
 
   /**
-   * Encodes allowed '+' character into percent, so that URLDecoder won't treat it as a space character.
+   * Encodes allowed '+' character into percent, so that URLDecoder won't treat it as a space
+   * character.
    */
   private static String encodeAllowedCharacters(String value) {
     value = value.replace("+", "%2B");
