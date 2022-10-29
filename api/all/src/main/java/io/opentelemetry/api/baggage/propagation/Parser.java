@@ -147,10 +147,18 @@ class Parser {
       return null;
     }
     try {
-      return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+      return URLDecoder.decode(encodeAllowedCharacters(value), StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
       return null;
     }
+  }
+
+  /**
+   * Encodes allowed '+' character into percent, so that URLDecoder won't treat it as a space character.
+   */
+  private static String encodeAllowedCharacters(String value) {
+    value = value.replace("+", "%2B");
+    return value;
   }
 
   /**
