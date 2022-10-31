@@ -54,6 +54,8 @@ public abstract class ImmutableSpanContext implements SpanContext {
    * @param traceFlags the trace flags of the {@code SpanContext}.
    * @param traceState the trace state for the {@code SpanContext}.
    * @param remote the remote flag for the {@code SpanContext}.
+   * @param skipIdValidation pass true to force the {@code SpanContext} to be valid, even if the
+   *     trace ID or span ID are not.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
   public static SpanContext create(
