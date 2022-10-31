@@ -5,9 +5,13 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 
@@ -19,14 +23,24 @@ import org.jctools.queues.MpscArrayQueue;
  */
 public final class JcTools {
 
+  private static final AtomicBoolean queueCreationWarningLogged = new AtomicBoolean();
+  private static final Logger logger = Logger.getLogger(JcTools.class.getName());
+
   /**
    * Returns a new {@link Queue} appropriate for use with multiple producers and a single consumer.
    */
   public static <T> Queue<T> newFixedSizeQueue(int capacity) {
     try {
       return new MpscArrayQueue<>(capacity);
-    } catch (java.lang.NoClassDefFoundError e) {
-      // Happens when modules such as jdk.unsupported are disabled in a custom JRE distribution
+    } catch (java.lang.NoClassDefFoundError | java.lang.ExceptionInInitializerError e) {
+      if (!queueCreationWarningLogged.getAndSet(true)) {
+        logger.log(
+            Level.WARNING,
+            "Cannot create high-performance queue, reverting to ArrayBlockingQueue ({0})",
+            Objects.toString(e, "unknown cause"));
+      }
+      // Happens when modules such as jdk.unsupported are disabled in a custom JRE distribution,
+      // or a security manager preventing access to Unsafe is installed.
       return new ArrayBlockingQueue<>(capacity);
     }
   }
