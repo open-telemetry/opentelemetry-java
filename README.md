@@ -230,12 +230,12 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API Extensions
 
-| Component                                                     | Description                                                           | Artifact ID                                 | Version                                                     |
-|---------------------------------------------------------------|-----------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
-| [AWS Extension](./extensions/aws)                             | AWS Xray propagator (deprecated)                                      | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                      | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                     | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
-| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                                                     | Description                                                                                                                                                                             | Artifact ID                                 | Version                                                     |
+|---------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|
+| [AWS Extension](./extensions/aws)                             | AWS Xray propagator (deprecated, moved to [opentelemetry-java-contrib/aws-xray-propagator](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator)) | `opentelemetry-extension-aws`               | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                                                                                                                        | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                                                                                                                       | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.19.0<!--/VERSION_STABLE-->           |
+| [Incubator Extension](./extensions/incubator)                 | API incubator, including pass through propagator, and extended tracer                                                                                                                   | `opentelemetry-extension-incubator`         | <!--VERSION_UNSTABLE-->1.19.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### SDK
 
