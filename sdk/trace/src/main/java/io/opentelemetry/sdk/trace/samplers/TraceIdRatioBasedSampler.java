@@ -10,6 +10,8 @@ import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -52,7 +54,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
 
   TraceIdRatioBasedSampler(double ratio, long idUpperBound) {
     this.idUpperBound = idUpperBound;
-    description = String.format("TraceIdRatioBased{%.6f}", ratio);
+    description = "TraceIdRatioBased{" + decimalFormat(ratio) + "}";
   }
 
   @Override
@@ -107,5 +109,13 @@ final class TraceIdRatioBasedSampler implements Sampler {
 
   private static long getTraceIdRandomPart(String traceId) {
     return OtelEncodingUtils.longFromBase16String(traceId, 16);
+  }
+
+  private static String decimalFormat(double value) {
+    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+    decimalFormatSymbols.setDecimalSeparator('.');
+
+    DecimalFormat decimalFormat = new DecimalFormat("0.000000", decimalFormatSymbols);
+    return decimalFormat.format(value);
   }
 }
