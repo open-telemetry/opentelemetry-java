@@ -67,6 +67,19 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
+   * supported compression methods include "gzip" and "none".
+   */
+  public JaegerGrpcSpanExporterBuilder setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
+    delegate.setCompression(compressionMethod);
+    return this;
+  }
+
+  /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
    * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */

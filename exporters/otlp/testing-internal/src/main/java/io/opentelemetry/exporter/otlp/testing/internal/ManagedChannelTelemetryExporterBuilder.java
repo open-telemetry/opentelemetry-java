@@ -140,6 +140,11 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     TelemetryExporter<T> delegateExporter = delegate.build();
     return new TelemetryExporter<T>() {
       @Override
+      public Object unwrap() {
+        return delegateExporter.unwrap();
+      }
+
+      @Override
       public CompletableResultCode export(Collection<T> items) {
         return delegateExporter.export(items);
       }

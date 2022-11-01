@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -235,6 +236,28 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     List<U> expectedResourceTelemetry = toProto(telemetry);
     assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+  }
+
+  @Test
+  void compressionWithNone() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build();
+    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+    assumeThat(exporter.unwrap())
+        .extracting("delegate")
+        .isNotInstanceOf(UpstreamGrpcExporter.class);
+    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+  }
+
+  @Test
+  void compressionWithGzip() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build();
+    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+    assumeThat(exporter.unwrap())
+        .extracting("delegate")
+        .isNotInstanceOf(UpstreamGrpcExporter.class);
+    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
   }
 
   @Test
