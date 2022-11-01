@@ -92,7 +92,7 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is enabled. Currently
+   * Sets the method used to compress payloads. If unset, gzip compression is enabled. Currently
    * supported compression methods include "gzip" and "none".
    *
    * <p>The compression method is ignored when a custom Zipkin sender is set via {@link
