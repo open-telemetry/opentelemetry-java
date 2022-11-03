@@ -98,7 +98,7 @@ public final class ComponentRegistry<V> {
                       .setSchemaUrl(schemaUrl1)
                       .setAttributes(attributes)
                       .build()));
-    } else { // schemaUrl != null && version != null
+    } else { // schemaUrl == null && version == null
       return componentByName.computeIfAbsent(
           name,
           name1 ->
