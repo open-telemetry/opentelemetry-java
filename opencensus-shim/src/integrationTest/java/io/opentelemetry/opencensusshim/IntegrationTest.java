@@ -15,7 +15,7 @@ import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 // todo remove if/once the underlying issue is agreed upon
-public class ITTest {
+public class IntegrationTest {
 
   @Test
   void test() {
