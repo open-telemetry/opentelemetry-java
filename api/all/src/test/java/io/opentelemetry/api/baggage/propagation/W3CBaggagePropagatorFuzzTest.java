@@ -18,8 +18,11 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.Result;
@@ -62,6 +65,17 @@ class W3CBaggagePropagatorFuzzTest {
       Baggage extractedBaggage = Baggage.fromContext(extractedContext);
       assertThat(extractedBaggage).isEqualTo(baggage);
     }
+
+    @Fuzz
+    public void baggageOctet(@From(BaggageOctetGenerator.class) String baggageValue) {
+      Map<String, String> carrier = new HashMap<>();
+      carrier.put("baggage", "key=" + baggageValue);
+      Context context =
+          baggagePropagator.extract(Context.current(), carrier, new MapTextMapGetter());
+      Baggage baggage = Baggage.fromContext(context);
+      String value = baggage.getEntryValue("key");
+      assertThat(value).isEqualTo(baggageValue);
+    }
   }
 
   // driver methods to avoid having to use the vintage junit engine, and to enable increasing the
@@ -79,9 +93,15 @@ class W3CBaggagePropagatorFuzzTest {
     assertThat(result.wasSuccessful()).isTrue();
   }
 
-  private static Result runTestCase(String roundTripRandomValues) {
+  @Test
+  void baggageOctetFuzzing() {
+    Result result = runTestCase("baggageOctet");
+    assertThat(result.wasSuccessful()).isTrue();
+  }
+
+  private static Result runTestCase(String testCaseName) {
     return GuidedFuzzing.run(
-        TestCases.class, roundTripRandomValues, new NoGuidance(10000, System.out), System.out);
+        TestCases.class, testCaseName, new NoGuidance(10000, System.out), System.out);
   }
 
   public static class AsciiGenerator extends AbstractStringGenerator {
@@ -107,6 +127,27 @@ class W3CBaggagePropagatorFuzzTest {
     @Override
     public String get(Map<String, String> carrier, String key) {
       return carrier.get(key);
+    }
+  }
+
+  public static class BaggageOctetGenerator extends AbstractStringGenerator {
+
+    private static final Set<Character> excluded =
+        new HashSet<>(Arrays.asList(' ', '"', ',', ';', '\\', '%'));
+
+    @Override
+    protected int nextCodePoint(SourceOfRandomness random) {
+      while (true) {
+        char c = random.nextChar(' ', '~');
+        if (!excluded.contains(c)) {
+          return c;
+        }
+      }
+    }
+
+    @Override
+    protected boolean codePointInRange(int codePoint) {
+      return !excluded.contains((char) codePoint);
     }
   }
 }
