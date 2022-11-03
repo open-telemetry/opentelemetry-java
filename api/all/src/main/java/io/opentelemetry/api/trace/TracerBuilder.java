@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.Attributes;
  * Builder class for creating {@link Tracer} instances.
  *
  * <p>{@link Tracer}s are identified by their scope name, version, and schema URL. These identifying
- * fields, along with attributes, combine to for the instrumentation scope, which is attached to all
- * spans produced by the {@link Tracer}.
+ * fields, along with attributes, combine to form the instrumentation scope, which is attached to
+ * all spans produced by the {@link Tracer}.
  *
  * @since 1.4.0
  */

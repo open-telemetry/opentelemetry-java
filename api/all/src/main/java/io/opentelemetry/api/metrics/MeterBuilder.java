@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.Attributes;
  * Builder class for creating {@link Meter} instances.
  *
  * <p>{@link Meter}s are identified by their scope name, version, and schema URL. These identifying
- * fields, along with attributes, combine to for the instrumentation scope, which is attached to all
- * metrics produced by the {@link Meter}.
+ * fields, along with attributes, combine to form the instrumentation scope, which is attached to
+ * all metrics produced by the {@link Meter}.
  *
  * @since 1.10.0
  */

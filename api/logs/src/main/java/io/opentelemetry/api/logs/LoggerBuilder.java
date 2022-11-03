@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.Attributes;
  * Builder class for creating {@link Logger} instances.
  *
  * <p>{@link Logger}s are identified by their scope name, version, and schema URL. These identifying
- * fields, along with attributes, combine to for the instrumentation scope, which is attached to all
- * log records produced by the {@link Logger}.
+ * fields, along with attributes, combine to form the instrumentation scope, which is attached to
+ * all log records produced by the {@link Logger}.
  */
 public interface LoggerBuilder {
 
