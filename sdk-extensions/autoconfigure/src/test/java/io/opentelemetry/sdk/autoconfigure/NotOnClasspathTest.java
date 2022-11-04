@@ -84,9 +84,9 @@ class NotOnClasspathTest {
   @Test
   void loggingSpansOtlp() {
     assertThatThrownBy(
-        () ->
-            SpanExporterConfiguration.configureExporter(
-                "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "OTLP JSON Logging Trace Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
@@ -111,12 +111,12 @@ class NotOnClasspathTest {
   @Test
   void loggingMetricsOtlp() {
     assertThatThrownBy(
-        () ->
-            MetricExporterConfiguration.configureExporter(
-                "logging-otlp",
-                EMPTY,
-                MetricExporterConfiguration.class.getClassLoader(),
-                (a, unused) -> a))
+            () ->
+                MetricExporterConfiguration.configureExporter(
+                    "logging-otlp",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "OTLP JSON Logging Metrics Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
@@ -138,9 +138,9 @@ class NotOnClasspathTest {
   @Test
   void loggingLogsOtlp() {
     assertThatThrownBy(
-        () ->
-            LogRecordExporterConfiguration.configureExporter(
-                "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () ->
+                LogRecordExporterConfiguration.configureExporter(
+                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "OTLP JSON Logging Log Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
