@@ -263,8 +263,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       return null;
     }
 
-    SpanParentInfo mainParent = null;
-
+    SpanParentInfo mainParent = parents.get(0);
     for (SpanParentInfo parentInfo : parents) {
       if (parentInfo.getRefType() == ReferenceType.CHILD_OF) {
         mainParent = parentInfo;
@@ -272,7 +271,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       }
     }
 
-    mainParent = mainParent == null ? parents.get(0) : mainParent;
     return mainParent.getSpanContext();
   }
 
@@ -287,12 +285,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
     BaggageBuilder builder = Baggage.builder();
     for (SpanParentInfo parent : parents) {
-      parent
-          .getBaggage()
-          .forEach(
-              (key, entry) -> {
-                builder.put(key, entry.getValue());
-              });
+      parent.getBaggage().forEach((key, entry) -> builder.put(key, entry.getValue()));
     }
 
     return builder.build();
@@ -301,7 +294,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @AutoValue
   @Immutable
   abstract static class SpanParentInfo {
-    public static SpanParentInfo create(
+    private static SpanParentInfo create(
         io.opentelemetry.api.trace.SpanContext spanContext,
         Baggage baggage,
         ReferenceType refType) {
