@@ -208,7 +208,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    Baggage baggage = null;
+    Baggage baggage;
     io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
     io.opentelemetry.api.trace.SpanContext mainParent = getMainParent(allParents);
 
