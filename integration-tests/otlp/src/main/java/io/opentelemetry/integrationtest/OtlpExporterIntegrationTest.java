@@ -11,10 +11,10 @@ import static org.awaitility.Awaitility.await;
 import static org.testcontainers.Testcontainers.exposeHostPorts;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.linecorp.armeria.internal.common.util.SelfSignedCertificate;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
-import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -68,10 +68,12 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UncheckedIOException;
+import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import org.junit.jupiter.api.AfterAll;
@@ -79,7 +81,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
@@ -113,17 +114,22 @@ abstract class OtlpExporterIntegrationTest {
           .put(ResourceAttributes.SERVICE_NAME, "integration test")
           .build();
 
-  @RegisterExtension
-  static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
-
-  @RegisterExtension
-  static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
+  static SelfSignedCertificate serverTls;
+  static SelfSignedCertificate clientTls;
 
   private static OtlpGrpcServer grpcServer;
   private static GenericContainer<?> collector;
 
   @BeforeAll
-  static void beforeAll() {
+  static void beforeAll() throws CertificateException {
+    serverTls = new SelfSignedCertificate();
+    clientTls =
+        new SelfSignedCertificate(
+            Date.from(Instant.now().minusSeconds(365 * 24 * 3600)),
+            Date.from(Instant.ofEpochMilli(253402300799000L)),
+            "EC",
+            256);
+
     grpcServer = new OtlpGrpcServer();
     grpcServer.start();
 
@@ -136,13 +142,11 @@ abstract class OtlpExporterIntegrationTest {
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
             .withCopyFileToContainer(
-                MountableFile.forHostPath(serverTls.certificateFile().toPath(), 0555),
-                "/server.cert")
+                MountableFile.forHostPath(serverTls.certificate().toPath(), 0555), "/server.cert")
             .withCopyFileToContainer(
-                MountableFile.forHostPath(serverTls.privateKeyFile().toPath(), 0555), "/server.key")
+                MountableFile.forHostPath(serverTls.privateKey().toPath(), 0555), "/server.key")
             .withCopyFileToContainer(
-                MountableFile.forHostPath(clientTls.certificateFile().toPath(), 0555),
-                "/client.cert")
+                MountableFile.forHostPath(clientTls.certificate().toPath(), 0555), "/client.cert")
             .withEnv(
                 "OTLP_EXPORTER_ENDPOINT", "host.testcontainers.internal:" + grpcServer.httpPort())
             .withEnv("MTLS_CLIENT_CERTIFICATE", "/client.cert")
@@ -202,8 +206,8 @@ abstract class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testTraceExport(exporter);
@@ -236,8 +240,8 @@ abstract class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
                     + "/v1/traces")
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testTraceExport(exporter);
@@ -335,8 +339,8 @@ abstract class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testMetricExport(exporter);
@@ -369,8 +373,8 @@ abstract class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
                     + "/v1/metrics")
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testMetricExport(exporter);
@@ -460,8 +464,8 @@ abstract class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_MTLS_PORT))
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testLogRecordExporter(exporter);
@@ -494,8 +498,8 @@ abstract class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_MTLS_PORT)
                     + "/v1/logs")
-            .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded())
-            .setTrustedCertificates(serverTls.certificate().getEncoded())
+            .setClientTls(clientTls.key().getEncoded(), clientTls.cert().getEncoded())
+            .setTrustedCertificates(serverTls.cert().getEncoded())
             .build();
 
     testLogRecordExporter(exporter);
