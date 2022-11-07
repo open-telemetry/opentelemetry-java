@@ -103,7 +103,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
                   contextShim.getSpanContext(), contextShim.getBaggage(), refType));
     } else {
       if (allParents.size() == 1) {
-        allParents = new ArrayList<SpanParentInfo>(allParents);
+        allParents = new ArrayList<>(allParents);
       }
       allParents.add(
           SpanParentInfo.create(contextShim.getSpanContext(), contextShim.getBaggage(), refType));
