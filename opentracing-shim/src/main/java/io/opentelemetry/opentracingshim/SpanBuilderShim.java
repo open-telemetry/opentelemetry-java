@@ -256,7 +256,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   }
 
   // The first SpanContext with Child Of type in the entire list is used as parent,
-  // else the the first SpanContext is used as parent.
+  // else the first SpanContext is used as parent.
   @Nullable
   static io.opentelemetry.api.trace.SpanContext getMainParent(List<SpanParentInfo> parents) {
     if (parents.size() == 0) {
