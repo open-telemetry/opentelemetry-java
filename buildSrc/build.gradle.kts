@@ -25,7 +25,7 @@ dependencies {
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.1")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.8")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.4.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
 }
 
