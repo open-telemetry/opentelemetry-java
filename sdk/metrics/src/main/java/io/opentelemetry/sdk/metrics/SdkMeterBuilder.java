@@ -8,40 +8,43 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import javax.annotation.Nullable;
 
 class SdkMeterBuilder implements MeterBuilder {
 
   private final ComponentRegistry<SdkMeter> registry;
-  private final InstrumentationScopeInfoBuilder scopeBuilder;
+  private final String instrumentationScopeName;
+  @Nullable private String instrumentationScopeVersion;
+  @Nullable private String schemaUrl;
+  private Attributes attributes = Attributes.empty();
 
   SdkMeterBuilder(ComponentRegistry<SdkMeter> registry, String instrumentationScopeName) {
     this.registry = registry;
-    this.scopeBuilder = InstrumentationScopeInfo.builder(instrumentationScopeName);
+    this.instrumentationScopeName = instrumentationScopeName;
   }
 
   @Override
   public MeterBuilder setSchemaUrl(String schemaUrl) {
-    scopeBuilder.setSchemaUrl(schemaUrl);
+    this.schemaUrl = schemaUrl;
     return this;
   }
 
   @Override
   public MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
-    scopeBuilder.setVersion(instrumentationScopeVersion);
+    this.instrumentationScopeVersion = instrumentationScopeVersion;
     return this;
   }
 
   @Override
   public MeterBuilder setAttributes(Attributes attributes) {
-    scopeBuilder.setAttributes(attributes);
+    this.attributes = attributes;
     return this;
   }
 
   @Override
   public Meter build() {
-    return registry.get(scopeBuilder.build());
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, attributes);
   }
 }

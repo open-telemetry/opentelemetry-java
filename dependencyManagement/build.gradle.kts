@@ -12,12 +12,12 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.13.4.20221013",
+  "com.fasterxml.jackson:jackson-bom:2.14.0",
   "com.google.guava:guava-bom:31.1-jre",
-  "com.google.protobuf:protobuf-bom:3.21.8",
-  "com.linecorp.armeria:armeria-bom:1.20.1",
+  "com.google.protobuf:protobuf-bom:3.21.9",
+  "com.linecorp.armeria:armeria-bom:1.20.2",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.50.1",
+  "io.grpc:grpc-bom:1.50.2",
   "io.zipkin.brave:brave-bom:5.14.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.9.1",
@@ -76,13 +76,13 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.9.6",
+  "com.google.api.grpc:proto-google-common-protos:2.10.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.0.0",
-  "com.uber.nullaway:nullaway:0.10.2",
+  "com.uber.nullaway:nullaway:0.10.4",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
@@ -91,7 +91,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.10.1",
+  "nl.jqno.equalsverifier:equalsverifier:3.11",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",

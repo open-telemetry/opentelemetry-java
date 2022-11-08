@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+import javax.annotation.Nullable;
 
 /** SDK implementation for {@link LoggerProvider}. */
 public final class SdkLoggerProvider implements LoggerProvider, Closeable {
@@ -61,7 +63,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
    */
   @Override
   public Logger get(String instrumentationScopeName) {
-    return loggerBuilder(instrumentationScopeName).build();
+    return loggerComponentRegistry.get(
+        instrumentationNameOrDefault(instrumentationScopeName), null, null, Attributes.empty());
   }
 
   /**
@@ -75,11 +78,16 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
     if (isNoopLogRecordProcessor) {
       return LoggerProvider.noop().loggerBuilder(instrumentationScopeName);
     }
+    return new SdkLoggerBuilder(
+        loggerComponentRegistry, instrumentationNameOrDefault(instrumentationScopeName));
+  }
+
+  private static String instrumentationNameOrDefault(@Nullable String instrumentationScopeName) {
     if (instrumentationScopeName == null || instrumentationScopeName.isEmpty()) {
       LOGGER.fine("Logger requested without instrumentation scope name.");
-      instrumentationScopeName = DEFAULT_LOGGER_NAME;
+      return DEFAULT_LOGGER_NAME;
     }
-    return new SdkLoggerBuilder(loggerComponentRegistry, instrumentationScopeName);
+    return instrumentationScopeName;
   }
 
   /**

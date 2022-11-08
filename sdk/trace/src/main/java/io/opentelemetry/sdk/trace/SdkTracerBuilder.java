@@ -8,40 +8,43 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import javax.annotation.Nullable;
 
 class SdkTracerBuilder implements TracerBuilder {
 
   private final ComponentRegistry<SdkTracer> registry;
-  private final InstrumentationScopeInfoBuilder scopeBuilder;
+  private final String instrumentationScopeName;
+  @Nullable private String instrumentationScopeVersion;
+  @Nullable private String schemaUrl;
+  private Attributes attributes = Attributes.empty();
 
   SdkTracerBuilder(ComponentRegistry<SdkTracer> registry, String instrumentationScopeName) {
     this.registry = registry;
-    this.scopeBuilder = InstrumentationScopeInfo.builder(instrumentationScopeName);
+    this.instrumentationScopeName = instrumentationScopeName;
   }
 
   @Override
   public TracerBuilder setSchemaUrl(String schemaUrl) {
-    scopeBuilder.setSchemaUrl(schemaUrl);
+    this.schemaUrl = schemaUrl;
     return this;
   }
 
   @Override
   public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
-    scopeBuilder.setVersion(instrumentationScopeVersion);
+    this.instrumentationScopeVersion = instrumentationScopeVersion;
     return this;
   }
 
   @Override
   public TracerBuilder setAttributes(Attributes attributes) {
-    scopeBuilder.setAttributes(attributes);
+    this.attributes = attributes;
     return this;
   }
 
   @Override
   public Tracer build() {
-    return registry.get(scopeBuilder.build());
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, attributes);
   }
 }

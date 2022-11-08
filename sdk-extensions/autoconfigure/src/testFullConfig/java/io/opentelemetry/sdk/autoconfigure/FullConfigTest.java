@@ -22,7 +22,6 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
@@ -189,7 +188,6 @@ class FullConfigTest {
     keys.addAll(B3Propagator.injectingMultiHeaders().fields());
     keys.addAll(JaegerPropagator.getInstance().fields());
     keys.addAll(OtTracePropagator.getInstance().fields());
-    keys.addAll(AwsXrayPropagator.getInstance().fields());
     // Added by TestPropagatorProvider
     keys.add("test");
     assertThat(fields).containsExactlyInAnyOrderElementsOf(keys);
