@@ -155,7 +155,6 @@ class SdkLoggerProviderTest {
             sdkLoggerProvider
                 .loggerBuilder("test")
                 .setInstrumentationVersion("version")
-                // Attributes are not part of logger identity
                 .setAttributes(Attributes.builder().put("key", "value").build())
                 .build())
         .isNotSameAs(
@@ -173,21 +172,27 @@ class SdkLoggerProviderTest {
                 .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
-                .setAttributes(Attributes.builder().put("key", "value").build())
+                .setAttributes(Attributes.builder().put("key", "value1").build())
                 .build())
         .isSameAs(
             sdkLoggerProvider
                 .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
-                .setAttributes(Attributes.builder().put("key", "value").build())
+                .setAttributes(Attributes.builder().put("key", "value1").build())
                 .build())
         .isSameAs(
             sdkLoggerProvider
                 .loggerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
-                .setAttributes(Attributes.builder().put("key", "another-value").build())
+                .setAttributes(Attributes.builder().put("key", "value2").build())
+                .build())
+        .isSameAs(
+            sdkLoggerProvider
+                .loggerBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
                 .build());
   }
 

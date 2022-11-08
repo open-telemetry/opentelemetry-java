@@ -159,14 +159,27 @@ class SdkTracerProviderTest {
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
-                .setAttributes(Attributes.builder().put("key", "value").build())
+                .setAttributes(Attributes.builder().put("key", "value1").build())
                 .build())
         .isSameAs(
             tracerFactory
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
-                .setAttributes(Attributes.builder().put("key", "value").build())
+                .setAttributes(Attributes.builder().put("key", "value1").build())
+                .build())
+        .isSameAs(
+            tracerFactory
+                .tracerBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .setAttributes(Attributes.builder().put("key", "value2").build())
+                .build())
+        .isSameAs(
+            tracerFactory
+                .tracerBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
                 .build());
   }
 
