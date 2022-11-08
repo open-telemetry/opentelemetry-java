@@ -318,12 +318,7 @@ class MetricAssertionsTest {
                                         // needing a loose one.
                                         .hasFilteredAttributesSatisfying(
                                             equalTo(BEAR, "mya"),
-                                            equalTo(WARM, true),
-                                            equalTo(TEMPERATURE, 30L),
                                             equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
                                             satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
                                         .hasFilteredAttributesSatisfyingExactly(
                                             equalTo(BEAR, "mya"),
@@ -958,10 +953,4 @@ class MetricAssertionsTest {
                                 point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
         .isInstanceOf(AssertionError.class);
   }
-
-  //  private static <T> AttributeAssertion attributeAssertion(AttributeKey<T> attributeKey, T
-  // value) {
-  //    return AttributeAssertion.create(attributeKey,
-  //        abstractAssert -> abstractAssert.isEqualTo(value));
-  //  }
 }

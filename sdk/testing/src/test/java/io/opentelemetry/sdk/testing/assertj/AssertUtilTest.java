@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class AssertUtilTest {
+class AssertUtilTest {
   private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
   private static final AttributeKey<Long> TEMPERATURE = AttributeKey.longKey("temperature");
   private static final AttributeKey<Double> LENGTH = AttributeKey.doubleKey("length");

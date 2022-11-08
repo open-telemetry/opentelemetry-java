@@ -85,14 +85,14 @@ public final class EventDataAssert extends AbstractAssert<EventDataAssert, Event
     return this;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions}. */
+  /** Asserts the event has attributes matching all {@code assertions}. */
   public EventDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
     return hasAttributesSatisfying(Arrays.asList(assertions));
   }
 
   /**
-   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
-   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public EventDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
@@ -100,15 +100,15 @@ public final class EventDataAssert extends AbstractAssert<EventDataAssert, Event
     return this;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /** Asserts the event has attributes matching all {@code assertions} and no more. */
   public EventDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
   }
 
   /**
-   * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
-   * Assertions can be created using methods like {@link
-   * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   * Asserts the event has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public EventDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributesExactly(actual.getAttributes(), assertions);

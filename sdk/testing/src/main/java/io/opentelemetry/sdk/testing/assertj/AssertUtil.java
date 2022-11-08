@@ -34,6 +34,11 @@ final class AssertUtil {
   }
 
   static void assertAttributes(Attributes actual, Iterable<AttributeAssertion> assertions) {
+    assertAttributes(actual, assertions, "attribute keys");
+  }
+
+  static void assertAttributes(
+      Attributes actual, Iterable<AttributeAssertion> assertions, String name) {
     Set<AttributeKey<?>> actualKeys = actual.asMap().keySet();
     Set<AttributeKey<?>> checkedKeys = new HashSet<>();
     for (AttributeAssertion attributeAssertion : assertions) {
@@ -46,10 +51,15 @@ final class AssertUtil {
       attributeAssertion.getAssertion().accept(assertion);
     }
 
-    assertThat(actualKeys).as("attribute keys").containsAll(checkedKeys);
+    assertThat(actualKeys).as(name).containsAll(checkedKeys);
   }
 
   static void assertAttributesExactly(Attributes actual, Iterable<AttributeAssertion> assertions) {
+    assertAttributesExactly(actual, assertions, "attribute keys");
+  }
+
+  static void assertAttributesExactly(
+      Attributes actual, Iterable<AttributeAssertion> assertions, String name) {
     Set<AttributeKey<?>> actualKeys = actual.asMap().keySet();
     Set<AttributeKey<?>> checkedKeys = new HashSet<>();
     for (AttributeAssertion attributeAssertion : assertions) {
@@ -62,7 +72,7 @@ final class AssertUtil {
       attributeAssertion.getAssertion().accept(assertion);
     }
 
-    assertThat(actualKeys).as("attribute keys").containsExactlyInAnyOrderElementsOf(checkedKeys);
+    assertThat(actualKeys).as(name).containsExactlyInAnyOrderElementsOf(checkedKeys);
   }
 
   /**

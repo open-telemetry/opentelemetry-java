@@ -161,14 +161,14 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return this;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions}. */
+  /** Asserts the log has attributes matching all {@code assertions}. */
   public LogRecordDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
     return hasAttributesSatisfying(Arrays.asList(assertions));
   }
 
   /**
-   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
-   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * Asserts the log has attributes matching all {@code assertions}. Assertions can be created using
+   * methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public LogRecordDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
@@ -176,15 +176,15 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return myself;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /** Asserts the log has attributes matching all {@code assertions} and no more. */
   public LogRecordDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
   }
 
   /**
-   * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
-   * Assertions can be created using methods like {@link
-   * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   * Asserts the log has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public LogRecordDataAssert hasAttributesSatisfyingExactly(
       Iterable<AttributeAssertion> assertions) {
