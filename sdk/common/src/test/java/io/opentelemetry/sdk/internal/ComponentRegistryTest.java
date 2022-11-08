@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import org.junit.jupiter.api.Test;
 
 class ComponentRegistryTest {
@@ -22,83 +21,35 @@ class ComponentRegistryTest {
 
   @Test
   void get_SameInstance() {
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).build()))
-        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
-        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
+    assertThat(registry.get(NAME, null, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, null, Attributes.builder().put("k1", "v2").build()));
+
+    assertThat(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, null, Attributes.builder().put("k1", "v2").build()));
+    assertThat(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
         .isSameAs(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
+            registry.get(NAME, null, SCHEMA_URL, Attributes.builder().put("k1", "v2").build()));
+    assertThat(registry.get(NAME, VERSION, SCHEMA_URL, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, SCHEMA_URL, Attributes.empty()))
         .isSameAs(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()));
-    assertThat(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()))
-        .isSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
+            registry.get(NAME, VERSION, SCHEMA_URL, Attributes.builder().put("k1", "v2").build()));
   }
 
   @Test
   void get_DifferentInstance() {
-    InstrumentationScopeInfo allFields =
-        InstrumentationScopeInfo.builder(NAME)
-            .setVersion(VERSION)
-            .setSchemaUrl(SCHEMA_URL)
-            .setAttributes(ATTRIBUTES)
-            .build();
+    assertThat(registry.get(NAME, VERSION, SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME + "_1", VERSION, SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME, VERSION + "_1", SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME, VERSION, SCHEMA_URL + "_1", ATTRIBUTES));
 
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME + "_1")
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION + "_1")
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL + "_1")
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(Attributes.builder().put("k1", "v2").build())
-                    .build()));
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
+    assertThat(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isNotSameAs(registry.get(NAME, null, null, Attributes.empty()));
+
+    assertThat(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
+        .isNotSameAs(registry.get(NAME, null, null, Attributes.empty()));
   }
 
   private static final class TestComponent {}
