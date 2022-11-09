@@ -40,7 +40,7 @@ public class LogsBenchmarks {
     private final SdkLoggerProvider sdk =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(
-                logRecord -> {
+                (context, logRecord) -> {
                   // Do nothing
                 })
             .build();
