@@ -158,6 +158,8 @@ class TraceAssertionsTest {
             attributeEntry("conditions", false, true),
             attributeEntry("scores", 0L, 1L),
             attributeEntry("coins", 0.01, 0.05, 0.1))
+        .hasAttributesSatisfying(
+            equalTo(BEAR, "mya"), equalTo(WARM, true), equalTo(TEMPERATURE, 30))
         .hasAttributesSatisfyingExactly(
             equalTo(BEAR, "mya"),
             equalTo(WARM, true),
