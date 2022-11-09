@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class MultiLogRecordProcessorTest {
   void empty() {
     LogRecordProcessor multiLogRecordProcessor = LogRecordProcessor.composite();
     assertThat(multiLogRecordProcessor).isInstanceOf(NoopLogRecordProcessor.class);
-    multiLogRecordProcessor.onEmit(logRecord);
+    multiLogRecordProcessor.onEmit(Context.current(), logRecord);
     multiLogRecordProcessor.shutdown();
   }
 
@@ -53,9 +54,10 @@ class MultiLogRecordProcessorTest {
   void twoLogRecordProcessor() {
     LogRecordProcessor multiLogRecordProcessor =
         LogRecordProcessor.composite(logRecordProcessor1, logRecordProcessor2);
-    multiLogRecordProcessor.onEmit(logRecord);
-    verify(logRecordProcessor1).onEmit(same(logRecord));
-    verify(logRecordProcessor2).onEmit(same(logRecord));
+    Context context = Context.current();
+    multiLogRecordProcessor.onEmit(context, logRecord);
+    verify(logRecordProcessor1).onEmit(same(context), same(logRecord));
+    verify(logRecordProcessor2).onEmit(same(context), same(logRecord));
 
     multiLogRecordProcessor.forceFlush();
     verify(logRecordProcessor1).forceFlush();
