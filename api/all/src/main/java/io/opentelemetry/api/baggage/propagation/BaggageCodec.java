@@ -6,10 +6,8 @@
 package io.opentelemetry.api.baggage.propagation;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.BitSet;
 import javax.annotation.Nullable;
 
 /**
@@ -31,30 +29,7 @@ import javax.annotation.Nullable;
 class BaggageCodec {
 
   private static final byte ESCAPE_CHAR = '%';
-
-  private static final BitSet WWW_FORM_URL_SAFE = new BitSet(256);
-
-  // Static initializer for www_form_url
-  static {
-    // alpha characters
-    for (int i = 'a'; i <= 'z'; i++) {
-      WWW_FORM_URL_SAFE.set(i);
-    }
-    for (int i = 'A'; i <= 'Z'; i++) {
-      WWW_FORM_URL_SAFE.set(i);
-    }
-    // numeric characters
-    for (int i = '0'; i <= '9'; i++) {
-      WWW_FORM_URL_SAFE.set(i);
-    }
-    // special chars
-    WWW_FORM_URL_SAFE.set('-');
-    WWW_FORM_URL_SAFE.set('_');
-    WWW_FORM_URL_SAFE.set('.');
-    WWW_FORM_URL_SAFE.set('*');
-    // blank to be replaced with +
-    WWW_FORM_URL_SAFE.set(' ');
-  }
+  private static final int RADIX = 16;
 
   private BaggageCodec() {}
 
@@ -66,7 +41,7 @@ class BaggageCodec {
    * @return array of original bytes
    */
   @Nullable
-  static byte[] decode(@Nullable byte[] bytes) {
+  private static byte[] decode(@Nullable byte[] bytes) {
     if (bytes == null) {
       return null;
     }
@@ -75,11 +50,11 @@ class BaggageCodec {
       int b = bytes[i];
       if (b == ESCAPE_CHAR) {
         try {
-          int u = Utils.digit16(bytes[++i]);
-          int l = Utils.digit16(bytes[++i]);
+          int u = digit16(bytes[++i]);
+          int l = digit16(bytes[++i]);
           buffer.write((char) ((u << 4) + l));
         } catch (ArrayIndexOutOfBoundsException e) {
-          throw new DecoderException("Invalid URL encoding: ", e);
+          throw new IllegalArgumentException("Invalid URL encoding: ", e);
         }
       } else {
         buffer.write(b);
@@ -106,39 +81,18 @@ class BaggageCodec {
     return new String(bytes, charset);
   }
 
-  static class Utils {
-
-    /** Radix used in encoding and decoding. */
-    private static final int RADIX = 16;
-
-    private Utils() {}
-
-    /**
-     * Returns the numeric value of the character {@code b} in radix 16.
-     *
-     * @param b The byte to be converted.
-     * @return The numeric value represented by the character in radix 16.
-     */
-    static int digit16(byte b) {
-      int i = Character.digit((char) b, RADIX);
-      if (i == -1) {
-        throw new DecoderException(
-            "Invalid URL encoding: not a valid digit (radix " + RADIX + "): " + b);
-      }
-      return i;
+  /**
+   * Returns the numeric value of the character {@code b} in radix 16.
+   *
+   * @param b The byte to be converted.
+   * @return The numeric value represented by the character in radix 16.
+   */
+  private static int digit16(byte b) {
+    int i = Character.digit((char) b, RADIX);
+    if (i == -1) {
+      throw new IllegalArgumentException(
+          "Invalid URL encoding: not a valid digit (radix " + RADIX + "): " + b);
     }
-  }
-
-  public static class DecoderException extends RuntimeException implements Serializable {
-
-    private static final long serialVersionUID = 4717632118051490483L;
-
-    public DecoderException(String message, Throwable cause) {
-      super(message, cause);
-    }
-
-    public DecoderException(String message) {
-      super(message);
-    }
+    return i;
   }
 }
