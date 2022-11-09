@@ -72,9 +72,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   }
 
   public OkHttpExporterBuilder<T> setCompression(String compressionMethod) {
-    if (compressionMethod.equals("gzip")) {
-      this.compressionEnabled = true;
-    }
+    this.compressionEnabled = compressionMethod.equals("gzip");
     return this;
   }
 

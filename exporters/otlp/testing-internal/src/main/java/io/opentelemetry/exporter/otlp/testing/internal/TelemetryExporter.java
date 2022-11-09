@@ -20,6 +20,11 @@ public interface TelemetryExporter<T> {
   static TelemetryExporter<SpanData> wrap(SpanExporter exporter) {
     return new TelemetryExporter<SpanData>() {
       @Override
+      public Object unwrap() {
+        return exporter;
+      }
+
+      @Override
       public CompletableResultCode export(Collection<SpanData> items) {
         return exporter.export(items);
       }
@@ -34,6 +39,11 @@ public interface TelemetryExporter<T> {
   /** Wraps a MetricExporter. */
   static TelemetryExporter<MetricData> wrap(MetricExporter exporter) {
     return new TelemetryExporter<MetricData>() {
+      @Override
+      public Object unwrap() {
+        return exporter;
+      }
+
       @Override
       public CompletableResultCode export(Collection<MetricData> items) {
         return exporter.export(items);
@@ -50,6 +60,11 @@ public interface TelemetryExporter<T> {
   static TelemetryExporter<LogRecordData> wrap(LogRecordExporter exporter) {
     return new TelemetryExporter<LogRecordData>() {
       @Override
+      public Object unwrap() {
+        return exporter;
+      }
+
+      @Override
       public CompletableResultCode export(Collection<LogRecordData> items) {
         return exporter.export(items);
       }
@@ -60,6 +75,8 @@ public interface TelemetryExporter<T> {
       }
     };
   }
+
+  Object unwrap();
 
   CompletableResultCode export(Collection<T> items);
 
