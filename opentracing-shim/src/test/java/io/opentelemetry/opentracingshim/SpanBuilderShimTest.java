@@ -168,6 +168,7 @@ class SpanBuilderShimTest {
         SpanData spanData = ((ReadableSpan) childSpan.getSpan()).toSpanData();
         assertThat(spanData.getParentSpanContext())
             .isEqualTo(io.opentelemetry.api.trace.SpanContext.getInvalid());
+        assertThat(spanData.getLinks()).isEmpty();
       } finally {
         childSpan.finish();
       }
