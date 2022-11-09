@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -113,17 +112,6 @@ public class PropagatorContextInjectBenchmark {
     @Override
     protected void doInject(Context context, Map<String, String> carrier) {
       b3Propagator.inject(context, carrier, setter);
-    }
-  }
-
-  /** Benchmark for injecting trace context into AWS X-Ray headers. */
-  public static class AwsXrayPropagatorInjectBenchmark extends AbstractContextInjectBenchmark {
-    private final AwsXrayPropagator xrayPropagator = AwsXrayPropagator.getInstance();
-    private final TextMapSetter<Map<String, String>> setter = Map::put;
-
-    @Override
-    protected void doInject(Context context, Map<String, String> carrier) {
-      xrayPropagator.inject(context, carrier, setter);
     }
   }
 }

@@ -65,6 +65,6 @@ public final class OpenTracingShim {
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {
-    return tracerProvider.get("opentracingshim");
+    return tracerProvider.get("opentracing-shim");
   }
 }

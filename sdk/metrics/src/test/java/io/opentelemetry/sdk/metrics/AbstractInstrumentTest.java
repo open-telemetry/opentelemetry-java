@@ -22,6 +22,13 @@ class AbstractInstrumentTest {
     assertThat(testInstrument.getDescriptor()).isSameAs(INSTRUMENT_DESCRIPTOR);
   }
 
+  @Test
+  void testToString() {
+    TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
+    assertThat(testInstrument)
+        .hasToString("TestInstrument{descriptor=" + INSTRUMENT_DESCRIPTOR + "}");
+  }
+
   private static final class TestInstrument extends AbstractInstrument {
     TestInstrument(InstrumentDescriptor descriptor) {
       super(descriptor);
