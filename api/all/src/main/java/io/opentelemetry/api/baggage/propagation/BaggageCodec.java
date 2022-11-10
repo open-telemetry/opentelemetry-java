@@ -8,7 +8,6 @@ package io.opentelemetry.api.baggage.propagation;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
 
 /**
  * Note: This class is based on code from Apache Commons Codec. It is comprised of code from these
@@ -40,11 +39,7 @@ class BaggageCodec {
    * @param bytes array of URL safe characters
    * @return array of original bytes
    */
-  @Nullable
-  private static byte[] decode(@Nullable byte[] bytes) {
-    if (bytes == null) {
-      return null;
-    }
+  private static byte[] decode(byte[] bytes) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     for (int i = 0; i < bytes.length; i++) {
       int b = bytes[i];
@@ -53,7 +48,7 @@ class BaggageCodec {
           int u = digit16(bytes[++i]);
           int l = digit16(bytes[++i]);
           buffer.write((char) ((u << 4) + l));
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) { // FIXME
           throw new IllegalArgumentException("Invalid URL encoding: ", e);
         }
       } else {
@@ -71,12 +66,7 @@ class BaggageCodec {
    * @param charset encoding of given string
    * @return decoded value
    */
-  @Nullable
-  static String decode(@Nullable String value, Charset charset) {
-    if (value == null) {
-      return null;
-    }
-
+  static String decode(String value, Charset charset) {
     byte[] bytes = decode(value.getBytes(StandardCharsets.US_ASCII));
     return new String(bytes, charset);
   }
@@ -90,7 +80,7 @@ class BaggageCodec {
   private static int digit16(byte b) {
     int i = Character.digit((char) b, RADIX);
     if (i == -1) {
-      throw new IllegalArgumentException(
+      throw new IllegalArgumentException( // FIXME
           "Invalid URL encoding: not a valid digit (radix " + RADIX + "): " + b);
     }
     return i;
