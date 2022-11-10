@@ -6,6 +6,9 @@
 package io.opentelemetry.exporter.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_PEER_PORT;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_SOCK_PEER_ADDR;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.PEER_SERVICE;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -72,8 +75,6 @@ final class OtelToZipkinSpanTransformer {
    * @return a new Zipkin Span
    */
   Span generateSpan(SpanData spanData) {
-    Endpoint endpoint = getEndpoint(spanData);
-
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
 
@@ -85,7 +86,8 @@ final class OtelToZipkinSpanTransformer {
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
             .duration(Math.max(1, endTimestamp - startTimestamp))
-            .localEndpoint(endpoint);
+            .localEndpoint(getLocalEndpoint(spanData))
+            .remoteEndpoint(getRemoteEndpoint(spanData));
 
     if (spanData.getParentSpanContext().isValid()) {
       spanBuilder.parentId(spanData.getParentSpanId());
@@ -140,7 +142,7 @@ final class OtelToZipkinSpanTransformer {
     return value != null ? value : "";
   }
 
-  private Endpoint getEndpoint(SpanData spanData) {
+  private Endpoint getLocalEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     Endpoint.Builder endpoint = Endpoint.newBuilder();
@@ -155,6 +157,22 @@ final class OtelToZipkinSpanTransformer {
     if (serviceNameValue != null) {
       endpoint.serviceName(serviceNameValue);
     }
+    return endpoint.build();
+  }
+
+  private static Endpoint getRemoteEndpoint(SpanData spanData) {
+    // TODO: Implement fallback mechanism:
+    // https://opentelemetry.io/docs/reference/specification/trace/sdk_exporters/zipkin/#otlp---zipkin
+    Attributes attributes = spanData.getAttributes();
+
+    Endpoint.Builder endpoint = Endpoint.newBuilder();
+    endpoint.serviceName(attributes.get(PEER_SERVICE));
+    endpoint.ip(attributes.get(NET_SOCK_PEER_ADDR));
+    Long port = attributes.get(NET_PEER_PORT);
+    if (port != null) {
+      endpoint.port(port.intValue());
+    }
+
     return endpoint.build();
   }
 
