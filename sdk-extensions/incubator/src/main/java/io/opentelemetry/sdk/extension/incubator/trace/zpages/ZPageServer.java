@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.zpages;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -74,15 +75,13 @@ public final class ZPageServer {
   // Length of time to wait for the HttpServer to stop
   private static final int HTTPSERVER_STOP_DELAY = 1;
   // Tracez SpanProcessor and DataAggregator for constructing TracezZPageHandler
-  private final TracezSpanProcessor tracezSpanProcessor =
-      TracezSpanProcessor.builder().build();
+  private final TracezSpanProcessor tracezSpanProcessor = TracezSpanProcessor.builder().build();
   private final TracezTraceConfigSupplier tracezTraceConfigSupplier =
       new TracezTraceConfigSupplier();
   private final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
   // Handler for /tracez page
-  private final ZPageHandler tracezZPageHandler =
-      new TracezZPageHandler(tracezDataAggregator);
+  private final ZPageHandler tracezZPageHandler = new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
   private final ZPageHandler traceConfigzZPageHandler =
       new TraceConfigzZPageHandler(tracezTraceConfigSupplier);
@@ -96,8 +95,7 @@ public final class ZPageServer {
   @Nullable
   private HttpServer server;
 
-  private ZPageServer() {
-  }
+  private ZPageServer() {}
 
   public static ZPageServer create() {
     return new ZPageServer();
@@ -188,6 +186,20 @@ public final class ZPageServer {
       server.stop(HTTPSERVER_STOP_DELAY);
       server = null;
     }
+  }
+
+  /**
+   * Convenience method to return a new SdkTracerProvider that has been configured with our ZPage
+   * specific span processor, sampler, and limits.
+   *
+   * @return new SdkTracerProvider
+   */
+  public SdkTracerProvider buildSdkTracerProvider() {
+    return SdkTracerProvider.builder()
+        .addSpanProcessor(getSpanProcessor())
+        .setSpanLimits(getTracezTraceConfigSupplier())
+        .setSampler(getTracezSampler())
+        .build();
   }
 
   /**
