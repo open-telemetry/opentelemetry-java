@@ -5,7 +5,6 @@
 
 package io.opentelemetry.extension.aws;
 
-import static io.opentelemetry.extension.aws.AwsXrayPropagator.TRACE_HEADER_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.baggage.Baggage;
@@ -24,6 +23,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Moved to contrib
 class AwsXrayPropagatorTest {
 
   private static final String TRACE_ID = "8a3c60f7d188f8fa79d48a391a778fa6";
@@ -57,7 +57,7 @@ class AwsXrayPropagatorTest {
 
     assertThat(carrier)
         .containsEntry(
-            TRACE_HEADER_KEY,
+            AwsXrayPropagator.TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1");
   }
 
@@ -73,7 +73,7 @@ class AwsXrayPropagatorTest {
 
     assertThat(carrier)
         .containsEntry(
-            TRACE_HEADER_KEY,
+            AwsXrayPropagator.TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
   }
 
@@ -98,7 +98,7 @@ class AwsXrayPropagatorTest {
 
     assertThat(carrier)
         .containsEntry(
-            TRACE_HEADER_KEY,
+            AwsXrayPropagator.TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0;"
                 + "cat=meow;dog=bark");
   }
@@ -127,7 +127,7 @@ class AwsXrayPropagatorTest {
 
     assertThat(carrier)
         .containsEntry(
-            TRACE_HEADER_KEY,
+            AwsXrayPropagator.TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0;"
                 + key1
                 + '='
@@ -152,7 +152,7 @@ class AwsXrayPropagatorTest {
     // mapping with baggage.
     assertThat(carrier)
         .containsEntry(
-            TRACE_HEADER_KEY,
+            AwsXrayPropagator.TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
   }
 
@@ -187,7 +187,7 @@ class AwsXrayPropagatorTest {
   void extract_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -200,7 +200,7 @@ class AwsXrayPropagatorTest {
   void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -213,7 +213,7 @@ class AwsXrayPropagatorTest {
   void extract_DifferentPartOrder() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Parent=53995c3f42cd8ad8;Sampled=1;Root=1-8a3c60f7-d188f8fa79d48a391a778fa6");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -226,7 +226,7 @@ class AwsXrayPropagatorTest {
   void extract_AdditionalFields() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
     Context context = xrayPropagator.extract(Context.current(), carrier, getter);
@@ -249,7 +249,7 @@ class AwsXrayPropagatorTest {
 
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;"
             + key1
             + '='
@@ -271,7 +271,7 @@ class AwsXrayPropagatorTest {
   @Test
   void extract_EmptyHeaderValue() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(TRACE_HEADER_KEY, "");
+    invalidHeaders.put(AwsXrayPropagator.TRACE_HEADER_KEY, "");
 
     verifyInvalidBehavior(invalidHeaders);
   }
@@ -280,7 +280,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=abcdefghijklmnopabcdefghijklmnop;Parent=53995c3f42cd8ad8;Sampled=0");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -290,7 +290,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa600;Parent=53995c3f42cd8ad8;Sampled=0");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -300,7 +300,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidSpanId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=abcdefghijklmnop;Sampled=0");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -310,7 +310,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidSpanId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad800;Sampled=0");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -320,7 +320,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidFlags() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -330,7 +330,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidFlags_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=10220");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -340,7 +340,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidFlags_NonNumeric() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=a");
 
     verifyInvalidBehavior(invalidHeaders);
@@ -349,7 +349,8 @@ class AwsXrayPropagatorTest {
   @Test
   void extract_Invalid_NoSpanId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>(1);
-    invalidHeaders.put(TRACE_HEADER_KEY, "Root=1-622422bf-59625fe25708d4660735d8ef");
+    invalidHeaders.put(
+        AwsXrayPropagator.TRACE_HEADER_KEY, "Root=1-622422bf-59625fe25708d4660735d8ef");
 
     verifyInvalidBehavior(invalidHeaders);
   }
@@ -380,7 +381,7 @@ class AwsXrayPropagatorTest {
   void extract_EpochPart_ZeroedSingleDigit() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-0-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -396,7 +397,7 @@ class AwsXrayPropagatorTest {
   void extract_EpochPart_TwoChars() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-1a-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -412,7 +413,7 @@ class AwsXrayPropagatorTest {
   void extract_EpochPart_Zeroed() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-00000000-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
@@ -428,7 +429,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId_EpochPart_TooLong() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=1-8a3c60f711-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
@@ -439,7 +440,8 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId_EpochPart_Empty() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY, "Root=1--d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+        AwsXrayPropagator.TRACE_HEADER_KEY,
+        "Root=1--d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -449,7 +451,8 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId_EpochPart_Missing() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        TRACE_HEADER_KEY, "Root=1-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+        AwsXrayPropagator.TRACE_HEADER_KEY,
+        "Root=1-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -459,7 +462,7 @@ class AwsXrayPropagatorTest {
   void extract_InvalidTraceId_WrongVersion() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        TRACE_HEADER_KEY,
+        AwsXrayPropagator.TRACE_HEADER_KEY,
         "Root=2-1a2a3a4a-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))

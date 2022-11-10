@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -20,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class ResourceConfigurationTest {
 
   @Test
-  void resource() {
+  void configureResource() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(Collections.emptyMap()),
@@ -28,20 +27,12 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
-    assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();
-
-    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNotNull();
-
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_VERSION)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION)).isNotNull();
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isNotNull();
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNotNull();
   }
 
   @Test
-  void emptyClassLoader() {
+  void configureResource_EmptyClassLoader() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(Collections.emptyMap()),
@@ -49,15 +40,16 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
-    assertProcessAttributeIsNull(attributes);
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isNull();
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
   }
 
   @Test
-  void onlyEnabledCustomResourceProvider() {
+  void configureResource_OnlyEnabled() {
     Map<String, String> customConfigs = new HashMap<>(1);
     customConfigs.put(
         "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer");
+        "io.opentelemetry.sdk.autoconfigure.TestAnimalResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(customConfigs),
@@ -65,19 +57,19 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
-    assertProcessAttributeIsNull(attributes);
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
   }
 
   @Test
-  void settingEnabledAndDisabledConfiguration() {
+  void configureResource_EnabledAndDisabled() {
     Map<String, String> customConfigs = new HashMap<>(2);
     customConfigs.put(
         "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer,io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider");
+        "io.opentelemetry.sdk.autoconfigure.TestAnimalResourceProvider");
     customConfigs.put(
         "otel.java.disabled.resource.providers",
-        "io.opentelemetry.sdk.extension.resources.OsResourceProvider");
+        "io.opentelemetry.sdk.extension.resources.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(customConfigs),
@@ -85,22 +77,16 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
-    assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
-
-    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNotNull();
-
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
   }
 
   @Test
-  void onlySettingEnabledConfiguration() {
+  void configureResource_OnlyDisabled() {
     Map<String, String> customConfigs = new HashMap<>(1);
     customConfigs.put(
-        "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.ResourceProviderCustomizer");
+        "otel.java.disabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.get(customConfigs),
@@ -108,20 +94,7 @@ class ResourceConfigurationTest {
                 (r, c) -> r)
             .getAttributes();
 
-    assertProcessAttributeIsNull(attributes);
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
-  }
-
-  void assertProcessAttributeIsNull(Attributes attributes) {
-    assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNull();
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNull();
-
-    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).isNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE)).isNull();
-
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_VERSION)).isNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION)).isNull();
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
   }
 }

@@ -76,7 +76,6 @@ testing {
     }
     val testFullConfig by registering(JvmTestSuite::class) {
       dependencies {
-        implementation(project(":extensions:aws"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
@@ -85,7 +84,6 @@ testing {
         implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
-        implementation(project(":sdk-extensions:resources"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":semconv"))
@@ -102,7 +100,7 @@ testing {
           testTask {
             environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-            environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
+            environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
             environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
@@ -173,38 +171,6 @@ testing {
             environment("OTEL_TRACES_EXPORTER", "none")
             environment("OTEL_METRICS_EXPORTER", "prometheus")
             environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
-          }
-        }
-      }
-    }
-    val testResourceDisabledByProperty by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":sdk-extensions:resources"))
-      }
-
-      targets {
-        all {
-          testTask {
-            jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
-            // Properties win, this is ignored.
-            environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
-            environment("OTEL_TRACES_EXPORTER", "none")
-            environment("OTEL_METRICS_EXPORTER", "none")
-          }
-        }
-      }
-    }
-    val testResourceDisabledByEnv by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":sdk-extensions:resources"))
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
-            environment("OTEL_TRACES_EXPORTER", "none")
-            environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
       }

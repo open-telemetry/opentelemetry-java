@@ -17,6 +17,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 class RateLimitingSamplerTest {
@@ -62,8 +63,14 @@ class RateLimitingSamplerTest {
   }
 
   @Test
-  void description() {
+  void descriptionShouldBeLocaleIndependent() {
     RateLimitingSampler sampler = new RateLimitingSampler(15);
+
+    // PL locale uses ',' as decimal separator
+    Locale.setDefault(Locale.forLanguageTag("PL"));
+    assertThat(sampler.getDescription()).isEqualTo("RateLimitingSampler{15.00}");
+
+    Locale.setDefault(Locale.ENGLISH);
     assertThat(sampler.getDescription()).isEqualTo("RateLimitingSampler{15.00}");
   }
 }

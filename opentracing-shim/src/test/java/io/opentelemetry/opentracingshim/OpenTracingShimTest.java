@@ -28,7 +28,7 @@ class OpenTracingShimTest {
   @Test
   void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim();
-    assertThat(tracerShim.tracer()).isEqualTo(GlobalOpenTelemetry.getTracer("opentracingshim"));
+    assertThat(tracerShim.tracer()).isEqualTo(GlobalOpenTelemetry.getTracer("opentracing-shim"));
   }
 
   @Test
@@ -41,7 +41,7 @@ class OpenTracingShimTest {
     when(openTelemetry.getPropagators()).thenReturn(contextPropagators);
 
     TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim(openTelemetry);
-    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracingshim"));
+    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracing-shim"));
   }
 
   @Test

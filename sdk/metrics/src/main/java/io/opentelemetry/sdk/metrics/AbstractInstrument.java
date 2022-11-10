@@ -39,4 +39,9 @@ abstract class AbstractInstrument {
   public int hashCode() {
     return descriptor.hashCode();
   }
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + "{" + "descriptor=" + getDescriptor() + '}';
+  }
 }

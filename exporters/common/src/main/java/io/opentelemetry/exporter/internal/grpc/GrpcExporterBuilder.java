@@ -98,7 +98,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setCompression(String compressionMethod) {
-    this.compressionEnabled = true;
+    this.compressionEnabled = compressionMethod.equals("gzip");
     return this;
   }
 

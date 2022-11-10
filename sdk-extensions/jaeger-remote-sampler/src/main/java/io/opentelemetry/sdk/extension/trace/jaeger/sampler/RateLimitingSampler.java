@@ -18,6 +18,8 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 
 /**
@@ -29,10 +31,10 @@ class RateLimitingSampler implements Sampler {
   static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
   static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
 
-  private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
   private final SamplingResult onSamplingResult;
   private final SamplingResult offSamplingResult;
+  private final String description;
 
   /**
    * Creates rate limiting sampler.
@@ -40,13 +42,13 @@ class RateLimitingSampler implements Sampler {
    * @param maxTracesPerSecond the maximum number of sampled traces per second.
    */
   RateLimitingSampler(int maxTracesPerSecond) {
-    this.maxTracesPerSecond = maxTracesPerSecond;
     double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, Clock.getDefault());
     Attributes attributes =
         Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
     this.onSamplingResult = SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attributes);
     this.offSamplingResult = SamplingResult.create(SamplingDecision.DROP, attributes);
+    description = "RateLimitingSampler{" + decimalFormat(maxTracesPerSecond) + "}";
   }
 
   @Override
@@ -62,11 +64,19 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return String.format("RateLimitingSampler{%.2f}", maxTracesPerSecond);
+    return description;
   }
 
   @Override
   public String toString() {
     return getDescription();
+  }
+
+  private static String decimalFormat(double value) {
+    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+    decimalFormatSymbols.setDecimalSeparator('.');
+
+    DecimalFormat decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
+    return decimalFormat.format(value);
   }
 }
