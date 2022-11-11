@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
-  private static final String TYPE = "Remote";
+  private static final String TYPE = "jaeger_remote";
   private static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
   private static final AttributeKey<String> SAMPLER_PARAM = stringKey("sampler.description");
   private static final String WORKER_THREAD_NAME =
@@ -109,22 +109,28 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       return Sampler.parentBased(
           new PerOperationSampler(defaultSampler, operationSampling.strategies));
     }
-    Sampler rootSampler;
+
     switch (response.strategyType) {
       case PROBABILISTIC:
-        rootSampler =
+        Sampler probablisticSampler =
             Sampler.traceIdRatioBased(response.probabilisticSamplingStrategy.samplingRate);
         resultAttributes =
             Attributes.of(
-                SAMPLER_TYPE, TYPE, SAMPLER_PARAM, "level=service;" + rootSampler.getDescription());
-        return Sampler.parentBased(rootSampler);
+                SAMPLER_TYPE,
+                TYPE,
+                SAMPLER_PARAM,
+                "level=service;" + probablisticSampler.getDescription());
+        return Sampler.parentBased(probablisticSampler);
       case RATE_LIMITING:
-        rootSampler =
+        Sampler rateLimitingSampler =
             new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond);
         resultAttributes =
             Attributes.of(
-                SAMPLER_TYPE, TYPE, SAMPLER_PARAM, "level=service;" + rootSampler.getDescription());
-        return Sampler.parentBased(rootSampler);
+                SAMPLER_TYPE,
+                TYPE,
+                SAMPLER_PARAM,
+                "level=service;" + rateLimitingSampler.getDescription());
+        return Sampler.parentBased(rateLimitingSampler);
       case UNRECOGNIZED:
         throw new AssertionError("unrecognized sampler type");
     }

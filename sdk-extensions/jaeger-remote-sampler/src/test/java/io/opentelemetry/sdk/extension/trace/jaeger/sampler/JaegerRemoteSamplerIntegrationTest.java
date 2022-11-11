@@ -63,7 +63,7 @@ class JaegerRemoteSamplerIntegrationTest {
               SamplingDecision.DROP,
               Attributes.of(
                   AttributeKey.stringKey("sampler.type"),
-                  "Remote",
+                  "jaeger_remote",
                   AttributeKey.stringKey("sampler.description"),
                   "level=operation;TraceIdRatioBased{0.330000}"));
       assertThat(
@@ -128,7 +128,7 @@ class JaegerRemoteSamplerIntegrationTest {
               SamplingDecision.RECORD_AND_SAMPLE,
               Attributes.of(
                   AttributeKey.stringKey("sampler.type"),
-                  "Remote",
+                  "jaeger_remote",
                   AttributeKey.stringKey("sampler.description"),
                   "level=service;TraceIdRatioBased{0.800000}"));
       assertThat(

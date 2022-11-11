@@ -22,7 +22,7 @@ import java.util.Map;
 /** {@link PerOperationSampler} samples spans per operation. */
 class PerOperationSampler implements Sampler {
 
-  static final String TYPE = "Remote";
+  static final String TYPE = "jaeger_remote";
   static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
   static final AttributeKey<String> SAMPLER_PARAM = stringKey("sampler.description");
 
