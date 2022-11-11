@@ -31,9 +31,7 @@ class EventDataToAnnotationTest {
         "\"cat\":{\"v1\":\"v1\",\"v2\":12,\"v3\":123.45,\"v4\":false,\"v5\":[\"foo\",\"bar\",\"baz\"],\"v6\":[1,2,3],\"v7\":[1.23,3.45],\"v8\":[true,false,true]}";
     EventData eventData = EventData.create(0, "cat", attrs);
 
-    EventDataToAnnotation converter = new EventDataToAnnotation();
-
-    String result = converter.apply(eventData);
+    String result = EventDataToAnnotation.apply(eventData);
 
     assertThat(result).isEqualTo(expected);
   }
@@ -44,9 +42,7 @@ class EventDataToAnnotationTest {
     String expected = "\"dog\":{}";
     EventData eventData = EventData.create(0, "dog", attrs);
 
-    EventDataToAnnotation converter = new EventDataToAnnotation();
-
-    String result = converter.apply(eventData);
+    String result = EventDataToAnnotation.apply(eventData);
 
     assertThat(result).isEqualTo(expected);
   }
