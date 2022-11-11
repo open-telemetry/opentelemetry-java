@@ -97,7 +97,7 @@ val DEPENDENCIES = listOf(
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.22",
   "org.jctools:jctools-core:4.0.1",
-  "org.junit-pioneer:junit-pioneer:1.7.2",
+  "org.junit-pioneer:junit-pioneer:1.8.0",
   "org.skyscreamer:jsonassert:1.5.1",
 )
 
