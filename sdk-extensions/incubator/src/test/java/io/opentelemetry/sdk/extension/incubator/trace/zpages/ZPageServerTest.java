@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.zpages;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import org.junit.jupiter.api.Test;
 
 class ZPageServerTest {
@@ -27,5 +29,16 @@ class ZPageServerTest {
   void testSampler() {
     ZPageServer server = ZPageServer.create();
     assertThat(server.getTracezSampler()).isInstanceOf(TracezTraceConfigSupplier.class);
+  }
+
+  @Test
+  void buildTracerProvider() {
+    ZPageServer server = ZPageServer.create();
+    SpanLimits expectedLimits = server.getTracezTraceConfigSupplier().get();
+
+    try (SdkTracerProvider provider = server.buildSdkTracerProvider()) {
+      assertThat(provider.getSpanLimits()).isEqualTo(expectedLimits);
+      assertThat(provider.getSampler()).isSameAs(server.getTracezSampler());
+    }
   }
 }

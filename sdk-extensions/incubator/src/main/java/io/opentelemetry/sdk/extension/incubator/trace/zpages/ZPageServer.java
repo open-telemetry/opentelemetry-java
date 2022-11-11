@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.zpages;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -195,7 +196,17 @@ public final class ZPageServer {
    * @return new SdkTracerProvider
    */
   public SdkTracerProvider buildSdkTracerProvider() {
-    return SdkTracerProvider.builder()
+    return buildSdkTracerProvider(SdkTracerProvider.builder());
+  }
+
+  /**
+   * Convenience method to return a new SdkTracerProvider that has been configured with our ZPage
+   * specific span processor, sampler, and limits.
+   *
+   * @return new SdkTracerProvider
+   */
+  public SdkTracerProvider buildSdkTracerProvider(SdkTracerProviderBuilder builder) {
+    return builder
         .addSpanProcessor(getSpanProcessor())
         .setSpanLimits(getTracezTraceConfigSupplier())
         .setSampler(getTracezSampler())
