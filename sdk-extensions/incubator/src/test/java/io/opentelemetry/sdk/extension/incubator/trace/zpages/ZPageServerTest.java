@@ -13,20 +13,19 @@ class ZPageServerTest {
 
   @Test
   void spanProcessor() {
-    ZPageServer zPageServer = ZPageServer.create();
-    assertThat(zPageServer.getSpanProcessor()).isInstanceOf(TracezSpanProcessor.class);
+    ZPageServer server = ZPageServer.create();
+    assertThat(server.getSpanProcessor()).isInstanceOf(TracezSpanProcessor.class);
   }
 
   @Test
   void traceConfigSupplier() {
-    ZPageServer zPageServer = ZPageServer.create();
-    assertThat(zPageServer.getTracezTraceConfigSupplier())
-        .isInstanceOf(TracezTraceConfigSupplier.class);
+    ZPageServer server = ZPageServer.create();
+    assertThat(server.getTracezTraceConfigSupplier()).isInstanceOf(TracezTraceConfigSupplier.class);
   }
 
   @Test
   void testSampler() {
-    ZPageServer zPageServer = ZPageServer.create();
-    assertThat(zPageServer.getTracezSampler()).isInstanceOf(TracezTraceConfigSupplier.class);
+    ZPageServer server = ZPageServer.create();
+    assertThat(server.getTracezSampler()).isInstanceOf(TracezTraceConfigSupplier.class);
   }
 }
