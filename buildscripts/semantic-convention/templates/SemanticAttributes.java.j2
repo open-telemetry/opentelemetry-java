@@ -71,12 +71,12 @@ public final class {{class}} {
   * <p>Notes:
     <ul> {{attribute.note | render_markdown(code="{{@code {0}}}", paragraph="<li>{0}</li>", list="{0}")}} </ul>
     {%- endif %}
-    {%- if attribute.deprecated %}
+    {%- if (attribute.stability | string())  == "StabilityLevel.DEPRECATED" %}
   *
-  * @deprecated {{attribute.deprecated | to_doc_brief}}.
+  * @deprecated {{attribute.brief | to_doc_brief}}.
     {%- endif %}
   */
-    {%- if attribute.deprecated %}
+    {%- if (attribute.stability | string()) == "StabilityLevel.DEPRECATED"  %}
   @Deprecated
     {%- endif %}
   public static final AttributeKey<{{upFirst(to_java_return_type(attribute.attr_type | string))}}> {{attribute.fqn | to_const_name}} = {{to_java_key_type(attribute.attr_type | string)}}("{{attribute.fqn}}");
@@ -177,6 +177,13 @@ public final class {{class}} {
    */
   @Deprecated
   public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+
+  /**
+   * The ordinal number of request re-sending attempt.
+   * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use {@link SemanticAttributes#HTTP_RESEND_COUNT} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
 
   {% endif %}
 

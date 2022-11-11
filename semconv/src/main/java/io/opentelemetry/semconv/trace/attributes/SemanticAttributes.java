@@ -53,101 +53,26 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> EVENT_DOMAIN = stringKey("event.domain");
 
-  /**
-   * The Amazon Resource Name (ARN) of an <a
-   * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_instances.html">ECS
-   * container instance</a>.
-   */
-  public static final AttributeKey<String> AWS_ECS_CONTAINER_ARN =
-      stringKey("aws.ecs.container.arn");
-
-  /**
-   * The ARN of an <a
-   * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html">ECS
-   * cluster</a>.
-   */
-  public static final AttributeKey<String> AWS_ECS_CLUSTER_ARN = stringKey("aws.ecs.cluster.arn");
-
-  /**
-   * The <a
-   * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html">launch
-   * type</a> for an ECS task.
-   */
-  public static final AttributeKey<String> AWS_ECS_LAUNCHTYPE = stringKey("aws.ecs.launchtype");
-
-  /**
-   * The ARN of an <a
-   * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS
-   * task definition</a>.
-   */
-  public static final AttributeKey<String> AWS_ECS_TASK_ARN = stringKey("aws.ecs.task.arn");
-
-  /** The task definition family this task definition is a member of. */
-  public static final AttributeKey<String> AWS_ECS_TASK_FAMILY = stringKey("aws.ecs.task.family");
-
-  /** The revision for this task definition. */
-  public static final AttributeKey<String> AWS_ECS_TASK_REVISION =
-      stringKey("aws.ecs.task.revision");
-
-  /** The ARN of an EKS cluster. */
-  public static final AttributeKey<String> AWS_EKS_CLUSTER_ARN = stringKey("aws.eks.cluster.arn");
-
-  /**
-   * The name(s) of the AWS log group(s) an application is writing to.
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>Multiple log groups must be supported for cases like multi-container applications, where
-   *       a single application has sidecar containers, and each write to their own log group.
-   * </ul>
-   */
-  public static final AttributeKey<List<String>> AWS_LOG_GROUP_NAMES =
-      stringArrayKey("aws.log.group.names");
-
-  /**
-   * The Amazon Resource Name(s) (ARN) of the AWS log group(s).
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>See the <a
-   *       href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
-   *       group ARN format documentation</a>.
-   * </ul>
-   */
-  public static final AttributeKey<List<String>> AWS_LOG_GROUP_ARNS =
-      stringArrayKey("aws.log.group.arns");
-
-  /** The name(s) of the AWS log stream(s) an application is writing to. */
-  public static final AttributeKey<List<String>> AWS_LOG_STREAM_NAMES =
-      stringArrayKey("aws.log.stream.names");
-
-  /**
-   * The ARN(s) of the AWS log stream(s).
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>See the <a
-   *       href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
-   *       stream ARN format documentation</a>. One log group can contain several log streams, so
-   *       these ARNs necessarily identify both a log group and a log stream.
-   * </ul>
-   */
-  public static final AttributeKey<List<String>> AWS_LOG_STREAM_ARNS =
-      stringArrayKey("aws.log.stream.arns");
-
   /** The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP). */
   public static final AttributeKey<String> OTEL_SCOPE_NAME = stringKey("otel.scope.name");
 
   /** The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP). */
   public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
 
-  /** Deprecated, use the {@code otel.scope.name} attribute. */
+  /**
+   * Deprecated, use the {@code otel.scope.name} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.name` attribute.
+   */
+  @Deprecated
   public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
 
-  /** Deprecated, use the {@code otel.scope.version} attribute. */
+  /**
+   * Deprecated, use the {@code otel.scope.version} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.version` attribute.
+   */
+  @Deprecated
   public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
 
   /**
@@ -1113,15 +1038,6 @@ public final class SemanticAttributes {
     private EventDomainValues() {}
   }
 
-  public static final class AwsEcsLaunchtypeValues {
-    /** ec2. */
-    public static final String EC2 = "ec2";
-    /** fargate. */
-    public static final String FARGATE = "fargate";
-
-    private AwsEcsLaunchtypeValues() {}
-  }
-
   public static final class OpentracingRefTypeValues {
     /** The parent Span depends on the child Span in some capacity. */
     public static final String CHILD_OF = "child_of";
@@ -1608,6 +1524,14 @@ public final class SemanticAttributes {
    *     {@link SemanticAttributes#NET_SOCK_HOST_ADDR} instead.
    */
   @Deprecated public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+
+  /**
+   * The ordinal number of request re-sending attempt.
+   *
+   * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#HTTP_RESEND_COUNT} instead.
+   */
+  @Deprecated public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
 
   private SemanticAttributes() {}
 }
