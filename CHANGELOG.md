@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.20.0 (2022-11-11)
+
 ### API
 
 - Fix bug in `W3CBaggagePropagator` that caused `+` characters to be decoded as whitespace ` `.
