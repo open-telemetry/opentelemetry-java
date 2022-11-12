@@ -16,9 +16,64 @@ import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
+@SuppressWarnings("unused")
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.13.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.15.0";
+
+  /**
+   * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
+   * the exception should be preferred over the static type in languages that support it.
+   */
+  public static final AttributeKey<String> EXCEPTION_TYPE = stringKey("exception.type");
+
+  /** The exception message. */
+  public static final AttributeKey<String> EXCEPTION_MESSAGE = stringKey("exception.message");
+
+  /**
+   * A stacktrace as a string in the natural representation for the language runtime. The
+   * representation is to be determined and documented by each language SIG.
+   */
+  public static final AttributeKey<String> EXCEPTION_STACKTRACE = stringKey("exception.stacktrace");
+
+  /** The name identifies the event. */
+  public static final AttributeKey<String> EVENT_NAME = stringKey("event.name");
+
+  /**
+   * The domain identifies the context in which an event happened. An event name is unique only
+   * within a domain.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>An {@code event.name} is supposed to be unique only in the context of an {@code
+   *       event.domain}, so this allows for two events in different domains to have same {@code
+   *       event.name}, yet be unrelated events.
+   * </ul>
+   */
+  public static final AttributeKey<String> EVENT_DOMAIN = stringKey("event.domain");
+
+  /** The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP). */
+  public static final AttributeKey<String> OTEL_SCOPE_NAME = stringKey("otel.scope.name");
+
+  /** The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP). */
+  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
+
+  /**
+   * Deprecated, use the {@code otel.scope.name} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.name` attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
+
+  /**
+   * Deprecated, use the {@code otel.scope.version} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.version` attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -237,42 +292,14 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> DB_SQL_TABLE = stringKey("db.sql.table");
 
   /**
-   * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
-   * the exception should be preferred over the static type in languages that support it.
+   * Name of the code, either &quot;OK&quot; or &quot;ERROR&quot;. MUST NOT be set if the status
+   * code is UNSET.
    */
-  public static final AttributeKey<String> EXCEPTION_TYPE = stringKey("exception.type");
+  public static final AttributeKey<String> OTEL_STATUS_CODE = stringKey("otel.status_code");
 
-  /** The exception message. */
-  public static final AttributeKey<String> EXCEPTION_MESSAGE = stringKey("exception.message");
-
-  /**
-   * A stacktrace as a string in the natural representation for the language runtime. The
-   * representation is to be determined and documented by each language SIG.
-   */
-  public static final AttributeKey<String> EXCEPTION_STACKTRACE = stringKey("exception.stacktrace");
-
-  /**
-   * SHOULD be set to true if the exception event is recorded at a point where it is known that the
-   * exception is escaping the scope of the span.
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>An exception is considered to have escaped (or left) the scope of a span, if that span is
-   *       ended while the exception is still logically &quot;in flight&quot;. This may be actually
-   *       &quot;in flight&quot; in some languages (e.g. if the exception is passed to a Context
-   *       manager's {@code __exit__} method in Python) but will usually be caught at the point of
-   *       recording the exception in most languages.
-   *   <li>It is usually not possible to determine at the point where an exception is thrown whether
-   *       it will escape the scope of a span. However, it is trivial to know that an exception will
-   *       escape, if one checks for an active exception just before ending the span, as done in the
-   *       <a href="#recording-an-exception">example above</a>.
-   *   <li>It follows that an exception may still escape the scope of the span even if the {@code
-   *       exception.escaped} attribute was not set or set to false, since the event might have been
-   *       recorded at a time where it was not clear whether the exception will escape.
-   * </ul>
-   */
-  public static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
+  /** Description of the Status if it has a value, otherwise not set. */
+  public static final AttributeKey<String> OTEL_STATUS_DESCRIPTION =
+      stringKey("otel.status_description");
 
   /**
    * Type of the trigger which caused this function execution.
@@ -579,8 +606,18 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> HTTP_URL = stringKey("http.url");
 
-  /** The ordinal number of request re-sending attempt. */
-  public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
+  /**
+   * The ordinal number of request resending attempt (for any reason, including redirects).
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The resend count SHOULD be updated each time an HTTP request gets resent by the client,
+   *       regardless of what was the cause of the resending (e.g. redirection, authorization
+   *       failure, 503 Server Unavailable, network issues, or any other).
+   * </ul>
+   */
+  public static final AttributeKey<Long> HTTP_RESEND_COUNT = longKey("http.resend_count");
 
   /** The URI scheme identifying the used protocol. */
   public static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
@@ -849,6 +886,23 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_CLIENT_ID =
       stringKey("messaging.rocketmq.client_id");
 
+  /**
+   * The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
+   */
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELIVERY_TIMESTAMP =
+      longKey("messaging.rocketmq.delivery_timestamp");
+
+  /** The delay time level for delay message, which determines the message delay time. */
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELAY_TIME_LEVEL =
+      longKey("messaging.rocketmq.delay_time_level");
+
+  /**
+   * It is essential for FIFO message. Messages that belong to the same message group are always
+   * processed one by one within the same consumer group.
+   */
+  public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_GROUP =
+      stringKey("messaging.rocketmq.message_group");
+
   /** Type of message. */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_TYPE =
       stringKey("messaging.rocketmq.message_type");
@@ -949,7 +1003,41 @@ public final class SemanticAttributes {
   public static final AttributeKey<Long> MESSAGE_UNCOMPRESSED_SIZE =
       longKey("message.uncompressed_size");
 
+  /**
+   * SHOULD be set to true if the exception event is recorded at a point where it is known that the
+   * exception is escaping the scope of the span.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>An exception is considered to have escaped (or left) the scope of a span, if that span is
+   *       ended while the exception is still logically &quot;in flight&quot;. This may be actually
+   *       &quot;in flight&quot; in some languages (e.g. if the exception is passed to a Context
+   *       manager's {@code __exit__} method in Python) but will usually be caught at the point of
+   *       recording the exception in most languages.
+   *   <li>It is usually not possible to determine at the point where an exception is thrown whether
+   *       it will escape the scope of a span. However, it is trivial to know that an exception will
+   *       escape, if one checks for an active exception just before ending the span, as done in the
+   *       <a href="#recording-an-exception">example above</a>.
+   *   <li>It follows that an exception may still escape the scope of the span even if the {@code
+   *       exception.escaped} attribute was not set or set to false, since the event might have been
+   *       recorded at a time where it was not clear whether the exception will escape.
+   * </ul>
+   */
+  public static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
+
   // Enum definitions
+  public static final class EventDomainValues {
+    /** Events from browser apps. */
+    public static final String BROWSER = "browser";
+    /** Events from mobile apps. */
+    public static final String DEVICE = "device";
+    /** Events from Kubernetes. */
+    public static final String K8S = "k8s";
+
+    private EventDomainValues() {}
+  }
+
   public static final class OpentracingRefTypeValues {
     /** The parent Span depends on the child Span in some capacity. */
     public static final String CHILD_OF = "child_of";
@@ -1085,6 +1173,18 @@ public final class SemanticAttributes {
     public static final String LOCAL_SERIAL = "local_serial";
 
     private DbCassandraConsistencyLevelValues() {}
+  }
+
+  public static final class OtelStatusCodeValues {
+    /**
+     * The operation has been validated by an Application developer or Operator to have completed
+     * successfully.
+     */
+    public static final String OK = "OK";
+    /** The operation contains an error. */
+    public static final String ERROR = "ERROR";
+
+    private OtelStatusCodeValues() {}
   }
 
   public static final class FaasTriggerValues {
@@ -1424,6 +1524,14 @@ public final class SemanticAttributes {
    *     {@link SemanticAttributes#NET_SOCK_HOST_ADDR} instead.
    */
   @Deprecated public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+
+  /**
+   * The ordinal number of request re-sending attempt.
+   *
+   * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#HTTP_RESEND_COUNT} instead.
+   */
+  @Deprecated public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
 
   private SemanticAttributes() {}
 }
