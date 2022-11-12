@@ -12,7 +12,7 @@
 #### API Extensions
 
 * DEPRECATION: the `opentelemetry-extension-aws` module containing
-  various `AwsXrayPropagator` implementations has been deprecated for removal in next major version.
+  various `AwsXrayPropagator` implementations has been deprecated for removal in next minor version.
   A copy of the code will instead be maintained
   in [opentelemetry-java-contrib/aws-xray-propagator](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator)
   and published under
