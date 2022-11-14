@@ -14,7 +14,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -27,6 +26,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -35,6 +35,12 @@ import java.util.function.Function;
 final class SpanExporterConfiguration {
 
   private static final String EXPORTER_NONE = "none";
+  private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
+
+  static {
+    EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
+  }
 
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(
@@ -92,15 +98,18 @@ final class SpanExporterConfiguration {
         return configureJaeger(config, meterProvider);
       case "zipkin":
         return configureZipkin(config);
-      case "logging":
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.logging.LoggingSpanExporter",
-            "Logging Trace Exporter",
-            "opentelemetry-exporter-logging");
-        return LoggingSpanExporter.create();
       default:
         SpanExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
+          String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
+          if (artifactId != null) {
+            throw new ConfigurationException(
+                "otel.traces.exporter set to \""
+                    + name
+                    + "\" but "
+                    + artifactId
+                    + " not found on classpath. Make sure to add it as a dependency.");
+          }
           throw new ConfigurationException("Unrecognized value for otel.traces.exporter: " + name);
         }
         return spiExporter;
