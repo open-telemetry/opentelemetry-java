@@ -7,7 +7,7 @@ package io.opentelemetry.integrationtests.graal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.trace.internal.JcTools;
+import io.opentelemetry.sdk.common.internal.JcTools;
 import java.util.Queue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledInNativeImage;

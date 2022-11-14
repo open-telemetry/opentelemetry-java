@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.internal;
+package io.opentelemetry.sdk.common.internal;
 
 import java.io.FileDescriptor;
 import java.net.InetAddress;

@@ -8,6 +8,13 @@ plugins {
 description = "OpenTelemetry SDK Common"
 otelJava.moduleName.set("io.opentelemetry.sdk.common")
 
+sourceSets {
+  main {
+    val commonShadedDeps = project(":sdk:common-shaded-deps")
+    output.dir(commonShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:common-shaded-deps:extractShadowJar")
+  }
+}
+
 val mrJarVersions = listOf(9)
 
 dependencies {
@@ -78,5 +85,13 @@ tasks {
 
   check {
     dependsOn(testing.suites)
+  }
+}
+
+tasks {
+  withType<ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer>().configureEach {
+    // We catch NoClassDefFoundError to fallback to non-jctools queues.
+    exclude("**/internal/shaded/jctools/**")
+    exclude("**/internal/JcTools*")
   }
 }

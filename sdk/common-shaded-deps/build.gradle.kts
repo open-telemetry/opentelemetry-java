@@ -4,10 +4,10 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
-// This project is not published, it is bundled into :sdk:trace
+// This project is not published, it is bundled into :sdk:common
 
-description = "Internal use only - shaded dependencies of OpenTelemetry SDK for Tracing"
-otelJava.moduleName.set("io.opentelemetry.sdk.trace.internal")
+description = "Internal use only - shaded dependencies of OpenTelemetry SDK"
+otelJava.moduleName.set("io.opentelemetry.sdk.common.internal")
 
 dependencies {
   implementation("org.jctools:jctools-core")

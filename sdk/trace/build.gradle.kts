@@ -1,5 +1,3 @@
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
-
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -11,18 +9,11 @@ plugins {
 description = "OpenTelemetry SDK For Tracing"
 otelJava.moduleName.set("io.opentelemetry.sdk.trace")
 
-sourceSets {
-  main {
-    val traceShadedDeps = project(":sdk:trace-shaded-deps")
-    output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:trace-shaded-deps:extractShadowJar")
-  }
-}
-
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
-  compileOnly(project(":sdk:trace-shaded-deps"))
+  compileOnly(project(":sdk:common-shaded-deps"))
 
   implementation(project(":semconv"))
 
@@ -57,12 +48,4 @@ dependencies {
   jmh("io.grpc:grpc-api")
   jmh("io.grpc:grpc-netty-shaded")
   jmh("org.testcontainers:testcontainers") // testContainer for OTLP collector
-}
-
-tasks {
-  withType<AnimalSniffer>().configureEach {
-    // We catch NoClassDefFoundError to fallback to non-jctools queues.
-    exclude("**/internal/shaded/jctools/**")
-    exclude("**/internal/JcTools*")
-  }
 }
