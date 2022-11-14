@@ -164,7 +164,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (value == null) {
       return this;
     }
-    // TODO - Verify only the 'basic' types are supported/used.
+
     if (value instanceof Integer
         || value instanceof Long
         || value instanceof Short
@@ -175,7 +175,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       this.spanBuilderAttributeKeys.add(doubleKey(key));
       this.spanBuilderAttributeValues.add(value.doubleValue());
     } else {
-      throw new IllegalArgumentException("Number type not supported");
+      this.spanBuilderAttributeKeys.add(stringKey(key));
+      this.spanBuilderAttributeValues.add(value.toString());
     }
 
     return this;
