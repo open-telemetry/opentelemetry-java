@@ -67,8 +67,7 @@ class SpanShimTest {
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(1);
-    assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo")))
-        .isEqualTo(BigInteger.ONE.toString());
+    assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("1");
   }
 
   @Test

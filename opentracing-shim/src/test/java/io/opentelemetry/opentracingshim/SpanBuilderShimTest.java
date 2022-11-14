@@ -305,8 +305,7 @@ class SpanBuilderShimTest {
     try {
       SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(1);
-      assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo")))
-          .isEqualTo(BigInteger.TEN.toString());
+      assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("10");
     } finally {
       span.finish();
     }
