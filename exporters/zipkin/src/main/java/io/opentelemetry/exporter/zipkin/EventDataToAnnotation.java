@@ -19,7 +19,9 @@ import java.util.List;
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/sdk_exporters/zipkin.md#events">the
  * zipkin exporter spec</a> for details.
  */
-class EventDataToAnnotation {
+final class EventDataToAnnotation {
+
+  private EventDataToAnnotation() {}
 
   static String apply(EventData eventData) {
     String name = eventData.getName();
