@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.internal.JcTools;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
@@ -76,7 +77,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize)); // TODO: use JcTools.newFixedSizeQueue(..)
+            JcTools.newFixedSizeQueue(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -205,9 +206,11 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll().toLogRecordData());
-        }
+        JcTools.drain(
+            queue,
+            maxExportBatchSize - batch.size(),
+            logRecord -> batch.add(logRecord.toLogRecordData()));
+
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
           updateNextExportTime();

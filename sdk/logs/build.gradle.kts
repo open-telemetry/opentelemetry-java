@@ -13,6 +13,8 @@ dependencies {
   api(project(":api:logs"))
   api(project(":sdk:common"))
 
+  compileOnly(project(":sdk:common-shaded-deps"))
+
   testImplementation(project(":sdk:logs-testing"))
 
   testImplementation("org.awaitility:awaitility")
