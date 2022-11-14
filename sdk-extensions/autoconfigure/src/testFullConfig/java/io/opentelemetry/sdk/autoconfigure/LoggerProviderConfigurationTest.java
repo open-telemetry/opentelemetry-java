@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -61,8 +60,8 @@ class LoggerProviderConfigurationTest {
                             assertThat(worker)
                                 .extracting("queue")
                                 .isInstanceOfSatisfying(
-                                    ArrayBlockingQueue.class,
-                                    queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
+                                    Queue.class,
+                                    queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
                           }));
     } finally {
       loggerProvider.shutdown();
