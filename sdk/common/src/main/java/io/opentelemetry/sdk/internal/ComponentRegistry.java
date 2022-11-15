@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -44,6 +46,9 @@ public final class ComponentRegistry<V> {
   private final Map<String, Map<String, Map<String, V>>> componentByNameVersionAndSchema =
       new ConcurrentHashMap<>();
 
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private final Set<V> allComponents = Collections.newSetFromMap(new IdentityHashMap<>());
 
   private final Function<InstrumentationScopeInfo, V> factory;
@@ -109,7 +114,9 @@ public final class ComponentRegistry<V> {
 
   private V buildComponent(InstrumentationScopeInfo instrumentationScopeInfo) {
     V component = factory.apply(instrumentationScopeInfo);
-    allComponents.add(component);
+    synchronized (lock) {
+      allComponents.add(component);
+    }
     return component;
   }
 
@@ -119,6 +126,8 @@ public final class ComponentRegistry<V> {
    * @return a {@code Collection} view of the registered components.
    */
   public Collection<V> getComponents() {
-    return Collections.unmodifiableCollection(allComponents);
+    synchronized (lock) {
+      return Collections.unmodifiableCollection(new ArrayList<>(allComponents));
+    }
   }
 }
