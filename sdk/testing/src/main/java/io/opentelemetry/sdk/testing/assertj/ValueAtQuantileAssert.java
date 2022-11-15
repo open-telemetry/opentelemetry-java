@@ -10,7 +10,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
 /**
- * Test assertions for (deprecated) {@link ValueAtQuantile}.
+ * Test assertions for {@link ValueAtQuantile}.
  *
  * @since 1.14.0
  */

@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
+import java.math.BigInteger;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -294,6 +295,20 @@ class SpanBuilderShimTest {
         (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).withStartTimestamp(micros).start();
     SpanData spanData = ((ReadableSpan) spanShim.getSpan()).toSpanData();
     assertThat(spanData.getStartEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  @Test
+  void setAttribute_unrecognizedType() {
+    SpanShim span =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME).withTag("foo", BigInteger.TEN).start();
+    try {
+      SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
+      assertThat(spanData.getAttributes().size()).isEqualTo(1);
+      assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("10");
+    } finally {
+      span.finish();
+    }
   }
 
   @Test

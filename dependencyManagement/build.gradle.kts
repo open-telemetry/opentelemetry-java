@@ -15,7 +15,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.14.0",
   "com.google.guava:guava-bom:31.1-jre",
   "com.google.protobuf:protobuf-bom:3.21.9",
-  "com.linecorp.armeria:armeria-bom:1.20.2",
+  "com.linecorp.armeria:armeria-bom:1.20.3",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
   "io.grpc:grpc-bom:1.50.2",
   "io.zipkin.brave:brave-bom:5.14.1",
@@ -97,7 +97,7 @@ val DEPENDENCIES = listOf(
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.22",
   "org.jctools:jctools-core:4.0.1",
-  "org.junit-pioneer:junit-pioneer:1.7.2",
+  "org.junit-pioneer:junit-pioneer:1.9.0",
   "org.skyscreamer:jsonassert:1.5.1",
 )
 

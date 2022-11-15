@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +58,16 @@ class SpanShimTest {
     assertThat(span.getSpanContext().getTraceId().toString()).isEqualTo(contextShim.toTraceId());
     assertThat(span.getSpanContext().getSpanId().toString()).isEqualTo(contextShim.toSpanId());
     assertThat(contextShim.baggageItems().iterator().hasNext()).isFalse();
+  }
+
+  @Test
+  void setAttribute_unrecognizedType() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    spanShim.setTag("foo", BigInteger.ONE);
+
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(1);
+    assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("1");
   }
 
   @Test
