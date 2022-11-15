@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Bugfixes
+
+* Fix bug in `ComponentRegistry` that produces `ConcurrentModificationException` when reading
+  metrics at the same time as obtaining a meter.
+  [(#4951)](https://github.com/open-telemetry/opentelemetry-java/pull/4951)
+
 ## Version 1.20.0 (2022-11-11)
 
 ### API
