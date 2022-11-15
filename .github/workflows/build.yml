@@ -61,7 +61,7 @@ jobs:
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
-        if: ${{ !startsWith(github.ref_name, 'release/') }}
+        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
         run: |
           if git diff --quiet
           then 
