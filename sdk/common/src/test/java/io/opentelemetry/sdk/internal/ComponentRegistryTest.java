@@ -66,11 +66,11 @@ class ComponentRegistryTest {
   void getComponents_HighConcurrency() throws ExecutionException, InterruptedException {
     List<Future<?>> futures = new ArrayList<>();
     Random random = new Random();
-    int concurrency = 5;
+    int concurrency = 2;
     ExecutorService executor = Executors.newFixedThreadPool(concurrency);
 
     try {
-      for (int i = 0; i < 1000; i++) {
+      for (int i = 0; i < 100; i++) {
         futures.add(
             executor.submit(
                 () -> {
