@@ -9,7 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,13 +17,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -33,13 +30,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.event.LoggingEvent;
 
 class SdkLoggerTest {
-
-  @RegisterExtension
-  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
 
   @Test
   void logRecordBuilder() {
@@ -141,44 +133,5 @@ class SdkLoggerTest {
     loggerProvider.get("test").logRecordBuilder().emit();
 
     verify(logRecordProcessor, never()).onEmit(any(), any());
-  }
-
-  @Test
-  @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
-  void eventBuilder() {
-    AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
-            .build();
-
-    // Emit event from logger with name and add event domain
-    loggerProvider
-        .loggerBuilder("test")
-        .setEventDomain("event-domain")
-        .build()
-        .eventBuilder("event-name")
-        .emit();
-
-    assertThat(seenLog.get().toLogRecordData())
-        .hasAttributes(
-            Attributes.builder()
-                .put("event.domain", "event-domain")
-                .put("event.name", "event-name")
-                .build());
-
-    assertThat(apiUsageLogs.getEvents()).isEmpty();
-    seenLog.set(null);
-
-    // Emit event from logger with name and no event domain
-    loggerProvider.get("test").eventBuilder("event-name");
-
-    assertThat(apiUsageLogs.getEvents())
-        .hasSize(1)
-        .extracting(LoggingEvent::getMessage)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger."));
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.api.events.EventLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -16,8 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <ol>
  *   <li>Enable emitting structured <a
  *       href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md">events</a>
- *       via {@link Logger#eventBuilder(String)}. Requires assigning an {@link
- *       LoggerBuilder#setEventDomain(String) event domain} to the {@link Logger}.
+ *       via {@link EventLogger#eventBuilder(String)}.
  *   <li>Enable the creation of log appenders, which bridge logs from other log frameworks (e.g.
  *       SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via {@link Logger#logRecordBuilder()}.
  *       It is <b>NOT</b> a replacement log framework.
