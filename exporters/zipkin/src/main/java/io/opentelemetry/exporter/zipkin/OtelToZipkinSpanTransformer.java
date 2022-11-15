@@ -14,6 +14,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -160,20 +161,28 @@ final class OtelToZipkinSpanTransformer {
     return endpoint.build();
   }
 
+  @Nullable
   private static Endpoint getRemoteEndpoint(SpanData spanData) {
-    // TODO: Implement fallback mechanism:
-    // https://opentelemetry.io/docs/reference/specification/trace/sdk_exporters/zipkin/#otlp---zipkin
-    Attributes attributes = spanData.getAttributes();
+    if (spanData.getKind() == SpanKind.CLIENT || spanData.getKind() == SpanKind.PRODUCER) {
+      // TODO: Implement fallback mechanism:
+      // https://opentelemetry.io/docs/reference/specification/trace/sdk_exporters/zipkin/#otlp---zipkin
+      Attributes attributes = spanData.getAttributes();
+      String serviceName = attributes.get(PEER_SERVICE);
 
-    Endpoint.Builder endpoint = Endpoint.newBuilder();
-    endpoint.serviceName(attributes.get(PEER_SERVICE));
-    endpoint.ip(attributes.get(NET_SOCK_PEER_ADDR));
-    Long port = attributes.get(NET_PEER_PORT);
-    if (port != null) {
-      endpoint.port(port.intValue());
+      if (serviceName != null) {
+        Endpoint.Builder endpoint = Endpoint.newBuilder();
+        endpoint.serviceName(serviceName);
+        endpoint.ip(attributes.get(NET_SOCK_PEER_ADDR));
+        Long port = attributes.get(NET_PEER_PORT);
+        if (port != null) {
+          endpoint.port(port.intValue());
+        }
+
+        return endpoint.build();
+      }
     }
 
-    return endpoint.build();
+    return null;
   }
 
   @Nullable
