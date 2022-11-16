@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import org.assertj.core.api.Assertions;
 
 /**
- * Test assertions for (deprecated) {@link SummaryPointData}.
+ * Test assertions for {@link SummaryPointData}.
  *
  * @since 1.14.0
  */

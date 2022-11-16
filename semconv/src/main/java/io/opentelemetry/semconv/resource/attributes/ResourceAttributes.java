@@ -5,6 +5,7 @@
 
 package io.opentelemetry.semconv.resource.attributes;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -14,9 +15,10 @@ import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
+@SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.13.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.15.0";
 
   /**
    * Array of brand name and version separated by a space
@@ -25,8 +27,8 @@ public final class ResourceAttributes {
    *
    * <ul>
    *   <li>This value is intended to be taken from the <a
-   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a>
-   *       (navigator.userAgentData.brands).
+   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a> ({@code
+   *       navigator.userAgentData.brands}).
    * </ul>
    */
   public static final AttributeKey<List<String>> BROWSER_BRANDS = stringArrayKey("browser.brands");
@@ -38,18 +40,31 @@ public final class ResourceAttributes {
    *
    * <ul>
    *   <li>This value is intended to be taken from the <a
-   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a>
-   *       (navigator.userAgentData.platform). If unavailable, the legacy {@code navigator.platform}
+   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a> ({@code
+   *       navigator.userAgentData.platform}). If unavailable, the legacy {@code navigator.platform}
    *       API SHOULD NOT be used instead and this attribute SHOULD be left unset in order for the
    *       values to be consistent. The list of possible values is defined in the <a
    *       href="https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform">W3C User-Agent Client
    *       Hints specification</a>. Note that some (but not all) of these values can overlap with
-   *       values in the <a href="./os.md">os.type and os.name attributes</a>. However, for
-   *       consistency, the values in the {@code browser.platform} attribute should capture the
-   *       exact value that the user agent provides.
+   *       values in the <a href="./os.md">{@code os.type} and {@code os.name} attributes</a>.
+   *       However, for consistency, the values in the {@code browser.platform} attribute should
+   *       capture the exact value that the user agent provides.
    * </ul>
    */
   public static final AttributeKey<String> BROWSER_PLATFORM = stringKey("browser.platform");
+
+  /**
+   * A boolean that is true if the browser is running on a mobile device
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This value is intended to be taken from the <a
+   *       href="https://wicg.github.io/ua-client-hints/#interface">UA client hints API</a> ({@code
+   *       navigator.userAgentData.mobile}). If unavailable, this attribute SHOULD be left unset.
+   * </ul>
+   */
+  public static final AttributeKey<Boolean> BROWSER_MOBILE = booleanKey("browser.mobile");
 
   /**
    * Full user-agent string provided by the browser
@@ -63,6 +78,17 @@ public final class ResourceAttributes {
    * </ul>
    */
   public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
+
+  /**
+   * Preferred language of the user using the browser
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This value is intended to be taken from the Navigator API {@code navigator.language}.
+   * </ul>
+   */
+  public static final AttributeKey<String> BROWSER_LANGUAGE = stringKey("browser.language");
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");

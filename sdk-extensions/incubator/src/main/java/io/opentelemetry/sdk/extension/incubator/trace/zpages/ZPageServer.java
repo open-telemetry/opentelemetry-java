@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.zpages;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -74,42 +76,46 @@ public final class ZPageServer {
   // Length of time to wait for the HttpServer to stop
   private static final int HTTPSERVER_STOP_DELAY = 1;
   // Tracez SpanProcessor and DataAggregator for constructing TracezZPageHandler
-  private static final TracezSpanProcessor tracezSpanProcessor =
-      TracezSpanProcessor.builder().build();
-  private static final TracezTraceConfigSupplier tracezTraceConfigSupplier =
+  private final TracezSpanProcessor tracezSpanProcessor = TracezSpanProcessor.builder().build();
+  private final TracezTraceConfigSupplier tracezTraceConfigSupplier =
       new TracezTraceConfigSupplier();
-  private static final TracezDataAggregator tracezDataAggregator =
+  private final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
   // Handler for /tracez page
-  private static final ZPageHandler tracezZPageHandler =
-      new TracezZPageHandler(tracezDataAggregator);
+  private final ZPageHandler tracezZPageHandler = new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
-  private static final ZPageHandler traceConfigzZPageHandler =
+  private final ZPageHandler traceConfigzZPageHandler =
       new TraceConfigzZPageHandler(tracezTraceConfigSupplier);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
-  private static final ZPageHandler indexZPageHandler =
+  private final ZPageHandler indexZPageHandler =
       new IndexZPageHandler(Arrays.asList(tracezZPageHandler, traceConfigzZPageHandler));
 
-  private static final Object mutex = new Object();
+  private final Object mutex = new Object();
 
   @GuardedBy("mutex")
   @Nullable
-  private static HttpServer server;
+  private HttpServer server;
+
+  private ZPageServer() {}
+
+  public static ZPageServer create() {
+    return new ZPageServer();
+  }
 
   /** Returns a supplier of {@link SpanLimits} which can be reconfigured using zpages. */
-  public static Supplier<SpanLimits> getTracezTraceConfigSupplier() {
+  public Supplier<SpanLimits> getTracezTraceConfigSupplier() {
     return tracezTraceConfigSupplier;
   }
 
   /** Returns a {@link Sampler} which can be reconfigured using zpages. */
-  public static Sampler getTracezSampler() {
+  public Sampler getTracezSampler() {
     return tracezTraceConfigSupplier;
   }
 
   /**
    * Returns a {@link SpanProcessor} which will allow processing of spans by {@link ZPageServer}.
    */
-  public static SpanProcessor getSpanProcessor() {
+  public SpanProcessor getSpanProcessor() {
     return tracezSpanProcessor;
   }
 
@@ -119,7 +125,7 @@ public final class ZPageServer {
    *
    * @param server the {@link HttpServer} for the page to register to.
    */
-  static void registerIndexZPageHandler(HttpServer server) {
+  private void registerIndexZPageHandler(HttpServer server) {
     server.createContext(indexZPageHandler.getUrlPath(), new ZPageHttpHandler(indexZPageHandler));
   }
 
@@ -138,7 +144,7 @@ public final class ZPageServer {
    *
    * @param server the {@link HttpServer} for the page to register to.
    */
-  static void registerTracezZPageHandler(HttpServer server) {
+  private void registerTracezZPageHandler(HttpServer server) {
     server.createContext(tracezZPageHandler.getUrlPath(), new ZPageHttpHandler(tracezZPageHandler));
   }
 
@@ -154,7 +160,7 @@ public final class ZPageServer {
    *
    * @param server the {@link HttpServer} for the page to register to.
    */
-  static void registerTraceConfigzZPageHandler(HttpServer server) {
+  private void registerTraceConfigzZPageHandler(HttpServer server) {
     server.createContext(
         traceConfigzZPageHandler.getUrlPath(), new ZPageHttpHandler(traceConfigzZPageHandler));
   }
@@ -164,7 +170,7 @@ public final class ZPageServer {
    *
    * @param server the {@link HttpServer} for the page to register to.
    */
-  public static void registerAllPagesToHttpServer(HttpServer server) {
+  public void registerAllPagesToHttpServer(HttpServer server) {
     // For future zPages, register them to the server in here
     registerIndexZPageHandler(server);
     registerTracezZPageHandler(server);
@@ -173,7 +179,7 @@ public final class ZPageServer {
   }
 
   /** Method for stopping the {@link HttpServer} {@code server}. */
-  private static void stop() {
+  private void stop() {
     synchronized (mutex) {
       if (server == null) {
         return;
@@ -181,6 +187,30 @@ public final class ZPageServer {
       server.stop(HTTPSERVER_STOP_DELAY);
       server = null;
     }
+  }
+
+  /**
+   * Convenience method to return a new SdkTracerProvider that has been configured with our ZPage
+   * specific span processor, sampler, and limits.
+   *
+   * @return new SdkTracerProvider
+   */
+  public SdkTracerProvider buildSdkTracerProvider() {
+    return buildSdkTracerProvider(SdkTracerProvider.builder());
+  }
+
+  /**
+   * Convenience method to return a new SdkTracerProvider that has been configured with our ZPage
+   * specific span processor, sampler, and limits.
+   *
+   * @return new SdkTracerProvider
+   */
+  public SdkTracerProvider buildSdkTracerProvider(SdkTracerProviderBuilder builder) {
+    return builder
+        .addSpanProcessor(getSpanProcessor())
+        .setSpanLimits(getTracezTraceConfigSupplier())
+        .setSampler(getTracezSampler())
+        .build();
   }
 
   /**
@@ -193,13 +223,13 @@ public final class ZPageServer {
    * @throws IllegalStateException if the server is already started.
    * @throws IOException if the server cannot bind to the specified port.
    */
-  public static void startHttpServerAndRegisterAllPages(int port) throws IOException {
+  public void startHttpServerAndRegisterAllPages(int port) throws IOException {
     synchronized (mutex) {
       if (server != null) {
         throw new IllegalStateException("The HttpServer is already started.");
       }
       server = HttpServer.create(new InetSocketAddress(port), HTTPSERVER_BACKLOG);
-      ZPageServer.registerAllPagesToHttpServer(server);
+      registerAllPagesToHttpServer(server);
       server.start();
     }
 
@@ -208,10 +238,8 @@ public final class ZPageServer {
             new Thread() {
               @Override
               public void run() {
-                ZPageServer.stop();
+                ZPageServer.this.stop();
               }
             });
   }
-
-  private ZPageServer() {}
 }

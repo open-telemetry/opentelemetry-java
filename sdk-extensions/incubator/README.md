@@ -108,30 +108,37 @@ make sure your
 version of the JDK includes this package.
 
 To setup the zPages, register zPages with your `OpenTelemetrySdk` and
-call `ZPageServer.startHttpServerAndRegisterAllPages(int port)`:
+call `startHttpServerAndRegisterAllPages(int port)` on your ZPageServer instance:
 
 ```java
 public class MyMainClass {
   public static void main(String[] args) throws Exception {
+    // Create a new ZPageServer
+    ZPageServer zpageServer = ZPageServer.create();
     // Configure OpenTelemetrySdk with zPages
-    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-        .setTracerProvider(
-            SdkTracerProvider.builder()
-                .addSpanProcessor(ZPageServer.getSpanProcessor())
-                .setSpanLimits(ZPageServer.getTracezTraceConfigSupplier())
-                .setSampler(ZPageServer.getTracezSampler())
-                .build())
-        .build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setTracerProvider(zpageServer.buildSdkTracerProvider()).build();
 
     // Start zPages server
-    ZPageServer.startHttpServerAndRegisterAllPages(8080);
-    // ... do work
+    zpageServer.startHttpServerAndRegisterAllPages(8080);
+    // ...Do work (this is just an example)
+    long count = 0;
+    while (true) {
+      Tracer tracer = openTelemetry.getTracer("demo");
+      Span span = tracer.spanBuilder("exampleSpan" + ++count).startSpan();
+      try (Scope scope = span.makeCurrent()) {
+        System.out.println("Inside a span...");
+        TimeUnit.SECONDS.sleep(2);
+      }
+      span.end();
+    }
   }
 }
 ```
 
-Alternatively, you can call `ZPageServer.registerAllPagesToHttpServer(HttpServer server)` to
-register the zPages to a shared server:
+Note that `startHttpServerAndRegisterAllPages()` will create a new `HttpServer` and register the zPages
+with it. If you already have an existing or shared `HttpServer`, you can instead call
+`registerAllPagesToHttpServer(HttpServer server)`:
 
 ```java
 public class MyMainClass {
@@ -140,7 +147,7 @@ public class MyMainClass {
 
     // Start zPages server
     HttpServer server = HttpServer.create(new InetSocketAddress(8000), 10);
-    ZPageServer.registerAllPagesToHttpServer(server);
+    zPageServer.registerAllPagesToHttpServer(server);
     server.start();
     // ... do work
   }
