@@ -6,7 +6,6 @@
 package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.events.EventBuilder;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +14,7 @@ class DefaultLogger implements Logger {
 
   private static final Logger INSTANCE = new DefaultLogger();
 
-  private static final EventBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
+  private static final LogRecordBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
 
   private DefaultLogger() {}
 
@@ -28,7 +27,7 @@ class DefaultLogger implements Logger {
     return NOOP_LOG_RECORD_BUILDER;
   }
 
-  private static final class NoopLogRecordBuilder implements EventBuilder {
+  private static final class NoopLogRecordBuilder implements LogRecordBuilder {
 
     private NoopLogRecordBuilder() {}
 

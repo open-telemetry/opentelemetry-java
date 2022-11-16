@@ -13,7 +13,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Obtain a {{@link #logRecordBuilder()}, add properties using the setters, and emit it via
  * {@link LogRecordBuilder#emit()}.
  *
- * @see io.opentelemetry.api.events.EventLogger for usage emitting events
+ * <p>See also {@code io.opentelemetry.api.events.EventLogger} in {@code
+ * io.opentelemetry:opentelemetry-extension-events}.
  */
 @ThreadSafe
 public interface Logger {
