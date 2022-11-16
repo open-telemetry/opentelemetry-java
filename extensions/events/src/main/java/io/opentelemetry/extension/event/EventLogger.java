@@ -5,14 +5,9 @@
 
 package io.opentelemetry.extension.event;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 /**
  * {@link EventLogger} provides convenience methods for emitting Events. An Event is a {@code
@@ -31,12 +26,9 @@ import java.util.concurrent.TimeUnit;
  *       loggerProvider.get("instrumentation-library-name"), "acme.observability");
  *
  *   void doWork() {
- *     eventLogger
- *       .eventBuilder("my-event")
- *       .setAllAttributes(Attributes.builder()
+ *     eventLogger.emitEvent("my-event", Attributes.builder()
  *          .put("key1", "value1")
  *          .put("key2", "value2").build())
- *       .emit();
  *   }
  * }
  * }</pre>
@@ -54,8 +46,8 @@ public final class EventLogger {
   /**
    * Create a new {@link EventLogger}.
    *
-   * <p>{@link #eventBuilder(String)} delegates to {@link Logger#logRecordBuilder()}. The {@code
-   * eventDomain} is included on every emitted {@code LogRecord} in the {@link
+   * <p>{@link #emitEvent(String, Attributes)} delegates to {@link Logger#logRecordBuilder()}. The
+   * {@code eventDomain} is included on every emitted {@code LogRecord} in the {@link
    * SemanticAttributes#EVENT_DOMAIN} attribute.
    *
    * @param logger the delegate {@link Logger}
@@ -68,77 +60,21 @@ public final class EventLogger {
   }
 
   /**
-   * Return an {@link EventBuilder} to emit an Event.
+   * Emit an event with the {@code eventName} and {@code attributes}.
    *
-   * <p>Build the event using the {@link EventBuilder} setters, and emit via {@link
-   * EventBuilder#emit()}. The {@code eventName} is included on the emitted {@code LogRecord} in the
-   * {@link SemanticAttributes#EVENT_NAME} attribute.
+   * <p>The {@code eventName} is included on the emitted {@code LogRecord} in the {@link
+   * SemanticAttributes#EVENT_NAME} attribute.
    *
    * @param eventName the event name, which acts as a classifier for events. Within a particular
    *     event domain, event name defines a particular class or type of event.
+   * @param attributes the event attributes
    */
-  public EventBuilder eventBuilder(String eventName) {
-    return new EventBuilderImpl(logger.logRecordBuilder(), eventName);
-  }
-
-  private class EventBuilderImpl implements EventBuilder {
-
-    private final LogRecordBuilder logRecordBuilder;
-    private final String eventName;
-
-    private EventBuilderImpl(LogRecordBuilder logRecordBuilder, String eventName) {
-      this.logRecordBuilder = logRecordBuilder;
-      this.eventName = eventName;
-    }
-
-    @Override
-    public LogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
-      logRecordBuilder.setEpoch(timestamp, unit);
-      return this;
-    }
-
-    @Override
-    public LogRecordBuilder setEpoch(Instant instant) {
-      logRecordBuilder.setEpoch(instant);
-      return this;
-    }
-
-    @Override
-    public LogRecordBuilder setContext(Context context) {
-      logRecordBuilder.setContext(context);
-      return this;
-    }
-
-    @Override
-    public LogRecordBuilder setSeverity(Severity severity) {
-      logRecordBuilder.setSeverity(severity);
-      return this;
-    }
-
-    @Override
-    public LogRecordBuilder setSeverityText(String severityText) {
-      logRecordBuilder.setSeverityText(severityText);
-      return this;
-    }
-
-    @Override
-    public LogRecordBuilder setBody(String body) {
-      logRecordBuilder.setBody(body);
-      return this;
-    }
-
-    @Override
-    public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
-      logRecordBuilder.setAttribute(key, value);
-      return this;
-    }
-
-    @Override
-    public void emit() {
-      logRecordBuilder
-          .setAttribute(SemanticAttributes.EVENT_DOMAIN, eventDomain)
-          .setAttribute(SemanticAttributes.EVENT_NAME, eventName)
-          .emit();
-    }
+  public void emitEvent(String eventName, Attributes attributes) {
+    logger
+        .logRecordBuilder()
+        .setAllAttributes(attributes)
+        .setAttribute(SemanticAttributes.EVENT_DOMAIN, eventDomain)
+        .setAttribute(SemanticAttributes.EVENT_NAME, eventName)
+        .emit();
   }
 }
