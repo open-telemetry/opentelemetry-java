@@ -34,8 +34,6 @@ jobs:
             coverage: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
@@ -83,13 +81,12 @@ jobs:
           path: all/build/reports/jacoco/test/html
 
   markdown-link-check:
-    # release branches are excluded to avoid unnecessary maintenance if external links break
+    # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
-    # to the misspell dictionary
+    # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
@@ -109,8 +106,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - id: setup-java
         name: Set up Java
@@ -132,11 +127,11 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   required-status-check:
-    # markdown-link-check is not required so that pull requests will not be blocked if external
-    # links break
-    # similarly misspell-check is not required so that pull requests will not be blocked if new
-    # misspellings are added to the misspell dictionary
-    needs: build
+    # markdown-link-check is not required so pull requests are not blocked if external links break
+    # misspell-check is not required so pull requests are not blocked if the misspell dictionary is
+    # udpated
+    needs:
+      - build
     runs-on: ubuntu-latest
     if: always()
     steps:
