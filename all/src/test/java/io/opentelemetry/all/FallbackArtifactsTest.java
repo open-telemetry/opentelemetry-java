@@ -56,6 +56,12 @@ class FallbackArtifactsTest {
     classAvailable("io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator");
   }
 
+  @Test
+  void extensionAws() {
+    classAvailable("io.opentelemetry.extension.aws.AwsConfigurablePropagator");
+    classAvailable("io.opentelemetry.extension.aws.AwsXrayPropagator");
+  }
+
   private static void classAvailable(String fqcn) {
     Assertions.assertThatCode(() -> Class.forName(fqcn)).doesNotThrowAnyException();
   }
