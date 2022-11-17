@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## Version 1.20.1 (2022-11-15)
+
+### Bugfixes
+
+* Fix bug in `ComponentRegistry` that produces `ConcurrentModificationException` when reading
+  metrics at the same time as obtaining a meter.
+  [(#4951)](https://github.com/open-telemetry/opentelemetry-java/pull/4951)
+
 ## Version 1.20.0 (2022-11-11)
 
 ### API
@@ -12,7 +20,7 @@
 #### API Extensions
 
 * DEPRECATION: the `opentelemetry-extension-aws` module containing
-  various `AwsXrayPropagator` implementations has been deprecated for removal in next major version.
+  various `AwsXrayPropagator` implementations has been deprecated for removal in next minor version.
   A copy of the code will instead be maintained
   in [opentelemetry-java-contrib/aws-xray-propagator](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator)
   and published under
