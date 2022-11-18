@@ -34,6 +34,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -196,7 +197,7 @@ class OtelToZipkinSpanTransformerTest {
         Endpoint.newBuilder().serviceName("remote-test-service").ip("8.8.8.8").port(42).build();
 
     Span expectedSpan =
-        zipkinSpan(Span.Kind.valueOf(spanKind.name()), localIp).toBuilder()
+        zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(expectedRemoteEndpoint)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
@@ -211,7 +212,7 @@ class OtelToZipkinSpanTransformerTest {
   @ParameterizedTest
   @EnumSource(
       value = SpanKind.class,
-      names = {"SERVER", "CONSUMER"})
+      names = {"SERVER", "CONSUMER", "INTERNAL"})
   void generateSpan_RemoteEndpointMappingWhenKindIsNotClientOrProducer(SpanKind spanKind) {
     Attributes attributes =
         Attributes.builder()
@@ -234,7 +235,7 @@ class OtelToZipkinSpanTransformerTest {
             .build();
 
     Span expectedSpan =
-        zipkinSpan(Span.Kind.valueOf(spanKind.name()), localIp).toBuilder()
+        zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(null)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
@@ -268,7 +269,7 @@ class OtelToZipkinSpanTransformerTest {
             .build();
 
     Span expectedSpan =
-        zipkinSpan(Span.Kind.valueOf(spanKind.name()), localIp).toBuilder()
+        zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(null)
             .putTag(NET_SOCK_PEER_ADDR.getKey(), "8.8.8.8")
@@ -307,7 +308,7 @@ class OtelToZipkinSpanTransformerTest {
         Endpoint.newBuilder().serviceName("remote-test-service").ip("8.8.8.8").build();
 
     Span expectedSpan =
-        zipkinSpan(Span.Kind.valueOf(spanKind.name()), localIp).toBuilder()
+        zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(expectedRemoteEndpoint)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
@@ -342,7 +343,7 @@ class OtelToZipkinSpanTransformerTest {
         Endpoint.newBuilder().serviceName("remote-test-service").build();
 
     Span expectedSpan =
-        zipkinSpan(Span.Kind.valueOf(spanKind.name()), localIp).toBuilder()
+        zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(expectedRemoteEndpoint)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
@@ -493,5 +494,10 @@ class OtelToZipkinSpanTransformerTest {
             zipkinSpan(Span.Kind.SERVER, localIp).toBuilder()
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .build());
+  }
+
+  @Nullable
+  private static Span.Kind toZipkinSpanKind(SpanKind spanKind) {
+    return spanKind != SpanKind.INTERNAL ? Span.Kind.valueOf(spanKind.name()) : null;
   }
 }
