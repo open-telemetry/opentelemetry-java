@@ -90,6 +90,7 @@ val DEPENDENCIES = listOf(
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
+  "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.11",
   "org.assertj:assertj-core:3.23.1",

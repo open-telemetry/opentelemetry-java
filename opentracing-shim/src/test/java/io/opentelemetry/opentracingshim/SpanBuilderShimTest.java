@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
+import io.opentracing.noop.NoopSpan;
 import java.math.BigInteger;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +58,19 @@ class SpanBuilderShimTest {
       }
     } finally {
       parentSpan.finish();
+    }
+  }
+
+  @Test
+  void noop_parent_span() {
+    SpanShim childSpan =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(NoopSpan.INSTANCE).start();
+    try {
+      SpanData spanData = ((ReadableSpan) childSpan.getSpan()).toSpanData();
+      assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+    } finally {
+      childSpan.finish();
     }
   }
 
