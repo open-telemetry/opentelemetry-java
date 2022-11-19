@@ -61,13 +61,15 @@ jobs:
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
         if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
         run: |
-          if git diff --quiet
+          # need to "git add" in case any generated files did not already exist
+          git add docs/apidiffs
+          if git diff --cached --quiet
           then 
             echo "No diff detected."
           else 
             echo "Diff detected - did you run './gradlew jApiCmp'?"
-            echo $(git diff --name-only)
-            echo $(git diff)
+            echo $(git diff --cached --name-only)
+            echo $(git diff --cached)
             exit 1
           fi
 
