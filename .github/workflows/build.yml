@@ -131,7 +131,7 @@ jobs:
   required-status-check:
     # markdown-link-check is not required so pull requests are not blocked if external links break
     # misspell-check is not required so pull requests are not blocked if the misspell dictionary is
-    # udpated
+    # updated
     needs:
       - build
     runs-on: ubuntu-latest
