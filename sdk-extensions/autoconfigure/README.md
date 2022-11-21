@@ -169,6 +169,9 @@ The logging-otlp exporter writes the telemetry data to the JUL logger in OLTP JS
 | otel.metrics.exporter=logging-otlp | OTEL_METRICS_EXPORTER=logging-otlp | Select the logging OTLP JSON exporter for metrics  |
 | otel.logs.exporter=logging-otlp    | OTEL_LOGS_EXPORTER=logging-otlp    | Select the logging OTLP JSON exporter for logs     |
 
+**NOTE:** While the `OtlpJsonLogging{Signal}Exporters` are stable, specifying their use
+via `otel.{signal}.exporter=logging-otlp` is experimental and subject to change or removal.
+
 ## Propagator
 
 The propagators determine which distributed tracing header formats are used, and which baggage propagation header formats are used.

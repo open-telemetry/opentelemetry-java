@@ -145,6 +145,12 @@ testing {
         }
       }
     }
+    val testLoggingOtlp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:logging-otlp"))
+        implementation("com.google.guava:guava")
+      }
+    }
     val testOtlp by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:all"))
