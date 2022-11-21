@@ -41,7 +41,6 @@ final class OtelToZipkinSpanTransformer {
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
   private final Supplier<InetAddress> ipAddressSupplier;
-
   /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
    * an InetAddress, which may be null. This value from this Supplier will be used when creating the
@@ -125,8 +124,9 @@ final class OtelToZipkinSpanTransformer {
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationScopeInfo.getVersion());
     }
 
-    for (EventData annotation : spanData.getEvents()) {
-      spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
+    for (EventData eventData : spanData.getEvents()) {
+      String annotation = EventDataToAnnotation.apply(eventData);
+      spanBuilder.addAnnotation(toEpochMicros(eventData.getEpochNanos()), annotation);
     }
     int droppedEvents = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
     if (droppedEvents > 0) {
@@ -136,7 +136,7 @@ final class OtelToZipkinSpanTransformer {
     return spanBuilder.build();
   }
 
-  private static String nullToEmpty(String value) {
+  private static String nullToEmpty(@Nullable String value) {
     return value != null ? value : "";
   }
 
