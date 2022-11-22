@@ -136,4 +136,13 @@ class MultiLogRecordExporterTest {
     verify(logRecordExporter1).shutdown();
     verify(logRecordExporter2).shutdown();
   }
+
+  @Test
+  void toString_Valid() {
+    when(logRecordExporter1.toString()).thenReturn("LogRecordExporter1");
+    when(logRecordExporter2.toString()).thenReturn("LogRecordExporter2");
+    assertThat(LogRecordExporter.composite(logRecordExporter1, logRecordExporter2).toString())
+        .isEqualTo(
+            "MultiLogRecordExporter{logRecordExporters=[LogRecordExporter1, LogRecordExporter2]}");
+  }
 }
