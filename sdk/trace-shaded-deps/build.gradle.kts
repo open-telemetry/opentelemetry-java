@@ -26,3 +26,8 @@ tasks {
     into("build/extracted/shadow")
   }
 }
+
+tasks.withType<Test>().configureEach {
+  // JcToolsSecurityManagerTest interferes with JcToolsTest
+  setForkEvery(1)
+}

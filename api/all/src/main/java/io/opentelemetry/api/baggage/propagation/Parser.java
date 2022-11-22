@@ -7,8 +7,6 @@ package io.opentelemetry.api.baggage.propagation;
 
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
@@ -64,6 +62,8 @@ class Parser {
               } else {
                 skipToNext = true;
               }
+            } else if (state == State.VALUE) {
+              skipToNext = !value.tryNextChar(current, i);
             }
             break;
           }
@@ -146,11 +146,7 @@ class Parser {
     if (value == null) {
       return null;
     }
-    try {
-      return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      return null;
-    }
+    return BaggageCodec.decode(value, StandardCharsets.UTF_8);
   }
 
   /**

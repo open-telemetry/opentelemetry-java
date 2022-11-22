@@ -12,6 +12,8 @@ dependencies {
   api("io.opentracing:opentracing-api")
   implementation(project(":semconv"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":sdk:testing"))
 }
 

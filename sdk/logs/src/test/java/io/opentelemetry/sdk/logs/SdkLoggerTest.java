@@ -46,7 +46,7 @@ class SdkLoggerTest {
     LoggerSharedState state = mock(LoggerSharedState.class);
     InstrumentationScopeInfo info = InstrumentationScopeInfo.create("foo");
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    LogRecordProcessor logRecordProcessor = seenLog::set;
+    LogRecordProcessor logRecordProcessor = (context, logRecord) -> seenLog.set(logRecord);
     Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(5L);
 
@@ -69,7 +69,7 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLogRecordProcessor(seenLog::set)
+            .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
             .setLogLimits(() -> LogLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
     LogRecordBuilder logRecordBuilder = loggerProvider.get("test").logRecordBuilder();
@@ -109,7 +109,7 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLogRecordProcessor(seenLog::set)
+            .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
             .setLogLimits(
                 () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build())
             .build();
@@ -140,7 +140,7 @@ class SdkLoggerTest {
     loggerProvider.shutdown().join(10, TimeUnit.SECONDS);
     loggerProvider.get("test").logRecordBuilder().emit();
 
-    verify(logRecordProcessor, never()).onEmit(any());
+    verify(logRecordProcessor, never()).onEmit(any(), any());
   }
 
   @Test
@@ -148,7 +148,9 @@ class SdkLoggerTest {
   void eventBuilder() {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder().addLogRecordProcessor(seenLog::set).build();
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
+            .build();
 
     // Emit event from logger with name and add event domain
     loggerProvider

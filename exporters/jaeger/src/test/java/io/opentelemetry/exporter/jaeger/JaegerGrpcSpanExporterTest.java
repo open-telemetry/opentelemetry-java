@@ -357,6 +357,57 @@ class JaegerGrpcSpanExporterTest {
     assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setCompression(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("compressionMethod");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setCompression("foo"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
+  }
+
+  @Test
+  void compressionDefault() {
+    JaegerGrpcSpanExporter exporter = JaegerGrpcSpanExporter.builder().build();
+    try {
+      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionNone() {
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.builder().setCompression("none").build();
+    try {
+      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionGzip() {
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.builder().setCompression("gzip").build();
+    try {
+      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(true);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionEnabledAndDisabled() {
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.builder().setCompression("gzip").setCompression("none").build();
+    try {
+      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test

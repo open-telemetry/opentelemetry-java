@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.43.0"
+    id("com.github.ben-manes.versions") version "0.44.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.gradle.enterprise") version "3.11.2"
+    id("com.gradle.enterprise") version "3.11.4"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.7.20"
-    id("org.graalvm.buildtools.native") version "0.9.16"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
+    id("org.graalvm.buildtools.native") version "0.9.18"
   }
 }
 
@@ -30,7 +30,6 @@ include(":bom-alpha")
 include(":context")
 include(":dependencyManagement")
 include(":extensions:incubator")
-include(":extensions:aws")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
@@ -63,7 +62,6 @@ include(":sdk:trace")
 include(":sdk:trace-shaded-deps")
 include(":sdk-extensions:autoconfigure")
 include(":sdk-extensions:autoconfigure-spi")
-include(":sdk-extensions:resources")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")

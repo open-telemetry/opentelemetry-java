@@ -2,6 +2,101 @@
 
 ## Unreleased
 
+## Version 1.20.1 (2022-11-15)
+
+### Bugfixes
+
+* Fix bug in `ComponentRegistry` that produces `ConcurrentModificationException` when reading
+  metrics at the same time as obtaining a meter.
+  [(#4951)](https://github.com/open-telemetry/opentelemetry-java/pull/4951)
+
+## Version 1.20.0 (2022-11-11)
+
+### API
+
+- Fix bug in `W3CBaggagePropagator` that caused `+` characters to be decoded as whitespace ` `.
+  [(#4898)](https://github.com/open-telemetry/opentelemetry-java/pull/4898)
+
+#### API Extensions
+
+* DEPRECATION: the `opentelemetry-extension-aws` module containing
+  various `AwsXrayPropagator` implementations has been deprecated for removal in next minor version.
+  A copy of the code will instead be maintained
+  in [opentelemetry-java-contrib/aws-xray-propagator](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator)
+  and published under
+  coordinates `io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:{version}`.
+  [(#4862)](https://github.com/open-telemetry/opentelemetry-java/pull/4862)
+
+### SDK
+
+#### Traces
+
+* Add graal hints for shaded dependencies, allowing `JcTools` queue to be used in graal environment.
+  [(#4832)](https://github.com/open-telemetry/opentelemetry-java/pull/4832)
+* `Sampler#getDescription()` implementations are now locale independent.
+  [(#4877)](https://github.com/open-telemetry/opentelemetry-java/pull/4887)
+* Allow SDK to run in environments prohibiting use of `sun.misc.Unsafe`.
+  [(#4902)](https://github.com/open-telemetry/opentelemetry-java/pull/4902)
+
+#### Metrics
+
+* Add `toString` to `AbstractInstrument`.
+  [(#4833)](https://github.com/open-telemetry/opentelemetry-java/pull/4883)
+* Add zero bucket boundary to default explicit bucket histogram aggregation.
+  [(#4819)](https://github.com/open-telemetry/opentelemetry-java/pull/4819)
+
+#### Logs
+
+* Optimize log hot path, reducing allocations significantly.
+  [(#4913)](https://github.com/open-telemetry/opentelemetry-java/pull/4913)
+* BREAKING: Add `Context` argument to `LogRecordProcessor#onEmit`.
+  [(#4889)](https://github.com/open-telemetry/opentelemetry-java/pull/4889)
+
+#### Exporter
+
+* `OtlpLogging{Signal}Exporter`s encode enums as numbers.
+  [(#4783)](https://github.com/open-telemetry/opentelemetry-java/pull/4783)
+* Add `User-Agent` header of `OTel OTLP Exporter Java/{version}` to OTLP export requests.
+  [(#4784)](https://github.com/open-telemetry/opentelemetry-java/pull/4784)
+
+#### SDK Extensions
+
+* WARNING: `opentelemetry-sdk-extension-aws` has been removed following its relocation
+  to [opentelemetry-java-contrib/instrumentation-aws-xray](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray),
+  which is published under
+  coordinates `io.opentelemetry.contrib:opentelemetry-aws-resources:{version}`.
+  We will push security patches to `1.19.x` as needed. The latest `opentelemetry-bom` will point
+  to the latest published version, currently `1.19.0`.
+  [(#4830)](https://github.com/open-telemetry/opentelemetry-java/pull/4830)
+* WARNING: `opentelemetry-sdk-extension-resources` has been removed following its relocation
+  to [opentelemetry-java-instrumentation/instrumentation/resources/library](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library),
+  which is published under
+  coordinates `io.opentelemetry.instrumentation:opentelemetry-resources:{version}`.
+  We will push security patches to `1.19.x` as needed. The latest `opentelemetry-bom` will point
+  to the latest published version, currently `1.19.0`.
+  [(#4828)](https://github.com/open-telemetry/opentelemetry-java/pull/4828)
+* Add autoconfigure support for `BatchLogRecordProcessor`.
+  [(#4811)](https://github.com/open-telemetry/opentelemetry-java/pull/4811)
+* Autoconfigure performs percent decoding on `otel.resource.attributes` values.
+  [(#4653)](https://github.com/open-telemetry/opentelemetry-java/issues/4653)
+* Unify compression configuration for exporters including
+  [(#4775)](https://github.com/open-telemetry/opentelemetry-java/issues/4775):
+  * Fix handling of `none` in OTLP exporters.
+  * Add `JaegerGrpcSpanExporterBuilder#setCompression(String)`.
+  * Add `ZipkinSpanExporterBuilder#setCompression(String)`.
+
+### Semantic Conventions
+
+* Add migration notes to deprecated attributes
+  [(#4840)](https://github.com/open-telemetry/opentelemetry-java/pull/4840)
+
+### OpenTracing Shim
+
+* Use `opentracing-shim` as instrumentation scope name.
+  [(#4890)](https://github.com/open-telemetry/opentelemetry-java/pull/4890)
+* Add full support for multiple parents.
+  [(#4916)](https://github.com/open-telemetry/opentelemetry-java/pull/4916)
+
 ## Version 1.19.0 (2022-10-07)
 
 This release contains a large number of changes to the log signal following a series of significant

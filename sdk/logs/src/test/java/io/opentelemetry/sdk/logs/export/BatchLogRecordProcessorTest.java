@@ -291,7 +291,7 @@ class BatchLogRecordProcessorTest {
     BatchLogRecordProcessor processor =
         BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
     try {
-      assertThatCode(() -> processor.onEmit(null)).doesNotThrowAnyException();
+      assertThatCode(() -> processor.onEmit(null, null)).doesNotThrowAnyException();
     } finally {
       processor.shutdown();
     }

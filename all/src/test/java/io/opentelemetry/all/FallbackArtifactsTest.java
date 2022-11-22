@@ -28,6 +28,20 @@ class FallbackArtifactsTest {
   }
 
   @Test
+  void sdkExtensionResources() {
+    classAvailable("io.opentelemetry.sdk.extension.resources.ContainerResource");
+    classAvailable("io.opentelemetry.sdk.extension.resources.ContainerResourceProvider");
+    classAvailable("io.opentelemetry.sdk.extension.resources.HostResource");
+    classAvailable("io.opentelemetry.sdk.extension.resources.HostResourceProvider");
+    classAvailable("io.opentelemetry.sdk.extension.resources.OsResource");
+    classAvailable("io.opentelemetry.sdk.extension.resources.OsResourceProvider");
+    classAvailable("io.opentelemetry.sdk.extension.resources.ProcessResource");
+    classAvailable("io.opentelemetry.sdk.extension.resources.ProcessResourceProvider");
+    classAvailable("io.opentelemetry.sdk.extension.resources.ProcessRuntimeResource");
+    classAvailable("io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider");
+  }
+
+  @Test
   void sdkExtensionAws() {
     classAvailable("io.opentelemetry.sdk.extension.aws.resource.BeanstalkResource");
     classAvailable("io.opentelemetry.sdk.extension.aws.resource.BeanstalkResourceProvider");
@@ -40,6 +54,12 @@ class FallbackArtifactsTest {
     classAvailable("io.opentelemetry.sdk.extension.aws.resource.LambdaResource");
     classAvailable("io.opentelemetry.sdk.extension.aws.resource.LambdaResourceProvider");
     classAvailable("io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator");
+  }
+
+  @Test
+  void extensionAws() {
+    classAvailable("io.opentelemetry.extension.aws.AwsConfigurablePropagator");
+    classAvailable("io.opentelemetry.extension.aws.AwsXrayPropagator");
   }
 
   private static void classAvailable(String fqcn) {

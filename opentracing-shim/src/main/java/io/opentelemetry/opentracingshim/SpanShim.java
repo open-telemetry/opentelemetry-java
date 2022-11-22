@@ -112,7 +112,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     if (value == null) {
       return this;
     }
-    // TODO - Verify only the 'basic' types are supported/used.
+
     if (value instanceof Integer
         || value instanceof Long
         || value instanceof Short
@@ -121,7 +121,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     } else if (value instanceof Float || value instanceof Double) {
       span.setAttribute(key, value.doubleValue());
     } else {
-      throw new IllegalArgumentException("Number type not supported");
+      span.setAttribute(key, value.toString());
     }
 
     return this;

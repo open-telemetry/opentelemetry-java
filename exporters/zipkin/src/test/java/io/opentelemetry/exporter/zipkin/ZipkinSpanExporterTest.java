@@ -136,6 +136,10 @@ class ZipkinSpanExporterTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
 
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setCompression(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("compressionMethod");
+
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setSender(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("sender");
@@ -143,5 +147,46 @@ class ZipkinSpanExporterTest {
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("encoder");
+  }
+
+  @Test
+  void compressionDefault() {
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build();
+    try {
+      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionNone() {
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("none").build();
+    try {
+      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionGzip() {
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("gzip").build();
+    try {
+      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionEnabledAndDisabled() {
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder().setCompression("gzip").setCompression("none").build();
+    try {
+      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
   }
 }
