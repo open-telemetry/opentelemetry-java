@@ -23,11 +23,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -124,15 +120,7 @@ public final class OpenTelemetryExtension
    * requires AssertJ to be on the classpath.
    */
   public TracesAssert assertTraces() {
-    Map<String, List<SpanData>> traces =
-        getSpans().stream()
-            .collect(
-                Collectors.groupingBy(
-                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()));
-    for (List<SpanData> trace : traces.values()) {
-      trace.sort(Comparator.comparing(SpanData::getStartEpochNanos));
-    }
-    return assertThat(traces.values());
+    return assertThat(spanExporter.getFinishedSpanItems());
   }
 
   /**

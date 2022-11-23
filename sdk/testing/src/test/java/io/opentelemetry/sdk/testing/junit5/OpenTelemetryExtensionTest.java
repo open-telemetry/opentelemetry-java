@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -58,9 +59,9 @@ class OpenTelemetryExtensionTest {
 
   @Test
   public void assertTraces() {
-    Span span = tracer.spanBuilder("testa1").startSpan();
+    Span span = tracer.spanBuilder("testa1").setStartTimestamp(1000, TimeUnit.SECONDS).startSpan();
     try (Scope ignored = span.makeCurrent()) {
-      tracer.spanBuilder("testa2").startSpan().end();
+      tracer.spanBuilder("testa2").setStartTimestamp(1000, TimeUnit.SECONDS).startSpan().end();
     } finally {
       span.end();
     }

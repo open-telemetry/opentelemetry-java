@@ -7,12 +7,17 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.assertj.core.api.AbstractIterableAssert;
 
@@ -20,6 +25,40 @@ import org.assertj.core.api.AbstractIterableAssert;
 public final class TracesAssert
     extends AbstractIterableAssert<
         TracesAssert, List<List<SpanData>>, List<SpanData>, TraceAssert> {
+
+  /** Compare spans by start time, placing parents before their children as a tiebreaker. */
+  static final Comparator<SpanData> SPAN_DATA_COMPARATOR =
+      Comparator.comparing(SpanData::getStartEpochNanos)
+          .thenComparing(
+              (span1, span2) -> {
+                SpanContext parent1 = span1.getParentSpanContext();
+                if (parent1.isValid() && parent1.getSpanId().equals(span2.getSpanId())) {
+                  return 1;
+                }
+                SpanContext parent2 = span2.getParentSpanContext();
+                if (parent2.isValid() && parent2.getSpanId().equals(span1.getSpanId())) {
+                  return -1;
+                }
+                return 0;
+              });
+
+  /**
+   * Returns an assertion for a list of traces. The provided spans will be grouped into traces by
+   * their trace ID.
+   */
+  public static TracesAssert assertThat(List<SpanData> spanData) {
+    Map<String, List<SpanData>> traces =
+        spanData.stream()
+            .collect(
+                Collectors.groupingBy(
+                    SpanData::getTraceId,
+                    LinkedHashMap::new,
+                    Collectors.toCollection(ArrayList::new)));
+    for (List<SpanData> trace : traces.values()) {
+      trace.sort(SPAN_DATA_COMPARATOR);
+    }
+    return assertThat(traces.values());
+  }
 
   /**
    * Returns an assertion for a list of traces. The traces must already be grouped into {@code
