@@ -161,7 +161,11 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return this;
   }
 
-  /** Asserts the log has attributes matching all {@code assertions}. */
+  /**
+   * Asserts the log has attributes matching all {@code assertions}. Assertions can be created using
+   * methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public LogRecordDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
     return hasAttributesSatisfying(Arrays.asList(assertions));
   }
@@ -176,7 +180,11 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return myself;
   }
 
-  /** Asserts the log has attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the log has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public LogRecordDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
   }

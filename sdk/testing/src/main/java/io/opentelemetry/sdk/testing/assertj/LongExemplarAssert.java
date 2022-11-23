@@ -96,7 +96,11 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
     return hasFilteredAttributes(attributes);
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions}. */
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public LongExemplarAssert hasFilteredAttributesSatisfying(AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
   }
@@ -112,7 +116,11 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
     return myself;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
+   * Assertions can be created using methods like {@link
+   * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public LongExemplarAssert hasFilteredAttributesSatisfyingExactly(
       AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfying(Arrays.asList(assertions));

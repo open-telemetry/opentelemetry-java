@@ -306,12 +306,20 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has attributes matching all {@code assertions}. */
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public SpanDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
     return hasAttributesSatisfying(Arrays.asList(assertions));
   }
 
-  /** Asserts the span has attributes matching all {@code assertions}. */
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public SpanDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributes(
         actual.getAttributes(),

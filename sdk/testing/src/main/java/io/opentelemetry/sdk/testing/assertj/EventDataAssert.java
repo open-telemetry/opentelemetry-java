@@ -85,7 +85,11 @@ public final class EventDataAssert extends AbstractAssert<EventDataAssert, Event
     return this;
   }
 
-  /** Asserts the event has attributes matching all {@code assertions}. */
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public EventDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
     return hasAttributesSatisfying(Arrays.asList(assertions));
   }
@@ -100,7 +104,11 @@ public final class EventDataAssert extends AbstractAssert<EventDataAssert, Event
     return this;
   }
 
-  /** Asserts the event has attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the event has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public EventDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
   }

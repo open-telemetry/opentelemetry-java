@@ -97,7 +97,11 @@ public final class DoubleExemplarAssert
     return hasFilteredAttributes(attributes);
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions}. */
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public DoubleExemplarAssert hasFilteredAttributesSatisfying(AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
   }
@@ -113,7 +117,11 @@ public final class DoubleExemplarAssert
     return myself;
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
+   * Assertions can be created using methods like {@link
+   * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(
       AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfyingExactly(Arrays.asList(assertions));
