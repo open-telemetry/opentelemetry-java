@@ -83,6 +83,14 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
+   * Returns {@code true} if the global {@link OpenTelemetry} instance is registered or else {@code
+   * false}.
+   */
+  public static boolean isRegistered() {
+    return globalOpenTelemetry != null;
+  }
+
+  /**
    * Sets the {@link OpenTelemetry} that should be the global instance. Future calls to {@link
    * #get()} will return the provided {@link OpenTelemetry} instance. This should be called once as
    * early as possible in your application initialization logic, often in a {@code static} block in
