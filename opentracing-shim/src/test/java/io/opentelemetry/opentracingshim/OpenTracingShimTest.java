@@ -63,4 +63,15 @@ class OpenTracingShimTest {
     assertThat(tracerShim.propagators().textMapPropagator()).isSameAs(textMapPropagator);
     assertThat(tracerShim.propagators().httpHeadersPropagator()).isSameAs(httpHeadersPropagator);
   }
+
+  @Test
+  void createTracerShim_withTraceProviderAndPropagator() {
+    TextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    SdkTracerProvider sdk = SdkTracerProvider.builder().build();
+    TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim(sdk, textMapPropagator);
+
+    assertThat(tracerShim.propagators().httpHeadersPropagator()).isSameAs(textMapPropagator);
+    assertThat(tracerShim.propagators().textMapPropagator()).isSameAs(textMapPropagator);
+    assertThat(tracerShim.tracer()).isSameAs(sdk.get("opentracing-shim"));
+  }
 }
