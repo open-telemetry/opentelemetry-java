@@ -44,9 +44,9 @@ for more details.
 
 The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return a minimally configured instance (i.e. `OpenTelemetrySdk.builder().build()`).
 
-| System property   | Environment variable | Purpose                                                                                                                                                                                      |
-|-------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. The now legacy property `otel.experimental.sdk.enabled` will continue to work with default `true` during a transition period. |
+| System property   | Environment variable | Purpose                                                        |
+|-------------------|----------------------|----------------------------------------------------------------|
+| otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. |
 
 ## Exporters
 
