@@ -54,8 +54,13 @@ class LoggingOtlpTest {
     sdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
     sdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
-    await().untilAsserted(() -> assertThat(spansCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
-    await().untilAsserted(() -> assertThat(metricsCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
-    await().untilAsserted(() -> assertThat(logsCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
+    await()
+        .untilAsserted(
+            () -> assertThat(spansCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
+    await()
+        .untilAsserted(
+            () -> assertThat(metricsCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
+    await()
+        .untilAsserted(() -> assertThat(logsCapturer.getEvents().size()).isGreaterThanOrEqualTo(1));
   }
 }
