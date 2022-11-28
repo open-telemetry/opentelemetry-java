@@ -139,4 +139,9 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static boolean isValidBaggageValue(String value) {
     return value != null;
   }
+
+  @Override
+  public String toString() {
+    return "W3CBaggagePropagator";
+  }
 }

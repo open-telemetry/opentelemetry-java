@@ -32,4 +32,9 @@ final class NoopTextMapPropagator implements TextMapPropagator {
     }
     return context;
   }
+
+  @Override
+  public String toString() {
+    return "NoopTextMapPropagator";
+  }
 }

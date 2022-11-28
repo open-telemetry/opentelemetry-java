@@ -80,7 +80,6 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   @Override
   public String toString() {
-    // TODO(anuraaga): Add propagators
     return "OpenTelemetrySdk{"
         + "tracerProvider="
         + tracerProvider.unobfuscate()
@@ -88,6 +87,8 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         + meterProvider.unobfuscate()
         + ", loggerProvider="
         + loggerProvider
+        + ", propagators="
+        + propagators
         + "}";
   }
 

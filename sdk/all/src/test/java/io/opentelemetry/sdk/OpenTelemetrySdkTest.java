@@ -326,6 +326,8 @@ class OpenTelemetrySdkTest {
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     LogRecordExporter logRecordExporter = mock(LogRecordExporter.class);
     when(logRecordExporter.toString()).thenReturn("MockLogRecordExporter{}");
+    TextMapPropagator propagator = mock(TextMapPropagator.class);
+    when(propagator.toString()).thenReturn("MockTextMapPropagator{}");
     Resource resource =
         Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
     OpenTelemetrySdk sdk =
@@ -352,6 +354,7 @@ class OpenTelemetrySdkTest {
                         SimpleLogRecordProcessor.create(
                             LogRecordExporter.composite(logRecordExporter, logRecordExporter)))
                     .build())
+            .setPropagators(ContextPropagators.create(propagator))
             .build();
 
     assertThat(sdk.toString())
@@ -376,7 +379,8 @@ class OpenTelemetrySdkTest {
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
                 + "logRecordProcessor=SimpleLogRecordProcessor{logRecordExporter=MultiLogRecordExporter{logRecordExporters=[MockLogRecordExporter{}, MockLogRecordExporter{}]}}"
-                + "}"
+                + "}, "
+                + "propagators=DefaultContextPropagators{textMapPropagator=MockTextMapPropagator{}}"
                 + "}");
   }
 }
