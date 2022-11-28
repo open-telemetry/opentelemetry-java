@@ -11,6 +11,7 @@ import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsUtil;
@@ -58,7 +59,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private byte[] privateKeyPem;
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
-  private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
+  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;

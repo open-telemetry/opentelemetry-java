@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.zipkin;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.net.InetAddress;
 import java.time.Duration;
@@ -30,7 +31,7 @@ public final class ZipkinSpanExporterBuilder {
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
-  private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
+  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -138,8 +139,8 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
-   * will not be collected.
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
    *
    * @return this.
    * @since 1.17.0

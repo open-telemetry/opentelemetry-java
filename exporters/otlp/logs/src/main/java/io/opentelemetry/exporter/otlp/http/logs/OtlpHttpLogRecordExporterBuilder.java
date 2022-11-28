@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.http.logs;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
@@ -97,8 +98,8 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, metrics
-   * will not be collected.
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
   public OtlpHttpLogRecordExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
