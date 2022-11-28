@@ -155,6 +155,7 @@ class FullConfigTest {
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
     // Initialize here so we can shutdown when done
+    GlobalOpenTelemetry.resetForTest();
     autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
   }
 
