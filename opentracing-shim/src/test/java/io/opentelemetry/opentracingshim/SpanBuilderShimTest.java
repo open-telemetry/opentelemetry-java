@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -18,10 +19,12 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
+import io.opentracing.tag.Tags;
 import java.math.BigInteger;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +42,23 @@ class SpanBuilderShimTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
+  }
+
+  @Test
+  void default_values() {
+    SpanShim span = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    try {
+      SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
+      assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
+      assertThat(spanData.getStatus()).isEqualTo(StatusData.unset());
+      assertThat(spanData.getSpanContext()).isNotEqualTo(SpanContext.getInvalid());
+      assertThat(spanData.getKind()).isEqualTo(SpanKind.INTERNAL);
+      assertThat(spanData.getAttributes().size()).isEqualTo(0);
+      assertThat(spanData.getEvents()).hasSize(0);
+      assertThat(spanData.getLinks()).hasSize(0);
+    } finally {
+      span.finish();
+    }
   }
 
   @Test
@@ -295,6 +315,54 @@ class SpanBuilderShimTest {
         (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).withStartTimestamp(micros).start();
     SpanData spanData = ((ReadableSpan) spanShim.getSpan()).toSpanData();
     assertThat(spanData.getStartEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  @Test
+  void setAttribute_errorAsBoolean() {
+    SpanShim span1 =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+                .withTag(Tags.ERROR.getKey(), true)
+                .start();
+    SpanShim span2 =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+                .withTag(Tags.ERROR.getKey(), false)
+                .start();
+    try {
+      SpanData spanData1 = ((ReadableSpan) span1.getSpan()).toSpanData();
+      assertThat(spanData1.getStatus()).isEqualTo(StatusData.error());
+
+      SpanData spanData2 = ((ReadableSpan) span2.getSpan()).toSpanData();
+      assertThat(spanData2.getStatus()).isEqualTo(StatusData.ok());
+    } finally {
+      span1.finish();
+      span2.finish();
+    }
+  }
+
+  @Test
+  void setAttribute_errorAsString() {
+    SpanShim span1 =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+                .withTag(Tags.ERROR.getKey(), "tRuE")
+                .start();
+    SpanShim span2 =
+        (SpanShim)
+            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+                .withTag(Tags.ERROR.getKey(), "FaLsE")
+                .start();
+    try {
+      SpanData spanData1 = ((ReadableSpan) span1.getSpan()).toSpanData();
+      assertThat(spanData1.getStatus()).isEqualTo(StatusData.error());
+
+      SpanData spanData2 = ((ReadableSpan) span2.getSpan()).toSpanData();
+      assertThat(spanData2.getStatus()).isEqualTo(StatusData.ok());
+    } finally {
+      span1.finish();
+      span2.finish();
+    }
   }
 
   @Test

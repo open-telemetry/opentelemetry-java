@@ -346,4 +346,17 @@ class SdkLoggerProviderTest {
     assertThat(seenLogs.size()).isEqualTo(1);
     assertThat(seenLogs.get(0).toLogRecordData().getEpochNanos()).isEqualTo(now);
   }
+
+  @Test
+  void toString_Valid() {
+    when(logRecordProcessor.toString()).thenReturn("MockLogRecordProcessor");
+    assertThat(sdkLoggerProvider.toString())
+        .isEqualTo(
+            "SdkLoggerProvider{"
+                + "clock=SystemClock{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.21.0-SNAPSHOT\"}}, "
+                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
+                + "logRecordProcessor=MockLogRecordProcessor"
+                + "}");
+  }
 }

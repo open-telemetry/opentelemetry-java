@@ -119,4 +119,11 @@ class SimpleLogRecordProcessorTest {
     assertThat(shutdown.isSuccess()).isTrue();
     verify(logRecordExporter).shutdown();
   }
+
+  @Test
+  void toString_Valid() {
+    when(logRecordExporter.toString()).thenReturn("MockLogRecordExporter");
+    assertThat(logRecordProcessor.toString())
+        .isEqualTo("SimpleLogRecordProcessor{logRecordExporter=MockLogRecordExporter}");
+  }
 }

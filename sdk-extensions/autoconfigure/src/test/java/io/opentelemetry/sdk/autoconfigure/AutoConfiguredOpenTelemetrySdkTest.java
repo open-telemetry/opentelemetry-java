@@ -360,31 +360,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void disableSdkLegacyProperty() {
-    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
-        traceCustomizer = getTracerProviderBuilderSpy();
-    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
-        metricCustomizer = getMeterProviderBuilderSpy();
-    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
-        getLoggerProviderBuilderSpy();
-
-    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "false"))
-            .addTracerProviderCustomizer(traceCustomizer)
-            .addMeterProviderCustomizer(metricCustomizer)
-            .addLoggerProviderCustomizer(logCustomizer)
-            .build();
-
-    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
-
-    // When the SDK is disabled, configuration is skipped and none of the customizers are called
-    verify(traceCustomizer, never()).apply(any(), any());
-    verify(metricCustomizer, never()).apply(any(), any());
-    verify(logCustomizer, never()).apply(any(), any());
-  }
-
-  @Test
   void disableSdk() {
     BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
         traceCustomizer = getTracerProviderBuilderSpy();
@@ -396,32 +371,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-            .addTracerProviderCustomizer(traceCustomizer)
-            .addMeterProviderCustomizer(metricCustomizer)
-            .addLoggerProviderCustomizer(logCustomizer)
-            .build();
-
-    assertThat(autoConfiguredSdk.getOpenTelemetrySdk()).isInstanceOf(OpenTelemetrySdk.class);
-
-    // When the SDK is disabled, configuration is skipped and none of the customizers are called
-    verify(traceCustomizer, never()).apply(any(), any());
-    verify(metricCustomizer, never()).apply(any(), any());
-    verify(logCustomizer, never()).apply(any(), any());
-  }
-
-  @Test
-  void disableSdkNewPropertyWins() {
-    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
-        traceCustomizer = getTracerProviderBuilderSpy();
-    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
-        metricCustomizer = getMeterProviderBuilderSpy();
-    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
-        getLoggerProviderBuilderSpy();
-
-    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-            .addPropertiesSupplier(() -> singletonMap("otel.experimental.sdk.enabled", "true"))
             .addTracerProviderCustomizer(traceCustomizer)
             .addMeterProviderCustomizer(metricCustomizer)
             .addLoggerProviderCustomizer(logCustomizer)
