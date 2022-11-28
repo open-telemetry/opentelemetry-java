@@ -103,7 +103,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
    */
   public OtlpHttpLogRecordExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    delegate.setMeterProviderSupplier(meterProvider);
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 

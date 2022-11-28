@@ -102,7 +102,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setMeterProviderSupplier(MeterProvider meterProvider) {
+  public OkHttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
     this.meterProviderSupplier = () -> meterProvider;
     return this;
   }

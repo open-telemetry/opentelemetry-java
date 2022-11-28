@@ -106,7 +106,7 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    delegate.setMeterProviderSupplier(meterProvider);
+    delegate.setMeterProvider(meterProvider);
     return this;
   }
 
