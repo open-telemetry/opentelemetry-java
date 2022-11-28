@@ -77,8 +77,8 @@ class NotOnClasspathTest {
                     "logging", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Logging Trace Exporter enabled but opentelemetry-exporter-logging not found on "
-                + "classpath");
+            "otel.traces.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
@@ -92,8 +92,8 @@ class NotOnClasspathTest {
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Logging Metrics Exporter enabled but opentelemetry-exporter-logging not found on "
-                + "classpath");
+            "otel.metrics.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
@@ -104,8 +104,8 @@ class NotOnClasspathTest {
                     "logging", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Logging Log Exporter enabled but opentelemetry-exporter-logging not found on "
-                + "classpath");
+            "otel.logs.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test

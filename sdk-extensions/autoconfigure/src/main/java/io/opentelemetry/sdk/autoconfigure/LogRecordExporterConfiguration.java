@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -30,6 +29,12 @@ import javax.annotation.Nullable;
 class LogRecordExporterConfiguration {
 
   private static final String EXPORTER_NONE = "none";
+  private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
+
+  static {
+    EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
+  }
 
   // Visible for test
   static Map<String, LogRecordExporter> configureLogRecordExporters(
@@ -85,15 +90,18 @@ class LogRecordExporterConfiguration {
     switch (name) {
       case "otlp":
         return configureOtlpLogs(config, meterProvider);
-      case "logging":
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.logging.SystemOutLogRecordExporter",
-            "Logging Log Exporter",
-            "opentelemetry-exporter-logging");
-        return SystemOutLogRecordExporter.create();
       default:
         LogRecordExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
+          String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
+          if (artifactId != null) {
+            throw new ConfigurationException(
+                "otel.logs.exporter set to \""
+                    + name
+                    + "\" but "
+                    + artifactId
+                    + " not found on classpath. Make sure to add it as a dependency.");
+          }
           throw new ConfigurationException("Unrecognized value for otel.logs.exporter: " + name);
         }
         return spiExporter;
