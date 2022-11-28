@@ -21,7 +21,6 @@ dependencies {
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:prometheus"))
-  compileOnly(project(":exporters:zipkin"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

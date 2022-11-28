@@ -19,8 +19,6 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
@@ -41,6 +39,7 @@ final class SpanExporterConfiguration {
   static {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("zipkin", "opentelemetry-exporter-zipkin");
   }
 
   // Visible for testing
@@ -69,12 +68,7 @@ final class SpanExporterConfiguration {
     }
 
     NamedSpiManager<SpanExporter> spiExportersManager =
-        SpiUtil.loadConfigurable(
-            ConfigurableSpanExporterProvider.class,
-            ConfigurableSpanExporterProvider::getName,
-            ConfigurableSpanExporterProvider::createExporter,
-            config,
-            serviceClassLoader);
+        spanExporterSpiManager(config, serviceClassLoader);
 
     return exporterNames.stream()
         .collect(
@@ -84,6 +78,17 @@ final class SpanExporterConfiguration {
                     spanExporterCustomizer.apply(
                         configureExporter(exporterName, config, spiExportersManager, meterProvider),
                         config)));
+  }
+
+  // Visible for testing
+  static NamedSpiManager<SpanExporter> spanExporterSpiManager(
+      ConfigProperties config, ClassLoader serviceClassLoader) {
+    return SpiUtil.loadConfigurable(
+        ConfigurableSpanExporterProvider.class,
+        ConfigurableSpanExporterProvider::getName,
+        ConfigurableSpanExporterProvider::createExporter,
+        config,
+        serviceClassLoader);
   }
 
   // Visible for testing
@@ -97,8 +102,6 @@ final class SpanExporterConfiguration {
         return configureOtlp(config, meterProvider);
       case "jaeger":
         return configureJaeger(config, meterProvider);
-      case "zipkin":
-        return configureZipkin(config);
       case "logging-otlp":
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter",
@@ -192,26 +195,6 @@ final class SpanExporterConfiguration {
     }
 
     builder.setMeterProvider(meterProvider);
-
-    return builder.build();
-  }
-
-  private static SpanExporter configureZipkin(ConfigProperties config) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.zipkin.ZipkinSpanExporter",
-        "Zipkin Exporter",
-        "opentelemetry-exporter-zipkin");
-    ZipkinSpanExporterBuilder builder = ZipkinSpanExporter.builder();
-
-    String endpoint = config.getString("otel.exporter.zipkin.endpoint");
-    if (endpoint != null) {
-      builder.setEndpoint(endpoint);
-    }
-
-    Duration timeout = config.getDuration("otel.exporter.zipkin.timeout");
-    if (timeout != null) {
-      builder.setReadTimeout(timeout);
-    }
 
     return builder.build();
   }
