@@ -30,7 +30,7 @@ public final class ZipkinSpanExporterBuilder {
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -146,7 +146,7 @@ public final class ZipkinSpanExporterBuilder {
    */
   public ZipkinSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    this.meterProvider = meterProvider;
+    this.meterProviderSupplier = () -> meterProvider;
     return this;
   }
 
@@ -167,6 +167,6 @@ public final class ZipkinSpanExporterBuilder {
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
-    return new ZipkinSpanExporter(encoder, sender, meterProvider, transformer);
+    return new ZipkinSpanExporter(encoder, sender, meterProviderSupplier, transformer);
   }
 }

@@ -58,7 +58,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private byte[] privateKeyPem;
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -124,7 +124,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
+    this.meterProviderSupplier = () -> meterProvider;
     return this;
   }
 
@@ -177,7 +177,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         exporterName,
         type,
         clientBuilder.build(),
-        meterProvider,
+        meterProviderSupplier,
         endpoint,
         headers.build(),
         compressionEnabled);
@@ -209,7 +209,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
               .get()
               .apply(channel, authorityOverride)
               .withCompression(codec.getMessageEncoding());
-      return new UpstreamGrpcExporter<>(exporterName, type, stub, meterProvider, timeoutNanos);
+      return new UpstreamGrpcExporter<>(
+          exporterName, type, stub, meterProviderSupplier, timeoutNanos);
     }
   }
 }

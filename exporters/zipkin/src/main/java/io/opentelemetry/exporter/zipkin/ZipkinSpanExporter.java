@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import zipkin2.Callback;
@@ -44,14 +45,14 @@ public final class ZipkinSpanExporter implements SpanExporter {
   ZipkinSpanExporter(
       BytesEncoder<Span> encoder,
       Sender sender,
-      MeterProvider meterProvider,
+      Supplier<MeterProvider> meterProviderSupplier,
       OtelToZipkinSpanTransformer transformer) {
     this.encoder = encoder;
     this.sender = sender;
     this.exporterMetrics =
         sender.encoding() == Encoding.JSON
-            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProvider)
-            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProvider);
+            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProviderSupplier)
+            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProviderSupplier);
     this.transformer = transformer;
   }
 

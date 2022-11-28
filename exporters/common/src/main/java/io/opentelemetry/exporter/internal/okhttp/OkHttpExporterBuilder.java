@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.X509KeyManager;
@@ -46,7 +47,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   @Nullable private byte[] privateKeyPem;
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
   @Nullable private Authenticator authenticator;
 
   public OkHttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
@@ -100,8 +101,8 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
+  public OkHttpExporterBuilder<T> setMeterProviderSupplier(MeterProvider meterProvider) {
+    this.meterProviderSupplier = () -> meterProvider;
     return this;
   }
 
@@ -158,7 +159,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
         exporterName,
         type,
         clientBuilder.build(),
-        meterProvider,
+        meterProviderSupplier,
         endpoint,
         headers,
         compressionEnabled,
