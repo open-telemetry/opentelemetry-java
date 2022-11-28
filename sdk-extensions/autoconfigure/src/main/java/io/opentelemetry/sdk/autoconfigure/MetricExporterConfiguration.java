@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
+import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -53,6 +54,9 @@ final class MetricExporterConfiguration {
       case "otlp":
         metricExporter = configureOtlpMetrics(config);
         break;
+      case "logging-otlp":
+        metricExporter = configureLoggingOtlpExporter();
+        break;
       default:
         MetricExporter spiExporter = configureSpiExporter(name, config, serviceClassLoader);
         if (spiExporter == null) {
@@ -72,6 +76,14 @@ final class MetricExporterConfiguration {
 
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
     return configurePeriodicMetricReader(config, metricExporter);
+  }
+
+  private static MetricExporter configureLoggingOtlpExporter() {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter",
+        "OTLP JSON Logging Metrics Exporter",
+        "opentelemetry-exporter-logging-otlp");
+    return OtlpJsonLoggingMetricExporter.create();
   }
 
   // Visible for testing.

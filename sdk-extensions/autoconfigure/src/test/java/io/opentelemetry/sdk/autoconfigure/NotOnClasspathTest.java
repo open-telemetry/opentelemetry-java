@@ -82,6 +82,18 @@ class NotOnClasspathTest {
   }
 
   @Test
+  void loggingSpansOtlp() {
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "OTLP JSON Logging Trace Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
+                + "classpath");
+  }
+
+  @Test
   void loggingMetrics() {
     assertThatThrownBy(
             () ->
@@ -97,6 +109,21 @@ class NotOnClasspathTest {
   }
 
   @Test
+  void loggingMetricsOtlp() {
+    assertThatThrownBy(
+            () ->
+                MetricExporterConfiguration.configureExporter(
+                    "logging-otlp",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    (a, unused) -> a))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "OTLP JSON Logging Metrics Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
+                + "classpath");
+  }
+
+  @Test
   void loggingLogs() {
     assertThatThrownBy(
             () ->
@@ -106,6 +133,18 @@ class NotOnClasspathTest {
         .hasMessageContaining(
             "otel.logs.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
                 + " Make sure to add it as a dependency.");
+  }
+
+  @Test
+  void loggingLogsOtlp() {
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterConfiguration.configureExporter(
+                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "OTLP JSON Logging Log Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
+                + "classpath");
   }
 
   @Test

@@ -16,6 +16,7 @@ dependencies {
   implementation(project(":exporters:common"))
 
   compileOnly(project(":exporters:jaeger"))
+  compileOnly(project(":exporters:logging-otlp"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
@@ -139,6 +140,12 @@ testing {
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }
         }
+      }
+    }
+    val testLoggingOtlp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:logging-otlp"))
+        implementation("com.google.guava:guava")
       }
     }
     val testOtlp by registering(JvmTestSuite::class) {
