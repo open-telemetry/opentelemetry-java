@@ -66,7 +66,8 @@ class NotOnClasspathTest {
                     "zipkin", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Zipkin Exporter enabled but opentelemetry-exporter-zipkin not found on classpath");
+            "otel.traces.exporter set to \"zipkin\" but opentelemetry-exporter-zipkin not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test

@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
@@ -76,12 +77,15 @@ class SpanExporterConfigurationTest {
   // Timeout difficult to test using real exports so just check that things don't blow up.
   @Test
   void configureZipkinTimeout() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.zipkin.timeout", "5s"));
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "zipkin",
-            DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")),
-            NamedSpiManager.createEmpty(),
+            config,
+            SpanExporterConfiguration.spanExporterSpiManager(
+                config, SpanExporterConfigurationTest.class.getClassLoader()),
             MeterProvider.noop());
     try {
       assertThat(exporter).isNotNull();
