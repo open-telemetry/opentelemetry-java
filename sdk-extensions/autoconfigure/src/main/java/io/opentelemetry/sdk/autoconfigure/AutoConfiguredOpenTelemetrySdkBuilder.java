@@ -331,9 +331,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
     OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
-    boolean sdkEnabled =
-        !config.getBoolean(
-            "otel.sdk.disabled", !config.getBoolean("otel.experimental.sdk.enabled", true));
+    boolean sdkEnabled = !config.getBoolean("otel.sdk.disabled", false);
 
     if (sdkEnabled) {
       SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();

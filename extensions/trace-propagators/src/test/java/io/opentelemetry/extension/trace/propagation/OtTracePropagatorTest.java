@@ -340,4 +340,9 @@ class OtTracePropagatorTest {
             Context.current());
     assertThat(propagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(propagator.toString()).isEqualTo("OtTracePropagator");
+  }
 }

@@ -12,7 +12,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.14.0",
+  "com.fasterxml.jackson:jackson-bom:2.14.1",
   "com.google.guava:guava-bom:31.1-jre",
   "com.google.protobuf:protobuf-bom:3.21.9",
   "com.linecorp.armeria:armeria-bom:1.20.3",
@@ -81,8 +81,8 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
-  "com.tngtech.archunit:archunit-junit5:1.0.0",
-  "com.uber.nullaway:nullaway:0.10.4",
+  "com.tngtech.archunit:archunit-junit5:1.0.1",
+  "com.uber.nullaway:nullaway:0.10.5",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
@@ -92,7 +92,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.11",
+  "nl.jqno.equalsverifier:equalsverifier:3.11.1",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",

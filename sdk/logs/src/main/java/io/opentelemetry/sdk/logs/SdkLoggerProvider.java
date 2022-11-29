@@ -117,4 +117,18 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
   public void close() {
     shutdown().join(10, TimeUnit.SECONDS);
   }
+
+  @Override
+  public String toString() {
+    return "SdkLoggerProvider{"
+        + "clock="
+        + sharedState.getClock()
+        + ", resource="
+        + sharedState.getResource()
+        + ", logLimits="
+        + sharedState.getLogLimits()
+        + ", logRecordProcessor="
+        + sharedState.getLogRecordProcessor()
+        + '}';
+  }
 }

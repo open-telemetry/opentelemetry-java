@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,6 +49,21 @@ public final class TlsUtil {
 
   private static final String PEM_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
   private static final String PEM_KEY_FOOTER = "-----END PRIVATE KEY-----";
+  private static final List<KeyFactory> SUPPORTED_KEY_FACTORIES;
+
+  static {
+    SUPPORTED_KEY_FACTORIES = new ArrayList<>();
+    try {
+      SUPPORTED_KEY_FACTORIES.add(KeyFactory.getInstance("RSA"));
+    } catch (NoSuchAlgorithmException e) {
+      // Ignore and continue
+    }
+    try {
+      SUPPORTED_KEY_FACTORIES.add(KeyFactory.getInstance("EC"));
+    } catch (NoSuchAlgorithmException e) {
+      // Ignore and continue
+    }
+  }
 
   private TlsUtil() {}
 
@@ -83,9 +99,8 @@ public final class TlsUtil {
     try {
       KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
       ks.load(null);
-      KeyFactory factory = KeyFactory.getInstance("RSA");
       PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodePem(privateKeyPem));
-      PrivateKey key = factory.generatePrivate(keySpec);
+      PrivateKey key = generatePrivateKey(keySpec, SUPPORTED_KEY_FACTORIES);
 
       CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
@@ -106,10 +121,25 @@ public final class TlsUtil {
         | KeyStoreException
         | IOException
         | NoSuchAlgorithmException
-        | UnrecoverableKeyException
-        | InvalidKeySpecException e) {
+        | UnrecoverableKeyException e) {
       throw new SSLException("Could not build KeyManagerFactory from clientKeysPem.", e);
     }
+  }
+
+  // Visible for testing
+  static PrivateKey generatePrivateKey(PKCS8EncodedKeySpec keySpec, List<KeyFactory> keyFactories)
+      throws SSLException {
+    // Try to generate key using supported key factories
+    for (KeyFactory factory : keyFactories) {
+      try {
+        return factory.generatePrivate(keySpec);
+      } catch (InvalidKeySpecException e) {
+        // Ignore
+      }
+    }
+    throw new SSLException(
+        "Unable to generate key from supported algorithms: "
+            + keyFactories.stream().map(KeyFactory::getAlgorithm).collect(joining(",", "[", "]")));
   }
 
   /** Returns a {@link TrustManager} for the given trusted certificates. */
@@ -140,7 +170,8 @@ public final class TlsUtil {
   // We catch linkage error to provide a better exception message on Android.
   // https://github.com/open-telemetry/opentelemetry-java/issues/4533
   @IgnoreJRERequirement
-  private static byte[] decodePem(byte[] pem) {
+  // Visible for testing
+  static byte[] decodePem(byte[] pem) {
     String pemStr = new String(pem, StandardCharsets.UTF_8).trim();
     if (!pemStr.startsWith(PEM_KEY_HEADER) || !pemStr.endsWith(PEM_KEY_FOOTER)) {
       // pem may already be a decoded binary key, try to use it.

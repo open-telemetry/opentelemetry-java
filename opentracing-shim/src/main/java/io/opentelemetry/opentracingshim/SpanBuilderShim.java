@@ -45,7 +45,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
   @Nullable private SpanKind spanKind;
-  private boolean error;
+  @Nullable private Boolean error;
   private long startTimestampMicros;
 
   private static final Attributes CHILD_OF_ATTR =
@@ -248,8 +248,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     io.opentelemetry.api.trace.Span span = builder.startSpan();
-    if (error) {
-      span.setStatus(StatusCode.ERROR);
+    if (error != null) {
+      span.setStatus(error ? StatusCode.ERROR : StatusCode.OK);
     }
 
     return new SpanShim(telemetryInfo(), span, baggage);

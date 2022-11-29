@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 
@@ -60,11 +61,11 @@ class ZipkinTestUtil {
         .setHasEnded(true);
   }
 
-  static Span zipkinSpan(Span.Kind kind, InetAddress localIp) {
+  static Span zipkinSpan(@Nullable Span.Kind kind, InetAddress localIp) {
     return zipkinSpanBuilder(kind, localIp).build();
   }
 
-  static Span.Builder zipkinSpanBuilder(Span.Kind kind, InetAddress localIp) {
+  static Span.Builder zipkinSpanBuilder(@Nullable Span.Kind kind, InetAddress localIp) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)
@@ -74,7 +75,7 @@ class ZipkinTestUtil {
         .timestamp(1505855794000000L + 194009601L / 1000)
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
         .localEndpoint(Endpoint.newBuilder().ip(localIp).serviceName("tweetiebird").build())
-        .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
-        .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
+        .addAnnotation(1505855799000000L + 433901068L / 1000, "\"RECEIVED\":{}")
+        .addAnnotation(1505855799000000L + 459486280L / 1000, "\"SENT\":{}");
   }
 }

@@ -61,8 +61,6 @@ public enum HistogramValueGenerator {
   /** Constructs a pool using explicit bucket histogram boundaries. */
   private static double[] explicitDefaultBucketPool() {
     List<Double> fixedBoundaries = new ArrayList<Double>();
-    // Add minimal recording value.
-    fixedBoundaries.add(0.0);
     // Add the bucket LE bucket boundaries (starts at 5).
     fixedBoundaries.addAll(ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
     // Add Double max value as our other extreme.

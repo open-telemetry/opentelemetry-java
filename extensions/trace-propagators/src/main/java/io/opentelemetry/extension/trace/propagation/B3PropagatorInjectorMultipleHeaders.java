@@ -54,4 +54,9 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
   public Collection<String> fields() {
     return FIELDS;
   }
+
+  @Override
+  public String toString() {
+    return "B3PropagatorInjectorMultipleHeaders";
+  }
 }

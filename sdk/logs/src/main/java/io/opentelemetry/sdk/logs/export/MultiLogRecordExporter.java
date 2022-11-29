@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.logs.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,6 +24,10 @@ final class MultiLogRecordExporter implements LogRecordExporter {
   private static final Logger logger = Logger.getLogger(MultiLogRecordExporter.class.getName());
 
   private final LogRecordExporter[] logRecordExporters;
+
+  private MultiLogRecordExporter(LogRecordExporter[] logRecordExporters) {
+    this.logRecordExporters = logRecordExporters;
+  }
 
   /**
    * Constructs and returns an instance of this class.
@@ -93,7 +98,11 @@ final class MultiLogRecordExporter implements LogRecordExporter {
     return CompletableResultCode.ofAll(results);
   }
 
-  private MultiLogRecordExporter(LogRecordExporter[] logRecordExporters) {
-    this.logRecordExporters = logRecordExporters;
+  @Override
+  public String toString() {
+    return "MultiLogRecordExporter{"
+        + "logRecordExporters="
+        + Arrays.toString(logRecordExporters)
+        + '}';
   }
 }
