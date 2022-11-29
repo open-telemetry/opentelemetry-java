@@ -87,11 +87,16 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+                    "logging-otlp",
+                    EMPTY,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                        NotOnClasspathTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP JSON Logging Trace Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
-                + "classpath");
+            "otel.traces.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
@@ -120,8 +125,8 @@ class NotOnClasspathTest {
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP JSON Logging Metrics Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
-                + "classpath");
+            "otel.metrics.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
@@ -141,11 +146,16 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureExporter(
-                    "logging-otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+                    "logging-otlp",
+                    EMPTY,
+                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                        NotOnClasspathTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP JSON Logging Log Exporter enabled but opentelemetry-exporter-logging-otlp not found on "
-                + "classpath");
+            "otel.logs.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test

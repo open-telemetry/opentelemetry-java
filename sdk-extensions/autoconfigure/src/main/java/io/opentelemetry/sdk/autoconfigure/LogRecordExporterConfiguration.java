@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PR
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -35,6 +34,7 @@ class LogRecordExporterConfiguration {
   static {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
   }
 
   // Visible for test
@@ -60,12 +60,7 @@ class LogRecordExporterConfiguration {
     }
 
     NamedSpiManager<LogRecordExporter> spiExportersManager =
-        SpiUtil.loadConfigurable(
-            ConfigurableLogRecordExporterProvider.class,
-            ConfigurableLogRecordExporterProvider::getName,
-            ConfigurableLogRecordExporterProvider::createExporter,
-            config,
-            serviceClassLoader);
+        logRecordExporterSpiManager(config, serviceClassLoader);
 
     Map<String, LogRecordExporter> exportersByName = new HashMap<>();
     for (String name : exporterNames) {
@@ -82,6 +77,17 @@ class LogRecordExporterConfiguration {
   }
 
   // Visible for testing
+  static NamedSpiManager<LogRecordExporter> logRecordExporterSpiManager(
+      ConfigProperties config, ClassLoader serviceClassLoader) {
+    return SpiUtil.loadConfigurable(
+        ConfigurableLogRecordExporterProvider.class,
+        ConfigurableLogRecordExporterProvider::getName,
+        ConfigurableLogRecordExporterProvider::createExporter,
+        config,
+        serviceClassLoader);
+  }
+
+  // Visible for testing
   @Nullable
   static LogRecordExporter configureExporter(
       String name,
@@ -91,12 +97,6 @@ class LogRecordExporterConfiguration {
     switch (name) {
       case "otlp":
         return configureOtlpLogs(config, meterProvider);
-      case "logging-otlp":
-        ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter",
-            "OTLP JSON Logging Log Exporter",
-            "opentelemetry-exporter-logging-otlp");
-        return OtlpJsonLoggingLogRecordExporter.create();
       default:
         LogRecordExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
