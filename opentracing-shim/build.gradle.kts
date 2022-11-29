@@ -11,6 +11,7 @@ dependencies {
 
   api("io.opentracing:opentracing-api")
   implementation(project(":semconv"))
+  implementation("io.opentracing:opentracing-noop:0.33.0")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
