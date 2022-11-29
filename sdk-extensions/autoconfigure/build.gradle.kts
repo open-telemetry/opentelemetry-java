@@ -15,7 +15,6 @@ dependencies {
   implementation(project(":semconv"))
   implementation(project(":exporters:common"))
 
-  compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))

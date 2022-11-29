@@ -12,8 +12,6 @@ import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -22,7 +20,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +34,7 @@ final class SpanExporterConfiguration {
 
   static {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("jaeger", "opentelemetry-exporter-jaeger");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("zipkin", "opentelemetry-exporter-zipkin");
@@ -100,8 +98,6 @@ final class SpanExporterConfiguration {
     switch (name) {
       case "otlp":
         return configureOtlp(config, meterProvider);
-      case "jaeger":
-        return configureJaeger(config, meterProvider);
       default:
         SpanExporter spiExporter = spiExportersManager.getByName(name);
         if (spiExporter == null) {
@@ -168,29 +164,6 @@ final class SpanExporterConfiguration {
     } else {
       throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
     }
-  }
-
-  private static SpanExporter configureJaeger(
-      ConfigProperties config, MeterProvider meterProvider) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter",
-        "Jaeger gRPC Exporter",
-        "opentelemetry-exporter-jaeger");
-    JaegerGrpcSpanExporterBuilder builder = JaegerGrpcSpanExporter.builder();
-
-    String endpoint = config.getString("otel.exporter.jaeger.endpoint");
-    if (endpoint != null) {
-      builder.setEndpoint(endpoint);
-    }
-
-    Duration timeout = config.getDuration("otel.exporter.jaeger.timeout");
-    if (timeout != null) {
-      builder.setTimeout(timeout);
-    }
-
-    builder.setMeterProvider(meterProvider);
-
-    return builder.build();
   }
 
   private SpanExporterConfiguration() {}
