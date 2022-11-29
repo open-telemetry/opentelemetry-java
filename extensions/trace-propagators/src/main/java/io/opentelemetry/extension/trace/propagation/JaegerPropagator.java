@@ -145,6 +145,11 @@ public final class JaegerPropagator implements TextMapPropagator {
     return context;
   }
 
+  @Override
+  public String toString() {
+    return "JaegerPropagator";
+  }
+
   private static <C> SpanContext getSpanContextFromHeader(
       @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);

@@ -473,4 +473,9 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator.getInstance().inject(context, carrier, null);
     assertThat(carrier).isEmpty();
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(W3CBaggagePropagator.getInstance().toString()).isEqualTo("W3CBaggagePropagator");
+  }
 }
