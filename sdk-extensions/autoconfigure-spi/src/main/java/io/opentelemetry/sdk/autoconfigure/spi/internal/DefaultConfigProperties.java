@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -27,26 +27,33 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * Properties to be used for auto-configuration of the OpenTelemetry SDK components. These
- * properties will be a combination of system properties and environment variables. The properties
- * for both of these will be normalized to be all lower case, and underscores will be replaced with
+ * Properties are normalized to The properties for both of these will be normalized to be all lower
+ * case, dashses are replaces with periods, and environment variable underscores are replaces with
  * periods.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
-final class DefaultConfigProperties implements ConfigProperties {
+public final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
-  static DefaultConfigProperties get(Map<String, String> defaultProperties) {
+  /**
+   * Creates a {@link DefaultConfigProperties} by merging system properties, environment variables,
+   * and the {@code defaultProperties}.
+   *
+   * <p>Environment variables take priority over {@code defaultProperties}. System properties take
+   * priority over system properties.
+   */
+  public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
     return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
   }
 
-  static DefaultConfigProperties customize(
-      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
-    return new DefaultConfigProperties(previousProperties, overrides);
-  }
-
-  // Visible for testing
-  static ConfigProperties createForTest(Map<String, String> properties) {
+  /**
+   * Create a {@link DefaultConfigProperties} from the {@code properties}, ignoring system
+   * properties and environment variables.
+   */
+  public static DefaultConfigProperties createForTest(Map<String, String> properties) {
     return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
   }
 
@@ -180,7 +187,7 @@ final class DefaultConfigProperties implements ConfigProperties {
    *
    * @throws ConfigurationException if {@code name} contains duplicate entries
    */
-  static Set<String> getSet(ConfigProperties config, String name) {
+  public static Set<String> getSet(ConfigProperties config, String name) {
     List<String> list = config.getList(normalize(name));
     Set<String> set = new HashSet<>(list);
     if (set.size() != list.size()) {
@@ -215,6 +222,14 @@ final class DefaultConfigProperties implements ConfigProperties {
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
+  }
+
+  /**
+   * Return a new {@link DefaultConfigProperties} by overriding the {@code previousProperties} with
+   * the {@code overrides}.
+   */
+  public DefaultConfigProperties withOverrides(Map<String, String> overrides) {
+    return new DefaultConfigProperties(this, overrides);
   }
 
   private static ConfigurationException newInvalidPropertyException(

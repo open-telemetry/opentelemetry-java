@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -424,10 +425,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private ConfigProperties computeConfigProperties() {
-    DefaultConfigProperties properties = DefaultConfigProperties.get(propertiesSupplier.get());
+    DefaultConfigProperties properties = DefaultConfigProperties.create(propertiesSupplier.get());
     for (Function<ConfigProperties, Map<String, String>> customizer : propertiesCustomizers) {
       Map<String, String> overrides = customizer.apply(properties);
-      properties = DefaultConfigProperties.customize(properties, overrides);
+      properties = properties.withOverrides(overrides);
     }
     return properties;
   }

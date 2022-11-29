@@ -14,6 +14,7 @@ import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.PercentEscaper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
