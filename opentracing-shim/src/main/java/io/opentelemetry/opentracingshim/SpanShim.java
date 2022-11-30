@@ -86,7 +86,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/opentelemetry/issues/42
     } else if (Tags.ERROR.getKey().equals(key)) {
-      StatusCode canonicalCode = Boolean.parseBoolean(value) ? StatusCode.ERROR : StatusCode.UNSET;
+      StatusCode canonicalCode = Boolean.parseBoolean(value) ? StatusCode.ERROR : StatusCode.OK;
       span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
@@ -98,7 +98,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
   @Override
   public Span setTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      StatusCode canonicalCode = value ? StatusCode.ERROR : StatusCode.UNSET;
+      StatusCode canonicalCode = value ? StatusCode.ERROR : StatusCode.OK;
       span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
@@ -112,7 +112,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     if (value == null) {
       return this;
     }
-    // TODO - Verify only the 'basic' types are supported/used.
+
     if (value instanceof Integer
         || value instanceof Long
         || value instanceof Short
@@ -121,7 +121,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     } else if (value instanceof Float || value instanceof Double) {
       span.setAttribute(key, value.doubleValue());
     } else {
-      throw new IllegalArgumentException("Number type not supported");
+      span.setAttribute(key, value.toString());
     }
 
     return this;

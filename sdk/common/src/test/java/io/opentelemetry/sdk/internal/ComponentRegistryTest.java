@@ -5,10 +5,18 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class ComponentRegistryTest {
@@ -22,83 +30,66 @@ class ComponentRegistryTest {
 
   @Test
   void get_SameInstance() {
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).build()))
-        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
-        .isSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
+    assertThat(registry.get(NAME, null, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, null, Attributes.builder().put("k1", "v2").build()));
+
+    assertThat(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, null, Attributes.builder().put("k1", "v2").build()));
+    assertThat(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
+        .isSameAs(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
         .isSameAs(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
+            registry.get(NAME, null, SCHEMA_URL, Attributes.builder().put("k1", "v2").build()));
+    assertThat(registry.get(NAME, VERSION, SCHEMA_URL, Attributes.empty()))
+        .isSameAs(registry.get(NAME, VERSION, SCHEMA_URL, Attributes.empty()))
         .isSameAs(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()));
-    assertThat(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()))
-        .isSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
+            registry.get(NAME, VERSION, SCHEMA_URL, Attributes.builder().put("k1", "v2").build()));
   }
 
   @Test
   void get_DifferentInstance() {
-    InstrumentationScopeInfo allFields =
-        InstrumentationScopeInfo.builder(NAME)
-            .setVersion(VERSION)
-            .setSchemaUrl(SCHEMA_URL)
-            .setAttributes(ATTRIBUTES)
-            .build();
+    assertThat(registry.get(NAME, VERSION, SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME + "_1", VERSION, SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME, VERSION + "_1", SCHEMA_URL, ATTRIBUTES))
+        .isNotSameAs(registry.get(NAME, VERSION, SCHEMA_URL + "_1", ATTRIBUTES));
 
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME + "_1")
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION + "_1")
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL + "_1")
-                    .setAttributes(ATTRIBUTES)
-                    .build()));
-    assertThat(registry.get(allFields))
-        .isNotSameAs(
-            registry.get(
-                InstrumentationScopeInfo.builder(NAME)
-                    .setVersion(VERSION)
-                    .setSchemaUrl(SCHEMA_URL)
-                    .setAttributes(Attributes.builder().put("k1", "v2").build())
-                    .build()));
-    assertThat(registry.get(InstrumentationScopeInfo.builder(NAME).setVersion(VERSION).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setSchemaUrl(SCHEMA_URL).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
-    assertThat(
-            registry.get(InstrumentationScopeInfo.builder(NAME).setAttributes(ATTRIBUTES).build()))
-        .isNotSameAs(registry.get(InstrumentationScopeInfo.builder(NAME).build()));
+    assertThat(registry.get(NAME, VERSION, null, Attributes.empty()))
+        .isNotSameAs(registry.get(NAME, null, null, Attributes.empty()));
+
+    assertThat(registry.get(NAME, null, SCHEMA_URL, Attributes.empty()))
+        .isNotSameAs(registry.get(NAME, null, null, Attributes.empty()));
+  }
+
+  @Test
+  @SuppressWarnings("ReturnValueIgnored")
+  void getComponents_HighConcurrency() throws ExecutionException, InterruptedException {
+    List<Future<?>> futures = new ArrayList<>();
+    Random random = new Random();
+    int concurrency = 2;
+    ExecutorService executor = Executors.newFixedThreadPool(concurrency);
+
+    try {
+      for (int i = 0; i < 100; i++) {
+        futures.add(
+            executor.submit(
+                () -> {
+                  String name =
+                      IntStream.range(0, 20)
+                          .mapToObj(unused -> String.valueOf((char) random.nextInt(26)))
+                          .collect(joining());
+                  registry.get(name, null, null, Attributes.empty());
+                }));
+        futures.add(
+            executor.submit(() -> registry.getComponents().forEach(TestComponent::hashCode)));
+      }
+
+      for (Future<?> future : futures) {
+        future.get();
+      }
+    } finally {
+      executor.shutdown();
+    }
   }
 
   private static final class TestComponent {}

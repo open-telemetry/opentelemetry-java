@@ -99,4 +99,9 @@ public final class PassThroughPropagator implements TextMapPropagator {
     }
     return extracted != null ? context.with(EXTRACTED_KEY_VALUES, extracted) : context;
   }
+
+  @Override
+  public String toString() {
+    return "PassThroughPropagator{fields=" + fields + "}";
+  }
 }

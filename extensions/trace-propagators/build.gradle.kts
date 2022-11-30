@@ -16,6 +16,4 @@ dependencies {
 
   testImplementation("io.jaegertracing:jaeger-client")
   testImplementation("com.google.guava:guava")
-
-  jmhImplementation(project(":extensions:aws"))
 }

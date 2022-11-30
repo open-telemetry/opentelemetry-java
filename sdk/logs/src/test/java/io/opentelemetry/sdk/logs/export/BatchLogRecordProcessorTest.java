@@ -291,7 +291,7 @@ class BatchLogRecordProcessorTest {
     BatchLogRecordProcessor processor =
         BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
     try {
-      assertThatCode(() -> processor.onEmit(null)).doesNotThrowAnyException();
+      assertThatCode(() -> processor.onEmit(null, null)).doesNotThrowAnyException();
     } finally {
       processor.shutdown();
     }
@@ -418,6 +418,14 @@ class BatchLogRecordProcessorTest {
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  void toString_Valid() {
+    when(mockLogRecordExporter.toString()).thenReturn("MockLogRecordExporter");
+    assertThat(BatchLogRecordProcessor.builder(mockLogRecordExporter).build().toString())
+        .isEqualTo(
+            "BatchLogRecordProcessor{logRecordExporter=MockLogRecordExporter, scheduleDelayNanos=200000000, maxExportBatchSize=512, exporterTimeoutNanos=30000000000}");
   }
 
   private static final class BlockingLogRecordExporter implements LogRecordExporter {

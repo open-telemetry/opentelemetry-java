@@ -15,8 +15,11 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
+import io.opentracing.tag.Tags;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +60,42 @@ class SpanShimTest {
     assertThat(span.getSpanContext().getTraceId().toString()).isEqualTo(contextShim.toTraceId());
     assertThat(span.getSpanContext().getSpanId().toString()).isEqualTo(contextShim.toSpanId());
     assertThat(contextShim.baggageItems().iterator().hasNext()).isFalse();
+  }
+
+  @Test
+  void setAttribute_errorAsBoolean() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    spanShim.setTag(Tags.ERROR.getKey(), true);
+
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getStatus()).isEqualTo(StatusData.error());
+
+    spanShim.setTag(Tags.ERROR.getKey(), false);
+    spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getStatus()).isEqualTo(StatusData.ok());
+  }
+
+  @Test
+  void setAttribute_errorAsString() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    spanShim.setTag(Tags.ERROR.getKey(), "tRuE");
+
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getStatus()).isEqualTo(StatusData.error());
+
+    spanShim.setTag(Tags.ERROR.getKey(), "FaLsE");
+    spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getStatus()).isEqualTo(StatusData.ok());
+  }
+
+  @Test
+  void setAttribute_unrecognizedType() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    spanShim.setTag("foo", BigInteger.ONE);
+
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(1);
+    assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("1");
   }
 
   @Test

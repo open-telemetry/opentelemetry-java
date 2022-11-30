@@ -230,8 +230,8 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .timestamp(START_EPOCH_NANOS / 1000)
         .duration((END_EPOCH_NANOS / 1000) - (START_EPOCH_NANOS / 1000))
         .localEndpoint(Endpoint.newBuilder().serviceName(SERVICE_NAME).ip(localAddress).build())
-        .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
-        .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
+        .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "\"RECEIVED\":{}")
+        .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "\"SENT\":{}")
         .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
         .build();
   }

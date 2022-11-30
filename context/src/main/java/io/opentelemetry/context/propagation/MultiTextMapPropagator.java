@@ -16,17 +16,17 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 final class MultiTextMapPropagator implements TextMapPropagator {
-  private final TextMapPropagator[] textPropagators;
+  private final TextMapPropagator[] textMapPropagators;
   private final Collection<String> allFields;
 
-  MultiTextMapPropagator(TextMapPropagator... textPropagators) {
-    this(Arrays.asList(textPropagators));
+  MultiTextMapPropagator(TextMapPropagator... textMapPropagators) {
+    this(Arrays.asList(textMapPropagators));
   }
 
-  MultiTextMapPropagator(List<TextMapPropagator> textPropagators) {
-    this.textPropagators = new TextMapPropagator[textPropagators.size()];
-    textPropagators.toArray(this.textPropagators);
-    this.allFields = Collections.unmodifiableList(getAllFields(this.textPropagators));
+  MultiTextMapPropagator(List<TextMapPropagator> textMapPropagators) {
+    this.textMapPropagators = new TextMapPropagator[textMapPropagators.size()];
+    textMapPropagators.toArray(this.textMapPropagators);
+    this.allFields = Collections.unmodifiableList(getAllFields(this.textMapPropagators));
   }
 
   @Override
@@ -48,7 +48,7 @@ final class MultiTextMapPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    for (TextMapPropagator textPropagator : textPropagators) {
+    for (TextMapPropagator textPropagator : textMapPropagators) {
       textPropagator.inject(context, carrier, setter);
     }
   }
@@ -61,9 +61,14 @@ final class MultiTextMapPropagator implements TextMapPropagator {
     if (getter == null) {
       return context;
     }
-    for (TextMapPropagator textPropagator : textPropagators) {
+    for (TextMapPropagator textPropagator : textMapPropagators) {
       context = textPropagator.extract(context, carrier, getter);
     }
     return context;
+  }
+
+  @Override
+  public String toString() {
+    return "MultiTextMapPropagator{textMapPropagators=" + Arrays.toString(textMapPropagators) + '}';
   }
 }

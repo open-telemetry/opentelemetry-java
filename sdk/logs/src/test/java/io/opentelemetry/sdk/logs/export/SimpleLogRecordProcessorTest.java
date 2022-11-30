@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -58,7 +59,7 @@ class SimpleLogRecordProcessorTest {
 
   @Test
   void onEmit() {
-    logRecordProcessor.onEmit(readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     verify(logRecordExporter).export(Collections.singletonList(LOG_RECORD_DATA));
   }
 
@@ -66,8 +67,8 @@ class SimpleLogRecordProcessorTest {
   @SuppressLogger(SimpleLogRecordProcessor.class)
   void onEmit_ExporterError() {
     when(logRecordExporter.export(any())).thenThrow(new RuntimeException("Exporter error!"));
-    logRecordProcessor.onEmit(readWriteLogRecord);
-    logRecordProcessor.onEmit(readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     verify(logRecordExporter, times(2)).export(anyList());
   }
 
@@ -78,8 +79,8 @@ class SimpleLogRecordProcessorTest {
 
     when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
-    logRecordProcessor.onEmit(readWriteLogRecord);
-    logRecordProcessor.onEmit(readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
 
     verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
@@ -101,8 +102,8 @@ class SimpleLogRecordProcessorTest {
 
     when(logRecordExporter.export(any())).thenReturn(export1, export2);
 
-    logRecordProcessor.onEmit(readWriteLogRecord);
-    logRecordProcessor.onEmit(readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
+    logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
 
     verify(logRecordExporter, times(2)).export(Collections.singletonList(LOG_RECORD_DATA));
 
@@ -117,5 +118,12 @@ class SimpleLogRecordProcessorTest {
     assertThat(shutdown.isDone()).isTrue();
     assertThat(shutdown.isSuccess()).isTrue();
     verify(logRecordExporter).shutdown();
+  }
+
+  @Test
+  void toString_Valid() {
+    when(logRecordExporter.toString()).thenReturn("MockLogRecordExporter");
+    assertThat(logRecordProcessor.toString())
+        .isEqualTo("SimpleLogRecordProcessor{logRecordExporter=MockLogRecordExporter}");
   }
 }

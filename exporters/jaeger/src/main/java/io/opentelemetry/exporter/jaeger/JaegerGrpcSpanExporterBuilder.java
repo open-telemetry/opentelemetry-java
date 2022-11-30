@@ -69,6 +69,8 @@ public final class JaegerGrpcSpanExporterBuilder {
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Currently
    * supported compression methods include "gzip" and "none".
+   *
+   * @since 1.20.0
    */
   public JaegerGrpcSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");

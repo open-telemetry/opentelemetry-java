@@ -6,11 +6,15 @@
 package io.opentelemetry.exporter.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_PEER_PORT;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_SOCK_PEER_ADDR;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.PEER_SERVICE;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -41,7 +45,6 @@ final class OtelToZipkinSpanTransformer {
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
   private final Supplier<InetAddress> ipAddressSupplier;
-
   /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
    * an InetAddress, which may be null. This value from this Supplier will be used when creating the
@@ -72,8 +75,6 @@ final class OtelToZipkinSpanTransformer {
    * @return a new Zipkin Span
    */
   Span generateSpan(SpanData spanData) {
-    Endpoint endpoint = getEndpoint(spanData);
-
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
 
@@ -85,7 +86,8 @@ final class OtelToZipkinSpanTransformer {
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
             .duration(Math.max(1, endTimestamp - startTimestamp))
-            .localEndpoint(endpoint);
+            .localEndpoint(getLocalEndpoint(spanData))
+            .remoteEndpoint(getRemoteEndpoint(spanData));
 
     if (spanData.getParentSpanContext().isValid()) {
       spanBuilder.parentId(spanData.getParentSpanId());
@@ -125,8 +127,9 @@ final class OtelToZipkinSpanTransformer {
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationScopeInfo.getVersion());
     }
 
-    for (EventData annotation : spanData.getEvents()) {
-      spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
+    for (EventData eventData : spanData.getEvents()) {
+      String annotation = EventDataToAnnotation.apply(eventData);
+      spanBuilder.addAnnotation(toEpochMicros(eventData.getEpochNanos()), annotation);
     }
     int droppedEvents = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
     if (droppedEvents > 0) {
@@ -136,11 +139,11 @@ final class OtelToZipkinSpanTransformer {
     return spanBuilder.build();
   }
 
-  private static String nullToEmpty(String value) {
+  private static String nullToEmpty(@Nullable String value) {
     return value != null ? value : "";
   }
 
-  private Endpoint getEndpoint(SpanData spanData) {
+  private Endpoint getLocalEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     Endpoint.Builder endpoint = Endpoint.newBuilder();
@@ -156,6 +159,30 @@ final class OtelToZipkinSpanTransformer {
       endpoint.serviceName(serviceNameValue);
     }
     return endpoint.build();
+  }
+
+  @Nullable
+  private static Endpoint getRemoteEndpoint(SpanData spanData) {
+    if (spanData.getKind() == SpanKind.CLIENT || spanData.getKind() == SpanKind.PRODUCER) {
+      // TODO: Implement fallback mechanism:
+      // https://opentelemetry.io/docs/reference/specification/trace/sdk_exporters/zipkin/#otlp---zipkin
+      Attributes attributes = spanData.getAttributes();
+      String serviceName = attributes.get(PEER_SERVICE);
+
+      if (serviceName != null) {
+        Endpoint.Builder endpoint = Endpoint.newBuilder();
+        endpoint.serviceName(serviceName);
+        endpoint.ip(attributes.get(NET_SOCK_PEER_ADDR));
+        Long port = attributes.get(NET_PEER_PORT);
+        if (port != null) {
+          endpoint.port(port.intValue());
+        }
+
+        return endpoint.build();
+      }
+    }
+
+    return null;
   }
 
   @Nullable

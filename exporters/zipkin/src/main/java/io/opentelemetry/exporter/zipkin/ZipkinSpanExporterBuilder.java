@@ -101,6 +101,7 @@ public final class ZipkinSpanExporterBuilder {
    * @param compressionMethod The compression method, ex. "gzip".
    * @return this.
    * @see OkHttpSender
+   * @since 1.20.0
    */
   public ZipkinSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");

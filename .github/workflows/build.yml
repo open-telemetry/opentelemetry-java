@@ -34,8 +34,6 @@ jobs:
             coverage: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
@@ -60,14 +58,18 @@ jobs:
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
 
       - name: Check for diff
+        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
+        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
         run: |
-          if git diff --quiet
+          # need to "git add" in case any generated files did not already exist
+          git add docs/apidiffs
+          if git diff --cached --quiet
           then 
             echo "No diff detected."
           else 
             echo "Diff detected - did you run './gradlew jApiCmp'?"
-            echo $(git diff --name-only)
-            echo $(git diff)
+            echo $(git diff --cached --name-only)
+            echo $(git diff --cached)
             exit 1
           fi
 
@@ -81,13 +83,12 @@ jobs:
           path: all/build/reports/jacoco/test/html
 
   markdown-link-check:
-    # release branches are excluded to avoid unnecessary maintenance if external links break
+    # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance if new misspellings are added
-    # to the misspell dictionary
+    # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-misspell-check.yml
 
@@ -107,8 +108,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - id: setup-java
         name: Set up Java
@@ -130,11 +129,11 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   required-status-check:
-    # markdown-link-check is not required so that pull requests will not be blocked if external
-    # links break
-    # similarly misspell-check is not required so that pull requests will not be blocked if new
-    # misspellings are added to the misspell dictionary
-    needs: build
+    # markdown-link-check is not required so pull requests are not blocked if external links break
+    # misspell-check is not required so pull requests are not blocked if the misspell dictionary is
+    # updated
+    needs:
+      - build
     runs-on: ubuntu-latest
     if: always()
     steps:

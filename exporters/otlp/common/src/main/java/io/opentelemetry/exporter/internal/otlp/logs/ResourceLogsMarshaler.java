@@ -96,8 +96,6 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
       groupByResourceAndScope(Collection<LogRecordData> logs) {
     return MarshalerUtil.groupByResourceAndScope(
         logs,
-        // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
-        // two.
         LogRecordData::getResource,
         LogRecordData::getInstrumentationScopeInfo,
         LogMarshaler::create);
