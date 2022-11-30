@@ -5,15 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
-
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -26,7 +17,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
 
@@ -37,9 +27,10 @@ final class MetricExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
   }
 
-  static MetricReader configureExporter(
+  static MetricReader configureReader(
       String name,
       ConfigProperties config,
       ClassLoader serviceClassLoader,
@@ -49,99 +40,42 @@ final class MetricExporterConfiguration {
       return configurePrometheusMetricReader(config);
     }
 
-    MetricExporter metricExporter;
-    switch (name) {
-      case "otlp":
-        metricExporter = configureOtlpMetrics(config);
-        break;
-      default:
-        MetricExporter spiExporter = configureSpiExporter(name, config, serviceClassLoader);
-        if (spiExporter == null) {
-          String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
-          if (artifactId != null) {
-            throw new ConfigurationException(
-                "otel.metrics.exporter set to \""
-                    + name
-                    + "\" but "
-                    + artifactId
-                    + " not found on classpath. Make sure to add it as a dependency.");
-          }
-          throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
-        }
-        metricExporter = spiExporter;
-    }
+    NamedSpiManager<MetricExporter> spiExportersManager =
+        metricExporterSpiManager(config, serviceClassLoader);
 
+    MetricExporter metricExporter = configureExporter(name, spiExportersManager);
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
     return configurePeriodicMetricReader(config, metricExporter);
   }
 
-  // Visible for testing.
-  @Nullable
-  static MetricExporter configureSpiExporter(
-      String name, ConfigProperties config, ClassLoader serviceClassLoader) {
-    NamedSpiManager<MetricExporter> spiExportersManager =
-        SpiUtil.loadConfigurable(
-            ConfigurableMetricExporterProvider.class,
-            ConfigurableMetricExporterProvider::getName,
-            ConfigurableMetricExporterProvider::createExporter,
-            config,
-            serviceClassLoader);
-    return spiExportersManager.getByName(name);
+  // Visible for testing
+  static NamedSpiManager<MetricExporter> metricExporterSpiManager(
+      ConfigProperties config, ClassLoader serviceClassLoader) {
+    return SpiUtil.loadConfigurable(
+        ConfigurableMetricExporterProvider.class,
+        ConfigurableMetricExporterProvider::getName,
+        ConfigurableMetricExporterProvider::createExporter,
+        config,
+        serviceClassLoader);
   }
 
-  // Visible for testing
-  static MetricExporter configureOtlpMetrics(ConfigProperties config) {
-    String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
-
-    if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      ClasspathUtil.checkClassExists(
-          "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
-          "OTLP HTTP Metrics Exporter",
-          "opentelemetry-exporter-otlp-http-metrics");
-      OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
-
-      OtlpConfigUtil.configureOtlpExporterBuilder(
-          DATA_TYPE_METRICS,
-          config,
-          builder::setEndpoint,
-          builder::addHeader,
-          builder::setCompression,
-          builder::setTimeout,
-          builder::setTrustedCertificates,
-          builder::setClientTls,
-          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
-          config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
-          config, builder::setDefaultAggregationSelector);
-
-      return builder.build();
-    } else if (protocol.equals(PROTOCOL_GRPC)) {
-      ClasspathUtil.checkClassExists(
-          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-          "OTLP gRPC Metrics Exporter",
-          "opentelemetry-exporter-otlp");
-      OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-
-      OtlpConfigUtil.configureOtlpExporterBuilder(
-          DATA_TYPE_METRICS,
-          config,
-          builder::setEndpoint,
-          builder::addHeader,
-          builder::setCompression,
-          builder::setTimeout,
-          builder::setTrustedCertificates,
-          builder::setClientTls,
-          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
-          config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
-          config, builder::setDefaultAggregationSelector);
-
-      return builder.build();
-    } else {
-      throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
+  // Visible for testing.
+  static MetricExporter configureExporter(
+      String name, NamedSpiManager<MetricExporter> spiExportersManager) {
+    MetricExporter metricExporter = spiExportersManager.getByName(name);
+    if (metricExporter == null) {
+      String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
+      if (artifactId != null) {
+        throw new ConfigurationException(
+            "otel.metrics.exporter set to \""
+                + name
+                + "\" but "
+                + artifactId
+                + " not found on classpath. Make sure to add it as a dependency.");
+      }
+      throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
     }
+    return metricExporter;
   }
 
   private static PeriodicMetricReader configurePeriodicMetricReader(

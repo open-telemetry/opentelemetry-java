@@ -23,11 +23,16 @@ class SpanExporterConfigurationTest {
 
   @Test
   void configureOtlpSpansUnsupportedProtocol() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            ImmutableMap.of("otel.exporter.otlp.protocol", "foo"));
     assertThatThrownBy(
             () ->
-                SpanExporterConfiguration.configureOtlp(
-                    DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
+                SpanExporterConfiguration.configureExporter(
+                    "otlp",
+                    config,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        config, SpanExporterConfigurationTest.class.getClassLoader()),
                     MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
@@ -36,12 +41,15 @@ class SpanExporterConfigurationTest {
   // Timeout difficult to test using real exports so just check implementation detail here.
   @Test
   void configureOtlpTimeout() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.otlp.timeout", "10"));
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.otlp.timeout", "10")),
-            NamedSpiManager.createEmpty(),
+            config,
+            SpanExporterConfiguration.spanExporterSpiManager(
+                config, SpanExporterConfigurationTest.class.getClassLoader()),
             MeterProvider.noop());
     try {
       assertThat(exporter)
@@ -57,12 +65,15 @@ class SpanExporterConfigurationTest {
   // Timeout difficult to test using real exports so just check implementation detail here.
   @Test
   void configureJaegerTimeout() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.jaeger.timeout", "10"));
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "jaeger",
-            DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.jaeger.timeout", "10")),
-            NamedSpiManager.createEmpty(),
+            config,
+            SpanExporterConfiguration.spanExporterSpiManager(
+                config, SpanExporterConfigurationTest.class.getClassLoader()),
             MeterProvider.noop());
     try {
       assertThat(exporter)

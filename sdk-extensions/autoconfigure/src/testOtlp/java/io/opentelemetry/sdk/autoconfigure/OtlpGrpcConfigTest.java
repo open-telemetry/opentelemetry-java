@@ -82,11 +82,21 @@ class OtlpGrpcConfigTest {
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (SpanExporter spanExporter =
             SpanExporterConfiguration.configureExporter(
-                "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop());
+                "otlp",
+                properties,
+                SpanExporterConfiguration.spanExporterSpiManager(
+                    properties, OtlpGrpcConfigTest.class.getClassLoader()),
+                MeterProvider.noop());
         MetricExporter metricExporter =
-            MetricExporterConfiguration.configureOtlpMetrics(properties);
+            MetricExporterConfiguration.configureExporter(
+                "otlp",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    properties, OtlpGrpcConfigTest.class.getClassLoader()));
         LogRecordExporter logRecordExporter =
-            LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop())) {
+            LogRecordExporterConfiguration.configureExporter(
+                "otlp",
+                LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                    properties, OtlpGrpcConfigTest.class.getClassLoader()))) {
       assertThat(spanExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
           .isEqualTo(TimeUnit.SECONDS.toMillis(15));
@@ -147,11 +157,13 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            DefaultConfigProperties.createForTest(props),
-            NamedSpiManager.createEmpty(),
+            properties,
+            SpanExporterConfiguration.spanExporterSpiManager(
+                properties, OtlpGrpcConfigTest.class.getClassLoader()),
             MeterProvider.noop())) {
       assertThat(spanExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
@@ -184,9 +196,12 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     props.put("otel.exporter.otlp.metrics.temporality.preference", "DELTA");
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props))) {
+        MetricExporterConfiguration.configureExporter(
+            "otlp",
+            MetricExporterConfiguration.metricExporterSpiManager(
+                properties, OtlpGrpcConfigTest.class.getClassLoader()))) {
 
       assertThat(metricExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
@@ -225,9 +240,12 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.logs.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.logs.compression", "gzip");
     props.put("otel.exporter.otlp.logs.timeout", "15s");
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (LogRecordExporter logRecordExporter =
-        LogRecordExporterConfiguration.configureOtlpLogs(
-            DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
+        LogRecordExporterConfiguration.configureExporter(
+            "otlp",
+            LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                properties, OtlpGrpcConfigTest.class.getClassLoader()))) {
 
       assertThat(logRecordExporter)
           .extracting("delegate.client.callTimeoutMillis", INTEGER)
@@ -254,17 +272,29 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Invalid OTLP certificate/key path:");
-
-    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
+                    "otlp",
+                    properties,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate/key path:");
 
     assertThatThrownBy(
             () ->
-                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+                MetricExporterConfiguration.configureExporter(
+                    "otlp",
+                    MetricExporterConfiguration.metricExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid OTLP certificate/key path:");
+
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterConfiguration.configureExporter(
+                    "otlp",
+                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate/key path:");
   }
@@ -278,17 +308,29 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Client key provided but certification chain is missing");
-
-    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
+                    "otlp",
+                    properties,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key provided but certification chain is missing");
 
     assertThatThrownBy(
             () ->
-                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+                MetricExporterConfiguration.configureExporter(
+                    "otlp",
+                    MetricExporterConfiguration.metricExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key provided but certification chain is missing");
+
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterConfiguration.configureExporter(
+                    "otlp",
+                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key provided but certification chain is missing");
   }
@@ -302,17 +344,29 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp", properties, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Client key chain provided but key is missing");
-
-    assertThatThrownBy(() -> MetricExporterConfiguration.configureOtlpMetrics(properties))
+                    "otlp",
+                    properties,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
 
     assertThatThrownBy(
             () ->
-                LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
+                MetricExporterConfiguration.configureExporter(
+                    "otlp",
+                    MetricExporterConfiguration.metricExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Client key chain provided but key is missing");
+
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterConfiguration.configureExporter(
+                    "otlp",
+                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                        properties, OtlpGrpcConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
   }

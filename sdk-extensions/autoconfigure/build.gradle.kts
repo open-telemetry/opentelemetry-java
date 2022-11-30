@@ -13,24 +13,17 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":semconv"))
-  implementation(project(":exporters:common"))
 
   compileOnly(project(":exporters:jaeger"))
-  compileOnly(project(":exporters:otlp:all"))
-  compileOnly(project(":exporters:otlp:logs"))
-  compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:prometheus"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))
-
   testImplementation(project(":sdk:testing"))
-  testImplementation("com.linecorp.armeria:armeria-junit5")
-  testImplementation("com.linecorp.armeria:armeria-grpc")
+
+  testImplementation("com.google.guava:guava")
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
-  testRuntimeOnly("io.grpc:grpc-netty-shaded")
-  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 }
 
 testing {

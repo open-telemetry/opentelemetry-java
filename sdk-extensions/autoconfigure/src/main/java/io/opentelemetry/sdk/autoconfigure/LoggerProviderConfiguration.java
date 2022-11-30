@@ -37,8 +37,7 @@ final class LoggerProviderConfiguration {
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
     Map<String, LogRecordExporter> exportersByName =
-        configureLogRecordExporters(
-            config, serviceClassLoader, meterProvider, logRecordExporterCustomizer);
+        configureLogRecordExporters(config, serviceClassLoader, logRecordExporterCustomizer);
 
     configureLogRecordProcessors(config, exportersByName, meterProvider)
         .forEach(loggerProviderBuilder::addLogRecordProcessor);
