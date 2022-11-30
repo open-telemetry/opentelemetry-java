@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
-import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -24,12 +23,21 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
 
   private static final Duration DEFAULT_EXPORT_INTERVAL = Duration.ofMinutes(1);
+  private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
+
+  static {
+    EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
+  }
 
   static MetricReader configureExporter(
       String name,
@@ -46,12 +54,18 @@ final class MetricExporterConfiguration {
       case "otlp":
         metricExporter = configureOtlpMetrics(config);
         break;
-      case "logging":
-        metricExporter = configureLoggingExporter();
-        break;
       default:
         MetricExporter spiExporter = configureSpiExporter(name, config, serviceClassLoader);
         if (spiExporter == null) {
+          String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
+          if (artifactId != null) {
+            throw new ConfigurationException(
+                "otel.metrics.exporter set to \""
+                    + name
+                    + "\" but "
+                    + artifactId
+                    + " not found on classpath. Make sure to add it as a dependency.");
+          }
           throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
         }
         metricExporter = spiExporter;
@@ -59,14 +73,6 @@ final class MetricExporterConfiguration {
 
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
     return configurePeriodicMetricReader(config, metricExporter);
-  }
-
-  private static MetricExporter configureLoggingExporter() {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.logging.LoggingMetricExporter",
-        "Logging Metrics Exporter",
-        "opentelemetry-exporter-logging");
-    return LoggingMetricExporter.create();
   }
 
   // Visible for testing.

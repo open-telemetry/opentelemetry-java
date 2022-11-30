@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ class ResourceConfigurationTest {
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(props),
+                DefaultConfigProperties.create(props),
                 ResourceConfigurationTest.class.getClassLoader(),
                 (r, c) -> r))
         .isEqualTo(

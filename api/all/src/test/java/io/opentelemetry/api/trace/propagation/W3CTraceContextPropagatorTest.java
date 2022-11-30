@@ -528,6 +528,11 @@ class W3CTraceContextPropagatorTest {
         .isSameAs(context);
   }
 
+  @Test
+  void toString_Valid() {
+    assertThat(w3cTraceContextPropagator.toString()).isEqualTo("W3CTraceContextPropagator");
+  }
+
   // Tests transplanted from the w3c test suite
 
   @ParameterizedTest

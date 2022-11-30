@@ -104,4 +104,9 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
   public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofAll(pendingExports);
   }
+
+  @Override
+  public String toString() {
+    return "SimpleLogRecordProcessor{" + "logRecordExporter=" + logRecordExporter + '}';
+  }
 }

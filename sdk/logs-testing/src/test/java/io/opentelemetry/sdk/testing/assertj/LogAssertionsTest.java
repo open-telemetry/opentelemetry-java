@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.testing.assertj;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -111,6 +112,18 @@ public class LogAssertionsTest {
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
                         attributeEntry("coins", 0.01, 0.05, 0.1)))
+        .hasAttributesSatisfying(
+            equalTo(AttributeKey.stringKey("bear"), "mya"),
+            equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)))
+        .hasAttributesSatisfyingExactly(
+            equalTo(AttributeKey.stringKey("bear"), "mya"),
+            equalTo(AttributeKey.booleanKey("warm"), true),
+            equalTo(AttributeKey.longKey("temperature"), 30L),
+            equalTo(AttributeKey.doubleKey("length"), 1.2),
+            equalTo(AttributeKey.stringArrayKey("colors"), Arrays.asList("red", "blue")),
+            equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)),
+            equalTo(AttributeKey.longArrayKey("scores"), Arrays.asList(0L, 1L)),
+            equalTo(AttributeKey.doubleArrayKey("coins"), Arrays.asList(0.01, 0.05, 0.1)))
         .hasTotalAttributeCount(999);
   }
 
@@ -180,6 +193,20 @@ public class LogAssertionsTest {
                                 .hasEntrySatisfying(
                                     AttributeKey.stringKey("bear"),
                                     value -> assertThat(value).hasSize(2))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasAttributesSatisfying(equalTo(AttributeKey.stringKey("bear"), "moo")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(AttributeKey.stringKey("bear"), "mya"),
+                        equalTo(AttributeKey.booleanKey("warm"), true),
+                        equalTo(AttributeKey.longKey("temperature"), 30L),
+                        equalTo(AttributeKey.doubleKey("length"), 1.2)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
         .isInstanceOf(AssertionError.class);

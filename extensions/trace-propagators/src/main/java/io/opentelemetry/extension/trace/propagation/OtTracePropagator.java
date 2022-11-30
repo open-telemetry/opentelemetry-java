@@ -133,4 +133,9 @@ public final class OtTracePropagator implements TextMapPropagator {
     }
     return Common.buildSpanContext(traceId, spanId, sampled);
   }
+
+  @Override
+  public String toString() {
+    return "OtTracePropagator";
+  }
 }

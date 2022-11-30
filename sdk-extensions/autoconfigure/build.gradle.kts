@@ -16,12 +16,10 @@ dependencies {
   implementation(project(":exporters:common"))
 
   compileOnly(project(":exporters:jaeger"))
-  compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:logs"))
   compileOnly(project(":exporters:otlp:common"))
   compileOnly(project(":exporters:prometheus"))
-  compileOnly(project(":exporters:zipkin"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -140,6 +138,12 @@ testing {
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }
         }
+      }
+    }
+    val testLoggingOtlp by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":exporters:logging-otlp"))
+        implementation("com.google.guava:guava")
       }
     }
     val testOtlp by registering(JvmTestSuite::class) {

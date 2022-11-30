@@ -724,4 +724,12 @@ class B3PropagatorTest {
             B3Propagator.COMBINED_HEADER,
             TRACE_ID + "-" + SPAN_ID + "-" + B3Propagator.SINGLE_HEADER_DEBUG);
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(b3Propagator.toString())
+        .isEqualTo("B3Propagator{b3PropagatorInjector=B3PropagatorInjectorMultipleHeaders}");
+    assertThat(b3PropagatorSingleHeader.toString())
+        .isEqualTo("B3Propagator{b3PropagatorInjector=B3PropagatorInjectorSingleHeader}");
+  }
 }

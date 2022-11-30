@@ -6,7 +6,7 @@ retry_count=3
 
 for file in "$@"; do
   for i in $(seq 1 $retry_count); do
-    if markdown-link-check --config "$(dirname "$0")/markdown-link-check-config.json" \
+    if markdown-link-check --config "$(dirname "$0")/../config/markdown-link-check-config.json" \
                            "$file"; then
       break
     elif [[ $i -eq $retry_count ]]; then

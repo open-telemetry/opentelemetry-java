@@ -67,4 +67,9 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
   public Collection<String> fields() {
     return FIELDS;
   }
+
+  @Override
+  public String toString() {
+    return "B3PropagatorInjectorSingleHeader";
+  }
 }

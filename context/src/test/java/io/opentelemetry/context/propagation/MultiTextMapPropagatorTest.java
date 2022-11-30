@@ -167,4 +167,10 @@ class MultiTextMapPropagatorTest {
     new MultiTextMapPropagator(propagator1, propagator2).inject(context, carrier, null);
     assertThat(carrier).isEmpty();
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(new MultiTextMapPropagator(propagator1, propagator2).toString())
+        .isEqualTo("MultiTextMapPropagator{textMapPropagators=[propagator1, propagator2]}");
+  }
 }

@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
@@ -158,6 +159,45 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return this;
+  }
+
+  /**
+   * Asserts the log has attributes matching all {@code assertions}. Assertions can be created using
+   * methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public LogRecordDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
+    return hasAttributesSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the log has attributes matching all {@code assertions}. Assertions can be created using
+   * methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public LogRecordDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributes(actual.getAttributes(), assertions);
+    return myself;
+  }
+
+  /**
+   * Asserts the log has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public LogRecordDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the log has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public LogRecordDataAssert hasAttributesSatisfyingExactly(
+      Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributesExactly(actual.getAttributes(), assertions);
+    return myself;
   }
 
   private boolean attributesAreEqual(Attributes attributes) {

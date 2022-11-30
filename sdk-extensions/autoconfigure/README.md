@@ -44,9 +44,9 @@ for more details.
 
 The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return a minimally configured instance (i.e. `OpenTelemetrySdk.builder().build()`).
 
-| System property   | Environment variable | Purpose                                                                                                                                                                                      |
-|-------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. The now legacy property `otel.experimental.sdk.enabled` will continue to work with default `true` during a transition period. |
+| System property   | Environment variable | Purpose                                                        |
+|-------------------|----------------------|----------------------------------------------------------------|
+| otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. |
 
 ## Exporters
 
@@ -158,6 +158,19 @@ The logging exporter prints the name of the span along with its attributes to st
 | otel.traces.exporter=logging  | OTEL_TRACES_EXPORTER=logging  | Select the logging exporter for tracing                              |
 | otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
 | otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
+
+### Logging OTLP JSON exporter
+
+The logging-otlp exporter writes the telemetry data to the JUL logger in OLTP JSON form. It's a more verbose output mainly used for testing and debugging.
+
+| System property                    | Environment variable               | Description                                        |
+|------------------------------------|------------------------------------|----------------------------------------------------|
+| otel.traces.exporter=logging-otlp  | OTEL_TRACES_EXPORTER=logging-otlp  | Select the logging OTLP JSON exporter for tracing  |
+| otel.metrics.exporter=logging-otlp | OTEL_METRICS_EXPORTER=logging-otlp | Select the logging OTLP JSON exporter for metrics  |
+| otel.logs.exporter=logging-otlp    | OTEL_LOGS_EXPORTER=logging-otlp    | Select the logging OTLP JSON exporter for logs     |
+
+**NOTE:** While the `OtlpJsonLogging{Signal}Exporters` are stable, specifying their use
+via `otel.{signal}.exporter=logging-otlp` is experimental and subject to change or removal.
 
 ## Propagator
 

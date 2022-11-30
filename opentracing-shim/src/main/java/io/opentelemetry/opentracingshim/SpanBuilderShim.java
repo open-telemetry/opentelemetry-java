@@ -23,6 +23,7 @@ import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
   @Nullable private SpanKind spanKind;
-  private boolean error;
+  @Nullable private Boolean error;
   private long startTimestampMicros;
 
   private static final Attributes CHILD_OF_ATTR =
@@ -63,11 +64,9 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder asChildOf(Span parent) {
-    if (parent == null) {
+    if (parent == null || parent instanceof NoopSpan) {
       return this;
     }
-
-    // TODO - Verify we handle a no-op Span
     SpanShim spanShim = ShimUtil.getSpanShim(parent);
     return addReference(References.CHILD_OF, spanShim.context());
   }
@@ -249,8 +248,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     io.opentelemetry.api.trace.Span span = builder.startSpan();
-    if (error) {
-      span.setStatus(StatusCode.ERROR);
+    if (error != null) {
+      span.setStatus(error ? StatusCode.ERROR : StatusCode.OK);
     }
 
     return new SpanShim(telemetryInfo(), span, baggage);
