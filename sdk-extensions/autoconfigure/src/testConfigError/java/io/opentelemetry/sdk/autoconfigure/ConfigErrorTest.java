@@ -5,14 +5,20 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 // All tests fail due to config errors so never register a global. We can test everything here
 // without separating test sets.
@@ -55,5 +61,25 @@ class ConfigErrorTest {
     assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized value for otel.traces.sampler: cat");
+  }
+
+  @Test
+  @SetSystemProperty(key = "otel.traces.sampler", value = "traceidratio")
+  @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
+  @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
+  @SuppressLogger(GlobalOpenTelemetry.class)
+  void globalOpenTelemetryWhenError() {
+    assertThat(GlobalOpenTelemetry.get())
+        .isInstanceOf(OpenTelemetry.class)
+        .extracting("propagators")
+        // Failed to initialize so is no-op
+        .isEqualTo(ContextPropagators.noop());
+
+    LoggingEvent log =
+        logs.assertContains(
+            "Error automatically configuring OpenTelemetry SDK. "
+                + "OpenTelemetry will not be enabled.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+    assertThat(log.getThrowable()).isInstanceOf(ConfigurationException.class);
   }
 }

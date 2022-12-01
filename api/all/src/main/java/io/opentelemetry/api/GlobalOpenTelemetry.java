@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -13,6 +14,8 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -42,6 +45,9 @@ import javax.annotation.concurrent.ThreadSafe;
 @SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalOpenTelemetry {
 
+  private static final String GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY =
+      "otel.java.global-autoconfigure.enabled";
+
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
@@ -55,8 +61,10 @@ public final class GlobalOpenTelemetry {
   private GlobalOpenTelemetry() {}
 
   /**
-   * Returns the registered global {@link OpenTelemetry}, or {@link OpenTelemetry#noop()} if {@link
-   * GlobalOpenTelemetry#set(OpenTelemetry)} has not been called.
+   * Returns the registered global {@link OpenTelemetry}.
+   *
+   * @throws IllegalStateException if a provider has been specified by system property using the
+   *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
     OpenTelemetry openTelemetry = globalOpenTelemetry;
@@ -65,14 +73,10 @@ public final class GlobalOpenTelemetry {
         openTelemetry = globalOpenTelemetry;
         if (openTelemetry == null) {
 
-          StringBuilder message =
-              new StringBuilder("GlobalOpenTelemetry.get called before GlobalOpenTelemetry.set.");
-          if (isAutoConfigureOnClasspath()) {
-            message.append(
-                " AutoConfiguredOpenTelemetrySdk.initialize "
-                    + "should be called earlier in application lifecycle.");
+          OpenTelemetry autoConfigured = maybeAutoConfigureAndSetGlobal();
+          if (autoConfigured != null) {
+            return autoConfigured;
           }
-          logger.log(Level.SEVERE, message.toString());
 
           set(OpenTelemetry.noop());
           return OpenTelemetry.noop();
@@ -80,15 +84,6 @@ public final class GlobalOpenTelemetry {
       }
     }
     return openTelemetry;
-  }
-
-  private static boolean isAutoConfigureOnClasspath() {
-    try {
-      Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
   }
 
   /**
@@ -216,6 +211,50 @@ public final class GlobalOpenTelemetry {
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
+  }
+
+  @Nullable
+  private static OpenTelemetry maybeAutoConfigureAndSetGlobal() {
+    Class<?> openTelemetrySdkAutoConfiguration;
+    try {
+      openTelemetrySdkAutoConfiguration =
+          Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+
+    // If autoconfigure module is present but global autoconfigure disabled log a warning and return
+    boolean globalAutoconfigureEnabled =
+        Boolean.parseBoolean(ConfigUtil.getString(GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY));
+    if (!globalAutoconfigureEnabled) {
+      logger.log(
+          Level.INFO,
+          "AutoConfiguredOpenTelemetrySdk found on classpath but automatic configuration is disabled."
+              + " To enable, run your JVM with -D"
+              + GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY
+              + "=true");
+      return null;
+    }
+
+    try {
+      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
+      Object autoConfiguredSdk = initialize.invoke(null);
+      Method getOpenTelemetrySdk =
+          openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
+      return new ObfuscatedOpenTelemetry(
+          (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
+    } catch (NoSuchMethodException | IllegalAccessException e) {
+      throw new IllegalStateException(
+          "AutoConfiguredOpenTelemetrySdk detected on classpath "
+              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
+          e);
+    } catch (InvocationTargetException t) {
+      logger.log(
+          Level.SEVERE,
+          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
+          t.getTargetException());
+      return null;
+    }
   }
 
   /**
