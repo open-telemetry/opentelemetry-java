@@ -11,14 +11,10 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcServerExtension.generat
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
-import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -30,14 +26,12 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -57,18 +51,9 @@ class OtlpGrpcConfigTest {
   @Order(2)
   public static final OtlpGrpcServerExtension server = new OtlpGrpcServerExtension(certificate);
 
-  @BeforeEach
-  void setUp() {
-    GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
-  }
-
   @AfterEach
   public void tearDown() {
     server.reset();
-    shutdownGlobalSdk();
-    GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
   }
 
   @Test
@@ -315,51 +300,5 @@ class OtlpGrpcConfigTest {
                 LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
-  }
-
-  @Test
-  void configuresGlobal() {
-    System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
-    System.setProperty(
-        "otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
-    System.setProperty("otel.metric.export.interval", "1s");
-
-    GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
-
-    await()
-        .untilAsserted(
-            () -> {
-              assertThat(server.traceRequests).hasSize(1);
-
-              // Not well defined how many metric exports would have happened by now, check that
-              // any did. Metrics are recorded by OtlpGrpcSpanExporter, BatchSpanProcessor, and
-              // potentially others.
-              assertThat(server.metricRequests).isNotEmpty();
-            });
-  }
-
-  static void shutdownGlobalSdk() {
-    try {
-      Field globalOpenTelemetryField =
-          GlobalOpenTelemetry.class.getDeclaredField("globalOpenTelemetry");
-      globalOpenTelemetryField.setAccessible(true);
-      Object globalOpenTelemetry = globalOpenTelemetryField.get(null);
-      if (globalOpenTelemetry == null) {
-        return;
-      }
-      Field delegateField =
-          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
-              .getDeclaredField("delegate");
-      delegateField.setAccessible(true);
-      Object delegate = delegateField.get(globalOpenTelemetry);
-      if (delegate instanceof OpenTelemetrySdk) {
-        OpenTelemetrySdk sdk = ((OpenTelemetrySdk) delegate);
-        sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
-        sdk.getSdkMeterProvider().shutdown().join(10, TimeUnit.SECONDS);
-        sdk.getSdkLoggerProvider().shutdown().join(10, TimeUnit.SECONDS);
-      }
-    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
-      throw new IllegalStateException("Error shutting down global SDK.", e);
-    }
   }
 }

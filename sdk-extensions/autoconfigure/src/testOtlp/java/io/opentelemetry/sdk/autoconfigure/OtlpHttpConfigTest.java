@@ -5,18 +5,14 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.sdk.autoconfigure.OtlpGrpcConfigTest.shutdownGlobalSdk;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeLog;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeMetric;
 import static io.opentelemetry.sdk.autoconfigure.OtlpHttpServerExtension.generateFakeSpan;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -32,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -45,15 +40,6 @@ class OtlpHttpConfigTest {
   @BeforeEach
   void setUp() {
     server.reset();
-    GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
-  }
-
-  @AfterEach
-  public void tearDown() {
-    shutdownGlobalSdk();
-    GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
   }
 
   @Test
@@ -337,28 +323,5 @@ class OtlpHttpConfigTest {
                 LogRecordExporterConfiguration.configureOtlpLogs(properties, MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
-  }
-
-  @Test
-  void configuresGlobal() {
-    System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
-    System.setProperty(
-        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
-    System.setProperty(
-        "otel.exporter.otlp.certificate", server.selfSignedCertificate.certificate().getPath());
-    System.setProperty("otel.metric.export.interval", "1s");
-
-    GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
-
-    await()
-        .untilAsserted(
-            () -> {
-              assertThat(server.traceRequests).hasSize(1);
-
-              // Not well defined how many metric exports would have happened by now, check that
-              // any did. Metrics are recorded by OtlpHttpSpanExporter, BatchSpanProcessor, and
-              // potentially others.
-              assertThat(server.metricRequests).isNotEmpty();
-            });
   }
 }

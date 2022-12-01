@@ -13,8 +13,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -57,10 +55,8 @@ public final class GlobalOpenTelemetry {
   private GlobalOpenTelemetry() {}
 
   /**
-   * Returns the registered global {@link OpenTelemetry}.
-   *
-   * @throws IllegalStateException if a provider has been specified by system property using the
-   *     interface FQCN but the specified provider cannot be found.
+   * Returns the registered global {@link OpenTelemetry}, or {@link OpenTelemetry#noop()} if {@link
+   * GlobalOpenTelemetry#set(OpenTelemetry)} has not been called.
    */
   public static OpenTelemetry get() {
     OpenTelemetry openTelemetry = globalOpenTelemetry;
@@ -69,10 +65,14 @@ public final class GlobalOpenTelemetry {
         openTelemetry = globalOpenTelemetry;
         if (openTelemetry == null) {
 
-          OpenTelemetry autoConfigured = maybeAutoConfigureAndSetGlobal();
-          if (autoConfigured != null) {
-            return autoConfigured;
+          StringBuilder message =
+              new StringBuilder("GlobalOpenTelemetry.get called before GlobalOpenTelemetry.set.");
+          if (isAutoConfigureOnClasspath()) {
+            message.append(
+                " AutoConfiguredOpenTelemetrySdk.initialize "
+                    + "should be called earlier in application lifecycle.");
           }
+          logger.log(Level.SEVERE, message.toString());
 
           set(OpenTelemetry.noop());
           return OpenTelemetry.noop();
@@ -80,6 +80,15 @@ public final class GlobalOpenTelemetry {
       }
     }
     return openTelemetry;
+  }
+
+  private static boolean isAutoConfigureOnClasspath() {
+    try {
+      Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
   }
 
   /**
@@ -207,36 +216,6 @@ public final class GlobalOpenTelemetry {
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
-  }
-
-  @Nullable
-  private static OpenTelemetry maybeAutoConfigureAndSetGlobal() {
-    Class<?> openTelemetrySdkAutoConfiguration;
-    try {
-      openTelemetrySdkAutoConfiguration =
-          Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
-
-    try {
-      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
-      Object autoConfiguredSdk = initialize.invoke(null);
-      Method getOpenTelemetrySdk =
-          openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
-      return (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk);
-    } catch (NoSuchMethodException | IllegalAccessException e) {
-      throw new IllegalStateException(
-          "OpenTelemetrySdkAutoConfiguration detected on classpath "
-              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
-          e);
-    } catch (InvocationTargetException t) {
-      logger.log(
-          Level.SEVERE,
-          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
-          t.getTargetException());
-      return null;
-    }
   }
 
   /**
