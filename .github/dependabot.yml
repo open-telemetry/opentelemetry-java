@@ -20,3 +20,4 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "edu.berkeley.cs.jqf:jqf-fuzz"
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-core"
