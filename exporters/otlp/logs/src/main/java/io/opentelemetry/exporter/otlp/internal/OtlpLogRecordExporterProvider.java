@@ -62,9 +62,8 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       return builder.build();
-    } else {
-      throw new ConfigurationException("Unsupported OTLP logs protocol: " + protocol);
     }
+    throw new ConfigurationException("Unsupported OTLP logs protocol: " + protocol);
   }
 
   @Override

@@ -70,9 +70,8 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();
-    } else {
-      throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
+    throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
   }
 
   @Override

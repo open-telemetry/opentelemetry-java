@@ -61,9 +61,8 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
           retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
 
       return builder.build();
-    } else {
-      throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
     }
+    throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
   }
 
   @Override
