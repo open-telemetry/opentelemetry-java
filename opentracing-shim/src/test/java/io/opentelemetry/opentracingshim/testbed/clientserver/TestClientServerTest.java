@@ -7,7 +7,6 @@ package io.opentelemetry.opentracingshim.testbed.clientserver;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -65,17 +64,8 @@ class TestClientServerTest {
     assertThat(finished).hasSize(2);
 
     assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
-    SpanKind firstSpanKind = finished.get(0).getKind();
-    switch (firstSpanKind) {
-      case CLIENT:
-        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);
-        break;
-      case SERVER:
-        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.CLIENT);
-        break;
-      default:
-        fail("Unexpected first span kind: " + firstSpanKind);
-    }
+    assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.INTERNAL); // No semconv mapping.
+    assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.INTERNAL);
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }

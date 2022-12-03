@@ -15,7 +15,6 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -44,7 +43,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
-  @Nullable private SpanKind spanKind;
   @Nullable private Boolean error;
   private long startTimestampMicros;
 
@@ -119,25 +117,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
-    if (Tags.SPAN_KIND.getKey().equals(key)) {
-      switch (value) {
-        case Tags.SPAN_KIND_CLIENT:
-          spanKind = SpanKind.CLIENT;
-          break;
-        case Tags.SPAN_KIND_SERVER:
-          spanKind = SpanKind.SERVER;
-          break;
-        case Tags.SPAN_KIND_PRODUCER:
-          spanKind = SpanKind.PRODUCER;
-          break;
-        case Tags.SPAN_KIND_CONSUMER:
-          spanKind = SpanKind.CONSUMER;
-          break;
-        default:
-          spanKind = SpanKind.INTERNAL;
-          break;
-      }
-    } else if (Tags.ERROR.getKey().equals(key)) {
+    if (Tags.ERROR.getKey().equals(key)) {
       error = Boolean.parseBoolean(value);
     } else {
       this.spanBuilderAttributeKeys.add(stringKey(key));
@@ -228,10 +208,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.addLink(
           parentInfo.getSpanContext(),
           parentInfo.getRefType() == ReferenceType.CHILD_OF ? CHILD_OF_ATTR : FOLLOWS_FROM_ATTR);
-    }
-
-    if (spanKind != null) {
-      builder.setSpanKind(spanKind);
     }
 
     if (startTimestampMicros > 0) {
