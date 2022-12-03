@@ -23,7 +23,6 @@ import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.ArrayList;
@@ -64,11 +63,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder asChildOf(Span parent) {
-    if (parent == null || parent instanceof NoopSpan) {
-      return this;
-    }
     SpanShim spanShim = ShimUtil.getSpanShim(parent);
-    return addReference(References.CHILD_OF, spanShim.context());
+    if (spanShim != null) {
+      addReference(References.CHILD_OF, spanShim.context());
+    }
+
+    return this;
   }
 
   @Override
@@ -78,7 +78,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder addReference(@Nullable String referenceType, SpanContext referencedContext) {
-    if (referencedContext == null) {
+    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
+    if (contextShim == null) {
       return this;
     }
 
@@ -91,8 +92,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       // Discard references with unrecognized type.
       return this;
     }
-
-    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
 
     // Optimization for 99% situations, when there is only one parent.
     if (allParents.size() == 0) {
