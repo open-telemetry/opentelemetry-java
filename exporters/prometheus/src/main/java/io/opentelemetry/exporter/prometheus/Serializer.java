@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -115,8 +117,12 @@ abstract class Serializer {
                             PrometheusType.forMetric(metric)),
                     LinkedHashMap::new,
                     Collectors.toList()));
+    Optional<Resource> optResource = metrics.stream().findFirst().map(MetricData::getResource);
     try (Writer writer =
         new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8))) {
+      if (optResource.isPresent()) {
+        writeResource(optResource.get(), writer);
+      }
       for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
         write(entry.getValue(), entry.getKey(), writer);
       }
@@ -181,6 +187,14 @@ abstract class Serializer {
           throw new IllegalArgumentException("Can't happen");
       }
     }
+  }
+
+  private static void writeResource(Resource resource, Writer writer) throws IOException {
+    writer.write("# TYPE target info\n");
+    writer.write("# HELP target Target metadata\n");
+    writer.write("target_info{");
+    writeAttributePairs(writer, resource.getAttributes());
+    writer.write("} 1\n");
   }
 
   private void writeHistogram(Writer writer, String name, HistogramPointData point)
