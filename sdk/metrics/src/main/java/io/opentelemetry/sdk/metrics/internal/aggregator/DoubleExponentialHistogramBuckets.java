@@ -133,29 +133,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   /**
-   * Immutable method for merging. This method copies the first set of buckets, performs the merge
-   * on the copy, and returns the copy.
-   *
-   * @param a first buckets
-   * @param b second buckets
-   * @return A new set of buckets, the result
-   */
-  static DoubleExponentialHistogramBuckets merge(
-      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
-    if (b.counts.isEmpty()) {
-      return a;
-    } else if (a.counts.isEmpty()) {
-      return b;
-    }
-    DoubleExponentialHistogramBuckets copy = a.copy();
-    copy.mergeWith(b/* additive= */ );
-    return copy;
-  }
-
-  /**
    * This method merges this instance with another set of buckets. It alters the underlying bucket
-   * counts and scale of this instance only, so it is to be used with caution. For immutability, use
-   * the static merge() method.
+   * counts and scale of this instance only, so it is to be used with caution.
    *
    * <p>The bucket counts of this instance will be added to or subtracted from depending on the
    * additive parameter.
@@ -164,7 +143,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    *
    * @param other the histogram that will be merged into this one
    */
-  private void mergeWith(DoubleExponentialHistogramBuckets other) {
+  void mergeInto(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
     }
@@ -195,7 +174,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     // since we changed scale of this, we need to know the new difference between the two scales
     deltaOther = other.scale - this.scale;
 
-    // do actual merging of other into this. Will decrement or increment depending on sign.
+    // do actual merging of other into this.
     for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
       if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
