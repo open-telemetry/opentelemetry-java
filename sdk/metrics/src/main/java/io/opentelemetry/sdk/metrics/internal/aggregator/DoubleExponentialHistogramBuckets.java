@@ -184,7 +184,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.totalCount += other.totalCount;
   }
 
-  int getScale() {
+  @Override
+  public int getScale() {
     return scale;
   }
 

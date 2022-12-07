@@ -30,6 +30,10 @@ final class ExponentialBucketStrategy {
     return new DoubleExponentialHistogramBuckets(startingScale, maxBuckets, counterFactory);
   }
 
+  int getStartingScale() {
+    return startingScale;
+  }
+
   /** Create a new strategy for generating Exponential Buckets. */
   static ExponentialBucketStrategy newStrategy(
       int maxBuckets, ExponentialCounterFactory counterFactory) {
