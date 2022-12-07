@@ -54,7 +54,9 @@ public final class LoggingSpanExporter implements SpanExporter {
                   ? ""
                   : instrumentationScopeInfo.getVersion())
           .append("] ")
-          .append(span.getAttributes());
+          .append(span.getAttributes())
+          .append(" ")
+          .append(span.getResource().getAttributes());
       logger.log(Level.INFO, sb.toString());
     }
     return CompletableResultCode.ofSuccess();

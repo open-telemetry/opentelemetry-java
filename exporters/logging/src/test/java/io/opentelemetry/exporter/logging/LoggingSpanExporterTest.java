@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -65,6 +66,7 @@ class LoggingSpanExporterTest {
                       Attributes.of(booleanKey("important"), true))))
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
+          .setResource(Resource.empty())
           .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("tracer1"))
           .build();
 
@@ -82,8 +84,28 @@ class LoggingSpanExporterTest {
           .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(SpanKind.CLIENT)
+          .setResource(Resource.empty())
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("tracer2").setVersion("1.0").build())
+          .build();
+
+  private static final SpanData SPAN_WITH_RESOURCE =
+      TestSpanData.builder()
+          .setHasEnded(false)
+          .setSpanContext(
+              SpanContext.create(
+                  "12340000000043211234000000004321",
+                  "8765000000005678",
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
+          .setStartEpochNanos(500)
+          .setEndEpochNanos(500 + 1001)
+          .setStatus(StatusData.error())
+          .setResource(Resource.getDefault())
+          .setName("testSpanWithResource")
+          .setKind(SpanKind.CLIENT)
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.builder("tracer3").setVersion("1.0").build())
           .build();
 
   @RegisterExtension
@@ -103,20 +125,24 @@ class LoggingSpanExporterTest {
 
   @Test
   void log() {
-    exporter.export(Arrays.asList(SPAN1, SPAN2));
+    exporter.export(Arrays.asList(SPAN1, SPAN2, SPAN_WITH_RESOURCE));
 
     assertThat(logs.getEvents())
-        .hasSize(2)
+        .hasSize(3)
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     assertThat(logs.getEvents().get(0).getMessage())
         .isEqualTo(
             "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
                 + "INTERNAL [tracer: tracer1:] "
-                + "{animal=\"cat\", lives=9}");
+                + "{animal=\"cat\", lives=9} {}");
     assertThat(logs.getEvents().get(1).getMessage())
         .isEqualTo(
             "'testSpan2' : 12340000000043211234000000004321 8765000000005678 "
-                + "CLIENT [tracer: tracer2:1.0] {}");
+                + "CLIENT [tracer: tracer2:1.0] {} {}");
+    assertThat(logs.getEvents().get(2).getMessage())
+        .isEqualTo(
+            "'testSpanWithResource' : 12340000000043211234000000004321 8765000000005678 "
+                + "CLIENT [tracer: tracer3:1.0] {} {service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.21.0-SNAPSHOT\"}");
   }
 
   @Test
