@@ -1,12 +1,17 @@
-package io.opentelemetry.sdk.testing.assertj;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import io.opentelemetry.api.common.AttributeKey;
-import org.assertj.core.api.AbstractAssert;
-import org.junit.jupiter.api.Test;
-import java.util.function.Consumer;
+package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+
+import io.opentelemetry.api.common.AttributeKey;
+import java.util.function.Consumer;
+import org.assertj.core.api.AbstractAssert;
+import org.junit.jupiter.api.Test;
 
 class AttributeAssertionTest {
 
@@ -20,10 +25,7 @@ class AttributeAssertionTest {
       a.accept(anAssert);
       fail("Should have failed the assertion");
     } catch (AssertionError e) {
-      assertThat(e).hasMessage("[STRING attribute 'flib'] \n"
-          + "Expecting actual not to be null");
+      assertThat(e).hasMessage("[STRING attribute 'flib'] \n" + "Expecting actual not to be null");
     }
-
   }
-
 }
