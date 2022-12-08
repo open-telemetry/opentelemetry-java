@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.function.Consumer;
@@ -21,11 +21,7 @@ class AttributeAssertionTest {
     AttributeAssertion attrAssertion = AttributeAssertion.create(key, AbstractAssert::isNotNull);
     AbstractAssert<?, ?> anAssert = AttributeAssertion.attributeValueAssertion(key, null);
     Consumer<AbstractAssert<?, ?>> a = attrAssertion.getAssertion();
-    try {
-      a.accept(anAssert);
-      fail("Should have failed the assertion");
-    } catch (AssertionError e) {
-      assertThat(e).hasMessage("[STRING attribute 'flib'] \n" + "Expecting actual not to be null");
-    }
+    String message = assertThrows(AssertionError.class, () -> a.accept(anAssert)).getMessage();
+    assertThat(message).isEqualTo("[STRING attribute 'flib'] \nExpecting actual not to be null");
   }
 }
