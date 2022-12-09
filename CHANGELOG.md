@@ -37,7 +37,7 @@
 * Zipkin exporter serializes EventData attributes as JSON
   ([#4934](https://github.com/open-telemetry/opentelemetry-java/pull/4934))
 * Add support for EC mTLS keys (applies to `OtlpHttp{Signal}Exporter`, `OtlpGrpc{Signal}Exporter`,
-  `JaegerGrpcSpanExporter`, `JaegerRemoteSampler`) 
+  `JaegerGrpcSpanExporter`, `JaegerRemoteSampler`)
   ([#4920](https://github.com/open-telemetry/opentelemetry-java/pull/4920))
 * Add `Configurable{Signal}ExporterProvider` implementations for `Logging{Signal}Exporter`s
   ([#4950](https://github.com/open-telemetry/opentelemetry-java/pull/4950))
@@ -78,7 +78,7 @@
 * Handle `io.opentracing.noop.NoopSpan` correctly
   ([#4968](https://github.com/open-telemetry/opentelemetry-java/pull/4968))
 * Log invalid arguments rather than throwing exceptions.
-  ([#5012](https://github.com/open-telemetry/opentelemetry-java/pull/5012))  
+  ([#5012](https://github.com/open-telemetry/opentelemetry-java/pull/5012))
 * Stop mapping semconv values from OpenTracing to OTel.
   ([#5016](https://github.com/open-telemetry/opentelemetry-java/pull/5016))
 
