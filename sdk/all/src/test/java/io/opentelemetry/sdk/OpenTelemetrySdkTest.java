@@ -19,6 +19,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -322,6 +324,10 @@ class OpenTelemetrySdkTest {
     when(spanExporter.toString()).thenReturn("MockSpanExporter{}");
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
+    LogRecordExporter logRecordExporter = mock(LogRecordExporter.class);
+    when(logRecordExporter.toString()).thenReturn("MockLogRecordExporter{}");
+    TextMapPropagator propagator = mock(TextMapPropagator.class);
+    when(propagator.toString()).thenReturn("MockTextMapPropagator{}");
     Resource resource =
         Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
     OpenTelemetrySdk sdk =
@@ -341,6 +347,14 @@ class OpenTelemetrySdkTest {
                         InstrumentSelector.builder().setName("instrument").build(),
                         View.builder().setName("new-instrument").build())
                     .build())
+            .setLoggerProvider(
+                SdkLoggerProvider.builder()
+                    .setResource(resource)
+                    .addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(
+                            LogRecordExporter.composite(logRecordExporter, logRecordExporter)))
+                    .build())
+            .setPropagators(ContextPropagators.create(propagator))
             .build();
 
     assertThat(sdk.toString())
@@ -359,7 +373,14 @@ class OpenTelemetrySdkTest {
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
                 + "metricReaders=[PeriodicMetricReader{exporter=MockMetricExporter{}, intervalNanos=60000000000}], "
                 + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentName=instrument}, view=View{name=new-instrument, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}}]"
-                + "}"
+                + "}, "
+                + "loggerProvider=SdkLoggerProvider{"
+                + "clock=SystemClock{}, "
+                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
+                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
+                + "logRecordProcessor=SimpleLogRecordProcessor{logRecordExporter=MultiLogRecordExporter{logRecordExporters=[MockLogRecordExporter{}, MockLogRecordExporter{}]}}"
+                + "}, "
+                + "propagators=DefaultContextPropagators{textMapPropagator=MockTextMapPropagator{}}"
                 + "}");
   }
 }

@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -22,7 +23,7 @@ class ResourceConfigurationTest {
   void configureResource() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(Collections.emptyMap()),
+                DefaultConfigProperties.create(Collections.emptyMap()),
                 ResourceConfigurationTest.class.getClassLoader(),
                 (r, c) -> r)
             .getAttributes();
@@ -35,7 +36,7 @@ class ResourceConfigurationTest {
   void configureResource_EmptyClassLoader() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(Collections.emptyMap()),
+                DefaultConfigProperties.create(Collections.emptyMap()),
                 new URLClassLoader(new URL[0], null),
                 (r, c) -> r)
             .getAttributes();
@@ -52,7 +53,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.autoconfigure.TestAnimalResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(customConfigs),
+                DefaultConfigProperties.create(customConfigs),
                 ResourceConfigurationTest.class.getClassLoader(),
                 (r, c) -> r)
             .getAttributes();
@@ -72,7 +73,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.extension.resources.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(customConfigs),
+                DefaultConfigProperties.create(customConfigs),
                 ResourceConfigurationTest.class.getClassLoader(),
                 (r, c) -> r)
             .getAttributes();
@@ -89,7 +90,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.autoconfigure.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.get(customConfigs),
+                DefaultConfigProperties.create(customConfigs),
                 ResourceConfigurationTest.class.getClassLoader(),
                 (r, c) -> r)
             .getAttributes();

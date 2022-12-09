@@ -61,7 +61,10 @@ final class TracerShim extends BaseShimObject implements Tracer {
       return;
     }
 
-    SpanContextShim contextShim = getContextShim(context);
+    SpanContextShim contextShim = ShimUtil.getContextShim(context);
+    if (contextShim == null) {
+      return;
+    }
 
     if (format == Format.Builtin.TEXT_MAP
         || format == Format.Builtin.TEXT_MAP_INJECT
@@ -93,13 +96,5 @@ final class TracerShim extends BaseShimObject implements Tracer {
   @Override
   public void close() {
     isClosed = true;
-  }
-
-  static SpanContextShim getContextShim(SpanContext context) {
-    if (!(context instanceof SpanContextShim)) {
-      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
-    }
-
-    return (SpanContextShim) context;
   }
 }

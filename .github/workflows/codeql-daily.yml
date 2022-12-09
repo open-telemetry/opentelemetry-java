@@ -2,6 +2,7 @@ name: CodeQL (daily)
 
 on:
   schedule:
+    # Daily at 01:30 (UTC)
     - cron: '30 1 * * *'
   workflow_dispatch:
 
@@ -33,6 +34,7 @@ jobs:
 
   open-issue-on-failure:
     # open an issue on failure because it can be easy to miss CI failure notifications
-    needs: analyze
-    if: failure()
+    needs:
+      - analyze
+    if: failure() && github.run_attempt == 1
     uses: ./.github/workflows/reusable-open-issue-on-failure.yml

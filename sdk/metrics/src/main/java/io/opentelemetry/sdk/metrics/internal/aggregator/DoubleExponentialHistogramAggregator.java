@@ -58,13 +58,10 @@ public final class DoubleExponentialHistogramAggregator
   }
 
   /**
-   * This function is an immutable merge. It firstly combines the sum and zero count. Then it
-   * performs a merge using the buckets from both accumulations, without modifying those
-   * accumulations.
-   *
-   * @param previous the previously captured accumulation
-   * @param current the newly captured (delta) accumulation
-   * @return the result of the merge of the given accumulations.
+   * Merge the exponential histogram accumulations. Mutates the {@link
+   * ExponentialHistogramAccumulation#getPositiveBuckets()} and {@link
+   * ExponentialHistogramAccumulation#getNegativeBuckets()} of {@code previous}. Mutating buckets is
+   * acceptable because copies are already made in {@link Handle#doAccumulateThenReset(List)}.
    */
   @Override
   public ExponentialHistogramAccumulation merge(
@@ -72,11 +69,9 @@ public final class DoubleExponentialHistogramAggregator
 
     // Create merged buckets
     DoubleExponentialHistogramBuckets posBuckets =
-        DoubleExponentialHistogramBuckets.merge(
-            previous.getPositiveBuckets(), current.getPositiveBuckets());
+        merge(previous.getPositiveBuckets(), current.getPositiveBuckets());
     DoubleExponentialHistogramBuckets negBuckets =
-        DoubleExponentialHistogramBuckets.merge(
-            previous.getNegativeBuckets(), current.getNegativeBuckets());
+        merge(previous.getNegativeBuckets(), current.getNegativeBuckets());
 
     // resolve possible scale difference due to merge
     int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
@@ -95,7 +90,7 @@ public final class DoubleExponentialHistogramAggregator
       max = current.getMax();
     }
     return ExponentialHistogramAccumulation.create(
-        posBuckets.getScale(),
+        commonScale,
         previous.getSum() + current.getSum(),
         previous.hasMinMax() || current.hasMinMax(),
         min,
@@ -104,6 +99,21 @@ public final class DoubleExponentialHistogramAggregator
         negBuckets,
         previous.getZeroCount() + current.getZeroCount(),
         current.getExemplars());
+  }
+
+  /**
+   * Merge the exponential histogram buckets. If {@code a} is empty, return {@code b}. If {@code b}
+   * is empty, return {@code a}. Else merge {@code b} into {@code a}.
+   */
+  private static DoubleExponentialHistogramBuckets merge(
+      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
+    if (b.getTotalCount() == 0) {
+      return a;
+    } else if (a.getTotalCount() == 0) {
+      return b;
+    }
+    a.mergeInto(b);
+    return a;
   }
 
   @Override

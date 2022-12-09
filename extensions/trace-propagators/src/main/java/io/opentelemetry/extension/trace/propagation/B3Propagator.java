@@ -123,4 +123,9 @@ public final class B3Propagator implements TextMapPropagator {
         .findFirst()
         .get();
   }
+
+  @Override
+  public String toString() {
+    return "B3Propagator{b3PropagatorInjector=" + b3PropagatorInjector + "}";
+  }
 }

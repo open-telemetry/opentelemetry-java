@@ -107,6 +107,20 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     return worker.batch;
   }
 
+  @Override
+  public String toString() {
+    return "BatchLogRecordProcessor{"
+        + "logRecordExporter="
+        + worker.logRecordExporter
+        + ", scheduleDelayNanos="
+        + worker.scheduleDelayNanos
+        + ", maxExportBatchSize="
+        + worker.maxExportBatchSize
+        + ", exporterTimeoutNanos="
+        + worker.exporterTimeoutNanos
+        + '}';
+  }
+
   // Worker is a thread that batches multiple logs and calls the registered LogRecordExporter to
   // export
   // the data.
