@@ -9,7 +9,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 
 /**
  * Factory for creating an OpenTracing {@link io.opentracing.Tracer} that is implemented using the
@@ -70,14 +69,12 @@ public final class OpenTracingShim {
    * {@code TextMapPropagator} instance.
    *
    * @param provider the {@code TracerProvider} instance used to create this shim.
-   * @param propagator the {@code TextMapPropagator} instance used to create this shim.
+   * @param propagators the {@code OpenTracingPropagators} instance used to create this shim.
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim(
-      TracerProvider provider, TextMapPropagator propagator) {
-    return createTracerShim(
-        getTracer(provider),
-        OpenTracingPropagators.builder().setTextMap(propagator).setHttpHeaders(propagator).build());
+      TracerProvider provider, OpenTracingPropagators propagators) {
+    return createTracerShim(getTracer(provider), propagators);
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {
