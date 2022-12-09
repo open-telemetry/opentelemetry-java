@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.15.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.16.0";
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
@@ -40,15 +40,13 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> EVENT_NAME = stringKey("event.name");
 
   /**
-   * The domain identifies the context in which an event happened. An event name is unique only
-   * within a domain.
+   * The domain identifies the business context for the events.
    *
    * <p>Notes:
    *
    * <ul>
-   *   <li>An {@code event.name} is supposed to be unique only in the context of an {@code
-   *       event.domain}, so this allows for two events in different domains to have same {@code
-   *       event.name}, yet be unrelated events.
+   *   <li>Events across different domains may have same {@code event.name}, yet be unrelated
+   *       events.
    * </ul>
    */
   public static final AttributeKey<String> EVENT_DOMAIN = stringKey("event.domain");
@@ -397,6 +395,31 @@ public final class SemanticAttributes {
    * </ul>
    */
   public static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
+
+  /** The unique identifier of the feature flag. */
+  public static final AttributeKey<String> FEATURE_FLAG_KEY = stringKey("feature_flag.key");
+
+  /** The name of the service provider that performs the flag evaluation. */
+  public static final AttributeKey<String> FEATURE_FLAG_PROVIDER_NAME =
+      stringKey("feature_flag.provider_name");
+
+  /**
+   * SHOULD be a semantic identifier for a value. If one is unavailable, a stringified version of
+   * the value can be used.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>A semantic identifier, commonly referred to as a variant, provides a means for referring
+   *       to a value without including the value itself. This can provide additional context for
+   *       understanding the meaning behind a value. For example, the variant {@code red} maybe be
+   *       used for the value {@code #c05543}.
+   *   <li>A stringified version of the value can be used in situations where a semantic identifier
+   *       is unavailable. String representation of the value should be determined by the
+   *       implementer.
+   * </ul>
+   */
+  public static final AttributeKey<String> FEATURE_FLAG_VARIANT = stringKey("feature_flag.variant");
 
   /** Transport protocol used. See note below. */
   public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
@@ -866,6 +889,10 @@ public final class SemanticAttributes {
   /** Partition the message is sent to. */
   public static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION =
       longKey("messaging.kafka.partition");
+
+  /** The offset of a record in the corresponding Kafka partition. */
+  public static final AttributeKey<Long> MESSAGING_KAFKA_MESSAGE_OFFSET =
+      longKey("messaging.kafka.message.offset");
 
   /** A boolean that is true if the message is a tombstone. */
   public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =

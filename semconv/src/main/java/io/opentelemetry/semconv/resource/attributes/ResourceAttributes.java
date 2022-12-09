@@ -18,7 +18,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.15.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.16.0";
 
   /**
    * Array of brand name and version separated by a space
@@ -404,7 +404,11 @@ public final class ResourceAttributes {
    */
   public static final AttributeKey<Long> FAAS_MAX_MEMORY = longKey("faas.max_memory");
 
-  /** Unique host ID. For Cloud, this must be the instance_id assigned by the cloud provider. */
+  /**
+   * Unique host ID. For Cloud, this must be the instance_id assigned by the cloud provider. For
+   * non-containerized Linux systems, the {@code machine-id} located in {@code /etc/machine-id} or
+   * {@code /var/lib/dbus/machine-id} may be used.
+   */
   public static final AttributeKey<String> HOST_ID = stringKey("host.id");
 
   /**
@@ -672,6 +676,8 @@ public final class ResourceAttributes {
     public static final String AZURE = "azure";
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+    /** IBM Cloud. */
+    public static final String IBM_CLOUD = "ibm_cloud";
     /** Tencent Cloud. */
     public static final String TENCENT_CLOUD = "tencent_cloud";
 
@@ -683,6 +689,8 @@ public final class ResourceAttributes {
     public static final String ALIBABA_CLOUD_ECS = "alibaba_cloud_ecs";
     /** Alibaba Cloud Function Compute. */
     public static final String ALIBABA_CLOUD_FC = "alibaba_cloud_fc";
+    /** Red Hat OpenShift on Alibaba Cloud. */
+    public static final String ALIBABA_CLOUD_OPENSHIFT = "alibaba_cloud_openshift";
     /** AWS Elastic Compute Cloud. */
     public static final String AWS_EC2 = "aws_ec2";
     /** AWS Elastic Container Service. */
@@ -695,6 +703,8 @@ public final class ResourceAttributes {
     public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
     /** AWS App Runner. */
     public static final String AWS_APP_RUNNER = "aws_app_runner";
+    /** Red Hat OpenShift on AWS (ROSA). */
+    public static final String AWS_OPENSHIFT = "aws_openshift";
     /** Azure Virtual Machines. */
     public static final String AZURE_VM = "azure_vm";
     /** Azure Container Instances. */
@@ -705,6 +715,8 @@ public final class ResourceAttributes {
     public static final String AZURE_FUNCTIONS = "azure_functions";
     /** Azure App Service. */
     public static final String AZURE_APP_SERVICE = "azure_app_service";
+    /** Azure Red Hat OpenShift. */
+    public static final String AZURE_OPENSHIFT = "azure_openshift";
     /** Google Cloud Compute Engine (GCE). */
     public static final String GCP_COMPUTE_ENGINE = "gcp_compute_engine";
     /** Google Cloud Run. */
@@ -715,6 +727,10 @@ public final class ResourceAttributes {
     public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APP_ENGINE = "gcp_app_engine";
+    /** Red Hat OpenShift on Google Cloud. */
+    public static final String GOOGLE_CLOUD_OPENSHIFT = "google_cloud_openshift";
+    /** Red Hat OpenShift on IBM Cloud. */
+    public static final String IBM_CLOUD_OPENSHIFT = "ibm_cloud_openshift";
     /** Tencent Cloud Cloud Virtual Machine (CVM). */
     public static final String TENCENT_CLOUD_CVM = "tencent_cloud_cvm";
     /** Tencent Cloud Elastic Kubernetes Service (EKS). */
