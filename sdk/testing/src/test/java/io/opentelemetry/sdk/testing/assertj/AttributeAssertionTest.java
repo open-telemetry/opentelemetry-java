@@ -18,10 +18,13 @@ class AttributeAssertionTest {
   @Test
   void nullAttr_errorMessageContainsAttrName() {
     AttributeKey<String> key = AttributeKey.stringKey("flib");
-    AttributeAssertion attrAssertion = AttributeAssertion.create(key, AbstractAssert::isNotNull);
-    AbstractAssert<?, ?> anAssert = AttributeAssertion.attributeValueAssertion(key, null);
-    Consumer<AbstractAssert<?, ?>> a = attrAssertion.getAssertion();
-    String message = assertThrows(AssertionError.class, () -> a.accept(anAssert)).getMessage();
-    assertThat(message).isEqualTo("[STRING attribute 'flib'] \nExpecting actual not to be null");
+
+    assertThatThrownBy(
+            () ->
+                AttributeAssertion.create(key, AbstractAssert::isNotNull)
+                    .getAssertion()
+                    .accept(AttributeAssertion.attributeValueAssertion(key, null)))
+        .isInstanceOf(AssertionError.class)
+        .hasMessage("[STRING attribute 'flib'] \nExpecting actual not to be null");
   }
 }
