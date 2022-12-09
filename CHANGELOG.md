@@ -66,8 +66,9 @@
 
 ### Semantic Conventions
 
-* Update semantic and resource attributes for spec v0.15.0
-  ([#4938](https://github.com/open-telemetry/opentelemetry-java/pull/4938))
+* Update semantic and resource attributes for spec v0.16.0
+  ([#4938](https://github.com/open-telemetry/opentelemetry-java/pull/4938),
+   [#5033](https://github.com/open-telemetry/opentelemetry-java/pull/5033))
 
 ### OpenTracing Shim
 
