@@ -2,6 +2,89 @@
 
 ## Unreleased
 
+### API
+
+### API Extensions
+
+* WARNING: `opentelemetry-extension-aws` has been removed following its relocation
+  to [opentelemetry-java-contrib/aws-xray-propagator](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator),
+  which is published under
+  coordinates `io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:{version}`.
+  We will push security patches to `1.20.x` as needed. The latest `opentelemetry-bom` will point
+  to the latest published version, currently `1.20.1`.
+  ([#4945](https://github.com/open-telemetry/opentelemetry-java/pull/4945))
+* Add toString implementation to various propagator components
+  ([#4996](https://github.com/open-telemetry/opentelemetry-java/pull/4996))
+
+### SDK
+
+#### Logs
+
+* Add toString implementation to various log SDK components
+  ([#4979](https://github.com/open-telemetry/opentelemetry-java/pull/4979))
+
+#### Metrics
+
+* Add histogram collection benchmark
+  ([#4912](https://github.com/open-telemetry/opentelemetry-java/pull/4912))
+* Add ExponentialHistogramIndexerBenchmark
+  ([#4989](https://github.com/open-telemetry/opentelemetry-java/pull/4989))
+* Stop extra copy of exponential histogram buckets
+  ([#5020](https://github.com/open-telemetry/opentelemetry-java/pull/5020))
+
+#### Exporter
+
+* Zipkin exporter serializes EventData attributes as JSON
+  ([#4934](https://github.com/open-telemetry/opentelemetry-java/pull/4934))
+* Add support for EC mTLS keys (applies to `OtlpHttp{Signal}Exporter`, `OtlpGrpc{Signal}Exporter`,
+  `JaegerGrpcSpanExporter`, `JaegerRemoteSampler`)
+  ([#4920](https://github.com/open-telemetry/opentelemetry-java/pull/4920))
+* Add `Configurable{Signal}ExporterProvider` implementations for `Logging{Signal}Exporter`s
+  ([#4950](https://github.com/open-telemetry/opentelemetry-java/pull/4950))
+* Add `ConfigurableSpanExporterProvider` implementation for `ZipkinSpanExporter`
+  ([#4991](https://github.com/open-telemetry/opentelemetry-java/pull/4991))
+* Add `Configurable{Signal}ExporterProvider` implementations for `OtlpJsonLogging{Signal}Exporter`s
+  ([#4992](https://github.com/open-telemetry/opentelemetry-java/pull/4992))
+* `ZipkinSpanExporter` populates remoteEndpoint
+  ([#4933](https://github.com/open-telemetry/opentelemetry-java/pull/4933))
+
+#### SDK Extensions
+
+* BREAKING: Remove support for otel.experimental.sdk.enabled from autoconfigure
+  ([#4973](https://github.com/open-telemetry/opentelemetry-java/pull/4973))
+* De-singleton ZPageServer implementation
+  ([#4935](https://github.com/open-telemetry/opentelemetry-java/pull/4935))
+* Add auto-configure support for logging-otlp exporters
+  ([#4879](https://github.com/open-telemetry/opentelemetry-java/pull/4879))
+* Move DefaultConfigProperties to internal package in `opentelemetry-sdk-extension-autoconfigure-spi`
+  ([#5001](https://github.com/open-telemetry/opentelemetry-java/pull/5001))
+
+#### Testing
+
+* Make APIs for asserting attributes consistent
+  ([#4882](https://github.com/open-telemetry/opentelemetry-java/pull/4882))
+* Attribute assertions error messages always contain the attr key
+  ([#5027](https://github.com/open-telemetry/opentelemetry-java/pull/5027))
+
+### Semantic Conventions
+
+* Update semantic and resource attributes for spec v0.16.0
+  ([#4938](https://github.com/open-telemetry/opentelemetry-java/pull/4938),
+   [#5033](https://github.com/open-telemetry/opentelemetry-java/pull/5033))
+
+### OpenTracing Shim
+
+* Handle unsupported types when setting Attributes
+  ([#4939](https://github.com/open-telemetry/opentelemetry-java/pull/4939))
+* Properly set the status based on the error tag
+  ([#4962](https://github.com/open-telemetry/opentelemetry-java/pull/4962))
+* Handle `io.opentracing.noop.NoopSpan` correctly
+  ([#4968](https://github.com/open-telemetry/opentelemetry-java/pull/4968))
+* Log invalid arguments rather than throwing exceptions.
+  ([#5012](https://github.com/open-telemetry/opentelemetry-java/pull/5012))
+* Stop mapping semconv values from OpenTracing to OTel.
+  ([#5016](https://github.com/open-telemetry/opentelemetry-java/pull/5016))
+
 ## Version 1.20.1 (2022-11-15)
 
 ### Bugfixes

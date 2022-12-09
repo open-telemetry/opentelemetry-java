@@ -29,6 +29,6 @@ echo
 git log --reverse \
         --perl-regexp \
         --author='^(?!dependabot\[bot\] )' \
-        --pretty=format:"- %s" \
+        --pretty=format:"* %s" \
         "$range" \
   | sed -E 's,\(#([0-9]+)\)$,\n  ([#\1](https://github.com/open-telemetry/opentelemetry-java/pull/\1)),'

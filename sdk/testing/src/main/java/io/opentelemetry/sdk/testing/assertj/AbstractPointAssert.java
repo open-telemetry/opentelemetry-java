@@ -115,6 +115,8 @@ public abstract class AbstractPointAssert<
    * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
    * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
    */
   public final PointAssertT hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
@@ -124,6 +126,8 @@ public abstract class AbstractPointAssert<
    * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
    * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
    */
   public final PointAssertT hasAttributesSatisfyingExactly(
       Iterable<AttributeAssertion> assertions) {

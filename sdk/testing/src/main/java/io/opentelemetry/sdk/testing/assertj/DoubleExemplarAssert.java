@@ -121,6 +121,8 @@ public final class DoubleExemplarAssert
    * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
    * Assertions can be created using methods like {@link
    * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
    */
   public DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(
       AttributeAssertion... assertions) {
@@ -131,6 +133,8 @@ public final class DoubleExemplarAssert
    * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
    * Assertions can be created using methods like {@link
    * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
    */
   public DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(
       Iterable<AttributeAssertion> assertions) {
