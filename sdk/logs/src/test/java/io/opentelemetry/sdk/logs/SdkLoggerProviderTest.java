@@ -55,7 +55,10 @@ class SdkLoggerProviderTest {
   @BeforeEach
   void setup() {
     sdkLoggerProvider =
-        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+        SdkLoggerProvider.builder()
+            .setResource(Resource.empty().toBuilder().put("key", "value").build())
+            .addLogRecordProcessor(logRecordProcessor)
+            .build();
     when(logRecordProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(logRecordProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
@@ -354,7 +357,7 @@ class SdkLoggerProviderTest {
         .isEqualTo(
             "SdkLoggerProvider{"
                 + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.21.0-SNAPSHOT\"}}, "
+                + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
                 + "logRecordProcessor=MockLogRecordProcessor"
                 + "}");
