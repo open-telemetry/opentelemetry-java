@@ -20,9 +20,7 @@ the first Monday of the month.
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
   * The heading for the unreleased entries should be `## Unreleased`.
-* Run
-  the [Prepare release branch workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-release-branch.yml)
-  .
+* Run the [Prepare release branch workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-release-branch.yml).
   * Press the "Run workflow" button, and leave the default branch `main` selected.
   * Review and merge the two pull requests that it creates
     (one is targeted to the release branch and one is targeted to `main`).
@@ -35,27 +33,21 @@ In general, patch releases are only made for regressions, security vulnerabiliti
 and deadlocks.
 
 * Backport pull request(s) to the release branch.
-  * Run
-    the [Backport workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/backport.yml)
-    .
+  * Run the [Backport workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/backport.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, then enter the pull request number that you want to backport,
     then click the "Run workflow" button below that.
   * Review and merge the backport pull request that it generates.
 * Merge a pull request to the release branch updating the `CHANGELOG.md`.
   * The heading for the unreleased entries should be `## Unreleased`.
-* Run
-  the [Prepare patch release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-patch-release.yml)
-  .
+* Run the [Prepare patch release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-patch-release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
   * Review and merge the pull request that it creates for updating the version.
 
 ## Making the release
 
-* Run
-  the [Release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release.yml)
-  .
+* Run the [Release workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release.yml).
   * Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v1.9.x`, and click the "Run workflow" button below that.
   * This workflow will publish the artifacts to maven central and will publish a GitHub release
@@ -69,8 +61,7 @@ and deadlocks.
 
 ## Update release versions in documentations
 
-After releasing is done, you need to first update the docs. This needs to happen after artifacts
-have propagated
+After releasing is done, you need to first update the docs. This needs to happen after artifacts have propagated
 to Maven Central so should probably be done an hour or two after the release workflow finishes.
 
 ```
@@ -82,6 +73,8 @@ to Maven Central so should probably be done an hour or two after the release wor
 Where `x.y.z` is the version just released and `a.b.c` is the previous version.
 
 Create a PR against the main branch with the changes.
+
+[website docs]: https://github.com/open-telemetry/opentelemetry.io/tree/main/content/en/docs/instrumentation/java
 
 ## Credentials
 
@@ -109,8 +102,7 @@ defines the mapping from Github Action secret keys to 1Password keys:
 
 ## Releasing from the local setup
 
-Releasing from the local setup can be done providing the previously mentioned four credential
-values, i.e.
+Releasing from the local setup can be done providing the previously mentioned four credential values, i.e.
 `GPG_PRIVATE_KEY`, `GPG_PASSWORD`, `SONATYPE_USER` and `SONATYPE_KEY`:
 
 ```sh
