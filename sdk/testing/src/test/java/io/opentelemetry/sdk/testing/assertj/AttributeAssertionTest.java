@@ -5,11 +5,9 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
-import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 import org.junit.jupiter.api.Test;
 
