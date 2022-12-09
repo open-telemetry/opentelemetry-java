@@ -63,6 +63,8 @@
 
 * Make APIs for asserting attributes consistent
   ([#4882](https://github.com/open-telemetry/opentelemetry-java/pull/4882))
+* Attribute assertions error messages always contain the attr key
+  ([#5027](https://github.com/open-telemetry/opentelemetry-java/pull/5027))
 
 ### Semantic Conventions
 
