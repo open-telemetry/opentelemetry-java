@@ -74,8 +74,6 @@ Where `x.y.z` is the version just released and `a.b.c` is the previous version.
 
 Create a PR against the main branch with the changes.
 
-[website docs]: https://github.com/open-telemetry/opentelemetry.io/tree/main/content/en/docs/instrumentation/java
-
 ## Credentials
 
 The following credentials are required for publishing (and automatically set in Github Actions):
