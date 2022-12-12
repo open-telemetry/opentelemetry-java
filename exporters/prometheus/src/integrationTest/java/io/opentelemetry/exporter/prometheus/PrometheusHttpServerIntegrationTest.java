@@ -34,6 +34,7 @@ import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -113,7 +114,7 @@ class PrometheusHttpServerIntegrationTest {
 
   @Test
   void endToEnd() {
-    Meter meter = meterProvider.meterBuilder("test").build();
+    Meter meter = meterProvider.meterBuilder("test").setInstrumentationVersion("1.0.0").build();
 
     meter
         .counterBuilder("requests")
@@ -138,37 +139,71 @@ class PrometheusHttpServerIntegrationTest {
             stringKeyValue("http.scheme", "http"),
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
-                "service_name", resource.getAttributes().get(ResourceAttributes.SERVICE_NAME)),
+                "service_name",
+                Objects.requireNonNull(
+                    resource.getAttributes().get(ResourceAttributes.SERVICE_NAME))),
             stringKeyValue(
                 "telemetry_sdk_name",
-                resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_NAME)),
+                Objects.requireNonNull(
+                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_NAME))),
             stringKeyValue(
                 "telemetry_sdk_language",
-                resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)),
+                Objects.requireNonNull(
+                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE))),
             stringKeyValue(
                 "telemetry_sdk_version",
-                resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_VERSION)));
+                Objects.requireNonNull(
+                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_VERSION))));
 
     assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
     ScopeMetrics scopeMetrics = resourceMetrics.getScopeMetrics(0);
     assertThat(scopeMetrics.getScope().getName()).isEqualTo("");
 
-    Optional<Metric> optMetric =
+    Optional<Metric> optRequestTotal =
         scopeMetrics.getMetricsList().stream()
             .filter(metric -> metric.getName().equals("requests_total"))
             .findFirst();
-    assertThat(optMetric).isPresent();
-    Metric metric = optMetric.get();
-    assertThat(metric.getDataCase()).isEqualTo(Metric.DataCase.SUM);
+    assertThat(optRequestTotal).isPresent();
+    Metric requestTotal = optRequestTotal.get();
+    assertThat(requestTotal.getDataCase()).isEqualTo(Metric.DataCase.SUM);
 
-    Sum sum = metric.getSum();
-    assertThat(sum.getAggregationTemporality())
+    Sum requestTotalSum = requestTotal.getSum();
+    assertThat(requestTotalSum.getAggregationTemporality())
         .isEqualTo(AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE);
-    assertThat(sum.getDataPointsCount()).isEqualTo(1);
+    assertThat(requestTotalSum.getIsMonotonic()).isTrue();
+    assertThat(requestTotalSum.getDataPointsCount()).isEqualTo(1);
 
-    NumberDataPoint dataPoint = sum.getDataPoints(0);
-    assertThat(dataPoint.getAsDouble()).isEqualTo(3.0);
-    assertThat(dataPoint.getAttributesList()).contains(stringKeyValue("animal", "bear"));
+    NumberDataPoint requestTotalDataPoint = requestTotalSum.getDataPoints(0);
+    assertThat(requestTotalDataPoint.getAsDouble()).isEqualTo(3.0);
+    assertThat(requestTotalDataPoint.getAttributesList())
+        .containsExactlyInAnyOrder(
+            stringKeyValue("animal", "bear"),
+            // Scope name and version are serialized as attributes to disambiguate metrics with the
+            // same name in different scopes
+            stringKeyValue("otel_scope_name", "test"),
+            stringKeyValue("otel_scope_version", "1.0.0"));
+
+    // Scope is serialized as info type metric, which is transformed to non-monotonic cumulative sum
+    Optional<Metric> optTestScopeInfo =
+        scopeMetrics.getMetricsList().stream()
+            .filter(metric -> metric.getName().equals("otel_scope_info"))
+            .findFirst();
+    assertThat(optTestScopeInfo).isPresent();
+    Metric testScopeInfo = optTestScopeInfo.get();
+    assertThat(testScopeInfo.getDataCase()).isEqualTo(Metric.DataCase.SUM);
+
+    Sum testScopeInfoSum = testScopeInfo.getSum();
+    assertThat(testScopeInfoSum.getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE);
+    assertThat(testScopeInfoSum.getIsMonotonic()).isFalse();
+    assertThat(testScopeInfoSum.getDataPointsCount()).isEqualTo(1);
+
+    NumberDataPoint testScopeInfoDataPoint = testScopeInfoSum.getDataPoints(0);
+    assertThat(testScopeInfoDataPoint.getAsDouble()).isEqualTo(1.0);
+    assertThat(testScopeInfoDataPoint.getAttributesList())
+        .containsExactlyInAnyOrder(
+            stringKeyValue("otel_scope_name", "test"),
+            stringKeyValue("otel_scope_version", "1.0.0"));
   }
 
   private static KeyValue stringKeyValue(String key, String value) {

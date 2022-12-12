@@ -24,6 +24,7 @@ package io.opentelemetry.exporter.prometheus;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -99,22 +100,14 @@ abstract class Serializer {
   abstract void writeEof(Writer writer) throws IOException;
 
   final void write(Collection<MetricData> metrics, OutputStream output) throws IOException {
-    // Prometheus requires all metrics with the same name to be serialized together, so we need to
-    // group them.
-    // In particular, it is common for OpenTelemetry to report metrics with the same name from
-    // different libraries
-    // separately.
-    Map<String, List<MetricData>> metricsByName =
+    Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
         metrics.stream()
             // Not supported in specification yet.
             .filter(metric -> metric.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM)
             .filter(metric -> metricNameFilter.test(metricName(metric)))
             .collect(
                 Collectors.groupingBy(
-                    metric ->
-                        headerName(
-                            NameSanitizer.INSTANCE.apply(metric.getName()),
-                            PrometheusType.forMetric(metric)),
+                    MetricData::getInstrumentationScopeInfo,
                     LinkedHashMap::new,
                     Collectors.toList()));
     Optional<Resource> optResource = metrics.stream().findFirst().map(MetricData::getResource);
@@ -123,10 +116,33 @@ abstract class Serializer {
       if (optResource.isPresent()) {
         writeResource(optResource.get(), writer);
       }
-      for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
+      for (Map.Entry<InstrumentationScopeInfo, List<MetricData>> entry :
+          metricsByScope.entrySet()) {
         write(entry.getValue(), entry.getKey(), writer);
       }
       writeEof(writer);
+    }
+  }
+
+  private void write(
+      List<MetricData> metrics, InstrumentationScopeInfo instrumentationScopeInfo, Writer writer)
+      throws IOException {
+    writeScopeInfo(instrumentationScopeInfo, writer);
+    // Group metrics with the scope, name, but different types. This is a semantic error which the
+    // SDK warns about but passes through to exporters to handle.
+    Map<String, List<MetricData>> metricsByName =
+        metrics.stream()
+            .collect(
+                Collectors.groupingBy(
+                    metric ->
+                        headerName(
+                            NameSanitizer.INSTANCE.apply(metric.getName()),
+                            PrometheusType.forMetric(metric)),
+                    LinkedHashMap::new,
+                    Collectors.toList()));
+
+    for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
+      write(entry.getValue(), entry.getKey(), writer);
     }
   }
 
@@ -163,6 +179,7 @@ abstract class Serializer {
         case DOUBLE_GAUGE:
           writePoint(
               writer,
+              metric.getInstrumentationScopeInfo(),
               name,
               ((DoublePointData) point).getValue(),
               point.getAttributes(),
@@ -172,16 +189,19 @@ abstract class Serializer {
         case LONG_GAUGE:
           writePoint(
               writer,
+              metric.getInstrumentationScopeInfo(),
               name,
               (double) ((LongPointData) point).getValue(),
               point.getAttributes(),
               point.getEpochNanos());
           break;
         case HISTOGRAM:
-          writeHistogram(writer, name, (HistogramPointData) point);
+          writeHistogram(
+              writer, metric.getInstrumentationScopeInfo(), name, (HistogramPointData) point);
           break;
         case SUMMARY:
-          writeSummary(writer, name, (SummaryPointData) point);
+          writeSummary(
+              writer, metric.getInstrumentationScopeInfo(), name, (SummaryPointData) point);
           break;
         case EXPONENTIAL_HISTOGRAM:
           throw new IllegalArgumentException("Can't happen");
@@ -193,19 +213,40 @@ abstract class Serializer {
     writer.write("# TYPE target info\n");
     writer.write("# HELP target Target metadata\n");
     writer.write("target_info{");
-    writeAttributePairs(writer, resource.getAttributes());
+    writeAttributePairs(writer, /* initialComma= */ false, resource.getAttributes());
     writer.write("} 1\n");
   }
 
-  private void writeHistogram(Writer writer, String name, HistogramPointData point)
+  private static void writeScopeInfo(
+      InstrumentationScopeInfo instrumentationScopeInfo, Writer writer) throws IOException {
+    writer.write("# TYPE otel_scope_info info\n");
+    writer.write("# HELP otel_scope_info Scope metadata\n");
+    writer.write("otel_scope_info{");
+    writeScopeNameAndVersion(writer, instrumentationScopeInfo);
+    writeAttributePairs(writer, /* initialComma= */ true, instrumentationScopeInfo.getAttributes());
+    writer.write("} 1\n");
+  }
+
+  private void writeHistogram(
+      Writer writer,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      HistogramPointData point)
       throws IOException {
     writePoint(
         writer,
+        instrumentationScopeInfo,
         name + "_count",
         (double) point.getCount(),
         point.getAttributes(),
         point.getEpochNanos());
-    writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
+    writePoint(
+        writer,
+        instrumentationScopeInfo,
+        name + "_sum",
+        point.getSum(),
+        point.getAttributes(),
+        point.getEpochNanos());
 
     long cumulativeCount = 0;
     List<Long> counts = point.getCounts();
@@ -217,6 +258,7 @@ abstract class Serializer {
       cumulativeCount += counts.get(i);
       writePoint(
           writer,
+          instrumentationScopeInfo,
           name + "_bucket",
           (double) cumulativeCount,
           point.getAttributes(),
@@ -250,19 +292,32 @@ abstract class Serializer {
         : Double.POSITIVE_INFINITY;
   }
 
-  private void writeSummary(Writer writer, String name, SummaryPointData point) throws IOException {
+  private void writeSummary(
+      Writer writer,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      SummaryPointData point)
+      throws IOException {
     writePoint(
         writer,
+        instrumentationScopeInfo,
         name + "_count",
         (double) point.getCount(),
         point.getAttributes(),
         point.getEpochNanos());
-    writePoint(writer, name + "_sum", point.getSum(), point.getAttributes(), point.getEpochNanos());
+    writePoint(
+        writer,
+        instrumentationScopeInfo,
+        name + "_sum",
+        point.getSum(),
+        point.getAttributes(),
+        point.getEpochNanos());
 
     List<ValueAtQuantile> valueAtQuantiles = point.getValues();
     for (ValueAtQuantile valueAtQuantile : valueAtQuantiles) {
       writePoint(
           writer,
+          instrumentationScopeInfo,
           name,
           valueAtQuantile.getValue(),
           point.getAttributes(),
@@ -276,10 +331,15 @@ abstract class Serializer {
   }
 
   private void writePoint(
-      Writer writer, String name, double value, Attributes attributes, long epochNanos)
+      Writer writer,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      String name,
+      double value,
+      Attributes attributes,
+      long epochNanos)
       throws IOException {
     writer.write(name);
-    writeAttributes(writer, attributes);
+    writeAttributes(writer, instrumentationScopeInfo, attributes);
     writer.write(' ');
     writeDouble(writer, value);
     writer.write(' ');
@@ -289,6 +349,7 @@ abstract class Serializer {
 
   private void writePoint(
       Writer writer,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       String name,
       double value,
       Attributes attributes,
@@ -300,7 +361,8 @@ abstract class Serializer {
       double maxExemplar)
       throws IOException {
     writer.write(name);
-    writeAttributes(writer, attributes, additionalAttrKey, additionalAttrValue);
+    writeAttributes(
+        writer, instrumentationScopeInfo, attributes, additionalAttrKey, additionalAttrValue);
     writer.write(' ');
     writeDouble(writer, value);
     writer.write(' ');
@@ -309,21 +371,29 @@ abstract class Serializer {
     writer.write('\n');
   }
 
-  private static void writeAttributes(Writer writer, Attributes attributes) throws IOException {
-    if (attributes.isEmpty()) {
-      return;
-    }
+  private static void writeAttributes(
+      Writer writer, InstrumentationScopeInfo instrumentationScopeInfo, Attributes attributes)
+      throws IOException {
     writer.write('{');
-    writeAttributePairs(writer, attributes);
+    writeScopeNameAndVersion(writer, instrumentationScopeInfo);
+    if (!attributes.isEmpty()) {
+      writeAttributePairs(writer, /* initialComma= */ true, attributes);
+    }
     writer.write('}');
   }
 
   private static void writeAttributes(
-      Writer writer, Attributes attributes, String additionalAttrKey, double additionalAttrValue)
+      Writer writer,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      Attributes attributes,
+      String additionalAttrKey,
+      double additionalAttrValue)
       throws IOException {
     writer.write('{');
+    writeScopeNameAndVersion(writer, instrumentationScopeInfo);
+    writer.write(',');
     if (!attributes.isEmpty()) {
-      writeAttributePairs(writer, attributes);
+      writeAttributePairs(writer, /* initialComma= */ false, attributes);
       writer.write(',');
     }
     writer.write(additionalAttrKey);
@@ -333,19 +403,32 @@ abstract class Serializer {
     writer.write('}');
   }
 
-  private static void writeAttributePairs(Writer writer, Attributes attributes) throws IOException {
+  private static void writeScopeNameAndVersion(
+      Writer writer, InstrumentationScopeInfo instrumentationScopeInfo) throws IOException {
+    writer.write("otel_scope_name=\"");
+    writer.write(instrumentationScopeInfo.getName());
+    writer.write("\"");
+    if (instrumentationScopeInfo.getVersion() != null) {
+      writer.write(",otel_scope_version=\"");
+      writer.write(instrumentationScopeInfo.getVersion());
+      writer.write("\"");
+    }
+  }
+
+  private static void writeAttributePairs(
+      Writer writer, boolean initialComma, Attributes attributes) throws IOException {
     try {
       attributes.forEach(
           new BiConsumer<AttributeKey<?>, Object>() {
-            private boolean wroteOne;
+            private boolean prefixWithComma = initialComma;
 
             @Override
             public void accept(AttributeKey<?> key, Object value) {
               try {
-                if (wroteOne) {
+                if (prefixWithComma) {
                   writer.write(',');
                 } else {
-                  wroteOne = true;
+                  prefixWithComma = true;
                 }
                 writer.write(NameSanitizer.INSTANCE.apply(key.getKey()));
                 writer.write("=\"");

@@ -45,6 +45,6 @@ class PrometheusTest {
 
     WebClient client = WebClient.of("http://127.0.0.1:" + port);
     AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
-    assertThat(response.contentUtf8()).contains("test 2.0");
+    assertThat(response.contentUtf8()).contains("test{otel_scope_name=\"test\"} 2.0");
   }
 }

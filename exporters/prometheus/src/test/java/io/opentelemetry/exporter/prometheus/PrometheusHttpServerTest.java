@@ -79,12 +79,18 @@ class PrometheusHttpServerTest {
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
                 + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE grpc_name_total counter\n"
                 + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
-                + "http_name_total{kp=\"vp\"} 3.5 0\n");
+                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
   }
 
   @ParameterizedTest
@@ -108,12 +114,18 @@ class PrometheusHttpServerTest {
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
                 + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE grpc_name counter\n"
                 + "# HELP grpc_name long_description\n"
-                + "grpc_name_total{kp=\"vp\"} 5.0 0.000\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0.000\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE http_name counter\n"
                 + "# HELP http_name double_description\n"
-                + "http_name_total{kp=\"vp\"} 3.5 0.000\n"
+                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0.000\n"
                 + "# EOF\n");
   }
 
@@ -129,9 +141,12 @@ class PrometheusHttpServerTest {
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
                 + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE grpc_name_total counter\n"
                 + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{kp=\"vp\"} 5.0 0\n");
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n");
   }
 
   @Test
@@ -150,12 +165,18 @@ class PrometheusHttpServerTest {
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
                 + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE grpc_name_total counter\n"
                 + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
-                + "http_name_total{kp=\"vp\"} 3.5 0\n");
+                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
   }
 
   @Test
