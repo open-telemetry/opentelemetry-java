@@ -20,9 +20,11 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final GrpcExporter<TraceRequestMarshaler> delegate;
 
   /**
-   * Returns a new {@link OtlpGrpcSpanExporter} reading the configuration values from the
-   * environment and from system properties. System properties override values defined in the
-   * environment. If a configuration value is missing, it uses the default value.
+   * Returns a new {@link OtlpGrpcSpanExporter} using the default values.
+   *
+   * <p>To load configuration values from the environment and from system properties, use <code>
+   * io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk</code> instead of manually
+   * configuring your SDK.
    *
    * @return a new {@link OtlpGrpcSpanExporter} instance.
    */
