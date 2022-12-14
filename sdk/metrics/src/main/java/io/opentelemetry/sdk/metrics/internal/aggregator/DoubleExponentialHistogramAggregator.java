@@ -43,11 +43,13 @@ public final class DoubleExponentialHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, int maxBuckets) {
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      int maxBuckets,
+      int maxScale) {
     this(
         reservoirSupplier,
         ExponentialBucketStrategy.newStrategy(
-            maxBuckets, ExponentialCounterFactory.circularBufferCounter()));
+            maxBuckets, ExponentialCounterFactory.circularBufferCounter(), maxScale));
   }
 
   DoubleExponentialHistogramAggregator(
@@ -202,7 +204,7 @@ public final class DoubleExponentialHistogramAggregator
       this.min = Double.MAX_VALUE;
       this.max = -1;
       this.count = 0;
-      this.scale = bucketStrategy.getStartingScale();
+      this.scale = bucketStrategy.getMaxScale();
     }
 
     @Override

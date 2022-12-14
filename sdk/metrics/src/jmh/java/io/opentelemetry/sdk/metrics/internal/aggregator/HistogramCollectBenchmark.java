@@ -113,7 +113,8 @@ public class HistogramCollectBenchmark {
   @SuppressWarnings("ImmutableEnumChecker")
   public enum AggregationGenerator {
     EXPLICIT_BUCKET_HISTOGRAM(Aggregation.explicitBucketHistogram()),
-    EXPONENTIAL_BUCKET_HISTOGRAM(ExponentialHistogramAggregation.getDefault());
+    DEFAULT_EXPONENTIAL_BUCKET_HISTOGRAM(ExponentialHistogramAggregation.getDefault()),
+    ZERO_MAX_SCALE_EXPONENTIAL_BUCKET_HISTOGRAM(ExponentialHistogramAggregation.create(160, 0));
 
     private final Aggregation aggregation;
 

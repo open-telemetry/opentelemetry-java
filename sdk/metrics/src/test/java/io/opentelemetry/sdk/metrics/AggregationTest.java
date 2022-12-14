@@ -31,10 +31,10 @@ class AggregationTest {
     // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
     assertThat(ExponentialHistogramAggregation.getDefault())
         .asString()
-        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=160}");
-    assertThat(ExponentialHistogramAggregation.create(1))
+        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=160,maxScale=20}");
+    assertThat(ExponentialHistogramAggregation.create(1, 0))
         .asString()
-        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=1}");
+        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=1,maxScale=0}");
   }
 
   @Test
