@@ -66,6 +66,7 @@ class ConfigErrorTest {
   @Test
   @SetSystemProperty(key = "otel.traces.sampler", value = "traceidratio")
   @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
+  @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
   @SuppressLogger(GlobalOpenTelemetry.class)
   void globalOpenTelemetryWhenError() {
     assertThat(GlobalOpenTelemetry.get())

@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
@@ -18,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -27,26 +27,33 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * Properties to be used for auto-configuration of the OpenTelemetry SDK components. These
- * properties will be a combination of system properties and environment variables. The properties
- * for both of these will be normalized to be all lower case, and underscores will be replaced with
+ * Properties are normalized to The properties for both of these will be normalized to be all lower
+ * case, dashses are replaces with periods, and environment variable underscores are replaces with
  * periods.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
-final class DefaultConfigProperties implements ConfigProperties {
+public final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
-  static DefaultConfigProperties get(Map<String, String> defaultProperties) {
+  /**
+   * Creates a {@link DefaultConfigProperties} by merging system properties, environment variables,
+   * and the {@code defaultProperties}.
+   *
+   * <p>Environment variables take priority over {@code defaultProperties}. System properties take
+   * priority over environment variables.
+   */
+  public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
     return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
   }
 
-  static DefaultConfigProperties customize(
-      DefaultConfigProperties previousProperties, Map<String, String> overrides) {
-    return new DefaultConfigProperties(previousProperties, overrides);
-  }
-
-  // Visible for testing
-  static ConfigProperties createForTest(Map<String, String> properties) {
+  /**
+   * Create a {@link DefaultConfigProperties} from the {@code properties}, ignoring system
+   * properties and environment variables.
+   */
+  public static DefaultConfigProperties createForTest(Map<String, String> properties) {
     return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
   }
 
@@ -55,11 +62,13 @@ final class DefaultConfigProperties implements ConfigProperties {
       Map<String, String> environmentVariables,
       Map<String, String> defaultProperties) {
     Map<String, String> config = new HashMap<>();
-    defaultProperties.forEach((name, value) -> config.put(normalize(name), value));
+    defaultProperties.forEach(
+        (name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
     environmentVariables.forEach(
-        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
+        (name, value) -> config.put(ConfigUtil.normalizeEnvironmentVariableKey(name), value));
     systemProperties.forEach(
-        (key, value) -> config.put(normalize(key.toString()), value.toString()));
+        (key, value) ->
+            config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
 
     this.config = config;
   }
@@ -68,7 +77,7 @@ final class DefaultConfigProperties implements ConfigProperties {
       DefaultConfigProperties previousProperties, Map<String, String> overrides) {
     // previousProperties are already normalized, they can be copied as they are
     Map<String, String> config = new HashMap<>(previousProperties.config);
-    overrides.forEach((name, value) -> config.put(normalize(name), value));
+    overrides.forEach((name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
 
     this.config = config;
   }
@@ -76,13 +85,13 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Override
   @Nullable
   public String getString(String name) {
-    return config.get(normalize(name));
+    return config.get(ConfigUtil.normalizePropertyKey(name));
   }
 
   @Override
   @Nullable
   public Boolean getBoolean(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -93,7 +102,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Integer getInt(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -108,7 +117,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Long getLong(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -123,7 +132,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Double getDouble(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -138,7 +147,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Duration getDuration(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -167,7 +176,7 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public List<String> getList(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null) {
       return Collections.emptyList();
     }
@@ -180,8 +189,8 @@ final class DefaultConfigProperties implements ConfigProperties {
    *
    * @throws ConfigurationException if {@code name} contains duplicate entries
    */
-  static Set<String> getSet(ConfigProperties config, String name) {
-    List<String> list = config.getList(normalize(name));
+  public static Set<String> getSet(ConfigProperties config, String name) {
+    List<String> list = config.getList(ConfigUtil.normalizePropertyKey(name));
     Set<String> set = new HashSet<>(list);
     if (set.size() != list.size()) {
       String duplicates =
@@ -199,7 +208,7 @@ final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public Map<String, String> getMap(String name) {
-    return getList(normalize(name)).stream()
+    return getList(ConfigUtil.normalizePropertyKey(name)).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
             splitKeyValuePairs -> {
@@ -215,6 +224,14 @@ final class DefaultConfigProperties implements ConfigProperties {
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
+  }
+
+  /**
+   * Return a new {@link DefaultConfigProperties} by overriding the {@code previousProperties} with
+   * the {@code overrides}.
+   */
+  public DefaultConfigProperties withOverrides(Map<String, String> overrides) {
+    return new DefaultConfigProperties(this, overrides);
   }
 
   private static ConfigurationException newInvalidPropertyException(
@@ -265,9 +282,5 @@ final class DefaultConfigProperties implements ConfigProperties {
     }
     // Pull everything after the last digit.
     return rawValue.substring(lastDigitIndex + 1);
-  }
-
-  private static String normalize(String propertyName) {
-    return propertyName.toLowerCase(Locale.ROOT).replace('-', '.');
   }
 }

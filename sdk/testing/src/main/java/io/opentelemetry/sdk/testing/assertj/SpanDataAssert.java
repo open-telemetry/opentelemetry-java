@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -307,7 +306,37 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
-  /** Asserts the span has attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public SpanDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
+    return hasAttributesSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public SpanDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributes(
+        actual.getAttributes(),
+        assertions,
+        String.format("span [%s] attribute keys", actual.getName()));
+    return this;
+  }
+
+  /**
+   * Asserts the span has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public SpanDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
     return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
   }
@@ -318,22 +347,10 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public SpanDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
-    Set<AttributeKey<?>> actualKeys = actual.getAttributes().asMap().keySet();
-    Set<AttributeKey<?>> checkedKeys = new HashSet<>();
-    for (AttributeAssertion attributeAssertion : assertions) {
-      AttributeKey<?> key = attributeAssertion.getKey();
-      Object value = actual.getAttributes().get(key);
-      if (value != null) {
-        checkedKeys.add(key);
-      }
-      AbstractAssert<?, ?> assertion = AttributeAssertion.attributeValueAssertion(key, value);
-      attributeAssertion.getAssertion().accept(assertion);
-    }
-
-    assertThat(actualKeys)
-        .as("span [%s] attribute keys", actual.getName())
-        .containsExactlyInAnyOrderElementsOf(checkedKeys);
-
+    AssertUtil.assertAttributesExactly(
+        actual.getAttributes(),
+        assertions,
+        String.format("span [%s] attribute keys", actual.getName()));
     return this;
   }
 

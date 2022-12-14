@@ -6,7 +6,6 @@
 package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -40,20 +39,14 @@ class ShimUtilTest {
     SpanShim shim = new SpanShim(telemetryInfo, span);
     assertThat(ShimUtil.getSpanShim(shim)).isEqualTo(shim);
     assertThat(ShimUtil.getSpanShim(new SpanWrapper(shim))).isEqualTo(shim);
-    assertThatThrownBy(() -> ShimUtil.getSpanShim(new SpanWrapper("not a span")))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("span wrapper didn't return a span: java.lang.String");
-    assertThatThrownBy(() -> ShimUtil.getSpanShim(null))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("span is not a valid SpanShim object: null");
+    assertThat(ShimUtil.getSpanShim(new SpanWrapper("not a span"))).isNull();
+    assertThat(ShimUtil.getSpanShim(null)).isNull();
   }
 
   @Test
   void getContextShim() {
     SpanContextShim contextShim = new SpanContextShim(new SpanShim(telemetryInfo, span));
     assertThat(ShimUtil.getContextShim(contextShim)).isEqualTo(contextShim);
-    assertThatThrownBy(() -> ShimUtil.getContextShim(null))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("context is not a valid SpanContextShim object: null");
+    assertThat(ShimUtil.getContextShim(null)).isNull();
   }
 }

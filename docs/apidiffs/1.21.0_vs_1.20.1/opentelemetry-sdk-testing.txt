@@ -1,0 +1,23 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.assertj.AbstractPointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasAttributesSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.EventDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EventDataAssert hasAttributesSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LongExemplarAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongExemplarAssert hasFilteredAttributesSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttributesSatisfying(java.lang.Iterable)

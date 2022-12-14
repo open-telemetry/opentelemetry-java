@@ -21,6 +21,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class OtlpGrpcConfigTest {
 
@@ -317,6 +319,7 @@ class OtlpGrpcConfigTest {
   }
 
   @Test
+  @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(

@@ -15,7 +15,6 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -43,7 +42,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
-  @Nullable private SpanKind spanKind;
   @Nullable private Boolean error;
   private long startTimestampMicros;
 
@@ -63,13 +61,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder asChildOf(Span parent) {
-    if (parent == null) {
-      return this;
+    SpanShim spanShim = ShimUtil.getSpanShim(parent);
+    if (spanShim != null) {
+      addReference(References.CHILD_OF, spanShim.context());
     }
 
-    // TODO - Verify we handle a no-op Span
-    SpanShim spanShim = ShimUtil.getSpanShim(parent);
-    return addReference(References.CHILD_OF, spanShim.context());
+    return this;
   }
 
   @Override
@@ -79,7 +76,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder addReference(@Nullable String referenceType, SpanContext referencedContext) {
-    if (referencedContext == null) {
+    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
+    if (contextShim == null) {
       return this;
     }
 
@@ -92,8 +90,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       // Discard references with unrecognized type.
       return this;
     }
-
-    SpanContextShim contextShim = ShimUtil.getContextShim(referencedContext);
 
     // Optimization for 99% situations, when there is only one parent.
     if (allParents.size() == 0) {
@@ -120,25 +116,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
-    if (Tags.SPAN_KIND.getKey().equals(key)) {
-      switch (value) {
-        case Tags.SPAN_KIND_CLIENT:
-          spanKind = SpanKind.CLIENT;
-          break;
-        case Tags.SPAN_KIND_SERVER:
-          spanKind = SpanKind.SERVER;
-          break;
-        case Tags.SPAN_KIND_PRODUCER:
-          spanKind = SpanKind.PRODUCER;
-          break;
-        case Tags.SPAN_KIND_CONSUMER:
-          spanKind = SpanKind.CONSUMER;
-          break;
-        default:
-          spanKind = SpanKind.INTERNAL;
-          break;
-      }
-    } else if (Tags.ERROR.getKey().equals(key)) {
+    if (Tags.ERROR.getKey().equals(key)) {
       error = Boolean.parseBoolean(value);
     } else {
       this.spanBuilderAttributeKeys.add(stringKey(key));
@@ -229,10 +207,6 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.addLink(
           parentInfo.getSpanContext(),
           parentInfo.getRefType() == ReferenceType.CHILD_OF ? CHILD_OF_ATTR : FOLLOWS_FROM_ATTR);
-    }
-
-    if (spanKind != null) {
-      builder.setSpanKind(spanKind);
     }
 
     if (startTimestampMicros > 0) {

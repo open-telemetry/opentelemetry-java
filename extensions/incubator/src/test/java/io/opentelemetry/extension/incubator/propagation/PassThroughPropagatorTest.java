@@ -87,4 +87,9 @@ class PassThroughPropagatorTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("field");
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(propagator.toString()).isEqualTo("PassThroughPropagator{fields=[animal, food]}");
+  }
 }

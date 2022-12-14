@@ -50,9 +50,10 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(@Nullable Span span) {
-    if (span == null) {
+    SpanShim spanShim = ShimUtil.getSpanShim(span);
+    if (spanShim == null) {
       return new ScopeShim(Context.current().with(NOOP_SPANSHIM).makeCurrent());
     }
-    return new ScopeShim(Context.current().with(ShimUtil.getSpanShim(span)).makeCurrent());
+    return new ScopeShim(Context.current().with(spanShim).makeCurrent());
   }
 }

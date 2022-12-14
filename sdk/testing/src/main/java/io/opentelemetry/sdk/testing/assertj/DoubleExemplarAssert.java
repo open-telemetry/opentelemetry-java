@@ -97,19 +97,48 @@ public final class DoubleExemplarAssert
     return hasFilteredAttributes(attributes);
   }
 
-  /** Asserts the exemplar has filtered attributes matching all {@code assertions} and no more. */
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
   public DoubleExemplarAssert hasFilteredAttributesSatisfying(AttributeAssertion... assertions) {
     return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions}. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   */
+  public DoubleExemplarAssert hasFilteredAttributesSatisfying(
+      Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributes(actual.getFilteredAttributes(), assertions);
+    return myself;
   }
 
   /**
    * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
    * Assertions can be created using methods like {@link
    * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
    */
-  public DoubleExemplarAssert hasFilteredAttributesSatisfying(
+  public DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(
+      AttributeAssertion... assertions) {
+    return hasFilteredAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the exemplar has filtered attributes matching all {@code assertions} and no more.
+   * Assertions can be created using methods like {@link
+   * OpenTelemetryAssertions#satisfies(AttributeKey, OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public DoubleExemplarAssert hasFilteredAttributesSatisfyingExactly(
       Iterable<AttributeAssertion> assertions) {
-    AssertUtil.assertAttributes(actual.getFilteredAttributes(), assertions);
+    AssertUtil.assertAttributesExactly(actual.getFilteredAttributes(), assertions);
     return myself;
   }
 }

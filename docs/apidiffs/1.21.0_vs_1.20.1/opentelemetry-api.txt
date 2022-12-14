@@ -1,0 +1,7 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()

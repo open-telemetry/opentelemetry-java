@@ -6,6 +6,7 @@
 package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Tracer;
@@ -259,6 +260,13 @@ class TracerShimTest {
   void inject_nullContext() {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
+    assertThat(map).isEmpty();
+  }
+
+  @Test
+  void inject_invalid() {
+    Map<String, String> map = new HashMap<>();
+    tracerShim.inject(mock(SpanContext.class), Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertThat(map).isEmpty();
   }
 

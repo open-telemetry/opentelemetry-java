@@ -460,6 +460,11 @@ class JaegerPropagatorTest {
     assertThat(jaegerPropagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
   }
 
+  @Test
+  void toString_Valid() {
+    assertThat(jaegerPropagator.toString()).isEqualTo("JaegerPropagator");
+  }
+
   private static String generateTraceIdHeaderValue(
       String traceId, String spanId, char parentSpan, String sampled) {
     return traceId

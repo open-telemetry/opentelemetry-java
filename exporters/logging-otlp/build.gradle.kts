@@ -14,6 +14,7 @@ dependencies {
   compileOnly(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation("com.fasterxml.jackson.core:jackson-core")
 

@@ -55,6 +55,9 @@ and deadlocks.
   * Review and merge the pull request that it creates for updating the change log in main
     (note that if this is not a patch release then the change log on main may already be up-to-date,
     in which case no pull request will be created).
+  * Review and merge the pull request that it creates for updating the version on
+    the [website](https://github.com/open-telemetry/opentelemetry.io), which is created
+    via [Reusable - Create website pull request patch](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/reusable-create-website-pull-request.yml).
 
 ## Update release versions in documentations
 
@@ -69,11 +72,7 @@ to Maven Central so should probably be done an hour or two after the release wor
 
 Where `x.y.z` is the version just released and `a.b.c` is the previous version.
 
-Create a PR to mark the new release in README.md on the main branch.
-
-Finally, update the [website docs][] to refer to the newly released version.
-
-[website docs]: https://github.com/open-telemetry/opentelemetry.io/tree/main/content/en/docs/instrumentation/java
+Create a PR against the main branch with the changes.
 
 ## Credentials
 

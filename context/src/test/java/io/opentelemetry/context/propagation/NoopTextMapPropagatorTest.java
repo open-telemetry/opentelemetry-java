@@ -63,6 +63,11 @@ class NoopTextMapPropagatorTest {
     assertThat(carrier).isEmpty();
   }
 
+  @Test
+  void toString_Valid() {
+    assertThat(TextMapPropagator.noop().toString()).isEqualTo("NoopTextMapPropagator");
+  }
+
   enum MapTextMapGetter implements TextMapGetter<Map<? extends Object, ? extends Object>> {
     INSTANCE;
 

@@ -7,9 +7,11 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventData;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -80,6 +82,52 @@ public final class EventDataAssert extends AbstractAssert<EventDataAssert, Event
   public EventDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
+    return this;
+  }
+
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public EventDataAssert hasAttributesSatisfying(AttributeAssertion... assertions) {
+    return hasAttributesSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the event has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public EventDataAssert hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributes(actual.getAttributes(), assertions);
+    return this;
+  }
+
+  /**
+   * Asserts the event has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public EventDataAssert hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the event has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public EventDataAssert hasAttributesSatisfyingExactly(Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributesExactly(actual.getAttributes(), assertions);
     return this;
   }
 }

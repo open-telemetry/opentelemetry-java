@@ -93,8 +93,8 @@ public abstract class AbstractPointAssert<
   }
 
   /**
-   * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
-   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * Asserts the point has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public final PointAssertT hasAttributesSatisfying(AttributeAssertion... assertions) {
@@ -102,12 +102,36 @@ public abstract class AbstractPointAssert<
   }
 
   /**
-   * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
-   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * Asserts the point has attributes matching all {@code assertions}. Assertions can be created
+   * using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
    * OpenTelemetryAssertions.LongAssertConsumer)}.
    */
   public final PointAssertT hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributes(actual.getAttributes(), assertions);
+    return myself;
+  }
+
+  /**
+   * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public final PointAssertT hasAttributesSatisfyingExactly(AttributeAssertion... assertions) {
+    return hasAttributesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the point has attributes matching all {@code assertions} and no more. Assertions can be
+   * created using methods like {@link OpenTelemetryAssertions#satisfies(AttributeKey,
+   * OpenTelemetryAssertions.LongAssertConsumer)}.
+   *
+   * @since 1.21.0
+   */
+  public final PointAssertT hasAttributesSatisfyingExactly(
+      Iterable<AttributeAssertion> assertions) {
+    AssertUtil.assertAttributesExactly(actual.getAttributes(), assertions);
     return myself;
   }
 }

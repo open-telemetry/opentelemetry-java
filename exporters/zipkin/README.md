@@ -21,36 +21,8 @@ spans will be sent to a Zipkin endpoint running on `localhost`:
 ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
             .setEndpoint("http://localhost/api/v2/spans")
-            .setServiceName("my-service")
             .build();
 ```
-
-Service name and Endpoint can be also configured via environment variables or system properties.
-
-```java
-// Using environment variables
-ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder()
-            .readEnvironmentVariables()
-            .build()
-```
-
-```java
-// Using system properties
-ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder()
-            .readSystemProperties()
-            .build()
-```
-
-The Zipkin span exporter will look for the following environment variables / system properties:
-* `OTEL_ZIPKIN_SERVICE_NAME` / `otel.zipkin.service.name`
-* `OTEL_ZIPKIN_ENDPOINT` / `otel.zipkin.endpoint`
-
-
-## Compatibility
-
-As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ and Android API level 24+.
 
 ## Attribution
 

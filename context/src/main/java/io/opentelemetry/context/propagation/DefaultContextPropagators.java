@@ -33,4 +33,9 @@ final class DefaultContextPropagators implements ContextPropagators {
   DefaultContextPropagators(TextMapPropagator textMapPropagator) {
     this.textMapPropagator = textMapPropagator;
   }
+
+  @Override
+  public String toString() {
+    return "DefaultContextPropagators{textMapPropagator=" + textMapPropagator + "}";
+  }
 }
