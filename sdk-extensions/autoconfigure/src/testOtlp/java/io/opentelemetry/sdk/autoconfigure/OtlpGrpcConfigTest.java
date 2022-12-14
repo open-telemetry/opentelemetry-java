@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class OtlpGrpcConfigTest {
 
@@ -318,6 +319,7 @@ class OtlpGrpcConfigTest {
   }
 
   @Test
+  @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(
