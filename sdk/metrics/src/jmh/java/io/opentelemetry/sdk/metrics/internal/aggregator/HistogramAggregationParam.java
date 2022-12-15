@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;
 
 /** The types of histogram aggregation to benchmark. */
@@ -22,23 +21,13 @@ public enum HistogramAggregationParam {
           ExplicitBucketHistogramUtils.createBoundaryArray(Collections.emptyList()),
           ExemplarReservoir::doubleNoSamples)),
   EXPONENTIAL_SMALL_CIRCULAR_BUFFER(
-      new DoubleExponentialHistogramAggregator(
-          ExemplarReservoir::doubleNoSamples,
-          ExponentialBucketStrategy.newStrategy(
-              20, ExponentialCounterFactory.circularBufferCounter(), 0))),
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 0)),
   EXPONENTIAL_CIRCULAR_BUFFER(
-      new DoubleExponentialHistogramAggregator(
-          ExemplarReservoir::doubleNoSamples,
-          ExponentialBucketStrategy.newStrategy(
-              160, ExponentialCounterFactory.circularBufferCounter(), 0))),
-  EXPONENTIAL_MAP_COUNTER(
-      new DoubleExponentialHistogramAggregator(
-          ExemplarReservoir::doubleNoSamples,
-          ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter(), 0)));
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 0));
 
   private final Aggregator<?, ?> aggregator;
 
-  private HistogramAggregationParam(Aggregator<?, ?> aggregator) {
+  HistogramAggregationParam(Aggregator<?, ?> aggregator) {
     this.aggregator = aggregator;
   }
 

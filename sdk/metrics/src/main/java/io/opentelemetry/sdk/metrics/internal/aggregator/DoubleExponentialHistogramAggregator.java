@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.Exponenti
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +34,8 @@ public final class DoubleExponentialHistogramAggregator
     implements Aggregator<ExponentialHistogramAccumulation, DoubleExemplarData> {
 
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
-  private final ExponentialBucketStrategy bucketStrategy;
+  private final int maxBuckets;
+  private final int startingScale;
 
   /**
    * Constructs an exponential histogram aggregator.
@@ -43,23 +43,17 @@ public final class DoubleExponentialHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, int maxBuckets) {
-    this(
-        reservoirSupplier,
-        ExponentialBucketStrategy.newStrategy(
-            maxBuckets, ExponentialCounterFactory.circularBufferCounter()));
-  }
-
-  DoubleExponentialHistogramAggregator(
       Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
-      ExponentialBucketStrategy bucketStrategy) {
+      int maxBuckets,
+      int startingScale) {
     this.reservoirSupplier = reservoirSupplier;
-    this.bucketStrategy = bucketStrategy;
+    this.maxBuckets = maxBuckets;
+    this.startingScale = startingScale;
   }
 
   @Override
   public AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), this.bucketStrategy);
+    return new Handle(reservoirSupplier.get(), maxBuckets, startingScale);
   }
 
   /**
@@ -183,7 +177,7 @@ public final class DoubleExponentialHistogramAggregator
 
   static final class Handle
       extends AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> {
-    private final ExponentialBucketStrategy bucketStrategy;
+    private final int maxBuckets;
     @Nullable private DoubleExponentialHistogramBuckets positiveBuckets;
     @Nullable private DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
@@ -193,16 +187,15 @@ public final class DoubleExponentialHistogramAggregator
     private long count;
     private int scale;
 
-    Handle(
-        ExemplarReservoir<DoubleExemplarData> reservoir, ExponentialBucketStrategy bucketStrategy) {
+    Handle(ExemplarReservoir<DoubleExemplarData> reservoir, int maxBuckets, int startingScale) {
       super(reservoir);
-      this.bucketStrategy = bucketStrategy;
+      this.maxBuckets = maxBuckets;
       this.sum = 0;
       this.zeroCount = 0;
       this.min = Double.MAX_VALUE;
       this.max = -1;
       this.count = 0;
-      this.scale = bucketStrategy.getStartingScale();
+      this.scale = startingScale;
     }
 
     @Override
@@ -260,17 +253,15 @@ public final class DoubleExponentialHistogramAggregator
         zeroCount++;
         return;
       } else if (c > 0) {
-        // Initialize positive buckets if needed, adjusting to current scale
+        // Initialize positive buckets at current scale, if needed
         if (positiveBuckets == null) {
-          positiveBuckets = bucketStrategy.newBuckets();
-          positiveBuckets.downscale(positiveBuckets.getScale() - scale);
+          positiveBuckets = new DoubleExponentialHistogramBuckets(scale, maxBuckets);
         }
         buckets = positiveBuckets;
       } else {
-        // Initialize negative buckets if needed, adjusting to current scale
+        // Initialize negative buckets at current scale, if needed
         if (negativeBuckets == null) {
-          negativeBuckets = bucketStrategy.newBuckets();
-          negativeBuckets.downscale(negativeBuckets.getScale() - scale);
+          negativeBuckets = new DoubleExponentialHistogramBuckets(scale, maxBuckets);
         }
         buckets = negativeBuckets;
       }
