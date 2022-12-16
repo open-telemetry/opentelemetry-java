@@ -6,27 +6,26 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitterBuilder;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
-final class SdkLoggerBuilder implements LoggerBuilder {
+final class SdkLoggerBuilder implements LoggerBuilder, EventEmitterBuilder {
 
   private final ComponentRegistry<SdkLogger> registry;
   private final String instrumentationScopeName;
+  @Nullable private final String eventDomain;
   @Nullable private String instrumentationScopeVersion;
   @Nullable private String schemaUrl;
-  @Nullable private String eventDomain;
 
-  SdkLoggerBuilder(ComponentRegistry<SdkLogger> registry, String instrumentationScopeName) {
+  SdkLoggerBuilder(
+      ComponentRegistry<SdkLogger> registry,
+      String instrumentationScopeName,
+      @Nullable String eventDomain) {
     this.registry = registry;
     this.instrumentationScopeName = instrumentationScopeName;
-  }
-
-  @Override
-  public LoggerBuilder setEventDomain(String eventDomain) {
     this.eventDomain = eventDomain;
-    return this;
   }
 
   @Override

@@ -145,7 +145,7 @@ class SdkLoggerTest {
 
   @Test
   @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
-  void eventBuilder() {
+  void emit() {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
@@ -154,15 +154,20 @@ class SdkLoggerTest {
 
     // Emit event from logger with name and add event domain
     loggerProvider
-        .loggerBuilder("test")
-        .setEventDomain("event-domain")
+        .eventEmitterBuilder("test", "event-domain")
         .build()
-        .eventBuilder("event-name")
-        .emit();
+        .emit(
+            "event-name",
+            Attributes.builder()
+                .put("key1", "value1")
+                // should be overridden by the eventName argument passed to emit
+                .put("event.name", "foo")
+                .build());
 
     assertThat(seenLog.get().toLogRecordData())
         .hasAttributes(
             Attributes.builder()
+                .put("key1", "value1")
                 .put("event.domain", "event-domain")
                 .put("event.name", "event-name")
                 .build());
@@ -171,14 +176,11 @@ class SdkLoggerTest {
     seenLog.set(null);
 
     // Emit event from logger with name and no event domain
-    loggerProvider.get("test").eventBuilder("event-name");
+    ((SdkLogger) loggerProvider.get("test")).emit("event-name", Attributes.empty());
 
     assertThat(apiUsageLogs.getEvents())
         .hasSize(1)
         .extracting(LoggingEvent::getMessage)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger."));
+        .allMatch(log -> log.equals("Cannot emit event from Logger without event domain."));
   }
 }

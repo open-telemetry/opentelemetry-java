@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -395,6 +396,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
       GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
+      GlobalEventEmitterProvider.set(openTelemetrySdk.getSdkLoggerProvider());
       logger.log(
           Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
     }

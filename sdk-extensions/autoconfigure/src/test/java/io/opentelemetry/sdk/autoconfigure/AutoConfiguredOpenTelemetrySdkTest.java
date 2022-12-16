@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
@@ -127,6 +128,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
@@ -341,6 +343,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
     assertThat(GlobalLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventEmitterProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -349,6 +352,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
     assertThat(GlobalLoggerProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventEmitterProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

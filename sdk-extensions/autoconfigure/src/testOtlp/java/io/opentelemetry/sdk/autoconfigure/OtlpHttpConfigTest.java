@@ -16,6 +16,7 @@ import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -48,6 +49,7 @@ class OtlpHttpConfigTest {
     server.reset();
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
   }
 
   @AfterEach
@@ -55,6 +57,7 @@ class OtlpHttpConfigTest {
     shutdownGlobalSdk();
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
   }
 
   @Test

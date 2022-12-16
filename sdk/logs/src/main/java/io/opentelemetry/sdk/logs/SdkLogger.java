@@ -6,22 +6,17 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.internal.ValidationUtil;
-import io.opentelemetry.api.logs.EventBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link Logger}. */
-final class SdkLogger implements Logger {
-
-  // Obtain a noop logger with the domain set so that we can obtain noop EventBuilder without
-  // generating additional warning logs
-  private static final Logger NOOP_LOGGER_WITH_DOMAIN =
-      LoggerProvider.noop().loggerBuilder("unused").setEventDomain("unused").build();
+final class SdkLogger implements Logger, EventEmitter {
 
   private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -53,16 +48,16 @@ final class SdkLogger implements Logger {
   }
 
   @Override
-  public EventBuilder eventBuilder(String eventName) {
+  public void emit(String eventName, Attributes attributes) {
     if (eventDomain == null) {
-      ValidationUtil.log(
-          "Cannot emit event from Logger without event domain. Please use LoggerBuilder#setEventDomain(String) when obtaining Logger.",
-          Level.WARNING);
-      return NOOP_LOGGER_WITH_DOMAIN.eventBuilder(eventName);
+      ValidationUtil.log("Cannot emit event from Logger without event domain.", Level.WARNING);
+      return;
     }
-    return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo)
+    new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo)
+        .setAllAttributes(attributes)
         .setAttribute(AttributeKey.stringKey("event.domain"), eventDomain)
-        .setAttribute(AttributeKey.stringKey("event.name"), eventName);
+        .setAttribute(AttributeKey.stringKey("event.name"), eventName)
+        .emit();
   }
 
   @Override
