@@ -8,22 +8,28 @@ package io.opentelemetry.api.metrics;
 /**
  * Builder class for creating {@link Meter} instances.
  *
+ * <p>{@link Meter}s are identified by their scope name, version, and schema URL. These identifying
+ * fields, along with attributes, combine to form the instrumentation scope, which is attached to
+ * all metrics produced by the {@link Meter}.
+ *
  * @since 1.10.0
  */
 public interface MeterBuilder {
 
   /**
-   * Assigns an OpenTelemetry schema URL to the resulting Meter.
+   * Set the scope schema URL of the resulting {@link Meter}. Schema URL is part of {@link Meter}
+   * identity.
    *
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
+   * @param schemaUrl The schema URL.
    * @return this
    */
   MeterBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assigns a version to the instrumentation scope that is using the resulting Meter.
+   * Sets the instrumentation scope version of the resulting {@link Meter}. Version is part of
+   * {@link Meter} identity.
    *
-   * @param instrumentationScopeVersion The version of the instrumentation scope.
+   * @param instrumentationScopeVersion The instrumentation scope version.
    * @return this
    */
   MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
