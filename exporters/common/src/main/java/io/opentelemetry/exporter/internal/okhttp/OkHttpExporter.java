@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -57,7 +58,7 @@ public final class OkHttpExporter<T extends Marshaler> {
       String exporterName,
       String type,
       OkHttpClient client,
-      MeterProvider meterProvider,
+      Supplier<MeterProvider> meterProviderSupplier,
       String endpoint,
       @Nullable Headers headers,
       boolean compressionEnabled,
@@ -70,8 +71,8 @@ public final class OkHttpExporter<T extends Marshaler> {
     this.requestBodyCreator = exportAsJson ? JsonRequestBody::new : ProtoRequestBody::new;
     this.exporterMetrics =
         exportAsJson
-            ? ExporterMetrics.createHttpJson(exporterName, type, meterProvider)
-            : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProvider);
+            ? ExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
+            : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

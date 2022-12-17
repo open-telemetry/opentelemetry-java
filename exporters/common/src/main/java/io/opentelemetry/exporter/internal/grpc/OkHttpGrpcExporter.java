@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -75,12 +76,13 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
       String exporterName,
       String type,
       OkHttpClient client,
-      MeterProvider meterProvider,
+      Supplier<MeterProvider> meterProviderSupplier,
       String endpoint,
       Headers headers,
       boolean compressionEnabled) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpcOkHttp(exporterName, type, meterProvider);
+    this.exporterMetrics =
+        ExporterMetrics.createGrpcOkHttp(exporterName, type, meterProviderSupplier);
     this.client = client;
     this.url = HttpUrl.get(endpoint);
     this.headers = headers;
