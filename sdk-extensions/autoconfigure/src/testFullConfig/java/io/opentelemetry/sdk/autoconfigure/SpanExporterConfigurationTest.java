@@ -57,12 +57,15 @@ class SpanExporterConfigurationTest {
   // Timeout difficult to test using real exports so just check implementation detail here.
   @Test
   void configureJaegerTimeout() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.exporter.jaeger.timeout", "10"));
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "jaeger",
-            DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.jaeger.timeout", "10")),
-            NamedSpiManager.createEmpty(),
+            config,
+            SpanExporterConfiguration.spanExporterSpiManager(
+                config, SpanExporterConfigurationTest.class.getClassLoader()),
             MeterProvider.noop());
     try {
       assertThat(exporter)

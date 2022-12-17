@@ -52,11 +52,15 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "jaeger", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+                    "jaeger",
+                    EMPTY,
+                    SpanExporterConfiguration.spanExporterSpiManager(
+                        EMPTY, NotOnClasspathTest.class.getClassLoader()),
+                    MeterProvider.noop()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Jaeger gRPC Exporter enabled but opentelemetry-exporter-jaeger not found on "
-                + "classpath");
+            "otel.traces.exporter set to \"jaeger\" but opentelemetry-exporter-jaeger not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
