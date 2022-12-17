@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 public final class ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
+  private static final int DEFAULT_STARTING_SCALE = 20;
 
   private static final Aggregation DEFAULT =
       new ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS);
@@ -59,7 +60,8 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
                         Clock.getDefault(),
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())),
-            maxBuckets);
+            maxBuckets,
+            DEFAULT_STARTING_SCALE);
   }
 
   @Override
