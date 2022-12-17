@@ -16,23 +16,23 @@ class ConfigUtilTest {
   @Test
   @SetSystemProperty(key = "config.key", value = "system")
   void getString_SystemPropertyPriority() {
-    assertThat(ConfigUtil.getString("config.key")).isEqualTo("system");
-    assertThat(ConfigUtil.getString("config-key")).isEqualTo("system");
-    assertThat(ConfigUtil.getString("other.config.key")).isEqualTo(null);
+    assertThat(ConfigUtil.getString("config.key", "default")).isEqualTo("system");
+    assertThat(ConfigUtil.getString("config-key", "default")).isEqualTo("system");
+    assertThat(ConfigUtil.getString("other.config.key", "default")).isEqualTo("default");
   }
 
   @Test
   @SetSystemProperty(key = "CONFIG-KEY", value = "system")
   void getString_SystemPropertyNormalized() {
-    assertThat(ConfigUtil.getString("config.key")).isEqualTo("system");
-    assertThat(ConfigUtil.getString("config-key")).isEqualTo("system");
-    assertThat(ConfigUtil.getString("other.config.key")).isEqualTo(null);
+    assertThat(ConfigUtil.getString("config.key", "default")).isEqualTo("system");
+    assertThat(ConfigUtil.getString("config-key", "default")).isEqualTo("system");
+    assertThat(ConfigUtil.getString("other.config.key", "default")).isEqualTo("default");
   }
 
   @Test
   void getString_EnvironmentVariable() {
-    assertThat(ConfigUtil.getString("config.key")).isEqualTo("environment");
-    assertThat(ConfigUtil.getString("other.config.key")).isEqualTo(null);
+    assertThat(ConfigUtil.getString("config.key", "default")).isEqualTo("environment");
+    assertThat(ConfigUtil.getString("other.config.key", "default")).isEqualTo("default");
   }
 
   @Test
