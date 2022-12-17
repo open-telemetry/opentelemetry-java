@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
@@ -65,10 +64,8 @@ class OtlpGrpcRetryTest {
     try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            properties,
             SpanExporterConfiguration.spanExporterSpiManager(
-                properties, OtlpGrpcRetryTest.class.getClassLoader()),
-            MeterProvider.noop())) {
+                properties, OtlpGrpcRetryTest.class.getClassLoader()))) {
 
       testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
       testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);

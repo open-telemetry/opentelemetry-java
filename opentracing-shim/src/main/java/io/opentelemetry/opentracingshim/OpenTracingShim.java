@@ -64,6 +64,19 @@ public final class OpenTracingShim {
             .build());
   }
 
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim using the provided {@code TracerProvider} and
+   * {@code TextMapPropagator} instance.
+   *
+   * @param provider the {@code TracerProvider} instance used to create this shim.
+   * @param propagators the {@code OpenTracingPropagators} instance used to create this shim.
+   * @return a {@code io.opentracing.Tracer}.
+   */
+  public static io.opentracing.Tracer createTracerShim(
+      TracerProvider provider, OpenTracingPropagators propagators) {
+    return createTracerShim(getTracer(provider), propagators);
+  }
+
   private static Tracer getTracer(TracerProvider tracerProvider) {
     return tracerProvider.get("opentracing-shim");
   }

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 
-import static io.opentelemetry.api.trace.SpanKind.CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;
@@ -31,7 +30,6 @@ class ListenerTest {
 
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(1);
-    assertThat(CLIENT).isEqualTo(finished.get(0).getKind());
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }

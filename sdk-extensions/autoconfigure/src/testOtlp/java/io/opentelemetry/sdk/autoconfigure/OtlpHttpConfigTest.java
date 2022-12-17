@@ -17,7 +17,6 @@ import static org.awaitility.Awaitility.await;
 import com.google.common.collect.Lists;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -36,6 +35,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class OtlpHttpConfigTest {
 
@@ -70,10 +70,8 @@ class OtlpHttpConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            properties,
             SpanExporterConfiguration.spanExporterSpiManager(
-                properties, OtlpHttpConfigTest.class.getClassLoader()),
-            MeterProvider.noop());
+                properties, OtlpHttpConfigTest.class.getClassLoader()));
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureExporter(
             "otlp",
@@ -165,10 +163,8 @@ class OtlpHttpConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            properties,
             SpanExporterConfiguration.spanExporterSpiManager(
-                properties, OtlpHttpConfigTest.class.getClassLoader()),
-            MeterProvider.noop());
+                properties, OtlpHttpConfigTest.class.getClassLoader()));
 
     assertThat(spanExporter)
         .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -294,10 +290,8 @@ class OtlpHttpConfigTest {
             () ->
                 SpanExporterConfiguration.configureExporter(
                     "otlp",
-                    properties,
                     SpanExporterConfiguration.spanExporterSpiManager(
-                        properties, OtlpHttpConfigTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                        properties, OtlpHttpConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate/key path:");
 
@@ -331,10 +325,8 @@ class OtlpHttpConfigTest {
             () ->
                 SpanExporterConfiguration.configureExporter(
                     "otlp",
-                    properties,
                     SpanExporterConfiguration.spanExporterSpiManager(
-                        properties, OtlpHttpConfigTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                        properties, OtlpHttpConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key provided but certification chain is missing");
 
@@ -368,10 +360,8 @@ class OtlpHttpConfigTest {
             () ->
                 SpanExporterConfiguration.configureExporter(
                     "otlp",
-                    properties,
                     SpanExporterConfiguration.spanExporterSpiManager(
-                        properties, OtlpHttpConfigTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                        properties, OtlpHttpConfigTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Client key chain provided but key is missing");
 
@@ -395,6 +385,7 @@ class OtlpHttpConfigTest {
   }
 
   @Test
+  @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty(

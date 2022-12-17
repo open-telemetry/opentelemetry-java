@@ -47,7 +47,7 @@ final class TracerProviderConfiguration {
 
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, serviceClassLoader, meterProvider, spanExporterCustomizer);
+            config, serviceClassLoader, spanExporterCustomizer);
 
     configureSpanProcessors(config, exportersByName, meterProvider)
         .forEach(tracerProviderBuilder::addSpanProcessor);

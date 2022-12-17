@@ -7,11 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -23,16 +20,13 @@ import javax.annotation.Nullable;
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
-  private final ExponentialCounterFactory counterFactory;
-  private ExponentialCounter counts;
+  private AdaptingCircularBufferCounter counts;
   private int scale;
   private ExponentialHistogramIndexer exponentialHistogramIndexer;
   private long totalCount;
 
-  DoubleExponentialHistogramBuckets(
-      int startingScale, int maxBuckets, ExponentialCounterFactory counterFactory) {
-    this.counterFactory = counterFactory;
-    this.counts = counterFactory.newCounter(maxBuckets);
+  DoubleExponentialHistogramBuckets(int startingScale, int maxBuckets) {
+    this.counts = new AdaptingCircularBufferCounter(maxBuckets);
     this.scale = startingScale;
     this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(scale);
     this.totalCount = 0;
@@ -40,8 +34,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   // For copying
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
-    this.counterFactory = buckets.counterFactory;
-    this.counts = counterFactory.copy(buckets.counts);
+    this.counts = new AdaptingCircularBufferCounter(buckets.counts);
     this.scale = buckets.scale;
     this.exponentialHistogramIndexer = buckets.exponentialHistogramIndexer;
     this.totalCount = buckets.totalCount;
@@ -53,7 +46,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   /** Resets all counters in this bucket set to zero, but preserves scale. */
-  public void clear() {
+  void clear() {
     this.totalCount = 0;
     this.counts.clear();
   }
@@ -82,7 +75,6 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     return counts.getIndexStart();
   }
 
-  @Nonnull
   @Override
   public List<Long> getBucketCounts() {
     if (counts.isEmpty()) {
@@ -113,7 +105,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       // We want to preserve other optimisations here as well, e.g. integer size.
       // Instead of  creating a new counter, we copy the existing one (for bucket size
       // optimisations), and clear the values before writing the new ones.
-      ExponentialCounter newCounts = counterFactory.copy(counts);
+      AdaptingCircularBufferCounter newCounts = new AdaptingCircularBufferCounter(counts);
       newCounts.clear();
 
       for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
@@ -133,29 +125,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   }
 
   /**
-   * Immutable method for merging. This method copies the first set of buckets, performs the merge
-   * on the copy, and returns the copy.
-   *
-   * @param a first buckets
-   * @param b second buckets
-   * @return A new set of buckets, the result
-   */
-  static DoubleExponentialHistogramBuckets merge(
-      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
-    if (b.counts.isEmpty()) {
-      return a;
-    } else if (a.counts.isEmpty()) {
-      return b;
-    }
-    DoubleExponentialHistogramBuckets copy = a.copy();
-    copy.mergeWith(b/* additive= */ );
-    return copy;
-  }
-
-  /**
    * This method merges this instance with another set of buckets. It alters the underlying bucket
-   * counts and scale of this instance only, so it is to be used with caution. For immutability, use
-   * the static merge() method.
+   * counts and scale of this instance only, so it is to be used with caution.
    *
    * <p>The bucket counts of this instance will be added to or subtracted from depending on the
    * additive parameter.
@@ -164,7 +135,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    *
    * @param other the histogram that will be merged into this one
    */
-  private void mergeWith(DoubleExponentialHistogramBuckets other) {
+  void mergeInto(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
     }
@@ -195,7 +166,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     // since we changed scale of this, we need to know the new difference between the two scales
     deltaOther = other.scale - this.scale;
 
-    // do actual merging of other into this. Will decrement or increment depending on sign.
+    // do actual merging of other into this.
     for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
       if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
@@ -205,7 +176,8 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     this.totalCount += other.totalCount;
   }
 
-  int getScale() {
+  @Override
+  public int getScale() {
     return scale;
   }
 

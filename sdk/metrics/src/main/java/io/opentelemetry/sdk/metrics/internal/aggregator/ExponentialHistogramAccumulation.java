@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
 import java.util.List;
 
 @AutoValue
@@ -20,8 +21,8 @@ abstract class ExponentialHistogramAccumulation {
       boolean hasMinMax,
       double min,
       double max,
-      DoubleExponentialHistogramBuckets positiveBuckets,
-      DoubleExponentialHistogramBuckets negativeBuckets,
+      ExponentialHistogramBuckets positiveBuckets,
+      ExponentialHistogramBuckets negativeBuckets,
       long zeroCount,
       List<DoubleExemplarData> exemplars) {
     return new AutoValue_ExponentialHistogramAccumulation(
@@ -38,9 +39,9 @@ abstract class ExponentialHistogramAccumulation {
 
   abstract double getMax();
 
-  abstract DoubleExponentialHistogramBuckets getPositiveBuckets();
+  abstract ExponentialHistogramBuckets getPositiveBuckets();
 
-  abstract DoubleExponentialHistogramBuckets getNegativeBuckets();
+  abstract ExponentialHistogramBuckets getNegativeBuckets();
 
   abstract long getZeroCount();
 

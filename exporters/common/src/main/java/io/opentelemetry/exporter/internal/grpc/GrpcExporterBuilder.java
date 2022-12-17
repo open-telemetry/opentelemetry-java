@@ -11,6 +11,7 @@ import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsUtil;
@@ -58,7 +59,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private byte[] privateKeyPem;
   @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -124,7 +125,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
+    this.meterProviderSupplier = () -> meterProvider;
     return this;
   }
 
@@ -177,7 +178,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         exporterName,
         type,
         clientBuilder.build(),
-        meterProvider,
+        meterProviderSupplier,
         endpoint,
         headers.build(),
         compressionEnabled);
@@ -209,7 +210,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
               .get()
               .apply(channel, authorityOverride)
               .withCompression(codec.getMessageEncoding());
-      return new UpstreamGrpcExporter<>(exporterName, type, stub, meterProvider, timeoutNanos);
+      return new UpstreamGrpcExporter<>(
+          exporterName, type, stub, meterProviderSupplier, timeoutNanos);
     }
   }
 }

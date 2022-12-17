@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -30,10 +29,8 @@ class SpanExporterConfigurationTest {
             () ->
                 SpanExporterConfiguration.configureExporter(
                     "otlp",
-                    config,
                     SpanExporterConfiguration.spanExporterSpiManager(
-                        config, SpanExporterConfigurationTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                        config, SpanExporterConfigurationTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
   }
@@ -47,10 +44,8 @@ class SpanExporterConfigurationTest {
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            config,
             SpanExporterConfiguration.spanExporterSpiManager(
-                config, SpanExporterConfigurationTest.class.getClassLoader()),
-            MeterProvider.noop());
+                config, SpanExporterConfigurationTest.class.getClassLoader()));
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -71,10 +66,8 @@ class SpanExporterConfigurationTest {
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "jaeger",
-            config,
             SpanExporterConfiguration.spanExporterSpiManager(
-                config, SpanExporterConfigurationTest.class.getClassLoader()),
-            MeterProvider.noop());
+                config, SpanExporterConfigurationTest.class.getClassLoader()));
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -95,10 +88,8 @@ class SpanExporterConfigurationTest {
     SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "zipkin",
-            config,
             SpanExporterConfiguration.spanExporterSpiManager(
-                config, SpanExporterConfigurationTest.class.getClassLoader()),
-            MeterProvider.noop());
+                config, SpanExporterConfigurationTest.class.getClassLoader()));
     try {
       assertThat(exporter).isNotNull();
     } finally {

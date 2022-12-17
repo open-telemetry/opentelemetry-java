@@ -14,7 +14,6 @@ dependencies {
 
   implementation(project(":semconv"))
 
-  compileOnly(project(":exporters:jaeger"))
   compileOnly(project(":exporters:prometheus"))
 
   annotationProcessor("com.google.auto.value:auto-value")

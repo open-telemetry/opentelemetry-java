@@ -37,6 +37,13 @@ public abstract class AttributeAssertion {
   // suppressing here.
   @SuppressWarnings("NullAway")
   static AbstractAssert<?, ?> attributeValueAssertion(AttributeKey<?> key, @Nullable Object value) {
+    AbstractAssert<? extends AbstractAssert<?, ?>, ?> abstractAssert = makeAssertion(key, value);
+    String description = "%s attribute '%s'";
+    return abstractAssert.as(description, key.getType(), key.getKey());
+  }
+
+  private static AbstractAssert<? extends AbstractAssert<?, ?>, ?> makeAssertion(
+      AttributeKey<?> key, Object value) {
     switch (key.getType()) {
       case STRING:
         return assertThat((String) value);

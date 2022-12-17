@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.state;
+package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
@@ -31,11 +31,8 @@ import javax.annotation.Nullable;
  *   <li>If cellSize == INT then intBacking is not null
  *   <li>If cellSize == LONG then longBacking is not null
  * </ul>
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
  */
-public class AdaptingIntegerArray {
+final class AdaptingIntegerArray {
   @Nullable private byte[] byteBacking;
   @Nullable private short[] shortBacking;
   @Nullable private int[] intBacking;
@@ -52,7 +49,7 @@ public class AdaptingIntegerArray {
   private ArrayCellSize cellSize;
 
   /** Construct an adapting integer array of a given size. */
-  public AdaptingIntegerArray(int size) {
+  AdaptingIntegerArray(int size) {
     this.cellSize = ArrayCellSize.BYTE;
     this.byteBacking = new byte[size];
   }
@@ -78,13 +75,13 @@ public class AdaptingIntegerArray {
   }
 
   /** Returns a deep-copy of this array, preserving cell size. */
-  public AdaptingIntegerArray copy() {
+  AdaptingIntegerArray copy() {
     return new AdaptingIntegerArray(this);
   }
 
   /** Add {@code count} to the value stored at {@code index}. */
   @SuppressWarnings("NullAway")
-  public void increment(int idx, long count) {
+  void increment(int idx, long count) {
     // TODO - prevent bad index
     long result;
     switch (cellSize) {
@@ -124,7 +121,7 @@ public class AdaptingIntegerArray {
 
   /** Grab the value stored at {@code index}. */
   @SuppressWarnings("NullAway")
-  public long get(int index) {
+  long get(int index) {
     long value = 0;
     switch (this.cellSize) {
       case BYTE:
@@ -145,7 +142,7 @@ public class AdaptingIntegerArray {
 
   /** Return the length of this integer array. */
   @SuppressWarnings("NullAway")
-  public int length() {
+  int length() {
     int length = 0;
     switch (this.cellSize) {
       case BYTE:
@@ -165,7 +162,7 @@ public class AdaptingIntegerArray {
   }
   /** Zeroes out all counts in this array. */
   @SuppressWarnings("NullAway")
-  public void clear() {
+  void clear() {
     switch (this.cellSize) {
       case BYTE:
         Arrays.fill(this.byteBacking, (byte) 0);
