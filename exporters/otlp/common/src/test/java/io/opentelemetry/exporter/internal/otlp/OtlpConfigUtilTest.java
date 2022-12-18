@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.exporter.internal.otlp;
 
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_LOGS;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
-import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.DATA_TYPE_LOGS;
+import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.DATA_TYPE_METRICS;
+import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.DATA_TYPE_TRACES;
+import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.PROTOCOL_GRPC;
+import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

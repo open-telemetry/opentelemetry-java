@@ -68,7 +68,7 @@ final class MeterProviderConfiguration {
     return exporterNames.stream()
         .map(
             exporterName ->
-                MetricExporterConfiguration.configureExporter(
+                MetricExporterConfiguration.configureReader(
                     exporterName, config, serviceClassLoader, metricExporterCustomizer))
         .collect(Collectors.toList());
   }

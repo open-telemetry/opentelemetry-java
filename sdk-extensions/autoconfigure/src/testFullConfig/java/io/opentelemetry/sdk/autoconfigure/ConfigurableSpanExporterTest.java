@@ -35,10 +35,7 @@ public class ConfigurableSpanExporterTest {
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config,
-            SpanExporterConfiguration.class.getClassLoader(),
-            MeterProvider.noop(),
-            (a, unused) -> a);
+            config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a);
 
     assertThat(exportersByName)
         .hasSize(1)
@@ -57,10 +54,7 @@ public class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    new URLClassLoader(new URL[0], null),
-                    MeterProvider.noop(),
-                    (a, unused) -> a))
+                    config, new URLClassLoader(new URL[0], null), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -74,10 +68,7 @@ public class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    SpanExporterConfiguration.class.getClassLoader(),
-                    MeterProvider.noop(),
-                    (a, unused) -> a))
+                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
   }
@@ -90,10 +81,7 @@ public class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    SpanExporterConfiguration.class.getClassLoader(),
-                    MeterProvider.noop(),
-                    (a, unused) -> a))
+                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
   }
@@ -103,10 +91,7 @@ public class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "catExporter",
-                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    NamedSpiManager.createEmpty(),
-                    MeterProvider.noop()))
+                    "catExporter", NamedSpiManager.createEmpty()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }

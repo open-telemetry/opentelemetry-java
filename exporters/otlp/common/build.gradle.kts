@@ -17,6 +17,8 @@ dependencies {
 
   api(project(":exporters:common"))
 
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
+
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))

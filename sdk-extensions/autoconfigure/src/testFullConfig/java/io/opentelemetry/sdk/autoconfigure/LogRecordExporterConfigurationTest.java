@@ -12,19 +12,19 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import org.junit.jupiter.api.Test;
 
-public class MetricExporterConfigurationTest {
+public class LogRecordExporterConfigurationTest {
 
   @Test
-  void configureOtlpMetricsUnsupportedProtocol() {
+  void configureExporter_UnsupportedOtlpProtocol() {
     assertThatThrownBy(
             () ->
-                MetricExporterConfiguration.configureExporter(
+                LogRecordExporterConfiguration.configureExporter(
                     "otlp",
-                    MetricExporterConfiguration.metricExporterSpiManager(
+                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
                         DefaultConfigProperties.createForTest(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        MetricExporterConfigurationTest.class.getClassLoader())))
+                        LogRecordExporterConfiguration.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
+        .hasMessageContaining("Unsupported OTLP logs protocol: foo");
   }
 }
