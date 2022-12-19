@@ -69,6 +69,7 @@ testing {
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
+        implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
@@ -130,12 +131,6 @@ testing {
             environment("OTEL_BSP_SCHEDULE_DELAY", "10")
           }
         }
-      }
-    }
-    val testLoggingOtlp by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:logging-otlp"))
-        implementation("com.google.guava:guava")
       }
     }
     val testOtlp by registering(JvmTestSuite::class) {

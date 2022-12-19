@@ -25,7 +25,7 @@ class LogRecordExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
-    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp-logs");
   }
 
   // Visible for test

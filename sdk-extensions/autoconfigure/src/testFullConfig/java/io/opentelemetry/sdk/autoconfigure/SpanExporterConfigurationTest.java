@@ -10,7 +10,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -19,6 +22,25 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
+
+  @Test
+  void configureExporter_KnownSpiExportersOnClasspath() {
+    NamedSpiManager<SpanExporter> spiExportersManager =
+        SpanExporterConfiguration.spanExporterSpiManager(
+            DefaultConfigProperties.createForTest(Collections.emptyMap()),
+            SpanExporterConfigurationTest.class.getClassLoader());
+
+    assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
+        .isInstanceOf(JaegerGrpcSpanExporter.class);
+    assertThat(SpanExporterConfiguration.configureExporter("logging", spiExportersManager))
+        .isInstanceOf(LoggingSpanExporter.class);
+    assertThat(SpanExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))
+        .isInstanceOf(OtlpJsonLoggingSpanExporter.class);
+    assertThat(SpanExporterConfiguration.configureExporter("otlp", spiExportersManager))
+        .isInstanceOf(OtlpGrpcSpanExporter.class);
+    assertThat(SpanExporterConfiguration.configureExporter("zipkin", spiExportersManager))
+        .isInstanceOf(ZipkinSpanExporter.class);
+  }
 
   @Test
   void configureOtlpSpansUnsupportedProtocol() {

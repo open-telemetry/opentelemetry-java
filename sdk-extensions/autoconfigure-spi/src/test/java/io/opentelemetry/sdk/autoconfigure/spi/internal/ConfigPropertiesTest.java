@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
