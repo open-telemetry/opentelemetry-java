@@ -27,18 +27,19 @@ class ZipkinSpanExporterProviderTest {
 
   @Test
   void createExporter_Default() {
-    SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()));
-    assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
-    assertThat(spanExporter)
-        .extracting("sender")
-        .extracting("client")
-        .extracting("readTimeoutMillis")
-        .isEqualTo(10_000);
-    assertThat(spanExporter)
-        .extracting("sender")
-        .extracting("endpoint")
-        .isEqualTo(HttpUrl.get("http://localhost:9411/api/v2/spans"));
+    try (SpanExporter spanExporter =
+        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
+      assertThat(spanExporter)
+          .extracting("sender")
+          .extracting("client")
+          .extracting("readTimeoutMillis")
+          .isEqualTo(10_000);
+      assertThat(spanExporter)
+          .extracting("sender")
+          .extracting("endpoint")
+          .isEqualTo(HttpUrl.get("http://localhost:9411/api/v2/spans"));
+    }
   }
 
   @Test
@@ -47,17 +48,18 @@ class ZipkinSpanExporterProviderTest {
     config.put("otel.exporter.zipkin.endpoint", "http://localhost:8080/spans");
     config.put("otel.exporter.zipkin.timeout", "1s");
 
-    SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config));
-    assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
-    assertThat(spanExporter)
-        .extracting("sender")
-        .extracting("client")
-        .extracting("readTimeoutMillis")
-        .isEqualTo(1000);
-    assertThat(spanExporter)
-        .extracting("sender")
-        .extracting("endpoint")
-        .isEqualTo(HttpUrl.get("http://localhost:8080/spans"));
+    try (SpanExporter spanExporter =
+        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
+      assertThat(spanExporter)
+          .extracting("sender")
+          .extracting("client")
+          .extracting("readTimeoutMillis")
+          .isEqualTo(1000);
+      assertThat(spanExporter)
+          .extracting("sender")
+          .extracting("endpoint")
+          .isEqualTo(HttpUrl.get("http://localhost:8080/spans"));
+    }
   }
 }

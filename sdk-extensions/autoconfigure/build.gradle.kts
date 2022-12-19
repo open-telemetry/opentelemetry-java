@@ -113,26 +113,6 @@ testing {
         }
       }
     }
-    val testJaeger by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:jaeger"))
-        implementation(project(":exporters:jaeger-proto"))
-
-        implementation("com.linecorp.armeria:armeria-junit5")
-        implementation("com.linecorp.armeria:armeria-grpc")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "none")
-            environment("OTEL_TRACES_EXPORTER", "jaeger")
-            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-          }
-        }
-      }
-    }
     val testOtlp by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:all"))
