@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.jaeger.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
-import io.opentelemetry.exporter.jaeger.internal.JaegerGrpcSpanExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
