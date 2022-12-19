@@ -14,8 +14,6 @@ dependencies {
 
   implementation(project(":semconv"))
 
-  compileOnly(project(":exporters:prometheus"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))

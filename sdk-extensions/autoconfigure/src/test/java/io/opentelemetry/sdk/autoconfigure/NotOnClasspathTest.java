@@ -153,8 +153,8 @@ class NotOnClasspathTest {
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Prometheus Metrics Server enabled but opentelemetry-exporter-prometheus not found on "
-                + "classpath");
+            "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test

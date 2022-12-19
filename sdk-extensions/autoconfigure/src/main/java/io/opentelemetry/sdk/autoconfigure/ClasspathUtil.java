@@ -9,11 +9,18 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 
 final class ClasspathUtil {
 
-  @SuppressWarnings("UnusedException")
-  static void checkClassExists(String className, String featureName, String requiredLibrary) {
+  static boolean checkClassExists(String className) {
     try {
       Class.forName(className);
+      return true;
     } catch (ClassNotFoundException unused) {
+      return false;
+    }
+  }
+
+  @SuppressWarnings("UnusedException")
+  static void checkClassExists(String className, String featureName, String requiredLibrary) {
+    if (!checkClassExists(className)) {
       throw new ConfigurationException(
           featureName
               + " enabled but "
