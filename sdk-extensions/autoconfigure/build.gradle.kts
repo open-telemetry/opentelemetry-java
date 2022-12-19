@@ -166,23 +166,6 @@ testing {
         }
       }
     }
-    val testZipkin by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:zipkin"))
-
-        implementation("com.linecorp.armeria:armeria-junit5")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_METRICS_EXPORTER", "none")
-            environment("OTEL_TRACES_EXPORTER", "zipkin")
-            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-          }
-        }
-      }
-    }
   }
 }
 
