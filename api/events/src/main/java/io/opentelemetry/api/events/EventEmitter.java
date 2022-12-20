@@ -15,9 +15,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private final EventEmitter eventEmitter = openTelemetryEventEmitterProvider.loggerBuilder("instrumentation-library-name", "acme.observability")
- *     .setInstrumentationVersion("1.0.0")
- *     .build();
+ *   private final EventEmitter eventEmitter = openTelemetryEventEmitterProvider.get("scope-name", "acme.observability");
  *
  *   void doWork() {
  *     eventEmitter.emit("my-event", Attributes.builder()
