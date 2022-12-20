@@ -29,7 +29,7 @@ We hold regular meetings. See details at [community page](https://github.com/ope
 We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
 for support or general questions. Feel free to drop us a line.
 
-We are also present in the `#otel-java` channel in the [CNCF slack](https://slack.cncf.io/).
+We are also present in the [`#otel-java`](https://cloud-native.slack.com/archives/C014L2KCTE3) channel in the [CNCF slack](https://slack.cncf.io/).
 Please join us for more informal discussions.
 
 ## Overview
