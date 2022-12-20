@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.state;
+package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 /**
  * A circle-buffer-backed exponential counter.
@@ -13,11 +13,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
  * <p>This expand start/End index as it sees values.
  *
  * <p>This class is NOT thread-safe. It is expected to be behind a synchronized incrementer.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time
  */
-public class AdaptingCircularBufferCounter implements ExponentialCounter {
+final class AdaptingCircularBufferCounter {
   private static final int NULL_INDEX = Integer.MIN_VALUE;
   private int endIndex = NULL_INDEX;
   private int startIndex = NULL_INDEX;
@@ -25,44 +22,48 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
   private final AdaptingIntegerArray backing;
 
   /** Constructs a circular buffer that will hold at most {@code maxSize} buckets. */
-  public AdaptingCircularBufferCounter(int maxSize) {
+  AdaptingCircularBufferCounter(int maxSize) {
     this.backing = new AdaptingIntegerArray(maxSize);
   }
 
   /** (Deep)-Copies the values from another exponential counter. */
-  public AdaptingCircularBufferCounter(ExponentialCounter toCopy) {
-    // If toCopy is an AdaptingCircularBuffer, just do a copy of the underlying array
-    // and baseIndex.
-    if (toCopy instanceof AdaptingCircularBufferCounter) {
-      this.backing = ((AdaptingCircularBufferCounter) toCopy).backing.copy();
-      this.startIndex = toCopy.getIndexStart();
-      this.endIndex = toCopy.getIndexEnd();
-      this.baseIndex = ((AdaptingCircularBufferCounter) toCopy).baseIndex;
-    } else {
-      // Copy values from some other implementation of ExponentialCounter.
-      this.backing = new AdaptingIntegerArray(toCopy.getMaxSize());
-      this.startIndex = NULL_INDEX;
-      this.baseIndex = NULL_INDEX;
-      this.endIndex = NULL_INDEX;
-      for (int i = toCopy.getIndexStart(); i <= toCopy.getIndexEnd(); i++) {
-        long val = toCopy.get(i);
-        this.increment(i, val);
-      }
-    }
+  AdaptingCircularBufferCounter(AdaptingCircularBufferCounter toCopy) {
+    this.backing = toCopy.backing.copy();
+    this.startIndex = toCopy.getIndexStart();
+    this.endIndex = toCopy.getIndexEnd();
+    this.baseIndex = toCopy.baseIndex;
   }
 
-  @Override
-  public int getIndexStart() {
+  /**
+   * The first index with a recording. May be negative.
+   *
+   * <p>Note: the returned value is not meaningful when isEmpty returns true.
+   *
+   * @return the first index with a recording.
+   */
+  int getIndexStart() {
     return startIndex;
   }
 
-  @Override
-  public int getIndexEnd() {
+  /**
+   * The last index with a recording. May be negative.
+   *
+   * <p>Note: the returned value is not meaningful when isEmpty returns true.
+   *
+   * @return The last index with a recording.
+   */
+  int getIndexEnd() {
     return endIndex;
   }
 
-  @Override
-  public boolean increment(int index, long delta) {
+  /**
+   * Persist new data at index, incrementing by delta amount.
+   *
+   * @param index The index of where to perform the incrementation.
+   * @param delta How much to increment the index by.
+   * @return success status.
+   */
+  boolean increment(int index, long delta) {
     if (baseIndex == NULL_INDEX) {
       startIndex = index;
       endIndex = index;
@@ -89,26 +90,34 @@ public class AdaptingCircularBufferCounter implements ExponentialCounter {
     return true;
   }
 
-  @Override
-  public long get(int index) {
+  /**
+   * Get the number of recordings for the given index.
+   *
+   * @return the number of recordings for the index, or 0 if the index is out of bounds.
+   */
+  long get(int index) {
     if (index < startIndex || index > endIndex) {
       return 0;
     }
     return backing.get(toBufferIndex(index));
   }
 
-  @Override
-  public boolean isEmpty() {
+  /**
+   * Boolean denoting if the backing structure has recordings or not.
+   *
+   * @return true if no recordings, false if at least one recording.
+   */
+  boolean isEmpty() {
     return baseIndex == NULL_INDEX;
   }
 
-  @Override
-  public int getMaxSize() {
+  /** Returns the maximum number of buckets allowed in this counter. */
+  int getMaxSize() {
     return backing.length();
   }
 
-  @Override
-  public void clear() {
+  /** Resets all bucket counts to zero and resets index start/end tracking. */
+  void clear() {
     this.backing.clear();
     this.baseIndex = NULL_INDEX;
     this.endIndex = NULL_INDEX;

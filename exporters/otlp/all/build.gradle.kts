@@ -15,6 +15,7 @@ dependencies {
   api(project(":sdk:metrics"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("io.grpc:grpc-stub")
 

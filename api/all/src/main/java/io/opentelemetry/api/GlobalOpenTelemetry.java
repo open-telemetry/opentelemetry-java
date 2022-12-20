@@ -225,7 +225,7 @@ public final class GlobalOpenTelemetry {
 
     // If autoconfigure module is present but global autoconfigure disabled log a warning and return
     boolean globalAutoconfigureEnabled =
-        Boolean.parseBoolean(ConfigUtil.getString(GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY));
+        Boolean.parseBoolean(ConfigUtil.getString(GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY, "false"));
     if (!globalAutoconfigureEnabled) {
       logger.log(
           Level.INFO,

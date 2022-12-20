@@ -41,6 +41,7 @@ import static io.opentelemetry.exporter.internal.marshal.WireFormat.FIXED64_SIZE
 import static io.opentelemetry.exporter.internal.marshal.WireFormat.MAX_VARINT32_SIZE;
 import static io.opentelemetry.exporter.internal.marshal.WireFormat.MAX_VARINT_SIZE;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -71,7 +72,10 @@ public abstract class CodedOutputStream {
   static {
     int bufferSize = 50 * 1024;
     try {
-      bufferSize = Integer.parseInt(System.getProperty("otel.experimental.otlp.buffer-size"));
+      String bufferSizeConfig = ConfigUtil.getString("otel.experimental.otlp.buffer-size", "");
+      if (!bufferSizeConfig.isEmpty()) {
+        bufferSize = Integer.parseInt(bufferSizeConfig);
+      }
     } catch (Throwable t) {
       // Ignore.
     }

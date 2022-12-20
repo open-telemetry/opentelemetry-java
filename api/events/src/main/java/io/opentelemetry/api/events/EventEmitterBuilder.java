@@ -5,21 +5,29 @@
 
 package io.opentelemetry.api.events;
 
-/** Builder class for creating {@link EventEmitter} instances. */
+/**
+ * Builder class for creating {@link EventEmitter} instances.
+ *
+ * <p>{@link EventEmitter}s are identified by their scope name, version, and schema URL. These
+ * identifying fields, along with attributes, combine to form the instrumentation scope, which is
+ * attached to all events produced by the {@link EventEmitter}.
+ */
 public interface EventEmitterBuilder {
 
   /**
-   * Assign an OpenTelemetry schema URL to the resulting {@link EventEmitter}.
+   * Set the scope schema URL of the resulting {@link EventEmitter}. Schema URL is part of {@link
+   * EventEmitter} identity.
    *
-   * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation scope
+   * @param schemaUrl The schema URL.
    * @return this
    */
   EventEmitterBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assign a version to the instrumentation scope that is using the resulting {@link EventEmitter}.
+   * Sets the instrumentation scope version of the resulting {@link EventEmitter}. Version is part
+   * of {@link EventEmitter} identity.
    *
-   * @param instrumentationScopeVersion the version of the instrumentation scope
+   * @param instrumentationScopeVersion The instrumentation scope version.
    * @return this
    */
   EventEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion);
@@ -27,7 +35,7 @@ public interface EventEmitterBuilder {
   /**
    * Gets or creates a {@link EventEmitter} instance.
    *
-   * @return a logger instance configured with the provided options
+   * @return a {@link EventEmitter} instance configured with the provided options.
    */
   EventEmitter build();
 }

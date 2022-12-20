@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -46,10 +47,10 @@ public final class UpstreamGrpcExporter<T extends Marshaler> implements GrpcExpo
       String exporterName,
       String type,
       MarshalerServiceStub<T, ?, ?> stub,
-      MeterProvider meterProvider,
+      Supplier<MeterProvider> meterProviderSupplier,
       long timeoutNanos) {
     this.type = type;
-    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProvider);
+    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProviderSupplier);
     this.timeoutNanos = timeoutNanos;
     this.stub = stub;
   }

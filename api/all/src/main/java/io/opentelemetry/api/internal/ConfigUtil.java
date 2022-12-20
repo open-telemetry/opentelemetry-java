@@ -28,10 +28,10 @@ public final class ConfigUtil {
    * properties take priority over environment variables.
    *
    * @param key the property key
-   * @return the system property if not null, or the environment variable if not null, or null
+   * @return the system property if not null, or the environment variable if not null, or {@code
+   *     defaultValue}
    */
-  @Nullable
-  public static String getString(String key) {
+  public static String getString(String key, String defaultValue) {
     String normalizedKey = normalizePropertyKey(key);
     String systemProperty =
         System.getProperties().entrySet().stream()
@@ -46,7 +46,7 @@ public final class ConfigUtil {
         .filter(entry -> normalizedKey.equals(normalizeEnvironmentVariableKey(entry.getKey())))
         .map(Map.Entry::getValue)
         .findFirst()
-        .orElse(null);
+        .orElse(defaultValue);
   }
 
   /**

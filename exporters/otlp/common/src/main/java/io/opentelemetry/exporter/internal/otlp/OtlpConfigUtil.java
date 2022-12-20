@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -13,28 +13,32 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
-final class OtlpConfigUtil {
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
+public final class OtlpConfigUtil {
 
-  static final String DATA_TYPE_TRACES = "traces";
-  static final String DATA_TYPE_METRICS = "metrics";
-  static final String DATA_TYPE_LOGS = "logs";
+  public static final String DATA_TYPE_TRACES = "traces";
+  public static final String DATA_TYPE_METRICS = "metrics";
+  public static final String DATA_TYPE_LOGS = "logs";
 
-  static final String PROTOCOL_GRPC = "grpc";
-  static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
+  public static final String PROTOCOL_GRPC = "grpc";
+  public static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
 
-  static String getOtlpProtocol(String dataType, ConfigProperties config) {
+  /** Determine the configured OTLP protocol for the {@code dataType}. */
+  public static String getOtlpProtocol(String dataType, ConfigProperties config) {
     String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
     if (protocol != null) {
       return protocol;
@@ -42,7 +46,8 @@ final class OtlpConfigUtil {
     return config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
   }
 
-  static void configureOtlpExporterBuilder(
+  /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
       Consumer<String> setEndpoint,
@@ -133,7 +138,11 @@ final class OtlpConfigUtil {
     }
   }
 
-  static void configureOtlpAggregationTemporality(
+  /**
+   * Invoke the {@code aggregationTemporalitySelectorConsumer} with the configured {@link
+   * AggregationTemporality}.
+   */
+  public static void configureOtlpAggregationTemporality(
       ConfigProperties config,
       Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
     String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
@@ -154,7 +163,11 @@ final class OtlpConfigUtil {
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
   }
 
-  static void configureOtlpHistogramDefaultAggregation(
+  /**
+   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
+   * DefaultAggregationSelector}.
+   */
+  public static void configureOtlpHistogramDefaultAggregation(
       ConfigProperties config,
       Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
     String defaultHistogramAggregation =
@@ -215,14 +228,17 @@ final class OtlpConfigUtil {
     if (filePath == null) {
       return null;
     }
-    Path path = Paths.get(filePath);
-    if (!Files.exists(path)) {
-      throw new ConfigurationException("Invalid OTLP certificate/key path: " + path);
+    File file = new File(filePath);
+    if (!file.exists()) {
+      throw new ConfigurationException("Invalid OTLP certificate/key path: " + filePath);
     }
     try {
-      return Files.readAllBytes(path);
+      RandomAccessFile raf = new RandomAccessFile(file, "r");
+      byte[] bytes = new byte[(int) raf.length()];
+      raf.readFully(bytes);
+      return bytes;
     } catch (IOException e) {
-      throw new ConfigurationException("Error reading content of file (" + path + ")", e);
+      throw new ConfigurationException("Error reading content of file (" + filePath + ")", e);
     }
   }
 

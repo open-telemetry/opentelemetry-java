@@ -8,22 +8,28 @@ package io.opentelemetry.api.trace;
 /**
  * Builder class for creating {@link Tracer} instances.
  *
+ * <p>{@link Tracer}s are identified by their scope name, version, and schema URL. These identifying
+ * fields, along with attributes, combine to form the instrumentation scope, which is attached to
+ * all spans produced by the {@link Tracer}.
+ *
  * @since 1.4.0
  */
 public interface TracerBuilder {
 
   /**
-   * Assign an OpenTelemetry schema URL to the resulting Tracer.
+   * Set the scope schema URL of the resulting {@link Tracer}. Schema URL is part of {@link Tracer}
+   * identity.
    *
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation scope.
+   * @param schemaUrl The schema URL.
    * @return this
    */
   TracerBuilder setSchemaUrl(String schemaUrl);
 
   /**
-   * Assign a version to the instrumentation scope that is using the resulting Tracer.
+   * Sets the instrumentation scope version of the resulting {@link Tracer}. Version is part of
+   * {@link Tracer} identity.
    *
-   * @param instrumentationScopeVersion The version of the instrumentation scope.
+   * @param instrumentationScopeVersion The instrumentation scope version.
    * @return this
    */
   TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion);

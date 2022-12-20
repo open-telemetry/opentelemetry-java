@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -26,7 +25,6 @@ class LogRecordExporterConfigurationTest {
                 LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
@@ -42,7 +40,6 @@ class LogRecordExporterConfigurationTest {
                 LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
@@ -58,21 +55,8 @@ class LogRecordExporterConfigurationTest {
                 LogRecordExporterConfiguration.configureLogRecordExporters(
                     config,
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    MeterProvider.noop(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
-  }
-
-  @Test
-  void configureOtlpLogs_unsupportedProtocol() {
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureOtlpLogs(
-                    DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                    MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Unsupported OTLP logs protocol: foo");
   }
 }

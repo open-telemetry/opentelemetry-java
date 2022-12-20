@@ -8,10 +8,12 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -19,52 +21,40 @@ class NotOnClasspathTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
+  private static final NamedSpiManager<SpanExporter> SPAN_EXPORTER_SPI_MANAGER =
+      SpanExporterConfiguration.spanExporterSpiManager(
+          EMPTY, NotOnClasspathTest.class.getClassLoader());
+  private static final NamedSpiManager<MetricExporter> METRIC_EXPORTER_SPI_MANAGER =
+      MetricExporterConfiguration.metricExporterSpiManager(
+          EMPTY, NotOnClasspathTest.class.getClassLoader());
+  private static final NamedSpiManager<LogRecordExporter> LOG_RECORD_EXPORTER_SPI_MANAGER =
+      LogRecordExporterConfiguration.logRecordExporterSpiManager(
+          EMPTY, NotOnClasspathTest.class.getClassLoader());
 
   @Test
-  void otlpGrpcSpans() {
+  void otlpSpans() {
     assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () -> SpanExporterConfiguration.configureExporter("otlp", SPAN_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP gRPC Trace Exporter enabled but opentelemetry-exporter-otlp not found on "
-                + "classpath");
-  }
-
-  @Test
-  void otlpHttpSpans() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "otlp", config, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining(
-            "OTLP HTTP Trace Exporter enabled but opentelemetry-exporter-otlp-http-trace not found on "
-                + "classpath");
+            "otel.traces.exporter set to \"otlp\" but opentelemetry-exporter-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
   void jaeger() {
     assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "jaeger", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () -> SpanExporterConfiguration.configureExporter("jaeger", SPAN_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "Jaeger gRPC Exporter enabled but opentelemetry-exporter-jaeger not found on "
-                + "classpath");
+            "otel.traces.exporter set to \"jaeger\" but opentelemetry-exporter-jaeger not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
   void zipkin() {
     assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "zipkin", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () -> SpanExporterConfiguration.configureExporter("zipkin", SPAN_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.traces.exporter set to \"zipkin\" but opentelemetry-exporter-zipkin not found on classpath."
@@ -74,9 +64,7 @@ class NotOnClasspathTest {
   @Test
   void loggingSpans() {
     assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "logging", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+            () -> SpanExporterConfiguration.configureExporter("logging", SPAN_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.traces.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
@@ -88,12 +76,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "logging-otlp",
-                    EMPTY,
-                    SpanExporterConfiguration.spanExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        NotOnClasspathTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                    "logging-otlp", SPAN_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.traces.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
@@ -105,10 +88,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "logging",
-                    EMPTY,
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    "logging", METRIC_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.metrics.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
@@ -120,10 +100,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "logging-otlp",
-                    EMPTY,
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    "logging-otlp", METRIC_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.metrics.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
@@ -135,7 +112,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureExporter(
-                    "logging", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
+                    "logging", LOG_RECORD_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.logs.exporter set to \"logging\" but opentelemetry-exporter-logging not found on classpath."
@@ -147,12 +124,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureExporter(
-                    "logging-otlp",
-                    EMPTY,
-                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        NotOnClasspathTest.class.getClassLoader()),
-                    MeterProvider.noop()))
+                    "logging-otlp", LOG_RECORD_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "otel.logs.exporter set to \"logging-otlp\" but opentelemetry-exporter-logging-otlp not found on classpath."
@@ -160,44 +132,24 @@ class NotOnClasspathTest {
   }
 
   @Test
-  void otlpGrpcMetrics() {
+  void otlpMetrics() {
     assertThatCode(
             () ->
-                MetricExporterConfiguration.configureExporter(
-                    "otlp",
-                    EMPTY,
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                MetricExporterConfiguration.configureExporter("otlp", METRIC_EXPORTER_SPI_MANAGER))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP gRPC Metrics Exporter enabled but opentelemetry-exporter-otlp not found on "
-                + "classpath");
-  }
-
-  @Test
-  void otlpHttpMetrics() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
-    assertThatCode(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "otlp",
-                    config,
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
-        .hasMessageContaining(
-            "OTLP HTTP Metrics Exporter enabled but opentelemetry-exporter-otlp-http-metrics not found on classpath");
+            "otel.metrics.exporter set to \"otlp\" but opentelemetry-exporter-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 
   @Test
   void prometheus() {
     assertThatThrownBy(
             () ->
-                MetricExporterConfiguration.configureExporter(
+                MetricExporterConfiguration.configureReader(
                     "prometheus",
                     EMPTY,
-                    MetricExporterConfiguration.class.getClassLoader(),
+                    NotOnClasspathTest.class.getClassLoader(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
@@ -223,19 +175,10 @@ class NotOnClasspathTest {
     assertThatCode(
             () ->
                 LogRecordExporterConfiguration.configureExporter(
-                    "otlp", EMPTY, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .doesNotThrowAnyException();
-  }
-
-  @Test
-  void otlpHttpLogs() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
-    assertThatCode(
-            () ->
-                LogRecordExporterConfiguration.configureExporter(
-                    "otlp", config, NamedSpiManager.createEmpty(), MeterProvider.noop()))
-        .doesNotThrowAnyException();
+                    "otlp", LOG_RECORD_EXPORTER_SPI_MANAGER))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "otel.logs.exporter set to \"otlp\" but opentelemetry-exporter-otlp not found on classpath."
+                + " Make sure to add it as a dependency.");
   }
 }
