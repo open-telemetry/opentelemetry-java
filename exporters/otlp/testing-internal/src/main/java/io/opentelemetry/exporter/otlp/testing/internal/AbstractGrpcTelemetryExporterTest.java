@@ -222,9 +222,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(httpRequests)
         .singleElement()
         .satisfies(
-            req -> {
-              assertThat(req.headers().get("User-Agent")).matches("OTel OTLP Exporter Java/1\\..*");
-            });
+            req ->
+                assertThat(req.headers().get("User-Agent"))
+                    .matches("OTel OTLP Exporter Java/1\\..*"));
   }
 
   @Test
@@ -268,6 +268,25 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void withHeaders() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .addHeader("key", "value")
+            .build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
     } finally {
       exporter.shutdown();
     }

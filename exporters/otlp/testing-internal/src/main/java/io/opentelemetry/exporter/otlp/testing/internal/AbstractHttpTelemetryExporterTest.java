@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -17,6 +18,7 @@ import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.RequestHeaders;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -24,6 +26,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -35,6 +38,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -52,6 +56,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import okio.Buffer;
+import okio.GzipSource;
+import okio.Okio;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -149,8 +156,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   aggReq -> {
                     T request;
                     try {
-                      request = parse.extractThrows(aggReq.content().array());
-                    } catch (InvalidProtocolBufferException e) {
+                      byte[] requestBody =
+                          maybeGzipInflate(aggReq.headers(), aggReq.content().array());
+                      request = parse.extractThrows(requestBody);
+                    } catch (IOException e) {
                       throw new UncheckedIOException(e);
                     }
                     exportedResourceTelemetry.addAll(getResourceTelemetry.apply(request));
@@ -163,6 +172,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                             successResponse);
                   });
       return HttpResponse.from(responseFuture);
+    }
+
+    private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
+        throws IOException {
+      if (!requestHeaders.contains("content-encoding", "gzip")) {
+        return content;
+      }
+      Buffer buffer = new Buffer();
+      GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
+      gzipSource.read(buffer, Integer.MAX_VALUE);
+      return buffer.readByteArray();
     }
   }
 
@@ -247,8 +267,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build();
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
     assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isNull());
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionWithGzip() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
+    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+    assumeThat(exporter.unwrap())
+        .extracting("delegate")
+        .isNotInstanceOf(UpstreamGrpcExporter.class);
+    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("gzip"));
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test
@@ -261,6 +312,22 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void withHeaders() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).addHeader("key", "value").build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
     } finally {
       exporter.shutdown();
     }
