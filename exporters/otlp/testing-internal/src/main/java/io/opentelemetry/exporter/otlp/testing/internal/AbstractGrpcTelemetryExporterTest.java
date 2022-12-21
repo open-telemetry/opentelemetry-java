@@ -728,7 +728,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static boolean usingOkHttp() {
     try {
-      Class.forName("io.grpc.stub.AbstractStub");
+      Class.forName("io.grpc.internal.AbstractManagedChannelImplBuilder");
       return false;
     } catch (ClassNotFoundException e) {
       return true;

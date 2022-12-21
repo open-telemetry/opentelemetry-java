@@ -480,6 +480,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(OkHttpExporter.class)
   void retryableError_tooManyAttempts() {
     addHttpError(502);
     addHttpError(502);

@@ -54,11 +54,8 @@ testing {
     val testConfigError by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":extensions:trace-propagators"))
-        implementation(project(":exporters:jaeger"))
-        implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:logs"))
-        implementation(project(":exporters:zipkin"))
       }
     }
     val testFullConfig by registering(JvmTestSuite::class) {
@@ -108,22 +105,6 @@ testing {
             environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
-      }
-    }
-    val testOtlp by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:logs"))
-        implementation(project(":exporters:otlp:common"))
-        implementation(project(":sdk:testing"))
-        implementation(project(":sdk:logs-testing"))
-
-        implementation("io.opentelemetry.proto:opentelemetry-proto")
-        implementation("com.linecorp.armeria:armeria-junit5")
-        implementation("com.linecorp.armeria:armeria-grpc")
-        implementation("com.squareup.okhttp3:okhttp")
-        implementation("com.squareup.okhttp3:okhttp-tls")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
       }
     }
   }
