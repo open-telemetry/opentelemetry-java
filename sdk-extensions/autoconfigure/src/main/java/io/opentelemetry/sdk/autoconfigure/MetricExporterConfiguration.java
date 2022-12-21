@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
-import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
@@ -17,6 +15,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
 
@@ -30,6 +29,7 @@ final class MetricExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
   }
 
+  @Nullable
   static MetricReader configureReader(
       String name,
       ConfigProperties config,
@@ -37,7 +37,16 @@ final class MetricExporterConfiguration {
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer) {
     if (name.equals("prometheus")) {
-      return configurePrometheusMetricReader(config);
+      // PrometheusHttpServer is implemented as MetricReader (not MetricExporter) and uses
+      // the AutoConfigurationCustomizer#addMeterProviderCustomizer SPI hook instead of
+      // ConfigurableMetricExporterProvider. While the prometheus SPI hook is not handled here,
+      // the classpath check here provides uniform exception messages.
+      try {
+        Class.forName("io.opentelemetry.exporter.prometheus.PrometheusHttpServer");
+        return null;
+      } catch (ClassNotFoundException unused) {
+        throw missingExporterException("prometheus", "opentelemetry-exporter-prometheus");
+      }
     }
 
     NamedSpiManager<MetricExporter> spiExportersManager =
@@ -45,7 +54,10 @@ final class MetricExporterConfiguration {
 
     MetricExporter metricExporter = configureExporter(name, spiExportersManager);
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
-    return configurePeriodicMetricReader(config, metricExporter);
+
+    return PeriodicMetricReader.builder(metricExporter)
+        .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
+        .build();
   }
 
   // Visible for testing
@@ -66,42 +78,21 @@ final class MetricExporterConfiguration {
     if (metricExporter == null) {
       String artifactId = EXPORTER_ARTIFACT_ID_BY_NAME.get(name);
       if (artifactId != null) {
-        throw new ConfigurationException(
-            "otel.metrics.exporter set to \""
-                + name
-                + "\" but "
-                + artifactId
-                + " not found on classpath. Make sure to add it as a dependency.");
+        throw missingExporterException(name, artifactId);
       }
       throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
     }
     return metricExporter;
   }
 
-  private static PeriodicMetricReader configurePeriodicMetricReader(
-      ConfigProperties config, MetricExporter exporter) {
-
-    return PeriodicMetricReader.builder(exporter)
-        .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
-        .build();
-  }
-
-  private static PrometheusHttpServer configurePrometheusMetricReader(ConfigProperties config) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.prometheus.PrometheusHttpServer",
-        "Prometheus Metrics Server",
-        "opentelemetry-exporter-prometheus");
-    PrometheusHttpServerBuilder prom = PrometheusHttpServer.builder();
-
-    Integer port = config.getInt("otel.exporter.prometheus.port");
-    if (port != null) {
-      prom.setPort(port);
-    }
-    String host = config.getString("otel.exporter.prometheus.host");
-    if (host != null) {
-      prom.setHost(host);
-    }
-    return prom.build();
+  private static ConfigurationException missingExporterException(
+      String exporterName, String artifactId) {
+    return new ConfigurationException(
+        "otel.metrics.exporter set to \""
+            + exporterName
+            + "\" but "
+            + artifactId
+            + " not found on classpath. Make sure to add it as a dependency.");
   }
 
   private MetricExporterConfiguration() {}

@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -105,7 +104,7 @@ public class ConfigurableMetricExporterTest {
   void configureMultipleMetricExporters() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
-            ImmutableMap.of("otel.metrics.exporter", "otlp,prometheus"));
+            ImmutableMap.of("otel.metrics.exporter", "otlp,logging"));
 
     assertThat(
             MeterProviderConfiguration.configureMetricReaders(
@@ -114,7 +113,7 @@ public class ConfigurableMetricExporterTest {
                 (metricExporter, unused) -> metricExporter))
         .hasSize(2)
         .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
-        .hasAtLeastOneElementOfType(PrometheusHttpServer.class)
+        .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
         .allSatisfy(metricReader -> metricReader.shutdown().join(10, TimeUnit.SECONDS));
   }
 }

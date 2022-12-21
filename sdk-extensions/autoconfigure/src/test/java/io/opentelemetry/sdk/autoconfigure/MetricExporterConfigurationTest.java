@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.MetricExporterConfiguration.configureExporter;
+import static io.opentelemetry.sdk.autoconfigure.MetricExporterConfiguration.configureReader;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -19,6 +20,21 @@ class MetricExporterConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
+
+  @Test
+  void configureReader_PrometheusNotOnClasspath() {
+    assertThatThrownBy(
+            () ->
+                configureReader(
+                    "prometheus",
+                    EMPTY,
+                    MetricExporterConfiguration.class.getClassLoader(),
+                    (a, b) -> a))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage(
+            "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus"
+                + " not found on classpath. Make sure to add it as a dependency.");
+  }
 
   @Test
   void configureExporter_KnownSpiExportersNotOnClasspath() {
@@ -45,20 +61,5 @@ class MetricExporterConfigurationTest {
     // Unrecognized exporter
     assertThatThrownBy(() -> configureExporter("foo", spiExportersManager))
         .hasMessage("Unrecognized value for otel.metrics.exporter: foo");
-  }
-
-  @Test
-  void configureReader_Prometheus() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureReader(
-                    "prometheus",
-                    EMPTY,
-                    MetricExporterConfigurationTest.class.getClassLoader(),
-                    (a, unused) -> a))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining(
-            "Prometheus Metrics Server enabled but opentelemetry-exporter-prometheus not found on "
-                + "classpath");
   }
 }

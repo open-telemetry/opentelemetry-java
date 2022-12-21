@@ -14,8 +14,6 @@ dependencies {
 
   implementation(project(":semconv"))
 
-  compileOnly(project(":exporters:prometheus"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))
@@ -60,7 +58,6 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:otlp:logs"))
-        implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
       }
     }
@@ -127,23 +124,6 @@ testing {
         implementation("com.squareup.okhttp3:okhttp")
         implementation("com.squareup.okhttp3:okhttp-tls")
         runtimeOnly("io.grpc:grpc-netty-shaded")
-      }
-    }
-    val testPrometheus by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":exporters:prometheus"))
-
-        implementation("com.linecorp.armeria:armeria-junit5")
-      }
-
-      targets {
-        all {
-          testTask {
-            environment("OTEL_TRACES_EXPORTER", "none")
-            environment("OTEL_METRICS_EXPORTER", "prometheus")
-            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
-          }
-        }
       }
     }
   }
