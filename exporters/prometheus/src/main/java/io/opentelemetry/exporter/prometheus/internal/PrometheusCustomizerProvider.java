@@ -32,7 +32,8 @@ public class PrometheusCustomizerProvider implements AutoConfigurationCustomizer
         });
   }
 
-  private static PrometheusHttpServer configurePrometheusHttpServer(ConfigProperties config) {
+  // Visible for test
+  static PrometheusHttpServer configurePrometheusHttpServer(ConfigProperties config) {
     PrometheusHttpServerBuilder prometheusBuilder = PrometheusHttpServer.builder();
 
     Integer port = config.getInt("otel.exporter.prometheus.port");

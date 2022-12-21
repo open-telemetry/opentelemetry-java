@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
