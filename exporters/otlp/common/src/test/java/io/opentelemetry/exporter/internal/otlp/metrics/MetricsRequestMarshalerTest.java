@@ -421,8 +421,8 @@ class MetricsRequestMarshalerTest {
                         1,
                         null,
                         null,
-                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
-                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
+                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.empty(),
@@ -433,8 +433,8 @@ class MetricsRequestMarshalerTest {
                         1,
                         3.3,
                         80.1,
-                        new TestExponentialHistogramBuckets(1, ImmutableList.of(1L, 0L, 2L)),
-                        new TestExponentialHistogramBuckets(0, Collections.emptyList()),
+                        new TestExponentialHistogramBuckets(0, 1, ImmutableList.of(1L, 0L, 2L)),
+                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.of(stringKey("key"), "value"),
@@ -837,9 +837,9 @@ class MetricsRequestMarshalerTest {
                                 20.1,
                                 44.3,
                                 new TestExponentialHistogramBuckets(
-                                    -1, ImmutableList.of(0L, 128L, 1L << 32)),
+                                    20, -1, ImmutableList.of(0L, 128L, 1L << 32)),
                                 new TestExponentialHistogramBuckets(
-                                    1, ImmutableList.of(0L, 128L, 1L << 32)),
+                                    20, 1, ImmutableList.of(0L, 128L, 1L << 32)),
                                 123,
                                 456,
                                 KV_ATTR,
@@ -1155,12 +1155,19 @@ class MetricsRequestMarshalerTest {
    */
   private static class TestExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
+    private final int scale;
     private final int offset;
     private final List<Long> bucketCounts;
 
-    TestExponentialHistogramBuckets(int offset, List<Long> bucketCounts) {
+    TestExponentialHistogramBuckets(int scale, int offset, List<Long> bucketCounts) {
+      this.scale = scale;
       this.offset = offset;
       this.bucketCounts = bucketCounts;
+    }
+
+    @Override
+    public int getScale() {
+      return scale;
     }
 
     @Override

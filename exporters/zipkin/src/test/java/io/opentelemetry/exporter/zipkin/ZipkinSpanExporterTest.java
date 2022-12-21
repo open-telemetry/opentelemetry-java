@@ -46,7 +46,7 @@ class ZipkinSpanExporterTest {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop(), mockTransformer);
+        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider::noop, mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
@@ -77,7 +77,7 @@ class ZipkinSpanExporterTest {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider.noop(), mockTransformer);
+        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider::noop, mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =

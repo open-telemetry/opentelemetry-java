@@ -26,6 +26,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ExponentialHistogramBuckets {
 
+  /** The scale of the buckets. Must align with {@link ExponentialHistogramPointData#getScale()}. */
+  int getScale();
+
   /**
    * The offset shifts the bucket boundaries according to <code>lower_bound = base^(offset+i).
    * </code>.

@@ -11,6 +11,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
 dependencies {
   api(project(":sdk:metrics"))
 
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
+
   compileOnly("com.sun.net.httpserver:http")
 
   testImplementation("com.google.guava:guava")

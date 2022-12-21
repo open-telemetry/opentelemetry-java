@@ -9,14 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +27,7 @@ class ConfigurableLogRecordExporterTest {
             ImmutableMap.of("test.option", "true", "otel.logs.exporter", "testExporter"));
     Map<String, LogRecordExporter> exportersByName =
         LogRecordExporterConfiguration.configureLogRecordExporters(
-            config,
-            LogRecordExporterConfiguration.class.getClassLoader(),
-            MeterProvider.noop(),
-            (a, unused) -> a);
+            config, LogRecordExporterConfiguration.class.getClassLoader(), (a, unused) -> a);
 
     assertThat(exportersByName)
         .hasSize(1)
@@ -51,10 +46,7 @@ class ConfigurableLogRecordExporterTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config,
-                    new URLClassLoader(new URL[0], null),
-                    MeterProvider.noop(),
-                    (a, unused) -> a))
+                    config, new URLClassLoader(new URL[0], null), (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -64,10 +56,7 @@ class ConfigurableLogRecordExporterTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureExporter(
-                    "catExporter",
-                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    NamedSpiManager.createEmpty(),
-                    MeterProvider.noop()))
+                    "catExporter", NamedSpiManager.createEmpty()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }

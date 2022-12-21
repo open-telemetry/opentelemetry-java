@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.Exponenti
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
@@ -50,8 +49,9 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
+  private static final int STARTING_SCALE = 20;
   private static final DoubleExponentialHistogramAggregator aggregator =
-      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160);
+      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 20);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
@@ -62,8 +62,7 @@ class DoubleExponentialHistogramAggregatorTest {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            ExemplarReservoir::doubleNoSamples,
-            ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter())));
+            ExemplarReservoir::doubleNoSamples, 160, STARTING_SCALE));
   }
 
   private static int valueToIndex(int scale, double value) {
@@ -83,8 +82,17 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Test
   void createHandle() {
-    assertThat(aggregator.createHandle())
-        .isInstanceOf(DoubleExponentialHistogramAggregator.Handle.class);
+    AggregatorHandle<?, ?> handle = aggregator.createHandle();
+    assertThat(handle).isInstanceOf(DoubleExponentialHistogramAggregator.Handle.class);
+    ExponentialHistogramAccumulation accumulation =
+        ((DoubleExponentialHistogramAggregator.Handle) handle)
+            .doAccumulateThenReset(Collections.emptyList());
+    assertThat(accumulation.getPositiveBuckets())
+        .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
+    assertThat(accumulation.getPositiveBuckets().getScale()).isEqualTo(STARTING_SCALE);
+    assertThat(accumulation.getNegativeBuckets())
+        .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
+    assertThat(accumulation.getNegativeBuckets().getScale()).isEqualTo(STARTING_SCALE);
   }
 
   @Test
@@ -108,6 +116,8 @@ class DoubleExponentialHistogramAggregatorTest {
     int expectedScale = 5; // should be downscaled from 20 to 5 after recordings
 
     assertThat(acc.getScale()).isEqualTo(expectedScale);
+    assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(expectedScale);
+    assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(expectedScale);
     assertThat(acc.getZeroCount()).isEqualTo(2);
 
     // Assert positive recordings are at correct index
@@ -163,6 +173,8 @@ class DoubleExponentialHistogramAggregatorTest {
 
     // With 160 buckets allowed, minimum scale is -4
     assertThat(acc.getScale()).isEqualTo(-4);
+    assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(-4);
+    assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(-4);
 
     // if scale is -4, base is 65,536.
     int base = 65_536;
@@ -187,7 +199,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(() -> reservoir, 160);
+        new DoubleExponentialHistogramAggregator(() -> reservoir, 160, STARTING_SCALE);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -303,9 +315,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
   private static ExponentialHistogramAccumulation createAccumulation(
       boolean hasMinMax, double min, double max) {
-    DoubleExponentialHistogramBuckets buckets =
-        new DoubleExponentialHistogramBuckets(
-            0, 1, ExponentialCounterFactory.circularBufferCounter());
+    DoubleExponentialHistogramBuckets buckets = new DoubleExponentialHistogramBuckets(0, 1);
     return ExponentialHistogramAccumulation.create(
         0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
   }
@@ -370,8 +380,11 @@ class DoubleExponentialHistogramAggregatorTest {
       d += min;
     }
 
-    ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
-    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(3);
+    ExponentialHistogramAccumulation acc =
+        Objects.requireNonNull(handle.accumulateThenReset(Attributes.empty()));
+    assertThat(acc.getScale()).isEqualTo(3);
+    assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(3);
+    assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(3);
     assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(160);
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(n);
   }
@@ -380,17 +393,22 @@ class DoubleExponentialHistogramAggregatorTest {
   void testDownScale() {
     DoubleExponentialHistogramAggregator.Handle handle =
         (DoubleExponentialHistogramAggregator.Handle) aggregator.createHandle();
+    // record a measurement to initialize positive buckets
+    handle.recordDouble(0.5);
+
     handle.downScale(20); // down to zero scale
 
     // test histogram operates properly after being manually scaled down to 0
-    handle.recordDouble(0.5);
     handle.recordDouble(1.0);
     handle.recordDouble(2.0);
     handle.recordDouble(4.0);
     handle.recordDouble(16.0);
 
-    ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
-    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(0);
+    ExponentialHistogramAccumulation acc =
+        Objects.requireNonNull(handle.accumulateThenReset(Attributes.empty()));
+    assertThat(acc.getScale()).isEqualTo(0);
+    assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(0);
+    assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(0);
     ExponentialHistogramBuckets buckets = acc.getPositiveBuckets();
     assertThat(acc.getSum()).isEqualTo(23.5);
     assertThat(buckets.getOffset()).isEqualTo(-2);
@@ -419,7 +437,7 @@ class DoubleExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160, STARTING_SCALE);
 
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
@@ -516,6 +534,8 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
     assertThat(acc.getScale()).isEqualTo(3);
+    assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(3);
+    assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(3);
     MetricAssertions.assertThat(acc.getPositiveBuckets())
         .hasTotalCount(numberOfUpdates * 3)
         .hasOffset(-27);

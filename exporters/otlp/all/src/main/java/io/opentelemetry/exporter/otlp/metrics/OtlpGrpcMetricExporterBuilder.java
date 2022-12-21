@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
@@ -57,6 +58,7 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH);
+    delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 

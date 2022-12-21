@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.debug;
 
-import java.util.Locale;
+import io.opentelemetry.api.internal.ConfigUtil;
 
 /**
  * Determines if the SDK is in debugging mode (captures stack traces) or not.
@@ -20,13 +20,7 @@ public final class DebugConfig {
   private DebugConfig() {}
 
   static {
-    // Attempt to mirror the logic in DefaultConfigProperties here...
-    enabled =
-        "true".equalsIgnoreCase(System.getProperty(ENABLE_METRICS_DEBUG_PROPERTY))
-            || "true"
-                .equalsIgnoreCase(
-                    System.getenv(
-                        ENABLE_METRICS_DEBUG_PROPERTY.toLowerCase(Locale.ROOT).replace('.', '_')));
+    enabled = Boolean.parseBoolean(ConfigUtil.getString(ENABLE_METRICS_DEBUG_PROPERTY, "false"));
   }
 
   /**

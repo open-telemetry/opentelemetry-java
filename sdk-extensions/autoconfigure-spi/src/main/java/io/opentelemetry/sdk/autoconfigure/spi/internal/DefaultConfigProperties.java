@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.spi.internal;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
@@ -18,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +43,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * and the {@code defaultProperties}.
    *
    * <p>Environment variables take priority over {@code defaultProperties}. System properties take
-   * priority over system properties.
+   * priority over environment variables.
    */
   public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
     return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
@@ -62,11 +62,13 @@ public final class DefaultConfigProperties implements ConfigProperties {
       Map<String, String> environmentVariables,
       Map<String, String> defaultProperties) {
     Map<String, String> config = new HashMap<>();
-    defaultProperties.forEach((name, value) -> config.put(normalize(name), value));
+    defaultProperties.forEach(
+        (name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
     environmentVariables.forEach(
-        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
+        (name, value) -> config.put(ConfigUtil.normalizeEnvironmentVariableKey(name), value));
     systemProperties.forEach(
-        (key, value) -> config.put(normalize(key.toString()), value.toString()));
+        (key, value) ->
+            config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
 
     this.config = config;
   }
@@ -75,7 +77,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
       DefaultConfigProperties previousProperties, Map<String, String> overrides) {
     // previousProperties are already normalized, they can be copied as they are
     Map<String, String> config = new HashMap<>(previousProperties.config);
-    overrides.forEach((name, value) -> config.put(normalize(name), value));
+    overrides.forEach((name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
 
     this.config = config;
   }
@@ -83,13 +85,13 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Override
   @Nullable
   public String getString(String name) {
-    return config.get(normalize(name));
+    return config.get(ConfigUtil.normalizePropertyKey(name));
   }
 
   @Override
   @Nullable
   public Boolean getBoolean(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -100,7 +102,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Integer getInt(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -115,7 +117,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Long getLong(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -130,7 +132,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Double getDouble(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -145,7 +147,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Duration getDuration(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -174,7 +176,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public List<String> getList(String name) {
-    String value = config.get(normalize(name));
+    String value = config.get(ConfigUtil.normalizePropertyKey(name));
     if (value == null) {
       return Collections.emptyList();
     }
@@ -188,7 +190,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * @throws ConfigurationException if {@code name} contains duplicate entries
    */
   public static Set<String> getSet(ConfigProperties config, String name) {
-    List<String> list = config.getList(normalize(name));
+    List<String> list = config.getList(ConfigUtil.normalizePropertyKey(name));
     Set<String> set = new HashSet<>(list);
     if (set.size() != list.size()) {
       String duplicates =
@@ -206,7 +208,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public Map<String, String> getMap(String name) {
-    return getList(normalize(name)).stream()
+    return getList(ConfigUtil.normalizePropertyKey(name)).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
             splitKeyValuePairs -> {
@@ -280,9 +282,5 @@ public final class DefaultConfigProperties implements ConfigProperties {
     }
     // Pull everything after the last digit.
     return rawValue.substring(lastDigitIndex + 1);
-  }
-
-  private static String normalize(String propertyName) {
-    return propertyName.toLowerCase(Locale.ROOT).replace('-', '.');
   }
 }
