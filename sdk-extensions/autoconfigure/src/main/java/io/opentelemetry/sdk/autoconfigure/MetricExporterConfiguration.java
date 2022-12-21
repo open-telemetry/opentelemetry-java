@@ -37,15 +37,16 @@ final class MetricExporterConfiguration {
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer) {
     if (name.equals("prometheus")) {
-      if (!ClasspathUtil.checkClassExists(
-          "io.opentelemetry.exporter.prometheus.PrometheusHttpServer")) {
-        // PrometheusHttpServer is implemented as MetricReader (not MetricExporter) and uses
-        // the AutoConfigurationCustomizer#addMeterProviderCustomizer SPI hook instead of
-        // ConfigurableMetricExporterProvider. While the prometheus SPI hook is not handled here,
-        // the classpath check here provides uniform exception messages.
+      // PrometheusHttpServer is implemented as MetricReader (not MetricExporter) and uses
+      // the AutoConfigurationCustomizer#addMeterProviderCustomizer SPI hook instead of
+      // ConfigurableMetricExporterProvider. While the prometheus SPI hook is not handled here,
+      // the classpath check here provides uniform exception messages.
+      try {
+        Class.forName("io.opentelemetry.exporter.prometheus.PrometheusHttpServer");
+        return null;
+      } catch (ClassNotFoundException unused) {
         throw missingExporterException("prometheus", "opentelemetry-exporter-prometheus");
       }
-      return null;
     }
 
     NamedSpiManager<MetricExporter> spiExportersManager =
