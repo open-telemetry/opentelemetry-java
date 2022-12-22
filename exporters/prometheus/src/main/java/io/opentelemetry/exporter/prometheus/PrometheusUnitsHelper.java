@@ -77,12 +77,4 @@ public final class PrometheusUnitsHelper {
   public static String getEquivalentPrometheusUnit(String unit) {
     return PROMETHEUS_UNIT_MAP.getOrDefault(unit, unit);
   }
-
-  //  @SuppressWarnings("SystemOut")
-  //  public static void printMap() {
-  //    System.out.println("Map is ");
-  //    for (Map.Entry<String, String> entry : PROMETHEUS_UNIT_MAP.entrySet()) {
-  //      System.out.println(entry.getKey() + ":" + entry.getValue());
-  //    }
-  //  }
 }
