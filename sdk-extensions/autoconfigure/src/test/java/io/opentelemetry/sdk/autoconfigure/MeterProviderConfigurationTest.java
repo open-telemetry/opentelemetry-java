@@ -33,13 +33,19 @@ class MeterProviderConfigurationTest {
         .isInstanceOf(TraceBasedExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "Trace_based"))
         .isInstanceOf(TraceBasedExemplarFilter.class);
+    assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "with_sampled_trace"))
+        .isInstanceOf(TraceBasedExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_off"))
         .isInstanceOf(AlwaysOffFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_Off"))
         .isInstanceOf(AlwaysOffFilter.class);
+    assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "none"))
+        .isInstanceOf(AlwaysOffFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_on"))
         .isInstanceOf(AlwaysOnFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "ALWAYS_ON"))
+        .isInstanceOf(AlwaysOnFilter.class);
+    assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "all"))
         .isInstanceOf(AlwaysOnFilter.class);
   }
 
