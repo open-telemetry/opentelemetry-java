@@ -147,12 +147,6 @@ class ContextTest {
     scope2.close();
     assertThat(Context.current()).isEqualTo(context1);
 
-    scope2.close();
-    assertThat(Context.current()).isEqualTo(context1);
-
-    scope1.close();
-    assertThat(Context.current()).isEqualTo(initial);
-
     scope1.close();
     assertThat(Context.current()).isEqualTo(initial);
 

@@ -5,7 +5,7 @@
 ### Bugfixes
 
 * Make closing scope idempotent and non-operational when corresponding context is not current.
-  [(#TODO)](https://github.com/open-telemetry/opentelemetry-java/pull/TODO)
+  [(#5061)](https://github.com/open-telemetry/opentelemetry-java/pull/5061)
 *
 ## Version 1.21.0 (2022-12-09)
 
