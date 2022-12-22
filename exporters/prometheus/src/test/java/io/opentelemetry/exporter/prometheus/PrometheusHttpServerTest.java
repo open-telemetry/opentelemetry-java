@@ -79,6 +79,18 @@ class PrometheusHttpServerTest {
             "# TYPE grpc_name_total counter\n"
                 + "# HELP grpc_name_total long_description\n"
                 + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_percent gauge\n"
+                + "# HELP grpc_name_percent long_description\n"
+                + "grpc_name_percent{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_percent_total counter\n"
+                + "# HELP grpc_name_percent_total long_description\n"
+                + "grpc_name_percent_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_days_total counter\n"
+                + "# HELP grpc_name_days_total long_description\n"
+                + "grpc_name_days_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE http_name_unknown_total counter\n"
+                + "# HELP http_name_unknown_total double_description\n"
+                + "http_name_unknown_total{kp=\"vp\"} 3.5 0\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
                 + "http_name_total{kp=\"vp\"} 3.5 0\n");
@@ -105,6 +117,16 @@ class PrometheusHttpServerTest {
             "# TYPE grpc_name counter\n"
                 + "# HELP grpc_name long_description\n"
                 + "grpc_name_total{kp=\"vp\"} 5.0 0.000\n"
+                + "# TYPE grpc_name_percent gauge\n"
+                + "# HELP grpc_name_percent long_description\n"
+                + "grpc_name_percent{kp=\"vp\"} 5.0 0.000\n"
+                + "grpc_name_percent_total{kp=\"vp\"} 5.0 0.000\n"
+                + "# TYPE grpc_name_days counter\n"
+                + "# HELP grpc_name_days long_description\n"
+                + "grpc_name_days_total{kp=\"vp\"} 5.0 0.000\n"
+                + "# TYPE http_name_unknown counter\n"
+                + "# HELP http_name_unknown double_description\n"
+                + "http_name_unknown_total{kp=\"vp\"} 3.5 0.000\n"
                 + "# TYPE http_name counter\n"
                 + "# HELP http_name double_description\n"
                 + "http_name_total{kp=\"vp\"} 3.5 0.000\n"
@@ -141,6 +163,18 @@ class PrometheusHttpServerTest {
             "# TYPE grpc_name_total counter\n"
                 + "# HELP grpc_name_total long_description\n"
                 + "grpc_name_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_percent gauge\n"
+                + "# HELP grpc_name_percent long_description\n"
+                + "grpc_name_percent{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_percent_total counter\n"
+                + "# HELP grpc_name_percent_total long_description\n"
+                + "grpc_name_percent_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE grpc_name_days_total counter\n"
+                + "# HELP grpc_name_days_total long_description\n"
+                + "grpc_name_days_total{kp=\"vp\"} 5.0 0\n"
+                + "# TYPE http_name_unknown_total counter\n"
+                + "# HELP http_name_unknown_total double_description\n"
+                + "http_name_unknown_total{kp=\"vp\"} 3.5 0\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
                 + "http_name_total{kp=\"vp\"} 3.5 0\n");
@@ -183,6 +217,54 @@ class PrometheusHttpServerTest {
                 Collections.singletonList(
                     ImmutableLongPointData.create(
                         123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+        ImmutableMetricData.createLongSum(
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
+            InstrumentationScopeInfo.builder("grpc").setVersion("version").build(),
+            "grpc.name",
+            "long_description",
+            "%",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.DELTA,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+        ImmutableMetricData.createLongSum(
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
+            InstrumentationScopeInfo.builder("grpc").setVersion("version").build(),
+            "grpc.name",
+            "long_description",
+            "%",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+        ImmutableMetricData.createLongSum(
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
+            InstrumentationScopeInfo.builder("grpc").setVersion("version").build(),
+            "grpc.name",
+            "long_description",
+            "d",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+        ImmutableMetricData.createDoubleSum(
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
+            InstrumentationScopeInfo.builder("http").setVersion("version").build(),
+            "http.name",
+            "double_description",
+            "unknown",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))),
         ImmutableMetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationScopeInfo.builder("http").setVersion("version").build(),
