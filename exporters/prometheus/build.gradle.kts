@@ -15,6 +15,8 @@ dependencies {
 
   compileOnly("com.sun.net.httpserver:http")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")
 }

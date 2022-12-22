@@ -23,6 +23,7 @@ package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -102,33 +103,42 @@ abstract class Serializer {
     // In particular, it is common for OpenTelemetry to report metrics with the same name from
     // different libraries
     // separately.
-    Map<String, List<MetricData>> metricsByName =
+    Map<String, List<PrometheusMetricNameDataEntry>> metricsByName =
         metrics.stream()
+            // Create an entry pair b/w metricData and its updated metric name with the unit suffix
+            .map(
+                metricData ->
+                    PrometheusMetricNameDataEntry.create(
+                        generateMetricNameWithSuffix(metricData), metricData))
             // Not supported in specification yet.
-            .filter(metric -> metric.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM)
-            .filter(metric -> metricNameFilter.test(metricName(metric)))
+            .filter(
+                metricNameDataEntry ->
+                    metricNameDataEntry.getMetricData().getType()
+                        != MetricDataType.EXPONENTIAL_HISTOGRAM)
+            .filter(metricNameDataEntry -> metricNameFilter.test(metricName(metricNameDataEntry)))
             .collect(
                 Collectors.groupingBy(
-                    metric ->
-                        headerName(
-                            NameSanitizer.INSTANCE.apply(metric.getName()),
-                            PrometheusType.forMetric(metric)),
+                    metricNameDataEntry ->
+                        Serializer.this.headerName(
+                            NameSanitizer.INSTANCE.apply(metricNameDataEntry.getMetricName()),
+                            PrometheusType.forMetric(metricNameDataEntry.getMetricData())),
                     LinkedHashMap::new,
                     Collectors.toList()));
     try (Writer writer =
         new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8))) {
-      for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
+      for (Map.Entry<String, List<PrometheusMetricNameDataEntry>> entry :
+          metricsByName.entrySet()) {
         write(entry.getValue(), entry.getKey(), writer);
       }
       writeEof(writer);
     }
   }
 
-  private void write(List<MetricData> metrics, String headerName, Writer writer)
+  private void write(List<PrometheusMetricNameDataEntry> metrics, String headerName, Writer writer)
       throws IOException {
     // Write header based on first metric
-    PrometheusType type = PrometheusType.forMetric(metrics.get(0));
-    String description = metrics.get(0).getDescription();
+    PrometheusType type = PrometheusType.forMetric(metrics.get(0).getMetricData());
+    String description = metrics.get(0).getMetricData().getDescription();
 
     writer.write("# TYPE ");
     writer.write(headerName);
@@ -143,16 +153,17 @@ abstract class Serializer {
     writer.write('\n');
 
     // Then write the metrics.
-    for (MetricData metric : metrics) {
-      write(metric, writer);
+    for (PrometheusMetricNameDataEntry metricNameDataEntry : metrics) {
+      write(metricNameDataEntry, writer);
     }
   }
 
-  private void write(MetricData metric, Writer writer) throws IOException {
-    String name = metricName(metric);
+  private void write(PrometheusMetricNameDataEntry metricNameDataEntry, Writer writer)
+      throws IOException {
+    String name = metricName(metricNameDataEntry);
 
-    for (PointData point : getPoints(metric)) {
-      switch (metric.getType()) {
+    for (PointData point : getPoints(metricNameDataEntry.getMetricData())) {
+      switch (metricNameDataEntry.getMetricData().getType()) {
         case DOUBLE_SUM:
         case DOUBLE_GAUGE:
           writePoint(
@@ -526,9 +537,9 @@ abstract class Serializer {
     return Collections.emptyList();
   }
 
-  private static String metricName(MetricData metric) {
-    PrometheusType type = PrometheusType.forMetric(metric);
-    String name = NameSanitizer.INSTANCE.apply(metric.getName());
+  private static String metricName(PrometheusMetricNameDataEntry metricNameDataEntry) {
+    PrometheusType type = PrometheusType.forMetric(metricNameDataEntry.getMetricData());
+    String name = NameSanitizer.INSTANCE.apply(metricNameDataEntry.getMetricName());
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
     }
@@ -539,5 +550,18 @@ abstract class Serializer {
     return exemplar instanceof DoubleExemplarData
         ? ((DoubleExemplarData) exemplar).getValue()
         : (double) ((LongExemplarData) exemplar).getValue();
+  }
+
+  private static String generateMetricNameWithSuffix(MetricData metric) {
+    StringBuilder stringBuilder = new StringBuilder(NameSanitizer.INSTANCE.apply(metric.getName()));
+    String prometheusEquivalentMetricUnit =
+        PrometheusUnitsHelper.getEquivalentPrometheusUnit(metric.getUnit());
+    // append the metric unit
+    if (!StringUtils.isNullOrEmpty(prometheusEquivalentMetricUnit)
+        && !(prometheusEquivalentMetricUnit.contains("{")
+            || prometheusEquivalentMetricUnit.contains("}"))) {
+      stringBuilder.append("_").append(prometheusEquivalentMetricUnit);
+    }
+    return stringBuilder.toString();
   }
 }
