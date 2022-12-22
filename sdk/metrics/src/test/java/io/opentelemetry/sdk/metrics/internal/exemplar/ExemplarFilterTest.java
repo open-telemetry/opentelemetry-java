@@ -25,17 +25,17 @@ class ExemplarFilterTest {
   private static final String SPAN_ID = "ff00000000000041";
 
   @Test
-  void never_NeverReturnsTrue() {
+  void alwaysOff_NeverReturnsTrue() {
     assertThat(
-            ExemplarFilter.neverSample()
+            ExemplarFilter.alwaysOff()
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
 
   @Test
-  void always_AlwaysReturnsTrue() {
+  void alwaysOn_AlwaysReturnsTrue() {
     assertThat(
-            ExemplarFilter.alwaysSample()
+            ExemplarFilter.alwaysOn()
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isTrue();
   }
@@ -43,45 +43,41 @@ class ExemplarFilterTest {
   @Test
   void withSampledTrace_ReturnsFalseOnNoContext() {
     assertThat(
-            ExemplarFilter.sampleWithTraces()
+            ExemplarFilter.traceBased()
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
 
   @Test
-  void withSampledTrace_sampleWithTrace() {
+  void traceBased_sampleWithTrace() {
     Context context =
         Context.root()
             .with(
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
-    assertThat(
-            ExemplarFilter.sampleWithTraces()
-                .shouldSampleMeasurement(1, Attributes.empty(), context))
+    assertThat(ExemplarFilter.traceBased().shouldSampleMeasurement(1, Attributes.empty(), context))
         .isTrue();
   }
 
   @Test
-  void withSampledTrace_notSampleUnsampledTrace() {
+  void traceBased_notSampleUnsampledTrace() {
     Context context =
         Context.root()
             .with(
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault())));
-    assertThat(
-            ExemplarFilter.sampleWithTraces()
-                .shouldSampleMeasurement(1, Attributes.empty(), context))
+    assertThat(ExemplarFilter.traceBased().shouldSampleMeasurement(1, Attributes.empty(), context))
         .isFalse();
   }
 
   @Test
   void setExemplarFilter() {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-    SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysSample());
+    SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOn());
     assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)))
-        .isEqualTo(ExemplarFilter.alwaysSample());
+        .isEqualTo(ExemplarFilter.alwaysOn());
   }
 }

@@ -290,9 +290,9 @@ These properties can be used to control the maximum size of spans by placing lim
 
 ## Exemplars
 
-| System property              | Environment variable         | Description                                                                                                       |
-|------------------------------|------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`. |
+| System property              | Environment variable         | Description                                                                                                     |
+|------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `ALWAYS_OFF`, `ALWAYS_ON` or `TRACE_BASED`. Default is `TRACE_BASED`. |
 
 ## Periodic Metric Reader
 

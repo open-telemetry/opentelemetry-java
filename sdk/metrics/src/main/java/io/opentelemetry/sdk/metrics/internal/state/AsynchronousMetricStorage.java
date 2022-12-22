@@ -81,7 +81,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
     Aggregator<T, U> aggregator =
         ((AggregatorFactory) view.getAggregation())
-            .createAggregator(instrumentDescriptor, ExemplarFilter.neverSample());
+            .createAggregator(instrumentDescriptor, ExemplarFilter.alwaysOff());
     return new AsynchronousMetricStorage<>(
         registeredReader,
         metricDescriptor,

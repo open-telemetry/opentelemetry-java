@@ -33,7 +33,7 @@ public enum TestSdk {
               .setResource(Resource.empty())
               // Must register reader for real SDK.
               .registerMetricReader(InMemoryMetricReader.create())
-              .setExemplarFilter(ExemplarFilter.neverSample())
+              .setExemplarFilter(ExemplarFilter.alwaysOff())
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }

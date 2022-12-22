@@ -9,12 +9,17 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 
-/** Exemplar sampler that only samples measurements with associated sampled traces. */
-final class WithTraceExemplarFilter implements ExemplarFilter {
+/**
+ * Exemplar sampler that only samples measurements with associated sampled traces.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class TraceBasedExemplarFilter implements ExemplarFilter {
 
-  static final ExemplarFilter INSTANCE = new WithTraceExemplarFilter();
+  static final ExemplarFilter INSTANCE = new TraceBasedExemplarFilter();
 
-  private WithTraceExemplarFilter() {}
+  private TraceBasedExemplarFilter() {}
 
   @Override
   public boolean shouldSampleMeasurement(long value, Attributes attributes, Context context) {

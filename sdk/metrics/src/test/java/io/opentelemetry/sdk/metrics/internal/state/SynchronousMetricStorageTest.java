@@ -48,7 +48,7 @@ public class SynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long, LongExemplarData> aggregator =
       ((AggregatorFactory) Aggregation.lastValue())
-          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+          .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   @Mock private MetricReader reader;
