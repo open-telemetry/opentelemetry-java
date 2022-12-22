@@ -7,7 +7,6 @@ package io.opentelemetry.context;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 enum ThreadLocalContextStorage implements ContextStorage {
@@ -39,7 +38,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
     private final Context toAttach;
     private boolean closed;
 
-    private ScopeImpl(@Nullable Context beforeAttach, @Nonnull Context toAttach) {
+    private ScopeImpl(@Nullable Context beforeAttach, Context toAttach) {
       this.beforeAttach = beforeAttach;
       this.toAttach = toAttach;
     }
