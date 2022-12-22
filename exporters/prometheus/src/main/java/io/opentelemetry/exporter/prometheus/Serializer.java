@@ -229,10 +229,9 @@ abstract class Serializer {
       case HISTOGRAM:
         return metricData.getHistogramData().getAggregationTemporality()
             == AggregationTemporality.DELTA;
-      case EXPONENTIAL_HISTOGRAM:
-        throw new IllegalArgumentException("Can't happen");
+      default:
     }
-    return false;
+    throw new IllegalArgumentException("Can't happen");
   }
 
   private static void writeResource(Resource resource, Writer writer) throws IOException {
