@@ -23,9 +23,15 @@ testing {
   suites {
     val integrationTest by registering(JvmTestSuite::class) {
       dependencies {
+        implementation(project(":semconv"))
+
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+
         implementation("com.fasterxml.jackson.jr:jackson-jr-stree")
         implementation("com.google.guava:guava")
         implementation("com.linecorp.armeria:armeria")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc-protocol")
         implementation("io.prometheus:simpleclient_httpserver")
         implementation("org.testcontainers:junit-jupiter")
       }

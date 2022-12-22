@@ -43,7 +43,10 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "description",
           "1",
@@ -59,7 +62,10 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "description",
           "1",
@@ -75,7 +81,10 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -91,7 +100,10 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -107,7 +119,10 @@ class SerializerTest {
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -123,7 +138,10 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -139,7 +157,10 @@ class SerializerTest {
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -155,7 +176,10 @@ class SerializerTest {
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -172,7 +196,10 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -183,7 +210,10 @@ class SerializerTest {
   private static final MetricData LONG_GAUGE =
       ImmutableMetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -194,7 +224,10 @@ class SerializerTest {
   private static final MetricData SUMMARY =
       ImmutableMetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -212,7 +245,10 @@ class SerializerTest {
   private static final MetricData HISTOGRAM_NO_ATTRIBUTES =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -241,7 +277,10 @@ class SerializerTest {
   private static final MetricData HISTOGRAM_SINGLE_ATTRIBUTE =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -270,7 +309,10 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_NO_ATTRIBUTES =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -281,7 +323,10 @@ class SerializerTest {
   private static final MetricData DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES =
       ImmutableMetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full").setVersion("version").build(),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
           "instrument.name",
           "unused",
           "1",
@@ -317,32 +362,38 @@ class SerializerTest {
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
-            "# TYPE instrument_name_total counter\n"
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"full\",otel_scope_version=\"version\",ks=\"vs\"} 1\n"
+                + "# TYPE instrument_name_total counter\n"
                 + "# HELP instrument_name_total description\n"
-                + "instrument_name_total{type=\"mcds\"} 5.0 1633950672000\n"
-                + "instrument_name_total{type=\"mcls\"} 5.0 1633950672000\n"
+                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672000\n"
+                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672000\n"
                 + "# TYPE instrument_name gauge\n"
                 + "# HELP instrument_name description\n"
-                + "instrument_name{type=\"nmcds\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"mdds\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"nmdds\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"nmcls\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"mdls\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"nmdls\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"dg\"} 5.0 1633950672000\n"
-                + "instrument_name{type=\"lg\"} 5.0 1633950672000\n"
-                + "instrument_name_count{type=\"s\"} 5.0 1633950672000\n"
-                + "instrument_name_sum{type=\"s\"} 7.0 1633950672000\n"
-                + "instrument_name{type=\"s\",quantile=\"0.9\"} 0.1 1633950672000\n"
-                + "instrument_name{type=\"s\",quantile=\"0.99\"} 0.3 1633950672000\n"
-                + "instrument_name_count 2.0 1633950672000\n"
-                + "instrument_name_sum 1.0 1633950672000\n"
-                + "instrument_name_bucket{le=\"+Inf\"} 2.0 1633950672000\n"
-                + "instrument_name_count{type=\"hs\"} 2.0 1633950672000\n"
-                + "instrument_name_sum{type=\"hs\"} 1.0 1633950672000\n"
-                + "instrument_name_bucket{type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
-                + "instrument_name 7.0 1633950672000\n"
-                + "instrument_name{animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdds\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdds\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdls\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdls\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672000\n"
+                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672000\n"
+                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -364,27 +415,33 @@ class SerializerTest {
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
-            "# TYPE instrument_name counter\n"
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"full\",otel_scope_version=\"version\",ks=\"vs\"} 1\n"
+                + "# TYPE instrument_name counter\n"
                 + "# HELP instrument_name description\n"
-                + "instrument_name_total{type=\"mcds\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"nmcds\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"mdds\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"nmdds\"} 5.0 1633950672.000\n"
-                + "instrument_name_total{type=\"mcls\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"nmcls\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"mdls\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"nmdls\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"dg\"} 5.0 1633950672.000\n"
-                + "instrument_name{type=\"lg\"} 5.0 1633950672.000\n"
-                + "instrument_name_count{type=\"s\"} 5.0 1633950672.000\n"
-                + "instrument_name_sum{type=\"s\"} 7.0 1633950672.000\n"
-                + "instrument_name{type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
-                + "instrument_name{type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
-                + "instrument_name_count{type=\"hs\"} 2.0 1633950672.000\n"
-                + "instrument_name_sum{type=\"hs\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
-                + "instrument_name 7.0 1633950672.000\n"
-                + "instrument_name{animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
+                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdds\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdds\"} 5.0 1633950672.000\n"
+                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdls\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdls\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672.000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672.000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672.000\n"
+                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
+                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 
