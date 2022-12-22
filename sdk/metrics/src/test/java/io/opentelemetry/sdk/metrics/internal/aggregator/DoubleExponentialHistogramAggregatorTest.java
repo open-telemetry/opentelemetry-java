@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.Exponenti
 import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounterFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
@@ -50,6 +49,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
+  private static final int MAX_SCALE = 20;
   private static final DoubleExponentialHistogramAggregator aggregator =
       new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 20);
   private static final Resource RESOURCE = Resource.getDefault();
@@ -57,14 +57,12 @@ class DoubleExponentialHistogramAggregatorTest {
       InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final ExponentialBucketStrategy EXPONENTIAL_BUCKET_STRATEGY =
-      ExponentialBucketStrategy.newStrategy(160, ExponentialCounterFactory.mapCounter(), 20);
 
   private static Stream<DoubleExponentialHistogramAggregator> provideAggregator() {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            ExemplarReservoir::doubleNoSamples, EXPONENTIAL_BUCKET_STRATEGY));
+            ExemplarReservoir::doubleNoSamples, 160, MAX_SCALE));
   }
 
   private static int valueToIndex(int scale, double value) {
@@ -91,12 +89,10 @@ class DoubleExponentialHistogramAggregatorTest {
             .doAccumulateThenReset(Collections.emptyList());
     assertThat(accumulation.getPositiveBuckets())
         .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
-    assertThat(accumulation.getPositiveBuckets().getScale())
-        .isEqualTo(EXPONENTIAL_BUCKET_STRATEGY.getMaxScale());
+    assertThat(accumulation.getPositiveBuckets().getScale()).isEqualTo(MAX_SCALE);
     assertThat(accumulation.getNegativeBuckets())
         .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
-    assertThat(accumulation.getNegativeBuckets().getScale())
-        .isEqualTo(EXPONENTIAL_BUCKET_STRATEGY.getMaxScale());
+    assertThat(accumulation.getNegativeBuckets().getScale()).isEqualTo(MAX_SCALE);
   }
 
   @Test
@@ -203,7 +199,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(() -> reservoir, 160, 20);
+        new DoubleExponentialHistogramAggregator(() -> reservoir, 160, MAX_SCALE);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -319,9 +315,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
   private static ExponentialHistogramAccumulation createAccumulation(
       boolean hasMinMax, double min, double max) {
-    DoubleExponentialHistogramBuckets buckets =
-        new DoubleExponentialHistogramBuckets(
-            0, 1, ExponentialCounterFactory.circularBufferCounter());
+    DoubleExponentialHistogramBuckets buckets = new DoubleExponentialHistogramBuckets(0, 1);
     return ExponentialHistogramAccumulation.create(
         0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
   }
@@ -443,7 +437,7 @@ class DoubleExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160, 20);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160, MAX_SCALE);
 
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();

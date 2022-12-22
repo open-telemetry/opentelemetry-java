@@ -35,7 +35,7 @@ public enum HistogramValueGenerator {
   private static final int INITIAL_SEED = 513423236;
   private final double[] pool;
 
-  private HistogramValueGenerator(double[] pool) {
+  HistogramValueGenerator(double[] pool) {
     this.pool = pool;
   }
 

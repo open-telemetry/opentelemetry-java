@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -43,6 +44,9 @@ import javax.annotation.concurrent.ThreadSafe;
 // We intentionally assign to be use for error reporting.
 @SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalOpenTelemetry {
+
+  private static final String GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY =
+      "otel.java.global-autoconfigure.enabled";
 
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
@@ -219,15 +223,29 @@ public final class GlobalOpenTelemetry {
       return null;
     }
 
+    // If autoconfigure module is present but global autoconfigure disabled log a warning and return
+    boolean globalAutoconfigureEnabled =
+        Boolean.parseBoolean(ConfigUtil.getString(GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY, "false"));
+    if (!globalAutoconfigureEnabled) {
+      logger.log(
+          Level.INFO,
+          "AutoConfiguredOpenTelemetrySdk found on classpath but automatic configuration is disabled."
+              + " To enable, run your JVM with -D"
+              + GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY
+              + "=true");
+      return null;
+    }
+
     try {
       Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
       Object autoConfiguredSdk = initialize.invoke(null);
       Method getOpenTelemetrySdk =
           openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
-      return (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk);
+      return new ObfuscatedOpenTelemetry(
+          (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
-          "OpenTelemetrySdkAutoConfiguration detected on classpath "
+          "AutoConfiguredOpenTelemetrySdk detected on classpath "
               + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
           e);
     } catch (InvocationTargetException t) {

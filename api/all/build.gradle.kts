@@ -18,3 +18,8 @@ dependencies {
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
 }
+
+tasks.test {
+  // Configure environment variable for ConfigUtilTest
+  environment("CONFIG_KEY", "environment")
+}

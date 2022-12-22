@@ -17,6 +17,7 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":semconv"))
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("io.grpc:grpc-stub")
 

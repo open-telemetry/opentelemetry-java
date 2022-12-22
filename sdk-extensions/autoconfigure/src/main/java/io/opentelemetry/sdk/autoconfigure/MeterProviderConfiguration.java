@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -68,8 +69,9 @@ final class MeterProviderConfiguration {
     return exporterNames.stream()
         .map(
             exporterName ->
-                MetricExporterConfiguration.configureExporter(
+                MetricExporterConfiguration.configureReader(
                     exporterName, config, serviceClassLoader, metricExporterCustomizer))
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 

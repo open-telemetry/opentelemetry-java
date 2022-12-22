@@ -10,11 +10,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.net.URL;
@@ -30,8 +28,10 @@ public class ConfigurableMetricExporterTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
     MetricExporter metricExporter =
-        MetricExporterConfiguration.configureSpiExporter(
-            "testExporter", config, MetricExporterConfiguration.class.getClassLoader());
+        MetricExporterConfiguration.configureExporter(
+            "testExporter",
+            MetricExporterConfiguration.metricExporterSpiManager(
+                config, ConfigurableMetricExporterTest.class.getClassLoader()));
 
     assertThat(metricExporter)
         .isInstanceOf(TestConfigurableMetricExporterProvider.TestMetricExporter.class)
@@ -45,9 +45,9 @@ public class ConfigurableMetricExporterTest {
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "testExporter",
-                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    new URLClassLoader(new URL[0], null),
-                    (a, unused) -> a))
+                    MetricExporterConfiguration.metricExporterSpiManager(
+                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                        new URLClassLoader(new URL[] {}, null))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -58,25 +58,24 @@ public class ConfigurableMetricExporterTest {
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "catExporter",
-                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    MetricExporterConfiguration.metricExporterSpiManager(
+                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                        ConfigurableMetricExporterTest.class.getClassLoader())))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }
 
   @Test
-  void configureMetricExporters_multipleWithNone() {
+  void configureMetricReaders_multipleWithNone() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("otel.metrics.exporter", "otlp,none"));
 
     assertThatThrownBy(
             () ->
-                MeterProviderConfiguration.configureMeterProvider(
-                    SdkMeterProvider.builder(),
+                MeterProviderConfiguration.configureMetricReaders(
                     config,
-                    MetricExporterConfiguration.class.getClassLoader(),
+                    ConfigurableMetricExporterTest.class.getClassLoader(),
                     (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
@@ -105,7 +104,7 @@ public class ConfigurableMetricExporterTest {
   void configureMultipleMetricExporters() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
-            ImmutableMap.of("otel.metrics.exporter", "otlp,prometheus"));
+            ImmutableMap.of("otel.metrics.exporter", "otlp,logging"));
 
     assertThat(
             MeterProviderConfiguration.configureMetricReaders(
@@ -114,7 +113,7 @@ public class ConfigurableMetricExporterTest {
                 (metricExporter, unused) -> metricExporter))
         .hasSize(2)
         .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
-        .hasAtLeastOneElementOfType(PrometheusHttpServer.class)
+        .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
         .allSatisfy(metricReader -> metricReader.shutdown().join(10, TimeUnit.SECONDS));
   }
 }

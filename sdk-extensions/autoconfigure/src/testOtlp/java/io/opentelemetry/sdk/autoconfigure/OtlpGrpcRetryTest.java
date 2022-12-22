@@ -13,11 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.Lists;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.grpc.Status;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -60,12 +60,12 @@ class OtlpGrpcRetryTest {
     props.put(
         "otel.exporter.otlp.traces.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     try (SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
-            DefaultConfigProperties.createForTest(props),
-            NamedSpiManager.createEmpty(),
-            MeterProvider.noop())) {
+            SpanExporterConfiguration.spanExporterSpiManager(
+                properties, OtlpGrpcRetryTest.class.getClassLoader()))) {
 
       testRetryableStatusCodes(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
       testDefaultRetryPolicy(() -> SPAN_DATA, spanExporter::export, server.traceRequests::size);
@@ -81,8 +81,11 @@ class OtlpGrpcRetryTest {
         "otel.exporter.otlp.metrics.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     try (MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props))) {
+        MetricExporterConfiguration.configureExporter(
+            "otlp",
+            MetricExporterConfiguration.metricExporterSpiManager(
+                DefaultConfigProperties.createForTest(props),
+                OtlpGrpcRetryTest.class.getClassLoader()))) {
 
       testRetryableStatusCodes(
           () -> METRIC_DATA, metricExporter::export, server.metricRequests::size);
@@ -100,8 +103,11 @@ class OtlpGrpcRetryTest {
         "otel.exporter.otlp.logs.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.experimental.exporter.otlp.retry.enabled", "true");
     try (LogRecordExporter logRecordExporter =
-        LogRecordExporterConfiguration.configureOtlpLogs(
-            DefaultConfigProperties.createForTest(props), MeterProvider.noop())) {
+        LogRecordExporterConfiguration.configureExporter(
+            "otlp",
+            LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                DefaultConfigProperties.createForTest(props),
+                OtlpGrpcConfigTest.class.getClassLoader()))) {
       testRetryableStatusCodes(
           () -> LOG_RECORD_DATA, logRecordExporter::export, server.logRequests::size);
       testDefaultRetryPolicy(

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ExponentialHistogramIndexer {
+final class ExponentialHistogramIndexer {
 
   private static final Map<Integer, ExponentialHistogramIndexer> cache = new ConcurrentHashMap<>();
 
@@ -40,8 +40,8 @@ class ExponentialHistogramIndexer {
     this.scaleFactor = computeScaleFactor(scale);
   }
 
-  /** Get an indexer for the given scale. Indexers are cached and reused for */
-  public static ExponentialHistogramIndexer get(int scale) {
+  /** Get an indexer for the given scale. Indexers are cached and reused for performance. */
+  static ExponentialHistogramIndexer get(int scale) {
     return cache.computeIfAbsent(scale, unused -> new ExponentialHistogramIndexer(scale));
   }
 
