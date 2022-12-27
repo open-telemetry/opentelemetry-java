@@ -78,7 +78,7 @@ class SerializerTest {
                       1633950672000000000L,
                       Attributes.of(TYPE, "nmcds"),
                       5))));
-  private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
+  private static final MetricData DELTA_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.builder("full")
@@ -96,25 +96,6 @@ class SerializerTest {
                       1633947011000000000L,
                       1633950672000000000L,
                       Attributes.of(TYPE, "mdds"),
-                      5))));
-  private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
-      ImmutableMetricData.createDoubleSum(
-          Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full")
-              .setVersion("version")
-              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
-              .build(),
-          "instrument.name",
-          "unused",
-          "1",
-          ImmutableSumData.create(
-              /* isMonotonic= */ false,
-              AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  ImmutableDoublePointData.create(
-                      1633947011000000000L,
-                      1633950672000000000L,
-                      Attributes.of(TYPE, "nmdds"),
                       5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       ImmutableMetricData.createLongSum(
@@ -154,7 +135,7 @@ class SerializerTest {
                       1633950672000000000L,
                       Attributes.of(TYPE, "nmcls"),
                       5))));
-  private static final MetricData MONOTONIC_DELTA_LONG_SUM =
+  private static final MetricData DELTA_LONG_SUM =
       ImmutableMetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.builder("full")
@@ -172,25 +153,6 @@ class SerializerTest {
                       1633947011000000000L,
                       1633950672000000000L,
                       Attributes.of(TYPE, "mdls"),
-                      5))));
-  private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
-      ImmutableMetricData.createLongSum(
-          Resource.create(Attributes.of(stringKey("kr"), "vr")),
-          InstrumentationScopeInfo.builder("full")
-              .setVersion("version")
-              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
-              .build(),
-          "instrument.name",
-          "unused",
-          "1",
-          ImmutableSumData.create(
-              /* isMonotonic= */ false,
-              AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  ImmutableLongPointData.create(
-                      1633947011000000000L,
-                      1633950672000000000L,
-                      Attributes.of(TYPE, "nmdls"),
                       5))));
 
   private static final MetricData DOUBLE_GAUGE =
@@ -242,7 +204,7 @@ class SerializerTest {
                       Arrays.asList(
                           ImmutableValueAtQuantile.create(0.9, 0.1),
                           ImmutableValueAtQuantile.create(0.99, 0.3))))));
-  private static final MetricData HISTOGRAM_NO_ATTRIBUTES =
+  private static final MetricData DELTA_HISTOGRAM =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.builder("full")
@@ -264,17 +226,8 @@ class SerializerTest {
                       null,
                       Collections.emptyList(),
                       Collections.singletonList(2L),
-                      Collections.singletonList(
-                          ImmutableDoubleExemplarData.create(
-                              Attributes.empty(),
-                              TimeUnit.MILLISECONDS.toNanos(1L),
-                              SpanContext.create(
-                                  "00000000000000000000000000000001",
-                                  "0000000000000002",
-                                  TraceFlags.getDefault(),
-                                  TraceState.getDefault()),
-                              /* value= */ 4))))));
-  private static final MetricData HISTOGRAM_SINGLE_ATTRIBUTE =
+                      Collections.emptyList()))));
+  private static final MetricData CUMULATIVE_HISTOGRAM_NO_ATTRIBUTES =
       ImmutableMetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationScopeInfo.builder("full")
@@ -285,7 +238,39 @@ class SerializerTest {
           "unused",
           "1",
           ImmutableHistogramData.create(
-              AggregationTemporality.DELTA,
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(
+                  ImmutableHistogramPointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.empty(),
+                      1.0,
+                      null,
+                      null,
+                      Collections.emptyList(),
+                      Collections.singletonList(2L),
+                      Collections.singletonList(
+                          ImmutableDoubleExemplarData.create(
+                              Attributes.empty(),
+                              TimeUnit.MILLISECONDS.toNanos(1L),
+                              SpanContext.create(
+                                  "00000000000000000000000000000001",
+                                  "0000000000000002",
+                                  TraceFlags.getDefault(),
+                                  TraceState.getDefault()),
+                              /* value= */ 4))))));
+  private static final MetricData CUMULATIVE_HISTOGRAM_SINGLE_ATTRIBUTE =
+      ImmutableMetricData.createDoubleHistogram(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
+          "instrument.name",
+          "unused",
+          "1",
+          ImmutableHistogramData.create(
+              AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableHistogramPointData.create(
                       1633947011000000000L,
@@ -348,17 +333,16 @@ class SerializerTest {
             serialize004(
                 MONOTONIC_CUMULATIVE_DOUBLE_SUM,
                 NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
-                MONOTONIC_DELTA_DOUBLE_SUM,
-                NON_MONOTONIC_DELTA_DOUBLE_SUM,
+                DELTA_DOUBLE_SUM, // Deltas are dropped
                 MONOTONIC_CUMULATIVE_LONG_SUM,
                 NON_MONOTONIC_CUMULATIVE_LONG_SUM,
-                MONOTONIC_DELTA_LONG_SUM,
-                NON_MONOTONIC_DELTA_LONG_SUM,
+                DELTA_LONG_SUM, // Deltas are dropped
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM_NO_ATTRIBUTES,
-                HISTOGRAM_SINGLE_ATTRIBUTE,
+                DELTA_HISTOGRAM, // Deltas are dropped
+                CUMULATIVE_HISTOGRAM_NO_ATTRIBUTES,
+                CUMULATIVE_HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
@@ -375,11 +359,7 @@ class SerializerTest {
                 + "# TYPE instrument_name gauge\n"
                 + "# HELP instrument_name description\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdds\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdds\"} 5.0 1633950672000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdls\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdls\"} 5.0 1633950672000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
                 + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672000\n"
@@ -402,16 +382,16 @@ class SerializerTest {
             serializeOpenMetrics(
                 MONOTONIC_CUMULATIVE_DOUBLE_SUM,
                 NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
-                MONOTONIC_DELTA_DOUBLE_SUM,
-                NON_MONOTONIC_DELTA_DOUBLE_SUM,
+                DELTA_DOUBLE_SUM, // Deltas are dropped
                 MONOTONIC_CUMULATIVE_LONG_SUM,
                 NON_MONOTONIC_CUMULATIVE_LONG_SUM,
-                MONOTONIC_DELTA_LONG_SUM,
-                NON_MONOTONIC_DELTA_LONG_SUM,
+                DELTA_LONG_SUM, // Deltas are dropped
                 DOUBLE_GAUGE,
                 LONG_GAUGE,
                 SUMMARY,
-                HISTOGRAM_SINGLE_ATTRIBUTE,
+                DELTA_HISTOGRAM, // Deltas are dropped
+                CUMULATIVE_HISTOGRAM_NO_ATTRIBUTES,
+                CUMULATIVE_HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
                 DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
         .isEqualTo(
@@ -425,18 +405,17 @@ class SerializerTest {
                 + "# HELP instrument_name description\n"
                 + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdds\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdds\"} 5.0 1633950672.000\n"
                 + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mdls\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmdls\"} 5.0 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
                 + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672.000\n"
                 + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
                 + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
+                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672.000\n"
+                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672.000\n"
+                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672.000\n"
                 + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672.000\n"
                 + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"

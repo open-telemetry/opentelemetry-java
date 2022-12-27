@@ -25,6 +25,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -104,6 +105,10 @@ abstract class Serializer {
         metrics.stream()
             // Not supported in specification yet.
             .filter(metric -> metric.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM)
+            // PrometheusHttpServer#getAggregationTemporality specifies cumulative temporality for
+            // all instruments, but non-SDK MetricProducers may not conform. We drop delta
+            // temporality metrics to avoid the complexity of stateful transformation to cumulative.
+            .filter(metric -> !isDeltaTemporality(metric))
             .filter(metric -> metricNameFilter.test(metricName(metric)))
             .collect(
                 Collectors.groupingBy(
@@ -207,6 +212,26 @@ abstract class Serializer {
           throw new IllegalArgumentException("Can't happen");
       }
     }
+  }
+
+  private static boolean isDeltaTemporality(MetricData metricData) {
+    switch (metricData.getType()) {
+      case LONG_GAUGE:
+      case DOUBLE_GAUGE:
+      case SUMMARY:
+        return false;
+      case LONG_SUM:
+        return metricData.getLongSumData().getAggregationTemporality()
+            == AggregationTemporality.DELTA;
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().getAggregationTemporality()
+            == AggregationTemporality.DELTA;
+      case HISTOGRAM:
+        return metricData.getHistogramData().getAggregationTemporality()
+            == AggregationTemporality.DELTA;
+      default:
+    }
+    throw new IllegalArgumentException("Can't happen");
   }
 
   private static void writeResource(Resource resource, Writer writer) throws IOException {
