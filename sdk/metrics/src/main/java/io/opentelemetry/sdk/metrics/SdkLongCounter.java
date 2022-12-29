@@ -99,43 +99,46 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<Builder>
+  static final class SdkLongCounterBuilder extends AbstractInstrumentBuilder<SdkLongCounterBuilder>
       implements LongCounterBuilder {
 
-    Builder(
+    SdkLongCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
+      super(
+          meterProviderSharedState,
+          meterSharedState,
+          InstrumentType.COUNTER,
+          InstrumentValueType.LONG,
+          name,
+          "",
+          DEFAULT_UNIT);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkLongCounterBuilder getThis() {
       return this;
     }
 
     @Override
     public SdkLongCounter build() {
-      return buildSynchronousInstrument(
-          InstrumentType.COUNTER, InstrumentValueType.LONG, SdkLongCounter::new);
+      return buildSynchronousInstrument(SdkLongCounter::new);
     }
 
     @Override
     public DoubleCounterBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleCounter.Builder::new);
+      return swapBuilder(SdkDoubleCounter.SdkDoubleCounterBuilder::new);
     }
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      return new SdkObservableInstrument(
-          meterSharedState,
-          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback));
+      return registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      return buildObservableMeasurement(
-          InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG);
+      return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
     }
   }
 }

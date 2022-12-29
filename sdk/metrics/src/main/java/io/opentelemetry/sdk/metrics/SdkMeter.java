@@ -76,21 +76,24 @@ final class SdkMeter implements Meter {
   public LongCounterBuilder counterBuilder(String name) {
     return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
-        : new SdkLongCounter.Builder(meterProviderSharedState, meterSharedState, name);
+        : new SdkLongCounter.SdkLongCounterBuilder(
+            meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
     return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
-        : new SdkLongUpDownCounter.Builder(meterProviderSharedState, meterSharedState, name);
+        : new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(
+            meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
     return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
-        : new SdkDoubleHistogram.Builder(meterProviderSharedState, meterSharedState, name);
+        : new SdkDoubleHistogram.SdkDoubleHistogramBuilder(
+            meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
@@ -133,5 +136,10 @@ final class SdkMeter implements Meter {
         CallbackRegistration.create(sdkMeasurements, callback);
     meterSharedState.registerCallback(callbackRegistration);
     return new SdkObservableInstrument(meterSharedState, callbackRegistration);
+  }
+
+  @Override
+  public String toString() {
+    return "SdkMeter{instrumentationScopeInfo=" + instrumentationScopeInfo + "}";
   }
 }
