@@ -118,7 +118,7 @@ class ContextTest {
   }
 
   @Test
-  public void closingScopeWhenNotActiveIsLogged() {
+  public void closingScopeWhenNotActiveIsNoopAndLogged() {
     Context initial = Context.current();
     Context context = initial.with(ANIMAL, "cat");
     try (Scope scope = context.makeCurrent()) {
@@ -126,11 +126,32 @@ class ContextTest {
       try (Scope ignored = context2.makeCurrent()) {
         assertThat(Context.current().get(ANIMAL)).isEqualTo("dog");
         scope.close();
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("dog");
       }
     }
     assertThat(Context.current()).isEqualTo(initial);
-    LoggingEvent log = logs.assertContains("Context in storage not the expected context");
+    LoggingEvent log =
+        logs.assertContains("Trying to close scope which does not represent current context");
     assertThat(log.getLevel()).isEqualTo(Level.DEBUG);
+  }
+
+  @SuppressWarnings("MustBeClosedChecker")
+  @Test
+  public void closeScopeIsIdempotent() {
+    Context initial = Context.current();
+    Context context1 = Context.root().with(ANIMAL, "cat");
+    Scope scope1 = context1.makeCurrent();
+    Context context2 = context1.with(ANIMAL, "dog");
+    Scope scope2 = context2.makeCurrent();
+
+    scope2.close();
+    assertThat(Context.current()).isEqualTo(context1);
+
+    scope1.close();
+    assertThat(Context.current()).isEqualTo(initial);
+
+    scope2.close();
+    assertThat(Context.current()).isEqualTo(initial);
   }
 
   @Test
