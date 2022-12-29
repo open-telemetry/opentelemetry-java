@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.as;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -25,6 +26,8 @@ import org.junit.jupiter.api.Test;
 class MeterProviderConfigurationTest {
 
   @Test
+  // Suppress log warnings for deprecated exemplar filter options
+  @SuppressLogger(MeterProviderConfiguration.class)
   void configureMeterProvider_ConfiguresExemplarFilter() {
     assertExemplarFilter(Collections.emptyMap()).isInstanceOf(TraceBasedExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "foo"))

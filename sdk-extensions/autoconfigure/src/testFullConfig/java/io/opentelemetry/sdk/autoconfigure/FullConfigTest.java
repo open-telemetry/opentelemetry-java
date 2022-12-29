@@ -18,6 +18,7 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -156,6 +157,7 @@ class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
     autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
   }
 
@@ -176,6 +178,8 @@ class FullConfigTest {
         .getSdkTracerProvider()
         .shutdown()
         .join(10, TimeUnit.SECONDS);
+    GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
   }
 
   @Test
@@ -210,8 +214,7 @@ class FullConfigTest {
         .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    Logger logger =
-        autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLoggerProvider().get("test");
+    Logger logger = GlobalLoggerProvider.get().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 

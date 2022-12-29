@@ -50,7 +50,7 @@ class ResourceConfigurationTest {
     Map<String, String> customConfigs = new HashMap<>(1);
     customConfigs.put(
         "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.TestAnimalResourceProvider");
+        "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(customConfigs),
@@ -67,7 +67,7 @@ class ResourceConfigurationTest {
     Map<String, String> customConfigs = new HashMap<>(2);
     customConfigs.put(
         "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.TestAnimalResourceProvider");
+        "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
     customConfigs.put(
         "otel.java.disabled.resource.providers",
         "io.opentelemetry.sdk.extension.resources.TestColorResourceProvider");
@@ -87,7 +87,7 @@ class ResourceConfigurationTest {
     Map<String, String> customConfigs = new HashMap<>(1);
     customConfigs.put(
         "otel.java.disabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.TestColorResourceProvider");
+        "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(customConfigs),
