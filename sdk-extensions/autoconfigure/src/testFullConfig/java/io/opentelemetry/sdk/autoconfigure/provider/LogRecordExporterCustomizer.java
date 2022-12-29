@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.provider;
 
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;

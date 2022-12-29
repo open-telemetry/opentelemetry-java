@@ -1,2 +1,2 @@
-io.opentelemetry.sdk.autoconfigure.TestConfigurableSpanExporterProvider
-io.opentelemetry.sdk.autoconfigure.ThrowingConfigurableSpanExporterProvider
+io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSpanExporterProvider
+io.opentelemetry.sdk.autoconfigure.provider.ThrowingConfigurableSpanExporterProvider
