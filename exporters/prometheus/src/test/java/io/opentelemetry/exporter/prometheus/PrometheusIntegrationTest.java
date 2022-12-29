@@ -18,15 +18,12 @@ import com.linecorp.armeria.client.WebClient;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.prometheus.client.exporter.HTTPServer;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -36,16 +33,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 @Testcontainers(disabledWithoutDocker = true)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class AbstractPrometheusIntegrationTest {
+class PrometheusIntegrationTest {
 
-  protected SdkMeterProvider meterProvider;
-  protected int port;
-
-  private GenericContainer<?> prometheus;
+  private static SdkMeterProvider meterProvider;
+  private static GenericContainer<?> prometheus;
 
   @BeforeAll
-  void setUp(@TempDir Path tempDir) throws Exception {
+  static void setUp(@TempDir Path tempDir) throws Exception {
+    PrometheusHttpServer prometheusHttpServer = PrometheusHttpServer.builder().setPort(0).build();
+    meterProvider = SdkMeterProvider.builder().registerMetricReader(prometheusHttpServer).build();
+    int port = prometheusHttpServer.getAddress().getPort();
+
     exposeHostPorts(port);
 
     String promConfigTemplate =
@@ -68,7 +66,7 @@ abstract class AbstractPrometheusIntegrationTest {
   }
 
   @AfterAll
-  void tearDown() {
+  static void tearDown() {
     prometheus.stop();
     meterProvider.shutdown();
   }
@@ -131,32 +129,5 @@ abstract class AbstractPrometheusIntegrationTest {
                   .isInstanceOfSatisfying(
                       JrsString.class, s -> assertThat(s.getValue()).isEqualTo("9"));
             });
-  }
-
-  static class PrometheusHttpServerIntegrationTest extends AbstractPrometheusIntegrationTest {
-    PrometheusHttpServerIntegrationTest() {
-      PrometheusHttpServer prometheusHttpServer = PrometheusHttpServer.builder().setPort(0).build();
-      meterProvider = SdkMeterProvider.builder().registerMetricReader(prometheusHttpServer).build();
-      port = prometheusHttpServer.getAddress().getPort();
-    }
-  }
-
-  static class PrometheusCollectorIntegrationTest extends AbstractPrometheusIntegrationTest {
-    private final HTTPServer server;
-
-    // Tests deprecated class
-    @SuppressWarnings("deprecation")
-    PrometheusCollectorIntegrationTest() throws IOException {
-      server = new HTTPServer(0);
-      port = server.getPort();
-
-      meterProvider =
-          SdkMeterProvider.builder().registerMetricReader(PrometheusCollector.create()).build();
-    }
-
-    @AfterAll
-    void stopHttpServer() {
-      server.close();
-    }
   }
 }
