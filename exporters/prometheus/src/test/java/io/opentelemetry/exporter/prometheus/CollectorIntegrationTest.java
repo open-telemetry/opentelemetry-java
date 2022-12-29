@@ -38,7 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,7 +56,7 @@ import org.testcontainers.utility.DockerImageName;
  * running in process, allowing assertions to be made against the data.
  */
 @Testcontainers(disabledWithoutDocker = true)
-class PrometheusHttpServerIntegrationTest {
+class CollectorIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =
       "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
@@ -126,7 +125,7 @@ class PrometheusHttpServerIntegrationTest {
         .untilAsserted(() -> assertThat(grpcServer.metricRequests.size()).isGreaterThan(0));
 
     ExportMetricsServiceRequest request = grpcServer.metricRequests.get(0);
-    Assertions.assertThat(request.getResourceMetricsCount()).isEqualTo(1);
+    assertThat(request.getResourceMetricsCount()).isEqualTo(1);
 
     ResourceMetrics resourceMetrics = request.getResourceMetrics(0);
     assertThat(resourceMetrics.getResource().getAttributesList())
