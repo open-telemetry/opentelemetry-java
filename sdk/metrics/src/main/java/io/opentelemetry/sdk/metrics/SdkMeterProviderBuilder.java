@@ -28,7 +28,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @see #setExemplarFilter(ExemplarFilter)
    */
-  private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.sampleWithTraces();
+  private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.traceBased();
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();

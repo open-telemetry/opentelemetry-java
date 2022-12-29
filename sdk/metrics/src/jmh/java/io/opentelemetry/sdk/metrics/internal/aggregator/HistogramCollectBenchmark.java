@@ -77,7 +77,7 @@ public class HistogramCollectBenchmark {
                       .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
                       .build());
       // Disable examplars
-      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.neverSample());
+      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
       sdkMeterProvider = builder.build();
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
 
