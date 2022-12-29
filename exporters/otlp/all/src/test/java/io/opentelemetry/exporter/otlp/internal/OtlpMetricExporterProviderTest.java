@@ -106,6 +106,12 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
     }
+    try (MetricExporter exporter =
+        provider.createExporter(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
+      assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
+    }
   }
 
   @Test
