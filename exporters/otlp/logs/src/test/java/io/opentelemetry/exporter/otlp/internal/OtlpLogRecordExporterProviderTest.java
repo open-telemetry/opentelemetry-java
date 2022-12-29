@@ -99,6 +99,16 @@ class OtlpLogRecordExporterProviderTest {
   }
 
   @Test
+  void createExporter_NoMocks() {
+    // Verifies createExporter after resetting the spy overrides
+    Mockito.reset(provider);
+    try (LogRecordExporter exporter =
+        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+      assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
+    }
+  }
+
+  @Test
   void createExporter_GrpcDefaults() {
     try (LogRecordExporter exporter =
         provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {

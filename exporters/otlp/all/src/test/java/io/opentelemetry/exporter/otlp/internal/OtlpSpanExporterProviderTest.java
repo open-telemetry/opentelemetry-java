@@ -99,6 +99,16 @@ class OtlpSpanExporterProviderTest {
   }
 
   @Test
+  void createExporter_NoMocks() {
+    // Verifies createExporter after resetting the spy overrides
+    Mockito.reset(provider);
+    try (SpanExporter exporter =
+        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+      assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
+    }
+  }
+
+  @Test
   void createExporter_GrpcDefaults() {
     try (SpanExporter exporter =
         provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
