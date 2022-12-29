@@ -33,7 +33,7 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_LOGS, config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      OtlpHttpLogRecordExporterBuilder builder = OtlpHttpLogRecordExporter.builder();
+      OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
@@ -48,7 +48,7 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      OtlpGrpcLogRecordExporterBuilder builder = OtlpGrpcLogRecordExporter.builder();
+      OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
@@ -69,5 +69,15 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
   @Override
   public String getName() {
     return "otlp";
+  }
+
+  // Visible for testing
+  OtlpHttpLogRecordExporterBuilder httpBuilder() {
+    return OtlpHttpLogRecordExporter.builder();
+  }
+
+  // Visible for testing
+  OtlpGrpcLogRecordExporterBuilder grpcBuilder() {
+    return OtlpGrpcLogRecordExporter.builder();
   }
 }

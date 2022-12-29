@@ -16,6 +16,8 @@ dependencies {
 
   compileOnly("io.grpc:grpc-stub")
 
+  testImplementation("io.grpc:grpc-stub")
+
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation(project(":sdk:logs-testing"))
 
