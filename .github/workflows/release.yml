@@ -123,7 +123,7 @@ jobs:
                             --discussion-category announcements \
                             v$VERSION
 
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   merge-change-log-to-main:
     runs-on: ubuntu-latest
