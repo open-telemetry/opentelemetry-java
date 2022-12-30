@@ -82,7 +82,7 @@ val DEPENDENCIES = listOf(
   "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.0.1",
-  "com.uber.nullaway:nullaway:0.10.5",
+  "com.uber.nullaway:nullaway:0.10.6",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
