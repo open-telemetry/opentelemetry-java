@@ -20,7 +20,14 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       String name) {
-    super(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
+    super(
+        meterProviderSharedState,
+        meterSharedState,
+        InstrumentType.OBSERVABLE_GAUGE,
+        InstrumentValueType.DOUBLE,
+        name,
+        "",
+        DEFAULT_UNIT);
   }
 
   @Override
@@ -35,13 +42,11 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
 
   @Override
   public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    return new SdkObservableInstrument(
-        meterSharedState,
-        registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback));
+    return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 
   @Override
   public ObservableDoubleMeasurement buildObserver() {
-    return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE);
+    return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
   }
 }

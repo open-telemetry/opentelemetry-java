@@ -453,4 +453,17 @@ class SdkMeterTest {
     sdkMeter.gaugeBuilder("doubleValueObserver").buildWithCallback(x -> {});
     logs.assertContains("Found duplicate metric definition");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(sdkMeter.toString())
+        .isEqualTo(
+            "SdkMeter{"
+                + "instrumentationScopeInfo=InstrumentationScopeInfo{"
+                + "name=io.opentelemetry.sdk.metrics.SdkMeterTest, "
+                + "version=null, "
+                + "schemaUrl=null, "
+                + "attributes={}"
+                + "}}");
+  }
 }

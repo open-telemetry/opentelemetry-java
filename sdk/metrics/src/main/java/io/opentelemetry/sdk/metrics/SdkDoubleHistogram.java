@@ -95,30 +95,37 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleHistogram.Builder>
+  static final class SdkDoubleHistogramBuilder
+      extends AbstractInstrumentBuilder<SdkDoubleHistogramBuilder>
       implements DoubleHistogramBuilder {
 
-    Builder(
+    SdkDoubleHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
+      super(
+          meterProviderSharedState,
+          meterSharedState,
+          InstrumentType.HISTOGRAM,
+          InstrumentValueType.DOUBLE,
+          name,
+          "",
+          DEFAULT_UNIT);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkDoubleHistogramBuilder getThis() {
       return this;
     }
 
     @Override
     public SdkDoubleHistogram build() {
-      return buildSynchronousInstrument(
-          InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE, SdkDoubleHistogram::new);
+      return buildSynchronousInstrument(SdkDoubleHistogram::new);
     }
 
     @Override
     public LongHistogramBuilder ofLongs() {
-      return swapBuilder(SdkLongHistogram.Builder::new);
+      return swapBuilder(SdkLongHistogram.SdkLongHistogramBuilder::new);
     }
   }
 }

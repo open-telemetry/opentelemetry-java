@@ -97,41 +97,44 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleCounter.Builder>
-      implements DoubleCounterBuilder {
+  static final class SdkDoubleCounterBuilder
+      extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder> implements DoubleCounterBuilder {
 
-    Builder(
+    SdkDoubleCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
         String unit) {
-      super(meterProviderSharedState, sharedState, name, description, unit);
+      super(
+          meterProviderSharedState,
+          sharedState,
+          InstrumentType.COUNTER,
+          InstrumentValueType.DOUBLE,
+          name,
+          description,
+          unit);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkDoubleCounterBuilder getThis() {
       return this;
     }
 
     @Override
     public SdkDoubleCounter build() {
-      return buildSynchronousInstrument(
-          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, SdkDoubleCounter::new);
+      return buildSynchronousInstrument(SdkDoubleCounter::new);
     }
 
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return new SdkObservableInstrument(
-          meterSharedState,
-          registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback));
+      return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(
-          InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.DOUBLE);
+      return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
     }
   }
 }

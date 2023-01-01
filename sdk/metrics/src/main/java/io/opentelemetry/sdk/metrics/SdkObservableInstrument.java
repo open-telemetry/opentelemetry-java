@@ -45,10 +45,14 @@ class SdkObservableInstrument
   public void close() {
     if (!removed.compareAndSet(false, true)) {
       throttlingLogger.log(
-          Level.WARNING,
-          callbackRegistration.getCallbackDescription() + " has called close() multiple times.");
+          Level.WARNING, callbackRegistration + " has called close() multiple times.");
       return;
     }
     meterSharedState.removeCallback(callbackRegistration);
+  }
+
+  @Override
+  public String toString() {
+    return "SdkObservableInstrument{callback=" + callbackRegistration + "}";
   }
 }
