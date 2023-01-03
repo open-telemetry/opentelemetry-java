@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
       new DaemonThreadFactory("prometheus-http");
   private static final Logger LOGGER = Logger.getLogger(PrometheusHttpServer.class.getName());
 
-  private final Set<String> allConflictHeaderNames = new HashSet<>();
+  private final Set<String> allConflictHeaderNames = ConcurrentHashMap.newKeySet();
   private final HttpServer server;
   private final ExecutorService executor;
   private volatile MetricProducer metricProducer = MetricProducer.noop();
