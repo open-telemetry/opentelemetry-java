@@ -73,7 +73,7 @@ fun findArtifact(version: String): File {
     val depModule = "io.opentelemetry:${base.archivesName.get()}:$version@jar"
     val depJar = "${base.archivesName.get()}-$version.jar"
     val configuration: Configuration = configurations.detachedConfiguration(
-      dependencies.create(depModule)
+      dependencies.create(depModule),
     )
     return files(configuration.files).filter {
       it.name.equals(depJar)
@@ -110,7 +110,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
             // so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
             onlyModified.set(false)
             files()
-          }
+          },
         )
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
@@ -133,7 +133,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile.set(
           apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
-            ?: file("$rootDir/docs/apidiffs/current_vs_$baseVersionString/${base.archivesName.get()}.txt")
+            ?: file("$rootDir/docs/apidiffs/current_vs_$baseVersionString/${base.archivesName.get()}.txt"),
         )
       }
       // have the check task depend on the api comparison task, to make it more likely it will get used.
