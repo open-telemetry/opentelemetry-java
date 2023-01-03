@@ -77,7 +77,7 @@ tasks {
         // Mainly to conveniently profile through IDEA. Don't add to check task, it's for
         // manual invocation.
         name != "testSpanPipeline"
-      }
+      },
     )
   }
 }
