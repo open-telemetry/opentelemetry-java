@@ -10,6 +10,8 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static java.util.stream.Collectors.joining;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -39,6 +41,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
@@ -52,7 +56,9 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");
+  private static final Logger LOGGER = Logger.getLogger(PrometheusHttpServer.class.getName());
 
+  private final Set<String> allConflictHeaderNames = new HashSet<>();
   private final HttpServer server;
   private final ExecutorService executor;
   private volatile MetricProducer metricProducer = MetricProducer.noop();
@@ -157,7 +163,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     return server.getAddress();
   }
 
-  private static class MetricsHandler implements HttpHandler {
+  private class MetricsHandler implements HttpHandler {
 
     private final Supplier<Collection<MetricData>> metricsSupplier;
 
@@ -190,7 +196,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         } else {
           out = exchange.getResponseBody();
         }
-        serializer.write(metrics, out);
+        HashSet<String> conflictHeaderNames = serializer.write(metrics, out);
+        conflictHeaderNames.removeAll(allConflictHeaderNames);
+        if (conflictHeaderNames.size() > 0 && LOGGER.isLoggable(Level.WARNING)) {
+          LOGGER.log(
+              Level.WARNING,
+              "Metric conflict(s) detected. Multiple metrics with same name but different type: "
+                  + conflictHeaderNames.stream().collect(joining(",", "[", "]")));
+          allConflictHeaderNames.addAll(conflictHeaderNames);
+        }
       }
       exchange.close();
     }

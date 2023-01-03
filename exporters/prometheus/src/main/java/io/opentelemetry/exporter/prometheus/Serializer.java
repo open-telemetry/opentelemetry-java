@@ -46,23 +46,25 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
 // Adapted from
 // https://github.com/prometheus/client_java/blob/master/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java
 abstract class Serializer {
-
   static Serializer create(@Nullable String acceptHeader, Predicate<String> filter) {
     if (acceptHeader == null) {
       return new Prometheus004Serializer(filter);
@@ -100,61 +102,65 @@ abstract class Serializer {
 
   abstract void writeEof(Writer writer) throws IOException;
 
-  final void write(Collection<MetricData> metrics, OutputStream output) throws IOException {
-    Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
-        metrics.stream()
-            // Not supported in specification yet.
-            .filter(metric -> metric.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM)
-            // PrometheusHttpServer#getAggregationTemporality specifies cumulative temporality for
-            // all instruments, but non-SDK MetricProducers may not conform. We drop delta
-            // temporality metrics to avoid the complexity of stateful transformation to cumulative.
-            .filter(metric -> !isDeltaTemporality(metric))
-            .filter(metric -> metricNameFilter.test(metricName(metric)))
-            .collect(
-                Collectors.groupingBy(
-                    MetricData::getInstrumentationScopeInfo,
-                    LinkedHashMap::new,
-                    Collectors.toList()));
+  final HashSet<String> write(Collection<MetricData> metrics, OutputStream output)
+      throws IOException {
+    HashSet<String> conflictMetricNames = new HashSet<>();
+    Map<String, List<MetricData>> metricsByName = new LinkedHashMap<>();
+    Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
+    // Iterate through metrics, filtering and grouping by headerName
+    for (MetricData metric : metrics) {
+      // Not supported in specification yet.
+      if (metric.getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+        continue;
+      }
+      // PrometheusHttpServer#getAggregationTemporality specifies cumulative temporality for
+      // all instruments, but non-SDK MetricProducers may not conform. We drop delta
+      // temporality metrics to avoid the complexity of stateful transformation to cumulative.
+      if (isDeltaTemporality(metric)) {
+        continue;
+      }
+      PrometheusType prometheusType = PrometheusType.forMetric(metric);
+      String metricName = metricName(metric.getName(), prometheusType);
+      // Skip metrics which do not pass metricNameFilter
+      if (!metricNameFilter.test(metricName)) {
+        continue;
+      }
+      List<MetricData> metricsWithHeaderName =
+          metricsByName.computeIfAbsent(metricName, unused -> new ArrayList<>());
+      // Skip metrics with the same name but different type
+      if (metricsWithHeaderName.size() > 0
+          && prometheusType != PrometheusType.forMetric(metricsWithHeaderName.get(0))) {
+        conflictMetricNames.add(metricName);
+        continue;
+      }
+
+      metricsWithHeaderName.add(metric);
+      scopes.add(metric.getInstrumentationScopeInfo());
+    }
+
     Optional<Resource> optResource = metrics.stream().findFirst().map(MetricData::getResource);
     try (Writer writer =
         new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8))) {
       if (optResource.isPresent()) {
         writeResource(optResource.get(), writer);
       }
-      for (Map.Entry<InstrumentationScopeInfo, List<MetricData>> entry :
-          metricsByScope.entrySet()) {
+      for (InstrumentationScopeInfo scope : scopes) {
+        writeScopeInfo(scope, writer);
+      }
+      for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
         write(entry.getValue(), entry.getKey(), writer);
       }
       writeEof(writer);
     }
+    return conflictMetricNames;
   }
 
-  private void write(
-      List<MetricData> metrics, InstrumentationScopeInfo instrumentationScopeInfo, Writer writer)
-      throws IOException {
-    writeScopeInfo(instrumentationScopeInfo, writer);
-    // Group metrics with the scope, name, but different types. This is a semantic error which the
-    // SDK warns about but passes through to exporters to handle.
-    Map<String, List<MetricData>> metricsByName =
-        metrics.stream()
-            .collect(
-                Collectors.groupingBy(
-                    metric ->
-                        headerName(
-                            NameSanitizer.INSTANCE.apply(metric.getName()),
-                            PrometheusType.forMetric(metric)),
-                    LinkedHashMap::new,
-                    Collectors.toList()));
-
-    for (Map.Entry<String, List<MetricData>> entry : metricsByName.entrySet()) {
-      write(entry.getValue(), entry.getKey(), writer);
-    }
-  }
-
-  private void write(List<MetricData> metrics, String headerName, Writer writer)
+  private void write(List<MetricData> metrics, String metricName, Writer writer)
       throws IOException {
     // Write header based on first metric
-    PrometheusType type = PrometheusType.forMetric(metrics.get(0));
+    MetricData first = metrics.get(0);
+    PrometheusType type = PrometheusType.forMetric(first);
+    String headerName = headerName(NameSanitizer.INSTANCE.apply(first.getName()), type);
     String description = metrics.get(0).getDescription();
 
     writer.write("# TYPE ");
@@ -171,13 +177,11 @@ abstract class Serializer {
 
     // Then write the metrics.
     for (MetricData metric : metrics) {
-      write(metric, writer);
+      write(metric, metricName, writer);
     }
   }
 
-  private void write(MetricData metric, Writer writer) throws IOException {
-    String name = metricName(metric);
-
+  private void write(MetricData metric, String metricName, Writer writer) throws IOException {
     for (PointData point : getPoints(metric)) {
       switch (metric.getType()) {
         case DOUBLE_SUM:
@@ -185,7 +189,7 @@ abstract class Serializer {
           writePoint(
               writer,
               metric.getInstrumentationScopeInfo(),
-              name,
+              metricName,
               ((DoublePointData) point).getValue(),
               point.getAttributes(),
               point.getEpochNanos());
@@ -195,18 +199,18 @@ abstract class Serializer {
           writePoint(
               writer,
               metric.getInstrumentationScopeInfo(),
-              name,
+              metricName,
               (double) ((LongPointData) point).getValue(),
               point.getAttributes(),
               point.getEpochNanos());
           break;
         case HISTOGRAM:
           writeHistogram(
-              writer, metric.getInstrumentationScopeInfo(), name, (HistogramPointData) point);
+              writer, metric.getInstrumentationScopeInfo(), metricName, (HistogramPointData) point);
           break;
         case SUMMARY:
           writeSummary(
-              writer, metric.getInstrumentationScopeInfo(), name, (SummaryPointData) point);
+              writer, metric.getInstrumentationScopeInfo(), metricName, (SummaryPointData) point);
           break;
         case EXPONENTIAL_HISTOGRAM:
           throw new IllegalArgumentException("Can't happen");
@@ -648,9 +652,8 @@ abstract class Serializer {
     return Collections.emptyList();
   }
 
-  private static String metricName(MetricData metric) {
-    PrometheusType type = PrometheusType.forMetric(metric);
-    String name = NameSanitizer.INSTANCE.apply(metric.getName());
+  private static String metricName(String rawMetricName, PrometheusType type) {
+    String name = NameSanitizer.INSTANCE.apply(rawMetricName);
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
     }
