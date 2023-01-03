@@ -298,7 +298,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "double.guage.no.attributes",
+          "double.gauge.no.attributes",
           "unused",
           "1",
           ImmutableGaugeData.create(
@@ -386,9 +386,9 @@ class SerializerTest {
                 + "cumulative_histogram_single_attribute_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672000\n"
                 + "cumulative_histogram_single_attribute_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672000\n"
                 + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
-                + "# TYPE double_guage_no_attributes gauge\n"
-                + "# HELP double_guage_no_attributes unused\n"
-                + "double_guage_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
+                + "# TYPE double_gauge_no_attributes gauge\n"
+                + "# HELP double_gauge_no_attributes unused\n"
+                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
                 + "# TYPE double_gauge_multiple_attributes gauge\n"
                 + "# HELP double_gauge_multiple_attributes unused\n"
                 + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
@@ -453,9 +453,9 @@ class SerializerTest {
                 + "cumulative_histogram_single_attribute_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672.000\n"
                 + "cumulative_histogram_single_attribute_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672.000\n"
                 + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
-                + "# TYPE double_guage_no_attributes gauge\n"
-                + "# HELP double_guage_no_attributes unused\n"
-                + "double_guage_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
+                + "# TYPE double_gauge_no_attributes gauge\n"
+                + "# HELP double_gauge_no_attributes unused\n"
+                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
                 + "# TYPE double_gauge_multiple_attributes gauge\n"
                 + "# HELP double_gauge_multiple_attributes unused\n"
                 + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
