@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteStreams;
 import com.linecorp.armeria.client.WebClient;
-import com.linecorp.armeria.client.encoding.DecodingClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
@@ -27,7 +27,11 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -150,17 +154,19 @@ class PrometheusHttpServerTest {
   }
 
   @Test
-  void fetchPrometheusCompressed() {
+  void fetchPrometheusCompressed() throws IOException {
     WebClient client =
         WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
-            .decorator(DecodingClient.newDecorator())
+            .addHeader(HttpHeaderNames.ACCEPT_ENCODING, "gzip")
             .build();
     AggregatedHttpResponse response = client.get("/").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_ENCODING)).isEqualTo("gzip");
-    assertThat(response.contentUtf8())
+    GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(response.content().array()));
+    String content = new String(ByteStreams.toByteArray(gis), StandardCharsets.UTF_8);
+    assertThat(content)
         .isEqualTo(
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
