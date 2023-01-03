@@ -44,7 +44,7 @@ afterEvaluate {
     val substitutionSnippet = bomProjects.joinToString(
       separator = "\n",
       prefix = "dependencySubstitution {\n",
-      postfix = "\n}\n"
+      postfix = "\n}\n",
     ) { project ->
       val publication = project.publishing.publications.getByName("mavenPublication") as MavenPublication
       "  substitute(module(\"${publication.groupId}:${publication.artifactId}\")).using(project(\"${project.path}\"))"

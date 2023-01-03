@@ -40,7 +40,7 @@ spotless {
       "src/**/*.md",
       "docs/**/*.md",
       "*.sh",
-      "src/**/*.properties"
+      "src/**/*.properties",
     )
     indentWithSpaces()
     trimTrailingWhitespace()

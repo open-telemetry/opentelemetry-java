@@ -60,8 +60,8 @@ tasks {
             "-Xlint:-options",
 
             // Fail build on any warning
-            "-Werror"
-          )
+            "-Werror",
+          ),
         )
       }
 
@@ -81,7 +81,7 @@ tasks {
       javaLauncher.set(
         javaToolchains.launcherFor {
           languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
-        }
+        },
       )
     }
 
@@ -125,7 +125,7 @@ tasks {
         "Built-By" to System.getProperty("user.name"),
         "Built-JDK" to System.getProperty("java.version"),
         "Implementation-Title" to project.name,
-        "Implementation-Version" to project.version
+        "Implementation-Version" to project.version,
       )
     }
   }
@@ -200,10 +200,10 @@ dependencies {
 class TestArgumentsProvider(
   @InputFile
   @PathSensitive(PathSensitivity.RELATIVE)
-  val loggingProperties: File
+  val loggingProperties: File,
 ) : CommandLineArgumentProvider {
   override fun asArguments() = listOf(
-    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}"
+    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
   )
 }
 
