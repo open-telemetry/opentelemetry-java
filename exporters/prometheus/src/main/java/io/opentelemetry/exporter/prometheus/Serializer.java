@@ -102,9 +102,8 @@ abstract class Serializer {
 
   abstract void writeEof(Writer writer) throws IOException;
 
-  final HashSet<String> write(Collection<MetricData> metrics, OutputStream output)
-      throws IOException {
-    HashSet<String> conflictMetricNames = new HashSet<>();
+  final Set<String> write(Collection<MetricData> metrics, OutputStream output) throws IOException {
+    Set<String> conflictMetricNames = new HashSet<>();
     Map<String, List<MetricData>> metricsByName = new LinkedHashMap<>();
     Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
     // Iterate through metrics, filtering and grouping by headerName

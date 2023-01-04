@@ -19,6 +19,7 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -218,6 +219,7 @@ class PrometheusHttpServerTest {
   }
 
   @Test
+  @SuppressLogger(PrometheusHttpServer.class)
   void fetch_DuplicateMetrics() {
     Resource resource = Resource.create(Attributes.of(stringKey("kr"), "vr"));
     metricData.set(

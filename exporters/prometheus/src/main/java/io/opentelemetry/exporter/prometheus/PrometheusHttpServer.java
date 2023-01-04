@@ -59,8 +59,6 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
       new DaemonThreadFactory("prometheus-http");
   private static final Logger LOGGER = Logger.getLogger(PrometheusHttpServer.class.getName());
 
-  private final Set<String> allConflictHeaderNames =
-      Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final HttpServer server;
   private final ExecutorService executor;
   private volatile MetricProducer metricProducer = MetricProducer.noop();
@@ -85,9 +83,10 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    server.createContext("/", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
-    server.createContext(
-        "/metrics", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
+    MetricsHandler metricsHandler =
+        new MetricsHandler(() -> getMetricProducer().collectAllMetrics());
+    server.createContext("/", metricsHandler);
+    server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
 
     executor = Executors.newFixedThreadPool(5, THREAD_FACTORY);
@@ -165,7 +164,10 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     return server.getAddress();
   }
 
-  private class MetricsHandler implements HttpHandler {
+  private static class MetricsHandler implements HttpHandler {
+
+    private final Set<String> allConflictHeaderNames =
+        Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final Supplier<Collection<MetricData>> metricsSupplier;
 
@@ -198,7 +200,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         } else {
           out = exchange.getResponseBody();
         }
-        HashSet<String> conflictHeaderNames = serializer.write(metrics, out);
+        Set<String> conflictHeaderNames = serializer.write(metrics, out);
         conflictHeaderNames.removeAll(allConflictHeaderNames);
         if (conflictHeaderNames.size() > 0 && LOGGER.isLoggable(Level.WARNING)) {
           LOGGER.log(
