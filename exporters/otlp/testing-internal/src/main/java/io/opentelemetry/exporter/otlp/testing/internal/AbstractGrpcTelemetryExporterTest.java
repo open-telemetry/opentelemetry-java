@@ -224,7 +224,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .satisfies(
             req ->
                 assertThat(req.headers().get("User-Agent"))
-                    .matches("OTel OTLP Exporter Java/1\\..*"));
+                    .matches("OTel-OTLP-Exporter-Java/1\\..*"));
   }
 
   @Test
