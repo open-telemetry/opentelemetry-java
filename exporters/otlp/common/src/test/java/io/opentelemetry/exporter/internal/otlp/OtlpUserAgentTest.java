@@ -14,7 +14,7 @@ class OtlpUserAgentTest {
 
   @Test
   void getUserAgent() {
-    assertThat(OtlpUserAgent.getUserAgent()).matches("OTel OTLP Exporter Java/1\\..*");
+    assertThat(OtlpUserAgent.getUserAgent()).matches("OTel-OTLP-Exporter-Java/1\\..*");
   }
 
   @Test
@@ -27,6 +27,6 @@ class OtlpUserAgentTest {
           valueRef.set(value);
         });
     assertThat(keyRef.get()).isEqualTo("User-Agent");
-    assertThat(valueRef.get()).matches("OTel OTLP Exporter Java/1\\..*");
+    assertThat(valueRef.get()).matches("OTel-OTLP-Exporter-Java/1\\..*");
   }
 }

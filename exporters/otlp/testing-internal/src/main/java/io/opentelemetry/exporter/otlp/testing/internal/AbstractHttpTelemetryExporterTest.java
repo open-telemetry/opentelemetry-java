@@ -248,9 +248,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(httpRequests)
         .singleElement()
         .satisfies(
-            req -> {
-              assertThat(req.headers().get("User-Agent")).matches("OTel OTLP Exporter Java/1\\..*");
-            });
+            req ->
+                assertThat(req.headers().get("User-Agent"))
+                    .matches("OTel-OTLP-Exporter-Java/1\\..*"));
   }
 
   @Test
