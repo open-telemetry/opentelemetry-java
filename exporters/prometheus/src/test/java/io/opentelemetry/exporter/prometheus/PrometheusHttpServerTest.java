@@ -17,11 +17,14 @@ import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -31,26 +34,39 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
-  private static final MetricProducer metricProducer = PrometheusHttpServerTest::generateTestData;
+  private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
+  private static final MetricProducer metricProducer = metricData::get;
 
   static PrometheusHttpServer prometheusServer;
   static WebClient client;
 
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(PrometheusHttpServer.class);
+
   @BeforeAll
-  static void setUp() {
+  static void beforeAll() {
     // Register the SDK metric producer with the prometheus reader.
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
     prometheusServer.register(metricProducer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
+  }
+
+  @BeforeEach
+  void beforeEach() {
+    metricData.set(generateTestData());
   }
 
   @AfterAll
@@ -86,12 +102,12 @@ class PrometheusHttpServerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
                 + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
@@ -121,12 +137,12 @@ class PrometheusHttpServerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
-                + "# TYPE grpc_name counter\n"
-                + "# HELP grpc_name long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0.000\n"
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
+                + "# TYPE grpc_name counter\n"
+                + "# HELP grpc_name long_description\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0.000\n"
                 + "# TYPE http_name counter\n"
                 + "# HELP http_name double_description\n"
                 + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0.000\n"
@@ -174,12 +190,12 @@ class PrometheusHttpServerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"http\",otel_scope_version=\"version\"} 1\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "# HELP grpc_name_total long_description\n"
+                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
                 + "# TYPE http_name_total counter\n"
                 + "# HELP http_name_total double_description\n"
                 + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
@@ -203,12 +219,83 @@ class PrometheusHttpServerTest {
   }
 
   @Test
+  @SuppressLogger(PrometheusHttpServer.class)
+  void fetch_DuplicateMetrics() {
+    Resource resource = Resource.create(Attributes.of(stringKey("kr"), "vr"));
+    metricData.set(
+        ImmutableList.of(
+            ImmutableMetricData.createLongSum(
+                resource,
+                InstrumentationScopeInfo.create("scope1"),
+                "foo",
+                "description1",
+                "unit1",
+                ImmutableSumData.create(
+                    /* isMonotonic= */ true,
+                    AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        ImmutableLongPointData.create(123, 456, Attributes.empty(), 1)))),
+            // A counter with same name as foo but with different scope, description, unit
+            ImmutableMetricData.createLongSum(
+                resource,
+                InstrumentationScopeInfo.create("scope2"),
+                "foo",
+                "description2",
+                "unit2",
+                ImmutableSumData.create(
+                    /* isMonotonic= */ true,
+                    AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        ImmutableLongPointData.create(123, 456, Attributes.empty(), 2)))),
+            // A gauge whose name conflicts with foo counter's name after the "_total" suffix is
+            // added
+            ImmutableMetricData.createLongGauge(
+                resource,
+                InstrumentationScopeInfo.create("scope3"),
+                "foo_total",
+                "unused",
+                "unused",
+                ImmutableGaugeData.create(
+                    Collections.singletonList(
+                        ImmutableLongPointData.create(123, 456, Attributes.empty(), 3))))));
+
+    AggregatedHttpResponse response = client.get("/").aggregate().join();
+    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+    assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+        .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"scope1\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"scope2\"} 1\n"
+                + "# TYPE foo_total counter\n"
+                + "# HELP foo_total description1\n"
+                + "foo_total{otel_scope_name=\"scope1\"} 1.0 0\n"
+                + "foo_total{otel_scope_name=\"scope2\"} 2.0 0\n");
+
+    // Validate conflict warning message
+    assertThat(logs.getEvents()).hasSize(1);
+    logs.assertContains(
+        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_total]");
+
+    // Make another request and confirm warning is only logged once
+    client.get("/").aggregate().join();
+    assertThat(logs.getEvents()).hasSize(1);
+  }
+
+  @Test
   void stringRepresentation() {
     assertThat(prometheusServer.toString())
         .isEqualTo("PrometheusHttpServer{address=" + prometheusServer.getAddress() + "}");
   }
 
-  private static ImmutableList<MetricData> generateTestData() {
+  private static List<MetricData> generateTestData() {
     return ImmutableList.of(
         ImmutableMetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),

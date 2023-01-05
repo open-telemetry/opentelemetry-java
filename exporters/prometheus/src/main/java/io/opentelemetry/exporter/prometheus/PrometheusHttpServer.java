@@ -10,6 +10,8 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static java.util.stream.Collectors.joining;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -34,11 +36,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
@@ -52,6 +57,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");
+  private static final Logger LOGGER = Logger.getLogger(PrometheusHttpServer.class.getName());
 
   private final HttpServer server;
   private final ExecutorService executor;
@@ -77,9 +83,10 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    server.createContext("/", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
-    server.createContext(
-        "/metrics", new MetricsHandler(() -> getMetricProducer().collectAllMetrics()));
+    MetricsHandler metricsHandler =
+        new MetricsHandler(() -> getMetricProducer().collectAllMetrics());
+    server.createContext("/", metricsHandler);
+    server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
 
     executor = Executors.newFixedThreadPool(5, THREAD_FACTORY);
@@ -159,6 +166,9 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private static class MetricsHandler implements HttpHandler {
 
+    private final Set<String> allConflictHeaderNames =
+        Collections.newSetFromMap(new ConcurrentHashMap<>());
+
     private final Supplier<Collection<MetricData>> metricsSupplier;
 
     private MetricsHandler(Supplier<Collection<MetricData>> metricsSupplier) {
@@ -190,7 +200,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         } else {
           out = exchange.getResponseBody();
         }
-        serializer.write(metrics, out);
+        Set<String> conflictHeaderNames = serializer.write(metrics, out);
+        conflictHeaderNames.removeAll(allConflictHeaderNames);
+        if (conflictHeaderNames.size() > 0 && LOGGER.isLoggable(Level.WARNING)) {
+          LOGGER.log(
+              Level.WARNING,
+              "Metric conflict(s) detected. Multiple metrics with same name but different type: "
+                  + conflictHeaderNames.stream().collect(joining(",", "[", "]")));
+          allConflictHeaderNames.addAll(conflictHeaderNames);
+        }
       }
       exchange.close();
     }

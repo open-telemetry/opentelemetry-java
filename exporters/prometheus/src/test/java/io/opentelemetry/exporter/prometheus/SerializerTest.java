@@ -47,7 +47,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "monotonic.cumulative.double.sum",
           "description",
           "1",
           ImmutableSumData.create(
@@ -66,7 +66,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "non.monotonic.cumulative.double.sum",
           "description",
           "1",
           ImmutableSumData.create(
@@ -85,7 +85,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "delta.double.sum",
           "unused",
           "1",
           ImmutableSumData.create(
@@ -104,7 +104,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "monotonic.cumulative.long.sum",
           "unused",
           "1",
           ImmutableSumData.create(
@@ -123,7 +123,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "non.monotonic.cumulative.long_sum",
           "unused",
           "1",
           ImmutableSumData.create(
@@ -142,7 +142,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "delta.long.sum",
           "unused",
           "1",
           ImmutableSumData.create(
@@ -162,7 +162,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "double.gauge",
           "unused",
           "1",
           ImmutableGaugeData.create(
@@ -176,7 +176,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "long.gauge",
           "unused",
           "1",
           ImmutableGaugeData.create(
@@ -190,7 +190,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "summary",
           "unused",
           "1",
           ImmutableSummaryData.create(
@@ -211,7 +211,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "delta.histogram",
           "unused",
           "1",
           ImmutableHistogramData.create(
@@ -234,7 +234,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "cumulative.histogram.no.attributes",
           "unused",
           "1",
           ImmutableHistogramData.create(
@@ -266,7 +266,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "cumulative.histogram.single.attribute",
           "unused",
           "1",
           ImmutableHistogramData.create(
@@ -298,7 +298,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "double.gauge.no.attributes",
           "unused",
           "1",
           ImmutableGaugeData.create(
@@ -312,7 +312,7 @@ class SerializerTest {
               .setVersion("version")
               .setAttributes(Attributes.of(stringKey("ks"), "vs"))
               .build(),
-          "instrument.name",
+          "double.gauge.multiple.attributes",
           "unused",
           "1",
           ImmutableGaugeData.create(
@@ -352,28 +352,46 @@ class SerializerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"full\",otel_scope_version=\"version\",ks=\"vs\"} 1\n"
-                + "# TYPE instrument_name_total counter\n"
-                + "# HELP instrument_name_total description\n"
-                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672000\n"
-                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672000\n"
-                + "# TYPE instrument_name gauge\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672000\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672000\n"
-                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672000\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672000\n"
-                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
+                + "# TYPE monotonic_cumulative_double_sum_total counter\n"
+                + "# HELP monotonic_cumulative_double_sum_total description\n"
+                + "monotonic_cumulative_double_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672000\n"
+                + "# TYPE non_monotonic_cumulative_double_sum gauge\n"
+                + "# HELP non_monotonic_cumulative_double_sum description\n"
+                + "non_monotonic_cumulative_double_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672000\n"
+                + "# TYPE monotonic_cumulative_long_sum_total counter\n"
+                + "# HELP monotonic_cumulative_long_sum_total unused\n"
+                + "monotonic_cumulative_long_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672000\n"
+                + "# TYPE non_monotonic_cumulative_long_sum gauge\n"
+                + "# HELP non_monotonic_cumulative_long_sum unused\n"
+                + "non_monotonic_cumulative_long_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672000\n"
+                + "# TYPE double_gauge gauge\n"
+                + "# HELP double_gauge unused\n"
+                + "double_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
+                + "# TYPE long_gauge gauge\n"
+                + "# HELP long_gauge unused\n"
+                + "long_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
+                + "# TYPE summary summary\n"
+                + "# HELP summary unused\n"
+                + "summary_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672000\n"
+                + "summary_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672000\n"
+                + "summary{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672000\n"
+                + "summary{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672000\n"
+                + "# TYPE cumulative_histogram_no_attributes histogram\n"
+                + "# HELP cumulative_histogram_no_attributes unused\n"
+                + "cumulative_histogram_no_attributes_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672000\n"
+                + "cumulative_histogram_no_attributes_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672000\n"
+                + "cumulative_histogram_no_attributes_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672000\n"
+                + "# TYPE cumulative_histogram_single_attribute histogram\n"
+                + "# HELP cumulative_histogram_single_attribute unused\n"
+                + "cumulative_histogram_single_attribute_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672000\n"
+                + "cumulative_histogram_single_attribute_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672000\n"
+                + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
+                + "# TYPE double_gauge_no_attributes gauge\n"
+                + "# HELP double_gauge_no_attributes unused\n"
+                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
+                + "# TYPE double_gauge_multiple_attributes gauge\n"
+                + "# HELP double_gauge_multiple_attributes unused\n"
+                + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -401,26 +419,46 @@ class SerializerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"full\",otel_scope_version=\"version\",ks=\"vs\"} 1\n"
-                + "# TYPE instrument_name counter\n"
-                + "# HELP instrument_name description\n"
-                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672.000\n"
-                + "instrument_name_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672.000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672.000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
-                + "instrument_name_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672.000\n"
-                + "instrument_name_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672.000\n"
-                + "instrument_name_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
-                + "instrument_name{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
+                + "# TYPE monotonic_cumulative_double_sum counter\n"
+                + "# HELP monotonic_cumulative_double_sum description\n"
+                + "monotonic_cumulative_double_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
+                + "# TYPE non_monotonic_cumulative_double_sum gauge\n"
+                + "# HELP non_monotonic_cumulative_double_sum description\n"
+                + "non_monotonic_cumulative_double_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672.000\n"
+                + "# TYPE monotonic_cumulative_long_sum counter\n"
+                + "# HELP monotonic_cumulative_long_sum unused\n"
+                + "monotonic_cumulative_long_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcls\"} 5.0 1633950672.000\n"
+                + "# TYPE non_monotonic_cumulative_long_sum gauge\n"
+                + "# HELP non_monotonic_cumulative_long_sum unused\n"
+                + "non_monotonic_cumulative_long_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672.000\n"
+                + "# TYPE double_gauge gauge\n"
+                + "# HELP double_gauge unused\n"
+                + "double_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
+                + "# TYPE long_gauge gauge\n"
+                + "# HELP long_gauge unused\n"
+                + "long_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
+                + "# TYPE summary summary\n"
+                + "# HELP summary unused\n"
+                + "summary_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672.000\n"
+                + "summary_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 7.0 1633950672.000\n"
+                + "summary{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.9\"} 0.1 1633950672.000\n"
+                + "summary{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\",quantile=\"0.99\"} 0.3 1633950672.000\n"
+                + "# TYPE cumulative_histogram_no_attributes histogram\n"
+                + "# HELP cumulative_histogram_no_attributes unused\n"
+                + "cumulative_histogram_no_attributes_count{otel_scope_name=\"full\",otel_scope_version=\"version\"} 2.0 1633950672.000\n"
+                + "cumulative_histogram_no_attributes_sum{otel_scope_name=\"full\",otel_scope_version=\"version\"} 1.0 1633950672.000\n"
+                + "cumulative_histogram_no_attributes_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
+                + "# TYPE cumulative_histogram_single_attribute histogram\n"
+                + "# HELP cumulative_histogram_single_attribute unused\n"
+                + "cumulative_histogram_single_attribute_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 2.0 1633950672.000\n"
+                + "cumulative_histogram_single_attribute_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\"} 1.0 1633950672.000\n"
+                + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
+                + "# TYPE double_gauge_no_attributes gauge\n"
+                + "# HELP double_gauge_no_attributes unused\n"
+                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
+                + "# TYPE double_gauge_multiple_attributes gauge\n"
+                + "# HELP double_gauge_multiple_attributes unused\n"
+                + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 
