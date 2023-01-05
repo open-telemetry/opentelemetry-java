@@ -2,11 +2,71 @@
 
 ## Unreleased
 
-### Bugfixes
+### API
+
+* WARNING: GlobalOpenTelemetry trigger of autoconfiguration is now opt-in.
+  Previously, `GlobalOpenTelemetry.get` triggered autoconfiguration
+  if `opentelemetry-sdk-extension-autoconfigure` was detected on the classpath. That behavior is now
+  opt-in by setting environment variable `OTEL_JAVA_GLOBAL_AUTOCONFIGURE_ENABLED=true`.
+  ([#5010](https://github.com/open-telemetry/opentelemetry-java/pull/5010))
+* Update LoggerBuilder, MeterBuilder, TracerBuilder javadoc
+  ([#5050](https://github.com/open-telemetry/opentelemetry-java/pull/5050))
+
+#### Context
 
 * Make closing scope idempotent and non-operational when corresponding context is not current.
   [(#5061)](https://github.com/open-telemetry/opentelemetry-java/pull/5061)
-*
+
+### SDK
+
+* Standardize internal usage of `ConfigUtil` for reading environment variables and system properties
+  ([#5048](https://github.com/open-telemetry/opentelemetry-java/pull/5048))
+
+#### Metrics
+
+* Lazily initialize exponential histogram buckets
+  ([#5023](https://github.com/open-telemetry/opentelemetry-java/pull/5023))
+* Delete MapCounter alternative exponential histogram implementation
+  ([#5047](https://github.com/open-telemetry/opentelemetry-java/pull/5047))
+* Add toString to SdkMeter, SdkObservableInstrument, AbstractInstrumentBuilder
+  ([#5072](https://github.com/open-telemetry/opentelemetry-java/pull/5072))
+
+#### Exporter
+
+* `OtlpGrpcSpanExporter`, `OtlpHttpSpanExporter`, `OtlpGrpcLogRecordExporter`,
+  `OtlpHttpLogRecordExporter`, `ZipkinSpanExporter`, and `JaegerGrpcSpanExporter` are now
+  instrumented with `GlobalOpenTelemetry` by default. Instrumentation initializes lazily to prevent
+  ordering issue of accessing `GlobalOpenTelemetry.get` before `GlobalOpenTelemetry.set` is called.
+  ([#4993](https://github.com/open-telemetry/opentelemetry-java/pull/4993))
+* Add `ConfigurableSpanExporterProvider` implementation for `JaegerGrpcSpanExporter`
+  ([#5002](https://github.com/open-telemetry/opentelemetry-java/pull/5002))
+* Add `ConfigurableSpanExporterProvider`, `ConfigurableMetricExporterProvider`,
+  `ConfigurableLogRecordExporterProvider` for `OtlpGrpc{Signal}Exporter`s
+  and `OtlpHttp{SignalExporter`s
+  ([#5003](https://github.com/open-telemetry/opentelemetry-java/pull/5003))
+* Replace OTLP User-Agent spaces with dashes
+  ([#5080](https://github.com/open-telemetry/opentelemetry-java/pull/5080))
+* Add `AutoConfigurationCustomizerProvider` implementation for `PrometheusHttpServer`
+  ([#5053](https://github.com/open-telemetry/opentelemetry-java/pull/5053))
+* Add resource `target_info` and scope `target_info` metrics to `PrometheusHttpServer` in compliance
+  with spec
+  ([#5039](https://github.com/open-telemetry/opentelemetry-java/pull/5039))
+* Drop delta metrics in `PrometheusHttpServer`
+  ([#5062](https://github.com/open-telemetry/opentelemetry-java/pull/5062))
+* PrometheusHttpServer drops metrics with same name and different type
+  ([#5078](https://github.com/open-telemetry/opentelemetry-java/pull/5078))
+
+#### SDK Extensions
+
+* DEPRECATION: Align autoconfigure exemplar filter names with spec. Previous names `none`, `all`,
+  `with_sampled_trace` are deprecated. Use `always_off`, `always_on`, `trace_based` instead.
+  ([#5063](https://github.com/open-telemetry/opentelemetry-java/pull/5063))
+
+### OpenTracing Shim
+
+* Add createTracerShim function
+  ([#4988](https://github.com/open-telemetry/opentelemetry-java/pull/4988))
+
 ## Version 1.21.0 (2022-12-09)
 
 ### API
