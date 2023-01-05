@@ -18,6 +18,9 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitter;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -36,7 +39,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
@@ -156,6 +158,8 @@ class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
     autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
   }
 
@@ -176,6 +180,9 @@ class FullConfigTest {
         .getSdkTracerProvider()
         .shutdown()
         .join(10, TimeUnit.SECONDS);
+    GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
   }
 
   @Test
@@ -210,10 +217,12 @@ class FullConfigTest {
         .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    Logger logger =
-        autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLoggerProvider().get("test");
+    Logger logger = GlobalLoggerProvider.get().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
+
+    EventEmitter eventEmitter = GlobalEventEmitterProvider.get().get("test", "test-domain");
+    eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
@@ -299,10 +308,30 @@ class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
-    // MetricExporterCustomizer filters logs not whose level is less than Severity.INFO
-    LogRecord log = logRequest.getResourceLogs(0).getScopeLogs(0).getLogRecords(0);
-    assertThat(log.getBody().getStringValue()).isEqualTo("info log message");
-    assertThat(log.getSeverityNumberValue()).isEqualTo(Severity.INFO.getSeverityNumber());
+
+    assertThat(logRequest.getResourceLogs(0).getScopeLogs(0).getLogRecordsList())
+        .satisfiesExactlyInAnyOrder(
+            logRecord -> {
+              // LogRecordExporterCustomizer filters logs not whose level is less than Severity.INFO
+              assertThat(logRecord.getBody().getStringValue()).isEqualTo("info log message");
+              assertThat(logRecord.getSeverityNumberValue())
+                  .isEqualTo(Severity.INFO.getSeverityNumber());
+            },
+            logRecord ->
+                assertThat(logRecord.getAttributesList())
+                    .containsExactlyInAnyOrder(
+                        KeyValue.newBuilder()
+                            .setKey("event.domain")
+                            .setValue(AnyValue.newBuilder().setStringValue("test-domain").build())
+                            .build(),
+                        KeyValue.newBuilder()
+                            .setKey("event.name")
+                            .setValue(AnyValue.newBuilder().setStringValue("test-name").build())
+                            .build(),
+                        KeyValue.newBuilder()
+                            .setKey("cow")
+                            .setValue(AnyValue.newBuilder().setStringValue("moo").build())
+                            .build()));
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

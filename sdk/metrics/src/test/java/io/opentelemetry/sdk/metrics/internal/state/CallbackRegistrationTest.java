@@ -86,16 +86,43 @@ class CallbackRegistrationTest {
   }
 
   @Test
-  void callbackDescription() {
-    assertThatThrownBy(() -> CallbackRegistration.callbackDescription(Collections.emptyList()))
+  void stringRepresentation() {
+    Runnable callback = () -> {};
+    assertThatThrownBy(() -> CallbackRegistration.create(Collections.emptyList(), callback))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Callback with no instruments is not allowed");
-    assertThat(CallbackRegistration.callbackDescription(Collections.singletonList(LONG_INSTRUMENT)))
-        .isEqualTo("Instrument long-counter");
     assertThat(
-            CallbackRegistration.callbackDescription(
-                Arrays.asList(LONG_INSTRUMENT, DOUBLE_INSTRUMENT)))
-        .isEqualTo("BatchCallback([long-counter,double-counter])");
+            CallbackRegistration.create(Collections.singletonList(measurement1), callback)
+                .toString())
+        .isEqualTo(
+            "CallbackRegistration{"
+                + "instrumentDescriptors=["
+                + "InstrumentDescriptor{"
+                + "name=double-counter, "
+                + "description=description, "
+                + "unit=unit, "
+                + "type=OBSERVABLE_COUNTER, "
+                + "valueType=LONG"
+                + "}]}");
+    assertThat(
+            CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback)
+                .toString())
+        .isEqualTo(
+            "CallbackRegistration{"
+                + "instrumentDescriptors=["
+                + "InstrumentDescriptor{"
+                + "name=double-counter, "
+                + "description=description, "
+                + "unit=unit, "
+                + "type=OBSERVABLE_COUNTER, "
+                + "valueType=LONG}, "
+                + "InstrumentDescriptor{"
+                + "name=long-counter, "
+                + "description=description, "
+                + "unit=unit, "
+                + "type=OBSERVABLE_COUNTER, "
+                + "valueType=LONG"
+                + "}]}");
   }
 
   @Test
@@ -189,8 +216,7 @@ class CallbackRegistrationTest {
     verify(storage1, never()).recordDouble(anyDouble(), any());
     verify(storage2, never()).recordDouble(anyDouble(), any());
     verify(storage3, never()).recordDouble(anyDouble(), any());
-    logs.assertContains(
-        "An exception occurred invoking callback for BatchCallback([double-counter,long-counter])");
+    logs.assertContains("An exception occurred invoking callback");
   }
 
   @Test
@@ -208,6 +234,6 @@ class CallbackRegistrationTest {
     verify(storage2, never()).recordDouble(anyDouble(), any());
     verify(storage3, never()).recordDouble(anyDouble(), any());
 
-    logs.assertContains("An exception occurred invoking callback for Instrument long-counter");
+    logs.assertContains("An exception occurred invoking callback");
   }
 }

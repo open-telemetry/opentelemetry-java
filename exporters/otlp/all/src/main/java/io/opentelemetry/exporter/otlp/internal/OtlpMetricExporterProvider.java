@@ -33,7 +33,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
+      OtlpHttpMetricExporterBuilder builder = httpBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
@@ -52,7 +52,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
+      OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
@@ -77,5 +77,15 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
   @Override
   public String getName() {
     return "otlp";
+  }
+
+  // Visible for testing
+  OtlpHttpMetricExporterBuilder httpBuilder() {
+    return OtlpHttpMetricExporter.builder();
+  }
+
+  // Visible for testing
+  OtlpGrpcMetricExporterBuilder grpcBuilder() {
+    return OtlpGrpcMetricExporter.builder();
   }
 }

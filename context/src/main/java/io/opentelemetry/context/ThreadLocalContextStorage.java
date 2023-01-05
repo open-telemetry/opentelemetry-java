@@ -30,14 +30,30 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
     THREAD_LOCAL_STORAGE.set(toAttach);
 
-    return () -> {
-      if (current() != toAttach) {
+    return new ScopeImpl(beforeAttach, toAttach);
+  }
+
+  private class ScopeImpl implements Scope {
+    @Nullable private final Context beforeAttach;
+    private final Context toAttach;
+    private boolean closed;
+
+    private ScopeImpl(@Nullable Context beforeAttach, Context toAttach) {
+      this.beforeAttach = beforeAttach;
+      this.toAttach = toAttach;
+    }
+
+    @Override
+    public void close() {
+      if (!closed && current() == toAttach) {
+        closed = true;
+        THREAD_LOCAL_STORAGE.set(beforeAttach);
+      } else {
         logger.log(
             Level.FINE,
-            "Context in storage not the expected context, Scope.close was not called correctly");
+            " Trying to close scope which does not represent current context. Ignoring the call.");
       }
-      THREAD_LOCAL_STORAGE.set(beforeAttach);
-    };
+    }
   }
 
   @Override

@@ -24,6 +24,8 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   static final String DEFAULT_UNIT = "";
 
   private final MeterProviderSharedState meterProviderSharedState;
+  private final InstrumentType type;
+  private final InstrumentValueType valueType;
   private String description;
   private String unit;
 
@@ -33,9 +35,13 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   AbstractInstrumentBuilder(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
+      InstrumentType type,
+      InstrumentValueType valueType,
       String name,
       String description,
       String unit) {
+    this.type = type;
+    this.valueType = valueType;
     this.instrumentName = name;
     this.description = description;
     this.unit = unit;
@@ -61,50 +67,52 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
     return getThis();
   }
 
-  private InstrumentDescriptor makeDescriptor(InstrumentType type, InstrumentValueType valueType) {
-    return InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
-  }
-
   protected <T> T swapBuilder(SwapBuilder<T> swapper) {
     return swapper.newBuilder(
         meterProviderSharedState, meterSharedState, instrumentName, description, unit);
   }
 
   final <I extends AbstractInstrument> I buildSynchronousInstrument(
-      InstrumentType type,
-      InstrumentValueType valueType,
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
-    InstrumentDescriptor descriptor = makeDescriptor(type, valueType);
+    InstrumentDescriptor descriptor =
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
     return instrumentFactory.apply(descriptor, storage);
   }
 
-  final CallbackRegistration registerDoubleAsynchronousInstrument(
+  final SdkObservableInstrument registerDoubleAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
-    SdkObservableMeasurement sdkObservableMeasurement =
-        buildObservableMeasurement(type, InstrumentValueType.DOUBLE);
+    SdkObservableMeasurement sdkObservableMeasurement = buildObservableMeasurement(type);
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
     meterSharedState.registerCallback(callbackRegistration);
-    return callbackRegistration;
+    return new SdkObservableInstrument(meterSharedState, callbackRegistration);
   }
 
-  final CallbackRegistration registerLongAsynchronousInstrument(
+  final SdkObservableInstrument registerLongAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
-    SdkObservableMeasurement sdkObservableMeasurement =
-        buildObservableMeasurement(type, InstrumentValueType.LONG);
+    SdkObservableMeasurement sdkObservableMeasurement = buildObservableMeasurement(type);
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
     meterSharedState.registerCallback(callbackRegistration);
-    return callbackRegistration;
+    return new SdkObservableInstrument(meterSharedState, callbackRegistration);
   }
 
-  final SdkObservableMeasurement buildObservableMeasurement(
-      InstrumentType type, InstrumentValueType valueType) {
-    return meterSharedState.registerObservableMeasurement(makeDescriptor(type, valueType));
+  final SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
+    InstrumentDescriptor descriptor =
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+    return meterSharedState.registerObservableMeasurement(descriptor);
+  }
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName()
+        + "{descriptor="
+        + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType)
+        + "}";
   }
 
   @FunctionalInterface

@@ -72,42 +72,46 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleUpDownCounter.Builder>
+  static final class SdkDoubleUpDownCounterBuilder
+      extends AbstractInstrumentBuilder<SdkDoubleUpDownCounterBuilder>
       implements DoubleUpDownCounterBuilder {
 
-    Builder(
+    SdkDoubleUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
         String unit) {
-      super(meterProviderSharedState, sharedState, name, description, unit);
+      super(
+          meterProviderSharedState,
+          sharedState,
+          InstrumentType.UP_DOWN_COUNTER,
+          InstrumentValueType.DOUBLE,
+          name,
+          description,
+          unit);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkDoubleUpDownCounterBuilder getThis() {
       return this;
     }
 
     @Override
     public DoubleUpDownCounter build() {
-      return buildSynchronousInstrument(
-          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE, SdkDoubleUpDownCounter::new);
+      return buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
     }
 
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return new SdkObservableInstrument(
-          meterSharedState,
-          registerDoubleAsynchronousInstrument(
-              InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback));
+      return registerDoubleAsynchronousInstrument(
+          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(
-          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, InstrumentValueType.DOUBLE);
+      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
   }
 }

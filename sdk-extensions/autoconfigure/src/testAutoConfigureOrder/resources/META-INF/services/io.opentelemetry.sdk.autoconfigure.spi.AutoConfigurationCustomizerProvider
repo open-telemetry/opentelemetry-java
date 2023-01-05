@@ -1,3 +1,3 @@
-io.opentelemetry.sdk.autoconfigure.SecondCustomizerProvider
-io.opentelemetry.sdk.autoconfigure.ThirdCustomizerProvider
-io.opentelemetry.sdk.autoconfigure.FirstCustomizerProvider
+io.opentelemetry.sdk.autoconfigure.provider.SecondCustomizerProvider
+io.opentelemetry.sdk.autoconfigure.provider.ThirdCustomizerProvider
+io.opentelemetry.sdk.autoconfigure.provider.FirstCustomizerProvider

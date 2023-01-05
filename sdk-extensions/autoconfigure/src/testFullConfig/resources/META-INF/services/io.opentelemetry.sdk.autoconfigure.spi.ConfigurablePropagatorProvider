@@ -1,2 +1,2 @@
-io.opentelemetry.sdk.autoconfigure.TestConfigurablePropagatorProvider
-io.opentelemetry.sdk.autoconfigure.ThrowingConfigurablePropagatorProvider
+io.opentelemetry.sdk.autoconfigure.provider.TestConfigurablePropagatorProvider
+io.opentelemetry.sdk.autoconfigure.provider.ThrowingConfigurablePropagatorProvider

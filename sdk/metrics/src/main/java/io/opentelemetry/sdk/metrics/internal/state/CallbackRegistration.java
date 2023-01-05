@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * A registered callback.
@@ -28,18 +27,20 @@ public final class CallbackRegistration {
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final List<SdkObservableMeasurement> observableMeasurements;
   private final Runnable callback;
-  private final String callbackDescription;
+  private final List<InstrumentDescriptor> instrumentDescriptors;
   private final boolean hasStorages;
 
   private CallbackRegistration(
       List<SdkObservableMeasurement> observableMeasurements, Runnable callback) {
     this.observableMeasurements = observableMeasurements;
     this.callback = callback;
-    List<InstrumentDescriptor> instrumentDescriptors =
+    this.instrumentDescriptors =
         observableMeasurements.stream()
             .map(SdkObservableMeasurement::getInstrumentDescriptor)
             .collect(toList());
-    this.callbackDescription = callbackDescription(instrumentDescriptors);
+    if (instrumentDescriptors.size() == 0) {
+      throw new IllegalStateException("Callback with no instruments is not allowed");
+    }
     this.hasStorages =
         observableMeasurements.stream()
             .flatMap(measurement -> measurement.getStorages().stream())
@@ -64,24 +65,9 @@ public final class CallbackRegistration {
     return new CallbackRegistration(observableMeasurements, runnable);
   }
 
-  // Visible for test
-  static String callbackDescription(List<InstrumentDescriptor> instrumentDescriptors) {
-    if (instrumentDescriptors.size() == 0) {
-      throw new IllegalStateException("Callback with no instruments is not allowed");
-    }
-    if (instrumentDescriptors.size() == 1) {
-      return "Instrument " + instrumentDescriptors.get(0).getName();
-    }
-    StringBuilder description = new StringBuilder("BatchCallback(");
-    description.append(
-        instrumentDescriptors.stream()
-            .map(InstrumentDescriptor::getName)
-            .collect(Collectors.joining(",", "[", "]")));
-    return description.append(")").toString();
-  }
-
-  public String getCallbackDescription() {
-    return callbackDescription;
+  @Override
+  public String toString() {
+    return "CallbackRegistration{instrumentDescriptors=" + instrumentDescriptors + "}";
   }
 
   void invokeCallback(RegisteredReader reader) {
@@ -98,9 +84,7 @@ public final class CallbackRegistration {
     } catch (Throwable e) {
       propagateIfFatal(e);
       throttlingLogger.log(
-          Level.WARNING,
-          "An exception occurred invoking callback for " + callbackDescription + ".",
-          e);
+          Level.WARNING, "An exception occurred invoking callback for " + this + ".", e);
     } finally {
       observableMeasurements.forEach(
           observableMeasurement -> observableMeasurement.setActiveReader(null));

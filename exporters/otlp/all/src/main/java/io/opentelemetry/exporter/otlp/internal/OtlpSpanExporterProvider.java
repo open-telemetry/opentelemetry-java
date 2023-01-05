@@ -32,7 +32,7 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
   public SpanExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      OtlpHttpSpanExporterBuilder builder = OtlpHttpSpanExporter.builder();
+      OtlpHttpSpanExporterBuilder builder = httpBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
@@ -47,7 +47,7 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
+      OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
@@ -68,5 +68,15 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
   @Override
   public String getName() {
     return "otlp";
+  }
+
+  // Visible for testing
+  OtlpHttpSpanExporterBuilder httpBuilder() {
+    return OtlpHttpSpanExporter.builder();
+  }
+
+  // Visible for testing
+  OtlpGrpcSpanExporterBuilder grpcBuilder() {
+    return OtlpGrpcSpanExporter.builder();
   }
 }

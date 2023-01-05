@@ -94,27 +94,33 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<SdkLongHistogram.Builder>
-      implements LongHistogramBuilder {
+  static final class SdkLongHistogramBuilder
+      extends AbstractInstrumentBuilder<SdkLongHistogramBuilder> implements LongHistogramBuilder {
 
-    Builder(
+    SdkLongHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
         String unit) {
-      super(meterProviderSharedState, sharedState, name, description, unit);
+      super(
+          meterProviderSharedState,
+          sharedState,
+          InstrumentType.HISTOGRAM,
+          InstrumentValueType.LONG,
+          name,
+          description,
+          unit);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkLongHistogramBuilder getThis() {
       return this;
     }
 
     @Override
     public SdkLongHistogram build() {
-      return buildSynchronousInstrument(
-          InstrumentType.HISTOGRAM, InstrumentValueType.LONG, SdkLongHistogram::new);
+      return buildSynchronousInstrument(SdkLongHistogram::new);
     }
   }
 }

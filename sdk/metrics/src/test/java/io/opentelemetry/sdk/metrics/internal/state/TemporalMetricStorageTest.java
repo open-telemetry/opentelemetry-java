@@ -48,11 +48,11 @@ class TemporalMetricStorageTest {
       MetricDescriptor.create("name", "description", "unit");
   private static final Aggregator<DoubleAccumulation, DoubleExemplarData> SUM =
       ((AggregatorFactory) Aggregation.sum())
-          .createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
+          .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff());
 
   private static final Aggregator<DoubleAccumulation, DoubleExemplarData> ASYNC_SUM =
       ((AggregatorFactory) Aggregation.sum())
-          .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
+          .createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.alwaysOff());
 
   @Mock private MetricReader reader;
   private RegisteredReader registeredReader;

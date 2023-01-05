@@ -12,7 +12,7 @@ if (!JavaVersion.current().isJava11Compatible()) {
     "JDK 11 or higher is required to build. " +
       "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
       "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-      "JDK 11 installation."
+      "JDK 11 installation.",
   )
 }
 

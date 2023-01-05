@@ -26,17 +26,17 @@ public interface ExemplarFilter {
    * A filter that only accepts measurements where there is a {@code Span} in {@link Context} that
    * is being sampled.
    */
-  static ExemplarFilter sampleWithTraces() {
-    return WithTraceExemplarFilter.INSTANCE;
+  static ExemplarFilter traceBased() {
+    return TraceBasedExemplarFilter.INSTANCE;
   }
 
-  /** A filter that accepts any measurement. */
-  static ExemplarFilter alwaysSample() {
-    return AlwaysSampleFilter.INSTANCE;
+  /** A filter which makes all measurements eligible for being an exemplar. */
+  static ExemplarFilter alwaysOn() {
+    return AlwaysOnFilter.INSTANCE;
   }
 
-  /** A filter that accepts no measurements. */
-  static ExemplarFilter neverSample() {
-    return NeverSampleFilter.INSTANCE;
+  /** A filter which makes no measurements eligible for being an exemplar. */
+  static ExemplarFilter alwaysOff() {
+    return AlwaysOffFilter.INSTANCE;
   }
 }

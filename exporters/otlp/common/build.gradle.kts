@@ -45,7 +45,7 @@ wire {
   root(
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
-    "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest"
+    "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest",
   )
 
   custom {

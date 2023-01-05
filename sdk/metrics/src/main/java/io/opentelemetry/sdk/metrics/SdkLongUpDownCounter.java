@@ -73,44 +73,49 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<SdkLongUpDownCounter.Builder>
+  static final class SdkLongUpDownCounterBuilder
+      extends AbstractInstrumentBuilder<SdkLongUpDownCounterBuilder>
       implements LongUpDownCounterBuilder {
 
-    Builder(
+    SdkLongUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(meterProviderSharedState, meterSharedState, name, "", DEFAULT_UNIT);
+      super(
+          meterProviderSharedState,
+          meterSharedState,
+          InstrumentType.UP_DOWN_COUNTER,
+          InstrumentValueType.LONG,
+          name,
+          "",
+          DEFAULT_UNIT);
     }
 
     @Override
-    protected Builder getThis() {
+    protected SdkLongUpDownCounterBuilder getThis() {
       return this;
     }
 
     @Override
     public LongUpDownCounter build() {
-      return buildSynchronousInstrument(
-          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG, SdkLongUpDownCounter::new);
+      return buildSynchronousInstrument(SdkLongUpDownCounter::new);
     }
 
     @Override
     public DoubleUpDownCounterBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleUpDownCounter.Builder::new);
+      return swapBuilder(SdkDoubleUpDownCounter.SdkDoubleUpDownCounterBuilder::new);
     }
 
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      return new SdkObservableInstrument(
-          meterSharedState,
-          registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback));
+      return registerLongAsynchronousInstrument(
+          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      return buildObservableMeasurement(
-          InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, InstrumentValueType.LONG);
+      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
   }
 }

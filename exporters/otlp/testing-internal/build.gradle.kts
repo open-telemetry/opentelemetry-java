@@ -11,6 +11,7 @@ dependencies {
   api(project(":sdk:metrics"))
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
+  api(project(":sdk:logs-testing"))
 
   api(project(":exporters:otlp:all"))
   api(project(":exporters:otlp:logs"))
@@ -22,6 +23,7 @@ dependencies {
 
   api("io.opentelemetry.proto:opentelemetry-proto")
   api("org.junit.jupiter:junit-jupiter-api")
+  implementation("com.squareup.okhttp3:okhttp")
   implementation("org.junit.jupiter:junit-jupiter-params")
 
   implementation("com.linecorp.armeria:armeria-grpc-protocol")

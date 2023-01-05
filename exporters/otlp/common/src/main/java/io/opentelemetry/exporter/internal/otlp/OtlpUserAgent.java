@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
  */
 public final class OtlpUserAgent {
 
-  private static final String userAgent = "OTel OTLP Exporter Java/" + readVersion();
+  private static final String userAgent = "OTel-OTLP-Exporter-Java/" + readVersion();
 
   private static String readVersion() {
     Properties properties = new Properties();

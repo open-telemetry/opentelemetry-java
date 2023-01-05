@@ -23,7 +23,7 @@ class AbstractInstrumentTest {
   }
 
   @Test
-  void testToString() {
+  void stringRepresentation() {
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(testInstrument)
         .hasToString("TestInstrument{descriptor=" + INSTRUMENT_DESCRIPTOR + "}");
