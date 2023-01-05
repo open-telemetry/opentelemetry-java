@@ -10,11 +10,15 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
@@ -27,11 +31,20 @@ public final class ZipkinSpanExporterBuilder {
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
   @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
-  // compression is enabled by default, because this is the default of OkHttpSender,
+  // compression is enabled by default, because this is the default of
+  // OkHttpSender,
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private final OkHttpSender.Builder okHttpSenderBuilder;
+  @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private byte[] privateKeyPem;
+  @Nullable private byte[] certificatePem;
+
+  public ZipkinSpanExporterBuilder() {
+    this.okHttpSenderBuilder = OkHttpSender.newBuilder();
+  }
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -152,6 +165,29 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
+   * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
+   * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
+   * use the system default trusted certificates.
+   */
+  public ZipkinSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
+    this.trustedCertificatesPem = trustedCertificatesPem;
+    return this;
+  }
+
+  /**
+   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * The key must be PKCS8, and both must be in PEM format.
+   */
+  public ZipkinSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    requireNonNull(privateKeyPem, "privateKeyPem");
+    requireNonNull(certificatePem, "certificatePem");
+    this.privateKeyPem = privateKeyPem;
+    this.certificatePem = certificatePem;
+    return this;
+  }
+
+  /**
    * Builds a {@link ZipkinSpanExporter}.
    *
    * @return a {@code ZipkinSpanExporter}.
@@ -159,8 +195,25 @@ public final class ZipkinSpanExporterBuilder {
   public ZipkinSpanExporter build() {
     Sender sender = this.sender;
     if (sender == null) {
+      if (trustedCertificatesPem != null) {
+        try {
+          X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
+          X509KeyManager keyManager = null;
+          if (privateKeyPem != null && certificatePem != null) {
+            keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
+          }
+          this.okHttpSenderBuilder
+              .clientBuilder()
+              .sslSocketFactory(TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
+        } catch (SSLException e) {
+          throw new IllegalStateException(
+              "Could not set trusted certificate for Zipkin HTTP connection, are they valid X.509 in PEM format?",
+              e);
+        }
+      }
+
       sender =
-          OkHttpSender.newBuilder()
+          this.okHttpSenderBuilder
               .endpoint(endpoint)
               .compressionEnabled(compressionEnabled)
               .readTimeout((int) readTimeoutMillis)

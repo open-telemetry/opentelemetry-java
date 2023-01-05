@@ -131,10 +131,13 @@ The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stab
 
 The [Zipkin](https://zipkin.io/zipkin-api/) exporter. It sends JSON in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to a specified HTTP URL.
 
-| System property               | Environment variable          | Description                                                                                                           |
-|-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=zipkin   | OTEL_TRACES_EXPORTER=zipkin   | Select the Zipkin exporter                                                                                            |
-| otel.exporter.zipkin.endpoint | OTEL_EXPORTER_ZIPKIN_ENDPOINT | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported. |
+| System property                         | Environment variable                    | Description                                                                                                                                                                                                                                     |
+|-----------------------------------------|-----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter=zipkin             | OTEL_TRACES_EXPORTER=zipkin             | Select the Zipkin exporter                                                                                                                                                                                                                      |
+| otel.exporter.zipkin.endpoint           | OTEL_EXPORTER_ZIPKIN_ENDPOINT           | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported.                                                                                                                           |
+| otel.exporter.zipkin.certificate        | OTEL_EXPORTER_ZIPKIN_CERTIFICATE        | The path to the file containing trusted certificates to use when verifying a server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
+| otel.exporter.zipkin.client.certificate | OTEL_EXPORTER_ZIPKIN_CLIENT_CERTIFICATE | The path to the file containing trusted certificates to use when verifying a client's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default no chain file is used.                                  |
+| otel.exporter.zipkin.client.key         | OTEL_EXPORTER_ZIPKIN_CLIENT_KEY         | The path to the file containing private client key to use when verifying a client's TLS credentials. The file should contain one private key PKCS8 PEM format. By default no client key is used.                                                |
 
 ### Prometheus exporter
 

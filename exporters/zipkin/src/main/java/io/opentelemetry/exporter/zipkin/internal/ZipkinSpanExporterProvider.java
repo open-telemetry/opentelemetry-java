@@ -8,9 +8,14 @@ package io.opentelemetry.exporter.zipkin.internal;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.time.Duration;
+import javax.annotation.Nullable;
 
 /**
  * {@link SpanExporter} SPI implementation for {@link ZipkinSpanExporter}.
@@ -38,6 +43,47 @@ public class ZipkinSpanExporterProvider implements ConfigurableSpanExporterProvi
       builder.setReadTimeout(timeout);
     }
 
+    String certificatePath = config.getString("otel.exporter.zipkin.certificate");
+    String clientKeyPath = config.getString("otel.exporter.zipkin.client.key");
+    String clientKeyChainPath = config.getString("otel.exporter.zipkin.client.certificate");
+
+    if (clientKeyPath != null && clientKeyChainPath == null) {
+      throw new ConfigurationException("Client key provided but certification chain is missing");
+    } else if (clientKeyPath == null && clientKeyChainPath != null) {
+      throw new ConfigurationException("Client key chain provided but key is missing");
+    }
+
+    byte[] certificateBytes = readFileBytes(certificatePath);
+    if (certificateBytes != null) {
+      builder.setTrustedCertificates(certificateBytes);
+    }
+
+    byte[] clientKeyBytes = readFileBytes(clientKeyPath);
+    byte[] clientKeyChainBytes = readFileBytes(clientKeyChainPath);
+
+    if (clientKeyBytes != null && clientKeyChainBytes != null) {
+      builder.setClientTls(clientKeyBytes, clientKeyChainBytes);
+    }
+
     return builder.build();
+  }
+
+  @Nullable
+  private static byte[] readFileBytes(@Nullable String filePath) {
+    if (filePath == null) {
+      return null;
+    }
+    File file = new File(filePath);
+    if (!file.exists()) {
+      throw new ConfigurationException("Invalid Zipkin certificate/key path: " + filePath);
+    }
+    try {
+      RandomAccessFile raf = new RandomAccessFile(file, "r");
+      byte[] bytes = new byte[(int) raf.length()];
+      raf.readFully(bytes);
+      return bytes;
+    } catch (IOException e) {
+      throw new ConfigurationException("Error reading content of file (" + filePath + ")", e);
+    }
   }
 }
