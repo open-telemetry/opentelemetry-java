@@ -137,6 +137,7 @@ jobs:
           version: 'latest'
           java-version: '11'
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Running test
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
