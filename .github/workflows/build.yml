@@ -128,10 +128,29 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
+  build-graal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          version: 'latest'
+          java-version: '11'
+          components: 'native-image'
+      - name: Running test
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          gu --version
+          native-image --version
+          ./gradlew nativeTest
+
   required-status-check:
     # markdown-link-check is not required so pull requests are not blocked if external links break
     # misspell-check is not required so pull requests are not blocked if the misspell dictionary is
     # updated
+    # build-graal is not required so pull requests are not blocked if we're rate limited
     needs:
       - build
     runs-on: ubuntu-latest
