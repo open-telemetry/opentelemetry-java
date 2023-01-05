@@ -16,6 +16,7 @@ import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
@@ -31,19 +32,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
-  private final String spanName;
-
-  // *All* parents are saved in this list.
-  private List<SpanParentInfo> allParents = Collections.emptyList();
-  private boolean ignoreActiveSpan;
-
-  @SuppressWarnings("rawtypes")
-  private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
-
-  private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
-  @Nullable private Boolean error;
-  private long startTimestampMicros;
+final class SpanBuilderShim implements SpanBuilder {
 
   private static final Attributes CHILD_OF_ATTR =
       Attributes.of(
@@ -54,8 +43,21 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
           SemanticAttributes.OPENTRACING_REF_TYPE,
           SemanticAttributes.OpentracingRefTypeValues.FOLLOWS_FROM);
 
-  public SpanBuilderShim(TelemetryInfo telemetryInfo, String spanName) {
-    super(telemetryInfo);
+  private final Tracer tracer;
+  private final String spanName;
+
+  // *All* parents are saved in this list.
+  private List<SpanParentInfo> allParents = Collections.emptyList();
+  private boolean ignoreActiveSpan;
+
+  private final List<AttributeKey<?>> spanBuilderAttributeKeys = new ArrayList<>();
+  private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
+
+  @Nullable private Boolean error;
+  private long startTimestampMicros;
+
+  SpanBuilderShim(Tracer tracer, String spanName) {
+    this.tracer = tracer;
     this.spanName = spanName;
   }
 
@@ -188,7 +190,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @Override
   public Span start() {
     Baggage baggage;
-    io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
+    io.opentelemetry.api.trace.SpanBuilder builder = tracer.spanBuilder(spanName);
     io.opentelemetry.api.trace.SpanContext mainParent = getMainParent(allParents);
 
     if (ignoreActiveSpan && mainParent == null) {
@@ -227,13 +229,14 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setStatus(error ? StatusCode.ERROR : StatusCode.OK);
     }
 
-    return new SpanShim(telemetryInfo(), span, baggage);
+    return new SpanShim(span, baggage);
   }
 
   // The first SpanContext with Child Of type in the entire list is used as parent,
   // else the first SpanContext is used as parent.
   @Nullable
-  static io.opentelemetry.api.trace.SpanContext getMainParent(List<SpanParentInfo> parents) {
+  private static io.opentelemetry.api.trace.SpanContext getMainParent(
+      List<SpanParentInfo> parents) {
     if (parents.size() == 0) {
       return null;
     }
@@ -249,7 +252,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     return mainParent.getSpanContext();
   }
 
-  static Baggage getAllBaggage(List<SpanParentInfo> parents) {
+  private static Baggage getAllBaggage(List<SpanParentInfo> parents) {
     if (parents.size() == 0) {
       return Baggage.empty();
     }

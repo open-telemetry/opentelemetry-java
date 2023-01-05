@@ -5,23 +5,17 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import javax.annotation.Nullable;
 
-final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
+final class ScopeManagerShim implements ScopeManager {
   private static final SpanShim NOOP_SPANSHIM =
-      new SpanShim(
-          new TelemetryInfo(
-              OpenTelemetry.noop().getTracer("noop"), OpenTracingPropagators.builder().build()),
-          io.opentelemetry.api.trace.Span.getInvalid());
+      new SpanShim(io.opentelemetry.api.trace.Span.getInvalid());
 
-  public ScopeManagerShim(TelemetryInfo telemetryInfo) {
-    super(telemetryInfo);
-  }
+  ScopeManagerShim() {}
 
   @Override
   @Nullable
@@ -35,7 +29,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
         return null;
       }
 
-      return new SpanShim(telemetryInfo(), io.opentelemetry.api.trace.Span.getInvalid(), baggage);
+      return new SpanShim(io.opentelemetry.api.trace.Span.getInvalid(), baggage);
     }
 
     // If there's a SpanShim for the *actual* active Span, simply return it.
@@ -44,7 +38,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
     }
 
     // Span was activated from outside the Shim layer unfortunately.
-    return new SpanShim(telemetryInfo(), span, baggage);
+    return new SpanShim(span, baggage);
   }
 
   @Override

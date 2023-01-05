@@ -17,6 +17,8 @@ public class OpenTracingPropagatorsBuilder {
   private TextMapPropagator httpHeadersPropagator =
       GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
 
+  OpenTracingPropagatorsBuilder() {}
+
   /** Set propagator for {@link io.opentracing.propagation.Format.Builtin#TEXT_MAP} format. */
   public OpenTracingPropagatorsBuilder setTextMap(TextMapPropagator textMapPropagator) {
     Objects.requireNonNull(textMapPropagator, "textMapPropagator");

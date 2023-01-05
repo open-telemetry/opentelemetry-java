@@ -10,7 +10,7 @@ import io.opentracing.Scope;
 final class ScopeShim implements Scope {
   final io.opentelemetry.context.Scope scope;
 
-  public ScopeShim(io.opentelemetry.context.Scope scope) {
+  ScopeShim(io.opentelemetry.context.Scope scope) {
     this.scope = scope;
   }
 
