@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.22.0 (2023-01-06)
+
 ### API
 
 * WARNING: GlobalOpenTelemetry trigger of autoconfiguration is now opt-in.
