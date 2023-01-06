@@ -163,21 +163,7 @@ class FullConfigTest {
 
   @AfterEach
   void afterEach() {
-    autoConfiguredOpenTelemetrySdk
-        .getOpenTelemetrySdk()
-        .getSdkMeterProvider()
-        .shutdown()
-        .join(10, TimeUnit.SECONDS);
-    autoConfiguredOpenTelemetrySdk
-        .getOpenTelemetrySdk()
-        .getSdkLoggerProvider()
-        .shutdown()
-        .join(10, TimeUnit.SECONDS);
-    autoConfiguredOpenTelemetrySdk
-        .getOpenTelemetrySdk()
-        .getSdkTracerProvider()
-        .shutdown()
-        .join(10, TimeUnit.SECONDS);
+    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
   }
