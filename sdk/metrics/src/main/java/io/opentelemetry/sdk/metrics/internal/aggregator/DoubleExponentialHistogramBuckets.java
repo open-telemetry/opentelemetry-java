@@ -25,10 +25,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
   private ExponentialHistogramIndexer exponentialHistogramIndexer;
   private long totalCount;
 
-  DoubleExponentialHistogramBuckets(int startingScale, int maxBuckets) {
+  DoubleExponentialHistogramBuckets(int scale, int maxBuckets) {
     this.counts = new AdaptingCircularBufferCounter(maxBuckets);
-    this.scale = startingScale;
-    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(scale);
+    this.scale = scale;
+    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(this.scale);
     this.totalCount = 0;
   }
 
