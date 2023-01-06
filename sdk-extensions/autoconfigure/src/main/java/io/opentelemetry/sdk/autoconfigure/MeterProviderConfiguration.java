@@ -19,14 +19,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 final class MeterProviderConfiguration {
-  private static final Logger LOGGER = Logger.getLogger(MeterProviderConfiguration.class.getName());
 
-  @SuppressWarnings("fallthrough")
   static void configureMeterProvider(
       SdkMeterProviderBuilder meterProviderBuilder,
       ConfigProperties config,
@@ -38,24 +34,12 @@ final class MeterProviderConfiguration {
     String exemplarFilter =
         config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
     switch (exemplarFilter) {
-      case "none": // DEPRECATED: replaced by always_off
-        LOGGER.log(
-            Level.WARNING,
-            "otel.metrics.exemplar.filter option \"none\" is deprecated for removal. Use \"always_off\" instead.");
       case "always_off":
         SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOff());
         break;
-      case "all": // DEPRECATED: replaced by always_on
-        LOGGER.log(
-            Level.WARNING,
-            "otel.metrics.exemplar.filter option \"all\" is deprecated for removal. Use \"always_on\" instead.");
       case "always_on":
         SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
         break;
-      case "with_sampled_trace": // DEPRECATED: replaced by trace_based
-        LOGGER.log(
-            Level.WARNING,
-            "otel.metrics.exemplar.filter option \"with_sampled_trace\" is deprecated for removal. Use \"trace_based\" instead.");
       case "trace_based":
       default:
         SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.traceBased());
