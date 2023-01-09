@@ -377,7 +377,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       openTelemetrySdk = sdkBuilder.build();
 
       if (registerShutdownHook) {
-        Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
       }
     }
 
