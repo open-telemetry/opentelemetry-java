@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -337,10 +338,16 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (sdkEnabled) {
       SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
       meterProviderBuilder.setResource(resource);
+      MutableSupplier<MeterProvider> meterProviderSupplier = new MutableSupplier<>();
       MeterProviderConfiguration.configureMeterProvider(
-          meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
+          meterProviderBuilder,
+          config,
+          serviceClassLoader,
+          metricExporterCustomizer,
+          meterProviderSupplier);
       meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
       SdkMeterProvider meterProvider = meterProviderBuilder.build();
+      meterProviderSupplier.setValue(meterProvider);
 
       SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
       tracerProviderBuilder.setResource(resource);

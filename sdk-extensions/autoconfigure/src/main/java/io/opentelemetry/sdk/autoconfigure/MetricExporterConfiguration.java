@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
@@ -15,6 +16,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -35,7 +37,8 @@ final class MetricExporterConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      Supplier<MeterProvider> meterProviderSupplier) {
     if (name.equals("prometheus")) {
       // PrometheusHttpServer is implemented as MetricReader (not MetricExporter) and uses
       // the AutoConfigurationCustomizer#addMeterProviderCustomizer SPI hook instead of
@@ -50,7 +53,7 @@ final class MetricExporterConfiguration {
     }
 
     NamedSpiManager<MetricExporter> spiExportersManager =
-        metricExporterSpiManager(config, serviceClassLoader);
+        metricExporterSpiManager(config, serviceClassLoader, meterProviderSupplier);
 
     MetricExporter metricExporter = configureExporter(name, spiExportersManager);
     metricExporter = metricExporterCustomizer.apply(metricExporter, config);
@@ -62,11 +65,13 @@ final class MetricExporterConfiguration {
 
   // Visible for testing
   static NamedSpiManager<MetricExporter> metricExporterSpiManager(
-      ConfigProperties config, ClassLoader serviceClassLoader) {
+      ConfigProperties config,
+      ClassLoader serviceClassLoader,
+      Supplier<MeterProvider> meterProviderSupplier) {
     return SpiUtil.loadConfigurable(
         ConfigurableMetricExporterProvider.class,
         ConfigurableMetricExporterProvider::getName,
-        ConfigurableMetricExporterProvider::createExporter,
+        (provider, c) -> provider.createExporter(c, meterProviderSupplier),
         config,
         serviceClassLoader);
   }

@@ -107,6 +107,12 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public OkHttpExporterBuilder<T> setMeterProviderSupplier(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    this.meterProviderSupplier = meterProviderSupplier;
+    return this;
+  }
+
   public OkHttpExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;

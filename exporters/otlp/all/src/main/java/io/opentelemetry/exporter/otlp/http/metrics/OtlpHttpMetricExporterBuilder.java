@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Builder utility for {@link OtlpHttpMetricExporter}.
@@ -71,6 +72,12 @@ public final class OtlpHttpMetricExporterBuilder {
   public OtlpHttpMetricExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
     delegate.setEndpoint(endpoint);
+    return this;
+  }
+
+  public OtlpHttpMetricExporterBuilder setMeterProviderSupplier(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    delegate.setMeterProviderSupplier(meterProviderSupplier);
     return this;
   }
 

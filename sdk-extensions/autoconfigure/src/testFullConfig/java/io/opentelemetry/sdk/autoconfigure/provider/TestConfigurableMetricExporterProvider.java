@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.provider;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -13,11 +14,13 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public class TestConfigurableMetricExporterProvider implements ConfigurableMetricExporterProvider {
 
   @Override
-  public MetricExporter createExporter(ConfigProperties config) {
+  public MetricExporter createExporter(
+      ConfigProperties config, Supplier<MeterProvider> meterProviderSupplier) {
     return new TestMetricExporter(config);
   }
 

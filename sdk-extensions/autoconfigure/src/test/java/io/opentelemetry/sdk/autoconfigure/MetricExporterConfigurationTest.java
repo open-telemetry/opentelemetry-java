@@ -29,7 +29,8 @@ class MetricExporterConfigurationTest {
                     "prometheus",
                     EMPTY,
                     MetricExporterConfiguration.class.getClassLoader(),
-                    (a, b) -> a))
+                    (a, b) -> a,
+                    () -> null))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
             "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus"
@@ -40,7 +41,7 @@ class MetricExporterConfigurationTest {
   void configureExporter_KnownSpiExportersNotOnClasspath() {
     NamedSpiManager<MetricExporter> spiExportersManager =
         MetricExporterConfiguration.metricExporterSpiManager(
-            EMPTY, MetricExporterConfigurationTest.class.getClassLoader());
+            EMPTY, MetricExporterConfigurationTest.class.getClassLoader(), () -> null);
 
     assertThatThrownBy(() -> configureExporter("logging", spiExportersManager))
         .isInstanceOf(ConfigurationException.class)

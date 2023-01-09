@@ -51,7 +51,8 @@ class MeterProviderConfigurationTest {
         builder,
         DefaultConfigProperties.createForTest(configWithDefault),
         MeterProviderConfigurationTest.class.getClassLoader(),
-        (a, b) -> a);
+        (a, b) -> a,
+        () -> null);
     return assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)));
   }

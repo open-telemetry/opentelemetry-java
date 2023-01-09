@@ -41,7 +41,8 @@ class MetricExporterConfigurationTest {
                 "prometheus",
                 EMPTY,
                 MetricExporterConfigurationTest.class.getClassLoader(),
-                (a, b) -> a))
+                (a, b) -> a,
+                () -> null))
         .isNull();
   }
 
@@ -79,7 +80,7 @@ class MetricExporterConfigurationTest {
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<MetricExporter> spiExportersManager =
         MetricExporterConfiguration.metricExporterSpiManager(
-            EMPTY, ConfigurableMetricExporterTest.class.getClassLoader());
+            EMPTY, ConfigurableMetricExporterTest.class.getClassLoader(), () -> null);
 
     assertThat(MetricExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(LoggingMetricExporter.class);
@@ -98,7 +99,8 @@ class MetricExporterConfigurationTest {
                     MetricExporterConfiguration.metricExporterSpiManager(
                         DefaultConfigProperties.createForTest(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        MetricExporterConfigurationTest.class.getClassLoader())))
+                        MetricExporterConfigurationTest.class.getClassLoader(),
+                        () -> null)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }

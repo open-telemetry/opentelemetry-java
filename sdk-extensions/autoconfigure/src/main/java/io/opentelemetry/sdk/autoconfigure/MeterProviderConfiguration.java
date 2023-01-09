@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -19,6 +20,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 final class MeterProviderConfiguration {
@@ -28,7 +30,8 @@ final class MeterProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      Supplier<MeterProvider> meterProviderSupplier) {
 
     // Configure default exemplar filters.
     String exemplarFilter =
@@ -46,7 +49,8 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    configureMetricReaders(config, serviceClassLoader, metricExporterCustomizer)
+    configureMetricReaders(
+            config, serviceClassLoader, metricExporterCustomizer, meterProviderSupplier)
         .forEach(meterProviderBuilder::registerMetricReader);
   }
 
@@ -54,7 +58,8 @@ final class MeterProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      Supplier<MeterProvider> meterProviderSupplier) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.metrics.exporter");
     if (exporterNames.contains("none")) {
       if (exporterNames.size() > 1) {
@@ -71,7 +76,11 @@ final class MeterProviderConfiguration {
         .map(
             exporterName ->
                 MetricExporterConfiguration.configureReader(
-                    exporterName, config, serviceClassLoader, metricExporterCustomizer))
+                    exporterName,
+                    config,
+                    serviceClassLoader,
+                    metricExporterCustomizer,
+                    meterProviderSupplier))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

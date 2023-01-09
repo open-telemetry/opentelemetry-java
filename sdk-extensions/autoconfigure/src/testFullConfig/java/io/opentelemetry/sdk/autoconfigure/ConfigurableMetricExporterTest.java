@@ -32,7 +32,7 @@ public class ConfigurableMetricExporterTest {
         MetricExporterConfiguration.configureExporter(
             "testExporter",
             MetricExporterConfiguration.metricExporterSpiManager(
-                config, ConfigurableMetricExporterTest.class.getClassLoader()));
+                config, ConfigurableMetricExporterTest.class.getClassLoader(), () -> null));
 
     assertThat(metricExporter)
         .isInstanceOf(TestConfigurableMetricExporterProvider.TestMetricExporter.class)
@@ -48,7 +48,8 @@ public class ConfigurableMetricExporterTest {
                     "testExporter",
                     MetricExporterConfiguration.metricExporterSpiManager(
                         DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        new URLClassLoader(new URL[] {}, null))))
+                        new URLClassLoader(new URL[] {}, null),
+                        () -> null)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -61,7 +62,8 @@ public class ConfigurableMetricExporterTest {
                     "catExporter",
                     MetricExporterConfiguration.metricExporterSpiManager(
                         DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        ConfigurableMetricExporterTest.class.getClassLoader())))
+                        ConfigurableMetricExporterTest.class.getClassLoader(),
+                        () -> null)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }
@@ -77,7 +79,8 @@ public class ConfigurableMetricExporterTest {
                 MeterProviderConfiguration.configureMetricReaders(
                     config,
                     ConfigurableMetricExporterTest.class.getClassLoader(),
-                    (a, unused) -> a))
+                    (a, unused) -> a,
+                    () -> null))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
   }
@@ -90,7 +93,8 @@ public class ConfigurableMetricExporterTest {
             MeterProviderConfiguration.configureMetricReaders(
                 config,
                 MeterProviderConfiguration.class.getClassLoader(),
-                (metricExporter, unused) -> metricExporter))
+                (metricExporter, unused) -> metricExporter,
+                () -> null))
         .hasSize(1)
         .first()
         .isInstanceOf(PeriodicMetricReader.class)
@@ -111,7 +115,8 @@ public class ConfigurableMetricExporterTest {
             MeterProviderConfiguration.configureMetricReaders(
                 config,
                 MeterProviderConfiguration.class.getClassLoader(),
-                (metricExporter, unused) -> metricExporter))
+                (metricExporter, unused) -> metricExporter,
+                () -> null))
         .hasSize(2)
         .hasAtLeastOneElementOfType(PeriodicMetricReader.class)
         .hasAtLeastOneElementOfType(PeriodicMetricReader.class)

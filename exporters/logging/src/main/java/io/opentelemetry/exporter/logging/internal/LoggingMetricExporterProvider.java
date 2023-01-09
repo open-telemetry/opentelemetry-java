@@ -5,10 +5,12 @@
 
 package io.opentelemetry.exporter.logging.internal;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.function.Supplier;
 
 /**
  * {@link MetricExporter} SPI implementation for {@link LoggingMetricExporter}.
@@ -18,7 +20,8 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  */
 public class LoggingMetricExporterProvider implements ConfigurableMetricExporterProvider {
   @Override
-  public MetricExporter createExporter(ConfigProperties config) {
+  public MetricExporter createExporter(
+      ConfigProperties config, Supplier<MeterProvider> meterProviderSupplier) {
     return LoggingMetricExporter.create();
   }
 

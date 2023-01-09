@@ -9,6 +9,7 @@ import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.otlp.OtlpConfigUtil;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.function.Supplier;
 
 /**
  * {@link MetricExporter} SPI implementation for {@link OtlpGrpcMetricExporter} and {@link
@@ -29,11 +31,13 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  */
 public class OtlpMetricExporterProvider implements ConfigurableMetricExporterProvider {
   @Override
-  public MetricExporter createExporter(ConfigProperties config) {
+  public MetricExporter createExporter(
+      ConfigProperties config, Supplier<MeterProvider> meterProviderSupplier) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      OtlpHttpMetricExporterBuilder builder = httpBuilder();
+      OtlpHttpMetricExporterBuilder builder =
+          httpBuilder().setMeterProviderSupplier(meterProviderSupplier);
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
@@ -52,7 +56,8 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
+      OtlpGrpcMetricExporterBuilder builder =
+          grpcBuilder().setMeterProviderSupplier(meterProviderSupplier);
 
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,

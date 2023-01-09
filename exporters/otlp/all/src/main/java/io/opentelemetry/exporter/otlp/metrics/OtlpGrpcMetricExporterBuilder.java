@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Builder utility for this exporter.
@@ -60,6 +61,12 @@ public final class OtlpGrpcMetricExporterBuilder {
             GRPC_ENDPOINT_PATH);
     delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  public OtlpGrpcMetricExporterBuilder setMeterProviderSupplier(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    delegate.setMeterProviderSupplier(meterProviderSupplier);
+    return this;
   }
 
   /**

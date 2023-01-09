@@ -129,6 +129,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public GrpcExporterBuilder<T> setMeterProviderSupplier(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    this.meterProviderSupplier = meterProviderSupplier;
+    return this;
+  }
+
   public GrpcExporter<T> build() {
     if (grpcChannel != null) {
       return new UpstreamGrpcExporterFactory().buildWithChannel((Channel) grpcChannel);

@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -29,8 +30,8 @@ class LoggingExporterProviderTest {
   void metricExporterProvider() {
     LoggingMetricExporterProvider provider = new LoggingMetricExporterProvider();
     assertThat(provider.getName()).isEqualTo("logging-otlp");
-    assertThat(
-            provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap())))
+    ConfigProperties config = DefaultConfigProperties.createForTest(Collections.emptyMap());
+    assertThat(provider.createExporter(config, () -> null))
         .isInstanceOf(OtlpJsonLoggingMetricExporter.class);
   }
 
