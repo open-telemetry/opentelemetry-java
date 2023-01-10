@@ -36,8 +36,6 @@ class SpanBuilderShimTest {
 
   private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
-  private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, OpenTracingPropagators.builder().build());
 
   private static final String SPAN_NAME = "Span";
 
@@ -48,7 +46,7 @@ class SpanBuilderShimTest {
 
   @Test
   void default_values() {
-    SpanShim span = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim span = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
       assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
@@ -65,10 +63,10 @@ class SpanBuilderShimTest {
 
   @Test
   void parent_single() {
-    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       SpanShim childSpan =
-          (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
+          (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(parentSpan).start();
 
       try {
         SpanData spanData = ((ReadableSpan) childSpan.getSpan()).toSpanData();
@@ -84,8 +82,7 @@ class SpanBuilderShimTest {
   @Test
   void noop_parent_span() {
     SpanShim childSpan =
-        (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(NoopSpan.INSTANCE).start();
+        (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(NoopSpan.INSTANCE).start();
     try {
       SpanData spanData = ((ReadableSpan) childSpan.getSpan()).toSpanData();
       assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
@@ -96,13 +93,13 @@ class SpanBuilderShimTest {
 
   @Test
   void parent_multipleFollowsFrom() {
-    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
 
     try {
       SpanShim childSpan =
           (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+              new SpanBuilderShim(tracer, SPAN_NAME)
                   .addReference(References.FOLLOWS_FROM, parentSpan1.context())
                   .addReference(References.FOLLOWS_FROM, parentSpan2.context())
                   .start();
@@ -122,14 +119,14 @@ class SpanBuilderShimTest {
 
   @Test
   void parent_multipleDifferentRefType() {
-    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan3 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan3 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
 
     try {
       SpanShim childSpan =
           (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+              new SpanBuilderShim(tracer, SPAN_NAME)
                   .addReference(References.FOLLOWS_FROM, parentSpan1.context())
                   .addReference(References.CHILD_OF, parentSpan2.context())
                   .addReference(References.CHILD_OF, parentSpan3.context())
@@ -151,14 +148,14 @@ class SpanBuilderShimTest {
 
   @Test
   void parent_multipleLinks() {
-    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan3 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan3 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
 
     try {
       SpanShim childSpan =
           (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+              new SpanBuilderShim(tracer, SPAN_NAME)
                   .addReference(References.FOLLOWS_FROM, parentSpan1.context())
                   .addReference(References.CHILD_OF, parentSpan2.context())
                   .addReference(References.FOLLOWS_FROM, parentSpan3.context())
@@ -191,11 +188,11 @@ class SpanBuilderShimTest {
 
   @Test
   void parent_wrongRefType() {
-    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       SpanShim childSpan =
           (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+              new SpanBuilderShim(tracer, SPAN_NAME)
                   .addReference("wrongreftype-value", parentSpan.context())
                   .start();
 
@@ -215,12 +212,12 @@ class SpanBuilderShimTest {
 
   @Test
   void baggage_parent() {
-    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       parentSpan.setBaggageItem("key1", "value1");
 
       SpanShim childSpan =
-          (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
+          (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(parentSpan).start();
       try {
         assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
         assertThat(getBaggageMap(parentSpan.context().baggageItems()))
@@ -235,13 +232,12 @@ class SpanBuilderShimTest {
 
   @Test
   void baggage_parentContext() {
-    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       parentSpan.setBaggageItem("key1", "value1");
 
       SpanShim childSpan =
-          (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan.context()).start();
+          (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(parentSpan.context()).start();
       try {
         assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
         assertThat(getBaggageMap(parentSpan.context().baggageItems()))
@@ -256,15 +252,15 @@ class SpanBuilderShimTest {
 
   @Test
   void baggage_multipleParents() {
-    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
-    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan1 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    SpanShim parentSpan2 = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       parentSpan1.setBaggageItem("key1", "value1");
       parentSpan2.setBaggageItem("key2", "value2");
 
       SpanShim childSpan =
           (SpanShim)
-              new SpanBuilderShim(telemetryInfo, SPAN_NAME)
+              new SpanBuilderShim(tracer, SPAN_NAME)
                   .addReference(References.FOLLOWS_FROM, parentSpan1.context())
                   .addReference(References.CHILD_OF, parentSpan2.context())
                   .start();
@@ -284,11 +280,9 @@ class SpanBuilderShimTest {
   void baggage_spanWithInvalidSpan() {
     io.opentelemetry.api.baggage.Baggage baggage =
         io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
-    SpanShim span =
-        new SpanShim(telemetryInfo, io.opentelemetry.api.trace.Span.getInvalid(), baggage);
+    SpanShim span = new SpanShim(io.opentelemetry.api.trace.Span.getInvalid(), baggage);
 
-    SpanShim childSpan =
-        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(span).start();
+    SpanShim childSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(span).start();
     assertThat(childSpan.getBaggage()).isEqualTo(baggage);
   }
 
@@ -297,11 +291,10 @@ class SpanBuilderShimTest {
     io.opentelemetry.api.baggage.Baggage baggage =
         io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
     SpanContextShim spanContext =
-        new SpanContextShim(
-            telemetryInfo, io.opentelemetry.api.trace.Span.getInvalid().getSpanContext(), baggage);
+        new SpanContextShim(io.opentelemetry.api.trace.Span.getInvalid().getSpanContext(), baggage);
 
     SpanShim childSpan =
-        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(spanContext).start();
+        (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(spanContext).start();
     assertThat(childSpan.getBaggage()).isEqualTo(baggage);
   }
 
@@ -309,10 +302,10 @@ class SpanBuilderShimTest {
   void parent_NullContextShim() {
     /* SpanContextShim is null until Span.context() or Span.getBaggageItem() are called.
      * Verify a null SpanContextShim in the parent is handled properly. */
-    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
     try {
       SpanShim childSpan =
-          (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
+          (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(parentSpan).start();
       try {
         assertThat(childSpan.context().baggageItems().iterator().hasNext()).isFalse();
       } finally {
@@ -327,7 +320,7 @@ class SpanBuilderShimTest {
   void withStartTimestamp() {
     long micros = 123447307984L;
     SpanShim spanShim =
-        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).withStartTimestamp(micros).start();
+        (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).withStartTimestamp(micros).start();
     SpanData spanData = ((ReadableSpan) spanShim.getSpan()).toSpanData();
     assertThat(spanData.getStartEpochNanos()).isEqualTo(micros * 1000L);
   }
@@ -336,14 +329,10 @@ class SpanBuilderShimTest {
   void setAttribute_errorAsBoolean() {
     SpanShim span1 =
         (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
-                .withTag(Tags.ERROR.getKey(), true)
-                .start();
+            new SpanBuilderShim(tracer, SPAN_NAME).withTag(Tags.ERROR.getKey(), true).start();
     SpanShim span2 =
         (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
-                .withTag(Tags.ERROR.getKey(), false)
-                .start();
+            new SpanBuilderShim(tracer, SPAN_NAME).withTag(Tags.ERROR.getKey(), false).start();
     try {
       SpanData spanData1 = ((ReadableSpan) span1.getSpan()).toSpanData();
       assertThat(spanData1.getStatus()).isEqualTo(StatusData.error());
@@ -360,14 +349,10 @@ class SpanBuilderShimTest {
   void setAttribute_errorAsString() {
     SpanShim span1 =
         (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
-                .withTag(Tags.ERROR.getKey(), "tRuE")
-                .start();
+            new SpanBuilderShim(tracer, SPAN_NAME).withTag(Tags.ERROR.getKey(), "tRuE").start();
     SpanShim span2 =
         (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME)
-                .withTag(Tags.ERROR.getKey(), "FaLsE")
-                .start();
+            new SpanBuilderShim(tracer, SPAN_NAME).withTag(Tags.ERROR.getKey(), "FaLsE").start();
     try {
       SpanData spanData1 = ((ReadableSpan) span1.getSpan()).toSpanData();
       assertThat(spanData1.getStatus()).isEqualTo(StatusData.error());
@@ -383,8 +368,7 @@ class SpanBuilderShimTest {
   @Test
   void setAttribute_unrecognizedType() {
     SpanShim span =
-        (SpanShim)
-            new SpanBuilderShim(telemetryInfo, SPAN_NAME).withTag("foo", BigInteger.TEN).start();
+        (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).withTag("foo", BigInteger.TEN).start();
     try {
       SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(1);
@@ -399,11 +383,9 @@ class SpanBuilderShimTest {
     SdkTracerProvider tracerSdkFactory =
         SdkTracerProvider.builder().setSampler(SamplingPrioritySampler.INSTANCE).build();
     Tracer tracer = tracerSdkFactory.get("SpanShimTest");
-    TelemetryInfo telemetryInfo =
-        new TelemetryInfo(tracer, OpenTracingPropagators.builder().build());
 
-    SpanBuilderShim spanBuilder1 = new SpanBuilderShim(telemetryInfo, SPAN_NAME);
-    SpanBuilderShim spanBuilder2 = new SpanBuilderShim(telemetryInfo, SPAN_NAME);
+    SpanBuilderShim spanBuilder1 = new SpanBuilderShim(tracer, SPAN_NAME);
+    SpanBuilderShim spanBuilder2 = new SpanBuilderShim(tracer, SPAN_NAME);
     SpanShim span1 =
         (SpanShim)
             spanBuilder1

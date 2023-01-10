@@ -17,17 +17,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-final class TracerShim extends BaseShimObject implements Tracer {
+final class TracerShim implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
 
+  private final io.opentelemetry.api.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
   private volatile boolean isClosed;
 
-  TracerShim(TelemetryInfo telemetryInfo) {
-    super(telemetryInfo);
-    this.scopeManagerShim = new ScopeManagerShim(telemetryInfo);
-    this.propagation = new Propagation(telemetryInfo);
+  TracerShim(
+      io.opentelemetry.api.trace.Tracer tracer, OpenTracingPropagators openTracingPropagators) {
+    this.tracer = tracer;
+    this.propagation = new Propagation(openTracingPropagators);
+    this.scopeManagerShim = new ScopeManagerShim();
+  }
+
+  // Visible for testing
+  io.opentelemetry.api.trace.Tracer tracer() {
+    return tracer;
+  }
+
+  // Visible for testing
+  Propagation propagation() {
+    return propagation;
   }
 
   @Override
@@ -48,10 +60,10 @@ final class TracerShim extends BaseShimObject implements Tracer {
   @Override
   public SpanBuilder buildSpan(String operationName) {
     if (isClosed) {
-      return new NoopSpanBuilderShim(telemetryInfo(), operationName);
+      return new NoopSpanBuilderShim(operationName);
     }
 
-    return new SpanBuilderShim(telemetryInfo, operationName);
+    return new SpanBuilderShim(tracer, operationName);
   }
 
   @Override

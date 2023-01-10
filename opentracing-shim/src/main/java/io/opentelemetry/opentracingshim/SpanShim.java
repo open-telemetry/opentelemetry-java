@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  * and performance reasons, as opposed to keeping a global map
  * link OTel's Span and OT Span/SpanContext.
  */
-final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeyed {
+final class SpanShim implements Span, ImplicitContextKeyed {
   private static final String DEFAULT_EVENT_NAME = "log";
   private static final String ERROR = "error";
   private static final ContextKey<SpanShim> SPAN_SHIM_KEY =
@@ -43,16 +43,14 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
   private final Object spanContextShimLock;
   private volatile SpanContextShim spanContextShim;
 
-  public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span) {
-    this(telemetryInfo, span, Baggage.empty());
+  SpanShim(io.opentelemetry.api.trace.Span span) {
+    this(span, Baggage.empty());
   }
 
-  public SpanShim(
-      TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span, Baggage baggage) {
-    super(telemetryInfo);
+  SpanShim(io.opentelemetry.api.trace.Span span, Baggage baggage) {
     this.span = span;
     this.spanContextShimLock = new Object();
-    this.spanContextShim = new SpanContextShim(telemetryInfo, span.getSpanContext(), baggage);
+    this.spanContextShim = new SpanContextShim(span.getSpanContext(), baggage);
   }
 
   io.opentelemetry.api.trace.Span getSpan() {

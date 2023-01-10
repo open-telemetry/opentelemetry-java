@@ -16,12 +16,19 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-final class Propagation extends BaseShimObject {
+final class Propagation {
   private static final TextMapSetter SETTER_INSTANCE = new TextMapSetter();
   private static final TextMapGetter GETTER_INSTANCE = new TextMapGetter();
 
-  Propagation(TelemetryInfo telemetryInfo) {
-    super(telemetryInfo);
+  private final OpenTracingPropagators propagators;
+
+  Propagation(OpenTracingPropagators propagators) {
+    this.propagators = propagators;
+  }
+
+  // Visible for testing
+  OpenTracingPropagators propagators() {
+    return propagators;
   }
 
   <C> void injectTextMap(SpanContextShim contextShim, Format<C> format, TextMapInject carrier) {
@@ -46,14 +53,14 @@ final class Propagation extends BaseShimObject {
       return null;
     }
 
-    return new SpanContextShim(telemetryInfo, span.getSpanContext(), baggage);
+    return new SpanContextShim(span.getSpanContext(), baggage);
   }
 
   private <C> TextMapPropagator getPropagator(Format<C> format) {
     if (format == Format.Builtin.HTTP_HEADERS) {
-      return propagators().httpHeadersPropagator();
+      return propagators.httpHeadersPropagator();
     }
-    return propagators().textMapPropagator();
+    return propagators.textMapPropagator();
   }
 
   static final class TextMapSetter

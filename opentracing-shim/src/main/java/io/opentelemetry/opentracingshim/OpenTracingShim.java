@@ -46,7 +46,7 @@ public final class OpenTracingShim {
    */
   public static io.opentracing.Tracer createTracerShim(
       Tracer tracer, OpenTracingPropagators propagators) {
-    return new TracerShim(new TelemetryInfo(tracer, propagators));
+    return new TracerShim(tracer, propagators);
   }
 
   /**

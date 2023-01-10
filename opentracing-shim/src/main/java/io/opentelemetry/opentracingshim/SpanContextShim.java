@@ -15,28 +15,12 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-final class SpanContextShim extends BaseShimObject implements SpanContext {
+final class SpanContextShim implements SpanContext {
 
   private final io.opentelemetry.api.trace.SpanContext context;
   private final Baggage baggage;
 
-  public SpanContextShim(SpanShim spanShim) {
-    this(
-        spanShim.telemetryInfo(),
-        spanShim.getSpan().getSpanContext(),
-        spanShim.telemetryInfo().emptyBaggage());
-  }
-
-  public SpanContextShim(
-      TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.SpanContext context) {
-    this(telemetryInfo, context, telemetryInfo.emptyBaggage());
-  }
-
-  public SpanContextShim(
-      TelemetryInfo telemetryInfo,
-      io.opentelemetry.api.trace.SpanContext context,
-      Baggage baggage) {
-    super(telemetryInfo);
+  SpanContextShim(io.opentelemetry.api.trace.SpanContext context, Baggage baggage) {
     this.context = context;
     this.baggage = baggage;
   }
@@ -45,7 +29,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     BaggageBuilder builder = baggage.toBuilder();
     builder.put(key, value, BaggageEntryMetadata.empty());
 
-    return new SpanContextShim(telemetryInfo(), context, builder.build());
+    return new SpanContextShim(context, builder.build());
   }
 
   io.opentelemetry.api.trace.SpanContext getSpanContext() {
