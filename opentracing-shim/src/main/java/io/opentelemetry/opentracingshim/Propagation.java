@@ -20,15 +20,12 @@ final class Propagation {
   private static final TextMapSetter SETTER_INSTANCE = new TextMapSetter();
   private static final TextMapGetter GETTER_INSTANCE = new TextMapGetter();
 
-  private final OpenTracingPropagators propagators;
+  private final TextMapPropagator textMapPropagator;
+  private final TextMapPropagator httpPropagator;
 
-  Propagation(OpenTracingPropagators propagators) {
-    this.propagators = propagators;
-  }
-
-  // Visible for testing
-  OpenTracingPropagators propagators() {
-    return propagators;
+  Propagation(TextMapPropagator textMapPropagator, TextMapPropagator httpPropagator) {
+    this.textMapPropagator = textMapPropagator;
+    this.httpPropagator = httpPropagator;
   }
 
   <C> void injectTextMap(SpanContextShim contextShim, Format<C> format, TextMapInject carrier) {
@@ -56,11 +53,12 @@ final class Propagation {
     return new SpanContextShim(span.getSpanContext(), baggage);
   }
 
-  private <C> TextMapPropagator getPropagator(Format<C> format) {
+  // Visible for testing
+  <C> TextMapPropagator getPropagator(Format<C> format) {
     if (format == Format.Builtin.HTTP_HEADERS) {
-      return propagators.httpHeadersPropagator();
+      return httpPropagator;
     }
-    return propagators.textMapPropagator();
+    return textMapPropagator;
   }
 
   static final class TextMapSetter
