@@ -413,7 +413,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     assertThat(spanData.getResource().getAttribute(stringKey("cat"))).isEqualTo("meow");
 
     // Ensures the export happened.
-    sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
+    sdk.shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Test
