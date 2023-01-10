@@ -172,12 +172,14 @@ final class TracerProviderConfiguration {
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:
-        Sampler spiSampler = spiSamplersManager.getByName(sampler);
+        boolean parentBased = sampler.startsWith("parentbased_");
+        Sampler spiSampler =
+            spiSamplersManager.getByName(sampler.replaceFirst("^parentbased_", ""));
         if (spiSampler == null) {
           throw new ConfigurationException(
               "Unrecognized value for otel.traces.sampler: " + sampler);
         }
-        return spiSampler;
+        return parentBased ? Sampler.parentBased(spiSampler) : spiSampler;
     }
   }
 

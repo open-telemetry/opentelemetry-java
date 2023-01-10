@@ -246,5 +246,13 @@ class TracerProviderConfigurationTest {
                     "catsampler", EMPTY, TracerProviderConfiguration.class.getClassLoader()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized value for otel.traces.sampler: catsampler");
+    assertThatThrownBy(
+            () ->
+                TracerProviderConfiguration.configureSampler(
+                    "parentbased_catsampler",
+                    EMPTY,
+                    TracerProviderConfiguration.class.getClassLoader()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unrecognized value for otel.traces.sampler: parentbased_catsampler");
   }
 }
