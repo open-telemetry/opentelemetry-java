@@ -9,6 +9,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
@@ -18,7 +21,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
  *
  * @since 1.14.0
  */
-public interface MetricReader extends AggregationTemporalitySelector, DefaultAggregationSelector {
+public interface MetricReader
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
    * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
@@ -63,4 +67,10 @@ public interface MetricReader extends AggregationTemporalitySelector, DefaultAgg
    * @return the result of the shutdown.
    */
   CompletableResultCode shutdown();
+
+  /** Close this {@link MetricReader}, releasing any resources. */
+  @Override
+  default void close() throws IOException {
+    shutdown().join(10, TimeUnit.SECONDS);
+  }
 }
