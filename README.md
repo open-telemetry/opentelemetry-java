@@ -314,7 +314,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 [ci-image]: https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg
 [ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3Aci+branch%3Amain
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
+[codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
 [Manual instrumentation]: https://opentelemetry.io/docs/java/manual_instrumentation/
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
