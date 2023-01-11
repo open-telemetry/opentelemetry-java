@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A {@link LogRecordExporter} implementation that outputs log records to standard out. The output
@@ -29,6 +30,8 @@ import java.util.Collection;
 public class SystemOutLogRecordExporter implements LogRecordExporter {
   private static final DateTimeFormatter ISO_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
   /** Returns a new {@link SystemOutLogRecordExporter}. */
   public static SystemOutLogRecordExporter create() {
     return new SystemOutLogRecordExporter();
@@ -38,6 +41,10 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     StringBuilder stringBuilder = new StringBuilder(60);
 
     for (LogRecordData log : logs) {
@@ -82,6 +89,10 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      System.out.println("Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

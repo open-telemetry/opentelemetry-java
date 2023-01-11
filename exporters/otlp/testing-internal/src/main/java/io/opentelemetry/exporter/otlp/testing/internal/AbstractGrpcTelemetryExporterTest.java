@@ -394,14 +394,19 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 .join(10, TimeUnit.SECONDS)
                 .isSuccess())
         .isFalse();
+    assertThat(httpRequests).isEmpty();
   }
 
   @Test
+  @SuppressLogger(OkHttpGrpcExporter.class)
+  @SuppressLogger(UpstreamGrpcExporter.class)
   void doubleShutdown() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).build();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(logs.getEvents()).isEmpty();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 
   @Test

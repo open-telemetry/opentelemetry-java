@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.jaeger.thrift;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.jaegertracing.internal.exceptions.SenderException;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import io.jaegertracing.thriftjava.Process;
@@ -22,6 +23,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,6 +33,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -55,6 +59,10 @@ class JaegerThriftSpanExporterTest {
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault());
   private static final SpanContext SPAN_CONTEXT_2 =
       SpanContext.create(TRACE_ID, SPAN_ID_2, TraceFlags.getDefault(), TraceState.getDefault());
+  private static final Duration DURATION = Duration.ofMillis(900);
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(JaegerThriftSpanExporter.class);
 
   private JaegerThriftSpanExporter exporter;
   @Mock private ThriftSender thriftSender;
@@ -66,34 +74,17 @@ class JaegerThriftSpanExporterTest {
 
   @Test
   void testExport() throws SenderException, UnknownHostException {
-    long duration = 900; // ms
-    long startMs = System.currentTimeMillis();
-    long endMs = startMs + duration;
     SpanData span =
-        TestSpanData.builder()
-            .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT)
-            .setParentSpanContext(SPAN_CONTEXT_2)
-            .setName("GET /api/endpoint")
-            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
-            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
-            .setLinks(Collections.emptyList())
-            .setTotalRecordedLinks(0)
-            .setTotalRecordedEvents(0)
-            .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
-                    .setVersion("1.0.0")
-                    .build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        ResourceAttributes.SERVICE_NAME,
-                        "myServiceName",
-                        AttributeKey.stringKey("resource-attr-key"),
-                        "resource-attr-value")))
-            .build();
+        testSpanData(
+            Resource.create(
+                Attributes.of(
+                    ResourceAttributes.SERVICE_NAME,
+                    "myServiceName",
+                    AttributeKey.stringKey("resource-attr-key"),
+                    "resource-attr-value")),
+            "GET /api/endpoint",
+            SPAN_CONTEXT,
+            SPAN_CONTEXT_2);
 
     // test
     CompletableResultCode result = exporter.export(Collections.singletonList(span));
@@ -126,8 +117,8 @@ class JaegerThriftSpanExporterTest {
                         .setTraceIdLow(TRACE_ID_LOW)
                         .setRefType(SpanRefType.CHILD_OF)))
             .setParentSpanId(SPAN_ID_2_LONG)
-            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setStartTime(TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos()))
+            .setDuration(DURATION.toMillis() * 1000)
             .setLogs(Collections.emptyList());
     expectedSpan.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
@@ -144,58 +135,29 @@ class JaegerThriftSpanExporterTest {
 
   @Test
   void testExportMultipleResources() throws SenderException, UnknownHostException {
-    long duration = 900; // ms
-    long startMs = System.currentTimeMillis();
-    long endMs = startMs + duration;
     SpanData span =
-        TestSpanData.builder()
-            .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT)
-            .setName("GET /api/endpoint/1")
-            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
-            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
-            .setLinks(Collections.emptyList())
-            .setTotalRecordedLinks(0)
-            .setTotalRecordedEvents(0)
-            .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
-                    .setVersion("1.0.0")
-                    .build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        ResourceAttributes.SERVICE_NAME,
-                        "myServiceName1",
-                        AttributeKey.stringKey("resource-attr-key-1"),
-                        "resource-attr-value-1")))
-            .build();
+        testSpanData(
+            Resource.create(
+                Attributes.of(
+                    ResourceAttributes.SERVICE_NAME,
+                    "myServiceName1",
+                    AttributeKey.stringKey("resource-attr-key-1"),
+                    "resource-attr-value-1")),
+            "GET /api/endpoint/1",
+            SPAN_CONTEXT,
+            SpanContext.getInvalid());
 
     SpanData span2 =
-        TestSpanData.builder()
-            .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT_2)
-            .setName("GET /api/endpoint/2")
-            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
-            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
-            .setLinks(Collections.emptyList())
-            .setTotalRecordedLinks(0)
-            .setTotalRecordedEvents(0)
-            .setInstrumentationScopeInfo(
-                InstrumentationScopeInfo.builder("io.opentelemetry.auto")
-                    .setVersion("1.0.0")
-                    .build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        ResourceAttributes.SERVICE_NAME,
-                        "myServiceName2",
-                        AttributeKey.stringKey("resource-attr-key-2"),
-                        "resource-attr-value-2")))
-            .build();
+        testSpanData(
+            Resource.create(
+                Attributes.of(
+                    ResourceAttributes.SERVICE_NAME,
+                    "myServiceName2",
+                    AttributeKey.stringKey("resource-attr-key-2"),
+                    "resource-attr-value-2")),
+            "GET /api/endpoint/2",
+            SPAN_CONTEXT_2,
+            SpanContext.getInvalid());
 
     // test
     CompletableResultCode result = exporter.export(Arrays.asList(span, span2));
@@ -232,8 +194,8 @@ class JaegerThriftSpanExporterTest {
             .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint/1")
             .setReferences(Collections.emptyList())
-            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setStartTime(TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos()))
+            .setDuration(DURATION.toMillis() * 1000)
             .setLogs(Collections.emptyList());
     expectedSpan1.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan1.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
@@ -251,8 +213,8 @@ class JaegerThriftSpanExporterTest {
             .setSpanId(SPAN_ID_2_LONG)
             .setOperationName("GET /api/endpoint/2")
             .setReferences(Collections.emptyList())
-            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setStartTime(TimeUnit.NANOSECONDS.toMicros(span2.getStartEpochNanos()))
+            .setDuration(DURATION.toMillis() * 1000)
             .setLogs(Collections.emptyList());
     expectedSpan2.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan2.addToTags(new Tag("otel.status_code", TagType.STRING).setVStr("OK"));
@@ -265,5 +227,48 @@ class JaegerThriftSpanExporterTest {
 
     verify(thriftSender).send(expectedProcess2, Collections.singletonList(expectedSpan2));
     verify(thriftSender).send(expectedProcess1, Collections.singletonList(expectedSpan1));
+  }
+
+  @Test
+  @SuppressLogger(JaegerThriftSpanExporter.class)
+  void shutdown() {
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(
+            exporter
+                .export(
+                    Collections.singletonList(
+                        testSpanData(
+                            Resource.getDefault(),
+                            "span name",
+                            SPAN_CONTEXT,
+                            SpanContext.getInvalid())))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
+  }
+
+  private static SpanData testSpanData(
+      Resource resource, String spanName, SpanContext spanContext, SpanContext parentContext) {
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + DURATION.toMillis();
+    return TestSpanData.builder()
+        .setHasEnded(true)
+        .setSpanContext(spanContext)
+        .setParentSpanContext(parentContext)
+        .setName(spanName)
+        .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+        .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+        .setStatus(StatusData.ok())
+        .setKind(SpanKind.CONSUMER)
+        .setLinks(Collections.emptyList())
+        .setTotalRecordedLinks(0)
+        .setTotalRecordedEvents(0)
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("io.opentelemetry.auto").setVersion("1.0.0").build())
+        .setResource(resource)
+        .build();
   }
 }
