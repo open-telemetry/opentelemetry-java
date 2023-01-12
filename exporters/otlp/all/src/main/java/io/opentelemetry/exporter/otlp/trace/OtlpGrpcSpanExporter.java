@@ -22,9 +22,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   /**
    * Returns a new {@link OtlpGrpcSpanExporter} using the default values.
    *
-   * <p>To load configuration values from the environment and from system properties, use <code>
-   * io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk</code> instead of manually
-   * configuring your SDK.
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
    * @return a new {@link OtlpGrpcSpanExporter} instance.
    */

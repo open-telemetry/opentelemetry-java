@@ -20,9 +20,10 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
   private final GrpcExporter<LogsRequestMarshaler> delegate;
 
   /**
-   * Returns a new {@link OtlpGrpcLogRecordExporter} reading the configuration values from the
-   * environment and from system properties. System properties override values defined in the
-   * environment. If a configuration value is missing, it uses the default value.
+   * Returns a new {@link OtlpGrpcLogRecordExporter} using the default values.
+   *
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
    * @return a new {@link OtlpGrpcLogRecordExporter} instance.
    */
