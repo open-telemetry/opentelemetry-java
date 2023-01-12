@@ -10,14 +10,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
@@ -36,14 +40,20 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetrySdkTest {
+
+  @RegisterExtension
+  LogCapturer logCapturer = LogCapturer.create().captureForLogger(OpenTelemetrySdk.class.getName());
 
   @Mock private MetricExporter metricExporter;
   @Mock private SdkTracerProvider tracerProvider;
@@ -316,6 +326,42 @@ class OpenTelemetrySdkTest {
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
+  }
+
+  @Test
+  void shutdown() {
+    when(tracerProvider.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(meterProvider.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(loggerProvider.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
+            .setLoggerProvider(loggerProvider)
+            .build();
+
+    // First call should call shutdown
+    assertThat(sdk.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    verify(tracerProvider).shutdown();
+    verify(meterProvider).shutdown();
+    verify(loggerProvider).shutdown();
+    assertThat(logCapturer.getEvents()).isEmpty();
+
+    // Subsequent calls should log not call shutdown
+    Mockito.reset(tracerProvider, meterProvider, loggerProvider);
+    assertThat(sdk.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    sdk.close();
+
+    verify(tracerProvider, never()).shutdown();
+    verify(meterProvider, never()).shutdown();
+    verify(loggerProvider, never()).shutdown();
+
+    assertThat(logCapturer.getEvents())
+        .hasSize(2)
+        .allSatisfy(
+            loggingEvent ->
+                assertThat(loggingEvent.getMessage()).isEqualTo("Multiple shutdown calls"));
   }
 
   @Test

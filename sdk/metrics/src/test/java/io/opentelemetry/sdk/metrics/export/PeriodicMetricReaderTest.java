@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -172,14 +174,13 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
-  void oneLastExportAfterShutdown() throws Exception {
+  void shutdown_ExportsOneLastTime() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
-            .setInterval(Duration.ofSeconds(100))
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
             .build();
     reader.register(metricProducer);
-    // Assume that this will be called in less than 100 seconds.
     reader.shutdown();
 
     // This export was called during shutdown.
@@ -187,6 +188,19 @@ class PeriodicMetricReaderTest {
         .containsExactly(Collections.singletonList(METRIC_DATA));
 
     assertThat(waitingMetricExporter.hasShutdown.get()).isTrue();
+  }
+
+  @Test
+  void close_CallsShutdown() throws IOException {
+    PeriodicMetricReader reader =
+        spy(
+            PeriodicMetricReader.builder(new WaitingMetricExporter())
+                .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+                .build());
+    reader.register(metricProducer);
+    reader.close();
+
+    verify(reader, times(1)).shutdown();
   }
 
   @Test

@@ -34,15 +34,13 @@ class SpanShimTest {
 
   private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
-  private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, OpenTracingPropagators.builder().build());
   private Span span;
 
   private static final String SPAN_NAME = "Span";
 
   @BeforeEach
   void setUp() {
-    span = telemetryInfo.tracer().spanBuilder(SPAN_NAME).startSpan();
+    span = tracer.spanBuilder(SPAN_NAME).startSpan();
   }
 
   @AfterEach
@@ -52,19 +50,19 @@ class SpanShimTest {
 
   @Test
   void context_simple() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
     assertThat(contextShim).isNotNull();
     assertThat(span.getSpanContext()).isEqualTo(contextShim.getSpanContext());
-    assertThat(span.getSpanContext().getTraceId().toString()).isEqualTo(contextShim.toTraceId());
-    assertThat(span.getSpanContext().getSpanId().toString()).isEqualTo(contextShim.toSpanId());
+    assertThat(span.getSpanContext().getTraceId()).isEqualTo(contextShim.toTraceId());
+    assertThat(span.getSpanContext().getSpanId()).isEqualTo(contextShim.toSpanId());
     assertThat(contextShim.baggageItems().iterator().hasNext()).isFalse();
   }
 
   @Test
   void setAttribute_errorAsBoolean() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     spanShim.setTag(Tags.ERROR.getKey(), true);
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -77,7 +75,7 @@ class SpanShimTest {
 
   @Test
   void setAttribute_errorAsString() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     spanShim.setTag(Tags.ERROR.getKey(), "tRuE");
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -90,7 +88,7 @@ class SpanShimTest {
 
   @Test
   void setAttribute_unrecognizedType() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     spanShim.setTag("foo", BigInteger.ONE);
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -100,7 +98,7 @@ class SpanShimTest {
 
   @Test
   void baggage() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
 
     spanShim.setBaggageItem("key1", "value1");
     spanShim.setBaggageItem("key2", "value2");
@@ -117,7 +115,7 @@ class SpanShimTest {
 
   @Test
   void baggage_replacement() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     SpanContextShim contextShim1 = (SpanContextShim) spanShim.context();
 
     spanShim.setBaggageItem("key1", "value1");
@@ -131,7 +129,7 @@ class SpanShimTest {
   @Test
   void baggage_multipleThreads() throws Exception {
     ExecutorService executor = Executors.newCachedThreadPool();
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     int baggageItemsCount = 100;
 
     IntStream.range(0, baggageItemsCount)
@@ -146,7 +144,7 @@ class SpanShimTest {
 
   @Test
   void finish_micros() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     long micros = 123447307984L;
     spanShim.finish(micros);
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -155,7 +153,7 @@ class SpanShimTest {
 
   @Test
   public void log_error() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     Map<String, Object> fields = createErrorFields();
     spanShim.log(fields);
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -164,7 +162,7 @@ class SpanShimTest {
 
   @Test
   public void log_error_with_timestamp() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     Map<String, Object> fields = createErrorFields();
     long micros = 123447307984L;
     spanShim.log(micros, fields);
@@ -174,7 +172,7 @@ class SpanShimTest {
 
   @Test
   public void log_exception() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     Map<String, Object> fields = createExceptionFields();
     spanShim.log(fields);
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -185,7 +183,7 @@ class SpanShimTest {
 
   @Test
   public void log_error_with_exception() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     Map<String, Object> fields = createExceptionFields();
     fields.putAll(createErrorFields());
 
@@ -197,7 +195,7 @@ class SpanShimTest {
 
   @Test
   public void log_exception_with_timestamp() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     Map<String, Object> fields = createExceptionFields();
     long micros = 123447307984L;
     spanShim.log(micros, fields);
@@ -209,7 +207,7 @@ class SpanShimTest {
 
   @Test
   public void log_fields() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     spanShim.log(putKeyValuePairsToMap(new HashMap<>()));
     SpanData spanData = ((ReadableSpan) span).toSpanData();
     verifyAttributes(spanData.getEvents().get(0));
@@ -217,7 +215,7 @@ class SpanShimTest {
 
   @Test
   void log_micros() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     long micros = 123447307984L;
     spanShim.log(micros, "event");
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -226,7 +224,7 @@ class SpanShimTest {
 
   @Test
   void log_fields_micros() {
-    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    SpanShim spanShim = new SpanShim(span);
     long micros = 123447307984L;
     spanShim.log(micros, putKeyValuePairsToMap(new HashMap<>()));
     SpanData spanData = ((ReadableSpan) span).toSpanData();

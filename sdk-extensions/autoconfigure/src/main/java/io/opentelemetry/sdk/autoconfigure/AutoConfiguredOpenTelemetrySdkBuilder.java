@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -36,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -366,19 +364,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
       SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
 
-      if (registerShutdownHook) {
-        Runtime.getRuntime()
-            .addShutdownHook(
-                new Thread(
-                    () -> {
-                      List<CompletableResultCode> shutdown = new ArrayList<>();
-                      shutdown.add(tracerProvider.shutdown());
-                      shutdown.add(meterProvider.shutdown());
-                      shutdown.add(loggerProvider.shutdown());
-                      CompletableResultCode.ofAll(shutdown).join(10, TimeUnit.SECONDS);
-                    }));
-      }
-
       ContextPropagators propagators =
           PropagatorConfiguration.configurePropagators(
               config, serviceClassLoader, propagatorCustomizer);
@@ -391,6 +376,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
               .setPropagators(propagators);
 
       openTelemetrySdk = sdkBuilder.build();
+
+      if (registerShutdownHook) {
+        Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
+      }
     }
 
     if (setResultAsGlobal) {

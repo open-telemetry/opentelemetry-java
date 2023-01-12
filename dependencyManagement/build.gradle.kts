@@ -17,10 +17,10 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:3.21.12",
   "com.linecorp.armeria:armeria-bom:1.21.0",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.51.1",
+  "io.grpc:grpc-bom:1.52.0",
   "io.zipkin.brave:brave-bom:5.14.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
-  "org.junit:junit-bom:5.9.1",
+  "org.junit:junit-bom:5.9.2",
   "org.testcontainers:testcontainers-bom:1.17.6",
   "org.yaml:snakeyaml:1.33"
 )
@@ -76,7 +76,7 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.11.0",
+  "com.google.api.grpc:proto-google-common-protos:2.12.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
@@ -93,7 +93,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.12.3",
-  "org.assertj:assertj-core:3.23.1",
+  "org.assertj:assertj-core:3.24.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.22",

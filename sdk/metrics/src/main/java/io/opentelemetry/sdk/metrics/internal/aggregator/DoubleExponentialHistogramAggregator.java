@@ -35,7 +35,7 @@ public final class DoubleExponentialHistogramAggregator
 
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
   private final int maxBuckets;
-  private final int startingScale;
+  private final int maxScale;
 
   /**
    * Constructs an exponential histogram aggregator.
@@ -45,15 +45,15 @@ public final class DoubleExponentialHistogramAggregator
   public DoubleExponentialHistogramAggregator(
       Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
       int maxBuckets,
-      int startingScale) {
+      int maxScale) {
     this.reservoirSupplier = reservoirSupplier;
     this.maxBuckets = maxBuckets;
-    this.startingScale = startingScale;
+    this.maxScale = maxScale;
   }
 
   @Override
   public AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), maxBuckets, startingScale);
+    return new Handle(reservoirSupplier.get(), maxBuckets, maxScale);
   }
 
   /**
@@ -187,7 +187,7 @@ public final class DoubleExponentialHistogramAggregator
     private long count;
     private int scale;
 
-    Handle(ExemplarReservoir<DoubleExemplarData> reservoir, int maxBuckets, int startingScale) {
+    Handle(ExemplarReservoir<DoubleExemplarData> reservoir, int maxBuckets, int maxScale) {
       super(reservoir);
       this.maxBuckets = maxBuckets;
       this.sum = 0;
@@ -195,7 +195,7 @@ public final class DoubleExponentialHistogramAggregator
       this.min = Double.MAX_VALUE;
       this.max = -1;
       this.count = 0;
-      this.scale = startingScale;
+      this.scale = maxScale;
     }
 
     @Override

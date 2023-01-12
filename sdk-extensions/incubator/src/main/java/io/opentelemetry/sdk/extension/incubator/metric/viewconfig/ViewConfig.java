@@ -207,7 +207,7 @@ public final class ViewConfig {
         throw new ConfigurationException("max_buckets must be an integer", e);
       }
       if (maxBuckets != null) {
-        return ExponentialHistogramAggregation.create(maxBuckets);
+        return ExponentialHistogramAggregation.create(maxBuckets, 20);
       }
     }
     return aggregation;

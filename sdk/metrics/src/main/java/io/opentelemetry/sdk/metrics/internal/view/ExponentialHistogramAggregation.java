@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramAggregator;
@@ -27,24 +28,38 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 public final class ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
-  private static final int DEFAULT_STARTING_SCALE = 20;
+  private static final int DEFAULT_MAX_SCALE = 20;
 
   private static final Aggregation DEFAULT =
-      new ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS);
+      new ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS, DEFAULT_MAX_SCALE);
 
   private final int maxBuckets;
+  private final int maxScale;
 
-  private ExponentialHistogramAggregation(int maxBuckets) {
+  private ExponentialHistogramAggregation(int maxBuckets, int maxScale) {
     this.maxBuckets = maxBuckets;
+    this.maxScale = maxScale;
   }
 
   public static Aggregation getDefault() {
     return DEFAULT;
   }
 
-  public static Aggregation create(int maxBuckets) {
+  /**
+   * Aggregations measurements into an {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
+   *
+   * @param maxBuckets the max number of positive buckets and negative buckets (max total buckets is
+   *     2 * {@code maxBuckets} + 1 zero bucket).
+   * @param maxScale the maximum and initial scale. If measurements can't fit in a particular scale
+   *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
+   *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
+   *     performance of computing bucket index is improved when scale is <= 0.
+   * @return the aggregation
+   */
+  public static Aggregation create(int maxBuckets, int maxScale) {
     checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
-    return new ExponentialHistogramAggregation(maxBuckets);
+    checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
+    return new ExponentialHistogramAggregation(maxBuckets, maxScale);
   }
 
   @Override
@@ -61,7 +76,7 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())),
             maxBuckets,
-            DEFAULT_STARTING_SCALE);
+            maxScale);
   }
 
   @Override
@@ -77,6 +92,10 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
 
   @Override
   public String toString() {
-    return "ExponentialHistogramAggregation{maxBuckets=" + maxBuckets + "}";
+    return "ExponentialHistogramAggregation{maxBuckets="
+        + maxBuckets
+        + ",maxScale="
+        + maxScale
+        + "}";
   }
 }

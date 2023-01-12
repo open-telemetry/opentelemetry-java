@@ -208,7 +208,9 @@ class SdkDoubleHistogramTest {
             .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
-                View.builder().setAggregation(ExponentialHistogramAggregation.create(5)).build())
+                View.builder()
+                    .setAggregation(ExponentialHistogramAggregation.create(5, 20))
+                    .build())
             .build();
     DoubleHistogram doubleHistogram =
         sdkMeterProvider

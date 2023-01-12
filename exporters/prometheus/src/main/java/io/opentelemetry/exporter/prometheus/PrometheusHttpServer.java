@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -53,7 +52,7 @@ import javax.annotation.Nullable;
  */
 // Very similar to
 // https://github.com/prometheus/client_java/blob/master/simpleclient_httpserver/src/main/java/io/prometheus/client/exporter/HTTPServer.java
-public final class PrometheusHttpServer implements Closeable, MetricReader {
+public final class PrometheusHttpServer implements MetricReader {
 
   private static final DaemonThreadFactory THREAD_FACTORY =
       new DaemonThreadFactory("prometheus-http");

@@ -12,14 +12,25 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry {
+public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
+
+  private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
+
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
   private final SdkLoggerProvider loggerProvider;
@@ -76,6 +87,29 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   @Override
   public ContextPropagators getPropagators() {
     return propagators;
+  }
+
+  /**
+   * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link
+   * SdkMeterProvider#shutdown()}, and {@link SdkLoggerProvider#shutdown()}.
+   *
+   * @return a {@link CompletableResultCode} which completes when all providers are shutdown
+   */
+  public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      LOGGER.info("Multiple shutdown calls");
+      return CompletableResultCode.ofSuccess();
+    }
+    List<CompletableResultCode> results = new ArrayList<>();
+    results.add(tracerProvider.unobfuscate().shutdown());
+    results.add(meterProvider.unobfuscate().shutdown());
+    results.add(loggerProvider.shutdown());
+    return CompletableResultCode.ofAll(results);
+  }
+
+  @Override
+  public void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Override

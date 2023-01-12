@@ -210,7 +210,7 @@ class TestArgumentsProvider(
 testing {
   suites.withType(JvmTestSuite::class).configureEach {
     dependencies {
-      implementation(project)
+      implementation(project(project.path))
 
       implementation(project(":testing-internal"))
 

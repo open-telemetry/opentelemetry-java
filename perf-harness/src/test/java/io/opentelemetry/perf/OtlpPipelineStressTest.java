@@ -10,7 +10,6 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -106,9 +105,7 @@ public class OtlpPipelineStressTest {
 
   private final InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
 
-  private SdkTracerProvider sdkTracerProvider;
-  private OpenTelemetry openTelemetry;
-  private SdkMeterProvider meterProvider;
+  private OpenTelemetrySdk openTelemetry;
   private Proxy collectorProxy;
   private ToxiproxyClient toxiproxyClient;
 
@@ -134,8 +131,7 @@ public class OtlpPipelineStressTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    meterProvider.close();
-    sdkTracerProvider.shutdown();
+    openTelemetry.close();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -188,7 +184,7 @@ public class OtlpPipelineStressTest {
 
     Thread.sleep(10000);
     List<MetricData> finishedMetricItems = metricExporter.getFinishedMetricItems();
-    meterProvider.close();
+    openTelemetry.getSdkMeterProvider().close();
     Thread.sleep(1000);
     reportMetrics(finishedMetricItems);
     Thread.sleep(10000);
@@ -250,7 +246,7 @@ public class OtlpPipelineStressTest {
                 .build());
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
-    meterProvider =
+    SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .setResource(resource)
             .registerMetricReader(
@@ -281,7 +277,9 @@ public class OtlpPipelineStressTest {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     openTelemetry =
-        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
-    sdkTracerProvider = tracerProvider;
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
+            .buildAndRegisterGlobal();
   }
 }

@@ -4,9 +4,9 @@ import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
 import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
-import me.champeau.gradle.japicmp.report.Severity
 import me.champeau.gradle.japicmp.report.Violation
 import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
+import me.champeau.gradle.japicmp.report.stdrules.BinaryIncompatibleRule
 import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup
 import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule
 import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule
@@ -32,32 +32,24 @@ val latestReleasedVersion: String by lazy {
   moduleVersion
 }
 
-class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
+class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
-    for (change in member.compatibilityChanges) {
-      if (isAbstractMethodOnAutoValue(member, change)) {
-        continue
-      }
-      if (!change.isSourceCompatible) {
-        return Violation.error(member, "Not source compatible")
-      }
-      if (!change.isBinaryCompatible) {
-        return Violation.notBinaryCompatible(member, Severity.error)
-      }
+    if (member.compatibilityChanges == listOf(JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS) &&
+      member is JApiMethod &&
+      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
+    ) {
+      return Violation.accept(member, "Autovalue will automatically add implementation")
     }
     return null
   }
+}
 
-  /**
-   * Checks if the change is an abstract method on a class annotated with AutoValue.
-   * AutoValues need to override default interface methods and declare them abstract again.
-   * It causes METHOD_ABSTRACT_ADDED_TO_CLASS - source-incompatible change. It's
-   * false-positive since AutoValue will generate implementation anyway.
-   */
-  fun isAbstractMethodOnAutoValue(member: JApiCompatibility, change: JApiCompatibilityChange): Boolean {
-    return change == JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS &&
-      member is JApiMethod &&
-      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
+class SourceIncompatibleRule : AbstractRecordingSeenMembers() {
+  override fun maybeAddViolation(member: JApiCompatibility): Violation? {
+    if (!member.isSourceCompatible()) {
+      return Violation.error(member, "Not source compatible")
+    }
+    return null
   }
 }
 
@@ -114,17 +106,26 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         )
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
-        // but allow new default methods on interfaces, adding default implementations to
-        // interface methods previously abstract, and select additional customizations defined in
-        // AllowDefaultMethodRule.
-        compatibilityChangeExcludes.set(listOf("METHOD_NEW_DEFAULT", "METHOD_ABSTRACT_NOW_DEFAULT"))
+        // with some changes.
+        val exclusions = mutableListOf<String>()
+        // Allow new default methods on interfaces
+        exclusions.add("METHOD_NEW_DEFAULT")
+        // Allow adding default implementations for default methods
+        exclusions.add("METHOD_ABSTRACT_NOW_DEFAULT")
+        // Bug prevents recognizing default methods of superinterface.
+        // Fixed in https://github.com/siom79/japicmp/pull/343 but not yet available in me.champeau.gradle.japicmp
+        exclusions.add("METHOD_ABSTRACT_ADDED_IN_IMPLEMENTED_INTERFACE")
+        compatibilityChangeExcludes.set(exclusions)
         richReport {
           addSetupRule(RecordSeenMembersSetup::class.java)
           addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)
           addRule(JApiChangeStatus.MODIFIED, SourceCompatibleRule::class.java)
           addRule(JApiChangeStatus.UNCHANGED, UnchangedMemberRule::class.java)
-          addRule(AllowDefaultMethodRule::class.java)
-          addRule(SourceCompatibleRule::class.java)
+          // Allow new abstract methods on autovalue
+          addRule(AllowNewAbstractMethodOnAutovalueClasses::class.java)
+          addRule(BinaryIncompatibleRule::class.java)
+          // Disallow source incompatible changes, which are allowed by default for some reason
+          addRule(SourceIncompatibleRule::class.java)
         }
 
         // this is needed so that we only consider the current artifact, and not dependencies

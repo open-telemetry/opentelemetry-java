@@ -49,7 +49,7 @@ class DoubleExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
 
-  private static final int STARTING_SCALE = 20;
+  private static final int MAX_SCALE = 20;
   private static final DoubleExponentialHistogramAggregator aggregator =
       new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 20);
   private static final Resource RESOURCE = Resource.getDefault();
@@ -62,7 +62,7 @@ class DoubleExponentialHistogramAggregatorTest {
     return Stream.of(
         aggregator,
         new DoubleExponentialHistogramAggregator(
-            ExemplarReservoir::doubleNoSamples, 160, STARTING_SCALE));
+            ExemplarReservoir::doubleNoSamples, 160, MAX_SCALE));
   }
 
   private static int valueToIndex(int scale, double value) {
@@ -89,10 +89,10 @@ class DoubleExponentialHistogramAggregatorTest {
             .doAccumulateThenReset(Collections.emptyList());
     assertThat(accumulation.getPositiveBuckets())
         .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
-    assertThat(accumulation.getPositiveBuckets().getScale()).isEqualTo(STARTING_SCALE);
+    assertThat(accumulation.getPositiveBuckets().getScale()).isEqualTo(MAX_SCALE);
     assertThat(accumulation.getNegativeBuckets())
         .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
-    assertThat(accumulation.getNegativeBuckets().getScale()).isEqualTo(STARTING_SCALE);
+    assertThat(accumulation.getNegativeBuckets().getScale()).isEqualTo(MAX_SCALE);
   }
 
   @Test
@@ -199,7 +199,7 @@ class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
-        new DoubleExponentialHistogramAggregator(() -> reservoir, 160, STARTING_SCALE);
+        new DoubleExponentialHistogramAggregator(() -> reservoir, 160, MAX_SCALE);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -437,7 +437,7 @@ class DoubleExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160, STARTING_SCALE);
+        new DoubleExponentialHistogramAggregator(reservoirSupplier, 160, MAX_SCALE);
 
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
