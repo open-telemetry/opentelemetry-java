@@ -17,7 +17,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:3.21.12",
   "com.linecorp.armeria:armeria-bom:1.21.0",
   "com.squareup.okhttp3:okhttp-bom:4.10.0",
-  "io.grpc:grpc-bom:1.51.1",
+  "io.grpc:grpc-bom:1.52.0",
   "io.zipkin.brave:brave-bom:5.14.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.9.2",
