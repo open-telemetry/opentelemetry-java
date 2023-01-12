@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -352,7 +353,10 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
     assertThat(GlobalLoggerProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
-    assertThat(GlobalEventEmitterProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventEmitterProvider.get())
+        .isInstanceOf(SdkEventEmitterProvider.class)
+        .extracting("delegateLoggerProvider")
+        .isSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

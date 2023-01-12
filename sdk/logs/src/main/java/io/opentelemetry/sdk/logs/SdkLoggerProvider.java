@@ -6,9 +6,6 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.events.EventEmitter;
-import io.opentelemetry.api.events.EventEmitterBuilder;
-import io.opentelemetry.api.events.EventEmitterProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
@@ -24,7 +21,7 @@ import java.util.logging.Level;
 import javax.annotation.Nullable;
 
 /** SDK implementation for {@link LoggerProvider}. */
-public final class SdkLoggerProvider implements LoggerProvider, EventEmitterProvider, Closeable {
+public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   static final String DEFAULT_LOGGER_NAME = "unknown";
   private static final java.util.logging.Logger LOGGER =
@@ -64,31 +61,12 @@ public final class SdkLoggerProvider implements LoggerProvider, EventEmitterProv
   }
 
   @Override
-  public EventEmitter get(String instrumentationScopeName, String eventDomain) {
-    return loggerComponentRegistry
-        .get(instrumentationNameOrDefault(instrumentationScopeName), null, null, Attributes.empty())
-        .withEventDomain(eventDomain);
-  }
-
-  @Override
   public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
     if (isNoopLogRecordProcessor) {
       return LoggerProvider.noop().loggerBuilder(instrumentationScopeName);
     }
     return new SdkLoggerBuilder(
-        loggerComponentRegistry, instrumentationNameOrDefault(instrumentationScopeName), null);
-  }
-
-  @Override
-  public EventEmitterBuilder eventEmitterBuilder(
-      String instrumentationScopeName, String eventDomain) {
-    if (isNoopLogRecordProcessor) {
-      return EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName, eventDomain);
-    }
-    return new SdkLoggerBuilder(
-        loggerComponentRegistry,
-        instrumentationNameOrDefault(instrumentationScopeName),
-        eventDomain);
+        loggerComponentRegistry, instrumentationNameOrDefault(instrumentationScopeName));
   }
 
   private static String instrumentationNameOrDefault(@Nullable String instrumentationScopeName) {

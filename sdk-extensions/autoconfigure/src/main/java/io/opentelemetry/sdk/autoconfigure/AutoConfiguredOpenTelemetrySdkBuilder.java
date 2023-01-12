@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -385,7 +386,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (setResultAsGlobal) {
       GlobalOpenTelemetry.set(openTelemetrySdk);
       GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
-      GlobalEventEmitterProvider.set(openTelemetrySdk.getSdkLoggerProvider());
+      GlobalEventEmitterProvider.set(
+          SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
       logger.log(
           Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
     }

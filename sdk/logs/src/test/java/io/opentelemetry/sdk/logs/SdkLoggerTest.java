@@ -24,7 +24,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -34,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.event.LoggingEvent;
 
 class SdkLoggerTest {
 
@@ -141,46 +139,5 @@ class SdkLoggerTest {
     loggerProvider.get("test").logRecordBuilder().emit();
 
     verify(logRecordProcessor, never()).onEmit(any(), any());
-  }
-
-  @Test
-  @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
-  void emit() {
-    AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
-            .build();
-
-    // Emit event from logger with name and add event domain
-    loggerProvider
-        .eventEmitterBuilder("test", "event-domain")
-        .build()
-        .emit(
-            "event-name",
-            Attributes.builder()
-                .put("key1", "value1")
-                // should be overridden by the eventName argument passed to emit
-                .put("event.name", "foo")
-                .build());
-
-    assertThat(seenLog.get().toLogRecordData())
-        .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.domain", "event-domain")
-                .put("event.name", "event-name")
-                .build());
-
-    assertThat(apiUsageLogs.getEvents()).isEmpty();
-    seenLog.set(null);
-
-    // Emit event from logger with name and no event domain
-    ((SdkLogger) loggerProvider.get("test")).emit("event-name", Attributes.empty());
-
-    assertThat(apiUsageLogs.getEvents())
-        .hasSize(1)
-        .extracting(LoggingEvent::getMessage)
-        .allMatch(log -> log.equals("Cannot emit event from Logger without event domain."));
   }
 }

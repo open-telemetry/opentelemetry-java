@@ -56,6 +56,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -514,7 +515,7 @@ abstract class OtlpExporterIntegrationTest {
 
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
     EventEmitter eventEmitter =
-        loggerProvider
+        SdkEventEmitterProvider.create(loggerProvider)
             .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName(), "event-domain")
             .build();
 
