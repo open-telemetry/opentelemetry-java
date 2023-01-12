@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -26,9 +27,11 @@ final class TracerShim implements Tracer {
   private volatile boolean isClosed;
 
   TracerShim(
-      io.opentelemetry.api.trace.Tracer tracer, OpenTracingPropagators openTracingPropagators) {
+      io.opentelemetry.api.trace.Tracer tracer,
+      TextMapPropagator textMapPropagator,
+      TextMapPropagator httpPropagator) {
     this.tracer = tracer;
-    this.propagation = new Propagation(openTracingPropagators);
+    this.propagation = new Propagation(textMapPropagator, httpPropagator);
     this.scopeManagerShim = new ScopeManagerShim();
   }
 
