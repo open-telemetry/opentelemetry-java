@@ -242,22 +242,30 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build();
-    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
-    assumeThat(exporter.unwrap())
-        .extracting("delegate")
-        .isNotInstanceOf(UpstreamGrpcExporter.class);
-    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+    try {
+      // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+      assumeThat(exporter.unwrap())
+          .extracting("delegate")
+          .isNotInstanceOf(UpstreamGrpcExporter.class);
+      assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test
   void compressionWithGzip() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build();
-    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
-    assumeThat(exporter.unwrap())
-        .extracting("delegate")
-        .isNotInstanceOf(UpstreamGrpcExporter.class);
-    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
+    try {
+      // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+      assumeThat(exporter.unwrap())
+          .extracting("delegate")
+          .isNotInstanceOf(UpstreamGrpcExporter.class);
+      assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test

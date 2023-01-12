@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -43,11 +44,11 @@ class OtlpGrpcNettySpanExporterTest
   @Test
   @SuppressWarnings("deprecation") // testing deprecated feature
   void usingGrpc() throws Exception {
-    try (Closeable exporter =
-        OtlpGrpcSpanExporter.builder()
-            .setChannel(InProcessChannelBuilder.forName("test").build())
-            .build()) {
+    ManagedChannel channel = InProcessChannelBuilder.forName("test").build();
+    try (Closeable exporter = OtlpGrpcSpanExporter.builder().setChannel(channel).build()) {
       assertThat(exporter).extracting("delegate").isInstanceOf(UpstreamGrpcExporter.class);
+    } finally {
+      channel.shutdownNow();
     }
   }
 
