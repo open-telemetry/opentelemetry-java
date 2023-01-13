@@ -11,8 +11,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
@@ -35,7 +37,8 @@ final class MetricExporterConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      List<Closeable> closeables) {
     if (name.equals("prometheus")) {
       // PrometheusHttpServer is implemented as MetricReader (not MetricExporter) and uses
       // the AutoConfigurationCustomizer#addMeterProviderCustomizer SPI hook instead of
@@ -53,11 +56,19 @@ final class MetricExporterConfiguration {
         metricExporterSpiManager(config, serviceClassLoader);
 
     MetricExporter metricExporter = configureExporter(name, spiExportersManager);
-    metricExporter = metricExporterCustomizer.apply(metricExporter, config);
+    closeables.add(metricExporter);
+    MetricExporter customizedMetricExporter =
+        metricExporterCustomizer.apply(metricExporter, config);
+    if (customizedMetricExporter != metricExporter) {
+      closeables.add(customizedMetricExporter);
+    }
 
-    return PeriodicMetricReader.builder(metricExporter)
-        .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
-        .build();
+    MetricReader reader =
+        PeriodicMetricReader.builder(customizedMetricExporter)
+            .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
+            .build();
+    closeables.add(reader);
+    return reader;
   }
 
   // Visible for testing

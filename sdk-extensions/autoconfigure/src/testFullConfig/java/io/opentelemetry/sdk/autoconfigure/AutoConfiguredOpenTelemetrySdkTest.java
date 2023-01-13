@@ -12,11 +12,14 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
+@SetSystemProperty(key = "otel.traces.exporter", value = "none")
+@SetSystemProperty(key = "otel.metrics.exporter", value = "none")
 class AutoConfiguredOpenTelemetrySdkTest {
 
   @RegisterExtension
@@ -30,24 +33,23 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void initializeAndGet() {
-    OpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
-    assertThat(GlobalOpenTelemetry.get())
-        // ObfuscatedOpenTelemetry
-        .extracting("delegate")
-        .isSameAs(sdk);
+    try (OpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk()) {
+      assertThat(GlobalOpenTelemetry.get())
+          // ObfuscatedOpenTelemetry
+          .extracting("delegate")
+          .isSameAs(sdk);
+    }
   }
 
   @Test
   void initializeAndGet_noGlobal() {
-    OpenTelemetrySdk sdk =
+    try (OpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
             .build()
-            .getOpenTelemetrySdk();
-    // TODO: calling get() will call initialize() again and autoconfigure another instance of the
-    // SDK; in that case the get() method will return OpenTelemetrySdk and not
-    // ObfuscatedOpenTelemetry
-    assertThat(GlobalOpenTelemetry.get()).isNotSameAs(sdk);
+            .getOpenTelemetrySdk()) {
+      assertThat(GlobalOpenTelemetry.get()).isNotSameAs(sdk);
+    }
   }
 
   @Test
@@ -63,10 +65,21 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   @SetSystemProperty(key = "otel.java.global-autoconfigure.enabled", value = "true")
   void globalOpenTelemetry_AutoConfigureEnabled() {
-    assertThat(GlobalOpenTelemetry.get())
-        .extracting("delegate")
-        .isInstanceOf(OpenTelemetrySdk.class);
+    OpenTelemetry openTelemetry = unobfuscate(GlobalOpenTelemetry.get());
+    assertThat(openTelemetry).isInstanceOf(OpenTelemetrySdk.class);
+    ((OpenTelemetrySdk) openTelemetry).close();
+  }
 
-    assertThat(logs.getEvents().size()).isEqualTo(0);
+  private static OpenTelemetry unobfuscate(OpenTelemetry openTelemetry) {
+    try {
+      Field delegateField =
+          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+              .getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(openTelemetry);
+      return (OpenTelemetry) delegate;
+    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalStateException("Error unobfuscating OpenTelemetry", e);
+    }
   }
 }

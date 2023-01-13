@@ -11,26 +11,34 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.trace.internal.JcTools;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class LoggerProviderConfigurationTest {
+
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @Test
   void configureLoggerProvider() {
     Map<String, String> properties = Collections.singletonMap("otel.logs.exporter", "otlp");
+    List<Closeable> closeables = new ArrayList<>();
 
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
     LoggerProviderConfiguration.configureLoggerProvider(
@@ -38,10 +46,11 @@ class LoggerProviderConfigurationTest {
         DefaultConfigProperties.createForTest(properties),
         LoggerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
-        (a, unused) -> a);
-    SdkLoggerProvider loggerProvider = builder.build();
+        (a, unused) -> a,
+        closeables);
+    cleanup.addCloseables(closeables);
 
-    try {
+    try (SdkLoggerProvider loggerProvider = builder.build()) {
       assertThat(loggerProvider)
           .extracting("sharedState")
           .satisfies(
@@ -65,21 +74,33 @@ class LoggerProviderConfigurationTest {
                                     ArrayBlockingQueue.class,
                                     queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
                           }));
-    } finally {
-      loggerProvider.shutdown();
+      assertThat(closeables)
+          .hasExactlyElementsOfTypes(
+              OtlpGrpcLogRecordExporter.class, BatchLogRecordProcessor.class);
     }
   }
 
   @Test
   void configureLogRecordProcessors_multipleExportersWithLogging() {
-    LogRecordExporter loggingExporter = SystemOutLogRecordExporter.create();
-    LogRecordExporter otlpExporter = OtlpGrpcLogRecordExporter.builder().build();
+    List<Closeable> closeables = new ArrayList<>();
 
-    assertThat(
-            LoggerProviderConfiguration.configureLogRecordProcessors(
-                DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                ImmutableMap.of("logging", loggingExporter, "otlp", otlpExporter),
-                MeterProvider.noop()))
+    List<LogRecordProcessor> logRecordProcessors =
+        LoggerProviderConfiguration.configureLogRecordProcessors(
+            DefaultConfigProperties.createForTest(Collections.emptyMap()),
+            ImmutableMap.of(
+                "logging",
+                SystemOutLogRecordExporter.create(),
+                "otlp",
+                OtlpGrpcLogRecordExporter.builder().build()),
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(logRecordProcessors)
+        .hasSize(2)
+        .hasAtLeastOneElementOfType(SimpleLogRecordProcessor.class)
+        .hasAtLeastOneElementOfType(BatchLogRecordProcessor.class);
+    assertThat(closeables)
         .hasSize(2)
         .hasAtLeastOneElementOfType(SimpleLogRecordProcessor.class)
         .hasAtLeastOneElementOfType(BatchLogRecordProcessor.class);
@@ -93,13 +114,11 @@ class LoggerProviderConfigurationTest {
     properties.put("otel.blrp.max.export.batch.size", "3");
     properties.put("otel.blrp.export.timeout", "4");
 
-    BatchLogRecordProcessor processor =
+    try (BatchLogRecordProcessor processor =
         LoggerProviderConfiguration.configureBatchLogRecordProcessor(
             DefaultConfigProperties.createForTest(properties),
             SystemOutLogRecordExporter.create(),
-            MeterProvider.noop());
-
-    try {
+            MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
           .satisfies(
@@ -119,8 +138,6 @@ class LoggerProviderConfigurationTest {
                     .extracting("logRecordExporter")
                     .isInstanceOf(SystemOutLogRecordExporter.class);
               });
-    } finally {
-      processor.shutdown();
     }
   }
 }

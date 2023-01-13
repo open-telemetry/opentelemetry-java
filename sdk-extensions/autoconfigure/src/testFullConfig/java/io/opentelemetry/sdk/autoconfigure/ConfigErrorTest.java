@@ -11,9 +11,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -27,9 +29,16 @@ class ConfigErrorTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(GlobalOpenTelemetry.class);
 
+  @BeforeEach
+  void setup() {
+    GlobalOpenTelemetry.resetForTest();
+    GlobalLoggerProvider.resetForTest();
+  }
+
   @Test
   @SetSystemProperty(key = "otel.propagators", value = "cat")
   void invalidPropagator() {
+    // TODO(jack-berg): confirm log warnings go away once exporters are properly shutdown (#5113)
     assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(

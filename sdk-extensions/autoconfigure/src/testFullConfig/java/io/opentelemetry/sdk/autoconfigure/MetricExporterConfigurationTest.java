@@ -14,35 +14,47 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MetricExporterConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
 
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
+
   @Test
   void configureReader_PrometheusOnClasspath() {
-    assertThat(
-            MetricExporterConfiguration.configureReader(
-                "prometheus",
-                EMPTY,
-                MetricExporterConfigurationTest.class.getClassLoader(),
-                (a, b) -> a))
-        .isNull();
+    List<Closeable> closeables = new ArrayList<>();
+
+    MetricReader reader =
+        MetricExporterConfiguration.configureReader(
+            "prometheus",
+            EMPTY,
+            MetricExporterConfigurationTest.class.getClassLoader(),
+            (a, b) -> a,
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(reader).isNull();
+    assertThat(closeables).isEmpty();
   }
 
   /**
@@ -58,14 +70,13 @@ class MetricExporterConfigurationTest {
     config.put("otel.metrics.exporter", "prometheus");
     config.put("otel.logs.exporter", "none");
 
-    OpenTelemetrySdk sdk =
+    try (OpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
             .setConfig(DefaultConfigProperties.createForTest(config))
             .build()
-            .getOpenTelemetrySdk();
-    try (SdkMeterProvider meterProvider = sdk.getSdkMeterProvider()) {
-      assertThat(meterProvider)
+            .getOpenTelemetrySdk()) {
+      assertThat(sdk.getSdkMeterProvider())
           .extracting("registeredReaders", as(InstanceOfAssertFactories.list(Object.class)))
           .satisfiesExactly(
               registeredReader ->

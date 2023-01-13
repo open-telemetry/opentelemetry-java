@@ -63,19 +63,16 @@ class SpanExporterConfigurationTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             Collections.singletonMap("otel.exporter.otlp.timeout", "10"));
-    SpanExporter exporter =
+    try (SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
             "otlp",
             SpanExporterConfiguration.spanExporterSpiManager(
-                config, SpanExporterConfigurationTest.class.getClassLoader()));
-    try {
+                config, SpanExporterConfigurationTest.class.getClassLoader()))) {
       assertThat(exporter)
           .isInstanceOfSatisfying(
               OtlpGrpcSpanExporter.class,
               otlp ->
                   assertThat(otlp).extracting("delegate.client.callTimeoutMillis").isEqualTo(10));
-    } finally {
-      exporter.shutdown();
     }
   }
 }

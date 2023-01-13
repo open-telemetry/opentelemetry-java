@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -27,6 +29,7 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -60,8 +63,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AutoConfiguredOpenTelemetrySdkTest {
 
   @Mock private IdGenerator idGenerator;
@@ -438,5 +444,42 @@ class AutoConfiguredOpenTelemetrySdkTest {
               String value3 = config.getString("7.397");
               assertThat(value3).isEqualTo("7");
             });
+  }
+
+  @Test
+  void configurationError_ClosesResources() {
+    // AutoConfiguredOpenTelemetrySdk should close partially configured resources if an exception
+    // short circuits configuration. Verify that SdkTracerProvider, SdkMeterProvider, and
+    // SdkLoggerProvider
+    // are closed when configuration fails late due to an invalid propagator.
+    SdkTracerProvider tracerProvider = mock(SdkTracerProvider.class);
+    SdkMeterProvider meterProvider = mock(SdkMeterProvider.class);
+    SdkLoggerProvider loggerProvider = mock(SdkLoggerProvider.class);
+    SdkTracerProviderBuilder tracerProviderBuilder = mock(SdkTracerProviderBuilder.class);
+    SdkMeterProviderBuilder meterProviderBuilder = mock(SdkMeterProviderBuilder.class);
+    SdkLoggerProviderBuilder loggerProviderBuilder = mock(SdkLoggerProviderBuilder.class);
+    when(tracerProviderBuilder.build()).thenReturn(tracerProvider);
+    when(meterProviderBuilder.build()).thenReturn(meterProvider);
+    when(loggerProviderBuilder.build()).thenReturn(loggerProvider);
+
+    assertThatThrownBy(
+            () ->
+                // Override the provider builders with mocks which we can verify are closed
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addTracerProviderCustomizer((u1, u2) -> tracerProviderBuilder)
+                    .addMeterProviderCustomizer((u1, u2) -> meterProviderBuilder)
+                    .addLoggerProviderCustomizer((u1, u2) -> loggerProviderBuilder)
+                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                    .setResultAsGlobal(false)
+                    .build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized value for otel.propagators");
+
+    verify(tracerProvider).close();
+    verify(meterProvider).close();
+    verify(loggerProvider).close();
   }
 }

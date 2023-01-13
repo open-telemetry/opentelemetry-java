@@ -6,17 +6,24 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.configureExporter;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class LogRecordExporterConfigurationTest {
+
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @Test
   void configureExporter_KnownSpiExportersNotOnClasspath() {
@@ -48,46 +55,55 @@ class LogRecordExporterConfigurationTest {
 
   @Test
   void configureLogRecordExporters_duplicates() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,otlp"));
+    List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config,
+                    DefaultConfigProperties.createForTest(
+                        ImmutableMap.of("otel.logs.exporter", "otlp,otlp")),
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    (a, unused) -> a,
+                    closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 
   @Test
   void configureLogRecordExporters_unrecognized() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "foo"));
+    List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config,
+                    DefaultConfigProperties.createForTest(
+                        ImmutableMap.of("otel.logs.exporter", "foo")),
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    (a, unused) -> a,
+                    new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 
   @Test
   void configureLogRecordExporters_multipleWithNone() {
-    ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.logs.exporter", "otlp,none"));
+    List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config,
+                    DefaultConfigProperties.createForTest(
+                        ImmutableMap.of("otel.logs.exporter", "otlp,none")),
                     LogRecordExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a))
+                    (a, unused) -> a,
+                    closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 }
