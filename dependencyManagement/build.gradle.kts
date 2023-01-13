@@ -25,56 +25,34 @@ val DEPENDENCY_BOMS = listOf(
   "org.yaml:snakeyaml:1.33"
 )
 
-val DEPENDENCY_SETS = listOf(
-  DependencySet(
-    "com.google.auto.value",
-    "1.9",
-    listOf("auto-value", "auto-value-annotations")
-  ),
-  DependencySet(
-    "com.google.errorprone",
-    "2.15.0",
-    listOf("error_prone_annotations", "error_prone_core")
-  ),
-  DependencySet(
-    "io.opencensus",
-    "0.31.1",
-    listOf(
-      "opencensus-api",
-      "opencensus-impl-core",
-      "opencensus-impl",
-      "opencensus-exporter-metrics-util",
-      "opencensus-contrib-exemplar-util"
-    )
-  ),
-  DependencySet(
-    "io.prometheus",
-    "0.16.0",
-    listOf("simpleclient", "simpleclient_common", "simpleclient_httpserver")
-  ),
-  DependencySet(
-    "javax.annotation",
-    "1.3.2",
-    listOf("javax.annotation-api")
-  ),
-  DependencySet(
-    "org.openjdk.jmh",
-    "1.35",
-    listOf("jmh-core", "jmh-generator-bytecode")
-  ),
-  DependencySet(
-    "org.mockito",
-    "4.7.0",
-    listOf("mockito-core", "mockito-junit-jupiter")
-  ),
-  DependencySet(
-    "org.slf4j",
-    "2.0.0",
-    listOf("jul-to-slf4j", "slf4j-simple")
-  ),
-)
+val autoValueVersion = "1.10.1"
+val errorProneVersion = "2.15.0"
+val jmhVersion = "1.36"
+val mockitoVersion = "4.11.0"
+val slf4jVersion = "2.0.6"
+val opencensusVersion = "0.31.1"
+val prometheusClientVersion = "0.16.0"
 
 val DEPENDENCIES = listOf(
+  "com.google.auto.value:auto-value:${autoValueVersion}",
+  "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+  "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+  "com.google.errorprone:error_prone_core:${errorProneVersion}",
+  "io.opencensus:opencensus-api:${opencensusVersion}",
+  "io.opencensus:opencensus-impl-core:${opencensusVersion}",
+  "io.opencensus:opencensus-impl:${opencensusVersion}",
+  "io.opencensus:opencensus-exporter-metrics-util:${opencensusVersion}",
+  "io.opencensus:opencensus-contrib-exemplar-util:${opencensusVersion}",
+  "org.openjdk.jmh:jmh-core:${jmhVersion}",
+  "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+  "org.mockito:mockito-core:${mockitoVersion}",
+  "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+  "org.slf4j:slf4j-simple:${slf4jVersion}",
+  "org.slf4j:jul-to-slf4j:${slf4jVersion}",
+  "io.prometheus:simpleclient:${prometheusClientVersion}",
+  "io.prometheus:simpleclient_common:${prometheusClientVersion}",
+  "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
+  "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.api.grpc:proto-google-common-protos:2.12.0",
   "com.google.code.findbugs:jsr305:3.0.2",
@@ -113,12 +91,6 @@ dependencies {
     dependencyVersions[split[0]] = split[2]
   }
   constraints {
-    for (set in DEPENDENCY_SETS) {
-      for (module in set.modules) {
-        api("${set.group}:$module:${set.version}")
-        dependencyVersions[set.group] = set.version
-      }
-    }
     for (dependency in DEPENDENCIES) {
       api(dependency)
       val split = dependency.split(':')
