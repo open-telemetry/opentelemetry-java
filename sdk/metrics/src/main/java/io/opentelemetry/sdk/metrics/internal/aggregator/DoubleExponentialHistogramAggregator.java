@@ -10,10 +10,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
@@ -165,7 +165,7 @@ public final class DoubleExponentialHistogramAggregator
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
         metricDescriptor.getSourceInstrument().getUnit(),
-        ExponentialHistogramData.create(
+        ImmutableExponentialHistogramData.create(
             temporality,
             MetricDataUtils.toExponentialHistogramPointList(
                 accumulationByLabels,

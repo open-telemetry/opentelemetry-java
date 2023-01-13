@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link ExponentialHistogramPointData}. */

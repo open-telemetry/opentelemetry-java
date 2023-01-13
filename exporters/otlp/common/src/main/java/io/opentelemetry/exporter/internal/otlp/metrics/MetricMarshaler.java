@@ -12,7 +12,6 @@ import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.Metric;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import java.io.IOException;
 
 final class MetricMarshaler extends MarshalerWithSize {
@@ -57,8 +56,7 @@ final class MetricMarshaler extends MarshalerWithSize {
         dataField = Metric.HISTOGRAM;
         break;
       case EXPONENTIAL_HISTOGRAM:
-        dataMarshaler =
-            ExponentialHistogramMarshaler.create(ExponentialHistogramData.fromMetricData(metric));
+        dataMarshaler = ExponentialHistogramMarshaler.create(metric.getExponentialHistogramData());
         dataField = Metric.EXPONENTIAL_HISTOGRAM;
     }
 
