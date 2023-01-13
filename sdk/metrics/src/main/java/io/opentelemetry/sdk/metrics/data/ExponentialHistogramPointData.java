@@ -19,7 +19,6 @@ import javax.annotation.concurrent.Immutable;
  * @see <a
  *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#exponentialhistogram">Exponential
  *     Histogram Data Model</a>
- *
  * @since 1.23.0
  */
 @Immutable
