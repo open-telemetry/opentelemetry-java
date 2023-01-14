@@ -29,6 +29,18 @@ class PropagatorConfigurationTest {
   }
 
   @Test
+  void configurePropagators_none() {
+    ContextPropagators contextPropagators =
+        PropagatorConfiguration.configurePropagators(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.propagators", "none")),
+            PropagatorConfiguration.class.getClassLoader(),
+            (a, unused) -> a);
+
+    assertThat(contextPropagators.getTextMapPropagator().fields()).isEmpty();
+  }
+
+  @Test
   void configurePropagators_NotOnClasspath() {
     assertThatThrownBy(
             () ->

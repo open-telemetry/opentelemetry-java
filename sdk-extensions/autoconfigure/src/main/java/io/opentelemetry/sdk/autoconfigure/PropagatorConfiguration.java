@@ -39,8 +39,11 @@ final class PropagatorConfiguration {
             serviceClassLoader);
 
     for (String propagatorName : requestedPropagators) {
-      propagators.add(
-          propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagatorsManager), config));
+      if (!"none".equals(propagatorName)) {
+        propagators.add(
+            propagatorCustomizer.apply(
+                getPropagator(propagatorName, spiPropagatorsManager), config));
+      }
     }
 
     return ContextPropagators.create(TextMapPropagator.composite(propagators));
