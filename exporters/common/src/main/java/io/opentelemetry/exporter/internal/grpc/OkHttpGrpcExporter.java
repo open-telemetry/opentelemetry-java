@@ -63,6 +63,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
 
   // We only log unimplemented once since it's a configuration issue that won't be recovered.
   private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -91,6 +92,10 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
 
   @Override
   public CompletableResultCode export(T exportRequest, int numItems) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     exporterMetrics.addSeen(numItems);
 
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
@@ -209,6 +214,10 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
