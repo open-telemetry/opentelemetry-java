@@ -24,7 +24,7 @@ dependencies {
   testImplementation("io.opencensus:opencensus-impl")
   testImplementation("io.opencensus:opencensus-contrib-exemplar-util")
 
-  javaagent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.19.1")
+  javaagent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.21.0")
 }
 
 tasks.named<Test>("test") {
@@ -45,6 +45,7 @@ testing {
           testTask.configure {
             jvmArgs("-javaagent:${javaagent.asPath}")
             environment("OTEL_TRACES_EXPORTER", "logging")
+            environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
       }
