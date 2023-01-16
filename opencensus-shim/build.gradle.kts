@@ -3,8 +3,6 @@ plugins {
   id("otel.publish-conventions")
 }
 
-val javaagent by configurations.creating
-
 description = "OpenTelemetry OpenCensus Shim"
 otelJava.moduleName.set("io.opentelemetry.opencensusshim")
 
@@ -23,8 +21,6 @@ dependencies {
 
   testImplementation("io.opencensus:opencensus-impl")
   testImplementation("io.opencensus:opencensus-contrib-exemplar-util")
-
-  javaagent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.21.0")
 }
 
 tasks.named<Test>("test") {
@@ -32,23 +28,4 @@ tasks.named<Test>("test") {
   // methods available.
   setForkEvery(1)
   maxParallelForks = 3
-}
-
-testing {
-  suites {
-    val integrationTest by registering(JvmTestSuite::class) {
-      dependencies {
-      }
-
-      targets {
-        all {
-          testTask.configure {
-            jvmArgs("-javaagent:${javaagent.asPath}")
-            environment("OTEL_TRACES_EXPORTER", "logging")
-            environment("OTEL_METRICS_EXPORTER", "none")
-          }
-        }
-      }
-    }
-  }
 }

@@ -23,6 +23,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
 
+/**
+ * Ensures all methods for {@link Span} are appropriately proxied by {@link OpenTelemetrySpanImpl},
+ * further ensuring the shim behaves as expected when under otel javaagent instrumentation.
+ *
+ * <p>This addresses a regression between the shim as used with the Otel SDK on the app classloader
+ * and as instrumented via the javaagent. Details <a
+ * href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/6876">here</a>.
+ */
 class ProxyingSpanTest {
 
   /*
