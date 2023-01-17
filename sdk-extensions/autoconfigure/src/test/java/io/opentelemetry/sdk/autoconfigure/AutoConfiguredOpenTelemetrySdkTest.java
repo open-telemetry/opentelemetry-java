@@ -76,7 +76,8 @@ import org.mockito.quality.Strictness;
 class AutoConfiguredOpenTelemetrySdkTest {
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(AutoConfiguredOpenTelemetrySdkBuilder.class);
+  LogCapturer logs =
+      LogCapturer.create().captureForType(AutoConfiguredOpenTelemetrySdkBuilder.class);
 
   @Mock private IdGenerator idGenerator;
   @Mock private TextMapPropagator propagator1;
