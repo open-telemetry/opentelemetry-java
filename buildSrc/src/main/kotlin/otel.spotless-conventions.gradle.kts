@@ -27,7 +27,18 @@ spotless {
     }
   }
   kotlinGradle {
-    ktlint().editorConfigOverride(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
+    ktlint().editorConfigOverride(mapOf(
+      "indent_size" to "2",
+      "continuation_indent_size" to "2",
+      "max_line_length" to "160",
+      "ktlint_standard_no-wildcard-imports" to "disabled",
+      // ktlint does not break up long lines, it just fails on them
+      "ktlint_standard_max-line-length" to "disabled",
+      // ktlint makes it *very* hard to locate where this actually happened
+      "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+      // also very hard to find out where this happens
+      "ktlint_standard_wrapping" to "disabled"
+    ))
   }
   format("misc") {
     // not using "**/..." to help keep spotless fast
