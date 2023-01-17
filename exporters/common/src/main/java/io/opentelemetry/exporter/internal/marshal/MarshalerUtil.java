@@ -135,6 +135,7 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a repeated message field. */
+  @SuppressWarnings("AvoidObjectArrays")
   public static <T extends Marshaler> int sizeRepeatedMessage(
       ProtoFieldInfo field, T[] repeatedMessage) {
     int size = 0;

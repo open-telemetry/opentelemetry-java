@@ -31,6 +31,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
   private final InstrumentationScopeSpansMarshaler[] instrumentationScopeSpansMarshalers;
 
   /** Returns Marshalers of ResourceSpans created by grouping the provided SpanData. */
+  @SuppressWarnings("AvoidObjectArrays")
   public static ResourceSpansMarshaler[] create(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationScopeInfo, List<SpanMarshaler>>> resourceAndScopeMap =
         groupByResourceAndScope(spanDataList);
