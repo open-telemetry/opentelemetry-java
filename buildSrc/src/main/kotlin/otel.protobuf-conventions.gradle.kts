@@ -1,9 +1,9 @@
 import com.google.protobuf.gradle.*
 
 plugins {
-  id("com.google.protobuf")
-
   id("otel.java-conventions")
+
+  id("com.google.protobuf")
 }
 
 protobuf {
