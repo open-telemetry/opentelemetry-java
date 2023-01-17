@@ -32,7 +32,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.10.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.12.1")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.13.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")

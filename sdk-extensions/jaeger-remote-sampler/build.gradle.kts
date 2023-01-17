@@ -49,6 +49,14 @@ testing {
   }
 }
 
+afterEvaluate {
+  // Classpath when compiling testGrpcNetty, we add dependency management directly
+  // since it doesn't follow Gradle conventions of naming / properties.
+  dependencies {
+    add("testGrpcNettyCompileProtoPath", platform(project(":dependencyManagement")))
+  }
+}
+
 tasks {
   check {
     dependsOn(testing.suites)
