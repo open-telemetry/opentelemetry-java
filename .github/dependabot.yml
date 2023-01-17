@@ -21,3 +21,6 @@ updates:
     ignore:
       - dependency-name: "edu.berkeley.cs.jqf:jqf-fuzz"
       - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+      # Ignore updates to next mockito major version 5.x.x, which requires Java 11
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: ["version-update:semver-major"]

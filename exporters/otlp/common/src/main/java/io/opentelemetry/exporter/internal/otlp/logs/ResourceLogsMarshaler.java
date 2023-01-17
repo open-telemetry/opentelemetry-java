@@ -32,6 +32,7 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
   private final InstrumentationScopeLogsMarshaler[] instrumentationScopeLogsMarshalers;
 
   /** Returns Marshalers of ResourceLogs created by grouping the provided logRecords. */
+  @SuppressWarnings("AvoidObjectArrays")
   public static ResourceLogsMarshaler[] create(Collection<LogRecordData> logs) {
     Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> resourceAndScopeMap =
         groupByResourceAndScope(logs);

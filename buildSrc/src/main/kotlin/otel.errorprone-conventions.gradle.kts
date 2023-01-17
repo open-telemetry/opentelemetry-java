@@ -82,6 +82,10 @@ tasks {
         // every one of these methods is too noisy.
         disable("CanIgnoreReturnValueSuggester")
 
+        // YodaConditions may improve safety in some cases. The argument of increased
+        // cognitive load is dubious.
+        disable("YodaCondition")
+
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")
