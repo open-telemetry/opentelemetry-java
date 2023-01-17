@@ -10,12 +10,14 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
@@ -27,6 +29,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -47,6 +50,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -60,6 +64,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -69,6 +74,9 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AutoConfiguredOpenTelemetrySdkTest {
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(AutoConfiguredOpenTelemetrySdkBuilder.class);
 
   @Mock private IdGenerator idGenerator;
   @Mock private TextMapPropagator propagator1;
@@ -447,6 +455,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
+  @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
   void configurationError_ClosesResources() {
     // AutoConfiguredOpenTelemetrySdk should close partially configured resources if an exception
     // short circuits configuration. Verify that SdkTracerProvider, SdkMeterProvider, and
@@ -461,6 +470,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
     when(tracerProviderBuilder.build()).thenReturn(tracerProvider);
     when(meterProviderBuilder.build()).thenReturn(meterProvider);
     when(loggerProviderBuilder.build()).thenReturn(loggerProvider);
+
+    // Throw an error when closing and verify other resources are still closed
+    doThrow(new IOException("Error!")).when(tracerProvider).close();
 
     assertThatThrownBy(
             () ->
@@ -481,5 +493,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(tracerProvider).close();
     verify(meterProvider).close();
     verify(loggerProvider).close();
+
+    logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
   }
 }
