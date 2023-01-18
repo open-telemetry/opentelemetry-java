@@ -185,6 +185,45 @@ public final class {{class}} {
   @Deprecated
   public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
 
+
+ /**
+  * A string identifying the messaging system.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MESSAGING_DESTINATION_NAME} instead.
+  */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_DESTINATION =
+      stringKey("messaging.destination");
+
+ /**
+  * A boolean that is true if the message destination is temporary.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MESSAGING_DESTINATION_TEMPORARY} instead.
+  */
+  @Deprecated
+  public static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
+      booleanKey("messaging.temp_destination");
+
+ /**
+  * The name of the transport protocol.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
+  */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
+
+  /**
+  * The version of the transport protocol.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
+  */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
+      stringKey("messaging.protocol_version");
+
+  /**
+  * Connection string.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
+  */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
+
    /**
     * The <a href="#conversations">conversation ID</a> identifying the conversation to which the
     * message belongs, represented as a string. Sometimes called &quot;Correlation ID&quot;.
