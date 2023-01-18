@@ -100,7 +100,8 @@ public final class ViewConfig {
     try {
       List<ViewConfigSpecification> result = new ArrayList<>();
 
-      List<Map<String, Object>> viewConfigs = (List<Map<String, Object>>) yaml.loadFromInputStream(inputStream);
+      List<Map<String, Object>> viewConfigs =
+          (List<Map<String, Object>>) yaml.loadFromInputStream(inputStream);
 
       for (Map<String, Object> viewConfigSpecMap : viewConfigs) {
         Map<String, Object> selectorSpecMap =
