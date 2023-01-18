@@ -20,7 +20,7 @@ dependencies {
 
   // io.opentelemetry.sdk.extension.incubator.metric.viewconfig
   implementation(project(":sdk-extensions:autoconfigure-spi"))
-  implementation("org.yaml:snakeyaml")
+  implementation("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.trace.zpages
   implementation(project(":semconv"))
