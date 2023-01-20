@@ -77,18 +77,6 @@ public interface Aggregator<T, U extends ExemplarData> {
   }
 
   /**
-   * Returns the result of the merge of the given accumulations.
-   *
-   * <p>This should always assume that the accumulations do not overlap and merge together for a new
-   * cumulative report.
-   *
-   * @param previousCumulative the previously captured accumulation
-   * @param delta the newly captured (delta) accumulation
-   * @return the result of the merge of the given accumulations.
-   */
-  T merge(T previousCumulative, T delta);
-
-  /**
    * Returns a new DELTA aggregation by comparing two cumulative measurements.
    *
    * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.

@@ -155,17 +155,6 @@ class DoubleSumAggregatorTest {
                 TraceState.getDefault()),
             1);
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         DoubleSumAggregator aggregator =
@@ -173,16 +162,6 @@ class DoubleSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 ExemplarReservoir::doubleNoSamples);
-        DoubleAccumulation merged =
-            aggregator.merge(
-                DoubleAccumulation.create(1.0d, previousExemplars),
-                DoubleAccumulation.create(2.0d, exemplars));
-        assertThat(merged.getValue())
-            .withFailMessage(
-                "Invalid merge result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
-            .isEqualTo(3.0d);
-        assertThat(merged.getExemplars()).containsExactly(exemplar);
 
         DoubleAccumulation diffed =
             aggregator.diff(
@@ -190,7 +169,7 @@ class DoubleSumAggregatorTest {
         assertThat(diffed.getValue())
             .withFailMessage(
                 "Invalid diff result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
+                instrumentType, temporality, diffed)
             .isEqualTo(1d);
         assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }
@@ -198,7 +177,6 @@ class DoubleSumAggregatorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();

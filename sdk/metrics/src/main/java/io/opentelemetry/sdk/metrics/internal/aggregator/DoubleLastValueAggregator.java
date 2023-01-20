@@ -50,11 +50,6 @@ public final class DoubleLastValueAggregator
   }
 
   @Override
-  public DoubleAccumulation merge(DoubleAccumulation previous, DoubleAccumulation current) {
-    return current;
-  }
-
-  @Override
   public DoubleAccumulation diff(DoubleAccumulation previous, DoubleAccumulation current) {
     return current;
   }

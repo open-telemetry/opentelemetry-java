@@ -34,7 +34,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -256,125 +255,6 @@ class DoubleExponentialHistogramAggregatorTest {
   }
 
   @Test
-  void testMergeAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 0, 4.1, 100, 100, 10000, 1000000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, -1000, -2000000, -8.2, 2.3);
-
-    // Merged accumulations should equal accumulation with equivalent recordings and latest
-    // exemplars.
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                exemplars, 0, 4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
-  }
-
-  @Test
-  void testMergeAccumulationMinAndMax() {
-    // If min / max is null for both accumulations set min / max to null
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ false, 0, 0),
-                createAccumulation(/* hasMinMax= */ false, 0, 0)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ false, -1, -1));
-    // If min / max is non-null for only one accumulation set min / max to it
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ true, 1d, 2d),
-                createAccumulation(/* hasMinMax= */ false, 0, 0)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ false, 0, 0),
-                createAccumulation(/* hasMinMax= */ true, 1d, 2d)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-    // If both accumulations have min / max compute the min / max
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ true, 1d, 1d),
-                createAccumulation(/* hasMinMax= */ true, 2d, 2d)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-  }
-
-  private static ExponentialHistogramAccumulation createAccumulation(
-      boolean hasMinMax, double min, double max) {
-    DoubleExponentialHistogramBuckets buckets = new DoubleExponentialHistogramBuckets(0, 1);
-    return ExponentialHistogramAccumulation.create(
-        0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
-  }
-
-  @Test
-  void testMergeNonOverlap() {
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(Collections.emptyList(), 10, 100, 100, 10000, 100000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(Collections.emptyList(), 0.001, 0.01, 0.1, 1);
-
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                Collections.emptyList(), 0.001, 0.01, 0.1, 1, 10, 100, 100, 10000, 100000));
-  }
-
-  @Test
-  void testMergeWithEmptyBuckets() {
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList()),
-                getTestAccumulation(Collections.emptyList(), 1)))
-        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
-
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList(), 1),
-                getTestAccumulation(Collections.emptyList())))
-        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
-
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList()),
-                getTestAccumulation(Collections.emptyList())))
-        .isEqualTo(getTestAccumulation(Collections.emptyList()));
-  }
-
-  @Test
-  void testMergeOverlap() {
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(Collections.emptyList(), 0, 10, 100, 10000, 100000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(Collections.emptyList(), 100000, 10000, 100, 10, 0);
-
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                Collections.emptyList(), 0, 0, 10, 10, 100, 100, 10000, 10000, 100000, 100000));
-  }
-
-  @Test
   void testInsert1M() {
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> handle =
         aggregator.createHandle();
@@ -512,7 +392,6 @@ class DoubleExponentialHistogramAggregatorTest {
   void testMultithreadedUpdates() throws InterruptedException {
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    ExponentialHistogram summarizer = new ExponentialHistogram();
     ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
     int numberOfThreads = updates.size();
     int numberOfUpdates = 10000;
@@ -528,18 +407,16 @@ class DoubleExponentialHistogramAggregatorTest {
                           for (int j = 0; j < numberOfUpdates; j++) {
                             aggregatorHandle.recordDouble(v);
                             if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              summarizer.process(
-                                  aggregatorHandle.accumulateThenReset(
-                                      Attributes.empty(), /* reset= */ true));
+                              aggregatorHandle.accumulateThenReset(
+                                  Attributes.empty(), /* reset= */ false);
                             }
                           }
                         }))
             .collect(Collectors.toList()));
 
-    // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true));
-
-    ExponentialHistogramAccumulation acc = Objects.requireNonNull(summarizer.accumulation);
+    ExponentialHistogramAccumulation acc =
+        Objects.requireNonNull(
+            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ false));
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
     assertThat(acc.getScale()).isEqualTo(3);
@@ -572,25 +449,5 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(
             negCounts.get(valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
-  }
-
-  private static final class ExponentialHistogram {
-    private final Object mutex = new Object();
-
-    @Nullable private ExponentialHistogramAccumulation accumulation;
-
-    void process(@Nullable ExponentialHistogramAccumulation other) {
-      if (other == null) {
-        return;
-      }
-
-      synchronized (mutex) {
-        if (accumulation == null) {
-          accumulation = other;
-          return;
-        }
-        accumulation = aggregator.merge(accumulation, other);
-      }
-    }
   }
 }

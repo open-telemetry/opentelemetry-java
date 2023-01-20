@@ -59,13 +59,6 @@ public final class DoubleSumAggregator
   }
 
   @Override
-  public DoubleAccumulation merge(
-      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
-    return DoubleAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
-  }
-
-  @Override
   public DoubleAccumulation diff(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(

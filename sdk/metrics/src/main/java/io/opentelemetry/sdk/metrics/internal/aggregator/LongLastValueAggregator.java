@@ -47,11 +47,6 @@ public final class LongLastValueAggregator
   }
 
   @Override
-  public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
-    return current;
-  }
-
-  @Override
   public LongAccumulation diff(LongAccumulation previous, LongAccumulation current) {
     return current;
   }

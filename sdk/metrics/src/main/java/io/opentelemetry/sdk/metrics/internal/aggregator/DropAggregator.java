@@ -50,11 +50,6 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
   }
 
   @Override
-  public Object merge(Object previousAccumulation, Object accumulation) {
-    return ACCUMULATION;
-  }
-
-  @Override
   public MetricData toMetricData(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,

@@ -46,13 +46,6 @@ public final class LongSumAggregator
   }
 
   @Override
-  public LongAccumulation merge(
-      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
-    return LongAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
-  }
-
-  @Override
   public LongAccumulation diff(
       LongAccumulation previousAccumulation, LongAccumulation accumulation) {
     return LongAccumulation.create(

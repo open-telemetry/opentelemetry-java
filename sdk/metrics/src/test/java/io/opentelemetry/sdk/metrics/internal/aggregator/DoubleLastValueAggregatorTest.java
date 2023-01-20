@@ -76,39 +76,6 @@ class DoubleLastValueAggregatorTest {
   }
 
   @Test
-  void mergeAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    DoubleAccumulation result =
-        aggregator.merge(
-            DoubleAccumulation.create(1, previousExemplars),
-            DoubleAccumulation.create(2, exemplars));
-    // Assert that latest measurement is kept.
-    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
-  }
-
-  @Test
   void diffAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -142,7 +109,6 @@ class DoubleLastValueAggregatorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();

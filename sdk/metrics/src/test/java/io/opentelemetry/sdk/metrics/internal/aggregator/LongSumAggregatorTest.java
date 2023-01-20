@@ -164,21 +164,13 @@ class LongSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 ExemplarReservoir::longNoSamples);
-        LongAccumulation merged =
-            aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
-        assertThat(merged.getValue())
-            .withFailMessage(
-                "Invalid merge result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
-            .isEqualTo(3);
-        assertThat(merged.getExemplars()).containsExactly(exemplar);
 
         LongAccumulation diffed =
             aggregator.diff(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
         assertThat(diffed.getValue())
             .withFailMessage(
                 "Invalid diff result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
+                instrumentType, temporality, diffed)
             .isEqualTo(1);
         assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }

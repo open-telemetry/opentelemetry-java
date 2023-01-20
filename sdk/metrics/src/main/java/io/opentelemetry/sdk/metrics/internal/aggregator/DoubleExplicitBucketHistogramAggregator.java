@@ -62,40 +62,6 @@ public final class DoubleExplicitBucketHistogramAggregator
     return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
-  /**
-   * Return the result of the merge of two histogram accumulations. As long as one Aggregator
-   * instance produces all Accumulations with constant boundaries we don't need to worry about
-   * merging accumulations with different boundaries.
-   */
-  @Override
-  public ExplicitBucketHistogramAccumulation merge(
-      ExplicitBucketHistogramAccumulation previous, ExplicitBucketHistogramAccumulation current) {
-    long[] previousCounts = previous.getCounts();
-    long[] mergedCounts = new long[previousCounts.length];
-    for (int i = 0; i < previousCounts.length; ++i) {
-      mergedCounts[i] = previousCounts[i] + current.getCounts()[i];
-    }
-    double min = -1;
-    double max = -1;
-    if (previous.hasMinMax() && current.hasMinMax()) {
-      min = Math.min(previous.getMin(), current.getMin());
-      max = Math.max(previous.getMax(), current.getMax());
-    } else if (previous.hasMinMax()) {
-      min = previous.getMin();
-      max = previous.getMax();
-    } else if (current.hasMinMax()) {
-      min = current.getMin();
-      max = current.getMax();
-    }
-    return ExplicitBucketHistogramAccumulation.create(
-        previous.getSum() + current.getSum(),
-        previous.hasMinMax() || current.hasMinMax(),
-        min,
-        max,
-        mergedCounts,
-        current.getExemplars());
-  }
-
   @Override
   public MetricData toMetricData(
       Resource resource,
