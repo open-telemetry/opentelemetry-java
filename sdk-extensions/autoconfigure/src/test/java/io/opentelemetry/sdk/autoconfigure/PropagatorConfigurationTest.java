@@ -41,6 +41,19 @@ class PropagatorConfigurationTest {
   }
 
   @Test
+  void configurePropagators_none_withOthers() {
+    assertThatThrownBy(
+            () ->
+                PropagatorConfiguration.configurePropagators(
+                    DefaultConfigProperties.createForTest(
+                        Collections.singletonMap("otel.propagators", "none,blather")),
+                    PropagatorConfiguration.class.getClassLoader(),
+                    (a, unused) -> a))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("otel.propagators contains 'none' along with other propagators");
+  }
+
+  @Test
   void configurePropagators_NotOnClasspath() {
     assertThatThrownBy(
             () ->
