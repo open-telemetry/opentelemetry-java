@@ -19,6 +19,9 @@ import io.opentelemetry.sdk.resources.Resource;
  */
 public interface MetricStorage {
 
+  /** The max number of metric accumulations for a particular {@link MetricStorage}. */
+  int MAX_ACCUMULATIONS = 2000;
+
   /** Returns a description of the metric produced in this storage. */
   MetricDescriptor getMetricDescriptor();
 

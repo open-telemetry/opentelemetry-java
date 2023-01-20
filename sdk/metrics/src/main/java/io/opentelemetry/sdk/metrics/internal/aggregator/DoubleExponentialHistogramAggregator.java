@@ -200,18 +200,22 @@ public final class DoubleExponentialHistogramAggregator
 
     @Override
     protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(
-        List<DoubleExemplarData> exemplars) {
+        List<DoubleExemplarData> exemplars, boolean reset) {
       ExponentialHistogramBuckets positiveBuckets;
       ExponentialHistogramBuckets negativeBuckets;
       if (this.positiveBuckets != null) {
         positiveBuckets = this.positiveBuckets.copy();
-        this.positiveBuckets.clear();
+        if (reset) {
+          this.positiveBuckets.clear();
+        }
       } else {
         positiveBuckets = EmptyExponentialHistogramBuckets.get(scale);
       }
       if (this.negativeBuckets != null) {
         negativeBuckets = this.negativeBuckets.copy();
-        this.negativeBuckets.clear();
+        if (reset) {
+          this.negativeBuckets.clear();
+        }
       } else {
         negativeBuckets = EmptyExponentialHistogramBuckets.get(scale);
       }
@@ -226,11 +230,13 @@ public final class DoubleExponentialHistogramAggregator
               negativeBuckets,
               zeroCount,
               exemplars);
-      this.sum = 0;
-      this.zeroCount = 0;
-      this.min = Double.MAX_VALUE;
-      this.max = -1;
-      this.count = 0;
+      if (reset) {
+        this.sum = 0;
+        this.zeroCount = 0;
+        this.min = Double.MAX_VALUE;
+        this.max = -1;
+        this.count = 0;
+      }
       return acc;
     }
 

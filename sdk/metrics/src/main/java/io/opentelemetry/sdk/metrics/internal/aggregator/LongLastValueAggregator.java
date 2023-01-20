@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -90,8 +91,12 @@ public final class LongLastValueAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
-      return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
+    protected LongAccumulation doAccumulateThenReset(
+        List<LongExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
+      }
+      return LongAccumulation.create(Objects.requireNonNull(this.current.get()), exemplars);
     }
 
     @Override

@@ -89,16 +89,18 @@ public abstract class AggregatorHandle<T, U extends ExemplarData> implements Bou
    * Aggregator}.
    */
   @Nullable
-  public final T accumulateThenReset(Attributes attributes) {
+  public final T accumulateThenReset(Attributes attributes, boolean reset) {
     if (!hasRecordings) {
       return null;
     }
-    hasRecordings = false;
-    return doAccumulateThenReset(exemplarReservoir.collectAndReset(attributes));
+    if (reset) {
+      hasRecordings = false;
+    }
+    return doAccumulateThenReset(exemplarReservoir.collectAndReset(attributes), reset);
   }
 
   /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract T doAccumulateThenReset(List<U> exemplars);
+  protected abstract T doAccumulateThenReset(List<U> exemplars, boolean reset);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {

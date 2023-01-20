@@ -157,7 +157,7 @@ public final class DoubleExplicitBucketHistogramAggregator
 
     @Override
     protected ExplicitBucketHistogramAccumulation doAccumulateThenReset(
-        List<DoubleExemplarData> exemplars) {
+        List<DoubleExemplarData> exemplars, boolean reset) {
       lock.lock();
       try {
         ExplicitBucketHistogramAccumulation acc =
@@ -168,11 +168,13 @@ public final class DoubleExplicitBucketHistogramAggregator
                 this.count > 0 ? this.max : -1,
                 Arrays.copyOf(counts, counts.length),
                 exemplars);
-        this.sum = 0;
-        this.min = Double.MAX_VALUE;
-        this.max = -1;
-        this.count = 0;
-        Arrays.fill(this.counts, 0);
+        if (reset) {
+          this.sum = 0;
+          this.min = Double.MAX_VALUE;
+          this.max = -1;
+          this.count = 0;
+          Arrays.fill(this.counts, 0);
+        }
         return acc;
       } finally {
         lock.unlock();

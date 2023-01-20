@@ -41,10 +41,12 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
-  private final TemporalMetricStorage<T, U> metricStorage;
+  private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private Map<Attributes, T> accumulations = new HashMap<>();
+  private Map<Attributes, T> lastAccumulations =
+      new HashMap<>(); // Only populated if aggregationTemporality == DELTA
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -53,17 +55,10 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
       AttributesProcessor attributesProcessor) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    AggregationTemporality aggregationTemporality =
+    this.aggregationTemporality =
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
-    this.metricStorage =
-        new TemporalMetricStorage<>(
-            aggregator,
-            /* isSynchronous= */ false,
-            registeredReader,
-            aggregationTemporality,
-            metricDescriptor);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
   }
@@ -108,13 +103,13 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   private void recordAccumulation(T accumulation, Attributes attributes) {
     Attributes processedAttributes = attributesProcessor.process(attributes, Context.current());
 
-    if (accumulations.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
+    if (accumulations.size() >= MetricStorage.MAX_ACCUMULATIONS) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed accumulations ("
-              + MetricStorageUtils.MAX_ACCUMULATIONS
+              + MetricStorage.MAX_ACCUMULATIONS
               + ").");
       return;
     }
@@ -148,10 +143,30 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    Map<Attributes, T> currentAccumulations = accumulations;
-    accumulations = new HashMap<>();
-    return metricStorage.buildMetricFor(
-        resource, instrumentationScopeInfo, currentAccumulations, startEpochNanos, epochNanos);
+    Map<Attributes, T> result;
+    if (aggregationTemporality == AggregationTemporality.DELTA) {
+      Map<Attributes, T> accumulations = this.accumulations;
+      Map<Attributes, T> lastAccumulations = this.lastAccumulations;
+      lastAccumulations.entrySet().removeIf(entry -> !accumulations.containsKey(entry.getKey()));
+      accumulations.forEach(
+          (k, v) ->
+              lastAccumulations.compute(k, (k2, v2) -> v2 == null ? v : aggregator.diff(v2, v)));
+      result = lastAccumulations;
+      this.lastAccumulations = accumulations;
+    } else {
+      result = accumulations;
+    }
+    // TODO: clear instead?
+    this.accumulations = new HashMap<>();
+    return aggregator.toMetricData(
+        resource,
+        instrumentationScopeInfo,
+        metricDescriptor,
+        result,
+        aggregationTemporality,
+        startEpochNanos,
+        registeredReader.getLastCollectEpochNanos(),
+        epochNanos);
   }
 
   @Override

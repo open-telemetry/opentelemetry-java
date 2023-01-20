@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -94,8 +95,12 @@ public final class DoubleLastValueAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
-      return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
+    protected DoubleAccumulation doAccumulateThenReset(
+        List<DoubleExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
+      }
+      return DoubleAccumulation.create(Objects.requireNonNull(this.current.get()), exemplars);
     }
 
     @Override

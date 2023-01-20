@@ -107,8 +107,12 @@ public final class DoubleSumAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
-      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected DoubleAccumulation doAccumulateThenReset(
+        List<DoubleExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+      }
+      return DoubleAccumulation.create(this.current.sum(), exemplars);
     }
 
     @Override

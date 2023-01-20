@@ -98,7 +98,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
-    testAggregator.accumulateThenReset(Attributes.empty());
+    testAggregator.accumulateThenReset(Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
@@ -106,7 +106,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(33.55);
 
-    testAggregator.accumulateThenReset(Attributes.empty());
+    testAggregator.accumulateThenReset(Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
@@ -148,7 +148,7 @@ class AggregatorHandleTest {
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(doubleReservoir.collectAndReset(attributes))
         .thenReturn(Collections.singletonList(result));
-    testAggregator.accumulateThenReset(attributes);
+    testAggregator.accumulateThenReset(attributes, /* reset= */ true);
     assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
   }
 
@@ -164,7 +164,7 @@ class AggregatorHandleTest {
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(List<T> exemplars) {
+    protected Void doAccumulateThenReset(List<T> exemplars, boolean reset) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

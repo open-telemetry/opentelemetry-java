@@ -158,7 +158,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    for (int i = 0; i <= MetricStorageUtils.MAX_ACCUMULATIONS + 1; i++) {
+    for (int i = 0; i <= MetricStorage.MAX_ACCUMULATIONS + 1; i++) {
       longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
 
@@ -166,7 +166,7 @@ class AsynchronousMetricStorageTest {
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
-                    .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS));
+                    .hasSize(MetricStorage.MAX_ACCUMULATIONS));
     logs.assertContains("Instrument long-counter has exceeded the maximum allowed accumulations");
   }
 

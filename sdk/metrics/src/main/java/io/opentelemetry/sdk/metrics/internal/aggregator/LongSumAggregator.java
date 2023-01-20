@@ -94,8 +94,12 @@ public final class LongSumAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
-      return LongAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected LongAccumulation doAccumulateThenReset(
+        List<LongExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return LongAccumulation.create(this.current.sumThenReset(), exemplars);
+      }
+      return LongAccumulation.create(this.current.sum(), exemplars);
     }
 
     @Override
