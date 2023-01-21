@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -113,8 +112,9 @@ public class HistogramCollectBenchmark {
   @SuppressWarnings("ImmutableEnumChecker")
   public enum AggregationGenerator {
     EXPLICIT_BUCKET_HISTOGRAM(Aggregation.explicitBucketHistogram()),
-    DEFAULT_EXPONENTIAL_BUCKET_HISTOGRAM(ExponentialHistogramAggregation.getDefault()),
-    ZERO_MAX_SCALE_EXPONENTIAL_BUCKET_HISTOGRAM(ExponentialHistogramAggregation.create(160, 0));
+    DEFAULT_BASE2_EXPONENTIAL_BUCKET_HISTOGRAM(Aggregation.base2ExponentialBucketHistogram()),
+    ZERO_MAX_SCALE_BASE2_EXPONENTIAL_BUCKET_HISTOGRAM(
+        Aggregation.base2ExponentialBucketHistogram(160, 0));
 
     private final Aggregation aggregation;
 

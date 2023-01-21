@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -199,15 +198,16 @@ public final class ViewConfig {
         return Aggregation.explicitBucketHistogram(bucketBoundaries);
       }
     }
-    if (ExponentialHistogramAggregation.getDefault().equals(aggregation)) {
+    if (Aggregation.base2ExponentialBucketHistogram().equals(aggregation)) {
       Integer maxBuckets;
       try {
         maxBuckets = getAsType(aggregationArgs, "max_buckets", Integer.class);
       } catch (IllegalStateException e) {
         throw new ConfigurationException("max_buckets must be an integer", e);
       }
+      // TODO: support configuring max_scale
       if (maxBuckets != null) {
-        return ExponentialHistogramAggregation.create(maxBuckets, 20);
+        return Aggregation.base2ExponentialBucketHistogram(maxBuckets, 20);
       }
     }
     return aggregation;

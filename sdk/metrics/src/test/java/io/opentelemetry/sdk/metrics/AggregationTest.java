@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -28,11 +27,10 @@ class AggregationTest {
     assertThat(Aggregation.explicitBucketHistogram(Collections.singletonList(1.0d)))
         .asString()
         .contains("ExplicitBucketHistogramAggregation");
-    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
-    assertThat(ExponentialHistogramAggregation.getDefault())
+    assertThat(Aggregation.base2ExponentialBucketHistogram())
         .asString()
         .isEqualTo("ExponentialHistogramAggregation{maxBuckets=160,maxScale=20}");
-    assertThat(ExponentialHistogramAggregation.create(1, 0))
+    assertThat(Aggregation.base2ExponentialBucketHistogram(1, 0))
         .asString()
         .isEqualTo("ExponentialHistogramAggregation{maxBuckets=1,maxScale=0}");
   }
@@ -88,9 +86,8 @@ class AggregationTest {
     assertThat(explicitHistogram.isCompatibleWithInstrument(observableGauge)).isFalse();
     assertThat(explicitHistogram.isCompatibleWithInstrument(histogram)).isTrue();
 
-    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
     AggregatorFactory exponentialHistogram =
-        ((AggregatorFactory) ExponentialHistogramAggregation.getDefault());
+        ((AggregatorFactory) Aggregation.base2ExponentialBucketHistogram());
     assertThat(exponentialHistogram.isCompatibleWithInstrument(counter)).isTrue();
     assertThat(exponentialHistogram.isCompatibleWithInstrument(observableCounter)).isFalse();
     assertThat(exponentialHistogram.isCompatibleWithInstrument(upDownCounter)).isFalse();

@@ -198,7 +198,7 @@ class ViewConfigTest {
     assertThatThrownBy(
             () ->
                 ViewConfig.toAggregation(
-                    "exponential_bucket_histogram", ImmutableMap.of("max_buckets", "four")))
+                    "base2_exponential_bucket_histogram", ImmutableMap.of("max_buckets", "four")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("max_buckets must be an integer");
   }
@@ -224,11 +224,12 @@ class ViewConfigTest {
         .isEqualTo(Arrays.asList(1.0, 2.0));
 
     // Exponential histogram
-    assertThat(ViewConfig.toAggregation("exponential_bucket_histogram", Collections.emptyMap()))
-        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+    assertThat(
+            ViewConfig.toAggregation("base2_exponential_bucket_histogram", Collections.emptyMap()))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     assertThat(
             ViewConfig.toAggregation(
-                "exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
+                "base2_exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
         .isInstanceOf(ExponentialHistogramAggregation.class)
         .extracting("maxBuckets", as(InstanceOfAssertFactories.INTEGER))
         .isEqualTo(20);

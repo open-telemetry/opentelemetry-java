@@ -17,11 +17,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -380,16 +380,30 @@ class OtlpConfigUtilTest {
             configureHistogramDefaultAggregation(
                     ImmutableMap.of(
                         "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                        "base2_exponential_bucket_histogram"))
+                .getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
+    assertThat(
+            configureHistogramDefaultAggregation(
+                    ImmutableMap.of(
+                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                        "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM"))
+                .getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
+    assertThat(
+            configureHistogramDefaultAggregation(
+                    ImmutableMap.of(
+                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
                         "exponential_bucket_histogram"))
                 .getDefaultAggregation(InstrumentType.HISTOGRAM))
-        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     assertThat(
             configureHistogramDefaultAggregation(
                     ImmutableMap.of(
                         "otel.exporter.otlp.metrics.default.histogram.aggregation",
                         "EXPONENTIAL_BUCKET_HISTOGRAM"))
                 .getDefaultAggregation(InstrumentType.HISTOGRAM))
-        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
 
     assertThat(
             configureHistogramDefaultAggregation(
