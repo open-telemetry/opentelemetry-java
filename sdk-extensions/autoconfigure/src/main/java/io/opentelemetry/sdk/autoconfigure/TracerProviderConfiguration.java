@@ -179,6 +179,13 @@ final class TracerProviderConfiguration {
               config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
+      case "parentbased_jaeger_remote":
+        Sampler jaegerRemote = spiSamplersManager.getByName("jaeger_remote");
+        if (jaegerRemote == null) {
+          throw new ConfigurationException(
+              "parentbased_jaeger_remote configured but opentelemetry-sdk-extension-jaeger-remote-sampler not on classpath");
+        }
+        return Sampler.parentBased(jaegerRemote);
       default:
         Sampler spiSampler = spiSamplersManager.getByName(sampler);
         if (spiSampler == null) {

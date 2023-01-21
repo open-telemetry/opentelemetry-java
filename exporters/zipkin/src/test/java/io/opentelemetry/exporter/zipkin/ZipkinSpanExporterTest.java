@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
@@ -40,6 +42,9 @@ class ZipkinSpanExporterTest {
   @Mock private Call<Void> mockZipkinCall;
   @Mock private OtelToZipkinSpanTransformer mockTransformer;
   @Mock private InetAddress localIp;
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(ZipkinSpanExporter.class);
 
   @Test
   void testExport() {
@@ -110,11 +115,21 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  @SuppressLogger(ZipkinSpanExporter.class)
   void testShutdown() throws IOException {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setSender(mockSender).build();
 
-    exporter.shutdown();
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
     verify(mockSender).close();
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(
+            exporter
+                .export(Collections.singletonList(spanBuilder().build()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 
   @Test

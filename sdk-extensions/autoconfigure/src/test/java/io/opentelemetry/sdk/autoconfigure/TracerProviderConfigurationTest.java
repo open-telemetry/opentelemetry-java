@@ -238,5 +238,14 @@ class TracerProviderConfigurationTest {
                     "catsampler", EMPTY, TracerProviderConfiguration.class.getClassLoader()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized value for otel.traces.sampler: catsampler");
+    assertThatThrownBy(
+            () ->
+                TracerProviderConfiguration.configureSampler(
+                    "parentbased_jaeger_remote",
+                    EMPTY,
+                    TracerProviderConfiguration.class.getClassLoader()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage(
+            "parentbased_jaeger_remote configured but opentelemetry-sdk-extension-jaeger-remote-sampler not on classpath");
   }
 }

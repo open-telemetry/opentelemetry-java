@@ -8,44 +8,58 @@ package io.opentelemetry.exporter.logging;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @SuppressLogger(LoggingMetricExporter.class)
 class LoggingMetricExporterTest {
 
-  LoggingMetricExporter exporter;
+  private static final MetricData METRIC_DATA =
+      ImmutableMetricData.createLongSum(
+          Resource.create(Attributes.of(stringKey("host"), "localhost")),
+          InstrumentationScopeInfo.builder("manualInstrumentation").setVersion("1.0").build(),
+          "counterOne",
+          "A simple counter",
+          "one",
+          ImmutableSumData.create(
+              true,
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(
+                  ImmutableLongPointData.create(
+                      TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()),
+                      TimeUnit.MILLISECONDS.toNanos(Instant.now().plusMillis(245).toEpochMilli()),
+                      Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
+                      1010))));
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(LoggingMetricExporter.class);
+
+  private LoggingMetricExporter exporter;
 
   @BeforeEach
   void setUp() {
     exporter = LoggingMetricExporter.create();
-  }
-
-  @AfterEach
-  void tearDown() {
-    exporter.shutdown();
   }
 
   @Test
@@ -59,64 +73,21 @@ class LoggingMetricExporterTest {
   }
 
   @Test
-  void testExport() {
-    long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
-    Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
-    InstrumentationScopeInfo instrumentationScopeInfo =
-        InstrumentationScopeInfo.builder("manualInstrumentation").setVersion("1.0").build();
-    exporter.export(
-        Arrays.asList(
-            ImmutableMetricData.createDoubleSummary(
-                resource,
-                instrumentationScopeInfo,
-                "measureOne",
-                "A summarized test measure",
-                "ms",
-                ImmutableSummaryData.create(
-                    Collections.singletonList(
-                        ImmutableSummaryPointData.create(
-                            nowEpochNanos,
-                            nowEpochNanos + 245,
-                            Attributes.of(stringKey("a"), "b", stringKey("c"), "d"),
-                            1010,
-                            50000,
-                            Arrays.asList(
-                                ImmutableValueAtQuantile.create(0.0, 25),
-                                ImmutableValueAtQuantile.create(1.0, 433)))))),
-            ImmutableMetricData.createLongSum(
-                resource,
-                instrumentationScopeInfo,
-                "counterOne",
-                "A simple counter",
-                "one",
-                ImmutableSumData.create(
-                    true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        ImmutableLongPointData.create(
-                            nowEpochNanos,
-                            nowEpochNanos + 245,
-                            Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
-                            1010)))),
-            ImmutableMetricData.createDoubleSum(
-                resource,
-                instrumentationScopeInfo,
-                "observedValue",
-                "an observer gauge",
-                "kb",
-                ImmutableSumData.create(
-                    true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        ImmutableDoublePointData.create(
-                            nowEpochNanos,
-                            nowEpochNanos + 245,
-                            Attributes.of(stringKey("1"), "2", stringKey("3"), "4"),
-                            33.7767))))));
+  void export() {
+    assertThat(exporter.export(Collections.singletonList(METRIC_DATA)).isSuccess()).isTrue();
+    assertThat(logs.getEvents())
+        .satisfiesExactly(
+            loggingEvent ->
+                assertThat(loggingEvent.getMessage())
+                    .isEqualTo("Received a collection of 1 metrics for export."),
+            loggingEvent -> {
+              assertThat(loggingEvent.getMessage()).isEqualTo("metric: {0}");
+              assertThat(loggingEvent.getArgumentArray()).isEqualTo(new MetricData[] {METRIC_DATA});
+            });
   }
 
   @Test
-  void testFlush() {
+  void flush() {
     AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingMetricExporter.class.getName())
         .addHandler(
@@ -128,5 +99,19 @@ class LoggingMetricExporterTest {
             });
     exporter.flush();
     assertThat(flushed.get()).isTrue();
+  }
+
+  @Test
+  void shutdown() {
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
+    assertThat(
+            exporter
+                .export(Collections.singletonList(METRIC_DATA))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 }

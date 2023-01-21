@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.16.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.17.0";
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
@@ -572,6 +572,12 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
 
+  /**
+   * The column number in {@code code.filepath} best representing the operation. It SHOULD point
+   * within the code unit named in {@code code.function}.
+   */
+  public static final AttributeKey<Long> CODE_COLUMN = longKey("code.column");
+
   /** HTTP request method. */
   public static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
 
@@ -788,81 +794,170 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> GRAPHQL_DOCUMENT = stringKey("graphql.document");
 
-  /** A string identifying the messaging system. */
-  public static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
-
-  /**
-   * The message destination name. This might be equal to the span name but is required
-   * nevertheless.
-   */
-  public static final AttributeKey<String> MESSAGING_DESTINATION =
-      stringKey("messaging.destination");
-
-  /** The kind of message destination */
-  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
-      stringKey("messaging.destination_kind");
-
-  /** A boolean that is true if the message destination is temporary. */
-  public static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
-      booleanKey("messaging.temp_destination");
-
-  /** The name of the transport protocol. */
-  public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
-
-  /** The version of the transport protocol. */
-  public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
-      stringKey("messaging.protocol_version");
-
-  /** Connection string. */
-  public static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
-
   /**
    * A value used by the messaging system as an identifier for the message, represented as a string.
    */
-  public static final AttributeKey<String> MESSAGING_MESSAGE_ID = stringKey("messaging.message_id");
+  public static final AttributeKey<String> MESSAGING_MESSAGE_ID = stringKey("messaging.message.id");
 
   /**
    * The <a href="#conversations">conversation ID</a> identifying the conversation to which the
    * message belongs, represented as a string. Sometimes called &quot;Correlation ID&quot;.
    */
-  public static final AttributeKey<String> MESSAGING_CONVERSATION_ID =
-      stringKey("messaging.conversation_id");
+  public static final AttributeKey<String> MESSAGING_MESSAGE_CONVERSATION_ID =
+      stringKey("messaging.message.conversation_id");
 
   /**
    * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
    * unknown whether the compressed or uncompressed payload size is reported.
    */
   public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
-      longKey("messaging.message_payload_size_bytes");
+      longKey("messaging.message.payload_size_bytes");
 
   /** The compressed size of the message payload in bytes. */
   public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
-      longKey("messaging.message_payload_compressed_size_bytes");
+      longKey("messaging.message.payload_compressed_size_bytes");
 
   /**
-   * A string identifying the kind of message consumption as defined in the <a
-   * href="#operation-names">Operation names</a> section above. If the operation is
-   * &quot;send&quot;, this attribute MUST NOT be set, since the operation can be inferred from the
-   * span kind in that case.
+   * The message destination name
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Destination name SHOULD uniquely identify a specific queue, topic or other entity within
+   *       the broker. If the broker does not have such notion, the destination name SHOULD uniquely
+   *       identify the broker.
+   * </ul>
+   */
+  public static final AttributeKey<String> MESSAGING_DESTINATION_NAME =
+      stringKey("messaging.destination.name");
+
+  /** The kind of message destination */
+  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
+      stringKey("messaging.destination.kind");
+
+  /**
+   * Low cardinality representation of the messaging destination name
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Destination names could be constructed from templates. An example would be a destination
+   *       name involving a user name or product id. Although the destination name in this case is
+   *       of high cardinality, the underlying template is of low cardinality and can be effectively
+   *       used for grouping and aggregation.
+   * </ul>
+   */
+  public static final AttributeKey<String> MESSAGING_DESTINATION_TEMPLATE =
+      stringKey("messaging.destination.template");
+
+  /**
+   * A boolean that is true if the message destination is temporary and might not exist anymore
+   * after messages are processed.
+   */
+  public static final AttributeKey<Boolean> MESSAGING_DESTINATION_TEMPORARY =
+      booleanKey("messaging.destination.temporary");
+
+  /**
+   * A boolean that is true if the message destination is anonymous (could be unnamed or have
+   * auto-generated name).
+   */
+  public static final AttributeKey<Boolean> MESSAGING_DESTINATION_ANONYMOUS =
+      booleanKey("messaging.destination.anonymous");
+
+  /**
+   * The message source name
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Source name SHOULD uniquely identify a specific queue, topic, or other entity within the
+   *       broker. If the broker does not have such notion, the source name SHOULD uniquely identify
+   *       the broker.
+   * </ul>
+   */
+  public static final AttributeKey<String> MESSAGING_SOURCE_NAME =
+      stringKey("messaging.source.name");
+
+  /** The kind of message source */
+  public static final AttributeKey<String> MESSAGING_SOURCE_KIND =
+      stringKey("messaging.source.kind");
+
+  /**
+   * Low cardinality representation of the messaging source name
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Source names could be constructed from templates. An example would be a source name
+   *       involving a user name or product id. Although the source name in this case is of high
+   *       cardinality, the underlying template is of low cardinality and can be effectively used
+   *       for grouping and aggregation.
+   * </ul>
+   */
+  public static final AttributeKey<String> MESSAGING_SOURCE_TEMPLATE =
+      stringKey("messaging.source.template");
+
+  /**
+   * A boolean that is true if the message source is temporary and might not exist anymore after
+   * messages are processed.
+   */
+  public static final AttributeKey<Boolean> MESSAGING_SOURCE_TEMPORARY =
+      booleanKey("messaging.source.temporary");
+
+  /**
+   * A boolean that is true if the message source is anonymous (could be unnamed or have
+   * auto-generated name).
+   */
+  public static final AttributeKey<Boolean> MESSAGING_SOURCE_ANONYMOUS =
+      booleanKey("messaging.source.anonymous");
+
+  /** A string identifying the messaging system. */
+  public static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
+
+  /**
+   * A string identifying the kind of messaging operation as defined in the <a
+   * href="#operation-names">Operation names</a> section above.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>If a custom value is used, it MUST be of low cardinality.
+   * </ul>
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
   /**
+   * The number of messages sent, received, or processed in the scope of the batching operation.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Instrumentations SHOULD NOT set {@code messaging.batch.message_count} on spans that
+   *       operate with a single message. When a messaging client library supports both batch and
+   *       single-message API for the same operation, instrumentations SHOULD use {@code
+   *       messaging.batch.message_count} for batching APIs and SHOULD NOT use it for single-message
+   *       APIs.
+   * </ul>
+   */
+  public static final AttributeKey<Long> MESSAGING_BATCH_MESSAGE_COUNT =
+      longKey("messaging.batch.message_count");
+
+  /**
    * The identifier for the consumer receiving a message. For Kafka, set it to {@code
-   * {messaging.kafka.consumer_group} - {messaging.kafka.client_id}}, if both are present, or only
-   * {@code messaging.kafka.consumer_group}. For brokers, such as RabbitMQ and Artemis, set it to
+   * {messaging.kafka.consumer.group} - {messaging.kafka.client_id}}, if both are present, or only
+   * {@code messaging.kafka.consumer.group}. For brokers, such as RabbitMQ and Artemis, set it to
    * the {@code client_id} of the client consuming the message.
    */
   public static final AttributeKey<String> MESSAGING_CONSUMER_ID =
-      stringKey("messaging.consumer_id");
+      stringKey("messaging.consumer.id");
 
   /** RabbitMQ message routing key. */
-  public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
-      stringKey("messaging.rabbitmq.routing_key");
+  public static final AttributeKey<String> MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY =
+      stringKey("messaging.rabbitmq.destination.routing_key");
 
   /**
    * Message keys in Kafka are used for grouping alike messages to ensure they're processed on the
-   * same partition. They differ from {@code messaging.message_id} in that they're not unique. If
+   * same partition. They differ from {@code messaging.message.id} in that they're not unique. If
    * the key is {@code null}, the attribute MUST NOT be set.
    *
    * <p>Notes:
@@ -873,30 +968,34 @@ public final class SemanticAttributes {
    * </ul>
    */
   public static final AttributeKey<String> MESSAGING_KAFKA_MESSAGE_KEY =
-      stringKey("messaging.kafka.message_key");
+      stringKey("messaging.kafka.message.key");
 
   /**
    * Name of the Kafka Consumer Group that is handling the message. Only applies to consumers, not
    * producers.
    */
   public static final AttributeKey<String> MESSAGING_KAFKA_CONSUMER_GROUP =
-      stringKey("messaging.kafka.consumer_group");
+      stringKey("messaging.kafka.consumer.group");
 
   /** Client Id for the Consumer or Producer that is handling the message. */
   public static final AttributeKey<String> MESSAGING_KAFKA_CLIENT_ID =
       stringKey("messaging.kafka.client_id");
 
   /** Partition the message is sent to. */
-  public static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION =
-      longKey("messaging.kafka.partition");
+  public static final AttributeKey<Long> MESSAGING_KAFKA_DESTINATION_PARTITION =
+      longKey("messaging.kafka.destination.partition");
+
+  /** Partition the message is received from. */
+  public static final AttributeKey<Long> MESSAGING_KAFKA_SOURCE_PARTITION =
+      longKey("messaging.kafka.source.partition");
 
   /** The offset of a record in the corresponding Kafka partition. */
   public static final AttributeKey<Long> MESSAGING_KAFKA_MESSAGE_OFFSET =
       longKey("messaging.kafka.message.offset");
 
   /** A boolean that is true if the message is a tombstone. */
-  public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
-      booleanKey("messaging.kafka.tombstone");
+  public static final AttributeKey<Boolean> MESSAGING_KAFKA_MESSAGE_TOMBSTONE =
+      booleanKey("messaging.kafka.message.tombstone");
 
   /** Namespace of RocketMQ resources, resources in different namespaces are individual. */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_NAMESPACE =
@@ -916,31 +1015,31 @@ public final class SemanticAttributes {
   /**
    * The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
    */
-  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELIVERY_TIMESTAMP =
-      longKey("messaging.rocketmq.delivery_timestamp");
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_MESSAGE_DELIVERY_TIMESTAMP =
+      longKey("messaging.rocketmq.message.delivery_timestamp");
 
   /** The delay time level for delay message, which determines the message delay time. */
-  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELAY_TIME_LEVEL =
-      longKey("messaging.rocketmq.delay_time_level");
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_MESSAGE_DELAY_TIME_LEVEL =
+      longKey("messaging.rocketmq.message.delay_time_level");
 
   /**
    * It is essential for FIFO message. Messages that belong to the same message group are always
    * processed one by one within the same consumer group.
    */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_GROUP =
-      stringKey("messaging.rocketmq.message_group");
+      stringKey("messaging.rocketmq.message.group");
 
   /** Type of message. */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_TYPE =
-      stringKey("messaging.rocketmq.message_type");
+      stringKey("messaging.rocketmq.message.type");
 
   /** The secondary classifier of message besides topic. */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_MESSAGE_TAG =
-      stringKey("messaging.rocketmq.message_tag");
+      stringKey("messaging.rocketmq.message.tag");
 
   /** Key(s) of message, another way to mark message besides message id. */
   public static final AttributeKey<List<String>> MESSAGING_ROCKETMQ_MESSAGE_KEYS =
-      stringArrayKey("messaging.rocketmq.message_keys");
+      stringArrayKey("messaging.rocketmq.message.keys");
 
   /** Model of message consumption. This only applies to consumer spans. */
   public static final AttributeKey<String> MESSAGING_ROCKETMQ_CONSUMPTION_MODEL =
@@ -1171,6 +1270,8 @@ public final class SemanticAttributes {
     public static final String COCKROACHDB = "cockroachdb";
     /** OpenSearch. */
     public static final String OPENSEARCH = "opensearch";
+    /** ClickHouse. */
+    public static final String CLICKHOUSE = "clickhouse";
 
     private DbSystemValues() {}
   }
@@ -1388,7 +1489,18 @@ public final class SemanticAttributes {
     private MessagingDestinationKindValues() {}
   }
 
+  public static final class MessagingSourceKindValues {
+    /** A message received from a queue. */
+    public static final String QUEUE = "queue";
+    /** A message received from a topic. */
+    public static final String TOPIC = "topic";
+
+    private MessagingSourceKindValues() {}
+  }
+
   public static final class MessagingOperationValues {
+    /** publish. */
+    public static final String PUBLISH = "publish";
     /** receive. */
     public static final String RECEIVE = "receive";
     /** process. */
@@ -1559,6 +1671,114 @@ public final class SemanticAttributes {
    *     SemanticAttributes#HTTP_RESEND_COUNT} instead.
    */
   @Deprecated public static final AttributeKey<Long> HTTP_RETRY_COUNT = longKey("http.retry_count");
+
+  /**
+   * A string identifying the messaging system.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_DESTINATION_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_DESTINATION =
+      stringKey("messaging.destination");
+
+  /**
+   * A boolean that is true if the message destination is temporary.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_DESTINATION_TEMPORARY} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
+      booleanKey("messaging.temp_destination");
+
+  /**
+   * The name of the transport protocol.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no
+   *     replacement.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
+
+  /**
+   * The version of the transport protocol.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no
+   *     replacement.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
+      stringKey("messaging.protocol_version");
+
+  /**
+   * Connection string.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no
+   *     replacement.
+   */
+  @Deprecated public static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
+
+  /**
+   * The <a href="#conversations">conversation ID</a> identifying the conversation to which the
+   * message belongs, represented as a string. Sometimes called &quot;Correlation ID&quot;.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_MESSAGE_CONVERSATION_ID} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_CONVERSATION_ID =
+      stringKey("messaging.conversation_id");
+
+  /**
+   * RabbitMQ message routing key.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
+      stringKey("messaging.rabbitmq.routing_key");
+
+  /**
+   * Partition the message is received from.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_KAFKA_SOURCE_PARTITION} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION =
+      longKey("messaging.kafka.partition");
+
+  /**
+   * A boolean that is true if the message is a tombstone.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_KAFKA_MESSAGE_TOMBSTONE} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
+      booleanKey("messaging.kafka.tombstone");
+
+  /**
+   * The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_ROCKETMQ_MESSAGE_DELIVERY_TIMESTAMP} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELIVERY_TIMESTAMP =
+      longKey("messaging.rocketmq.delivery_timestamp");
+
+  /**
+   * The delay time level for delay message, which determines the message delay time.
+   *
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#MESSAGING_ROCKETMQ_MESSAGE_DELAY_TIME_LEVEL} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELAY_TIME_LEVEL =
+      longKey("messaging.rocketmq.delay_time_level");
 
   private SemanticAttributes() {}
 }

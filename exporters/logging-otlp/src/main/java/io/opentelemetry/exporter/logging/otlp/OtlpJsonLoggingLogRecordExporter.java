@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,8 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName());
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
   /** Returns a new {@link OtlpJsonLoggingLogRecordExporter}. */
   public static LogRecordExporter create() {
     return new OtlpJsonLoggingLogRecordExporter();
@@ -38,6 +41,10 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     ResourceLogsMarshaler[] allResourceLogs = ResourceLogsMarshaler.create(logs);
     for (ResourceLogsMarshaler resourceLogs : allResourceLogs) {
       SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
@@ -59,6 +66,9 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

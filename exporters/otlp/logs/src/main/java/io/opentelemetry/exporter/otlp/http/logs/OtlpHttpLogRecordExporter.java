@@ -26,6 +26,9 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
   /**
    * Returns a new {@link OtlpHttpLogRecordExporter} using the default values.
    *
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
+   *
    * @return a new {@link OtlpHttpLogRecordExporter} instance.
    */
   public static OtlpHttpLogRecordExporter getDefault() {

@@ -431,13 +431,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                 .join(10, TimeUnit.SECONDS)
                 .isSuccess())
         .isFalse();
+    assertThat(httpRequests).isEmpty();
   }
 
   @Test
+  @SuppressLogger(OkHttpExporter.class)
   void doubleShutdown() {
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(logs.getEvents()).isEmpty();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 
   @Test

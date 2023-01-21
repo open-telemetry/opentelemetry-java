@@ -18,7 +18,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.16.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.17.0";
 
   /**
    * Array of brand name and version separated by a space

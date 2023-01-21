@@ -2,7 +2,26 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.12.1"
+  id("com.diffplug.spotless") version "6.13.0"
+}
+
+spotless {
+  kotlinGradle {
+    ktlint().editorConfigOverride(mapOf(
+      "indent_size" to "2",
+      "continuation_indent_size" to "2",
+      "max_line_length" to "160",
+      "insert_final_newline" to "true",
+      "ktlint_standard_no-wildcard-imports" to "disabled",
+      // ktlint does not break up long lines, it just fails on them
+      "ktlint_standard_max-line-length" to "disabled",
+      // ktlint makes it *very* hard to locate where this actually happened
+      "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+      // also very hard to find out where this happens
+      "ktlint_standard_wrapping" to "disabled"
+    ))
+    target("**/*.gradle.kts",)
+  }
 }
 
 repositories {
@@ -14,7 +33,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.10.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.12.1")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.13.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
@@ -42,12 +61,5 @@ tasks {
     with(options) {
       release.set(8)
     }
-  }
-}
-
-spotless {
-  kotlinGradle {
-    ktlint().editorConfigOverride(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
-    target("**/*.gradle.kts")
   }
 }

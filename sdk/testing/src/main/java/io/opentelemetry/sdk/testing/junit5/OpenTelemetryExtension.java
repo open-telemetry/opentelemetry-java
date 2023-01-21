@@ -155,5 +155,6 @@ public final class OpenTelemetryExtension
   @Override
   public void afterAll(ExtensionContext context) {
     GlobalOpenTelemetry.resetForTest();
+    openTelemetry.close();
   }
 }

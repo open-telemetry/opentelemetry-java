@@ -42,6 +42,9 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   /**
    * Returns a new {@link OtlpHttpMetricExporter} using the default values.
    *
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
+   *
    * @return a new {@link OtlpHttpMetricExporter} instance.
    */
   public static OtlpHttpMetricExporter getDefault() {

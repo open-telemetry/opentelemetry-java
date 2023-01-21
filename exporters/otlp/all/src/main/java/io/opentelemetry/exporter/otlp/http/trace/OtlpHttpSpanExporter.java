@@ -30,6 +30,9 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   /**
    * Returns a new {@link OtlpHttpSpanExporter} using the default values.
    *
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
+   *
    * @return a new {@link OtlpHttpSpanExporter} instance.
    */
   public static OtlpHttpSpanExporter getDefault() {

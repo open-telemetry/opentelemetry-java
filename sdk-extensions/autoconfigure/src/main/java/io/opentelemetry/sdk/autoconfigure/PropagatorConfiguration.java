@@ -38,6 +38,13 @@ final class PropagatorConfiguration {
             config,
             serviceClassLoader);
 
+    if (requestedPropagators.contains("none")) {
+      if (requestedPropagators.size() > 1) {
+        throw new ConfigurationException(
+            "otel.propagators contains 'none' along with other propagators");
+      }
+      return ContextPropagators.noop();
+    }
     for (String propagatorName : requestedPropagators) {
       propagators.add(
           propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagatorsManager), config));

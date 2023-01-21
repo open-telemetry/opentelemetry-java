@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -170,5 +172,14 @@ class OtlpJsonLoggingMetricExporterTest {
   @Test
   void shutdown() {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
+    assertThat(
+            exporter
+                .export(Collections.singletonList(METRIC1))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 }

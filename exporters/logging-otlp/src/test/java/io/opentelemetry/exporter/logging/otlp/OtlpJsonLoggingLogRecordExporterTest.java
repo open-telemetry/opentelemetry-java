@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -166,5 +167,11 @@ class OtlpJsonLoggingLogRecordExporterTest {
   @Test
   void shutdown() {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
+    assertThat(
+            exporter.export(Collections.singletonList(LOG1)).join(10, TimeUnit.SECONDS).isSuccess())
+        .isFalse();
+    assertThat(logs.getEvents()).isEmpty();
+    assertThat(exporter.shutdown().isSuccess()).isTrue();
+    logs.assertContains("Calling shutdown() multiple times.");
   }
 }

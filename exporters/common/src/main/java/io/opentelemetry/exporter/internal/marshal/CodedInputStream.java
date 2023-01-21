@@ -127,6 +127,7 @@ public final class CodedInputStream {
   }
 
   /** Read varint32. */
+  @SuppressWarnings("LabelledBreakTarget")
   public int readRawVarint32() throws IOException {
     // See implementation notes for readRawVarint64
     fastpath:
