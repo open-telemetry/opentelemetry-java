@@ -71,6 +71,7 @@ testing {
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
+        implementation(project(":sdk-extensions:jaeger-remote-sampler"))
         implementation(project(":semconv"))
 
         implementation("com.google.guava:guava")
