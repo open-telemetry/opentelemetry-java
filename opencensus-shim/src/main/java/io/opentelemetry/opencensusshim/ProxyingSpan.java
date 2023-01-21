@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 // todo make this unnecessary
 @SuppressWarnings("UngroupedOverloads")
-public interface ProxyingSpan extends Span {
+interface ProxyingSpan extends Span {
   Span getProxied();
 
   // implementations
