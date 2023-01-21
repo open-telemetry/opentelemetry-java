@@ -33,7 +33,7 @@ public abstract class ImmutableExponentialHistogramPointData
    * @return a DoubleExponentialHistogramPointData.
    */
   @SuppressWarnings("TooManyParameters")
-  public static ImmutableExponentialHistogramPointData create(
+  public static ExponentialHistogramPointData create(
       int scale,
       double sum,
       long zeroCount,

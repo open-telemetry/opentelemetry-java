@@ -10,11 +10,15 @@ import java.util.List;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link ExponentialHistogramBuckets}. */
-public class ExponentialHistogramBucketsAssert
+/**
+ * Test assertions for {@link ExponentialHistogramBuckets}.
+ *
+ * @since 1.23.0
+ */
+public final class ExponentialHistogramBucketsAssert
     extends AbstractAssert<ExponentialHistogramBucketsAssert, ExponentialHistogramBuckets> {
 
-  protected ExponentialHistogramBucketsAssert(ExponentialHistogramBuckets actual) {
+  ExponentialHistogramBucketsAssert(ExponentialHistogramBuckets actual) {
     super(actual, ExponentialHistogramBucketsAssert.class);
   }
 

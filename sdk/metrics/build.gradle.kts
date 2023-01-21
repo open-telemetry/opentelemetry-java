@@ -22,7 +22,6 @@ dependencies {
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk:metrics-testing"))
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
 

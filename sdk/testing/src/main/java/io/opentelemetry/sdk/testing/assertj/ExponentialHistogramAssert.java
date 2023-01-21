@@ -5,18 +5,23 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
+import java.util.Arrays;
+import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
-import org.assertj.core.api.AbstractIterableAssert;
-import org.assertj.core.api.Assertions;
 
-/** Test assertions for {@link ExponentialHistogramData}. */
-public class ExponentialHistogramAssert
+/**
+ * Test assertions for {@link ExponentialHistogramData}.
+ *
+ * @since 1.23.0
+ */
+public final class ExponentialHistogramAssert
     extends AbstractAssert<ExponentialHistogramAssert, ExponentialHistogramData> {
 
-  protected ExponentialHistogramAssert(ExponentialHistogramData actual) {
+  ExponentialHistogramAssert(ExponentialHistogramData actual) {
     super(actual, ExponentialHistogramAssert.class);
   }
 
@@ -47,14 +52,26 @@ public class ExponentialHistogramAssert
     return this;
   }
 
-  /** Returns convenience API to assert against the {@code points} field. */
-  public AbstractIterableAssert<
-          ?,
-          ? extends Iterable<? extends ExponentialHistogramPointData>,
-          ExponentialHistogramPointData,
-          ?>
-      points() {
-    isNotNull();
-    return Assertions.assertThat(actual.getPoints());
+  /**
+   * Asserts the exponential histogram has points matching all of the given assertions and no more,
+   * in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final ExponentialHistogramAssert hasPointsSatisfying(
+      Consumer<ExponentialHistogramPointAssert>... assertions) {
+    return hasPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts the exponential histogram has points matching all of the given assertions and no more,
+   * in any order.
+   */
+  public ExponentialHistogramAssert hasPointsSatisfying(
+      Iterable<? extends Consumer<ExponentialHistogramPointAssert>> assertions) {
+    assertThat(actual.getPoints())
+        .satisfiesExactlyInAnyOrder(
+            AssertUtil.toConsumers(assertions, ExponentialHistogramPointAssert::new));
+    return this;
   }
 }

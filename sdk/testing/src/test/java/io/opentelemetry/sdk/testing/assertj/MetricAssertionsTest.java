@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -28,6 +29,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
@@ -230,6 +234,44 @@ class MetricAssertionsTest {
               AggregationTemporality.DELTA,
               // Points
               Arrays.asList(HISTOGRAM_POINT_DATA)));
+
+  private static final ExponentialHistogramPointData EXPONENTIAL_HISTOGRAM_POINT_DATA =
+      ImmutableExponentialHistogramPointData.create(
+          1,
+          10.0,
+          1,
+          2.0,
+          4.0,
+          ImmutableExponentialHistogramBuckets.create(1, 10, Arrays.asList(1L, 2L)),
+          ImmutableExponentialHistogramBuckets.create(1, 0, Collections.emptyList()),
+          1,
+          2,
+          Attributes.empty(),
+          Arrays.asList(DOUBLE_EXEMPLAR1, DOUBLE_EXEMPLAR2));
+
+  private static final MetricData EXPONENTIAL_HISTOGRAM_METRIC =
+      ImmutableMetricData.createExponentialHistogram(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "exponential_histogram",
+          /* description= */ "description",
+          /* unit= */ "unit",
+          ImmutableExponentialHistogramData.create(
+              AggregationTemporality.CUMULATIVE,
+              // Points
+              Collections.singletonList(EXPONENTIAL_HISTOGRAM_POINT_DATA)));
+
+  private static final MetricData EXPONENTIAL_HISTOGRAM_DELTA_METRIC =
+      ImmutableMetricData.createExponentialHistogram(
+          RESOURCE,
+          INSTRUMENTATION_SCOPE_INFO,
+          /* name= */ "exponential_histogram_delta",
+          /* description= */ "description",
+          /* unit= */ "unit",
+          ImmutableExponentialHistogramData.create(
+              AggregationTemporality.DELTA,
+              // Points
+              Collections.singletonList(EXPONENTIAL_HISTOGRAM_POINT_DATA)));
 
   private static final SummaryPointData SUMMARY_POINT_DATA =
       ImmutableSummaryPointData.create(
@@ -889,6 +931,101 @@ class MetricAssertionsTest {
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point -> point.hasBucketBoundaries(11.0))))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void exponentialHistogram() {
+    assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+        .hasExponentialHistogramSatisfying(
+            histogram ->
+                histogram
+                    .isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasScale(1)
+                                .hasSum(10.0)
+                                .hasZeroCount(1)
+                                .hasCount(4)
+                                .hasMin(2.0)
+                                .hasMax(4.0)
+                                .hasPositiveBucketsSatisfying(
+                                    buckets ->
+                                        buckets
+                                            .hasOffset(10)
+                                            .hasCounts(Arrays.asList(1L, 2L))
+                                            .hasTotalCount(3))
+                                .hasNegativeBucketsSatisfying(
+                                    buckets ->
+                                        buckets
+                                            .hasOffset(0)
+                                            .hasCounts(Collections.emptyList())
+                                            .hasTotalCount(0))
+                                .hasStartEpochNanos(1)
+                                .hasEpochNanos(2)
+                                .hasAttributes(Attributes.empty())
+                                .hasExemplars(DOUBLE_EXEMPLAR1, DOUBLE_EXEMPLAR2)
+                                .hasExemplarsSatisfying(exemplar -> {}, exemplar -> {})));
+    assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
+        .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta);
+  }
+
+  @Test
+  void exponentialHistogram_failure() {
+    assertThatThrownBy(
+            () -> assertThat(EXPONENTIAL_HISTOGRAM_METRIC).hasDoubleGaugeSatisfying(gauge -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
+                    .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isCumulative))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point.hasPositiveBucketsSatisfying(
+                                        buckets ->
+                                            buckets.hasCounts(Collections.singletonList(1L))))))
         .isInstanceOf(AssertionError.class);
   }
 
