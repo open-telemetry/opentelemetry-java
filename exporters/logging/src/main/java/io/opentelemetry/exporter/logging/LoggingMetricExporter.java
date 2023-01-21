@@ -98,7 +98,7 @@ public final class LoggingMetricExporter implements MetricExporter {
   @Override
   public CompletableResultCode shutdown() {
     if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
     return flush();

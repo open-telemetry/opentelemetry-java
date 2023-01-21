@@ -107,7 +107,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
    */
   public CompletableResultCode shutdown() {
     if (sharedState.hasBeenShutdown()) {
-      LOGGER.log(Level.WARNING, "Calling shutdown() multiple times.");
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
     return sharedState.shutdown();
