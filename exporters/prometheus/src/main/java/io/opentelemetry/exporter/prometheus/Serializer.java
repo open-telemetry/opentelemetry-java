@@ -37,7 +37,6 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtQuantile;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -646,7 +645,7 @@ abstract class Serializer {
       case HISTOGRAM:
         return metricData.getHistogramData().getPoints();
       case EXPONENTIAL_HISTOGRAM:
-        return ExponentialHistogramData.fromMetricData(metricData).getPoints();
+        return metricData.getExponentialHistogramData().getPoints();
     }
     return Collections.emptyList();
   }

@@ -3,13 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
+package io.opentelemetry.sdk.metrics.data;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -20,48 +16,13 @@ import javax.annotation.concurrent.Immutable;
  * <p>The bucket boundaries are calculated using both the scale {@link #getScale()}, and the offset
  * {@link ExponentialHistogramBuckets#getOffset()}.
  *
- * <p>See <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram">data
- * model</a>.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * @see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#exponentialhistogram">Exponential
+ *     Histogram Data Model</a>
+ * @since 1.23.0
  */
 @Immutable
 public interface ExponentialHistogramPointData extends PointData {
-
-  /**
-   * Create an ExponentialHistogramPointData.
-   *
-   * @return an ExponentialHistogramPointData.
-   */
-  @SuppressWarnings("TooManyParameters")
-  static ExponentialHistogramPointData create(
-      int scale,
-      double sum,
-      long zeroCount,
-      @Nullable Double min,
-      @Nullable Double max,
-      ExponentialHistogramBuckets positiveBuckets,
-      ExponentialHistogramBuckets negativeBuckets,
-      long startEpochNanos,
-      long epochNanos,
-      Attributes attributes,
-      List<DoubleExemplarData> exemplars) {
-
-    return ImmutableExponentialHistogramPointData.create(
-        scale,
-        sum,
-        zeroCount,
-        min,
-        max,
-        positiveBuckets,
-        negativeBuckets,
-        startEpochNanos,
-        epochNanos,
-        attributes,
-        exemplars);
-  }
 
   /**
    * Scale characterises the resolution of the histogram, with larger values of scale offering

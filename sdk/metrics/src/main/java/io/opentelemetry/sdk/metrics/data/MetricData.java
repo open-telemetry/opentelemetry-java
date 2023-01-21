@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -158,5 +159,16 @@ public interface MetricData {
       return (HistogramData) getData();
     }
     return ImmutableHistogramData.empty();
+  }
+
+  /**
+   * Returns the {@link ExponentialHistogramData} if type is {@link
+   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   */
+  default ExponentialHistogramData getExponentialHistogramData() {
+    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      return (ExponentialHistogramData) getData();
+    }
+    return ImmutableExponentialHistogramData.empty();
   }
 }

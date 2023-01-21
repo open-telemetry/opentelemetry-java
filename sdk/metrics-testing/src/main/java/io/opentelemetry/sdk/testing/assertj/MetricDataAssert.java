@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.testing.assertj;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 import org.assertj.core.api.AbstractAssert;
 
@@ -107,6 +106,6 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
           MetricDataType.EXPONENTIAL_HISTOGRAM,
           actual.getType());
     }
-    return new ExponentialHistogramAssert(ExponentialHistogramData.fromMetricData(actual));
+    return new ExponentialHistogramAssert(actual.getExponentialHistogramData());
   }
 }
