@@ -41,6 +41,7 @@ import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -143,7 +144,7 @@ class FullConfigTest {
         }
       };
 
-  private AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk;
+  private OpenTelemetrySdk openTelemetrySdk;
 
   @BeforeEach
   void setUp() {
@@ -158,12 +159,12 @@ class FullConfigTest {
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
-    autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
+    openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
   @AfterEach
   void afterEach() {
-    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
   }
@@ -203,6 +204,10 @@ class FullConfigTest {
     Logger logger = GlobalLoggerProvider.get().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
+
+    openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 

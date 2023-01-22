@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -28,6 +29,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -329,66 +332,93 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Resource resource =
         ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
 
-    OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
-    boolean sdkEnabled = !config.getBoolean("otel.sdk.disabled", false);
+    // Track any closeable resources created throughout configuration. If an exception short
+    // circuits configuration, partially configured components will be closed.
+    List<Closeable> closeables = new ArrayList<>();
 
-    if (sdkEnabled) {
-      SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-      meterProviderBuilder.setResource(resource);
-      MeterProviderConfiguration.configureMeterProvider(
-          meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer);
-      meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
-      SdkMeterProvider meterProvider = meterProviderBuilder.build();
+    try {
+      OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
+      boolean sdkEnabled = !config.getBoolean("otel.sdk.disabled", false);
 
-      SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-      tracerProviderBuilder.setResource(resource);
-      TracerProviderConfiguration.configureTracerProvider(
-          tracerProviderBuilder,
-          config,
-          serviceClassLoader,
-          meterProvider,
-          spanExporterCustomizer,
-          samplerCustomizer);
-      tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
-      SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+      if (sdkEnabled) {
+        SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+        meterProviderBuilder.setResource(resource);
+        MeterProviderConfiguration.configureMeterProvider(
+            meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer, closeables);
+        meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+        SdkMeterProvider meterProvider = meterProviderBuilder.build();
+        closeables.add(meterProvider);
 
-      SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
-      loggerProviderBuilder.setResource(resource);
-      LoggerProviderConfiguration.configureLoggerProvider(
-          loggerProviderBuilder,
-          config,
-          serviceClassLoader,
-          meterProvider,
-          logRecordExporterCustomizer);
-      loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
-      SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
+        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+        tracerProviderBuilder.setResource(resource);
+        TracerProviderConfiguration.configureTracerProvider(
+            tracerProviderBuilder,
+            config,
+            serviceClassLoader,
+            meterProvider,
+            spanExporterCustomizer,
+            samplerCustomizer,
+            closeables);
+        tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+        SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+        closeables.add(tracerProvider);
 
-      ContextPropagators propagators =
-          PropagatorConfiguration.configurePropagators(
-              config, serviceClassLoader, propagatorCustomizer);
+        SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+        loggerProviderBuilder.setResource(resource);
+        LoggerProviderConfiguration.configureLoggerProvider(
+            loggerProviderBuilder,
+            config,
+            serviceClassLoader,
+            meterProvider,
+            logRecordExporterCustomizer,
+            closeables);
+        loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
+        SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
+        closeables.add(loggerProvider);
 
-      OpenTelemetrySdkBuilder sdkBuilder =
-          OpenTelemetrySdk.builder()
-              .setTracerProvider(tracerProvider)
-              .setLoggerProvider(loggerProvider)
-              .setMeterProvider(meterProvider)
-              .setPropagators(propagators);
+        if (registerShutdownHook) {
+          Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
+        }
 
-      openTelemetrySdk = sdkBuilder.build();
+        ContextPropagators propagators =
+            PropagatorConfiguration.configurePropagators(
+                config, serviceClassLoader, propagatorCustomizer);
 
-      if (registerShutdownHook) {
-        Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
+        OpenTelemetrySdkBuilder sdkBuilder =
+            OpenTelemetrySdk.builder()
+                .setTracerProvider(tracerProvider)
+                .setLoggerProvider(loggerProvider)
+                .setMeterProvider(meterProvider)
+                .setPropagators(propagators);
+
+        openTelemetrySdk = sdkBuilder.build();
       }
-    }
 
-    if (setResultAsGlobal) {
-      GlobalOpenTelemetry.set(openTelemetrySdk);
-      GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
-      logger.log(
-          Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
-    }
+      if (setResultAsGlobal) {
+        GlobalOpenTelemetry.set(openTelemetrySdk);
+        GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
+        logger.log(
+            Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
+      }
 
-    return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+    } catch (RuntimeException e) {
+      logger.info(
+          "Error encountered during autoconfiguration. Closing partially configured components.");
+      for (Closeable closeable : closeables) {
+        try {
+          logger.fine("Closing " + closeable.getClass().getName());
+          closeable.close();
+        } catch (IOException ex) {
+          logger.warning(
+              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+        }
+      }
+      if (e instanceof ConfigurationException) {
+        throw e;
+      }
+      throw new ConfigurationException("Unexpected configuration error", e);
+    }
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer

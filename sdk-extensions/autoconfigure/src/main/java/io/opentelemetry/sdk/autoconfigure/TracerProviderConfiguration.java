@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +38,8 @@ final class TracerProviderConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
-      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
+      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer,
+      List<Closeable> closeables) {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
 
@@ -47,27 +49,33 @@ final class TracerProviderConfiguration {
 
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, serviceClassLoader, spanExporterCustomizer);
+            config, serviceClassLoader, spanExporterCustomizer, closeables);
 
-    configureSpanProcessors(config, exportersByName, meterProvider)
+    configureSpanProcessors(config, exportersByName, meterProvider, closeables)
         .forEach(tracerProviderBuilder::addSpanProcessor);
   }
 
   static List<SpanProcessor> configureSpanProcessors(
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
-      MeterProvider meterProvider) {
+      MeterProvider meterProvider,
+      List<Closeable> closeables) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
 
     SpanExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
-      spanProcessors.add(SimpleSpanProcessor.create(exporter));
+      SpanProcessor spanProcessor = SimpleSpanProcessor.create(exporter);
+      closeables.add(spanProcessor);
+      spanProcessors.add(spanProcessor);
     }
 
     if (!exportersByNameCopy.isEmpty()) {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
-      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider));
+      SpanProcessor spanProcessor =
+          configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider);
+      closeables.add(spanProcessor);
+      spanProcessors.add(spanProcessor);
     }
 
     return spanProcessors;

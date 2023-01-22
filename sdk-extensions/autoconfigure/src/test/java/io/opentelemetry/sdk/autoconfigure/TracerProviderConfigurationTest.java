@@ -10,13 +10,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -25,27 +24,31 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.internal.JcTools;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-// NB: We use AssertJ extracting to reflectively access implementation details to test configuration
-// because the use of BatchSpanProcessor makes it difficult to verify values through public means.
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TracerProviderConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
+
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @Mock private SpanExporter mockSpanExporter;
 
@@ -60,44 +63,39 @@ class TracerProviderConfigurationTest {
     properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.traces.sampler", "always_off");
     properties.put("otel.traces.exporter", "none");
+    List<Closeable> closeables = new ArrayList<>();
 
-    Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
     // are verified in other test sets like testFullConfig.
-    SdkTracerProviderBuilder tracerProviderBuilder =
-        SdkTracerProvider.builder().setResource(resource);
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
         DefaultConfigProperties.createForTest(properties),
         TracerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
         (a, unused) -> a,
-        (a, unused) -> a);
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    try {
+        (a, unused) -> a,
+        closeables);
+
+    try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
       assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
 
       assertThat(tracerProvider)
           .extracting("sharedState")
           .satisfies(
-              sharedState -> {
-                assertThat(sharedState).extracting("resource").isEqualTo(resource);
-                assertThat(sharedState)
-                    .extracting("activeSpanProcessor")
-                    .isEqualTo(SpanProcessor.composite());
-              });
-    } finally {
-      tracerProvider.shutdown();
+              sharedState ->
+                  assertThat(sharedState)
+                      .extracting("activeSpanProcessor")
+                      .isEqualTo(SpanProcessor.composite()));
+      assertThat(closeables).isEmpty();
     }
   }
 
   @Test
   void configureBatchSpanProcessor_empty() {
-    BatchSpanProcessor processor =
+    try (BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
-            EMPTY, mockSpanExporter, MeterProvider.noop());
-
-    try {
+            EMPTY, mockSpanExporter, MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
           .satisfies(
@@ -115,8 +113,6 @@ class TracerProviderConfigurationTest {
                         Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
                 assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
-    } finally {
-      processor.shutdown();
     }
   }
 
@@ -128,13 +124,11 @@ class TracerProviderConfigurationTest {
     properties.put("otel.bsp.max.export.batch.size", "3");
     properties.put("otel.bsp.export.timeout", "4");
 
-    BatchSpanProcessor processor =
+    try (BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
             DefaultConfigProperties.createForTest(properties),
             mockSpanExporter,
-            MeterProvider.noop());
-
-    try {
+            MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
           .satisfies(
@@ -152,8 +146,6 @@ class TracerProviderConfigurationTest {
                         Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
                 assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
-    } finally {
-      processor.shutdown();
     }
   }
 

@@ -146,7 +146,7 @@ public final class OkHttpExporter<T extends Marshaler> {
 
   public CompletableResultCode shutdown() {
     if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
     client.dispatcher().cancelAll();
