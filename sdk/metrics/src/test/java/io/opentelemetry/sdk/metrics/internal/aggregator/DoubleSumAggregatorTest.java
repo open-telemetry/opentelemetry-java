@@ -67,7 +67,9 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12.1 * 5);
   }
 
@@ -82,7 +84,9 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-11);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(14);
   }
 
@@ -90,23 +94,27 @@ class DoubleSumAggregatorTest {
   void toAccumulationAndReset() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(25);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-25);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(-13);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
   }
 
@@ -137,7 +145,7 @@ class DoubleSumAggregatorTest {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isEqualTo(DoubleAccumulation.create(0, exemplars));
   }
 
@@ -189,7 +197,7 @@ class DoubleSumAggregatorTest {
             metricDescriptor,
             Collections.singletonMap(
                 Attributes.empty(),
-                aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true)),
+                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
             AggregationTemporality.CUMULATIVE,
             0,
             10,

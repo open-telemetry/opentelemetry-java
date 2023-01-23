@@ -138,7 +138,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
   }
 
   @Override
-  public MetricData collectAndReset(
+  public MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
@@ -156,7 +156,6 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
     } else {
       result = accumulations;
     }
-    // TODO: clear instead?
     this.accumulations = new HashMap<>();
     return aggregator.toMetricData(
         resource,

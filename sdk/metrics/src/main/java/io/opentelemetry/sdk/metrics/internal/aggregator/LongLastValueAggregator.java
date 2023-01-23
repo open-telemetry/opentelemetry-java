@@ -86,7 +86,7 @@ public final class LongLastValueAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(
+    protected LongAccumulation doAccumulateThenMaybeReset(
         List<LongExemplarData> exemplars, boolean reset) {
       if (reset) {
         return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);

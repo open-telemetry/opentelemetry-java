@@ -90,7 +90,7 @@ public final class DoubleLastValueAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(
+    protected DoubleAccumulation doAccumulateThenMaybeReset(
         List<DoubleExemplarData> exemplars, boolean reset) {
       if (reset) {
         return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);

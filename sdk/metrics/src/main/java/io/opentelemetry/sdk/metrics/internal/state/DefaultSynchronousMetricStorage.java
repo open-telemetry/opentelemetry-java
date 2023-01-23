@@ -35,10 +35,11 @@ import java.util.logging.Logger;
 public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     implements SynchronousMetricStorage {
 
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(DefaultSynchronousMetricStorage.class.getName()));
   private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
+  private static final Logger internalLogger =
+      Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
 
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
@@ -118,7 +119,6 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
         }
         // Try to remove the boundAggregator. This will race with the collect method, but only one
         // will succeed.
-        // TODO: is this still valid?
         activeCollectionStorage.remove(attributes, boundAggregatorHandle);
         continue;
       }
@@ -153,7 +153,7 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
   }
 
   @Override
-  public MetricData collectAndReset(
+  public MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
@@ -171,7 +171,7 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
           activeCollectionStorage.remove(entry.getKey(), entry.getValue());
         }
       }
-      T accumulation = entry.getValue().accumulateThenReset(entry.getKey(), reset);
+      T accumulation = entry.getValue().accumulateThenMaybeReset(entry.getKey(), reset);
       if (accumulation == null) {
         continue;
       }

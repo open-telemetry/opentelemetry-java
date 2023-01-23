@@ -42,12 +42,16 @@ class LongLastValueAggregatorTest {
         aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12L);
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(14);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(14L);
   }
 
@@ -55,21 +59,25 @@ class LongLastValueAggregatorTest {
   void toAccumulationAndReset() {
     AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordLong(13);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(13L);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordLong(12);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12L);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
   }
 
@@ -86,7 +94,7 @@ class LongLastValueAggregatorTest {
             METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(),
-                aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true)),
+                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
             AggregationTemporality.CUMULATIVE,
             2,
             10,

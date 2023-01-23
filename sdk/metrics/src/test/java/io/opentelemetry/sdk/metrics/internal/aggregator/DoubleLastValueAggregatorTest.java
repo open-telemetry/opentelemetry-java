@@ -44,12 +44,16 @@ class DoubleLastValueAggregatorTest {
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(14.1);
   }
 
@@ -57,21 +61,25 @@ class DoubleLastValueAggregatorTest {
   void toAccumulationAndReset() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordDouble(13.1);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordDouble(12.1);
     assertThat(
-            aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true).getValue())
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isNull();
   }
 
@@ -121,7 +129,7 @@ class DoubleLastValueAggregatorTest {
             METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(),
-                aggregatorHandle.accumulateThenReset(Attributes.empty(), /* reset= */ true)),
+                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
             AggregationTemporality.DELTA,
             0,
             10,

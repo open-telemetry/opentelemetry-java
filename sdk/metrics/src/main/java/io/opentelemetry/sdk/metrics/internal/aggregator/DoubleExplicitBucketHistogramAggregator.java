@@ -122,7 +122,7 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected ExplicitBucketHistogramAccumulation doAccumulateThenReset(
+    protected ExplicitBucketHistogramAccumulation doAccumulateThenMaybeReset(
         List<DoubleExemplarData> exemplars, boolean reset) {
       lock.lock();
       try {

@@ -58,7 +58,7 @@ public interface Aggregator<T, U extends ExemplarData> {
   default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
     AggregatorHandle<T, U> handle = createHandle();
     handle.recordLong(value, attributes, context);
-    return handle.accumulateThenReset(attributes, /* reset= */ true);
+    return handle.accumulateThenMaybeReset(attributes, /* reset= */ true);
   }
 
   /**
@@ -73,7 +73,7 @@ public interface Aggregator<T, U extends ExemplarData> {
   default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {
     AggregatorHandle<T, U> handle = createHandle();
     handle.recordDouble(value, attributes, context);
-    return handle.accumulateThenReset(attributes, /* reset= */ true);
+    return handle.accumulateThenMaybeReset(attributes, /* reset= */ true);
   }
 
   /**

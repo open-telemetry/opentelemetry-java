@@ -106,26 +106,8 @@ public final class DoubleExponentialHistogramAggregator
     }
 
     @Override
-    protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(
+    protected synchronized ExponentialHistogramAccumulation doAccumulateThenMaybeReset(
         List<DoubleExemplarData> exemplars, boolean reset) {
-      ExponentialHistogramBuckets positiveBuckets;
-      ExponentialHistogramBuckets negativeBuckets;
-      if (this.positiveBuckets != null) {
-        positiveBuckets = this.positiveBuckets.copy();
-        if (reset) {
-          this.positiveBuckets.clear();
-        }
-      } else {
-        positiveBuckets = EmptyExponentialHistogramBuckets.get(scale);
-      }
-      if (this.negativeBuckets != null) {
-        negativeBuckets = this.negativeBuckets.copy();
-        if (reset) {
-          this.negativeBuckets.clear();
-        }
-      } else {
-        negativeBuckets = EmptyExponentialHistogramBuckets.get(scale);
-      }
       ExponentialHistogramAccumulation acc =
           ExponentialHistogramAccumulation.create(
               scale,
@@ -133,8 +115,8 @@ public final class DoubleExponentialHistogramAggregator
               this.count > 0,
               this.count > 0 ? this.min : -1,
               this.count > 0 ? this.max : -1,
-              positiveBuckets,
-              negativeBuckets,
+              resolveBuckets(this.positiveBuckets, scale, reset),
+              resolveBuckets(this.negativeBuckets, scale, reset),
               zeroCount,
               exemplars);
       if (reset) {
@@ -145,6 +127,18 @@ public final class DoubleExponentialHistogramAggregator
         this.count = 0;
       }
       return acc;
+    }
+
+    private static ExponentialHistogramBuckets resolveBuckets(
+        @Nullable DoubleExponentialHistogramBuckets buckets, int scale, boolean reset) {
+      if (buckets == null) {
+        return EmptyExponentialHistogramBuckets.get(scale);
+      }
+      ExponentialHistogramBuckets copy = buckets.copy();
+      if (reset) {
+        buckets.clear();
+      }
+      return copy;
     }
 
     @Override

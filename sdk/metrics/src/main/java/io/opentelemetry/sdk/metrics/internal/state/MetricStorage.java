@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
@@ -29,7 +30,8 @@ public interface MetricStorage {
   RegisteredReader getRegisteredReader();
 
   /**
-   * Collects the metrics from this storage and resets for the next collection period.
+   * Collects the metrics from this storage. If storing {@link AggregationTemporality#DELTA}
+   * metrics, reset for the next collection period.
    *
    * <p>Note: This is a stateful operation and will reset any interval-related state for the {@code
    * collector}.
@@ -40,7 +42,7 @@ public interface MetricStorage {
    * @param epochNanos The timestamp for this collection.
    * @return The {@link MetricData} from this collection period.
    */
-  MetricData collectAndReset(
+  MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
