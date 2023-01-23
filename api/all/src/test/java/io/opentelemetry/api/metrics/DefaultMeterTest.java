@@ -15,7 +15,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.event.LoggingEvent;
 
 @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 public class DefaultMeterTest {
@@ -65,13 +64,7 @@ public class DefaultMeterTest {
         .isSameAs(
             METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).ofLongs().buildWithCallback(unused -> {}));
 
-    assertThat(apiUsageLogs.getEvents())
-        .extracting(LoggingEvent::getMessage)
-        .hasSize(12)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."));
+    assertThat(apiUsageLogs.getEvents()).isEmpty();
   }
 
   @Test
@@ -101,13 +94,7 @@ public class DefaultMeterTest {
     METER.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
     METER.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
 
-    assertThat(apiUsageLogs.getEvents())
-        .hasSize(12)
-        .extracting(LoggingEvent::getMessage)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Unit \"日\" is invalid. Instrument unit must be 63 or fewer ASCII characters."));
+    assertThat(apiUsageLogs.getEvents()).isEmpty();
   }
 
   @Test

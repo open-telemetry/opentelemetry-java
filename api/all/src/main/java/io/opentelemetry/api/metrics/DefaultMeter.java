@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.context.Context;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
@@ -39,25 +38,21 @@ class DefaultMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    ValidationUtil.checkValidInstrumentName(name);
     return NOOP_LONG_COUNTER_BUILDER;
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    ValidationUtil.checkValidInstrumentName(name);
     return NOOP_LONG_UP_DOWN_COUNTER_BUILDER;
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    ValidationUtil.checkValidInstrumentName(name);
     return NOOP_DOUBLE_HISTOGRAM_BUILDER;
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    ValidationUtil.checkValidInstrumentName(name);
     return NOOP_DOUBLE_GAUGE_BUILDER;
   }
 
@@ -107,7 +102,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongCounterBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -144,7 +138,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleCounterBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -201,7 +194,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongUpDownCounterBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -240,7 +232,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleUpDownCounterBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -295,7 +286,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleHistogramBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -320,7 +310,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongHistogramBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -341,7 +330,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleGaugeBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
@@ -371,7 +359,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongGaugeBuilder setUnit(String unit) {
-      ValidationUtil.checkValidInstrumentUnit(unit);
       return this;
     }
 
