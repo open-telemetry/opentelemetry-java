@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -459,28 +458,32 @@ class DoubleExponentialHistogramAggregatorTest {
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
-      MetricAssertions.assertThat(metricDataCumulative)
-          .hasExponentialHistogram()
-          .isCumulative()
-          .points()
-          .satisfiesExactly(
-              point -> {
-                MetricAssertions.assertThat(point)
-                    .hasSum(123.456)
-                    .hasScale(20)
-                    .hasZeroCount(2)
-                    .hasCount(3)
-                    .hasMin(0)
-                    .hasMax(123.456)
-                    .hasExemplars(exemplar);
-                MetricAssertions.assertThat(point.getPositiveBuckets())
-                    .hasCounts(Collections.singletonList(1L))
-                    .hasOffset(valueToIndex(20, 123.456))
-                    .hasTotalCount(1);
-                MetricAssertions.assertThat(point.getNegativeBuckets())
-                    .hasTotalCount(0)
-                    .hasCounts(Collections.emptyList());
-              });
+      assertThat(metricDataCumulative)
+          .hasExponentialHistogramSatisfying(
+              expHistogram ->
+                  expHistogram
+                      .isCumulative()
+                      .hasPointsSatisfying(
+                          point ->
+                              point
+                                  .hasSum(123.456)
+                                  .hasScale(20)
+                                  .hasZeroCount(2)
+                                  .hasCount(3)
+                                  .hasMin(0)
+                                  .hasMax(123.456)
+                                  .hasExemplars(exemplar)
+                                  .hasPositiveBucketsSatisfying(
+                                      buckets ->
+                                          buckets
+                                              .hasCounts(Collections.singletonList(1L))
+                                              .hasOffset(valueToIndex(20, 123.456))
+                                              .hasTotalCount(1))
+                                  .hasNegativeBucketsSatisfying(
+                                      buckets ->
+                                          buckets
+                                              .hasTotalCount(0)
+                                              .hasCounts(Collections.emptyList()))));
       aggregatorHandle.recordDouble(1);
       aggregatorHandle.recordDouble(-1);
       aggregatorHandle.recordDouble(0);
@@ -537,12 +540,12 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(acc.getScale()).isEqualTo(3);
     assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(3);
     assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(3);
-    MetricAssertions.assertThat(acc.getPositiveBuckets())
-        .hasTotalCount(numberOfUpdates * 3)
-        .hasOffset(-27);
-    MetricAssertions.assertThat(acc.getNegativeBuckets())
-        .hasTotalCount(numberOfUpdates * 2)
-        .hasOffset(-27);
+    ExponentialHistogramBuckets positiveBuckets = acc.getPositiveBuckets();
+    assertThat(positiveBuckets.getTotalCount()).isEqualTo(numberOfUpdates * 3);
+    assertThat(positiveBuckets.getOffset()).isEqualTo(-27);
+    ExponentialHistogramBuckets negativeBuckets = acc.getNegativeBuckets();
+    assertThat(negativeBuckets.getTotalCount()).isEqualTo(numberOfUpdates * 2);
+    assertThat(negativeBuckets.getOffset()).isEqualTo(-27);
 
     // Verify positive buckets have correct counts
     List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();

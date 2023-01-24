@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
 import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -227,52 +226,61 @@ class SdkLongHistogramTest {
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
-                MetricAssertions.assertThat(metric)
+                assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("testHistogram")
                     .hasDescription("description")
                     .hasUnit("ms")
-                    .hasExponentialHistogram()
-                    .isCumulative()
-                    .points()
-                    .satisfiesExactlyInAnyOrder(
-                        point -> {
-                          MetricAssertions.assertThat(point)
-                              .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                              .hasEpochNanos(testClock.now())
-                              .hasAttributes(Attributes.empty())
-                              .hasCount(2)
-                              .hasSum(25)
-                              .hasMin(12)
-                              .hasMax(13)
-                              .hasScale(5)
-                              .hasZeroCount(0);
-                          MetricAssertions.assertThat(point.getPositiveBuckets())
-                              .hasOffset(114)
-                              .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L));
-                          MetricAssertions.assertThat(point.getNegativeBuckets())
-                              .hasOffset(0)
-                              .hasCounts(Collections.emptyList());
-                        },
-                        point -> {
-                          MetricAssertions.assertThat(point)
-                              .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                              .hasEpochNanos(testClock.now())
-                              .hasAttributes(Attributes.builder().put("key", "value").build())
-                              .hasCount(1)
-                              .hasSum(12)
-                              .hasMin(12)
-                              .hasMax(12)
-                              .hasScale(20)
-                              .hasZeroCount(0);
-                          MetricAssertions.assertThat(point.getPositiveBuckets())
-                              .hasOffset(3759105)
-                              .hasCounts(Collections.singletonList(1L));
-                          MetricAssertions.assertThat(point.getNegativeBuckets())
-                              .hasOffset(0)
-                              .hasCounts(Collections.emptyList());
-                        }));
+                    .hasExponentialHistogramSatisfying(
+                        expHistogram ->
+                            expHistogram
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasCount(2)
+                                            .hasSum(25)
+                                            .hasMin(12)
+                                            .hasMax(13)
+                                            .hasScale(5)
+                                            .hasZeroCount(0)
+                                            .hasPositiveBucketsSatisfying(
+                                                buckets ->
+                                                    buckets
+                                                        .hasOffset(114)
+                                                        .hasCounts(
+                                                            Arrays.asList(1L, 0L, 0L, 0L, 1L)))
+                                            .hasNegativeBucketsSatisfying(
+                                                buckets ->
+                                                    buckets
+                                                        .hasOffset(0)
+                                                        .hasCounts(Collections.emptyList())),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(
+                                                Attributes.builder().put("key", "value").build())
+                                            .hasCount(1)
+                                            .hasSum(12)
+                                            .hasMin(12)
+                                            .hasMax(12)
+                                            .hasScale(20)
+                                            .hasZeroCount(0)
+                                            .hasPositiveBucketsSatisfying(
+                                                buckets ->
+                                                    buckets
+                                                        .hasOffset(3759105)
+                                                        .hasCounts(Collections.singletonList(1L)))
+                                            .hasNegativeBucketsSatisfying(
+                                                buckets ->
+                                                    buckets
+                                                        .hasOffset(0)
+                                                        .hasCounts(Collections.emptyList())))));
   }
 
   @Test
