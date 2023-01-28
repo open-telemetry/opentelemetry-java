@@ -6,10 +6,11 @@
 package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -40,15 +41,15 @@ class TracerShimTest {
   @RegisterExtension static OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   TracerShim tracerShim;
-  Tracer tracer;
+  TracerProvider provider;
 
   @BeforeEach
   void setUp() {
-    tracer = otelTesting.getOpenTelemetry().getTracer("opentracingshim");
+    provider = otelTesting.getOpenTelemetry().getTracerProvider();
     TextMapPropagator propagator =
         otelTesting.getOpenTelemetry().getPropagators().getTextMapPropagator();
     ;
-    tracerShim = new TracerShim(tracer, propagator, propagator);
+    tracerShim = new TracerShim(provider, propagator, propagator);
   }
 
   @Test
@@ -278,8 +279,8 @@ class TracerShimTest {
     Map<String, String> map = new HashMap<>();
     CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
     CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
-    tracerShim = new TracerShim(tracer, textMapPropagator, httpHeadersPropagator);
-    io.opentelemetry.api.trace.Span span = tracer.spanBuilder("span").startSpan();
+    tracerShim = new TracerShim(provider, textMapPropagator, httpHeadersPropagator);
+    io.opentelemetry.api.trace.Span span = tracerShim.tracer().spanBuilder("span").startSpan();
     SpanContext context = new SpanShim(span).context();
 
     tracerShim.inject(context, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
@@ -292,8 +293,8 @@ class TracerShimTest {
     Map<String, String> map = new HashMap<>();
     CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
     CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
-    tracerShim = new TracerShim(tracer, textMapPropagator, httpHeadersPropagator);
-    io.opentelemetry.api.trace.Span span = tracer.spanBuilder("span").startSpan();
+    tracerShim = new TracerShim(provider, textMapPropagator, httpHeadersPropagator);
+    io.opentelemetry.api.trace.Span span = tracerShim.tracer().spanBuilder("span").startSpan();
     SpanContext context = new SpanShim(span).context();
 
     tracerShim.inject(context, Format.Builtin.HTTP_HEADERS, new TextMapAdapter(map));
@@ -306,7 +307,7 @@ class TracerShimTest {
     Map<String, String> map = new HashMap<>();
     CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
     CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
-    tracerShim = new TracerShim(tracer, textMapPropagator, httpHeadersPropagator);
+    tracerShim = new TracerShim(provider, textMapPropagator, httpHeadersPropagator);
 
     tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertThat(textMapPropagator.isExtracted()).isTrue();
@@ -318,7 +319,7 @@ class TracerShimTest {
     Map<String, String> map = new HashMap<>();
     CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
     CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
-    tracerShim = new TracerShim(tracer, textMapPropagator, httpHeadersPropagator);
+    tracerShim = new TracerShim(provider, textMapPropagator, httpHeadersPropagator);
 
     tracerShim.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(map));
     assertThat(textMapPropagator.isExtracted()).isFalse();
@@ -328,7 +329,7 @@ class TracerShimTest {
   @Test
   void extract_onlyBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    tracerShim = new TracerShim(tracer, propagator, TextMapPropagator.noop());
+    tracerShim = new TracerShim(provider, propagator, TextMapPropagator.noop());
 
     io.opentelemetry.api.baggage.Baggage baggage =
         io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
@@ -347,6 +348,17 @@ class TracerShimTest {
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
     assertThat(span.getSpanContext().isValid()).isFalse();
+  }
+
+  @Test
+  void close_doesNotCrash() {
+    // Need to explicitly use SdkTracerProvider as it implements Closeable,
+    // which we mock to throw an Exception.
+    io.opentelemetry.sdk.trace.SdkTracerProvider sdkProvider =
+        mock(io.opentelemetry.sdk.trace.SdkTracerProvider.class);
+    doThrow(new RuntimeException("testing error")).when(sdkProvider).close();
+    tracerShim = new TracerShim(sdkProvider, TextMapPropagator.noop(), TextMapPropagator.noop());
+    tracerShim.close();
   }
 
   @Test

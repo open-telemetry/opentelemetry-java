@@ -14,6 +14,8 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -21,16 +23,18 @@ import javax.annotation.Nullable;
 final class TracerShim implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
 
+  private final io.opentelemetry.api.trace.TracerProvider provider;
   private final io.opentelemetry.api.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
   private volatile boolean isClosed;
 
   TracerShim(
-      io.opentelemetry.api.trace.Tracer tracer,
+      io.opentelemetry.api.trace.TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
-    this.tracer = tracer;
+    this.provider = provider;
+    this.tracer = provider.get("opentracing-shim");
     this.propagation = new Propagation(textMapPropagator, httpPropagator);
     this.scopeManagerShim = new ScopeManagerShim();
   }
@@ -110,6 +114,21 @@ final class TracerShim implements Tracer {
 
   @Override
   public void close() {
+    if (isClosed) {
+      return;
+    }
     isClosed = true;
+
+    if (provider instanceof Closeable) {
+      try {
+        ((Closeable) provider).close();
+      } catch (RuntimeException | IOException e) {
+        logger.log(
+            Level.INFO,
+            "Exception caught while closing TracerProvider. Ignoring. "
+                + "Exception: [{0}] Message: [{1}]",
+            new String[] {e.getClass().getName(), e.getMessage()});
+      }
+    }
   }
 }
