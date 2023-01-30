@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.MetricStorageUtils.MAX_ACCUMULATIONS;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -16,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -36,16 +35,17 @@ import java.util.logging.Logger;
 public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     implements SynchronousMetricStorage {
 
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(DefaultSynchronousMetricStorage.class.getName()));
   private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
+  private static final Logger internalLogger =
+      Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
 
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
+  private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> activeCollectionStorage =
       new ConcurrentHashMap<>();
-  private final TemporalMetricStorage<T, U> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
 
   DefaultSynchronousMetricStorage(
@@ -55,18 +55,11 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
       AttributesProcessor attributesProcessor) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    AggregationTemporality aggregationTemporality =
+    this.aggregationTemporality =
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
-    this.temporalMetricStorage =
-        new TemporalMetricStorage<>(
-            aggregator,
-            /* isSynchronous= */ true,
-            registeredReader,
-            aggregationTemporality,
-            metricDescriptor);
     this.attributesProcessor = attributesProcessor;
   }
 
@@ -160,29 +153,44 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
   }
 
   @Override
-  public MetricData collectAndReset(
+  public MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
+    boolean reset = aggregationTemporality == AggregationTemporality.DELTA;
+
     // Grab accumulated measurements.
     Map<Attributes, T> accumulations = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : activeCollectionStorage.entrySet()) {
-      boolean unmappedEntry = entry.getValue().tryUnmap();
-      if (unmappedEntry) {
-        // If able to unmap then remove the record from the current Map. This can race with the
-        // acquire but because we requested a specific value only one will succeed.
-        activeCollectionStorage.remove(entry.getKey(), entry.getValue());
+      if (reset) {
+        boolean unmappedEntry = entry.getValue().tryUnmap();
+        if (unmappedEntry) {
+          // If able to unmap then remove the record from the current Map. This can race with the
+          // acquire but because we requested a specific value only one will succeed.
+          activeCollectionStorage.remove(entry.getKey(), entry.getValue());
+        }
       }
-      T accumulation = entry.getValue().accumulateThenReset(entry.getKey());
+      T accumulation = entry.getValue().accumulateThenMaybeReset(entry.getKey(), reset);
       if (accumulation == null) {
         continue;
       }
       accumulations.put(entry.getKey(), accumulation);
     }
 
-    return temporalMetricStorage.buildMetricFor(
-        resource, instrumentationScopeInfo, accumulations, startEpochNanos, epochNanos);
+    if (accumulations.isEmpty()) {
+      return EmptyMetricData.getInstance();
+    }
+
+    return aggregator.toMetricData(
+        resource,
+        instrumentationScopeInfo,
+        metricDescriptor,
+        accumulations,
+        aggregationTemporality,
+        startEpochNanos,
+        registeredReader.getLastCollectEpochNanos(),
+        epochNanos);
   }
 
   @Override

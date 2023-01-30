@@ -37,7 +37,8 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
         protected void doRecordDouble(double value) {}
 
         @Override
-        protected Object doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
+        protected Object doAccumulateThenMaybeReset(
+            List<DoubleExemplarData> exemplars, boolean reset) {
           return ACCUMULATION;
         }
       };
@@ -47,11 +48,6 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
   @Override
   public AggregatorHandle<Object, DoubleExemplarData> createHandle() {
     return HANDLE;
-  }
-
-  @Override
-  public Object merge(Object previousAccumulation, Object accumulation) {
-    return ACCUMULATION;
   }
 
   @Override

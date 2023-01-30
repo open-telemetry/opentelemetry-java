@@ -101,7 +101,7 @@ public class MeterSharedState {
       List<MetricData> result = new ArrayList<>(storages.size());
       for (MetricStorage storage : storages) {
         MetricData current =
-            storage.collectAndReset(
+            storage.collect(
                 meterProviderSharedState.getResource(),
                 getInstrumentationScopeInfo(),
                 meterProviderSharedState.getStartEpochNanos(),

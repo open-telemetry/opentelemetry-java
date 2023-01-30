@@ -46,13 +46,6 @@ public final class LongSumAggregator
   }
 
   @Override
-  public LongAccumulation merge(
-      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
-    return LongAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
-  }
-
-  @Override
   public LongAccumulation diff(
       LongAccumulation previousAccumulation, LongAccumulation accumulation) {
     return LongAccumulation.create(
@@ -94,8 +87,12 @@ public final class LongSumAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
-      return LongAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected LongAccumulation doAccumulateThenMaybeReset(
+        List<LongExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return LongAccumulation.create(this.current.sumThenReset(), exemplars);
+      }
+      return LongAccumulation.create(this.current.sum(), exemplars);
     }
 
     @Override

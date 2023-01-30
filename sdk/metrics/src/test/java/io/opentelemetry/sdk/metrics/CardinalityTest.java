@@ -118,7 +118,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(10))));
+                                                .isEqualTo(2000))));
   }
 
   /**

@@ -85,20 +85,22 @@ public abstract class AggregatorHandle<T, U extends ExemplarData> implements Bou
   }
 
   /**
-   * Returns the current value into as {@link T} and resets the current value in this {@code
-   * Aggregator}.
+   * Returns the current value into as {@link T}. If {@code reset} is {@code true}, resets the
+   * current value in this {@code Aggregator}.
    */
   @Nullable
-  public final T accumulateThenReset(Attributes attributes) {
+  public final T accumulateThenMaybeReset(Attributes attributes, boolean reset) {
     if (!hasRecordings) {
       return null;
     }
-    hasRecordings = false;
-    return doAccumulateThenReset(exemplarReservoir.collectAndReset(attributes));
+    if (reset) {
+      hasRecordings = false;
+    }
+    return doAccumulateThenMaybeReset(exemplarReservoir.collectAndReset(attributes), reset);
   }
 
-  /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract T doAccumulateThenReset(List<U> exemplars);
+  /** Implementation of the {@link #accumulateThenMaybeReset(Attributes, boolean)}. */
+  protected abstract T doAccumulateThenMaybeReset(List<U> exemplars, boolean reset);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {

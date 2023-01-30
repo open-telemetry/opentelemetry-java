@@ -89,7 +89,7 @@ class AsynchronousMetricStorageTest {
     longCounterStorage.recordLong(2, Attributes.builder().put("key", "b").build());
     longCounterStorage.recordLong(3, Attributes.builder().put("key", "c").build());
 
-    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -111,7 +111,7 @@ class AsynchronousMetricStorageTest {
     doubleCounterStorage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
     doubleCounterStorage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
 
-    assertThat(doubleCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(doubleCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -144,7 +144,7 @@ class AsynchronousMetricStorageTest {
 
     storage.recordLong(1, Attributes.builder().put("key1", "a").put("key2", "b").build());
 
-    assertThat(storage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(storage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -158,15 +158,15 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxAccumulations() {
-    for (int i = 0; i <= MetricStorageUtils.MAX_ACCUMULATIONS + 1; i++) {
+    for (int i = 0; i <= MetricStorage.MAX_ACCUMULATIONS + 1; i++) {
       longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
     }
 
-    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
-                    .hasSize(MetricStorageUtils.MAX_ACCUMULATIONS));
+                    .hasSize(MetricStorage.MAX_ACCUMULATIONS));
     logs.assertContains("Instrument long-counter has exceeded the maximum allowed accumulations");
   }
 
@@ -175,7 +175,7 @@ class AsynchronousMetricStorageTest {
     longCounterStorage.recordLong(1, Attributes.builder().put("key1", "a").build());
     longCounterStorage.recordLong(2, Attributes.builder().put("key1", "a").build());
 
-    assertThat(longCounterStorage.collectAndReset(resource, scope, 0, testClock.nanoTime()))
+    assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData)
@@ -186,5 +186,139 @@ class AsynchronousMetricStorageTest {
                                     point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
     logs.assertContains(
         "Instrument long-counter has recorded multiple values for the same attributes");
+  }
+
+  @Test
+  void collect_CumulativeReportsCumulativeObservations() {
+    // Record measurement and collect at time 10
+    longCounterStorage.recordLong(3, Attributes.empty());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 10))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(10)
+                                .hasValue(3)
+                                .hasAttributes(Attributes.empty())));
+    registeredReader.setLastCollectEpochNanos(10);
+
+    // Record measurements and collect at time 30
+    longCounterStorage.recordLong(3, Attributes.empty());
+    longCounterStorage.recordLong(6, Attributes.builder().put("key", "value1").build());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 30))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(30)
+                                .hasValue(3)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(30)
+                                .hasValue(6)
+                                .hasAttributes(Attributes.builder().put("key", "value1").build())));
+    registeredReader.setLastCollectEpochNanos(30);
+
+    // Record measurement and collect at time 35
+    longCounterStorage.recordLong(4, Attributes.empty());
+    longCounterStorage.recordLong(5, Attributes.builder().put("key", "value2").build());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 35))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(35)
+                                .hasValue(4)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(35)
+                                .hasValue(5)
+                                .hasAttributes(Attributes.builder().put("key", "value2").build())));
+  }
+
+  @Test
+  void collect_DeltaComputesDiff() {
+    when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.DELTA);
+    longCounterStorage =
+        AsynchronousMetricStorage.create(
+            registeredReader,
+            registeredView,
+            InstrumentDescriptor.create(
+                "long-counter",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG));
+
+    // Record measurement and collect at time 10
+    longCounterStorage.recordLong(3, Attributes.empty());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 10))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(10)
+                                .hasValue(3)
+                                .hasAttributes(Attributes.empty())));
+    registeredReader.setLastCollectEpochNanos(10);
+
+    // Record measurement and collect at time 30
+    longCounterStorage.recordLong(3, Attributes.empty());
+    longCounterStorage.recordLong(6, Attributes.builder().put("key", "value1").build());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 30))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(10)
+                                .hasEpochNanos(30)
+                                .hasValue(0)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            point
+                                .hasStartEpochNanos(10)
+                                .hasEpochNanos(30)
+                                .hasValue(6)
+                                .hasAttributes(Attributes.builder().put("key", "value1").build())));
+    registeredReader.setLastCollectEpochNanos(30);
+
+    // Record measurement and collect at time 35
+    longCounterStorage.recordLong(4, Attributes.empty());
+    longCounterStorage.recordLong(5, Attributes.builder().put("key", "value2").build());
+    assertThat(longCounterStorage.collect(resource, scope, 0, 35))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(30)
+                                .hasEpochNanos(35)
+                                .hasValue(1)
+                                .hasAttributes(Attributes.empty()),
+                        point ->
+                            point
+                                .hasStartEpochNanos(30)
+                                .hasEpochNanos(35)
+                                .hasValue(5)
+                                .hasAttributes(Attributes.builder().put("key", "value2").build())));
   }
 }

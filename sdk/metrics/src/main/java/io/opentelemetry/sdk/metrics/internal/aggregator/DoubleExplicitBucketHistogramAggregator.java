@@ -62,40 +62,6 @@ public final class DoubleExplicitBucketHistogramAggregator
     return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
-  /**
-   * Return the result of the merge of two histogram accumulations. As long as one Aggregator
-   * instance produces all Accumulations with constant boundaries we don't need to worry about
-   * merging accumulations with different boundaries.
-   */
-  @Override
-  public ExplicitBucketHistogramAccumulation merge(
-      ExplicitBucketHistogramAccumulation previous, ExplicitBucketHistogramAccumulation current) {
-    long[] previousCounts = previous.getCounts();
-    long[] mergedCounts = new long[previousCounts.length];
-    for (int i = 0; i < previousCounts.length; ++i) {
-      mergedCounts[i] = previousCounts[i] + current.getCounts()[i];
-    }
-    double min = -1;
-    double max = -1;
-    if (previous.hasMinMax() && current.hasMinMax()) {
-      min = Math.min(previous.getMin(), current.getMin());
-      max = Math.max(previous.getMax(), current.getMax());
-    } else if (previous.hasMinMax()) {
-      min = previous.getMin();
-      max = previous.getMax();
-    } else if (current.hasMinMax()) {
-      min = current.getMin();
-      max = current.getMax();
-    }
-    return ExplicitBucketHistogramAccumulation.create(
-        previous.getSum() + current.getSum(),
-        previous.hasMinMax() || current.hasMinMax(),
-        min,
-        max,
-        mergedCounts,
-        current.getExemplars());
-  }
-
   @Override
   public MetricData toMetricData(
       Resource resource,
@@ -156,8 +122,8 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected ExplicitBucketHistogramAccumulation doAccumulateThenReset(
-        List<DoubleExemplarData> exemplars) {
+    protected ExplicitBucketHistogramAccumulation doAccumulateThenMaybeReset(
+        List<DoubleExemplarData> exemplars, boolean reset) {
       lock.lock();
       try {
         ExplicitBucketHistogramAccumulation acc =
@@ -168,11 +134,13 @@ public final class DoubleExplicitBucketHistogramAggregator
                 this.count > 0 ? this.max : -1,
                 Arrays.copyOf(counts, counts.length),
                 exemplars);
-        this.sum = 0;
-        this.min = Double.MAX_VALUE;
-        this.max = -1;
-        this.count = 0;
-        Arrays.fill(this.counts, 0);
+        if (reset) {
+          this.sum = 0;
+          this.min = Double.MAX_VALUE;
+          this.max = -1;
+          this.count = 0;
+          Arrays.fill(this.counts, 0);
+        }
         return acc;
       } finally {
         lock.unlock();

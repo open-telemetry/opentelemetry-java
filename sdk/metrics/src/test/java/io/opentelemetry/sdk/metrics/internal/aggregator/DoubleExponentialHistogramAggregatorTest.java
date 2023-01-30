@@ -33,7 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,7 +75,7 @@ class DoubleExponentialHistogramAggregatorTest {
     for (double r : recordings) {
       aggregatorHandle.recordDouble(r);
     }
-    return aggregatorHandle.doAccumulateThenReset(exemplars);
+    return aggregatorHandle.doAccumulateThenMaybeReset(exemplars, /* reset= */ true);
   }
 
   @Test
@@ -85,7 +84,7 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(handle).isInstanceOf(DoubleExponentialHistogramAggregator.Handle.class);
     ExponentialHistogramAccumulation accumulation =
         ((DoubleExponentialHistogramAggregator.Handle) handle)
-            .doAccumulateThenReset(Collections.emptyList());
+            .doAccumulateThenMaybeReset(Collections.emptyList(), /* reset= */ true);
     assertThat(accumulation.getPositiveBuckets())
         .isInstanceOf(DoubleExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
     assertThat(accumulation.getPositiveBuckets().getScale()).isEqualTo(MAX_SCALE);
@@ -109,7 +108,8 @@ class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(0.0);
     aggregatorHandle.recordLong(0);
 
-    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    ExponentialHistogramAccumulation acc =
+        aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
     List<Long> positiveCounts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
     List<Long> negativeCounts = acc.getNegativeBuckets().getBucketCounts();
     int expectedScale = 5; // should be downscaled from 20 to 5 after recordings
@@ -144,7 +144,8 @@ class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(Double.NEGATIVE_INFINITY);
     aggregatorHandle.recordDouble(Double.NaN);
 
-    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    ExponentialHistogramAccumulation acc =
+        aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
     assertThat(Objects.requireNonNull(acc).getSum()).isEqualTo(0);
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(0);
     assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(0);
@@ -160,7 +161,8 @@ class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(Double.MIN_VALUE);
     aggregatorHandle.recordDouble(Double.MAX_VALUE);
 
-    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    ExponentialHistogramAccumulation acc =
+        aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
     List<Long> bucketCounts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
 
     // assert buckets == [1 0 0 0 ... 1]
@@ -219,7 +221,9 @@ class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(0, attributes, Context.root());
 
     assertThat(
-            Objects.requireNonNull(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+            Objects.requireNonNull(
+                    aggregatorHandle.accumulateThenMaybeReset(
+                        Attributes.empty(), /* reset= */ true))
                 .getExemplars())
         .isEqualTo(exemplars);
   }
@@ -228,15 +232,19 @@ class DoubleExponentialHistogramAggregatorTest {
   void testAccumulationAndReset() {
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
 
     aggregatorHandle.recordDouble(5.0);
     assertThat(
-            Objects.requireNonNull(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+            Objects.requireNonNull(
+                    aggregatorHandle.accumulateThenMaybeReset(
+                        Attributes.empty(), /* reset= */ true))
                 .getPositiveBuckets()
                 .getBucketCounts())
         .isEqualTo(Collections.singletonList(1L));
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
   }
 
   @Test
@@ -245,125 +253,6 @@ class DoubleExponentialHistogramAggregatorTest {
         aggregator.accumulateDoubleMeasurement(1.2, Attributes.empty(), Context.current());
     ExponentialHistogramAccumulation expected = getTestAccumulation(Collections.emptyList(), 1.2);
     assertThat(acc).isEqualTo(expected);
-  }
-
-  @Test
-  void testMergeAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(previousExemplars, 0, 4.1, 100, 100, 10000, 1000000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(exemplars, -1000, -2000000, -8.2, 2.3);
-
-    // Merged accumulations should equal accumulation with equivalent recordings and latest
-    // exemplars.
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                exemplars, 0, 4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
-  }
-
-  @Test
-  void testMergeAccumulationMinAndMax() {
-    // If min / max is null for both accumulations set min / max to null
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ false, 0, 0),
-                createAccumulation(/* hasMinMax= */ false, 0, 0)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ false, -1, -1));
-    // If min / max is non-null for only one accumulation set min / max to it
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ true, 1d, 2d),
-                createAccumulation(/* hasMinMax= */ false, 0, 0)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ false, 0, 0),
-                createAccumulation(/* hasMinMax= */ true, 1d, 2d)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-    // If both accumulations have min / max compute the min / max
-    assertThat(
-            aggregator.merge(
-                createAccumulation(/* hasMinMax= */ true, 1d, 1d),
-                createAccumulation(/* hasMinMax= */ true, 2d, 2d)))
-        .isEqualTo(createAccumulation(/* hasMinMax= */ true, 1d, 2d));
-  }
-
-  private static ExponentialHistogramAccumulation createAccumulation(
-      boolean hasMinMax, double min, double max) {
-    DoubleExponentialHistogramBuckets buckets = new DoubleExponentialHistogramBuckets(0, 1);
-    return ExponentialHistogramAccumulation.create(
-        0, 0, hasMinMax, min, max, buckets, buckets, 0, Collections.emptyList());
-  }
-
-  @Test
-  void testMergeNonOverlap() {
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(Collections.emptyList(), 10, 100, 100, 10000, 100000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(Collections.emptyList(), 0.001, 0.01, 0.1, 1);
-
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                Collections.emptyList(), 0.001, 0.01, 0.1, 1, 10, 100, 100, 10000, 100000));
-  }
-
-  @Test
-  void testMergeWithEmptyBuckets() {
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList()),
-                getTestAccumulation(Collections.emptyList(), 1)))
-        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
-
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList(), 1),
-                getTestAccumulation(Collections.emptyList())))
-        .isEqualTo(getTestAccumulation(Collections.emptyList(), 1));
-
-    assertThat(
-            aggregator.merge(
-                getTestAccumulation(Collections.emptyList()),
-                getTestAccumulation(Collections.emptyList())))
-        .isEqualTo(getTestAccumulation(Collections.emptyList()));
-  }
-
-  @Test
-  void testMergeOverlap() {
-    ExponentialHistogramAccumulation previousAccumulation =
-        getTestAccumulation(Collections.emptyList(), 0, 10, 100, 10000, 100000);
-    ExponentialHistogramAccumulation nextAccumulation =
-        getTestAccumulation(Collections.emptyList(), 100000, 10000, 100, 10, 0);
-
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            getTestAccumulation(
-                Collections.emptyList(), 0, 0, 10, 10, 100, 100, 10000, 10000, 100000, 100000));
   }
 
   @Test
@@ -380,7 +269,8 @@ class DoubleExponentialHistogramAggregatorTest {
     }
 
     ExponentialHistogramAccumulation acc =
-        Objects.requireNonNull(handle.accumulateThenReset(Attributes.empty()));
+        Objects.requireNonNull(
+            handle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true));
     assertThat(acc.getScale()).isEqualTo(3);
     assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(3);
     assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(3);
@@ -404,7 +294,8 @@ class DoubleExponentialHistogramAggregatorTest {
     handle.recordDouble(16.0);
 
     ExponentialHistogramAccumulation acc =
-        Objects.requireNonNull(handle.accumulateThenReset(Attributes.empty()));
+        Objects.requireNonNull(
+            handle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true));
     assertThat(acc.getScale()).isEqualTo(0);
     assertThat(acc.getPositiveBuckets().getScale()).isEqualTo(0);
     assertThat(acc.getNegativeBuckets().getScale()).isEqualTo(0);
@@ -443,7 +334,8 @@ class DoubleExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(0);
     aggregatorHandle.recordDouble(0);
     aggregatorHandle.recordDouble(123.456);
-    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    ExponentialHistogramAccumulation acc =
+        aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
 
     MetricData metricDataCumulative =
         cumulativeAggregator.toMetricData(
@@ -508,7 +400,6 @@ class DoubleExponentialHistogramAggregatorTest {
   void testMultithreadedUpdates() throws InterruptedException {
     AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    ExponentialHistogram summarizer = new ExponentialHistogram();
     ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
     int numberOfThreads = updates.size();
     int numberOfUpdates = 10000;
@@ -524,17 +415,16 @@ class DoubleExponentialHistogramAggregatorTest {
                           for (int j = 0; j < numberOfUpdates; j++) {
                             aggregatorHandle.recordDouble(v);
                             if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              summarizer.process(
-                                  aggregatorHandle.accumulateThenReset(Attributes.empty()));
+                              aggregatorHandle.accumulateThenMaybeReset(
+                                  Attributes.empty(), /* reset= */ false);
                             }
                           }
                         }))
             .collect(Collectors.toList()));
 
-    // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
-
-    ExponentialHistogramAccumulation acc = Objects.requireNonNull(summarizer.accumulation);
+    ExponentialHistogramAccumulation acc =
+        Objects.requireNonNull(
+            aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ false));
     assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
     assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
     assertThat(acc.getScale()).isEqualTo(3);
@@ -567,25 +457,5 @@ class DoubleExponentialHistogramAggregatorTest {
     assertThat(
             negCounts.get(valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
-  }
-
-  private static final class ExponentialHistogram {
-    private final Object mutex = new Object();
-
-    @Nullable private ExponentialHistogramAccumulation accumulation;
-
-    void process(@Nullable ExponentialHistogramAccumulation other) {
-      if (other == null) {
-        return;
-      }
-
-      synchronized (mutex) {
-        if (accumulation == null) {
-          accumulation = other;
-          return;
-        }
-        accumulation = aggregator.merge(accumulation, other);
-      }
-    }
   }
 }
