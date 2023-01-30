@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -54,7 +55,7 @@ public class SynchronousMetricStorageTest {
   private final RegisteredReader cumulativeReader =
       RegisteredReader.create(InMemoryMetricReader.create(), ViewRegistry.create());
   private final TestClock testClock = TestClock.create();
-  private final Aggregator<Long, LongExemplarData> aggregator =
+  private final Aggregator<LongPointData, LongExemplarData> aggregator =
       ((AggregatorFactory) Aggregation.sum())
           .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
@@ -62,10 +63,10 @@ public class SynchronousMetricStorageTest {
   @Test
   void attributesProcessor_used() {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
-    SynchronousMetricStorage accumulator =
+    SynchronousMetricStorage storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
-    accumulator.bind(Attributes.empty());
+    storage.bind(Attributes.empty());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
@@ -75,12 +76,12 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor attributesProcessor =
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
-    SynchronousMetricStorage accumulator =
+    SynchronousMetricStorage storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
-    BoundStorageHandle handle = accumulator.bind(labels);
+    BoundStorageHandle handle = storage.bind(labels);
     handle.recordDouble(1, labels, Context.root());
-    MetricData md = accumulator.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
+    MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
         .hasDoubleSumSatisfying(
             sum ->
@@ -197,7 +198,7 @@ public class SynchronousMetricStorageTest {
             cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
 
     // Record measurements for max number of attributes
-    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS; i++) {
+    for (int i = 0; i < MetricStorage.MAX_CARDINALITY; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
@@ -207,7 +208,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .hasSize(MetricStorage.MAX_CARDINALITY)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -220,7 +221,7 @@ public class SynchronousMetricStorageTest {
     // Record measurement for additional attribute, exceeding limit
     storage.recordDouble(
         3,
-        Attributes.builder().put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1).build(),
+        Attributes.builder().put("key", "value" + MetricStorage.MAX_CARDINALITY + 1).build(),
         Context.current());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
@@ -228,7 +229,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .hasSize(MetricStorage.MAX_CARDINALITY)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -240,8 +241,8 @@ public class SynchronousMetricStorageTest {
                                     point
                                         .getAttributes()
                                         .get(AttributeKey.stringKey("key"))
-                                        .equals("value" + MetricStorage.MAX_ACCUMULATIONS + 1))));
-    logs.assertContains("Instrument name has exceeded the maximum allowed accumulations");
+                                        .equals("value" + MetricStorage.MAX_CARDINALITY + 1))));
+    logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 
   @Test
@@ -251,7 +252,7 @@ public class SynchronousMetricStorageTest {
             deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
 
     // Record measurements for max number of attributes
-    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS; i++) {
+    for (int i = 0; i < MetricStorage.MAX_CARDINALITY; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
@@ -261,7 +262,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .hasSize(MetricStorage.MAX_CARDINALITY)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -274,7 +275,7 @@ public class SynchronousMetricStorageTest {
     // Record measurement for additional attribute, should not exceed limit due to reset
     storage.recordDouble(
         3,
-        Attributes.builder().put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1).build(),
+        Attributes.builder().put("key", "value" + MetricStorage.MAX_CARDINALITY + 1).build(),
         Context.current());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
@@ -288,13 +289,13 @@ public class SynchronousMetricStorageTest {
                                 .hasValue(3)
                                 .hasAttributes(
                                     Attributes.builder()
-                                        .put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1)
+                                        .put("key", "value" + MetricStorage.MAX_CARDINALITY + 1)
                                         .build())));
     assertThat(logs.getEvents()).isEmpty();
     deltaReader.setLastCollectEpochNanos(20);
 
     // Record measurements exceeding max number of attributes. Last measurement should be dropped
-    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS + 1; i++) {
+    for (int i = 0; i < MetricStorage.MAX_CARDINALITY + 1; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
@@ -304,7 +305,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .hasSize(MetricStorage.MAX_CARDINALITY)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(20);
@@ -316,7 +317,7 @@ public class SynchronousMetricStorageTest {
                                     point
                                         .getAttributes()
                                         .get(AttributeKey.stringKey("key"))
-                                        .equals("value" + MetricStorage.MAX_ACCUMULATIONS + 1))));
-    logs.assertContains("Instrument name has exceeded the maximum allowed accumulations");
+                                        .equals("value" + MetricStorage.MAX_CARDINALITY + 1))));
+    logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 }

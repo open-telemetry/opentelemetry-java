@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -30,7 +31,7 @@ public final class DropAggregation implements Aggregation, AggregatorFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     return (Aggregator<T, U>) Aggregator.drop();
   }

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.List;
@@ -32,7 +33,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T, U extends ExemplarData> implements BoundStorageHandle {
+public abstract class AggregatorHandle<T extends PointData, U extends ExemplarData>
+    implements BoundStorageHandle {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
   private final AtomicLong refCountMapped;
@@ -89,18 +91,29 @@ public abstract class AggregatorHandle<T, U extends ExemplarData> implements Bou
    * current value in this {@code Aggregator}.
    */
   @Nullable
-  public final T accumulateThenMaybeReset(Attributes attributes, boolean reset) {
+  public final T aggregateThenMaybeReset(
+      long startEpochNanos, long epochNanos, Attributes attributes, boolean reset) {
     if (!hasRecordings) {
       return null;
     }
     if (reset) {
       hasRecordings = false;
     }
-    return doAccumulateThenMaybeReset(exemplarReservoir.collectAndReset(attributes), reset);
+    return doAggregateThenMaybeReset(
+        startEpochNanos,
+        epochNanos,
+        attributes,
+        exemplarReservoir.collectAndReset(attributes),
+        reset);
   }
 
-  /** Implementation of the {@link #accumulateThenMaybeReset(Attributes, boolean)}. */
-  protected abstract T doAccumulateThenMaybeReset(List<U> exemplars, boolean reset);
+  /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
+  protected abstract T doAggregateThenMaybeReset(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      List<U> exemplars,
+      boolean reset);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {

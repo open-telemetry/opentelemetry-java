@@ -9,14 +9,17 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -33,8 +36,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LongLastValueAggregator
-    implements Aggregator<LongAccumulation, LongExemplarData> {
+public final class LongLastValueAggregator implements Aggregator<LongPointData, LongExemplarData> {
   private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
 
   public LongLastValueAggregator(Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier) {
@@ -42,13 +44,22 @@ public final class LongLastValueAggregator
   }
 
   @Override
-  public AggregatorHandle<LongAccumulation, LongExemplarData> createHandle() {
+  public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public LongAccumulation diff(LongAccumulation previous, LongAccumulation current) {
+  public LongPointData diff(LongPointData previous, LongPointData current) {
     return current;
+  }
+
+  @Override
+  public LongPointData toPoint(Measurement measurement) {
+    return ImmutableLongPointData.create(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.longValue());
   }
 
   @Override
@@ -56,11 +67,8 @@ public final class LongLastValueAggregator
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
-      Map<Attributes, LongAccumulation> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
+      Collection<LongPointData> points,
+      AggregationTemporality temporality) {
     // Last-Value ignores temporality generally, but we can set a start time on the gauge.
     return ImmutableMetricData.createLongGauge(
         resource,
@@ -68,16 +76,10 @@ public final class LongLastValueAggregator
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getSourceInstrument().getUnit(),
-        ImmutableGaugeData.create(
-            MetricDataUtils.toLongPointList(
-                accumulationByLabels,
-                (temporality == AggregationTemporality.CUMULATIVE)
-                    ? startEpochNanos
-                    : lastCollectionEpoch,
-                epochNanos)));
+        ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation, LongExemplarData> {
+  static final class Handle extends AggregatorHandle<LongPointData, LongExemplarData> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
@@ -86,12 +88,15 @@ public final class LongLastValueAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenMaybeReset(
-        List<LongExemplarData> exemplars, boolean reset) {
-      if (reset) {
-        return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
-      }
-      return LongAccumulation.create(Objects.requireNonNull(this.current.get()), exemplars);
+    protected LongPointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<LongExemplarData> exemplars,
+        boolean reset) {
+      Long value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
+      return ImmutableLongPointData.create(
+          startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
     }
 
     @Override

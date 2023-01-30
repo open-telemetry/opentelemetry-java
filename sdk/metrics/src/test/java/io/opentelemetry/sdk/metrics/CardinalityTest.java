@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 @SuppressLogger(DefaultSynchronousMetricStorage.class)
 class CardinalityTest {
 
-  /** Traces {@code MetricStorageUtils#MAX_ACCUMULATIONS}. */
-  private static final int MAX_ACCUMULATIONS = 2000;
+  /** Traces {@code MetricStorageUtils#MAX_CARDINALITY}. */
+  private static final int MAX_CARDINALITY = 2000;
 
   private InMemoryMetricReader deltaReader;
   private InMemoryMetricReader cumulativeReader;
@@ -159,13 +159,13 @@ class CardinalityTest {
 
   /**
    * Records to sync instruments, many distinct attributes. Validates that the {@code
-   * MetricStorageUtils#MAX_ACCUMULATIONS} is enforced for each instrument.
+   * MetricStorageUtils#MAX_CARDINALITY} is enforced for each instrument.
    */
   @Test
   void cardinalityLimits_synchronousInstrument() {
     LongCounter syncCounter1 = meter.counterBuilder("sync-counter1").build();
     LongCounter syncCounter2 = meter.counterBuilder("sync-counter2").build();
-    for (int i = 0; i < MAX_ACCUMULATIONS + 1; i++) {
+    for (int i = 0; i < MAX_CARDINALITY + 1; i++) {
       syncCounter1.add(1, Attributes.builder().put("key", "value" + i).build());
       syncCounter2.add(1, Attributes.builder().put("key", "value" + i).build());
     }
@@ -183,7 +183,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))),
+                                                .isEqualTo(MAX_CARDINALITY))),
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter2")
@@ -194,7 +194,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))));
+                                                .isEqualTo(MAX_CARDINALITY))));
 
     assertThat(cumulativeReader.collectAllMetrics())
         .as("Cumulative collection")
@@ -209,7 +209,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))),
+                                                .isEqualTo(MAX_CARDINALITY))),
             metricData ->
                 assertThat(metricData)
                     .hasName("sync-counter2")
@@ -220,18 +220,18 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))));
+                                                .isEqualTo(MAX_CARDINALITY))));
   }
 
   /**
    * Records to sync instruments, many distinct attributes. Validates that the {@code
-   * MetricStorageUtils#MAX_ACCUMULATIONS} is enforced for each instrument.
+   * MetricStorageUtils#MAX_CARDINALITY} is enforced for each instrument.
    */
   @Test
   void cardinalityLimits_asynchronousInstrument() {
     Consumer<ObservableLongMeasurement> callback =
         measurement -> {
-          for (int i = 0; i < MAX_ACCUMULATIONS + 1; i++) {
+          for (int i = 0; i < MAX_CARDINALITY + 1; i++) {
             measurement.record(1, Attributes.builder().put("key", "value" + i).build());
           }
         };
@@ -251,7 +251,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))),
+                                                .isEqualTo(MAX_CARDINALITY))),
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter2")
@@ -262,7 +262,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))));
+                                                .isEqualTo(MAX_CARDINALITY))));
 
     assertThat(cumulativeReader.collectAllMetrics())
         .as("Cumulative collection")
@@ -277,7 +277,7 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))),
+                                                .isEqualTo(MAX_CARDINALITY))),
             metricData ->
                 assertThat(metricData)
                     .hasName("async-counter2")
@@ -288,6 +288,6 @@ class CardinalityTest {
                                     (Consumer<SumData<LongPointData>>)
                                         sumPointData ->
                                             assertThat(sumPointData.getPoints().size())
-                                                .isEqualTo(MAX_ACCUMULATIONS))));
+                                                .isEqualTo(MAX_CARDINALITY))));
   }
 }
