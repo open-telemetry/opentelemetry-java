@@ -37,6 +37,18 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     return this;
   }
 
+  /**
+   * Asserts the metric has a resource satisfying the given condition.
+   *
+   * @since 1.23.0
+   */
+  public MetricAssert hasResourceSatisfying(Consumer<ResourceAssert> resource) {
+    isNotNull();
+    resource.accept(
+        new ResourceAssert(actual.getResource(), String.format("metric [%s]", actual.getName())));
+    return this;
+  }
+
   /** Asserts the metric has the given the {@link InstrumentationScopeInfo}. */
   public MetricAssert hasInstrumentationScope(InstrumentationScopeInfo instrumentationScopeInfo) {
     isNotNull();
