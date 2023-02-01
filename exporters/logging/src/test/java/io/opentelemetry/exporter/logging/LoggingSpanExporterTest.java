@@ -104,11 +104,11 @@ class LoggingSpanExporterTest {
         .isEqualTo(
             "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
                 + "INTERNAL [tracer: tracer1:] "
-                + "{animal=\"cat\", lives=9}");
+                + "{animal=\"cat\", lives=9} [duration: 1000ns]");
     assertThat(logs.getEvents().get(1).getMessage())
         .isEqualTo(
             "'testSpan2' : 12340000000043211234000000004321 8765000000005678 "
-                + "CLIENT [tracer: tracer2:1.0] {}");
+                + "CLIENT [tracer: tracer2:1.0] {} [duration: 1001ns]");
   }
 
   @Test

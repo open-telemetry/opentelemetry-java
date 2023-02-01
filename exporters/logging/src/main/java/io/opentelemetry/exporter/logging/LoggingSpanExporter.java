@@ -61,7 +61,10 @@ public final class LoggingSpanExporter implements SpanExporter {
                   ? ""
                   : instrumentationScopeInfo.getVersion())
           .append("] ")
-          .append(span.getAttributes());
+          .append(span.getAttributes())
+          .append(" [duration: ")
+          .append(span.getEndEpochNanos() - span.getStartEpochNanos())
+          .append("ns]");
       logger.log(Level.INFO, sb.toString());
     }
     return CompletableResultCode.ofSuccess();
