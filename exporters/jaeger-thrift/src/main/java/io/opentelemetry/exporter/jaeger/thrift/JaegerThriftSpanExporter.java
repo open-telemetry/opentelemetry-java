@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
 
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(JaegerThriftSpanExporter.class.getName()));
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
   private final ThriftSender thriftSender;
   private final Process process;
 
@@ -82,13 +84,16 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     Map<Process, List<Span>> batches =
         spans.stream().collect(Collectors.groupingBy(SpanData::getResource)).entrySet().stream()
             .collect(
                 Collectors.toMap(
                     entry -> createProcess(entry.getKey()),
                     entry -> Adapter.toJaeger(entry.getValue())));
-
     List<CompletableResultCode> batchResults = new ArrayList<>(batches.size());
     batches.forEach(
         (process, jaegerSpans) -> {
@@ -148,13 +153,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    CompletableResultCode result = new CompletableResultCode();
-    // todo
-    return result.succeed();
-  }
-
-  // Visible for testing
-  Process getProcess() {
-    return process;
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+    }
+    return CompletableResultCode.ofSuccess();
   }
 }

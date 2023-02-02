@@ -42,6 +42,7 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -144,7 +145,7 @@ class FullConfigTest {
         }
       };
 
-  private AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk;
+  private OpenTelemetrySdk openTelemetrySdk;
 
   @BeforeEach
   void setUp() {
@@ -160,12 +161,12 @@ class FullConfigTest {
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
-    autoConfiguredOpenTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize();
+    openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
   @AfterEach
   void afterEach() {
-    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
@@ -209,6 +210,10 @@ class FullConfigTest {
 
     EventEmitter eventEmitter = GlobalEventEmitterProvider.get().get("test", "test-domain");
     eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
+
+    openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 

@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 public final class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
   private final AggregationTemporality aggregationTemporality;
 
   /**
@@ -64,6 +66,10 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     logger.info("Received a collection of " + metrics.size() + " metrics for export.");
     for (MetricData metricData : metrics) {
       logger.log(Level.INFO, "metric: {0}", metricData);
@@ -91,8 +97,10 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    // no-op
-    this.flush();
-    return CompletableResultCode.ofSuccess();
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
+    return flush();
   }
 }

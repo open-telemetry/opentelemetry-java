@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +26,8 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
   /** Returns a new {@link OtlpJsonLoggingSpanExporter}. */
   public static SpanExporter create() {
     return new OtlpJsonLoggingSpanExporter();
@@ -34,6 +37,10 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     ResourceSpansMarshaler[] allResourceSpans = ResourceSpansMarshaler.create(spans);
     for (ResourceSpansMarshaler resourceSpans : allResourceSpans) {
       SegmentedStringWriter sw =
@@ -56,6 +63,9 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

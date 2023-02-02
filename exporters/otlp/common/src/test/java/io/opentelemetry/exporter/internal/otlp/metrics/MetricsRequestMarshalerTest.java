@@ -41,12 +41,16 @@ import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
@@ -57,9 +61,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramBuckets;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramData;
-import io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -415,26 +416,27 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toExponentialHistogramDataPoints(
                 ImmutableList.of(
-                    ExponentialHistogramPointData.create(
+                    ImmutableExponentialHistogramPointData.create(
                         0,
                         123.4,
                         1,
                         null,
                         null,
-                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
-                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.empty(),
                         Collections.emptyList()),
-                    ExponentialHistogramPointData.create(
+                    ImmutableExponentialHistogramPointData.create(
                         0,
                         123.4,
                         1,
                         3.3,
                         80.1,
-                        new TestExponentialHistogramBuckets(0, 1, ImmutableList.of(1L, 0L, 2L)),
-                        new TestExponentialHistogramBuckets(0, 0, Collections.emptyList()),
+                        ImmutableExponentialHistogramBuckets.create(
+                            0, 1, ImmutableList.of(1L, 0L, 2L)),
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
                         123,
                         456,
                         Attributes.of(stringKey("key"), "value"),
@@ -827,18 +829,18 @@ class MetricsRequestMarshalerTest {
                     "name",
                     "description",
                     "1",
-                    ExponentialHistogramData.create(
+                    ImmutableExponentialHistogramData.create(
                         AggregationTemporality.CUMULATIVE,
                         singletonList(
-                            ExponentialHistogramPointData.create(
+                            ImmutableExponentialHistogramPointData.create(
                                 20,
                                 123.4,
                                 257,
                                 20.1,
                                 44.3,
-                                new TestExponentialHistogramBuckets(
+                                ImmutableExponentialHistogramBuckets.create(
                                     20, -1, ImmutableList.of(0L, 128L, 1L << 32)),
-                                new TestExponentialHistogramBuckets(
+                                ImmutableExponentialHistogramBuckets.create(
                                     20, 1, ImmutableList.of(0L, 128L, 1L << 32)),
                                 123,
                                 456,
@@ -1147,42 +1149,5 @@ class MetricsRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return new String(bos.toByteArray(), StandardCharsets.UTF_8);
-  }
-
-  /**
-   * Helper class for creating Exponential Histogram bucket data directly without needing to record.
-   * Essentially, mocking out the bucket operations and downscaling.
-   */
-  private static class TestExponentialHistogramBuckets implements ExponentialHistogramBuckets {
-
-    private final int scale;
-    private final int offset;
-    private final List<Long> bucketCounts;
-
-    TestExponentialHistogramBuckets(int scale, int offset, List<Long> bucketCounts) {
-      this.scale = scale;
-      this.offset = offset;
-      this.bucketCounts = bucketCounts;
-    }
-
-    @Override
-    public int getScale() {
-      return scale;
-    }
-
-    @Override
-    public int getOffset() {
-      return offset;
-    }
-
-    @Override
-    public List<Long> getBucketCounts() {
-      return bucketCounts;
-    }
-
-    @Override
-    public long getTotalCount() {
-      return getBucketCounts().stream().reduce(0L, Long::sum);
-    }
   }
 }

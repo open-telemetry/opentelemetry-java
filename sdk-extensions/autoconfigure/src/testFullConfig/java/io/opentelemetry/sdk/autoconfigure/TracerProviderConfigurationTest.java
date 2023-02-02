@@ -13,13 +13,14 @@ import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSamplerProvid
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-public class ConfigurableSamplerTest {
+public class TracerProviderConfigurationTest {
 
   @Test
   void configuration() {
@@ -57,5 +58,19 @@ public class ConfigurableSamplerTest {
                     TracerProviderConfiguration.class.getClassLoader()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catSampler");
+  }
+
+  @Test
+  void configureSampler_JaegerRemoteSampler() {
+    assertThat(
+            TracerProviderConfiguration.configureSampler(
+                "parentbased_jaeger_remote",
+                DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                TracerProviderConfigurationTest.class.getClassLoader()))
+        .satisfies(
+            sampler -> {
+              assertThat(sampler.getClass().getSimpleName()).isEqualTo("ParentBasedSampler");
+              assertThat(sampler).extracting("root").isInstanceOf(JaegerRemoteSampler.class);
+            });
   }
 }

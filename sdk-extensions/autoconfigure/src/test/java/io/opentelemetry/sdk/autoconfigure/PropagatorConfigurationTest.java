@@ -29,6 +29,31 @@ class PropagatorConfigurationTest {
   }
 
   @Test
+  void configurePropagators_none() {
+    ContextPropagators contextPropagators =
+        PropagatorConfiguration.configurePropagators(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.propagators", "none")),
+            PropagatorConfiguration.class.getClassLoader(),
+            (a, unused) -> a);
+
+    assertThat(contextPropagators.getTextMapPropagator().fields()).isEmpty();
+  }
+
+  @Test
+  void configurePropagators_none_withOthers() {
+    assertThatThrownBy(
+            () ->
+                PropagatorConfiguration.configurePropagators(
+                    DefaultConfigProperties.createForTest(
+                        Collections.singletonMap("otel.propagators", "none,blather")),
+                    PropagatorConfiguration.class.getClassLoader(),
+                    (a, unused) -> a))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("otel.propagators contains 'none' along with other propagators");
+  }
+
+  @Test
   void configurePropagators_NotOnClasspath() {
     assertThatThrownBy(
             () ->

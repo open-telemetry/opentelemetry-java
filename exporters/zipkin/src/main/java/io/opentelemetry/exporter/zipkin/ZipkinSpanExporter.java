@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
 
   private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
   private final ExporterMetrics exporterMetrics;
@@ -58,6 +60,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spanDataList) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     int numItems = spanDataList.size();
     exporterMetrics.addSeen(numItems);
 
@@ -96,6 +102,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
     try {
       sender.close();
     } catch (IOException e) {

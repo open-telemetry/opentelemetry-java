@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -44,6 +45,7 @@ public final class OkHttpExporter<T extends Marshaler> {
   private static final Logger internalLogger = Logger.getLogger(OkHttpExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final String type;
   private final OkHttpClient client;
@@ -76,6 +78,10 @@ public final class OkHttpExporter<T extends Marshaler> {
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     exporterMetrics.addSeen(numItems);
 
     Request.Builder requestBuilder = new Request.Builder().url(url);
@@ -139,11 +145,14 @@ public final class OkHttpExporter<T extends Marshaler> {
   }
 
   public CompletableResultCode shutdown() {
-    CompletableResultCode result = CompletableResultCode.ofSuccess();
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
-    return result;
+    return CompletableResultCode.ofSuccess();
   }
 
   static boolean isRetryable(Response response) {

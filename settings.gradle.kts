@@ -1,8 +1,8 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.44.0"
+    id("com.github.ben-manes.versions") version "0.45.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.gradle.enterprise") version "3.12.2"
+    id("com.gradle.enterprise") version "3.12.3"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.8.0"
     id("org.graalvm.buildtools.native") version "0.9.19"
@@ -57,7 +57,6 @@ include(":sdk:common")
 include(":sdk:logs")
 include(":sdk:logs-testing")
 include(":sdk:metrics")
-include(":sdk:metrics-testing")
 include(":sdk:testing")
 include(":sdk:trace")
 include(":sdk:trace-shaded-deps")

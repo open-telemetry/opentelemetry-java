@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -63,7 +62,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     aggregatorHandle.recordLong(5);
     aggregatorHandle.recordLong(150);
     aggregatorHandle.recordLong(2000);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 2175, /* hasMinMax= */ true, 5d, 2000d, new long[] {1, 1, 1, 1}));
@@ -89,7 +88,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 0, 0, new long[] {1, 0, 0, 0}, exemplars));
@@ -99,21 +98,24 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   void toAccumulationAndReset() {
     AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
 
     aggregatorHandle.recordLong(100);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 100, /* hasMinMax= */ true, 100d, 100d, new long[] {0, 1, 0, 0}));
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
 
     aggregatorHandle.recordLong(0);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 0, /* hasMinMax= */ true, 0d, 0d, new long[] {1, 0, 0, 0}));
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
   }
 
   @Test
@@ -129,87 +131,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   }
 
   @Test
-  void mergeAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    ExplicitBucketHistogramAccumulation previousAccumulation =
-        ExplicitBucketHistogramAccumulation.create(
-            2, /* hasMinMax= */ true, 1d, 2d, new long[] {1, 1, 0}, previousExemplars);
-    ExplicitBucketHistogramAccumulation nextAccumulation =
-        ExplicitBucketHistogramAccumulation.create(
-            2, /* hasMinMax= */ true, 2d, 3d, new long[] {0, 0, 2}, exemplars);
-    // Assure most recent exemplars are kept.
-    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                4, /* hasMinMax= */ true, 1d, 3d, new long[] {1, 1, 2}, exemplars));
-  }
-
-  @Test
-  void mergeAccumulation_MinAndMax() {
-    // If min / max is null for both accumulations set min / max to null
-    assertThat(
-            aggregator.merge(
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList()),
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList())))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                0, /* hasMinMax= */ false, -1, -1, new long[] {}, Collections.emptyList()));
-    // If min / max is non-null for only one accumulation set min / max to it
-    assertThat(
-            aggregator.merge(
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()),
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList())))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
-    assertThat(
-            aggregator.merge(
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ false, 0, 0, new long[] {}, Collections.emptyList()),
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList())))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
-    // If both accumulations have min / max compute the min / max
-    assertThat(
-            aggregator.merge(
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ true, 1d, 1d, new long[] {}, Collections.emptyList()),
-                ExplicitBucketHistogramAccumulation.create(
-                    0, /* hasMinMax= */ true, 2d, 2d, new long[] {}, Collections.emptyList())))
-        .isEqualTo(
-            ExplicitBucketHistogramAccumulation.create(
-                0, /* hasMinMax= */ true, 1d, 2d, new long[] {}, Collections.emptyList()));
-  }
-
-  @Test
   void toMetricData() {
     AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
@@ -221,7 +142,8 @@ class DoubleExplicitBucketHistogramAggregatorTest {
             INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
             Collections.singletonMap(
-                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+                Attributes.empty(),
+                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
             AggregationTemporality.DELTA,
             0,
             10,
@@ -295,7 +217,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
         aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);
     ExplicitBucketHistogramAccumulation explicitBucketHistogramAccumulation =
-        aggregatorHandle.accumulateThenReset(Attributes.empty());
+        aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
     assertThat(explicitBucketHistogramAccumulation).isNotNull();
     assertThat(explicitBucketHistogramAccumulation.getCounts().length)
         .isEqualTo(boundaries.length + 1);
@@ -305,7 +227,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   void testMultithreadedUpdates() throws InterruptedException {
     AggregatorHandle<ExplicitBucketHistogramAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    Histogram summarizer = new Histogram();
     ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
     int numberOfThreads = updates.size();
     int numberOfUpdates = 10000;
@@ -321,39 +242,16 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                           for (int j = 0; j < numberOfUpdates; j++) {
                             aggregatorHandle.recordLong(v);
                             if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              summarizer.process(
-                                  aggregatorHandle.accumulateThenReset(Attributes.empty()));
+                              aggregatorHandle.accumulateThenMaybeReset(
+                                  Attributes.empty(), /* reset= */ false);
                             }
                           }
                         }))
             .collect(Collectors.toList()));
 
-    // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
-
-    assertThat(summarizer.accumulation)
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ false))
         .isEqualTo(
             ExplicitBucketHistogramAccumulation.create(
                 1010000, /* hasMinMax= */ true, 1d, 23d, new long[] {50000, 50000, 0, 0}));
-  }
-
-  private static final class Histogram {
-    private final Object mutex = new Object();
-
-    @Nullable private ExplicitBucketHistogramAccumulation accumulation;
-
-    void process(@Nullable ExplicitBucketHistogramAccumulation other) {
-      if (other == null) {
-        return;
-      }
-
-      synchronized (mutex) {
-        if (accumulation == null) {
-          accumulation = other;
-          return;
-        }
-        accumulation = aggregator.merge(accumulation, other);
-      }
-    }
   }
 }

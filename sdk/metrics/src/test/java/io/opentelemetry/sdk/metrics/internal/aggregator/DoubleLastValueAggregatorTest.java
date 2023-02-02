@@ -43,58 +43,44 @@ class DoubleLastValueAggregatorTest {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
+    assertThat(
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14.1);
+    assertThat(
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(14.1);
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
 
     aggregatorHandle.recordDouble(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(13.1);
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
 
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
-  }
-
-  @Test
-  void mergeAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    DoubleAccumulation result =
-        aggregator.merge(
-            DoubleAccumulation.create(1, previousExemplars),
-            DoubleAccumulation.create(2, exemplars));
-    // Assert that latest measurement is kept.
-    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
+    assertThat(
+            aggregatorHandle
+                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+        .isNull();
   }
 
   @Test
@@ -131,7 +117,6 @@ class DoubleLastValueAggregatorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
@@ -143,7 +128,8 @@ class DoubleLastValueAggregatorTest {
             INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
             Collections.singletonMap(
-                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+                Attributes.empty(),
+                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
             AggregationTemporality.DELTA,
             0,
             10,

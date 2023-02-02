@@ -13,30 +13,41 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.Closeable;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class ConfigurableSpanExporterTest {
+class ConfigurableSpanExporterTest {
+
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @Test
   void configureSpanExporters_spiExporter() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
+    List<Closeable> closeables = new ArrayList<>();
+
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a);
+            config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a, closeables);
+    cleanup.addCloseables(closeables);
 
     assertThat(exportersByName)
         .hasSize(1)
@@ -45,6 +56,8 @@ public class ConfigurableSpanExporterTest {
         .isInstanceOf(TestConfigurableSpanExporterProvider.TestSpanExporter.class)
         .extracting("config")
         .isSameAs(config);
+    assertThat(closeables)
+        .hasExactlyElementsOfTypes(TestConfigurableSpanExporterProvider.TestSpanExporter.class);
   }
 
   @Test
@@ -52,12 +65,19 @@ public class ConfigurableSpanExporterTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
+    List<Closeable> closeables = new ArrayList<>();
+
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config, new URLClassLoader(new URL[0], null), (a, unused) -> a))
+                    config,
+                    new URLClassLoader(new URL[0], null),
+                    (a, unused) -> a,
+                    new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 
   @Test
@@ -65,30 +85,42 @@ public class ConfigurableSpanExporterTest {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("otel.traces.exporter", "otlp,otlp,logging"));
+    List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
+                    config,
+                    SpanExporterConfiguration.class.getClassLoader(),
+                    (a, unused) -> a,
+                    closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 
   @Test
   void configureSpanExporters_multipleWithNone() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.traces.exporter", "otlp,none"));
+    List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a))
+                    config,
+                    SpanExporterConfiguration.class.getClassLoader(),
+                    (a, unused) -> a,
+                    closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
+    cleanup.addCloseables(closeables);
+    assertThat(closeables).isEmpty();
   }
 
   @Test
-  void exporterNotFound() {
+  void configureExporter_NotFound() {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
@@ -100,48 +132,58 @@ public class ConfigurableSpanExporterTest {
   @Test
   void configureSpanProcessors_simpleSpanProcessor() {
     String exporterName = "logging";
-    Map<String, String> propMap = Collections.singletonMap("otel.traces.exporter", exporterName);
-    SpanExporter exporter = LoggingSpanExporter.create();
-    ConfigProperties properties = DefaultConfigProperties.createForTest(propMap);
+    List<Closeable> closeables = new ArrayList<>();
 
-    assertThat(
-            TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of(exporterName, exporter), MeterProvider.noop()))
-        .hasSize(1)
-        .first()
-        .isInstanceOf(SimpleSpanProcessor.class);
+    List<SpanProcessor> spanProcessors =
+        TracerProviderConfiguration.configureSpanProcessors(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.traces.exporter", exporterName)),
+            ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(spanProcessors).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
+    assertThat(closeables).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
   }
 
   @Test
   void configureSpanProcessors_batchSpanProcessor() {
     String exporterName = "zipkin";
-    Map<String, String> propMap = Collections.singletonMap("otel.traces.exporter", exporterName);
-    SpanExporter exporter = ZipkinSpanExporter.builder().build();
-    ConfigProperties properties = DefaultConfigProperties.createForTest(propMap);
+    List<Closeable> closeables = new ArrayList<>();
 
-    assertThat(
-            TracerProviderConfiguration.configureSpanProcessors(
-                properties, ImmutableMap.of(exporterName, exporter), MeterProvider.noop()))
-        .hasSize(1)
-        .first()
-        .isInstanceOf(BatchSpanProcessor.class);
+    List<SpanProcessor> spanProcessors =
+        TracerProviderConfiguration.configureSpanProcessors(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.traces.exporter", exporterName)),
+            ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(spanProcessors).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
+    assertThat(closeables).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
   }
 
   @Test
   void configureSpanProcessors_multipleExporters() {
-    SpanExporter otlpExporter = OtlpGrpcSpanExporter.builder().build();
-    SpanExporter zipkinExporter = ZipkinSpanExporter.builder().build();
-    ConfigProperties properties =
-        DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.traces.exporter", "otlp,zipkin"));
+    List<Closeable> closeables = new ArrayList<>();
 
-    assertThat(
-            TracerProviderConfiguration.configureSpanProcessors(
-                properties,
-                ImmutableMap.of("otlp", otlpExporter, "zipkin", zipkinExporter),
-                MeterProvider.noop()))
-        .hasSize(1)
-        .hasAtLeastOneElementOfType(BatchSpanProcessor.class)
+    List<SpanProcessor> spanProcessors =
+        TracerProviderConfiguration.configureSpanProcessors(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.traces.exporter", "otlp,zipkin")),
+            ImmutableMap.of(
+                "otlp",
+                OtlpGrpcSpanExporter.builder().build(),
+                "zipkin",
+                ZipkinSpanExporter.builder().build()),
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(spanProcessors)
+        .hasExactlyElementsOfTypes(BatchSpanProcessor.class)
         .first()
         .extracting("worker")
         .extracting("spanExporter")
@@ -162,21 +204,31 @@ public class ConfigurableSpanExporterTest {
                             .hasAtLeastOneElementOfType(OtlpGrpcSpanExporter.class);
                       });
             });
+    assertThat(closeables).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
   }
 
   @Test
   void configureSpanProcessors_multipleExportersWithLogging() {
-    SpanExporter loggingExporter = LoggingSpanExporter.create();
-    SpanExporter zipkinExporter = ZipkinSpanExporter.builder().build();
-    ConfigProperties properties =
-        DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.traces.exporter", "logging,zipkin"));
+    List<Closeable> closeables = new ArrayList<>();
 
-    assertThat(
-            TracerProviderConfiguration.configureSpanProcessors(
-                properties,
-                ImmutableMap.of("logging", loggingExporter, "zipkin", zipkinExporter),
-                MeterProvider.noop()))
+    List<SpanProcessor> spanProcessors =
+        TracerProviderConfiguration.configureSpanProcessors(
+            DefaultConfigProperties.createForTest(
+                Collections.singletonMap("otel.traces.exporter", "logging,zipkin")),
+            ImmutableMap.of(
+                "logging",
+                LoggingSpanExporter.create(),
+                "zipkin",
+                ZipkinSpanExporter.builder().build()),
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(spanProcessors)
+        .hasSize(2)
+        .hasAtLeastOneElementOfType(SimpleSpanProcessor.class)
+        .hasAtLeastOneElementOfType(BatchSpanProcessor.class);
+    assertThat(closeables)
         .hasSize(2)
         .hasAtLeastOneElementOfType(SimpleSpanProcessor.class)
         .hasAtLeastOneElementOfType(BatchSpanProcessor.class);

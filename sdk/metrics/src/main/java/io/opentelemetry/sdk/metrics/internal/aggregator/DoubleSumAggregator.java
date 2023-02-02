@@ -59,13 +59,6 @@ public final class DoubleSumAggregator
   }
 
   @Override
-  public DoubleAccumulation merge(
-      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
-    return DoubleAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
-  }
-
-  @Override
   public DoubleAccumulation diff(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(
@@ -107,8 +100,12 @@ public final class DoubleSumAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
-      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected DoubleAccumulation doAccumulateThenMaybeReset(
+        List<DoubleExemplarData> exemplars, boolean reset) {
+      if (reset) {
+        return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+      }
+      return DoubleAccumulation.create(this.current.sum(), exemplars);
     }
 
     @Override

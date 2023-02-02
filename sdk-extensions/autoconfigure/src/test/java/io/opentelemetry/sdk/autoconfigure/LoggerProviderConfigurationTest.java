@@ -10,23 +10,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanLimits;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class LoggerProviderConfigurationTest {
 
-  private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @Test
   void configureLoggerProvider() {
@@ -34,6 +36,7 @@ class LoggerProviderConfigurationTest {
         ImmutableMap.of(
             "otel.logs.exporter", "none",
             "otel.attribute.count.limit", "5");
+    List<Closeable> closeables = new ArrayList<>();
 
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
     // are verified in other test sets like testFullConfig.
@@ -43,10 +46,11 @@ class LoggerProviderConfigurationTest {
         DefaultConfigProperties.createForTest(properties),
         LoggerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
-        (a, unused) -> a);
-    SdkLoggerProvider loggerProvider = builder.build();
+        (a, unused) -> a,
+        closeables);
+    cleanup.addCloseables(closeables);
 
-    try {
+    try (SdkLoggerProvider loggerProvider = builder.build()) {
       assertThat(loggerProvider)
           .extracting("sharedState")
           .satisfies(
@@ -60,18 +64,19 @@ class LoggerProviderConfigurationTest {
                     .extracting(supplier -> (LogLimits) supplier.get())
                     .isEqualTo(LogLimits.builder().setMaxNumberOfAttributes(5).build());
               });
-    } finally {
-      loggerProvider.shutdown();
+      assertThat(closeables).isEmpty();
     }
   }
 
   @Test
-  void configureSpanLimits() {
-    assertThat(LoggerProviderConfiguration.configureLogLimits(EMPTY))
+  void configureLogLimits() {
+    assertThat(
+            LoggerProviderConfiguration.configureLogLimits(
+                DefaultConfigProperties.createForTest(Collections.emptyMap())))
         .isEqualTo(LogLimits.getDefault());
 
-    SpanLimits config =
-        TracerProviderConfiguration.configureSpanLimits(
+    LogLimits config =
+        LoggerProviderConfiguration.configureLogLimits(
             DefaultConfigProperties.createForTest(
                 ImmutableMap.of(
                     "otel.attribute.value.length.limit", "100",

@@ -1,4 +1,34 @@
 Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert hasPointsSatisfying(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert hasPointsSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert isCumulative()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert isDelta()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramBucketsAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramBucketsAssert hasCounts(java.util.List)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramBucketsAssert hasOffset(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramBucketsAssert hasTotalCount(long)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.assertj.AbstractPointAssert
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasCount(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasExemplars(io.opentelemetry.sdk.metrics.data.DoubleExemplarData[])
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasExemplarsSatisfying(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasExemplarsSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasMax(double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasMin(double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasNegativeBucketsSatisfying(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasPositiveBucketsSatisfying(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasScale(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasSum(double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert hasZeroCount(long)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.MetricAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasExponentialHistogramSatisfying(java.util.function.Consumer)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.TracesAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.TracesAssert assertThat(java.util.List)

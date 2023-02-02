@@ -130,7 +130,7 @@ class MetricStorageRegistryTest {
     }
 
     @Override
-    public MetricData collectAndReset(
+    public MetricData collect(
         Resource resource,
         InstrumentationScopeInfo instrumentationScopeInfo,
         long startEpochNanos,

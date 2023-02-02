@@ -3,25 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.data.exponentialhistogram;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Simple auto value implementation of {@link ExponentialHistogramPointData}. For detailed javadoc
- * on the type, see {@link ExponentialHistogramPointData}.
+ * Auto value implementation of {@link ExponentialHistogramPointData}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 @AutoValue
 @Immutable
-abstract class ImmutableExponentialHistogramPointData implements ExponentialHistogramPointData {
+public abstract class ImmutableExponentialHistogramPointData
+    implements ExponentialHistogramPointData {
 
   ImmutableExponentialHistogramPointData() {}
 
@@ -30,7 +32,8 @@ abstract class ImmutableExponentialHistogramPointData implements ExponentialHist
    *
    * @return a DoubleExponentialHistogramPointData.
    */
-  static ImmutableExponentialHistogramPointData create(
+  @SuppressWarnings("TooManyParameters")
+  public static ExponentialHistogramPointData create(
       int scale,
       double sum,
       long zeroCount,

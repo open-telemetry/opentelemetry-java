@@ -172,6 +172,27 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     return this;
   }
 
+  /**
+   * Asserts this {@link MetricData} is an exponential histogram that satisfies the provided
+   * assertion.
+   *
+   * @since 1.23.0
+   */
+  public MetricAssert hasExponentialHistogramSatisfying(
+      Consumer<ExponentialHistogramAssert> assertion) {
+    isNotNull();
+    if (actual.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: EXPONENTIAL_HISTOGRAM",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.EXPONENTIAL_HISTOGRAM,
+          actual.getType());
+    }
+    assertion.accept(new ExponentialHistogramAssert(actual.getExponentialHistogramData()));
+    return this;
+  }
+
   /** Asserts this {@link MetricData} is a summary that satisfies the provided assertion. */
   public MetricAssert hasSummarySatisfying(Consumer<SummaryAssert> assertion) {
     isNotNull();

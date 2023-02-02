@@ -32,6 +32,7 @@ public final class ResourceMetricsMarshaler extends MarshalerWithSize {
   private final InstrumentationScopeMetricsMarshaler[] instrumentationScopeMetricsMarshalers;
 
   /** Returns Marshalers of ResourceMetrics created by grouping the provided metricData. */
+  @SuppressWarnings("AvoidObjectArrays")
   public static ResourceMetricsMarshaler[] create(Collection<MetricData> metricDataList) {
     Map<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> resourceAndScopeMap =
         groupByResourceAndScope(metricDataList);

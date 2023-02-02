@@ -49,6 +49,14 @@ testing {
   }
 }
 
+afterEvaluate {
+  // Classpath when compiling testGrpcNetty, we add dependency management directly
+  // since it doesn't follow Gradle conventions of naming / properties.
+  dependencies {
+    add("testGrpcNettyCompileProtoPath", platform(project(":dependencyManagement")))
+  }
+}
+
 tasks {
   check {
     dependsOn(testing.suites)
@@ -60,6 +68,9 @@ wire {
     schemaHandlerFactoryClass = "io.opentelemetry.gradle.ProtoFieldsWireHandlerFactory"
   }
 }
+
+// Declare sourcesJar dependency on proto generation so gradle doesn't complain about implicit dependency
+tasks.getByName("sourcesJar").dependsOn("generateMainProtos")
 
 sourceSets {
   main {

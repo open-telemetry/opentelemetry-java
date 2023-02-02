@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,8 @@ import java.util.logging.Logger;
 /** A Span Exporter that logs every span at INFO level using java.util.logging. */
 public final class LoggingSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
+
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   /** Returns a new {@link LoggingSpanExporter}. */
   public static LoggingSpanExporter create() {
@@ -33,6 +36,10 @@ public final class LoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     // We always have 32 + 16 + name + several whitespace, 60 seems like an OK initial guess.
     StringBuilder sb = new StringBuilder(60);
     for (SpanData span : spans) {
@@ -80,6 +87,10 @@ public final class LoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
     return flush();
   }
 }

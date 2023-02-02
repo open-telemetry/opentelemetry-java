@@ -51,13 +51,6 @@ testing {
         }
       }
     }
-    val testConfigError by registering(JvmTestSuite::class) {
-      dependencies {
-        implementation(project(":extensions:trace-propagators"))
-        implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:logs"))
-      }
-    }
     val testFullConfig by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":extensions:trace-propagators"))
@@ -71,6 +64,7 @@ testing {
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
+        implementation(project(":sdk-extensions:jaeger-remote-sampler"))
         implementation(project(":semconv"))
 
         implementation("com.google.guava:guava")
@@ -86,23 +80,11 @@ testing {
             environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
-            environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-            environment("OTEL_METRIC_EXPORT_INTERVAL", "10")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
             environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
             environment("OTEL_TEST_CONFIGURED", "true")
             environment("OTEL_TEST_WRAPPED", "1")
-          }
-        }
-      }
-    }
-    val testInitializeRegistersGlobal by registering(JvmTestSuite::class) {
-      targets {
-        all {
-          testTask {
-            environment("OTEL_TRACES_EXPORTER", "none")
-            environment("OTEL_METRICS_EXPORTER", "none")
           }
         }
       }

@@ -256,6 +256,7 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /** Serializes {@code repeated message} field. */
+  @SuppressWarnings("AvoidObjectArrays")
   public abstract void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
       throws IOException;
 

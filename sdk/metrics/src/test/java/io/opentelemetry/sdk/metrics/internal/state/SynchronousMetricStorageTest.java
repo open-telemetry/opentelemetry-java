@@ -8,15 +8,17 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
@@ -27,15 +29,13 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@SuppressLogger(DefaultSynchronousMetricStorage.class)
 public class SynchronousMetricStorageTest {
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
@@ -45,26 +45,26 @@ public class SynchronousMetricStorageTest {
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultSynchronousMetricStorage.class);
+
+  private final RegisteredReader deltaReader =
+      RegisteredReader.create(InMemoryMetricReader.createDelta(), ViewRegistry.create());
+  private final RegisteredReader cumulativeReader =
+      RegisteredReader.create(InMemoryMetricReader.create(), ViewRegistry.create());
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long, LongExemplarData> aggregator =
-      ((AggregatorFactory) Aggregation.lastValue())
+      ((AggregatorFactory) Aggregation.sum())
           .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
-
-  @Mock private MetricReader reader;
-  private RegisteredReader registeredReader;
-
-  @BeforeEach
-  void setup() {
-    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
-  }
 
   @Test
   void attributesProcessor_used() {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(
-            registeredReader, METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
+            cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
     accumulator.bind(Attributes.empty());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
@@ -77,15 +77,14 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(
-            registeredReader, METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
+            cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
-    MetricData md =
-        accumulator.collectAndReset(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
+    MetricData md = accumulator.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
-        .hasDoubleGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
                     point ->
                         point.hasAttributes(
                             attributeEntry("K", "V"), attributeEntry("modifiedK", "modifiedV"))));
@@ -93,17 +92,16 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void sameAggregator_ForSameAttributes() {
-    SynchronousMetricStorage accumulator =
+    SynchronousMetricStorage storage =
         new DefaultSynchronousMetricStorage<>(
-            registeredReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
-    BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
-    BoundStorageHandle duplicateHandle =
-        accumulator.bind(Attributes.builder().put("K", "V").build());
+            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+    BoundStorageHandle handle = storage.bind(Attributes.builder().put("K", "V").build());
+    BoundStorageHandle duplicateHandle = storage.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
-      accumulator.collectAndReset(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
+      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
       BoundStorageHandle anotherDuplicateAggregatorHandle =
-          accumulator.bind(Attributes.builder().put("K", "V").build());
+          storage.bind(Attributes.builder().put("K", "V").build());
       try {
         assertThat(anotherDuplicateAggregatorHandle).isSameAs(handle);
       } finally {
@@ -116,8 +114,209 @@ public class SynchronousMetricStorageTest {
 
     // If we try to collect once all bound references are gone AND no recordings have occurred, we
     // should not see any labels (or metric).
-    assertThat(
-            accumulator.collectAndReset(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now()))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now()))
         .isEqualTo(EmptyMetricData.getInstance());
+  }
+
+  @Test
+  void recordAndcollect_CumulativeDoesNotReset() {
+    SynchronousMetricStorage storage =
+        new DefaultSynchronousMetricStorage<>(
+            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+
+    // Record measurement and collect at time 10
+    storage.recordDouble(3, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
+    cumulativeReader.setLastCollectEpochNanos(10);
+
+    // Record measurement and collect at time 30
+    storage.recordDouble(3, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(30).hasValue(6)));
+    cumulativeReader.setLastCollectEpochNanos(30);
+
+    // Record measurement and collect at time 35
+    storage.recordDouble(2, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(35).hasValue(8)));
+  }
+
+  @Test
+  void recordAndcollect_DeltaResets() {
+    SynchronousMetricStorage storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+
+    // Record measurement and collect at time 10
+    storage.recordDouble(3, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
+    deltaReader.setLastCollectEpochNanos(10);
+
+    // Record measurement and collect at time 30
+    storage.recordDouble(3, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3)));
+    deltaReader.setLastCollectEpochNanos(30);
+
+    // Record measurement and collect at time 35
+    storage.recordDouble(2, Attributes.empty(), Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2)));
+  }
+
+  @Test
+  void recordAndCollect_CumulativeAtLimit() {
+    SynchronousMetricStorage storage =
+        new DefaultSynchronousMetricStorage<>(
+            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+
+    // Record measurements for max number of attributes
+    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS; i++) {
+      storage.recordDouble(
+          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
+    }
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints())
+                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .allSatisfy(
+                                point -> {
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getEpochNanos()).isEqualTo(10);
+                                  assertThat(point.getValue()).isEqualTo(3);
+                                })));
+    assertThat(logs.getEvents()).isEmpty();
+    cumulativeReader.setLastCollectEpochNanos(10);
+
+    // Record measurement for additional attribute, exceeding limit
+    storage.recordDouble(
+        3,
+        Attributes.builder().put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1).build(),
+        Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints())
+                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .allSatisfy(
+                                point -> {
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getEpochNanos()).isEqualTo(20);
+                                  assertThat(point.getValue()).isEqualTo(3);
+                                })
+                            .noneMatch(
+                                point ->
+                                    point
+                                        .getAttributes()
+                                        .get(AttributeKey.stringKey("key"))
+                                        .equals("value" + MetricStorage.MAX_ACCUMULATIONS + 1))));
+    logs.assertContains("Instrument name has exceeded the maximum allowed accumulations");
+  }
+
+  @Test
+  void recordAndCollect_DeltaAtLimit() {
+    SynchronousMetricStorage storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+
+    // Record measurements for max number of attributes
+    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS; i++) {
+      storage.recordDouble(
+          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
+    }
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints())
+                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .allSatisfy(
+                                point -> {
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getEpochNanos()).isEqualTo(10);
+                                  assertThat(point.getValue()).isEqualTo(3);
+                                })));
+    assertThat(logs.getEvents()).isEmpty();
+    deltaReader.setLastCollectEpochNanos(10);
+
+    // Record measurement for additional attribute, should not exceed limit due to reset
+    storage.recordDouble(
+        3,
+        Attributes.builder().put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1).build(),
+        Context.current());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(10)
+                                .hasEpochNanos(20)
+                                .hasValue(3)
+                                .hasAttributes(
+                                    Attributes.builder()
+                                        .put("key", "value" + MetricStorage.MAX_ACCUMULATIONS + 1)
+                                        .build())));
+    assertThat(logs.getEvents()).isEmpty();
+    deltaReader.setLastCollectEpochNanos(20);
+
+    // Record measurements exceeding max number of attributes. Last measurement should be dropped
+    for (int i = 0; i < MetricStorage.MAX_ACCUMULATIONS + 1; i++) {
+      storage.recordDouble(
+          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
+    }
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints())
+                            .hasSize(MetricStorage.MAX_ACCUMULATIONS)
+                            .allSatisfy(
+                                point -> {
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(20);
+                                  assertThat(point.getEpochNanos()).isEqualTo(30);
+                                  assertThat(point.getValue()).isEqualTo(3);
+                                })
+                            .noneMatch(
+                                point ->
+                                    point
+                                        .getAttributes()
+                                        .get(AttributeKey.stringKey("key"))
+                                        .equals("value" + MetricStorage.MAX_ACCUMULATIONS + 1))));
+    logs.assertContains("Instrument name has exceeded the maximum allowed accumulations");
   }
 }

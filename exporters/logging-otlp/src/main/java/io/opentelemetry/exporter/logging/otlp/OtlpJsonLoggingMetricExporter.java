@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +29,8 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());
+
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final AggregationTemporality aggregationTemporality;
 
@@ -68,6 +71,10 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     ResourceMetricsMarshaler[] allResourceMetrics = ResourceMetricsMarshaler.create(metrics);
     for (ResourceMetricsMarshaler resourceMetrics : allResourceMetrics) {
       SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
@@ -89,6 +96,9 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

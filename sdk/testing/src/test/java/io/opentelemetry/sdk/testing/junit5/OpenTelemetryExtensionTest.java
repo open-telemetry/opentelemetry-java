@@ -5,15 +5,16 @@
 
 package io.opentelemetry.sdk.testing.junit5;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -150,10 +151,10 @@ class OpenTelemetryExtensionTest {
     LongCounter counter = meter.counterBuilder("counter").build();
     counter.add(1);
 
-    OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
+    assertThat(otelTesting.getMetrics())
         .satisfiesExactlyInAnyOrder(
             metricData ->
-                OpenTelemetryAssertions.assertThat(metricData)
+                assertThat(metricData)
                     .hasName("counter")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
@@ -165,12 +166,35 @@ class OpenTelemetryExtensionTest {
     LongCounter counter = meter.counterBuilder("counter").build();
     counter.add(1);
 
-    OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
+    assertThat(otelTesting.getMetrics())
         .satisfiesExactlyInAnyOrder(
             metricData ->
-                OpenTelemetryAssertions.assertThat(metricData)
+                assertThat(metricData)
                     .hasName("counter")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+  }
+
+  @Test
+  void afterAll() {
+    // Use a different instance of OpenTelemetryExtension to avoid interfering with other tests
+    OpenTelemetryExtension extension = OpenTelemetryExtension.create();
+    extension.beforeAll(null);
+
+    Meter meter = extension.getOpenTelemetry().getMeter("meter");
+    Tracer tracer = extension.getOpenTelemetry().getTracer("tracer");
+
+    meter.counterBuilder("counter").build().add(10);
+    tracer.spanBuilder("span").startSpan().end();
+    assertThat(extension.getMetrics()).isNotEmpty();
+    assertThat(extension.getSpans()).isNotEmpty();
+
+    extension.afterAll(null);
+    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+
+    meter.counterBuilder("counter").build().add(10);
+    tracer.spanBuilder("span").startSpan().end();
+    assertThat(extension.getMetrics()).isEmpty();
+    assertThat(extension.getSpans()).isEmpty();
   }
 }

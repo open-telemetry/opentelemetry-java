@@ -84,7 +84,7 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   }
 
   @Override
-  public MetricData collectAndReset(
+  public MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,

@@ -36,6 +36,7 @@ public final class UpstreamGrpcExporter<T extends Marshaler> implements GrpcExpo
 
   // We only log unavailable once since it's a configuration issue that won't be recovered.
   private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final String type;
   private final ExporterMetrics exporterMetrics;
@@ -57,6 +58,10 @@ public final class UpstreamGrpcExporter<T extends Marshaler> implements GrpcExpo
 
   @Override
   public CompletableResultCode export(T exportRequest, int numItems) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     exporterMetrics.addSeen(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
@@ -118,6 +123,9 @@ public final class UpstreamGrpcExporter<T extends Marshaler> implements GrpcExpo
 
   @Override
   public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

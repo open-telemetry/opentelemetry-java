@@ -32,6 +32,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static final KeyValueMarshaler[] EMPTY_REPEATED = new KeyValueMarshaler[0];
 
   /** Returns Marshalers for the given Attributes. */
+  @SuppressWarnings("AvoidObjectArrays")
   public static KeyValueMarshaler[] createRepeated(Attributes attributes) {
     if (attributes.isEmpty()) {
       return EMPTY_REPEATED;
