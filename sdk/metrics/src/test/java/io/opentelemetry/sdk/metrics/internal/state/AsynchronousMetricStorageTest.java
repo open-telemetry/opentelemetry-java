@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,9 +87,12 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordLong() {
-    longCounterStorage.recordLong(1, Attributes.builder().put("key", "a").build());
-    longCounterStorage.recordLong(2, Attributes.builder().put("key", "b").build());
-    longCounterStorage.recordLong(3, Attributes.builder().put("key", "c").build());
+    longCounterStorage.record(
+        longMeasurement(0, 1, 1, Attributes.builder().put("key", "a").build()));
+    longCounterStorage.record(
+        longMeasurement(0, 1, 2, Attributes.builder().put("key", "b").build()));
+    longCounterStorage.record(
+        longMeasurement(0, 1, 3, Attributes.builder().put("key", "c").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -107,9 +112,12 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void recordDouble() {
-    doubleCounterStorage.recordDouble(1.1, Attributes.builder().put("key", "a").build());
-    doubleCounterStorage.recordDouble(2.2, Attributes.builder().put("key", "b").build());
-    doubleCounterStorage.recordDouble(3.3, Attributes.builder().put("key", "c").build());
+    doubleCounterStorage.record(
+        doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "a").build()));
+    doubleCounterStorage.record(
+        doubleMeasurement(0, 1, 2.2, Attributes.builder().put("key", "b").build()));
+    doubleCounterStorage.record(
+        doubleMeasurement(0, 1, 3.3, Attributes.builder().put("key", "c").build()));
 
     assertThat(doubleCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -142,7 +150,8 @@ class AsynchronousMetricStorageTest {
             InstrumentDescriptor.create(
                 "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
 
-    storage.recordLong(1, Attributes.builder().put("key1", "a").put("key2", "b").build());
+    storage.record(
+        longMeasurement(0, 1, 1, Attributes.builder().put("key1", "a").put("key2", "b").build()));
 
     assertThat(storage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -157,23 +166,26 @@ class AsynchronousMetricStorageTest {
   }
 
   @Test
-  void record_MaxAccumulations() {
-    for (int i = 0; i <= MetricStorage.MAX_ACCUMULATIONS + 1; i++) {
-      longCounterStorage.recordLong(1, Attributes.builder().put("key" + i, "val").build());
+  void record_MaxCardinality() {
+    for (int i = 0; i <= MetricStorage.MAX_CARDINALITY + 1; i++) {
+      longCounterStorage.record(
+          longMeasurement(0, 1, 1, Attributes.builder().put("key" + i, "val").build()));
     }
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
                 assertThat(metricData.getLongSumData().getPoints())
-                    .hasSize(MetricStorage.MAX_ACCUMULATIONS));
-    logs.assertContains("Instrument long-counter has exceeded the maximum allowed accumulations");
+                    .hasSize(MetricStorage.MAX_CARDINALITY));
+    logs.assertContains("Instrument long-counter has exceeded the maximum allowed cardinality");
   }
 
   @Test
   void record_DuplicateAttributes() {
-    longCounterStorage.recordLong(1, Attributes.builder().put("key1", "a").build());
-    longCounterStorage.recordLong(2, Attributes.builder().put("key1", "a").build());
+    longCounterStorage.record(
+        longMeasurement(0, 1, 1, Attributes.builder().put("key1", "a").build()));
+    longCounterStorage.record(
+        longMeasurement(0, 1, 2, Attributes.builder().put("key1", "a").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -191,8 +203,8 @@ class AsynchronousMetricStorageTest {
   @Test
   void collect_CumulativeReportsCumulativeObservations() {
     // Record measurement and collect at time 10
-    longCounterStorage.recordLong(3, Attributes.empty());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 10))
+    longCounterStorage.record(longMeasurement(0, 10, 3, Attributes.empty()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -206,9 +218,10 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurements and collect at time 30
-    longCounterStorage.recordLong(3, Attributes.empty());
-    longCounterStorage.recordLong(6, Attributes.builder().put("key", "value1").build());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 30))
+    longCounterStorage.record(longMeasurement(0, 30, 3, Attributes.empty()));
+    longCounterStorage.record(
+        longMeasurement(0, 30, 6, Attributes.builder().put("key", "value1").build()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -228,9 +241,10 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.recordLong(4, Attributes.empty());
-    longCounterStorage.recordLong(5, Attributes.builder().put("key", "value2").build());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 35))
+    longCounterStorage.record(longMeasurement(0, 35, 4, Attributes.empty()));
+    longCounterStorage.record(
+        longMeasurement(0, 35, 5, Attributes.builder().put("key", "value2").build()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -264,8 +278,8 @@ class AsynchronousMetricStorageTest {
                 InstrumentValueType.LONG));
 
     // Record measurement and collect at time 10
-    longCounterStorage.recordLong(3, Attributes.empty());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 10))
+    longCounterStorage.record(longMeasurement(0, 10, 3, Attributes.empty()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -279,9 +293,10 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurement and collect at time 30
-    longCounterStorage.recordLong(3, Attributes.empty());
-    longCounterStorage.recordLong(6, Attributes.builder().put("key", "value1").build());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 30))
+    longCounterStorage.record(longMeasurement(0, 30, 3, Attributes.empty()));
+    longCounterStorage.record(
+        longMeasurement(0, 30, 6, Attributes.builder().put("key", "value1").build()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -301,9 +316,10 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.recordLong(4, Attributes.empty());
-    longCounterStorage.recordLong(5, Attributes.builder().put("key", "value2").build());
-    assertThat(longCounterStorage.collect(resource, scope, 0, 35))
+    longCounterStorage.record(longMeasurement(0, 35, 4, Attributes.empty()));
+    longCounterStorage.record(
+        longMeasurement(0, 35, 5, Attributes.builder().put("key", "value2").build()));
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
                 sum.isDelta()

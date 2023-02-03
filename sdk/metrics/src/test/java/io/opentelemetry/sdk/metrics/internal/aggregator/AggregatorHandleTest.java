@@ -16,6 +16,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.Collections;
@@ -98,7 +99,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
-    testAggregator.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
+    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
@@ -106,7 +107,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(33.55);
 
-    testAggregator.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true);
+    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
@@ -148,12 +149,12 @@ class AggregatorHandleTest {
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(doubleReservoir.collectAndReset(attributes))
         .thenReturn(Collections.singletonList(result));
-    testAggregator.accumulateThenMaybeReset(attributes, /* reset= */ true);
+    testAggregator.aggregateThenMaybeReset(0, 1, attributes, /* reset= */ true);
     assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
   }
 
   private static class TestAggregatorHandle<T extends ExemplarData>
-      extends AggregatorHandle<Void, T> {
+      extends AggregatorHandle<PointData, T> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
     final AtomicReference<List<T>> recordedExemplars = new AtomicReference<>();
@@ -164,7 +165,12 @@ class AggregatorHandleTest {
 
     @Nullable
     @Override
-    protected Void doAccumulateThenMaybeReset(List<T> exemplars, boolean reset) {
+    protected PointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<T> exemplars,
+        boolean reset) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

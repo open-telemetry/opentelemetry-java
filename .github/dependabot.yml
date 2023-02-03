@@ -24,3 +24,6 @@ updates:
       # Ignore updates to next mockito major version 5.x.x, which requires Java 11
       - dependency-name: "org.mockito:mockito-core"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.junit-pioneer:junit-pioneer"
+        # junit-pioneer 2.x requires Java 11
+        versions: [ "[1,)" ]

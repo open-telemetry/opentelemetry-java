@@ -4,7 +4,7 @@ pluginManagement {
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.gradle.enterprise") version "3.12.3"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.8.0"
+    id("org.jetbrains.kotlin.jvm") version "1.8.10"
     id("org.graalvm.buildtools.native") version "0.9.19"
   }
 }

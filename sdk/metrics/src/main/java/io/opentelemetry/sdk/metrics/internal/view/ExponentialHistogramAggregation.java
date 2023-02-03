@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramAggregator;
@@ -64,7 +65,7 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     return (Aggregator<T, U>)
         new DoubleExponentialHistogramAggregator(

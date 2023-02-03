@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
@@ -19,7 +20,8 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +34,7 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
+public final class DefaultSynchronousMetricStorage<T extends PointData, U extends ExemplarData>
     implements SynchronousMetricStorage {
 
   private static final BoundStorageHandle NOOP_STORAGE_HANDLE = new NoopBoundHandle();
@@ -100,13 +102,13 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
     // Missing entry or no longer mapped. Try to add a new one if not exceeded cardinality limits.
     aggregatorHandle = aggregator.createHandle();
     while (true) {
-      if (activeCollectionStorage.size() >= MAX_ACCUMULATIONS) {
+      if (activeCollectionStorage.size() >= MAX_CARDINALITY) {
         logger.log(
             Level.WARNING,
             "Instrument "
                 + metricDescriptor.getSourceInstrument().getName()
-                + " has exceeded the maximum allowed accumulations ("
-                + MAX_ACCUMULATIONS
+                + " has exceeded the maximum allowed cardinality ("
+                + MAX_CARDINALITY
                 + ").");
         return NOOP_STORAGE_HANDLE;
       }
@@ -159,9 +161,13 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
       long startEpochNanos,
       long epochNanos) {
     boolean reset = aggregationTemporality == AggregationTemporality.DELTA;
+    long start =
+        aggregationTemporality == AggregationTemporality.DELTA
+            ? registeredReader.getLastCollectEpochNanos()
+            : startEpochNanos;
 
-    // Grab accumulated measurements.
-    Map<Attributes, T> accumulations = new HashMap<>();
+    // Grab aggregated points.
+    List<T> points = new ArrayList<>(activeCollectionStorage.size());
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : activeCollectionStorage.entrySet()) {
       if (reset) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
@@ -171,26 +177,19 @@ public final class DefaultSynchronousMetricStorage<T, U extends ExemplarData>
           activeCollectionStorage.remove(entry.getKey(), entry.getValue());
         }
       }
-      T accumulation = entry.getValue().accumulateThenMaybeReset(entry.getKey(), reset);
-      if (accumulation == null) {
+      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
+      if (point == null) {
         continue;
       }
-      accumulations.put(entry.getKey(), accumulation);
+      points.add(point);
     }
 
-    if (accumulations.isEmpty()) {
+    if (points.isEmpty()) {
       return EmptyMetricData.getInstance();
     }
 
     return aggregator.toMetricData(
-        resource,
-        instrumentationScopeInfo,
-        metricDescriptor,
-        accumulations,
-        aggregationTemporality,
-        startEpochNanos,
-        registeredReader.getLastCollectEpochNanos(),
-        epochNanos);
+        resource, instrumentationScopeInfo, metricDescriptor, points, aggregationTemporality);
   }
 
   @Override

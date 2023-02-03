@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
@@ -37,7 +38,7 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
