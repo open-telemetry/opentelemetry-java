@@ -43,7 +43,7 @@ public abstract class AttributeAssertion {
   }
 
   private static AbstractAssert<? extends AbstractAssert<?, ?>, ?> makeAssertion(
-      AttributeKey<?> key, Object value) {
+      AttributeKey<?> key, @Nullable Object value) {
     switch (key.getType()) {
       case STRING:
         return assertThat((String) value);
