@@ -15,20 +15,22 @@ import org.junit.jupiter.api.Test;
 
 class SdkEventEmitterProviderTest {
 
-  @Test
-  void emit() {
-    AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-    Resource resource = Resource.builder().put("resource-key", "resource-value").build();
-    SdkEventEmitterProvider eventEmitterProvider =
-        SdkEventEmitterProvider.create(
-            SdkLoggerProvider.builder()
-                .setResource(resource)
-                .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
-                .build());
+  private static final Resource RESOURCE =
+      Resource.builder().put("resource-key", "resource-value").build();
 
-    // Emit event
+  private final AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
+  private final SdkEventEmitterProvider eventEmitterProvider =
+      SdkEventEmitterProvider.create(
+          SdkLoggerProvider.builder()
+              .setResource(RESOURCE)
+              .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
+              .build());
+
+  @Test
+  void emit_WithDomain() {
     eventEmitterProvider
-        .eventEmitterBuilder("test-scope", "event-domain")
+        .eventEmitterBuilder("test-scope")
+        .setEventDomain("event-domain")
         .build()
         .emit(
             "event-name",
@@ -36,17 +38,43 @@ class SdkEventEmitterProviderTest {
                 .put("key1", "value1")
                 // should be overridden by the eventName argument passed to emit
                 .put("event.name", "foo")
-                // should be overridden by the eventDomain argument used to obtain eventEmitter
+                // should be overridden by the eventDomain
                 .put("event.domain", "foo")
                 .build());
 
     assertThat(seenLog.get().toLogRecordData())
-        .hasResource(resource)
+        .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasAttributes(
             Attributes.builder()
                 .put("key1", "value1")
                 .put("event.domain", "event-domain")
+                .put("event.name", "event-name")
+                .build());
+  }
+
+  @Test
+  void emit_NoDomain() {
+    eventEmitterProvider
+        .eventEmitterBuilder("test-scope")
+        .build()
+        .emit(
+            "event-name",
+            Attributes.builder()
+                .put("key1", "value1")
+                // should be overridden by the eventName argument passed to emit
+                .put("event.name", "foo")
+                // should be overridden by the default eventDomain
+                .put("event.domain", "foo")
+                .build());
+
+    assertThat(seenLog.get().toLogRecordData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
+        .hasAttributes(
+            Attributes.builder()
+                .put("key1", "value1")
+                .put("event.domain", "unknown")
                 .put("event.name", "event-name")
                 .build());
   }

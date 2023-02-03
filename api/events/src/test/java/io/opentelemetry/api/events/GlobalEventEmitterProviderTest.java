@@ -28,8 +28,8 @@ class GlobalEventEmitterProviderTest {
   void setAndGet() {
     assertThat(GlobalEventEmitterProvider.get()).isEqualTo(EventEmitterProvider.noop());
     EventEmitterProvider eventEmitterProvider =
-        (instrumentationScopeName, eventDomain) ->
-            EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName, eventDomain);
+        instrumentationScopeName ->
+            EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName);
     GlobalEventEmitterProvider.set(eventEmitterProvider);
     assertThat(GlobalEventEmitterProvider.get()).isEqualTo(eventEmitterProvider);
   }
@@ -37,14 +37,13 @@ class GlobalEventEmitterProviderTest {
   @Test
   void setThenSet() {
     GlobalEventEmitterProvider.set(
-        (instrumentationScopeName, eventDomain) ->
-            EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName, eventDomain));
+        instrumentationScopeName ->
+            EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName));
     assertThatThrownBy(
             () ->
                 GlobalEventEmitterProvider.set(
-                    (instrumentationScopeName, eventDomain) ->
-                        EventEmitterProvider.noop()
-                            .eventEmitterBuilder(instrumentationScopeName, eventDomain)))
+                    instrumentationScopeName ->
+                        EventEmitterProvider.noop().eventEmitterBuilder(instrumentationScopeName)))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalEventEmitterProvider.set has already been called")
         .hasStackTraceContaining("setThenSet");

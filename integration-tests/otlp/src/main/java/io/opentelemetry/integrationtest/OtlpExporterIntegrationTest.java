@@ -516,7 +516,8 @@ abstract class OtlpExporterIntegrationTest {
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
     EventEmitter eventEmitter =
         SdkEventEmitterProvider.create(loggerProvider)
-            .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName(), "event-domain")
+            .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName())
+            .setEventDomain("event-domain")
             .build();
 
     SpanContext spanContext =

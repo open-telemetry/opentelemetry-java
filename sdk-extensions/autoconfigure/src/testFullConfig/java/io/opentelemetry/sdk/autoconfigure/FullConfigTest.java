@@ -208,7 +208,11 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
-    EventEmitter eventEmitter = GlobalEventEmitterProvider.get().get("test", "test-domain");
+    EventEmitter eventEmitter =
+        GlobalEventEmitterProvider.get()
+            .eventEmitterBuilder("test")
+            .setEventDomain("test-domain")
+            .build();
     eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);

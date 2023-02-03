@@ -18,11 +18,12 @@ class DefaultEventEmitterProviderTest {
     EventEmitterProvider provider = EventEmitterProvider.noop();
 
     assertThat(provider).isSameAs(DefaultEventEmitterProvider.getInstance());
-    assertThatCode(() -> provider.get("scope-name", "event-domain")).doesNotThrowAnyException();
+    assertThatCode(() -> provider.get("scope-name")).doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider
-                    .eventEmitterBuilder("scope-name", "event-domain")
+                    .eventEmitterBuilder("scope-name")
+                    .setEventDomain("event-domain")
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
@@ -31,7 +32,7 @@ class DefaultEventEmitterProviderTest {
     assertThatCode(
             () ->
                 provider
-                    .eventEmitterBuilder("scope-name", "event-domain")
+                    .eventEmitterBuilder("scope-name")
                     .build()
                     .emit("event-name", Attributes.empty()))
         .doesNotThrowAnyException();

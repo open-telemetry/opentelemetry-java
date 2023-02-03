@@ -22,6 +22,8 @@ import io.opentelemetry.api.logs.LoggerProvider;
  */
 public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
+  private static final String DEFAULT_EVENT_DOMAIN = "unknown";
+
   private final LoggerProvider delegateLoggerProvider;
 
   private SdkEventEmitterProvider(LoggerProvider delegateLoggerProvider) {
@@ -36,25 +38,31 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
   }
 
   @Override
-  public EventEmitter get(String instrumentationScopeName, String eventDomain) {
-    return eventEmitterBuilder(instrumentationScopeName, eventDomain).build();
+  public EventEmitter get(String instrumentationScopeName) {
+    return eventEmitterBuilder(instrumentationScopeName)
+        .setEventDomain(DEFAULT_EVENT_DOMAIN)
+        .build();
   }
 
   @Override
-  public EventEmitterBuilder eventEmitterBuilder(
-      String instrumentationScopeName, String eventDomain) {
+  public EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName) {
     return new SdkEventEmitterBuilder(
-        delegateLoggerProvider.loggerBuilder(instrumentationScopeName), eventDomain);
+        delegateLoggerProvider.loggerBuilder(instrumentationScopeName));
   }
 
   private static class SdkEventEmitterBuilder implements EventEmitterBuilder {
 
     private final LoggerBuilder delegateLoggerBuilder;
-    private final String eventDomain;
+    private String eventDomain = DEFAULT_EVENT_DOMAIN;
 
-    private SdkEventEmitterBuilder(LoggerBuilder delegateLoggerBuilder, String eventDomain) {
+    private SdkEventEmitterBuilder(LoggerBuilder delegateLoggerBuilder) {
       this.delegateLoggerBuilder = delegateLoggerBuilder;
+    }
+
+    @Override
+    public EventEmitterBuilder setEventDomain(String eventDomain) {
       this.eventDomain = eventDomain;
+      return this;
     }
 
     @Override

@@ -18,8 +18,7 @@ class DefaultEventEmitterProvider implements EventEmitterProvider {
   }
 
   @Override
-  public EventEmitterBuilder eventEmitterBuilder(
-      String instrumentationScopeName, String eventDomain) {
+  public EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName) {
     return NOOP_EVENT_EMITTER_BUILDER;
   }
 
@@ -32,6 +31,11 @@ class DefaultEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public EventEmitterBuilder setInstrumentationVersion(String instrumentationVersion) {
+      return this;
+    }
+
+    @Override
+    public EventEmitterBuilder setEventDomain(String eventDomain) {
       return this;
     }
 

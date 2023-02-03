@@ -21,12 +21,10 @@ public interface EventEmitterProvider {
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
-   * @param eventDomain The event domain, which acts as a namespace for event names. Within a
-   *     particular event domain, event name defines a particular class or type of event.
    * @return a Logger instance.
    */
-  default EventEmitter get(String instrumentationScopeName, String eventDomain) {
-    return eventEmitterBuilder(instrumentationScopeName, eventDomain).build();
+  default EventEmitter get(String instrumentationScopeName) {
+    return eventEmitterBuilder(instrumentationScopeName).build();
   }
 
   /**
@@ -34,11 +32,9 @@ public interface EventEmitterProvider {
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
-   * @param eventDomain The event domain, which acts as a namespace for event names. Within a
-   *     particular event domain, event name defines a particular class or type of event.
    * @return a LoggerBuilder instance.
    */
-  EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName, String eventDomain);
+  EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName);
 
   /**
    * Returns a no-op {@link EventEmitterProvider} which provides Loggers which do not record or
