@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -49,6 +50,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
+  private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> pool = new ConcurrentLinkedQueue<>();
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -99,7 +101,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ").");
       return null;
     }
-    AggregatorHandle<T, U> newHandle = aggregator.createHandle();
+    // Get handle from pool if available, else create a new one.
+    AggregatorHandle<T, U> newHandle = pool.poll();
+    if (newHandle == null) {
+      newHandle = aggregator.createHandle();
+    }
     handle = aggregatorHandles.putIfAbsent(attributes, newHandle);
     return handle != null ? handle : newHandle;
   }
@@ -119,14 +125,22 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     // Grab aggregated points.
     List<T> points = new ArrayList<>(aggregatorHandles.size());
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : aggregatorHandles.entrySet()) {
+      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
       if (reset) {
         aggregatorHandles.remove(entry.getKey(), entry.getValue());
+        // Return the aggregator to the pool.
+        pool.offer(entry.getValue());
       }
-      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
       if (point == null) {
         continue;
       }
       points.add(point);
+    }
+
+    // Trim pool down if needed
+    int toDelete = pool.size() - MAX_CARDINALITY;
+    for (int i = 0; i < toDelete; i++) {
+      pool.poll();
     }
 
     if (points.isEmpty()) {
