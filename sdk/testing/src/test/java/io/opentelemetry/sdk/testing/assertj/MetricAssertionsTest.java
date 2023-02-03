@@ -1052,6 +1052,12 @@ class MetricAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
                 assertThat(SUMMARY_METRIC)
                     .hasSummarySatisfying(
                         summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
