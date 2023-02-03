@@ -9,12 +9,15 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A "null object" Aggregator which denotes no aggregation should occur.
@@ -22,31 +25,56 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregator implements Aggregator<Object, DoubleExemplarData> {
+public final class DropAggregator implements Aggregator<PointData, DoubleExemplarData> {
 
-  private static final Object ACCUMULATION = new Object();
+  private static final PointData POINT_DATA =
+      new PointData() {
+        @Override
+        public long getStartEpochNanos() {
+          return 0;
+        }
 
-  public static final Aggregator<Object, DoubleExemplarData> INSTANCE = new DropAggregator();
+        @Override
+        public long getEpochNanos() {
+          return 0;
+        }
 
-  private static final AggregatorHandle<Object, DoubleExemplarData> HANDLE =
-      new AggregatorHandle<Object, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
+        @Override
+        public Attributes getAttributes() {
+          return Attributes.empty();
+        }
+
+        @Override
+        public List<? extends ExemplarData> getExemplars() {
+          return Collections.emptyList();
+        }
+      };
+
+  public static final Aggregator<PointData, DoubleExemplarData> INSTANCE = new DropAggregator();
+
+  private static final AggregatorHandle<PointData, DoubleExemplarData> HANDLE =
+      new AggregatorHandle<PointData, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
+        @Override
+        protected PointData doAggregateThenMaybeReset(
+            long startEpochNanos,
+            long epochNanos,
+            Attributes attributes,
+            List<DoubleExemplarData> exemplars,
+            boolean reset) {
+          return POINT_DATA;
+        }
+
         @Override
         protected void doRecordLong(long value) {}
 
         @Override
         protected void doRecordDouble(double value) {}
-
-        @Override
-        protected Object doAccumulateThenMaybeReset(
-            List<DoubleExemplarData> exemplars, boolean reset) {
-          return ACCUMULATION;
-        }
       };
 
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<Object, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<PointData, DoubleExemplarData> createHandle() {
     return HANDLE;
   }
 
@@ -54,12 +82,9 @@ public final class DropAggregator implements Aggregator<Object, DoubleExemplarDa
   public MetricData toMetricData(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      MetricDescriptor descriptor,
-      Map<Attributes, Object> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
+      MetricDescriptor metricDescriptor,
+      Collection<PointData> points,
+      AggregationTemporality temporality) {
     return EmptyMetricData.getInstance();
   }
 }

@@ -9,14 +9,17 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -36,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class DoubleLastValueAggregator
-    implements Aggregator<DoubleAccumulation, DoubleExemplarData> {
+    implements Aggregator<DoublePointData, DoubleExemplarData> {
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
 
   public DoubleLastValueAggregator(
@@ -45,13 +48,22 @@ public final class DoubleLastValueAggregator
   }
 
   @Override
-  public AggregatorHandle<DoubleAccumulation, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public DoubleAccumulation diff(DoubleAccumulation previous, DoubleAccumulation current) {
+  public DoublePointData diff(DoublePointData previous, DoublePointData current) {
     return current;
+  }
+
+  @Override
+  public DoublePointData toPoint(Measurement measurement) {
+    return ImmutableDoublePointData.create(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.doubleValue());
   }
 
   @Override
@@ -59,11 +71,8 @@ public final class DoubleLastValueAggregator
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
-      Map<Attributes, DoubleAccumulation> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpochNanos,
-      long epochNanos) {
+      Collection<DoublePointData> points,
+      AggregationTemporality temporality) {
     // Gauge does not need a start time, but we send one as advised by the data model
     // for identifying resets.
     return ImmutableMetricData.createDoubleGauge(
@@ -72,16 +81,10 @@ public final class DoubleLastValueAggregator
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getSourceInstrument().getUnit(),
-        ImmutableGaugeData.create(
-            MetricDataUtils.toDoublePointList(
-                accumulationByLabels,
-                (temporality == AggregationTemporality.CUMULATIVE)
-                    ? startEpochNanos
-                    : lastCollectionEpochNanos,
-                epochNanos)));
+        ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
@@ -90,12 +93,15 @@ public final class DoubleLastValueAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenMaybeReset(
-        List<DoubleExemplarData> exemplars, boolean reset) {
-      if (reset) {
-        return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
-      }
-      return DoubleAccumulation.create(Objects.requireNonNull(this.current.get()), exemplars);
+    protected DoublePointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<DoubleExemplarData> exemplars,
+        boolean reset) {
+      Double value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
+      return ImmutableDoublePointData.create(
+          startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
     }
 
     @Override

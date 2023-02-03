@@ -70,7 +70,7 @@ public final class CallbackRegistration {
     return "CallbackRegistration{instrumentDescriptors=" + instrumentDescriptors + "}";
   }
 
-  void invokeCallback(RegisteredReader reader) {
+  void invokeCallback(RegisteredReader reader, long startEpochNanos, long epochNanos) {
     // Return early if no storages are registered
     if (!hasStorages) {
       return;
@@ -78,7 +78,8 @@ public final class CallbackRegistration {
     // Set the active reader on each observable measurement so that measurements are only recorded
     // to relevant storages
     observableMeasurements.forEach(
-        observableMeasurement -> observableMeasurement.setActiveReader(reader));
+        observableMeasurement ->
+            observableMeasurement.setActiveReader(reader, startEpochNanos, epochNanos));
     try {
       callback.run();
     } catch (Throwable e) {
@@ -87,7 +88,7 @@ public final class CallbackRegistration {
           Level.WARNING, "An exception occurred invoking callback for " + this + ".", e);
     } finally {
       observableMeasurements.forEach(
-          observableMeasurement -> observableMeasurement.setActiveReader(null));
+          observableMeasurement -> observableMeasurement.unsetActiveReader());
     }
   }
 }

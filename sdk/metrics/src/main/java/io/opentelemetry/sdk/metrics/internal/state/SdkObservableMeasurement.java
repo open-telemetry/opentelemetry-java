@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -32,7 +35,12 @@ public final class SdkObservableMeasurement
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
   private final List<AsynchronousMetricStorage<?, ?>> storages;
+
+  // These fields are set before invoking callbacks. They allow measurements to be recorded to the
+  // storages for correct reader, and with the correct time.
   @Nullable private volatile RegisteredReader activeReader;
+  private volatile long startEpochNanos;
+  private volatile long epochNanos;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
@@ -63,8 +71,22 @@ public final class SdkObservableMeasurement
     return instrumentationScopeInfo;
   }
 
-  public void setActiveReader(@Nullable RegisteredReader registeredReader) {
+  /**
+   * Set the active reader, and clock information. {@link #unsetActiveReader()} MUST be called
+   * after.
+   */
+  public void setActiveReader(
+      RegisteredReader registeredReader, long startEpochNanos, long epochNanos) {
     this.activeReader = registeredReader;
+    this.startEpochNanos = startEpochNanos;
+    this.epochNanos = epochNanos;
+  }
+
+  /**
+   * Unset the active reader. Called after {@link #setActiveReader(RegisteredReader, long, long)}.
+   */
+  public void unsetActiveReader() {
+    this.activeReader = null;
   }
 
   InstrumentDescriptor getInstrumentDescriptor() {
@@ -82,20 +104,7 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
-    RegisteredReader activeReader = this.activeReader;
-    if (activeReader == null) {
-      throttlingLogger.log(
-          Level.FINE,
-          "Measurement recorded for instrument "
-              + instrumentDescriptor.getName()
-              + " outside callback registered to instrument. Dropping measurement.");
-      return;
-    }
-    for (AsynchronousMetricStorage<?, ?> storage : storages) {
-      if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.recordLong(value, attributes);
-      }
-    }
+    doRecord(longMeasurement(startEpochNanos, epochNanos, value, attributes));
   }
 
   @Override
@@ -105,6 +114,10 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
+    doRecord(doubleMeasurement(startEpochNanos, epochNanos, value, attributes));
+  }
+
+  private void doRecord(Measurement measurement) {
     RegisteredReader activeReader = this.activeReader;
     if (activeReader == null) {
       throttlingLogger.log(
@@ -116,7 +129,7 @@ public final class SdkObservableMeasurement
     }
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.recordDouble(value, attributes);
+        storage.record(measurement);
       }
     }
   }

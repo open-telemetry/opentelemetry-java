@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -38,53 +39,53 @@ class LongLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(
             aggregatorHandle
-                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12L);
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(14);
     assertThat(
             aggregatorHandle
-                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(14L);
   }
 
   @Test
-  void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+  void aggregateThenMaybeReset() {
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    assertThat(
+            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordLong(13);
     assertThat(
             aggregatorHandle
-                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(13L);
-    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+    assertThat(
+            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
         .isNull();
 
     aggregatorHandle.recordLong(12);
     assertThat(
             aggregatorHandle
-                .accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12L);
-    assertThat(aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true))
+    assertThat(
+            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
         .isNull();
   }
 
   @Test
   void toMetricData() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -92,13 +93,10 @@ class LongLastValueAggregatorTest {
             RESOURCE,
             INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
-            Collections.singletonMap(
-                Attributes.empty(),
-                aggregatorHandle.accumulateThenMaybeReset(Attributes.empty(), /* reset= */ true)),
-            AggregationTemporality.CUMULATIVE,
-            2,
-            10,
-            100);
+            Collections.singletonList(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    2, 100, Attributes.empty(), /* reset= */ true)),
+            AggregationTemporality.CUMULATIVE);
     assertThat(metricData)
         .isEqualTo(
             ImmutableMetricData.createLongGauge(
