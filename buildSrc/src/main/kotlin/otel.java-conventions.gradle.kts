@@ -11,6 +11,7 @@ plugins {
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
+  id("org.owasp.dependencycheck")
 }
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
@@ -37,6 +38,12 @@ checkstyle {
   toolVersion = "8.12"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
+}
+
+dependencyCheck {
+  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor", "animalsniffer")
+  failBuildOnCVSS = 7.0f // fail on high or critical CVE
+  analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
