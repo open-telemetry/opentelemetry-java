@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.reflect.Field;
@@ -29,6 +30,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
   }
 
   @Test

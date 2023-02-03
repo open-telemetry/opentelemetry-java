@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.events.GlobalEventEmitterProvider;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
@@ -35,6 +36,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -142,6 +144,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
     GlobalLoggerProvider.resetForTest();
+    GlobalEventEmitterProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
@@ -356,6 +359,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
     assertThat(GlobalLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventEmitterProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -364,6 +368,10 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
     assertThat(GlobalLoggerProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventEmitterProvider.get())
+        .isInstanceOf(SdkEventEmitterProvider.class)
+        .extracting("delegateLoggerProvider")
+        .isSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

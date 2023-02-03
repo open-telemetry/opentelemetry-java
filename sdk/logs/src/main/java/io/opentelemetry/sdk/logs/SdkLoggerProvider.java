@@ -54,25 +54,12 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
   }
 
-  /**
-   * Gets or creates a named logger instance.
-   *
-   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
-   *     the instrumentation library, package, or fully qualified class name. Must not be null.
-   * @return a logger instance
-   */
   @Override
   public Logger get(String instrumentationScopeName) {
     return loggerComponentRegistry.get(
         instrumentationNameOrDefault(instrumentationScopeName), null, null, Attributes.empty());
   }
 
-  /**
-   * Creates a {@link LoggerBuilder} instance.
-   *
-   * @param instrumentationScopeName the name of the instrumentation scope
-   * @return a logger builder instance
-   */
   @Override
   public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
     if (isNoopLogRecordProcessor) {

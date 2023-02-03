@@ -18,6 +18,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -55,9 +56,10 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -505,10 +507,18 @@ abstract class OtlpExporterIntegrationTest {
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
             .setResource(RESOURCE)
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
+            .addLogRecordProcessor(
+                BatchLogRecordProcessor.builder(logRecordExporter)
+                    .setExporterTimeout(Duration.ofSeconds(1000))
+                    .build())
             .build();
 
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
+    EventEmitter eventEmitter =
+        SdkEventEmitterProvider.create(loggerProvider)
+            .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName())
+            .setEventDomain("event-domain")
+            .build();
 
     SpanContext spanContext =
         SpanContext.create(
@@ -527,6 +537,7 @@ abstract class OtlpExporterIntegrationTest {
           .setEpoch(Instant.now())
           .setContext(Context.current())
           .emit();
+      eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());
     }
 
     // Closing triggers flush of processor
@@ -550,27 +561,54 @@ abstract class OtlpExporterIntegrationTest {
 
     ScopeLogs ilLogs = resourceLogs.getScopeLogs(0);
     assertThat(ilLogs.getScope().getName()).isEqualTo(OtlpExporterIntegrationTest.class.getName());
-    assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
+    assertThat(ilLogs.getLogRecordsCount()).isEqualTo(2);
 
-    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogRecords(0);
-    assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
-    assertThat(protoLog.getAttributesList())
+    // LogRecord via Logger.logRecordBuilder()...emit()
+    io.opentelemetry.proto.logs.v1.LogRecord protoLog1 = ilLogs.getLogRecords(0);
+    assertThat(protoLog1.getBody().getStringValue()).isEqualTo("log body");
+    assertThat(protoLog1.getAttributesList())
         .isEqualTo(
             Collections.singletonList(
                 KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
-    assertThat(protoLog.getSeverityNumber().getNumber())
+    assertThat(protoLog1.getSeverityNumber().getNumber())
         .isEqualTo(Severity.DEBUG.getSeverityNumber());
-    assertThat(protoLog.getSeverityText()).isEqualTo("DEBUG");
-    assertThat(TraceId.fromBytes(protoLog.getTraceId().toByteArray()))
+    assertThat(protoLog1.getSeverityText()).isEqualTo("DEBUG");
+    assertThat(TraceId.fromBytes(protoLog1.getTraceId().toByteArray()))
         .isEqualTo(spanContext.getTraceId());
-    assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
+    assertThat(SpanId.fromBytes(protoLog1.getSpanId().toByteArray()))
         .isEqualTo(spanContext.getSpanId());
-    assertThat(TraceFlags.fromByte((byte) protoLog.getFlags()))
+    assertThat(TraceFlags.fromByte((byte) protoLog1.getFlags()))
         .isEqualTo(spanContext.getTraceFlags());
-    assertThat(protoLog.getTimeUnixNano()).isGreaterThan(0);
+    assertThat(protoLog1.getTimeUnixNano()).isGreaterThan(0);
+
+    // LogRecord via EventEmitter.emit(String, Attributes)
+    io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);
+    assertThat(protoLog2.getBody().getStringValue()).isEmpty();
+    assertThat(protoLog2.getAttributesList())
+        .containsExactlyInAnyOrder(
+            KeyValue.newBuilder()
+                .setKey("event.domain")
+                .setValue(AnyValue.newBuilder().setStringValue("event-domain").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("event.name")
+                .setValue(AnyValue.newBuilder().setStringValue("event-name").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                .build());
+    assertThat(protoLog2.getSeverityText()).isEmpty();
+    assertThat(TraceId.fromBytes(protoLog2.getTraceId().toByteArray()))
+        .isEqualTo(spanContext.getTraceId());
+    assertThat(SpanId.fromBytes(protoLog2.getSpanId().toByteArray()))
+        .isEqualTo(spanContext.getSpanId());
+    assertThat(TraceFlags.fromByte((byte) protoLog2.getFlags()))
+        .isEqualTo(spanContext.getTraceFlags());
+    assertThat(protoLog2.getTimeUnixNano()).isGreaterThan(0);
   }
 
   private static class OtlpGrpcServer extends ServerExtension {

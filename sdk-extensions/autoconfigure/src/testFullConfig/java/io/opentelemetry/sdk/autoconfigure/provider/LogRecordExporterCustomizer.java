@@ -26,8 +26,9 @@ public class LogRecordExporterCustomizer implements AutoConfigurationCustomizerP
                     logs.stream()
                         .filter(
                             log ->
-                                log.getSeverity().getSeverityNumber()
-                                    >= Severity.INFO.getSeverityNumber())
+                                log.getSeverity() == Severity.UNDEFINED_SEVERITY_NUMBER
+                                    || log.getSeverity().getSeverityNumber()
+                                        >= Severity.INFO.getSeverityNumber())
                         .collect(Collectors.toList());
                 return delegate.export(filtered);
               }
