@@ -89,7 +89,6 @@ class SdkLongUpDownCounterTest {
     long startTime = testClock.now();
     LongUpDownCounter longUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
-    // Do some records using bounds and direct calls and bindings.
     longUpDownCounter.add(12, Attributes.empty());
     longUpDownCounter.add(123, Attributes.builder().put("K", "V").build());
     longUpDownCounter.add(21, Attributes.empty());

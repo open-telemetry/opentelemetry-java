@@ -96,7 +96,6 @@ class SdkDoubleUpDownCounterTest {
     long startTime = testClock.now();
     DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
-    // Do some records using bounds and direct calls and bindings.
     doubleUpDownCounter.add(12.1d, Attributes.empty());
     doubleUpDownCounter.add(123.3d, Attributes.builder().put("K", "V").build());
     doubleUpDownCounter.add(21.4d, Attributes.empty());

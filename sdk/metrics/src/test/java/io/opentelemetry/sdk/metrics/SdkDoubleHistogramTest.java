@@ -103,7 +103,6 @@ class SdkDoubleHistogramTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testHistogram").build();
-    // Do some records using bounds and direct calls and bindings.
     doubleHistogram.record(9.1d, Attributes.empty());
     doubleHistogram.record(123.3d, Attributes.builder().put("K", "V").build());
     doubleHistogram.record(13.1d, Attributes.empty());

@@ -90,7 +90,6 @@ class SdkLongCounterTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-    // Do some records using bounds and direct calls and bindings.
     longCounter.add(12, Attributes.empty());
     longCounter.add(123, Attributes.builder().put("K", "V").build());
     longCounter.add(21, Attributes.empty());

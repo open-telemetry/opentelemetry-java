@@ -104,7 +104,6 @@ class SdkLongHistogramTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
-    // Do some records using bounds and direct calls and bindings.
     longHistogram.record(9, Attributes.empty());
     longHistogram.record(123, Attributes.builder().put("K", "V").build());
     longHistogram.record(14, Attributes.empty());

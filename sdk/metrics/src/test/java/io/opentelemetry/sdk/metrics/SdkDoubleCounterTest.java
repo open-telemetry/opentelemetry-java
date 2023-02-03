@@ -95,7 +95,6 @@ class SdkDoubleCounterTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    // Do some records using bounds and direct calls and bindings.
     doubleCounter.add(12.1d, Attributes.empty());
     doubleCounter.add(123.3d, Attributes.builder().put("K", "V").build());
     doubleCounter.add(21.4d, Attributes.empty());
