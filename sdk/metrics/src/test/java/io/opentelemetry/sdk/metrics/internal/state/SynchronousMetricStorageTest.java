@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -61,26 +60,15 @@ public class SynchronousMetricStorageTest {
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   @Test
-  void attributesProcessor_used() {
-    AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
+  void attributesProcessor_applied() {
+    Attributes attributes = Attributes.builder().put("K", "V").build();
+    AttributesProcessor attributesProcessor =
+        AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
+    AttributesProcessor spyAttributesProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
-    storage.bind(Attributes.empty());
-    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
-  }
-
-  @Test
-  void attributesProcessor_applied() {
-    Attributes labels = Attributes.builder().put("K", "V").build();
-    AttributesProcessor attributesProcessor =
-        AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
-    AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
-    SynchronousMetricStorage storage =
-        new DefaultSynchronousMetricStorage<>(
-            cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
-    BoundStorageHandle handle = storage.bind(labels);
-    handle.recordDouble(1, labels, Context.root());
+    storage.recordDouble(1, attributes, Context.root());
     MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
         .hasDoubleSumSatisfying(
@@ -89,34 +77,6 @@ public class SynchronousMetricStorageTest {
                     point ->
                         point.hasAttributes(
                             attributeEntry("K", "V"), attributeEntry("modifiedK", "modifiedV"))));
-  }
-
-  @Test
-  void sameAggregator_ForSameAttributes() {
-    SynchronousMetricStorage storage =
-        new DefaultSynchronousMetricStorage<>(
-            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
-    BoundStorageHandle handle = storage.bind(Attributes.builder().put("K", "V").build());
-    BoundStorageHandle duplicateHandle = storage.bind(Attributes.builder().put("K", "V").build());
-    try {
-      assertThat(duplicateHandle).isSameAs(handle);
-      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
-      BoundStorageHandle anotherDuplicateAggregatorHandle =
-          storage.bind(Attributes.builder().put("K", "V").build());
-      try {
-        assertThat(anotherDuplicateAggregatorHandle).isSameAs(handle);
-      } finally {
-        anotherDuplicateAggregatorHandle.release();
-      }
-    } finally {
-      duplicateHandle.release();
-      handle.release();
-    }
-
-    // If we try to collect once all bound references are gone AND no recordings have occurred, we
-    // should not see any labels (or metric).
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now()))
-        .isEqualTo(EmptyMetricData.getInstance());
   }
 
   @Test

@@ -13,8 +13,6 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongUpDownCounter;
-import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -42,35 +40,6 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
-  }
-
-  BoundLongUpDownCounter bind(Attributes attributes) {
-    return new BoundInstrument(storage.bind(attributes), attributes);
-  }
-
-  static final class BoundInstrument implements BoundLongUpDownCounter {
-    private final BoundStorageHandle handle;
-    private final Attributes attributes;
-
-    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
-      this.handle = handle;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void add(long increment, Context context) {
-      handle.recordLong(increment, attributes, context);
-    }
-
-    @Override
-    public void add(long increment) {
-      add(increment, Context.current());
-    }
-
-    @Override
-    public void unbind() {
-      handle.release();
-    }
   }
 
   static final class SdkLongUpDownCounterBuilder

@@ -13,8 +13,6 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
-import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -54,47 +52,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   @Override
   public void add(double increment) {
     add(increment, Attributes.empty());
-  }
-
-  BoundDoubleCounter bind(Attributes attributes) {
-    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
-  }
-
-  static final class BoundInstrument implements BoundDoubleCounter {
-    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-    private final InstrumentDescriptor descriptor;
-    private final BoundStorageHandle handle;
-    private final Attributes attributes;
-
-    BoundInstrument(
-        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
-      this.descriptor = descriptor;
-      this.handle = handle;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void add(double increment, Context context) {
-      if (increment < 0) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Counters can only increase. Instrument "
-                + descriptor.getName()
-                + " has recorded a negative value.");
-        return;
-      }
-      handle.recordDouble(increment, attributes, context);
-    }
-
-    @Override
-    public void add(double increment) {
-      add(increment, Context.current());
-    }
-
-    @Override
-    public void unbind() {
-      handle.release();
-    }
   }
 
   static final class SdkDoubleCounterBuilder

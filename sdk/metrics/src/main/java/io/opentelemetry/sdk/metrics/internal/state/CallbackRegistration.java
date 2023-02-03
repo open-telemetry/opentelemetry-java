@@ -53,8 +53,8 @@ public final class CallbackRegistration {
    *
    * <p>The {@code observableMeasurements} define the set of measurements the {@code runnable} may
    * record to. The active reader of each {@code observableMeasurements} is set via {@link
-   * SdkObservableMeasurement#setActiveReader(RegisteredReader)} before {@code runnable} is called,
-   * and set to {@code null} afterwards.
+   * SdkObservableMeasurement#setActiveReader(RegisteredReader, long, long)} before {@code runnable}
+   * is called, and set to {@code null} afterwards.
    *
    * @param observableMeasurements the measurements that the runnable may record to
    * @param runnable the callback
@@ -87,8 +87,7 @@ public final class CallbackRegistration {
       throttlingLogger.log(
           Level.WARNING, "An exception occurred invoking callback for " + this + ".", e);
     } finally {
-      observableMeasurements.forEach(
-          observableMeasurement -> observableMeasurement.unsetActiveReader());
+      observableMeasurements.forEach(SdkObservableMeasurement::unsetActiveReader);
     }
   }
 }

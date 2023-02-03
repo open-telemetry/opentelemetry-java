@@ -96,9 +96,6 @@ class DoubleSumAggregatorTest {
   void aggregateThenMaybeReset() {
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
@@ -107,9 +104,6 @@ class DoubleSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(25);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-25);
@@ -118,9 +112,6 @@ class DoubleSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(-13);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

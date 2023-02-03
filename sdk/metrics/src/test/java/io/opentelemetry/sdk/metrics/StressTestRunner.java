@@ -98,13 +98,10 @@ abstract class StressTestRunner {
     }
   }
 
-  abstract static class OperationUpdater {
+  interface OperationUpdater {
 
     /** Called every operation. */
-    abstract void update();
-
-    /** Called after all operations are completed. */
-    abstract void cleanup();
+    void update();
   }
 
   StressTestRunner() {}

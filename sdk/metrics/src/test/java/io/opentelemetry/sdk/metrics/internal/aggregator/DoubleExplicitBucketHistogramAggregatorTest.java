@@ -121,9 +121,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   void aggregateThenMaybeReset() {
     AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(100);
     assertThat(
@@ -138,9 +135,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 100d,
                 boundariesList,
                 Arrays.asList(0L, 1L, 0L, 0L)));
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(
@@ -155,9 +149,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 0d,
                 boundariesList,
                 Arrays.asList(1L, 0L, 0L, 0L)));
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

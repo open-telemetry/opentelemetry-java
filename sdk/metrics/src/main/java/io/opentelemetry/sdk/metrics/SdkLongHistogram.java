@@ -11,8 +11,6 @@ import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongHistogram;
-import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -51,47 +49,6 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
   @Override
   public void record(long value) {
     record(value, Attributes.empty());
-  }
-
-  BoundLongHistogram bind(Attributes attributes) {
-    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
-  }
-
-  static final class BoundInstrument implements BoundLongHistogram {
-    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-    private final InstrumentDescriptor descriptor;
-    private final BoundStorageHandle handle;
-    private final Attributes attributes;
-
-    BoundInstrument(
-        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
-      this.descriptor = descriptor;
-      this.handle = handle;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void record(long value, Context context) {
-      if (value < 0) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Histograms can only record non-negative values. Instrument "
-                + descriptor.getName()
-                + " has recorded a negative value.");
-        return;
-      }
-      handle.recordLong(value, attributes, context);
-    }
-
-    @Override
-    public void record(long value) {
-      record(value, Context.current());
-    }
-
-    @Override
-    public void unbind() {
-      handle.release();
-    }
   }
 
   static final class SdkLongHistogramBuilder

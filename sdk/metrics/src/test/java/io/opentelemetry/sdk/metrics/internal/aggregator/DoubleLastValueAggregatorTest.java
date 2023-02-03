@@ -63,9 +63,6 @@ class DoubleLastValueAggregatorTest {
   void aggregateThenMaybeReset() {
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordDouble(13.1);
     assertThat(
@@ -73,9 +70,6 @@ class DoubleLastValueAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(13.1);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordDouble(12.1);
     assertThat(
@@ -83,9 +77,6 @@ class DoubleLastValueAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12.1);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

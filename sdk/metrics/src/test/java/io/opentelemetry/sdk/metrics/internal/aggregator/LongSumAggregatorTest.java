@@ -71,9 +71,6 @@ class LongSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12 * 5);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test
@@ -90,17 +87,11 @@ class LongSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(14);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test
   void aggregateThenMaybeReset() {
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(12);
@@ -109,9 +100,6 @@ class LongSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(25);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-25);
@@ -120,9 +108,6 @@ class LongSumAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(-13);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

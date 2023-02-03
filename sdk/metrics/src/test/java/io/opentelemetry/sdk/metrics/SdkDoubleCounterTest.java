@@ -16,12 +16,11 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleCounter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -53,25 +52,9 @@ class SdkDoubleCounterTest {
   }
 
   @Test
-  void bound_PreventNullAttributes() {
-    assertThatThrownBy(
-            () ->
-                ((SdkDoubleCounter) sdkMeter.counterBuilder("testCounter").ofDoubles().build())
-                    .bind(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
-  }
-
-  @Test
   void collectMetrics_NoRecords() {
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound =
-        ((SdkDoubleCounter) doubleCounter).bind(Attributes.builder().put("foo", "bar").build());
-    try {
-      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
-    } finally {
-      bound.unbind();
-    }
+    sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
@@ -112,72 +95,65 @@ class SdkDoubleCounterTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound =
-        ((SdkDoubleCounter) doubleCounter).bind(Attributes.builder().put("K", "V").build());
-    try {
-      // Do some records using bounds and direct calls and bindings.
-      doubleCounter.add(12.1d, Attributes.empty());
-      bound.add(123.3d);
-      doubleCounter.add(21.4d, Attributes.empty());
-      // Advancing time here should not matter.
-      testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(321.5d);
-      doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
-      assertThat(sdkMeterReader.collectAllMetrics())
-          .satisfiesExactly(
-              metric ->
-                  assertThat(metric)
-                      .hasResource(RESOURCE)
-                      .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                      .hasName("testCounter")
-                      .hasDescription("")
-                      .hasUnit("")
-                      .hasDoubleSumSatisfying(
-                          sum ->
-                              sum.isMonotonic()
-                                  .isCumulative()
-                                  .hasPointsSatisfying(
-                                      point ->
-                                          point
-                                              .hasStartEpochNanos(startTime)
-                                              .hasEpochNanos(testClock.now())
-                                              .hasAttributes(Attributes.empty())
-                                              .hasValue(33.5),
-                                      point ->
-                                          point
-                                              .hasStartEpochNanos(startTime)
-                                              .hasEpochNanos(testClock.now())
-                                              .hasValue(555.9)
-                                              .hasAttributes(attributeEntry("K", "V")))));
+    doubleCounter.add(12.1d, Attributes.empty());
+    doubleCounter.add(123.3d, Attributes.builder().put("K", "V").build());
+    doubleCounter.add(21.4d, Attributes.empty());
+    // Advancing time here should not matter.
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    doubleCounter.add(321.5d, Attributes.builder().put("K", "V").build());
+    doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("testCounter")
+                    .hasDescription("")
+                    .hasUnit("")
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(33.5),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(555.9)
+                                            .hasAttributes(attributeEntry("K", "V")))));
 
-      // Repeat to prove we keep previous values.
-      testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(222d);
-      doubleCounter.add(11d, Attributes.empty());
-      assertThat(sdkMeterReader.collectAllMetrics())
-          .satisfiesExactly(
-              metric ->
-                  assertThat(metric)
-                      .hasDoubleSumSatisfying(
-                          sum ->
-                              sum.isMonotonic()
-                                  .isCumulative()
-                                  .hasPointsSatisfying(
-                                      point ->
-                                          point
-                                              .hasStartEpochNanos(startTime)
-                                              .hasEpochNanos(testClock.now())
-                                              .hasAttributes(Attributes.empty())
-                                              .hasValue(44.5),
-                                      point ->
-                                          point
-                                              .hasStartEpochNanos(startTime)
-                                              .hasEpochNanos(testClock.now())
-                                              .hasValue(777.9)
-                                              .hasAttributes(attributeEntry("K", "V")))));
-    } finally {
-      bound.unbind();
-    }
+    // Repeat to prove we keep previous values.
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    doubleCounter.add(222d, Attributes.builder().put("K", "V").build());
+    doubleCounter.add(11d, Attributes.empty());
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.isMonotonic()
+                                .isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasAttributes(Attributes.empty())
+                                            .hasValue(44.5),
+                                    point ->
+                                        point
+                                            .hasStartEpochNanos(startTime)
+                                            .hasEpochNanos(testClock.now())
+                                            .hasValue(777.9)
+                                            .hasAttributes(attributeEntry("K", "V")))));
   }
 
   @Test
@@ -188,21 +164,6 @@ class SdkDoubleCounterTest {
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     logs.assertContains(
         "Counters can only increase. Instrument testCounter has recorded a negative value.");
-  }
-
-  @Test
-  @SuppressLogger(SdkDoubleCounter.class)
-  void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound = ((SdkDoubleCounter) doubleCounter).bind(Attributes.empty());
-    try {
-      bound.add(-9.3);
-      assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
-      logs.assertContains(
-          "Counters can only increase. Instrument testCounter has recorded a negative value.");
-    } finally {
-      bound.unbind();
-    }
   }
 
   @Test
@@ -217,14 +178,7 @@ class SdkDoubleCounterTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(doubleCounter, "K", "V")));
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new OperationUpdaterWithBinding(
-                  ((SdkDoubleCounter) doubleCounter)
-                      .bind(Attributes.builder().put("K", "V").build()))));
+              1_000, 1, () -> doubleCounter.add(10, Attributes.builder().put("K", "V").build())));
     }
 
     stressTestBuilder.build().run();
@@ -244,7 +198,7 @@ class SdkDoubleCounterTest {
                                         point
                                             .hasStartEpochNanos(testClock.now())
                                             .hasEpochNanos(testClock.now())
-                                            .hasValue(80_000)
+                                            .hasValue(40000)
                                             .hasAttributes(attributeEntry("K", "V")))));
   }
 
@@ -259,19 +213,16 @@ class SdkDoubleCounterTest {
             .setInstrument((SdkDoubleCounter) doubleCounter)
             .setCollectionIntervalMs(100);
 
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(doubleCounter, keys[i], values[i])));
-
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterWithBinding(
-                  ((SdkDoubleCounter) doubleCounter)
-                      .bind(Attributes.builder().put(keys[i], values[i]).build()))));
-    }
+    IntStream.range(0, 4)
+        .forEach(
+            i ->
+                stressTestBuilder.addOperation(
+                    StressTestRunner.Operation.create(
+                        2_000,
+                        1,
+                        () ->
+                            doubleCounter.add(
+                                10, Attributes.builder().put(keys[i], values[i]).build()))));
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterReader.collectAllMetrics())
@@ -289,64 +240,25 @@ class SdkDoubleCounterTest {
                                         point
                                             .hasStartEpochNanos(testClock.now())
                                             .hasEpochNanos(testClock.now())
-                                            .hasValue(40_000)
+                                            .hasValue(20_000)
                                             .hasAttributes(attributeEntry(keys[0], values[0])),
                                     point ->
                                         point
                                             .hasStartEpochNanos(testClock.now())
                                             .hasEpochNanos(testClock.now())
-                                            .hasValue(40_000)
+                                            .hasValue(20_000)
                                             .hasAttributes(attributeEntry(keys[1], values[1])),
                                     point ->
                                         point
                                             .hasStartEpochNanos(testClock.now())
                                             .hasEpochNanos(testClock.now())
-                                            .hasValue(40_000)
+                                            .hasValue(20_000)
                                             .hasAttributes(attributeEntry(keys[2], values[2])),
                                     point ->
                                         point
                                             .hasStartEpochNanos(testClock.now())
                                             .hasEpochNanos(testClock.now())
-                                            .hasValue(40_000)
+                                            .hasValue(20_000)
                                             .hasAttributes(attributeEntry(keys[3], values[3])))));
-  }
-
-  private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundDoubleCounter boundDoubleCounter;
-
-    private OperationUpdaterWithBinding(BoundDoubleCounter boundDoubleCounter) {
-      this.boundDoubleCounter = boundDoubleCounter;
-    }
-
-    @Override
-    void update() {
-      boundDoubleCounter.add(9.0);
-    }
-
-    @Override
-    void cleanup() {
-      boundDoubleCounter.unbind();
-    }
-  }
-
-  private static class OperationUpdaterDirectCall extends OperationUpdater {
-
-    private final DoubleCounter doubleCounter;
-    private final String key;
-    private final String value;
-
-    private OperationUpdaterDirectCall(DoubleCounter doubleCounter, String key, String value) {
-      this.doubleCounter = doubleCounter;
-      this.key = key;
-      this.value = value;
-    }
-
-    @Override
-    void update() {
-      doubleCounter.add(11.0, Attributes.builder().put(key, value).build());
-    }
-
-    @Override
-    void cleanup() {}
   }
 }
