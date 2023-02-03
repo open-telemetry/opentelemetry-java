@@ -221,7 +221,7 @@ class MetricAssertionsTest {
           ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
               // Points
-              Arrays.asList(HISTOGRAM_POINT_DATA)));
+              Collections.singletonList(HISTOGRAM_POINT_DATA)));
 
   private static final MetricData HISTOGRAM_METRIC_DELTA =
       ImmutableMetricData.createDoubleHistogram(
@@ -233,7 +233,7 @@ class MetricAssertionsTest {
           ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               // Points
-              Arrays.asList(HISTOGRAM_POINT_DATA)));
+              Collections.singletonList(HISTOGRAM_POINT_DATA)));
 
   private static final ExponentialHistogramPointData EXPONENTIAL_HISTOGRAM_POINT_DATA =
       ImmutableExponentialHistogramPointData.create(
@@ -291,9 +291,10 @@ class MetricAssertionsTest {
           /* unit= */ "1",
           ImmutableSummaryData.create(
               // Points
-              Arrays.asList(SUMMARY_POINT_DATA)));
+              Collections.singletonList(SUMMARY_POINT_DATA)));
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleGauge() {
     assertThat(DOUBLE_GAUGE_METRIC)
         .hasResource(RESOURCE)
@@ -421,6 +422,7 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleGaugeFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
@@ -784,6 +786,7 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleSumFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_SUM_METRIC).hasLongSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);
@@ -825,6 +828,7 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void longSumFailure() {
     assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasDoubleSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);

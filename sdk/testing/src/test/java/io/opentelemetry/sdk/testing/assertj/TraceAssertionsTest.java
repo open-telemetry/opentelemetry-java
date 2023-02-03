@@ -132,6 +132,7 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void passing() {
     assertThat(SPAN1)
         .hasTraceId(TRACE_ID)
@@ -274,6 +275,7 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void failure() {
     assertThatThrownBy(() -> assertThat(SPAN1).hasTraceId("foo"))
         .isInstanceOf(AssertionError.class);
@@ -513,6 +515,7 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void optionalAttributes() {
     assertThat(SPAN1)
         .hasAttributesSatisfyingExactly(
