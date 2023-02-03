@@ -9,28 +9,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for {@link MetricStorageRegistry}. */
-@ExtendWith(MockitoExtension.class)
 @SuppressLogger(MetricStorageRegistry.class)
 class MetricStorageRegistryTest {
   private static final MetricDescriptor SYNC_DESCRIPTOR =
@@ -47,56 +40,40 @@ class MetricStorageRegistryTest {
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
-  @Mock private MetricReader reader;
-  private RegisteredReader registeredReader;
-
-  @BeforeEach
-  void setup() {
-    registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
-  }
-
   @Test
   void register_Sync() {
-    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR, registeredReader);
+    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
-    assertThat(
-            metricStorageRegistry.register(
-                new TestMetricStorage(SYNC_DESCRIPTOR, registeredReader)))
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(SYNC_DESCRIPTOR)))
         .isSameAs(storage);
   }
 
   @Test
   void register_SyncIncompatibleDescriptor() {
-    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR, registeredReader);
+    TestMetricStorage storage = new TestMetricStorage(SYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
     assertThat(logs.getEvents()).isEmpty();
-    assertThat(
-            metricStorageRegistry.register(
-                new TestMetricStorage(OTHER_SYNC_DESCRIPTOR, registeredReader)))
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(OTHER_SYNC_DESCRIPTOR)))
         .isNotSameAs(storage);
     logs.assertContains("Found duplicate metric definition");
   }
 
   @Test
   void register_Async() {
-    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR, registeredReader);
+    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
-    assertThat(
-            metricStorageRegistry.register(
-                new TestMetricStorage(ASYNC_DESCRIPTOR, registeredReader)))
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(ASYNC_DESCRIPTOR)))
         .isSameAs(storage);
   }
 
   @Test
   void register_AsyncIncompatibleDescriptor() {
-    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR, registeredReader);
+    TestMetricStorage storage = new TestMetricStorage(ASYNC_DESCRIPTOR);
     assertThat(metricStorageRegistry.register(storage)).isSameAs(storage);
     assertThat(logs.getEvents()).isEmpty();
-    assertThat(
-            metricStorageRegistry.register(
-                new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR, registeredReader)))
+    assertThat(metricStorageRegistry.register(new TestMetricStorage(OTHER_ASYNC_DESCRIPTOR)))
         .isNotSameAs(storage);
     logs.assertContains("Found duplicate metric definition");
   }
@@ -112,21 +89,14 @@ class MetricStorageRegistryTest {
 
   private static final class TestMetricStorage implements MetricStorage, WriteableMetricStorage {
     private final MetricDescriptor descriptor;
-    private final RegisteredReader registeredReader;
 
-    TestMetricStorage(MetricDescriptor descriptor, RegisteredReader registeredReader) {
+    TestMetricStorage(MetricDescriptor descriptor) {
       this.descriptor = descriptor;
-      this.registeredReader = registeredReader;
     }
 
     @Override
     public MetricDescriptor getMetricDescriptor() {
       return descriptor;
-    }
-
-    @Override
-    public RegisteredReader getRegisteredReader() {
-      return registeredReader;
     }
 
     @Override
@@ -139,8 +109,9 @@ class MetricStorageRegistryTest {
     }
 
     @Override
-    public BoundStorageHandle bind(Attributes attributes) {
-      return null;
-    }
+    public void recordLong(long value, Attributes attributes, Context context) {}
+
+    @Override
+    public void recordDouble(double value, Attributes attributes, Context context) {}
   }
 }

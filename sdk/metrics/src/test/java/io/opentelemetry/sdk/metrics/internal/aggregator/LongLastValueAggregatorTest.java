@@ -58,9 +58,6 @@ class LongLastValueAggregatorTest {
   @Test
   void aggregateThenMaybeReset() {
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(13);
     assertThat(
@@ -68,9 +65,6 @@ class LongLastValueAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(13L);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordLong(12);
     assertThat(
@@ -78,9 +72,6 @@ class LongLastValueAggregatorTest {
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12L);
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

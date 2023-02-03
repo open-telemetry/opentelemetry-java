@@ -138,7 +138,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     return metricDescriptor;
   }
 
-  @Override
+  /** Returns the registered reader this storage is associated with. */
   public RegisteredReader getRegisteredReader() {
     return registeredReader;
   }

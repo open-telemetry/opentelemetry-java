@@ -37,61 +37,6 @@ class AggregatorHandleTest {
   @Mock ExemplarReservoir<LongExemplarData> longReservoir;
 
   @Test
-  void acquireMapped() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    testAggregator.release();
-  }
-
-  @Test
-  void tryUnmap_AcquiredHandler() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    // The aggregator is by default acquired, so need an extra release.
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-  }
-
-  @Test
-  void tryUnmap_AcquiredHandler_MultipleTimes() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    // The aggregator is by default acquired, so need an extra release.
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-  }
-
-  @Test
-  void bind_ThenUnmap_ThenTryToBind() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-    assertThat(testAggregator.acquire()).isFalse();
-    testAggregator.release();
-  }
-
-  @Test
   void testRecordings() {
     TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
 

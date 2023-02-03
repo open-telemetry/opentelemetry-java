@@ -225,9 +225,6 @@ class DoubleExponentialHistogramAggregatorTest {
   void aggregateThenMaybeReset() {
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
 
     aggregatorHandle.recordDouble(5.0);
     assertThat(
@@ -237,9 +234,6 @@ class DoubleExponentialHistogramAggregatorTest {
                 .getPositiveBuckets()
                 .getBucketCounts())
         .isEqualTo(Collections.singletonList(1L));
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
-        .isNull();
   }
 
   @Test

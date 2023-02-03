@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
@@ -25,9 +24,6 @@ public interface MetricStorage {
 
   /** Returns a description of the metric produced in this storage. */
   MetricDescriptor getMetricDescriptor();
-
-  /** Returns the registered reader this storage is associated with. */
-  RegisteredReader getRegisteredReader();
 
   /**
    * Collects the metrics from this storage. If storing {@link AggregationTemporality#DELTA}

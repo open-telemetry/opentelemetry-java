@@ -14,8 +14,6 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundLongCounter;
-import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -56,47 +54,6 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
-  }
-
-  BoundLongCounter bind(Attributes attributes) {
-    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
-  }
-
-  static final class BoundInstrument implements BoundLongCounter {
-    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-    private final InstrumentDescriptor descriptor;
-    private final BoundStorageHandle handle;
-    private final Attributes attributes;
-
-    BoundInstrument(
-        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
-      this.descriptor = descriptor;
-      this.handle = handle;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void add(long increment, Context context) {
-      if (increment < 0) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Counters can only increase. Instrument "
-                + descriptor.getName()
-                + " has recorded a negative value.");
-        return;
-      }
-      handle.recordLong(increment, attributes, context);
-    }
-
-    @Override
-    public void add(long increment) {
-      add(increment, Context.current());
-    }
-
-    @Override
-    public void unbind() {
-      handle.release();
-    }
   }
 
   static final class SdkLongCounterBuilder extends AbstractInstrumentBuilder<SdkLongCounterBuilder>
