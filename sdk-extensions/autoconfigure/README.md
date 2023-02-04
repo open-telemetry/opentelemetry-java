@@ -230,15 +230,15 @@ you can enable / disable one or more of them by using the following configuratio
 
 | System property                       | Environment variable                  | Description                                                                                 |
 |---------------------------------------|---------------------------------------|---------------------------------------------------------------------------------------------|
-| otel.java.enabled.resource-providers  | OTEL_JAVA_ENABLED_RESOURCE_PROVIDERS  | Enables one or more `ResourceProvider` types. If unset, all resource providers are enabled. |
-| otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types                                               |
+| otel.java.enabled.resource.providers  | OTEL_JAVA_ENABLED_RESOURCE_PROVIDERS  | Enables one or more `ResourceProvider` types. If unset, all resource providers are enabled. |
+| otel.java.disabled.resource.providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types                                               |
 
 The value for these properties must be a comma separated list of fully qualified `ResourceProvider` classnames.
 For example, if you don't want to expose the name of the operating system through the resource, you
 can pass the following JVM argument:
 
 ```
--Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
+-Dotel.java.disabled.resource.providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
 ```
 
 ## Batch span processor
