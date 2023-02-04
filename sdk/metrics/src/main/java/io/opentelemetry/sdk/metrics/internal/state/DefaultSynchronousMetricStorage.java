@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
@@ -50,7 +51,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
-  private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> pool = new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
+      new ConcurrentLinkedQueue<>();
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -65,6 +67,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+  }
+
+  // Visible for testing
+  Queue<AggregatorHandle<T, U>> getAggregatorHandlePool() {
+    return aggregatorHandlePool;
   }
 
   @Override
@@ -102,7 +109,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       return null;
     }
     // Get handle from pool if available, else create a new one.
-    AggregatorHandle<T, U> newHandle = pool.poll();
+    AggregatorHandle<T, U> newHandle = aggregatorHandlePool.poll();
     if (newHandle == null) {
       newHandle = aggregator.createHandle();
     }
@@ -129,7 +136,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       if (reset) {
         aggregatorHandles.remove(entry.getKey(), entry.getValue());
         // Return the aggregator to the pool.
-        pool.offer(entry.getValue());
+        aggregatorHandlePool.offer(entry.getValue());
       }
       if (point == null) {
         continue;
@@ -137,10 +144,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       points.add(point);
     }
 
-    // Trim pool down if needed
-    int toDelete = pool.size() - MAX_CARDINALITY;
+    // Trim pool down if needed. pool.size() will only exceed MAX_CARDINALITY if new handles are
+    // created during collection.
+    int toDelete = aggregatorHandlePool.size() - MAX_CARDINALITY;
     for (int i = 0; i < toDelete; i++) {
-      pool.poll();
+      aggregatorHandlePool.poll();
     }
 
     if (points.isEmpty()) {
