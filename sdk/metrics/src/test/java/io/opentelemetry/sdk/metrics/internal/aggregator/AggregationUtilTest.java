@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import org.junit.jupiter.api.Test;
 
 class AggregationUtilTest {
@@ -23,8 +22,8 @@ class AggregationUtilTest {
     assertThat(AggregationUtil.forName("EXplicit_BUCKet_HISTOGRAM"))
         .isEqualTo(Aggregation.explicitBucketHistogram());
     assertThat(AggregationUtil.forName("drop")).isEqualTo(Aggregation.drop());
-    assertThat(AggregationUtil.forName("exponential_bucket_histogram"))
-        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+    assertThat(AggregationUtil.forName("base2_exponential_bucket_histogram"))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     assertThatThrownBy(() -> AggregationUtil.forName("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Unrecognized aggregation name foo");
@@ -39,8 +38,8 @@ class AggregationUtilTest {
     assertThat(AggregationUtil.aggregationName(Aggregation.drop())).isEqualTo("drop");
     assertThat(AggregationUtil.aggregationName(Aggregation.explicitBucketHistogram()))
         .isEqualTo("explicit_bucket_histogram");
-    assertThat(AggregationUtil.aggregationName(ExponentialHistogramAggregation.getDefault()))
-        .isEqualTo("exponential_bucket_histogram");
+    assertThat(AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram()))
+        .isEqualTo("base2_exponential_bucket_histogram");
     assertThatThrownBy(() -> AggregationUtil.aggregationName(new Aggregation() {}))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Unrecognized aggregation");

@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.view.DefaultAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DropAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.LastValueAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.SumAggregation;
 import java.util.List;
@@ -66,5 +67,27 @@ public interface Aggregation {
    */
   static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
     return ExplicitBucketHistogramAggregation.create(bucketBoundaries);
+  }
+
+  /**
+   * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM} using the
+   * default {@code maxBuckets} and {@code maxScale}.
+   */
+  static Aggregation base2ExponentialBucketHistogram() {
+    return ExponentialHistogramAggregation.getDefault();
+  }
+
+  /**
+   * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
+   *
+   * @param maxBuckets the max number of positive buckets and negative buckets (max total buckets is
+   *     2 * {@code maxBuckets} + 1 zero bucket).
+   * @param maxScale the maximum and initial scale. If measurements can't fit in a particular scale
+   *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
+   *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
+   *     performance of computing bucket index is improved when scale is {@code <= 0}.
+   */
+  static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
+    return ExponentialHistogramAggregation.create(maxBuckets, maxScale);
   }
 }

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,8 @@ public class AggregationUtil {
   private static final String AGGREGATION_LAST_VALUE = "last_value";
   private static final String AGGREGATION_DROP = "drop";
   private static final String AGGREGATION_EXPLICIT_BUCKET_HISTOGRAM = "explicit_bucket_histogram";
-  private static final String AGGREGATION_EXPONENTIAL_HISTOGRAM = "exponential_bucket_histogram";
+  private static final String AGGREGATION_BASE2_EXPONENTIAL_HISTOGRAM =
+      "base2_exponential_bucket_histogram";
 
   static {
     aggregationByName = new HashMap<>();
@@ -34,9 +34,8 @@ public class AggregationUtil {
     aggregationByName.put(AGGREGATION_DROP, Aggregation.drop());
     aggregationByName.put(
         AGGREGATION_EXPLICIT_BUCKET_HISTOGRAM, Aggregation.explicitBucketHistogram());
-    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
     aggregationByName.put(
-        AGGREGATION_EXPONENTIAL_HISTOGRAM, ExponentialHistogramAggregation.getDefault());
+        AGGREGATION_BASE2_EXPONENTIAL_HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
 
     nameByAggregation = new HashMap<>();
     nameByAggregation.put(Aggregation.defaultAggregation().getClass(), AGGREGATION_DEFAULT);
@@ -45,9 +44,9 @@ public class AggregationUtil {
     nameByAggregation.put(Aggregation.drop().getClass(), AGGREGATION_DROP);
     nameByAggregation.put(
         Aggregation.explicitBucketHistogram().getClass(), AGGREGATION_EXPLICIT_BUCKET_HISTOGRAM);
-    // TODO(jack-berg): Use Aggregation.exponentialHistogram() when available
     nameByAggregation.put(
-        ExponentialHistogramAggregation.getDefault().getClass(), AGGREGATION_EXPONENTIAL_HISTOGRAM);
+        Aggregation.base2ExponentialBucketHistogram().getClass(),
+        AGGREGATION_BASE2_EXPONENTIAL_HISTOGRAM);
   }
 
   private AggregationUtil() {}
