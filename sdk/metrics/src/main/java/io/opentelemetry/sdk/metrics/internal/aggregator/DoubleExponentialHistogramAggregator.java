@@ -11,12 +11,15 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +34,7 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class DoubleExponentialHistogramAggregator
-    implements Aggregator<ExponentialHistogramAccumulation, DoubleExemplarData> {
+    implements Aggregator<ExponentialHistogramPointData, DoubleExemplarData> {
 
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
   private final int maxBuckets;
@@ -52,101 +55,8 @@ public final class DoubleExponentialHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get(), maxBuckets, maxScale);
-  }
-
-  /**
-   * Merge the exponential histogram accumulations. Mutates the {@link
-   * ExponentialHistogramAccumulation#getPositiveBuckets()} and {@link
-   * ExponentialHistogramAccumulation#getNegativeBuckets()} of {@code previous}. Mutating buckets is
-   * acceptable because copies are already made in {@link Handle#doAccumulateThenReset(List)}.
-   */
-  @Override
-  public ExponentialHistogramAccumulation merge(
-      ExponentialHistogramAccumulation previous, ExponentialHistogramAccumulation current) {
-
-    // Create merged buckets
-    ExponentialHistogramBuckets posBuckets =
-        merge(previous.getPositiveBuckets(), current.getPositiveBuckets());
-    ExponentialHistogramBuckets negBuckets =
-        merge(previous.getNegativeBuckets(), current.getNegativeBuckets());
-
-    // resolve possible scale difference due to merge
-    int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
-    posBuckets = downscale(posBuckets, commonScale);
-    negBuckets = downscale(negBuckets, commonScale);
-    double min = -1;
-    double max = -1;
-    if (previous.hasMinMax() && current.hasMinMax()) {
-      min = Math.min(previous.getMin(), current.getMin());
-      max = Math.max(previous.getMax(), current.getMax());
-    } else if (previous.hasMinMax()) {
-      min = previous.getMin();
-      max = previous.getMax();
-    } else if (current.hasMinMax()) {
-      min = current.getMin();
-      max = current.getMax();
-    }
-    return ExponentialHistogramAccumulation.create(
-        commonScale,
-        previous.getSum() + current.getSum(),
-        previous.hasMinMax() || current.hasMinMax(),
-        min,
-        max,
-        posBuckets,
-        negBuckets,
-        previous.getZeroCount() + current.getZeroCount(),
-        current.getExemplars());
-  }
-
-  /**
-   * Merge the exponential histogram buckets. If {@code a} is empty, return {@code b}. If {@code b}
-   * is empty, return {@code a}. Else merge {@code b} into {@code a}.
-   *
-   * <p>Assumes {@code a} and {@code b} are either {@link DoubleExponentialHistogramBuckets} or
-   * {@link EmptyExponentialHistogramBuckets}.
-   */
-  private static ExponentialHistogramBuckets merge(
-      ExponentialHistogramBuckets a, ExponentialHistogramBuckets b) {
-    if (a instanceof EmptyExponentialHistogramBuckets || a.getTotalCount() == 0) {
-      return b;
-    }
-    if (b instanceof EmptyExponentialHistogramBuckets || b.getTotalCount() == 0) {
-      return a;
-    }
-    if ((a instanceof DoubleExponentialHistogramBuckets)
-        && (b instanceof DoubleExponentialHistogramBuckets)) {
-      DoubleExponentialHistogramBuckets a1 = (DoubleExponentialHistogramBuckets) a;
-      DoubleExponentialHistogramBuckets b2 = (DoubleExponentialHistogramBuckets) b;
-      a1.mergeInto(b2);
-      return a1;
-    }
-    throw new IllegalStateException(
-        "Unable to merge ExponentialHistogramBuckets. Unrecognized implementation.");
-  }
-
-  /**
-   * Downscale the {@code buckets} to the {@code targetScale}.
-   *
-   * <p>Assumes {@code a} and {@code b} are either {@link DoubleExponentialHistogramBuckets} or
-   * {@link EmptyExponentialHistogramBuckets}.
-   */
-  private static ExponentialHistogramBuckets downscale(
-      ExponentialHistogramBuckets buckets, int targetScale) {
-    if (buckets.getScale() == targetScale) {
-      return buckets;
-    }
-    if (buckets instanceof EmptyExponentialHistogramBuckets) {
-      return EmptyExponentialHistogramBuckets.get(targetScale);
-    }
-    if (buckets instanceof DoubleExponentialHistogramBuckets) {
-      DoubleExponentialHistogramBuckets buckets1 = (DoubleExponentialHistogramBuckets) buckets;
-      buckets1.downscale(buckets1.getScale() - targetScale);
-      return buckets1;
-    }
-    throw new IllegalStateException(
-        "Unable to merge ExponentialHistogramBuckets. Unrecognized implementation");
   }
 
   @Override
@@ -154,29 +64,19 @@ public final class DoubleExponentialHistogramAggregator
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor metricDescriptor,
-      Map<Attributes, ExponentialHistogramAccumulation> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
+      Collection<ExponentialHistogramPointData> points,
+      AggregationTemporality temporality) {
     return ImmutableMetricData.createExponentialHistogram(
         resource,
         instrumentationScopeInfo,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
         metricDescriptor.getSourceInstrument().getUnit(),
-        ImmutableExponentialHistogramData.create(
-            temporality,
-            MetricDataUtils.toExponentialHistogramPointList(
-                accumulationByLabels,
-                (temporality == AggregationTemporality.CUMULATIVE)
-                    ? startEpochNanos
-                    : lastCollectionEpoch,
-                epochNanos)));
+        ImmutableExponentialHistogramData.create(temporality, points));
   }
 
   static final class Handle
-      extends AggregatorHandle<ExponentialHistogramAccumulation, DoubleExemplarData> {
+      extends AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> {
     private final int maxBuckets;
     @Nullable private DoubleExponentialHistogramBuckets positiveBuckets;
     @Nullable private DoubleExponentialHistogramBuckets negativeBuckets;
@@ -199,39 +99,45 @@ public final class DoubleExponentialHistogramAggregator
     }
 
     @Override
-    protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(
-        List<DoubleExemplarData> exemplars) {
-      ExponentialHistogramBuckets positiveBuckets;
-      ExponentialHistogramBuckets negativeBuckets;
-      if (this.positiveBuckets != null) {
-        positiveBuckets = this.positiveBuckets.copy();
-        this.positiveBuckets.clear();
-      } else {
-        positiveBuckets = EmptyExponentialHistogramBuckets.get(scale);
-      }
-      if (this.negativeBuckets != null) {
-        negativeBuckets = this.negativeBuckets.copy();
-        this.negativeBuckets.clear();
-      } else {
-        negativeBuckets = EmptyExponentialHistogramBuckets.get(scale);
-      }
-      ExponentialHistogramAccumulation acc =
-          ExponentialHistogramAccumulation.create(
+    protected synchronized ExponentialHistogramPointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<DoubleExemplarData> exemplars,
+        boolean reset) {
+      ExponentialHistogramPointData point =
+          ImmutableExponentialHistogramPointData.create(
               scale,
               sum,
-              this.count > 0,
-              this.count > 0 ? this.min : -1,
-              this.count > 0 ? this.max : -1,
-              positiveBuckets,
-              negativeBuckets,
               zeroCount,
+              this.count > 0 ? this.min : null,
+              this.count > 0 ? this.max : null,
+              resolveBuckets(this.positiveBuckets, scale, reset),
+              resolveBuckets(this.negativeBuckets, scale, reset),
+              startEpochNanos,
+              epochNanos,
+              attributes,
               exemplars);
-      this.sum = 0;
-      this.zeroCount = 0;
-      this.min = Double.MAX_VALUE;
-      this.max = -1;
-      this.count = 0;
-      return acc;
+      if (reset) {
+        this.sum = 0;
+        this.zeroCount = 0;
+        this.min = Double.MAX_VALUE;
+        this.max = -1;
+        this.count = 0;
+      }
+      return point;
+    }
+
+    private static ExponentialHistogramBuckets resolveBuckets(
+        @Nullable DoubleExponentialHistogramBuckets buckets, int scale, boolean reset) {
+      if (buckets == null) {
+        return EmptyExponentialHistogramBuckets.get(scale);
+      }
+      ExponentialHistogramBuckets copy = buckets.copy();
+      if (reset) {
+        buckets.clear();
+      }
+      return copy;
     }
 
     @Override
@@ -269,7 +175,8 @@ public final class DoubleExponentialHistogramAggregator
       // Record; If recording fails, calculate scale reduction and scale down to fit new value.
       // 2nd attempt at recording should work with new scale
       // TODO: We should experiment with downscale on demand during sync execution and only
-      // unifying scale factor between positive/negative at collection time (doAccumulate).
+      // unifying scale factor between positive/negative at collection time
+      // (doAggregateThenMaybeReset).
       if (!buckets.record(value)) {
         // getScaleReduction() used with downScale() will scale down as required to record value,
         // fit inside max allowed buckets, and make sure index can be represented by int.

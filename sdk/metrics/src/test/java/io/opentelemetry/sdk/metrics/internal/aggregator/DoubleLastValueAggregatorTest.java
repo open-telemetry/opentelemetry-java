@@ -14,8 +14,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,32 +42,45 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14.1);
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(14.1);
   }
 
   @Test
-  void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+  void aggregateThenMaybeReset() {
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(13.1);
 
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(12.1);
   }
 
   @Test
-  void mergeAccumulation() {
+  void diff() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -89,51 +104,18 @@ class DoubleLastValueAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 2));
-    DoubleAccumulation result =
-        aggregator.merge(
-            DoubleAccumulation.create(1, previousExemplars),
-            DoubleAccumulation.create(2, exemplars));
-    // Assert that latest measurement is kept.
-    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
-  }
-
-  @Test
-  void diffAccumulation() {
-    Attributes attributes = Attributes.builder().put("test", "value").build();
-    DoubleExemplarData exemplar =
-        ImmutableDoubleExemplarData.create(
-            attributes,
-            2L,
-            SpanContext.create(
-                "00000000000000000000000000000001",
-                "0000000000000002",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            1);
-    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
-    DoubleAccumulation result =
+    DoublePointData result =
         aggregator.diff(
-            DoubleAccumulation.create(1, previousExemplars),
-            DoubleAccumulation.create(2, exemplars));
+            ImmutableDoublePointData.create(0, 1, Attributes.empty(), 1, previousExemplars),
+            ImmutableDoublePointData.create(0, 1, Attributes.empty(), 2, exemplars));
     // Assert that latest measurement is kept.
-    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
+    assertThat(result)
+        .isEqualTo(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 2, exemplars));
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
@@ -142,12 +124,10 @@ class DoubleLastValueAggregatorTest {
             RESOURCE,
             INSTRUMENTATION_SCOPE_INFO,
             METRIC_DESCRIPTOR,
-            Collections.singletonMap(
-                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-            AggregationTemporality.DELTA,
-            0,
-            10,
-            100);
+            Collections.singletonList(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    10, 100, Attributes.empty(), /* reset= */ true)),
+            AggregationTemporality.DELTA);
     assertThat(metricData)
         .hasName("name")
         .hasDescription("description")

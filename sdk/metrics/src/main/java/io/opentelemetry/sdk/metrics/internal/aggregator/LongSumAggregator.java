@@ -9,17 +9,20 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -29,7 +32,7 @@ import java.util.function.Supplier;
  * at any time.
  */
 public final class LongSumAggregator
-    extends AbstractSumAggregator<LongAccumulation, LongExemplarData> {
+    extends AbstractSumAggregator<LongPointData, LongExemplarData> {
 
   private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
 
@@ -41,22 +44,27 @@ public final class LongSumAggregator
   }
 
   @Override
-  public AggregatorHandle<LongAccumulation, LongExemplarData> createHandle() {
+  public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public LongAccumulation merge(
-      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
-    return LongAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
+  public LongPointData diff(LongPointData previousPoint, LongPointData currentPoint) {
+    return ImmutableLongPointData.create(
+        currentPoint.getStartEpochNanos(),
+        currentPoint.getEpochNanos(),
+        currentPoint.getAttributes(),
+        currentPoint.getValue() - previousPoint.getValue(),
+        currentPoint.getExemplars());
   }
 
   @Override
-  public LongAccumulation diff(
-      LongAccumulation previousAccumulation, LongAccumulation accumulation) {
-    return LongAccumulation.create(
-        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
+  public LongPointData toPoint(Measurement measurement) {
+    return ImmutableLongPointData.create(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.longValue());
   }
 
   @Override
@@ -64,29 +72,18 @@ public final class LongSumAggregator
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
-      Map<Attributes, LongAccumulation> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
+      Collection<LongPointData> points,
+      AggregationTemporality temporality) {
     return ImmutableMetricData.createLongSum(
         resource,
         instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getSourceInstrument().getUnit(),
-        ImmutableSumData.create(
-            isMonotonic(),
-            temporality,
-            MetricDataUtils.toLongPointList(
-                accumulationByLabels,
-                temporality == AggregationTemporality.CUMULATIVE
-                    ? startEpochNanos
-                    : lastCollectionEpoch,
-                epochNanos)));
+        ImmutableSumData.create(isMonotonic(), temporality, points));
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation, LongExemplarData> {
+  static final class Handle extends AggregatorHandle<LongPointData, LongExemplarData> {
     private final LongAdder current = AdderUtil.createLongAdder();
 
     Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir) {
@@ -94,8 +91,15 @@ public final class LongSumAggregator
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<LongExemplarData> exemplars) {
-      return LongAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected LongPointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<LongExemplarData> exemplars,
+        boolean reset) {
+      long value = reset ? this.current.sumThenReset() : this.current.sum();
+      return ImmutableLongPointData.create(
+          startEpochNanos, epochNanos, attributes, value, exemplars);
     }
 
     @Override

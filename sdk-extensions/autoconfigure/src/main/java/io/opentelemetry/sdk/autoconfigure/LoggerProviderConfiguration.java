@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,14 +33,16 @@ final class LoggerProviderConfiguration {
       ClassLoader serviceClassLoader,
       MeterProvider meterProvider,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
-          logRecordExporterCustomizer) {
+          logRecordExporterCustomizer,
+      List<Closeable> closeables) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
     Map<String, LogRecordExporter> exportersByName =
-        configureLogRecordExporters(config, serviceClassLoader, logRecordExporterCustomizer);
+        configureLogRecordExporters(
+            config, serviceClassLoader, logRecordExporterCustomizer, closeables);
 
-    configureLogRecordProcessors(config, exportersByName, meterProvider)
+    configureLogRecordProcessors(config, exportersByName, meterProvider, closeables)
         .forEach(loggerProviderBuilder::addLogRecordProcessor);
   }
 
@@ -47,20 +50,25 @@ final class LoggerProviderConfiguration {
   static List<LogRecordProcessor> configureLogRecordProcessors(
       ConfigProperties config,
       Map<String, LogRecordExporter> exportersByName,
-      MeterProvider meterProvider) {
+      MeterProvider meterProvider,
+      List<Closeable> closeables) {
     Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
     LogRecordExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
-      logRecordProcessors.add(SimpleLogRecordProcessor.create(exporter));
+      LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
+      closeables.add(logRecordProcessor);
+      logRecordProcessors.add(logRecordProcessor);
     }
 
     if (!exportersByNameCopy.isEmpty()) {
       LogRecordExporter compositeLogRecordExporter =
           LogRecordExporter.composite(exportersByNameCopy.values());
-      logRecordProcessors.add(
-          configureBatchLogRecordProcessor(config, compositeLogRecordExporter, meterProvider));
+      LogRecordProcessor logRecordProcessor =
+          configureBatchLogRecordProcessor(config, compositeLogRecordExporter, meterProvider);
+      closeables.add(logRecordProcessor);
+      logRecordProcessors.add(logRecordProcessor);
     }
 
     return logRecordProcessors;

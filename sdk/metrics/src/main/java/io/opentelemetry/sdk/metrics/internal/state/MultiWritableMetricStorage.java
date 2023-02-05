@@ -6,22 +6,27 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
-import java.util.ArrayList;
+import io.opentelemetry.context.Context;
 import java.util.List;
 
 class MultiWritableMetricStorage implements WriteableMetricStorage {
-  private final List<? extends WriteableMetricStorage> underlyingMetrics;
+  private final List<? extends WriteableMetricStorage> storages;
 
-  MultiWritableMetricStorage(List<? extends WriteableMetricStorage> metrics) {
-    this.underlyingMetrics = metrics;
+  MultiWritableMetricStorage(List<? extends WriteableMetricStorage> storages) {
+    this.storages = storages;
   }
 
   @Override
-  public BoundStorageHandle bind(Attributes attributes) {
-    List<BoundStorageHandle> handles = new ArrayList<>(underlyingMetrics.size());
-    for (WriteableMetricStorage metric : underlyingMetrics) {
-      handles.add(metric.bind(attributes));
+  public void recordLong(long value, Attributes attributes, Context context) {
+    for (WriteableMetricStorage storage : storages) {
+      storage.recordLong(value, attributes, context);
     }
-    return new MultiBoundStorageHandle(handles);
+  }
+
+  @Override
+  public void recordDouble(double value, Attributes attributes, Context context) {
+    for (WriteableMetricStorage storage : storages) {
+      storage.recordDouble(value, attributes, context);
+    }
   }
 }

@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +29,8 @@ final class MeterProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      List<Closeable> closeables) {
 
     // Configure default exemplar filters.
     String exemplarFilter =
@@ -46,7 +48,7 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    configureMetricReaders(config, serviceClassLoader, metricExporterCustomizer)
+    configureMetricReaders(config, serviceClassLoader, metricExporterCustomizer, closeables)
         .forEach(meterProviderBuilder::registerMetricReader);
   }
 
@@ -54,7 +56,8 @@ final class MeterProviderConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
-          metricExporterCustomizer) {
+          metricExporterCustomizer,
+      List<Closeable> closeables) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.metrics.exporter");
     if (exporterNames.contains("none")) {
       if (exporterNames.size() > 1) {
@@ -71,7 +74,7 @@ final class MeterProviderConfiguration {
         .map(
             exporterName ->
                 MetricExporterConfiguration.configureReader(
-                    exporterName, config, serviceClassLoader, metricExporterCustomizer))
+                    exporterName, config, serviceClassLoader, metricExporterCustomizer, closeables))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

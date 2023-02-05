@@ -17,8 +17,10 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -58,51 +60,58 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue())
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12 * 5);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-11);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(14);
   }
 
   @Test
-  void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+  void aggregateThenMaybeReset() {
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(25);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(25);
 
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-25);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(-13);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(-13);
   }
 
   @Test
-  void testExemplarsInAccumulation() {
+  void aggregateThenMaybeReset_WithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     LongExemplarData exemplar =
         ImmutableLongExemplarData.create(
@@ -125,11 +134,11 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG),
             () -> reservoir);
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(LongAccumulation.create(0, exemplars));
+    assertThat(
+            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
+        .isEqualTo(ImmutableLongPointData.create(0, 1, Attributes.empty(), 0, exemplars));
   }
 
   @Test
@@ -152,21 +161,15 @@ class LongSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 ExemplarReservoir::longNoSamples);
-        LongAccumulation merged =
-            aggregator.merge(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
-        assertThat(merged.getValue())
-            .withFailMessage(
-                "Invalid merge result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
-            .isEqualTo(3);
-        assertThat(merged.getExemplars()).containsExactly(exemplar);
 
-        LongAccumulation diffed =
-            aggregator.diff(LongAccumulation.create(1L), LongAccumulation.create(2L, exemplars));
+        LongPointData diffed =
+            aggregator.diff(
+                ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L),
+                ImmutableLongPointData.create(0, 1, Attributes.empty(), 2L, exemplars));
         assertThat(diffed.getValue())
             .withFailMessage(
                 "Invalid diff result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
+                instrumentType, temporality, diffed)
             .isEqualTo(1);
         assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }
@@ -176,8 +179,7 @@ class LongSumAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<LongAccumulation, LongExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -185,12 +187,10 @@ class LongSumAggregatorTest {
             resource,
             library,
             metricDescriptor,
-            Collections.singletonMap(
-                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-            AggregationTemporality.CUMULATIVE,
-            0,
-            10,
-            100);
+            Collections.singletonList(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    0, 100, Attributes.empty(), /* reset= */ true)),
+            AggregationTemporality.CUMULATIVE);
     assertThat(metricData)
         .hasName("name")
         .hasDescription("description")
@@ -221,17 +221,16 @@ class LongSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
+
     assertThat(
             aggregator.toMetricData(
                 resource,
                 library,
                 metricDescriptor,
-                Collections.singletonMap(Attributes.empty(), accumulation),
-                AggregationTemporality.CUMULATIVE,
-                0,
-                10,
-                100))
+                Collections.singletonList(
+                    ImmutableLongPointData.create(
+                        0, 1, Attributes.empty(), 1, Collections.singletonList(exemplar))),
+                AggregationTemporality.CUMULATIVE))
         .hasLongSumSatisfying(
             sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }

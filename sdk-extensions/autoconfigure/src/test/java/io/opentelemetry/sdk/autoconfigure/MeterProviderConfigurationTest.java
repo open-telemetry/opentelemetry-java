@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOnFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.TraceBasedExemplarFilter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +52,8 @@ class MeterProviderConfigurationTest {
         builder,
         DefaultConfigProperties.createForTest(configWithDefault),
         MeterProviderConfigurationTest.class.getClassLoader(),
-        (a, b) -> a);
+        (a, b) -> a,
+        new ArrayList<>());
     return assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)));
   }

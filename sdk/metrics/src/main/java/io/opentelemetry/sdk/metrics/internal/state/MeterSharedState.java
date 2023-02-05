@@ -81,7 +81,7 @@ public class MeterSharedState {
     return instrumentationScopeInfo;
   }
 
-  /** Collects all accumulated metric stream points. */
+  /** Collects all metrics. */
   public List<MetricData> collectAll(
       RegisteredReader registeredReader,
       MeterProviderSharedState meterProviderSharedState,
@@ -93,7 +93,8 @@ public class MeterSharedState {
     // Collections across all readers are sequential
     synchronized (collectLock) {
       for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
-        callbackRegistration.invokeCallback(registeredReader);
+        callbackRegistration.invokeCallback(
+            registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
       }
 
       Collection<MetricStorage> storages =
@@ -101,7 +102,7 @@ public class MeterSharedState {
       List<MetricData> result = new ArrayList<>(storages.size());
       for (MetricStorage storage : storages) {
         MetricData current =
-            storage.collectAndReset(
+            storage.collect(
                 meterProviderSharedState.getResource(),
                 getInstrumentationScopeInfo(),
                 meterProviderSharedState.getStartEpochNanos(),

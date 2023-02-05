@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExplicitBucketHistogramAggregator;
@@ -48,7 +49,7 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     return (Aggregator<T, U>)
         new DoubleExplicitBucketHistogramAggregator(

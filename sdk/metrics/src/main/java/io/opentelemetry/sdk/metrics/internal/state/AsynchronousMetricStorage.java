@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -35,16 +36,19 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class AsynchronousMetricStorage<T, U extends ExemplarData> implements MetricStorage {
+final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarData>
+    implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
-  private final TemporalMetricStorage<T, U> metricStorage;
+  private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
-  private Map<Attributes, T> accumulations = new HashMap<>();
+  private Map<Attributes, T> points = new HashMap<>();
+  private Map<Attributes, T> lastPoints =
+      new HashMap<>(); // Only populated if aggregationTemporality == DELTA
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -53,17 +57,10 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
       AttributesProcessor attributesProcessor) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
-    AggregationTemporality aggregationTemporality =
+    this.aggregationTemporality =
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
-    this.metricStorage =
-        new TemporalMetricStorage<>(
-            aggregator,
-            /* isSynchronous= */ false,
-            registeredReader,
-            aggregationTemporality,
-            metricDescriptor);
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
   }
@@ -72,7 +69,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
-  static <T, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
+  static <T extends PointData, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
       RegisteredReader registeredReader,
       RegisteredView registeredView,
       InstrumentDescriptor instrumentDescriptor) {
@@ -89,38 +86,42 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
         registeredView.getViewAttributesProcessor());
   }
 
-  /** Record callback long measurements from {@link ObservableLongMeasurement}. */
-  void recordLong(long value, Attributes attributes) {
-    T accumulation = aggregator.accumulateLongMeasurement(value, attributes, Context.current());
-    if (accumulation != null) {
-      recordAccumulation(accumulation, attributes);
-    }
+  /**
+   * Record callback measurement from {@link ObservableLongMeasurement} or {@link
+   * ObservableDoubleMeasurement}.
+   */
+  void record(Measurement measurement) {
+    Context context = Context.current();
+    Attributes processedAttributes = attributesProcessor.process(measurement.attributes(), context);
+    long start =
+        aggregationTemporality == AggregationTemporality.DELTA
+            ? registeredReader.getLastCollectEpochNanos()
+            : measurement.startEpochNanos();
+    measurement =
+        measurement.hasDoubleValue()
+            ? Measurement.doubleMeasurement(
+                start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
+            : Measurement.longMeasurement(
+                start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
+    recordPoint(aggregator.toPoint(measurement));
   }
 
-  /** Record callback double measurements from {@link ObservableDoubleMeasurement}. */
-  void recordDouble(double value, Attributes attributes) {
-    T accumulation = aggregator.accumulateDoubleMeasurement(value, attributes, Context.current());
-    if (accumulation != null) {
-      recordAccumulation(accumulation, attributes);
-    }
-  }
+  private void recordPoint(T point) {
+    Attributes attributes = point.getAttributes();
 
-  private void recordAccumulation(T accumulation, Attributes attributes) {
-    Attributes processedAttributes = attributesProcessor.process(attributes, Context.current());
-
-    if (accumulations.size() >= MetricStorageUtils.MAX_ACCUMULATIONS) {
+    if (points.size() >= MetricStorage.MAX_CARDINALITY) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
-              + " has exceeded the maximum allowed accumulations ("
-              + MetricStorageUtils.MAX_ACCUMULATIONS
+              + " has exceeded the maximum allowed cardinality ("
+              + MetricStorage.MAX_CARDINALITY
               + ").");
       return;
     }
 
     // Check there is not already a recording for the attributes
-    if (accumulations.containsKey(attributes)) {
+    if (points.containsKey(attributes)) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
@@ -129,7 +130,7 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
       return;
     }
 
-    accumulations.put(processedAttributes, accumulation);
+    points.put(attributes, point);
   }
 
   @Override
@@ -137,21 +138,36 @@ final class AsynchronousMetricStorage<T, U extends ExemplarData> implements Metr
     return metricDescriptor;
   }
 
-  @Override
+  /** Returns the registered reader this storage is associated with. */
   public RegisteredReader getRegisteredReader() {
     return registeredReader;
   }
 
   @Override
-  public MetricData collectAndReset(
+  public MetricData collect(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    Map<Attributes, T> currentAccumulations = accumulations;
-    accumulations = new HashMap<>();
-    return metricStorage.buildMetricFor(
-        resource, instrumentationScopeInfo, currentAccumulations, startEpochNanos, epochNanos);
+    Map<Attributes, T> result;
+    if (aggregationTemporality == AggregationTemporality.DELTA) {
+      Map<Attributes, T> points = this.points;
+      Map<Attributes, T> lastPoints = this.lastPoints;
+      lastPoints.entrySet().removeIf(entry -> !points.containsKey(entry.getKey()));
+      points.forEach(
+          (k, v) -> lastPoints.compute(k, (k2, v2) -> v2 == null ? v : aggregator.diff(v2, v)));
+      result = lastPoints;
+      this.lastPoints = points;
+    } else {
+      result = points;
+    }
+    this.points = new HashMap<>();
+    return aggregator.toMetricData(
+        resource,
+        instrumentationScopeInfo,
+        metricDescriptor,
+        result.values(),
+        aggregationTemporality);
   }
 
   @Override

@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Arrays;
@@ -36,22 +35,22 @@ class HistogramExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(1.1));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(1.1);
+              assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerDoubleMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(2));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(2);
+              assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
     // only latest measurement is kept per-bucket
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerDoubleMeasurement(3, Attributes.empty(), Context.root());
@@ -59,11 +58,11 @@ class HistogramExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(4));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(4);
+              assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
   }
 
   @Test
@@ -79,21 +78,21 @@ class HistogramExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(
-            e ->
-                MetricAssertions.assertThat(e)
-                    .hasValue(-1.1)
-                    .hasFilteredAttributes(Attributes.of(bucketKey, 0L)),
-            e ->
-                MetricAssertions.assertThat(e)
-                    .hasValue(1)
-                    .hasFilteredAttributes(Attributes.of(bucketKey, 1L)),
-            e ->
-                MetricAssertions.assertThat(e)
-                    .hasValue(11)
-                    .hasFilteredAttributes(Attributes.of(bucketKey, 2L)),
-            e ->
-                MetricAssertions.assertThat(e)
-                    .hasValue(21)
-                    .hasFilteredAttributes(Attributes.of(bucketKey, 3L)));
+            e -> {
+              assertThat(e.getValue()).isEqualTo(-1.1);
+              assertThat(e.getFilteredAttributes()).isEqualTo(Attributes.of(bucketKey, 0L));
+            },
+            e -> {
+              assertThat(e.getValue()).isEqualTo(1);
+              assertThat(e.getFilteredAttributes()).isEqualTo(Attributes.of(bucketKey, 1L));
+            },
+            e -> {
+              assertThat(e.getValue()).isEqualTo(11);
+              assertThat(e.getFilteredAttributes()).isEqualTo(Attributes.of(bucketKey, 2L));
+            },
+            e -> {
+              assertThat(e.getValue()).isEqualTo(21);
+              assertThat(e.getFilteredAttributes()).isEqualTo(Attributes.of(bucketKey, 3L));
+            });
   }
 }

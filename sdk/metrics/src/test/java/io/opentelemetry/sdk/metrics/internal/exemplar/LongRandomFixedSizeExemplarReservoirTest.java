@@ -16,7 +16,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
-import io.opentelemetry.sdk.testing.assertj.MetricAssertions;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Random;
@@ -43,11 +42,11 @@ class LongRandomFixedSizeExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(1));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(1);
+              assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
 
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
@@ -55,11 +54,11 @@ class LongRandomFixedSizeExemplarReservoirTest {
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasFilteredAttributes(Attributes.empty())
-                    .hasValue(2));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(2);
+              assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
   }
 
   @Test
@@ -74,11 +73,11 @@ class LongRandomFixedSizeExemplarReservoirTest {
     reservoir.offerLongMeasurement(1, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasValue(1)
-                    .hasFilteredAttributes(remaining));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(1);
+              assertThat(exemplar.getFilteredAttributes()).isEqualTo(remaining);
+            });
   }
 
   @Test
@@ -97,13 +96,13 @@ class LongRandomFixedSizeExemplarReservoirTest {
     reservoir.offerLongMeasurement(1, all, context);
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactly(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar)
-                    .hasEpochNanos(clock.now())
-                    .hasValue(1)
-                    .hasFilteredAttributes(all)
-                    .hasTraceId(TRACE_ID)
-                    .hasSpanId(SPAN_ID));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(1);
+              assertThat(exemplar.getFilteredAttributes()).isEqualTo(all);
+              assertThat(exemplar.getSpanContext().getTraceId()).isEqualTo(TRACE_ID);
+              assertThat(exemplar.getSpanContext().getSpanId()).isEqualTo(SPAN_ID);
+            });
   }
 
   @Test
@@ -131,9 +130,13 @@ class LongRandomFixedSizeExemplarReservoirTest {
     reservoir.offerLongMeasurement(3, Attributes.of(key, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactlyInAnyOrder(
-            exemplar ->
-                MetricAssertions.assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),
-            exemplar ->
-                MetricAssertions.assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(3));
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(2);
+            },
+            exemplar -> {
+              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+              assertThat(exemplar.getValue()).isEqualTo(3);
+            });
   }
 }

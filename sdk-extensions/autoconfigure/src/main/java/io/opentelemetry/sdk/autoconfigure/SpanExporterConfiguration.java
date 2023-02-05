@@ -5,19 +5,18 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static java.util.stream.Collectors.toMap;
-
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 final class SpanExporterConfiguration {
 
@@ -38,7 +37,8 @@ final class SpanExporterConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
-          spanExporterCustomizer) {
+          spanExporterCustomizer,
+      List<Closeable> closeables) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.traces.exporter");
     if (exporterNames.contains(EXPORTER_NONE)) {
       if (exporterNames.size() > 1) {
@@ -50,6 +50,7 @@ final class SpanExporterConfiguration {
       if (customized == noop) {
         return Collections.emptyMap();
       }
+      closeables.add(customized);
       return Collections.singletonMap(EXPORTER_NONE, customized);
     }
 
@@ -60,13 +61,17 @@ final class SpanExporterConfiguration {
     NamedSpiManager<SpanExporter> spiExportersManager =
         spanExporterSpiManager(config, serviceClassLoader);
 
-    return exporterNames.stream()
-        .collect(
-            toMap(
-                Function.identity(),
-                exporterName ->
-                    spanExporterCustomizer.apply(
-                        configureExporter(exporterName, spiExportersManager), config)));
+    Map<String, SpanExporter> map = new HashMap<>();
+    for (String exporterName : exporterNames) {
+      SpanExporter spanExporter = configureExporter(exporterName, spiExportersManager);
+      closeables.add(spanExporter);
+      SpanExporter customizedSpanExporter = spanExporterCustomizer.apply(spanExporter, config);
+      if (customizedSpanExporter != spanExporter) {
+        closeables.add(customizedSpanExporter);
+      }
+      map.put(exporterName, customizedSpanExporter);
+    }
+    return Collections.unmodifiableMap(map);
   }
 
   // Visible for testing

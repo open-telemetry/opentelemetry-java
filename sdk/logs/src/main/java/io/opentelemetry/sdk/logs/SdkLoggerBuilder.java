@@ -16,17 +16,10 @@ final class SdkLoggerBuilder implements LoggerBuilder {
   private final String instrumentationScopeName;
   @Nullable private String instrumentationScopeVersion;
   @Nullable private String schemaUrl;
-  @Nullable private String eventDomain;
 
   SdkLoggerBuilder(ComponentRegistry<SdkLogger> registry, String instrumentationScopeName) {
     this.registry = registry;
     this.instrumentationScopeName = instrumentationScopeName;
-  }
-
-  @Override
-  public LoggerBuilder setEventDomain(String eventDomain) {
-    this.eventDomain = eventDomain;
-    return this;
   }
 
   @Override
@@ -43,9 +36,7 @@ final class SdkLoggerBuilder implements LoggerBuilder {
 
   @Override
   public SdkLogger build() {
-    SdkLogger logger =
-        registry.get(
-            instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
-    return eventDomain == null ? logger : logger.withEventDomain(eventDomain);
+    return registry.get(
+        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
   }
 }

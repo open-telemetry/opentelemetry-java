@@ -6,21 +6,23 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.DoubleAdder;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -30,7 +32,7 @@ import java.util.function.Supplier;
  * at any time.
  */
 public final class DoubleSumAggregator
-    extends AbstractSumAggregator<DoubleAccumulation, DoubleExemplarData> {
+    extends AbstractSumAggregator<DoublePointData, DoubleExemplarData> {
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
 
   /**
@@ -48,28 +50,27 @@ public final class DoubleSumAggregator
   }
 
   @Override
-  public AggregatorHandle<DoubleAccumulation, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
     return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public DoubleAccumulation accumulateDoubleMeasurement(
-      double value, Attributes attributes, Context context) {
-    return DoubleAccumulation.create(value);
+  public DoublePointData diff(DoublePointData previousPoint, DoublePointData currentPoint) {
+    return ImmutableDoublePointData.create(
+        currentPoint.getStartEpochNanos(),
+        currentPoint.getEpochNanos(),
+        currentPoint.getAttributes(),
+        currentPoint.getValue() - previousPoint.getValue(),
+        currentPoint.getExemplars());
   }
 
   @Override
-  public DoubleAccumulation merge(
-      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
-    return DoubleAccumulation.create(
-        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
-  }
-
-  @Override
-  public DoubleAccumulation diff(
-      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
-    return DoubleAccumulation.create(
-        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
+  public DoublePointData toPoint(Measurement measurement) {
+    return ImmutableDoublePointData.create(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.doubleValue());
   }
 
   @Override
@@ -77,29 +78,18 @@ public final class DoubleSumAggregator
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       MetricDescriptor descriptor,
-      Map<Attributes, DoubleAccumulation> accumulationByLabels,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
+      Collection<DoublePointData> points,
+      AggregationTemporality temporality) {
     return ImmutableMetricData.createDoubleSum(
         resource,
         instrumentationScopeInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getSourceInstrument().getUnit(),
-        ImmutableSumData.create(
-            isMonotonic(),
-            temporality,
-            MetricDataUtils.toDoublePointList(
-                accumulationByLabels,
-                temporality == AggregationTemporality.CUMULATIVE
-                    ? startEpochNanos
-                    : lastCollectionEpoch,
-                epochNanos)));
+        ImmutableSumData.create(isMonotonic(), temporality, points));
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
     Handle(ExemplarReservoir<DoubleExemplarData> exemplarReservoir) {
@@ -107,8 +97,15 @@ public final class DoubleSumAggregator
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<DoubleExemplarData> exemplars) {
-      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
+    protected DoublePointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<DoubleExemplarData> exemplars,
+        boolean reset) {
+      double value = reset ? this.current.sumThenReset() : this.current.sum();
+      return ImmutableDoublePointData.create(
+          startEpochNanos, epochNanos, attributes, value, exemplars);
     }
 
     @Override

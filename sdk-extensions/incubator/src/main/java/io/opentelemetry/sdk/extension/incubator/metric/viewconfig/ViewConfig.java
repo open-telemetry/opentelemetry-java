@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.yaml.snakeyaml.Yaml;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
 
 /**
  * Enables file based YAML configuration of Metric SDK {@link View}s.
@@ -93,10 +94,14 @@ public final class ViewConfig {
   // Visible for testing
   @SuppressWarnings("unchecked")
   static List<ViewConfigSpecification> loadViewConfig(InputStream inputStream) {
-    Yaml yaml = new Yaml();
+    LoadSettings settings = LoadSettings.builder().build();
+    Load yaml = new Load(settings);
     try {
       List<ViewConfigSpecification> result = new ArrayList<>();
-      List<Map<String, Object>> viewConfigs = yaml.load(inputStream);
+
+      List<Map<String, Object>> viewConfigs =
+          (List<Map<String, Object>>) yaml.loadFromInputStream(inputStream);
+
       for (Map<String, Object> viewConfigSpecMap : viewConfigs) {
         Map<String, Object> selectorSpecMap =
             requireNonNull(

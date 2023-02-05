@@ -16,6 +16,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.Collections;
@@ -36,61 +37,6 @@ class AggregatorHandleTest {
   @Mock ExemplarReservoir<LongExemplarData> longReservoir;
 
   @Test
-  void acquireMapped() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    testAggregator.release();
-    testAggregator.release();
-  }
-
-  @Test
-  void tryUnmap_AcquiredHandler() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    // The aggregator is by default acquired, so need an extra release.
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-  }
-
-  @Test
-  void tryUnmap_AcquiredHandler_MultipleTimes() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.acquire()).isTrue();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    // The aggregator is by default acquired, so need an extra release.
-    assertThat(testAggregator.tryUnmap()).isFalse();
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-  }
-
-  @Test
-  void bind_ThenUnmap_ThenTryToBind() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
-    testAggregator.release();
-    assertThat(testAggregator.tryUnmap()).isTrue();
-    assertThat(testAggregator.acquire()).isFalse();
-    testAggregator.release();
-  }
-
-  @Test
   void testRecordings() {
     TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
 
@@ -98,7 +44,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
-    testAggregator.accumulateThenReset(Attributes.empty());
+    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
@@ -106,7 +52,7 @@ class AggregatorHandleTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(33.55);
 
-    testAggregator.accumulateThenReset(Attributes.empty());
+    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
@@ -148,12 +94,12 @@ class AggregatorHandleTest {
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(doubleReservoir.collectAndReset(attributes))
         .thenReturn(Collections.singletonList(result));
-    testAggregator.accumulateThenReset(attributes);
+    testAggregator.aggregateThenMaybeReset(0, 1, attributes, /* reset= */ true);
     assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
   }
 
   private static class TestAggregatorHandle<T extends ExemplarData>
-      extends AggregatorHandle<Void, T> {
+      extends AggregatorHandle<PointData, T> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
     final AtomicReference<List<T>> recordedExemplars = new AtomicReference<>();
@@ -164,7 +110,12 @@ class AggregatorHandleTest {
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(List<T> exemplars) {
+    protected PointData doAggregateThenMaybeReset(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<T> exemplars,
+        boolean reset) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

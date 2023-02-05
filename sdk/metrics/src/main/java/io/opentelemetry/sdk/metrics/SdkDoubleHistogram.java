@@ -12,8 +12,6 @@ import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.instrument.BoundDoubleHistogram;
-import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -52,47 +50,6 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
   @Override
   public void record(double value) {
     record(value, Attributes.empty());
-  }
-
-  BoundDoubleHistogram bind(Attributes attributes) {
-    return new BoundInstrument(getDescriptor(), storage.bind(attributes), attributes);
-  }
-
-  static final class BoundInstrument implements BoundDoubleHistogram {
-    private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-    private final InstrumentDescriptor descriptor;
-    private final BoundStorageHandle aggregatorHandle;
-    private final Attributes attributes;
-
-    BoundInstrument(
-        InstrumentDescriptor descriptor, BoundStorageHandle handle, Attributes attributes) {
-      this.descriptor = descriptor;
-      this.aggregatorHandle = handle;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void record(double value, Context context) {
-      if (value < 0) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Histograms can only record non-negative values. Instrument "
-                + descriptor.getName()
-                + " has recorded a negative value.");
-        return;
-      }
-      aggregatorHandle.recordDouble(value, attributes, context);
-    }
-
-    @Override
-    public void record(double value) {
-      record(value, Context.current());
-    }
-
-    @Override
-    public void unbind() {
-      aggregatorHandle.release();
-    }
   }
 
   static final class SdkDoubleHistogramBuilder

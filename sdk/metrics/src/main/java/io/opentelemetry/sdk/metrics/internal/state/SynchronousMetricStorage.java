@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -35,7 +36,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
    *     recorded.
    */
-  static <T, U extends ExemplarData> SynchronousMetricStorage create(
+  static <T extends PointData, U extends ExemplarData> SynchronousMetricStorage create(
       RegisteredReader registeredReader,
       RegisteredView registeredView,
       InstrumentDescriptor instrumentDescriptor,

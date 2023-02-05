@@ -16,25 +16,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
  * at any time.
  */
 public interface WriteableMetricStorage {
-  /** Bind an efficient storage handle for a set of attributes. */
-  BoundStorageHandle bind(Attributes attributes);
 
   /** Records a measurement. */
-  default void recordLong(long value, Attributes attributes, Context context) {
-    BoundStorageHandle handle = bind(attributes);
-    try {
-      handle.recordLong(value, attributes, context);
-    } finally {
-      handle.release();
-    }
-  }
+  void recordLong(long value, Attributes attributes, Context context);
+
   /** Records a measurement. */
-  default void recordDouble(double value, Attributes attributes, Context context) {
-    BoundStorageHandle handle = bind(attributes);
-    try {
-      handle.recordDouble(value, attributes, context);
-    } finally {
-      handle.release();
-    }
-  }
+  void recordDouble(double value, Attributes attributes, Context context);
 }

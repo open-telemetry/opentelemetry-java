@@ -10,8 +10,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -33,7 +35,8 @@ class LogRecordExporterConfiguration {
       ConfigProperties config,
       ClassLoader serviceClassLoader,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
-          logRecordExporterCustomizer) {
+          logRecordExporterCustomizer,
+      List<Closeable> closeables) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.logs.exporter");
 
     // Default to no exporter
@@ -55,8 +58,12 @@ class LogRecordExporterConfiguration {
     Map<String, LogRecordExporter> exportersByName = new HashMap<>();
     for (String name : exporterNames) {
       LogRecordExporter logRecordExporter = configureExporter(name, spiExportersManager);
+      closeables.add(logRecordExporter);
       LogRecordExporter customizedLogRecordExporter =
           logRecordExporterCustomizer.apply(logRecordExporter, config);
+      if (customizedLogRecordExporter != logRecordExporter) {
+        closeables.add(customizedLogRecordExporter);
+      }
       exportersByName.put(name, customizedLogRecordExporter);
     }
 

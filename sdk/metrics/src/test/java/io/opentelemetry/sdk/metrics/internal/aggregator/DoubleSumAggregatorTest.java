@@ -17,8 +17,10 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -59,20 +61,23 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue())
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
         .isEqualTo(12.1 * 5);
   }
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
@@ -80,28 +85,37 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-11);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14);
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(14);
   }
 
   @Test
-  void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+  void aggregateThenMaybeReset() {
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(25);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(25);
 
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-25);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(-13);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+    assertThat(
+            aggregatorHandle
+                .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
+                .getValue())
+        .isEqualTo(-13);
   }
 
   @Test
-  void testExemplarsInAccumulation() {
+  void aggregateThenMaybeReset_WithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -124,11 +138,12 @@ class DoubleSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE),
             () -> reservoir);
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
-        .isEqualTo(DoubleAccumulation.create(0, exemplars));
+    assertThat(
+            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
+        .isEqualTo(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 0, exemplars));
   }
 
   @Test
@@ -145,17 +160,6 @@ class DoubleSumAggregatorTest {
                 TraceState.getDefault()),
             1);
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    List<DoubleExemplarData> previousExemplars =
-        Collections.singletonList(
-            ImmutableDoubleExemplarData.create(
-                attributes,
-                1L,
-                SpanContext.create(
-                    "00000000000000000000000000000001",
-                    "0000000000000002",
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()),
-                2));
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         DoubleSumAggregator aggregator =
@@ -163,24 +167,15 @@ class DoubleSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 ExemplarReservoir::doubleNoSamples);
-        DoubleAccumulation merged =
-            aggregator.merge(
-                DoubleAccumulation.create(1.0d, previousExemplars),
-                DoubleAccumulation.create(2.0d, exemplars));
-        assertThat(merged.getValue())
-            .withFailMessage(
-                "Invalid merge result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
-            .isEqualTo(3.0d);
-        assertThat(merged.getExemplars()).containsExactly(exemplar);
 
-        DoubleAccumulation diffed =
+        DoublePointData diffed =
             aggregator.diff(
-                DoubleAccumulation.create(1d), DoubleAccumulation.create(2d, exemplars));
+                ImmutableDoublePointData.create(0, 1, Attributes.empty(), 1d),
+                ImmutableDoublePointData.create(0, 1, Attributes.empty(), 2d, exemplars));
         assertThat(diffed.getValue())
             .withFailMessage(
                 "Invalid diff result for instrumentType %s, temporality %s: %s",
-                instrumentType, temporality, merged)
+                instrumentType, temporality, diffed)
             .isEqualTo(1d);
         assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }
@@ -188,9 +183,8 @@ class DoubleSumAggregatorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<DoubleAccumulation, DoubleExemplarData> aggregatorHandle =
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
@@ -199,12 +193,10 @@ class DoubleSumAggregatorTest {
             resource,
             scope,
             metricDescriptor,
-            Collections.singletonMap(
-                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-            AggregationTemporality.CUMULATIVE,
-            0,
-            10,
-            100);
+            Collections.singletonList(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    0, 100, Attributes.empty(), /* reset= */ true)),
+            AggregationTemporality.CUMULATIVE);
     assertThat(metricData)
         .hasName("name")
         .hasDescription("description")
@@ -235,18 +227,15 @@ class DoubleSumAggregatorTest {
                 TraceFlags.getDefault(),
                 TraceState.getDefault()),
             1);
-    DoubleAccumulation accumulation =
-        DoubleAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
                 resource,
                 scope,
                 metricDescriptor,
-                Collections.singletonMap(Attributes.empty(), accumulation),
-                AggregationTemporality.CUMULATIVE,
-                0,
-                10,
-                100))
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1, Attributes.empty(), 1, Collections.singletonList(exemplar))),
+                AggregationTemporality.CUMULATIVE))
         .hasDoubleSumSatisfying(
             sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
   }
