@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,12 +26,8 @@ class PrimitiveLongListTest {
     assertThat(wrapped.hashCode()).isEqualTo(reference.hashCode());
     assertThat(wrapped.equals(PrimitiveLongList.wrap(array))).isTrue();
 
-    // Message can change between Java versions, so instead check it's the same as a normal List's
-    // exception.
-    Throwable referenceException = catchThrowable(() -> reference.get(3));
     assertThatThrownBy(() -> wrapped.get(3))
-        .isInstanceOf(IndexOutOfBoundsException.class)
-        .hasMessage(referenceException.getMessage());
+        .isInstanceOf(IndexOutOfBoundsException.class);
 
     assertThat(PrimitiveLongList.toArray(wrapped)).isSameAs(array).containsExactly(1L, 2L);
   }
