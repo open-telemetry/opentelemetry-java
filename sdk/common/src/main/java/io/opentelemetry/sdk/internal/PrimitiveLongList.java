@@ -30,6 +30,13 @@ public final class PrimitiveLongList {
     return new LongListImpl(values);
   }
 
+  /** Set the size. */
+  public static void setSize(List<Long> list, int size) {
+    if (list instanceof LongListImpl) {
+      ((LongListImpl) list).setSize(size);
+    }
+  }
+
   /**
    * Returns a primitive array with the values of the list. The list should generally have been
    * created with {@link PrimitiveLongList#wrap(long[])}.
@@ -49,13 +56,22 @@ public final class PrimitiveLongList {
   private static class LongListImpl extends AbstractList<Long> {
 
     private final long[] values;
+    private int size;
 
     LongListImpl(long[] values) {
       this.values = values;
+      this.size = values.length;
+    }
+
+    private void setSize(int size) {
+      this.size = size;
     }
 
     @Override
     public Long get(int index) {
+      if (index >= size) {
+        throw new IndexOutOfBoundsException();
+      }
       // If out of bounds, the array access will produce a perfectly fine IndexOutOfBoundsException.
       return values[index];
     }
@@ -75,7 +91,7 @@ public final class PrimitiveLongList {
 
     @Override
     public int size() {
-      return values.length;
+      return size;
     }
   }
 

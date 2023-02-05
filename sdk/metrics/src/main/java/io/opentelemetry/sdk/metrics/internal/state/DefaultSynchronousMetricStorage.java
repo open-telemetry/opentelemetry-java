@@ -53,6 +53,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final AttributesProcessor attributesProcessor;
   private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
+  private final List<T> points = new ArrayList<>();
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -130,7 +131,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             : startEpochNanos;
 
     // Grab aggregated points.
-    List<T> points = new ArrayList<>(aggregatorHandles.size());
+    points.clear();
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : aggregatorHandles.entrySet()) {
       T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
       if (reset) {

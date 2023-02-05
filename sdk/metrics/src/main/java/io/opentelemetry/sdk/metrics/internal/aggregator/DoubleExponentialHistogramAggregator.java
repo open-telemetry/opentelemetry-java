@@ -13,9 +13,11 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
@@ -39,6 +41,9 @@ public final class DoubleExponentialHistogramAggregator
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
   private final int maxBuckets;
   private final int maxScale;
+  private final MutableMetricData metricData =
+      new MutableMetricData(MetricDataType.EXPONENTIAL_HISTOGRAM);
+  private final MutableExponentialHistogramData data = new MutableExponentialHistogramData();
 
   /**
    * Constructs an exponential histogram aggregator.
@@ -66,13 +71,15 @@ public final class DoubleExponentialHistogramAggregator
       MetricDescriptor metricDescriptor,
       Collection<ExponentialHistogramPointData> points,
       AggregationTemporality temporality) {
-    return ImmutableMetricData.createExponentialHistogram(
+    data.set(temporality, points);
+    metricData.set(
         resource,
         instrumentationScopeInfo,
         metricDescriptor.getName(),
         metricDescriptor.getDescription(),
         metricDescriptor.getSourceInstrument().getUnit(),
-        ImmutableExponentialHistogramData.create(temporality, points));
+        data);
+    return metricData;
   }
 
   static final class Handle
@@ -86,6 +93,10 @@ public final class DoubleExponentialHistogramAggregator
     private double max;
     private long count;
     private int scale;
+    private final MutableExponentialHistogramPointData point =
+        new MutableExponentialHistogramPointData();
+    private final MutableExponentialHistogramBuckets mutablePositiveBuckets;
+    private final MutableExponentialHistogramBuckets mutableNegativeBuckets;
 
     Handle(ExemplarReservoir<DoubleExemplarData> reservoir, int maxBuckets, int maxScale) {
       super(reservoir);
@@ -96,6 +107,8 @@ public final class DoubleExponentialHistogramAggregator
       this.max = -1;
       this.count = 0;
       this.scale = maxScale;
+      this.mutablePositiveBuckets = new MutableExponentialHistogramBuckets(maxBuckets);
+      this.mutableNegativeBuckets = new MutableExponentialHistogramBuckets(maxBuckets);
     }
 
     @Override
@@ -105,19 +118,20 @@ public final class DoubleExponentialHistogramAggregator
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      ExponentialHistogramPointData point =
-          ImmutableExponentialHistogramPointData.create(
-              scale,
-              sum,
-              zeroCount,
-              this.count > 0 ? this.min : null,
-              this.count > 0 ? this.max : null,
-              resolveBuckets(this.positiveBuckets, scale, reset),
-              resolveBuckets(this.negativeBuckets, scale, reset),
-              startEpochNanos,
-              epochNanos,
-              attributes,
-              exemplars);
+      point.set(
+          scale,
+          sum,
+          zeroCount,
+          this.count > 0,
+          this.min,
+          this.count > 0,
+          this.max,
+          resolveBuckets(this.positiveBuckets, this.mutablePositiveBuckets, scale, reset),
+          resolveBuckets(this.negativeBuckets, this.mutableNegativeBuckets, scale, reset),
+          startEpochNanos,
+          epochNanos,
+          attributes,
+          exemplars);
       if (reset) {
         this.sum = 0;
         this.zeroCount = 0;
@@ -129,15 +143,18 @@ public final class DoubleExponentialHistogramAggregator
     }
 
     private static ExponentialHistogramBuckets resolveBuckets(
-        @Nullable DoubleExponentialHistogramBuckets buckets, int scale, boolean reset) {
+        @Nullable DoubleExponentialHistogramBuckets buckets,
+        MutableExponentialHistogramBuckets mutableBuckets,
+        int scale,
+        boolean reset) {
       if (buckets == null) {
         return EmptyExponentialHistogramBuckets.get(scale);
       }
-      ExponentialHistogramBuckets copy = buckets.copy();
+      mutableBuckets.set(buckets);
       if (reset) {
         buckets.clear();
       }
-      return copy;
+      return mutableBuckets;
     }
 
     @Override

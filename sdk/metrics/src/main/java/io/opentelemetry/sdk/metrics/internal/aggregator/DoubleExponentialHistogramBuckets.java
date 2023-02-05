@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
+public final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   private AdaptingCircularBufferCounter counts;
   private int scale;
@@ -73,6 +73,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       return 0;
     }
     return counts.getIndexStart();
+  }
+
+  public AdaptingCircularBufferCounter getCounts() {
+    return counts;
   }
 
   @Override

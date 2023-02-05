@@ -14,7 +14,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
  *
  * <p>This class is NOT thread-safe. It is expected to be behind a synchronized incrementer.
  */
-final class AdaptingCircularBufferCounter {
+public final class AdaptingCircularBufferCounter {
   private static final int NULL_INDEX = Integer.MIN_VALUE;
   private int endIndex = NULL_INDEX;
   private int startIndex = NULL_INDEX;
@@ -41,7 +41,7 @@ final class AdaptingCircularBufferCounter {
    *
    * @return the first index with a recording.
    */
-  int getIndexStart() {
+  public int getIndexStart() {
     return startIndex;
   }
 
@@ -52,7 +52,7 @@ final class AdaptingCircularBufferCounter {
    *
    * @return The last index with a recording.
    */
-  int getIndexEnd() {
+  public int getIndexEnd() {
     return endIndex;
   }
 
@@ -95,7 +95,7 @@ final class AdaptingCircularBufferCounter {
    *
    * @return the number of recordings for the index, or 0 if the index is out of bounds.
    */
-  long get(int index) {
+  public long get(int index) {
     if (index < startIndex || index > endIndex) {
       return 0;
     }
