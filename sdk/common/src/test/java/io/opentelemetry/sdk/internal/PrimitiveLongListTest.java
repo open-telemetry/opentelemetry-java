@@ -26,8 +26,7 @@ class PrimitiveLongListTest {
     assertThat(wrapped.hashCode()).isEqualTo(reference.hashCode());
     assertThat(wrapped.equals(PrimitiveLongList.wrap(array))).isTrue();
 
-    assertThatThrownBy(() -> wrapped.get(3))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+    assertThatThrownBy(() -> wrapped.get(3)).isInstanceOf(IndexOutOfBoundsException.class);
 
     assertThat(PrimitiveLongList.toArray(wrapped)).isSameAs(array).containsExactly(1L, 2L);
   }
