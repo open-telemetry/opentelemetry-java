@@ -70,7 +70,7 @@ public final class PrimitiveLongList {
     @Override
     public Long get(int index) {
       if (index >= size) {
-        throw new IndexOutOfBoundsException();
+        throw new IndexOutOfBoundsException("Index " + index + " out of bounds for length " + size);
       }
       // If out of bounds, the array access will produce a perfectly fine IndexOutOfBoundsException.
       return values[index];
