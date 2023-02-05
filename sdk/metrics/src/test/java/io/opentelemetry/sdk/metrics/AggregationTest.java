@@ -29,15 +29,14 @@ class AggregationTest {
         .contains("ExplicitBucketHistogramAggregation");
     assertThat(Aggregation.base2ExponentialBucketHistogram())
         .asString()
-        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=160,maxScale=20}");
+        .isEqualTo("Base2ExponentialHistogramAggregation{maxBuckets=160,maxScale=20}");
     assertThat(Aggregation.base2ExponentialBucketHistogram(1, 0))
         .asString()
-        .isEqualTo("ExponentialHistogramAggregation{maxBuckets=1,maxScale=0}");
+        .isEqualTo("Base2ExponentialHistogramAggregation{maxBuckets=1,maxScale=0}");
   }
 
   @Test
   void histogramUsesExplicitBucket() {
-    // Note: This will change when exponential histograms are launched.
     assertThat(Aggregation.explicitBucketHistogram())
         .asString()
         .contains("ExplicitBucketHistogram");

@@ -6,10 +6,10 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DefaultAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DropAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.LastValueAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.SumAggregation;
 import java.util.List;
@@ -74,7 +74,7 @@ public interface Aggregation {
    * default {@code maxBuckets} and {@code maxScale}.
    */
   static Aggregation base2ExponentialBucketHistogram() {
-    return ExponentialHistogramAggregation.getDefault();
+    return Base2ExponentialHistogramAggregation.getDefault();
   }
 
   /**
@@ -88,6 +88,6 @@ public interface Aggregation {
    *     performance of computing bucket index is improved when scale is {@code <= 0}.
    */
   static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
-    return ExponentialHistogramAggregation.create(maxBuckets, maxScale);
+    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale);
   }
 }

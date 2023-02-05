@@ -8,9 +8,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class ExponentialHistogramIndexer {
+final class Base2ExponentialHistogramIndexer {
 
-  private static final Map<Integer, ExponentialHistogramIndexer> cache = new ConcurrentHashMap<>();
+  private static final Map<Integer, Base2ExponentialHistogramIndexer> cache =
+      new ConcurrentHashMap<>();
 
   /** Bit mask used to isolate exponent of IEEE 754 double precision number. */
   private static final long EXPONENT_BIT_MASK = 0x7FF0000000000000L;
@@ -35,14 +36,14 @@ final class ExponentialHistogramIndexer {
   private final int scale;
   private final double scaleFactor;
 
-  private ExponentialHistogramIndexer(int scale) {
+  private Base2ExponentialHistogramIndexer(int scale) {
     this.scale = scale;
     this.scaleFactor = computeScaleFactor(scale);
   }
 
   /** Get an indexer for the given scale. Indexers are cached and reused for performance. */
-  static ExponentialHistogramIndexer get(int scale) {
-    return cache.computeIfAbsent(scale, unused -> new ExponentialHistogramIndexer(scale));
+  static Base2ExponentialHistogramIndexer get(int scale) {
+    return cache.computeIfAbsent(scale, unused -> new Base2ExponentialHistogramIndexer(scale));
   }
 
   /**

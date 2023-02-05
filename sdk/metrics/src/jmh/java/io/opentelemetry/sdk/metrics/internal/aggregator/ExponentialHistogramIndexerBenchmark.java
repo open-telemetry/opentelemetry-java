@@ -36,7 +36,7 @@ public class ExponentialHistogramIndexerBenchmark {
 
     private double[] values;
     private final AtomicLong valueIndex = new AtomicLong();
-    private ExponentialHistogramIndexer indexer;
+    private Base2ExponentialHistogramIndexer indexer;
 
     @Setup(Level.Trial)
     public final void setup() {
@@ -46,7 +46,7 @@ public class ExponentialHistogramIndexerBenchmark {
       for (int i = 0; i < numValues; i++) {
         values[i] = random.nextDouble() * 1000;
       }
-      indexer = ExponentialHistogramIndexer.get(scale);
+      indexer = Base2ExponentialHistogramIndexer.get(scale);
     }
 
     public void compute() {

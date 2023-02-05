@@ -12,37 +12,37 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * This class handles the operations for recording, scaling, and exposing data related to the
+ * This class handles the operations for recording, scaling, and exposing data related to the base2
  * exponential histogram.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
+final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   private AdaptingCircularBufferCounter counts;
   private int scale;
-  private ExponentialHistogramIndexer exponentialHistogramIndexer;
+  private Base2ExponentialHistogramIndexer base2ExponentialHistogramIndexer;
   private long totalCount;
 
-  DoubleExponentialHistogramBuckets(int scale, int maxBuckets) {
+  DoubleBase2ExponentialHistogramBuckets(int scale, int maxBuckets) {
     this.counts = new AdaptingCircularBufferCounter(maxBuckets);
     this.scale = scale;
-    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(this.scale);
+    this.base2ExponentialHistogramIndexer = Base2ExponentialHistogramIndexer.get(this.scale);
     this.totalCount = 0;
   }
 
   // For copying
-  DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
+  DoubleBase2ExponentialHistogramBuckets(DoubleBase2ExponentialHistogramBuckets buckets) {
     this.counts = new AdaptingCircularBufferCounter(buckets.counts);
     this.scale = buckets.scale;
-    this.exponentialHistogramIndexer = buckets.exponentialHistogramIndexer;
+    this.base2ExponentialHistogramIndexer = buckets.base2ExponentialHistogramIndexer;
     this.totalCount = buckets.totalCount;
   }
 
   /** Returns a copy of this bucket. */
-  DoubleExponentialHistogramBuckets copy() {
-    return new DoubleExponentialHistogramBuckets(this);
+  DoubleBase2ExponentialHistogramBuckets copy() {
+    return new DoubleBase2ExponentialHistogramBuckets(this);
   }
 
   /** Resets all counters in this bucket set to zero, but preserves scale. */
@@ -56,7 +56,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       // Guarded by caller. If passed 0 it would be a bug in the SDK.
       throw new IllegalStateException("Illegal attempted recording of zero at bucket level.");
     }
-    int index = exponentialHistogramIndexer.computeIndex(value);
+    int index = base2ExponentialHistogramIndexer.computeIndex(value);
     boolean recordingSuccessful = this.counts.increment(index, 1);
     if (recordingSuccessful) {
       totalCount++;
@@ -121,7 +121,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
     }
 
     this.scale = this.scale - by;
-    this.exponentialHistogramIndexer = ExponentialHistogramIndexer.get(this.scale);
+    this.base2ExponentialHistogramIndexer = Base2ExponentialHistogramIndexer.get(this.scale);
   }
 
   /**
@@ -135,7 +135,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    *
    * @param other the histogram that will be merged into this one
    */
-  void mergeInto(DoubleExponentialHistogramBuckets other) {
+  void mergeInto(DoubleBase2ExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
     }
@@ -190,7 +190,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    * @return The required scale reduction in order to fit the value in these buckets.
    */
   int getScaleReduction(double value) {
-    long index = exponentialHistogramIndexer.computeIndex(value);
+    long index = base2ExponentialHistogramIndexer.computeIndex(value);
     long newStart = Math.min(index, counts.getIndexStart());
     long newEnd = Math.max(index, counts.getIndexEnd());
     return getScaleReduction(newStart, newEnd);
@@ -209,10 +209,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof DoubleExponentialHistogramBuckets)) {
+    if (!(obj instanceof DoubleBase2ExponentialHistogramBuckets)) {
       return false;
     }
-    DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
+    DoubleBase2ExponentialHistogramBuckets other = (DoubleBase2ExponentialHistogramBuckets) obj;
     // Don't need to compare getTotalCount() because equivalent bucket counts
     // imply equivalent overall count.
     // Additionally, we compare the "semantics" of bucket counts, that is
@@ -232,7 +232,7 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
    *   <li>Offset does NOT need to be the same
    * </ul>
    */
-  private boolean sameBucketCounts(DoubleExponentialHistogramBuckets other) {
+  private boolean sameBucketCounts(DoubleBase2ExponentialHistogramBuckets other) {
     if (this.totalCount != other.totalCount) {
       return false;
     }

@@ -28,12 +28,12 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Aggregator that generates exponential histograms.
+ * Aggregator that generates base2 exponential histograms.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DoubleExponentialHistogramAggregator
+public final class DoubleBase2ExponentialHistogramAggregator
     implements Aggregator<ExponentialHistogramPointData, DoubleExemplarData> {
 
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
@@ -45,7 +45,7 @@ public final class DoubleExponentialHistogramAggregator
    *
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
-  public DoubleExponentialHistogramAggregator(
+  public DoubleBase2ExponentialHistogramAggregator(
       Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
       int maxBuckets,
       int maxScale) {
@@ -78,8 +78,8 @@ public final class DoubleExponentialHistogramAggregator
   static final class Handle
       extends AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> {
     private final int maxBuckets;
-    @Nullable private DoubleExponentialHistogramBuckets positiveBuckets;
-    @Nullable private DoubleExponentialHistogramBuckets negativeBuckets;
+    @Nullable private DoubleBase2ExponentialHistogramBuckets positiveBuckets;
+    @Nullable private DoubleBase2ExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
     private double min;
@@ -129,7 +129,7 @@ public final class DoubleExponentialHistogramAggregator
     }
 
     private static ExponentialHistogramBuckets resolveBuckets(
-        @Nullable DoubleExponentialHistogramBuckets buckets, int scale, boolean reset) {
+        @Nullable DoubleBase2ExponentialHistogramBuckets buckets, int scale, boolean reset) {
       if (buckets == null) {
         return EmptyExponentialHistogramBuckets.get(scale);
       }
@@ -154,20 +154,20 @@ public final class DoubleExponentialHistogramAggregator
       count++;
 
       int c = Double.compare(value, 0);
-      DoubleExponentialHistogramBuckets buckets;
+      DoubleBase2ExponentialHistogramBuckets buckets;
       if (c == 0) {
         zeroCount++;
         return;
       } else if (c > 0) {
         // Initialize positive buckets at current scale, if needed
         if (positiveBuckets == null) {
-          positiveBuckets = new DoubleExponentialHistogramBuckets(scale, maxBuckets);
+          positiveBuckets = new DoubleBase2ExponentialHistogramBuckets(scale, maxBuckets);
         }
         buckets = positiveBuckets;
       } else {
         // Initialize negative buckets at current scale, if needed
         if (negativeBuckets == null) {
-          negativeBuckets = new DoubleExponentialHistogramBuckets(scale, maxBuckets);
+          negativeBuckets = new DoubleBase2ExponentialHistogramBuckets(scale, maxBuckets);
         }
         buckets = negativeBuckets;
       }
@@ -214,7 +214,7 @@ public final class DoubleExponentialHistogramAggregator
       return ZERO_BUCKETS.computeIfAbsent(
           scale,
           scale1 ->
-              new AutoValue_DoubleExponentialHistogramAggregator_EmptyExponentialHistogramBuckets(
+              new AutoValue_DoubleBase2ExponentialHistogramAggregator_EmptyExponentialHistogramBuckets(
                   scale1, 0, Collections.emptyList(), 0));
     }
   }
