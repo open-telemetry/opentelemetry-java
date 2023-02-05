@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -49,6 +51,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
+  private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
+      new ConcurrentLinkedQueue<>();
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -63,6 +67,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+  }
+
+  // Visible for testing
+  Queue<AggregatorHandle<T, U>> getAggregatorHandlePool() {
+    return aggregatorHandlePool;
   }
 
   @Override
@@ -99,7 +108,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ").");
       return null;
     }
-    AggregatorHandle<T, U> newHandle = aggregator.createHandle();
+    // Get handle from pool if available, else create a new one.
+    AggregatorHandle<T, U> newHandle = aggregatorHandlePool.poll();
+    if (newHandle == null) {
+      newHandle = aggregator.createHandle();
+    }
     handle = aggregatorHandles.putIfAbsent(attributes, newHandle);
     return handle != null ? handle : newHandle;
   }
@@ -119,14 +132,23 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     // Grab aggregated points.
     List<T> points = new ArrayList<>(aggregatorHandles.size());
     for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : aggregatorHandles.entrySet()) {
+      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
       if (reset) {
         aggregatorHandles.remove(entry.getKey(), entry.getValue());
+        // Return the aggregator to the pool.
+        aggregatorHandlePool.offer(entry.getValue());
       }
-      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
       if (point == null) {
         continue;
       }
       points.add(point);
+    }
+
+    // Trim pool down if needed. pool.size() will only exceed MAX_CARDINALITY if new handles are
+    // created during collection.
+    int toDelete = aggregatorHandlePool.size() - MAX_CARDINALITY;
+    for (int i = 0; i < toDelete; i++) {
+      aggregatorHandlePool.poll();
     }
 
     if (points.isEmpty()) {
