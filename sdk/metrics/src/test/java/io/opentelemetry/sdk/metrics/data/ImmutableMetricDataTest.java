@@ -63,7 +63,9 @@ class ImmutableMetricDataTest {
           EPOCH_NANOS,
           Attributes.of(KEY, "value"),
           DOUBLE_VALUE,
+          /* hasMin= */ true,
           DOUBLE_VALUE_MIN,
+          /* hasMax= */ true,
           DOUBLE_VALUE_MAX,
           ImmutableList.of(1.0),
           ImmutableList.of(1L, 1L));
@@ -203,7 +205,9 @@ class ImmutableMetricDataTest {
                     0,
                     Attributes.empty(),
                     0.0,
+                    /* hasMin= */ false,
                     0.0,
+                    /* hasMax= */ false,
                     0.0,
                     ImmutableList.of(),
                     ImmutableList.of()))
@@ -215,7 +219,9 @@ class ImmutableMetricDataTest {
                     0,
                     Attributes.empty(),
                     0.0,
+                    /* hasMin= */ false,
                     0.0,
+                    /* hasMax= */ false,
                     0.0,
                     ImmutableList.of(1.0, 1.0),
                     ImmutableList.of(0L, 0L, 0L)))
@@ -227,7 +233,9 @@ class ImmutableMetricDataTest {
                     0,
                     Attributes.empty(),
                     0.0,
+                    /* hasMin= */ false,
                     0.0,
+                    /* hasMax= */ false,
                     0.0,
                     ImmutableList.of(Double.NEGATIVE_INFINITY),
                     ImmutableList.of(0L, 0L)))
