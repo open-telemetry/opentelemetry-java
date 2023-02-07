@@ -14,15 +14,15 @@ import org.junit.jupiter.api.Test;
 
 /**
  * These are extra test cases for buckets. Much of this class is already tested via more complex
- * test cases at {@link DoubleExponentialHistogramAggregatorTest}.
+ * test cases at {@link DoubleBase2ExponentialHistogramAggregatorTest}.
  */
-class DoubleExponentialHistogramBucketsTest {
+class DoubleBase2ExponentialHistogramBucketsTest {
 
   @Test
   void record_Valid() {
     // Can only effectively test recording of one value here due to downscaling required.
     // More complex recording/downscaling operations are tested in the aggregator.
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
     b.record(1);
     b.record(1);
     b.record(1);
@@ -32,13 +32,13 @@ class DoubleExponentialHistogramBucketsTest {
 
   @Test
   void record_Zero_Throws() {
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
     assertThatThrownBy(() -> b.record(0)).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   void downscale_Valid() {
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
     b.downscale(20); // scale of zero is easy to reason with without a calculator
     b.record(1);
     b.record(2);
@@ -51,14 +51,14 @@ class DoubleExponentialHistogramBucketsTest {
 
   @Test
   void downscale_NegativeIncrement_Throws() {
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
     assertThatThrownBy(() -> b.downscale(-1)).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   void equalsAndHashCode() {
-    DoubleExponentialHistogramBuckets a = newBuckets();
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets a = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
 
     assertThat(a).isNotNull();
     assertThat(b).isEqualTo(a);
@@ -76,9 +76,9 @@ class DoubleExponentialHistogramBucketsTest {
     assertThat(a).hasSameHashCodeAs(b);
 
     // Now we start to play with altering offset, but having same effective counts.
-    DoubleExponentialHistogramBuckets empty = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets empty = newBuckets();
     empty.downscale(20);
-    DoubleExponentialHistogramBuckets c = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets c = newBuckets();
     c.downscale(20);
     assertThat(c.record(1)).isTrue();
     // Record can fail if scale is not set correctly.
@@ -90,13 +90,13 @@ class DoubleExponentialHistogramBucketsTest {
   void toString_Valid() {
     // Note this test may break once difference implementations for counts are developed since
     // the counts may have different toStrings().
-    DoubleExponentialHistogramBuckets b = newBuckets();
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets();
     b.record(1);
     assertThat(b.toString())
         .isEqualTo("DoubleExponentialHistogramBuckets{scale: 20, offset: -1, counts: {-1=1} }");
   }
 
-  private static DoubleExponentialHistogramBuckets newBuckets() {
-    return new DoubleExponentialHistogramBuckets(20, 160);
+  private static DoubleBase2ExponentialHistogramBuckets newBuckets() {
+    return new DoubleBase2ExponentialHistogramBuckets(20, 160);
   }
 }

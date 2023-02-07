@@ -21,8 +21,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -230,7 +230,7 @@ class ViewConfigTest {
     assertThat(
             ViewConfig.toAggregation(
                 "base2_exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
-        .isInstanceOf(ExponentialHistogramAggregation.class)
+        .isInstanceOf(Base2ExponentialHistogramAggregation.class)
         .extracting("maxBuckets", as(InstanceOfAssertFactories.INTEGER))
         .isEqualTo(20);
   }

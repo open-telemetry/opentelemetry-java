@@ -21,9 +21,9 @@ public enum HistogramAggregationParam {
           ExplicitBucketHistogramUtils.createBoundaryArray(Collections.emptyList()),
           ExemplarReservoir::doubleNoSamples)),
   EXPONENTIAL_SMALL_CIRCULAR_BUFFER(
-      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 0)),
+      new DoubleBase2ExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 20, 0)),
   EXPONENTIAL_CIRCULAR_BUFFER(
-      new DoubleExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 0));
+      new DoubleBase2ExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 0));
 
   private final Aggregator<?, ?> aggregator;
 

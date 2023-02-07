@@ -12,18 +12,21 @@ import java.util.function.Consumer;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
-class ExponentialHistogramIndexerTest {
+class Base2ExponentialHistogramIndexerTest {
 
   @Test
   void get_Caches() {
-    assertThat(ExponentialHistogramIndexer.get(1)).isSameAs(ExponentialHistogramIndexer.get(1));
-    assertThat(ExponentialHistogramIndexer.get(2)).isSameAs(ExponentialHistogramIndexer.get(2));
-    assertThat(ExponentialHistogramIndexer.get(1)).isNotSameAs(ExponentialHistogramIndexer.get(2));
+    assertThat(Base2ExponentialHistogramIndexer.get(1))
+        .isSameAs(Base2ExponentialHistogramIndexer.get(1));
+    assertThat(Base2ExponentialHistogramIndexer.get(2))
+        .isSameAs(Base2ExponentialHistogramIndexer.get(2));
+    assertThat(Base2ExponentialHistogramIndexer.get(1))
+        .isNotSameAs(Base2ExponentialHistogramIndexer.get(2));
   }
 
   @Test
   void computeIndex_ScaleOne() {
-    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(1);
+    Base2ExponentialHistogramIndexer indexer = Base2ExponentialHistogramIndexer.get(1);
 
     Arrays.asList(
             // Near +Inf
@@ -57,7 +60,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void computeIndex_ScaleZero() {
-    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(0);
+    Base2ExponentialHistogramIndexer indexer = Base2ExponentialHistogramIndexer.get(0);
 
     Arrays.asList(
             // Near +Inf
@@ -91,7 +94,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void computeIndex_ScaleNegOne() {
-    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(-1);
+    Base2ExponentialHistogramIndexer indexer = Base2ExponentialHistogramIndexer.get(-1);
 
     Arrays.asList(
             of(17d, 2),
@@ -119,7 +122,7 @@ class ExponentialHistogramIndexerTest {
 
   @Test
   void valueToIndex_ScaleNegFour() {
-    ExponentialHistogramIndexer indexer = ExponentialHistogramIndexer.get(-4);
+    Base2ExponentialHistogramIndexer indexer = Base2ExponentialHistogramIndexer.get(-4);
 
     Arrays.asList(
             of(0x1p0, -1),
@@ -199,7 +202,7 @@ class ExponentialHistogramIndexerTest {
         .forEach(test(indexer));
   }
 
-  private static Consumer<TestCase> test(ExponentialHistogramIndexer indexer) {
+  private static Consumer<TestCase> test(Base2ExponentialHistogramIndexer indexer) {
     return testCase ->
         AssertionsForClassTypes.assertThat(indexer.computeIndex(testCase.value))
             .describedAs(
