@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramAggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -26,18 +26,18 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
+public final class Base2ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
   private static final int DEFAULT_MAX_SCALE = 20;
 
   private static final Aggregation DEFAULT =
-      new ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS, DEFAULT_MAX_SCALE);
+      new Base2ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS, DEFAULT_MAX_SCALE);
 
   private final int maxBuckets;
   private final int maxScale;
 
-  private ExponentialHistogramAggregation(int maxBuckets, int maxScale) {
+  private Base2ExponentialHistogramAggregation(int maxBuckets, int maxScale) {
     this.maxBuckets = maxBuckets;
     this.maxScale = maxScale;
   }
@@ -60,7 +60,7 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
   public static Aggregation create(int maxBuckets, int maxScale) {
     checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
     checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
-    return new ExponentialHistogramAggregation(maxBuckets, maxScale);
+    return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale);
   }
 
   @Override
@@ -68,7 +68,7 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
     return (Aggregator<T, U>)
-        new DoubleExponentialHistogramAggregator(
+        new DoubleBase2ExponentialHistogramAggregator(
             () ->
                 ExemplarReservoir.filtered(
                     exemplarFilter,
@@ -93,7 +93,7 @@ public final class ExponentialHistogramAggregation implements Aggregation, Aggre
 
   @Override
   public String toString() {
-    return "ExponentialHistogramAggregation{maxBuckets="
+    return "Base2ExponentialHistogramAggregation{maxBuckets="
         + maxBuckets
         + ",maxScale="
         + maxScale

@@ -5,14 +5,17 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
+
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -175,11 +178,15 @@ public final class OtlpConfigUtil {
     if (defaultHistogramAggregation == null) {
       return;
     }
-    if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")) {
+    // TODO(jack-berg): remove EXPONENTIAL_BUCKET_HISTOGRAM in 1.24.0
+    if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")
+        || AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
+            .equalsIgnoreCase(defaultHistogramAggregation)) {
       defaultAggregationSelectorConsumer.accept(
           DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
-    } else if (!defaultHistogramAggregation.equalsIgnoreCase("EXPLICIT_BUCKET_HISTOGRAM")) {
+              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
+    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
     }

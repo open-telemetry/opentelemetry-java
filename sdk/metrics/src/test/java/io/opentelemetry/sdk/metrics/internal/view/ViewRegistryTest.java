@@ -177,7 +177,7 @@ class ViewRegistryTest {
         instrumentType ->
             instrumentType == InstrumentType.HISTOGRAM
                     || instrumentType == InstrumentType.OBSERVABLE_GAUGE
-                ? ExponentialHistogramAggregation.getDefault()
+                ? Aggregation.base2ExponentialBucketHistogram()
                 : Aggregation.defaultAggregation();
 
     ViewRegistry viewRegistry =
@@ -211,7 +211,7 @@ class ViewRegistryTest {
                 registeredView(
                     InstrumentSelector.builder().setName("*").build(),
                     View.builder()
-                        .setAggregation(ExponentialHistogramAggregation.getDefault())
+                        .setAggregation(Aggregation.base2ExponentialBucketHistogram())
                         .build())));
     // At this point, no warning logs should have been produced.
     assertThat(logs.getEvents()).hasSize(0);
@@ -225,7 +225,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     logs.assertContains(
-        "Instrument default aggregation exponential_bucket_histogram is incompatible with instrument default of type OBSERVABLE_GAUGE");
+        "Instrument default aggregation base2_exponential_bucket_histogram is incompatible with instrument default of type OBSERVABLE_GAUGE");
   }
 
   @Test

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.data;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AdaptingCircularBufferCounter;
-import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHistogramBuckets;
 import java.util.List;
 
 public class MutableExponentialHistogramBuckets implements ExponentialHistogramBuckets {
@@ -45,7 +45,7 @@ public class MutableExponentialHistogramBuckets implements ExponentialHistogramB
   }
 
   /** Set the values. */
-  public void set(DoubleExponentialHistogramBuckets exponentialHistogramBuckets) {
+  public void set(DoubleBase2ExponentialHistogramBuckets exponentialHistogramBuckets) {
     this.scale = exponentialHistogramBuckets.getScale();
     this.offset = exponentialHistogramBuckets.getOffset();
     AdaptingCircularBufferCounter counts = exponentialHistogramBuckets.getCounts();

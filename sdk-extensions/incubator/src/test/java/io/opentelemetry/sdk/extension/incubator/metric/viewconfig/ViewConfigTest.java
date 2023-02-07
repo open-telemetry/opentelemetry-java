@@ -21,8 +21,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -198,7 +198,7 @@ class ViewConfigTest {
     assertThatThrownBy(
             () ->
                 ViewConfig.toAggregation(
-                    "exponential_bucket_histogram", ImmutableMap.of("max_buckets", "four")))
+                    "base2_exponential_bucket_histogram", ImmutableMap.of("max_buckets", "four")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("max_buckets must be an integer");
   }
@@ -224,12 +224,13 @@ class ViewConfigTest {
         .isEqualTo(Arrays.asList(1.0, 2.0));
 
     // Exponential histogram
-    assertThat(ViewConfig.toAggregation("exponential_bucket_histogram", Collections.emptyMap()))
-        .isEqualTo(ExponentialHistogramAggregation.getDefault());
+    assertThat(
+            ViewConfig.toAggregation("base2_exponential_bucket_histogram", Collections.emptyMap()))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     assertThat(
             ViewConfig.toAggregation(
-                "exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
-        .isInstanceOf(ExponentialHistogramAggregation.class)
+                "base2_exponential_bucket_histogram", ImmutableMap.of("max_buckets", 20)))
+        .isInstanceOf(Base2ExponentialHistogramAggregation.class)
         .extracting("maxBuckets", as(InstanceOfAssertFactories.INTEGER))
         .isEqualTo(20);
   }

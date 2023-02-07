@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.14.0"
+  id("com.diffplug.spotless") version "6.14.1"
 }
 
 spotless {
@@ -20,7 +20,7 @@ spotless {
       // also very hard to find out where this happens
       "ktlint_standard_wrapping" to "disabled"
     ))
-    target("**/*.gradle.kts",)
+    target("**/*.gradle.kts")
   }
 }
 
@@ -33,7 +33,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.10.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.14.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.14.1")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
@@ -46,6 +46,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
+  implementation("org.owasp:dependency-check-gradle:8.0.2")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
