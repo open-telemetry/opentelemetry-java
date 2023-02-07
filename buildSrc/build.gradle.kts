@@ -20,7 +20,7 @@ spotless {
       // also very hard to find out where this happens
       "ktlint_standard_wrapping" to "disabled"
     ))
-    target("**/*.gradle.kts",)
+    target("**/*.gradle.kts")
   }
 }
 
@@ -46,6 +46,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.6.0")
+  implementation("org.owasp:dependency-check-gradle:8.0.2")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
