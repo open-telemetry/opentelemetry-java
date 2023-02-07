@@ -132,12 +132,14 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     // Grab aggregated points.
     points.clear();
-    for (Map.Entry<Attributes, AggregatorHandle<T, U>> entry : aggregatorHandles.entrySet()) {
-      T point = entry.getValue().aggregateThenMaybeReset(start, epochNanos, entry.getKey(), reset);
+    for (Attributes attributes :
+        ((Map<Attributes, AggregatorHandle<T, U>>) aggregatorHandles).keySet()) {
+      AggregatorHandle<T, U> handle = Objects.requireNonNull(aggregatorHandles.get(attributes));
+      T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
       if (reset) {
-        aggregatorHandles.remove(entry.getKey(), entry.getValue());
+        aggregatorHandles.remove(attributes, handle);
         // Return the aggregator to the pool.
-        aggregatorHandlePool.offer(entry.getValue());
+        aggregatorHandlePool.offer(handle);
       }
       if (point == null) {
         continue;

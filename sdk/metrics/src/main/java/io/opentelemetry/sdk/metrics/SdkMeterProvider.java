@@ -162,6 +162,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     private final MeterProviderSharedState sharedState;
     private final RegisteredReader registeredReader;
 
+    private final Object collectLock = new Object();
+    private final List<MetricData> results = new ArrayList<>();
+
     LeasedMetricProducer(
         ComponentRegistry<SdkMeter> registry,
         MeterProviderSharedState sharedState,
@@ -173,14 +176,16 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
     @Override
     public Collection<MetricData> collectAllMetrics() {
-      Collection<SdkMeter> meters = registry.getComponents();
-      List<MetricData> result = new ArrayList<>();
-      long collectTime = sharedState.getClock().now();
-      for (SdkMeter meter : meters) {
-        result.addAll(meter.collectAll(registeredReader, collectTime));
+      synchronized (collectLock) {
+        Collection<SdkMeter> meters = registry.getComponents();
+        results.clear();
+        long collectTime = sharedState.getClock().now();
+        for (SdkMeter meter : meters) {
+          results.addAll(meter.collectAll(registeredReader, collectTime));
+        }
+        registeredReader.setLastCollectEpochNanos(collectTime);
+        return Collections.unmodifiableCollection(results);
       }
-      registeredReader.setLastCollectEpochNanos(collectTime);
-      return Collections.unmodifiableCollection(result);
     }
   }
 }

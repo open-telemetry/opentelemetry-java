@@ -35,6 +35,8 @@ public class MeterSharedState {
   @GuardedBy("callbackLock")
   private final List<CallbackRegistration> callbackRegistrations = new ArrayList<>();
 
+  private final List<MetricData> results = new ArrayList<>();
+
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -99,7 +101,7 @@ public class MeterSharedState {
 
       Collection<MetricStorage> storages =
           Objects.requireNonNull(readerStorageRegistries.get(registeredReader)).getStorages();
-      List<MetricData> result = new ArrayList<>(storages.size());
+      results.clear();
       for (MetricStorage storage : storages) {
         MetricData current =
             storage.collect(
@@ -110,10 +112,10 @@ public class MeterSharedState {
         // Ignore if the metric data doesn't have any data points, for example when aggregation is
         // Aggregation#drop()
         if (!current.isEmpty()) {
-          result.add(current);
+          results.add(current);
         }
       }
-      return result;
+      return results;
     }
   }
 
