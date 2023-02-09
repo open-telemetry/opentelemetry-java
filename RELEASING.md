@@ -6,7 +6,7 @@ directory. Additionally, ensure that appropriate `@since` annotations are added 
 the public APIs.
 
 When preparing the change log, you can use
-the [draft-change-log-entires.sh](./.github/scripts/draft-change-log-entries.sh) script to assist
+the [draft-change-log-entries.sh](./.github/scripts/draft-change-log-entries.sh) script to assist
 with drafting. Alternatively,
 use `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent` or
 the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/) to view a

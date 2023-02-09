@@ -84,10 +84,9 @@ This release is a notable release for metrics:
 
 ### Semantic Conventions
 
-* Update the semantic conventions to v1.17.0
-  ([#5134](https://github.com/open-telemetry/opentelemetry-java/pull/5134))
 * Update semconv to 1.18.0
   ([#5188](https://github.com/open-telemetry/opentelemetry-java/pull/5188))
+  ([#5134](https://github.com/open-telemetry/opentelemetry-java/pull/5134))
 
 ### OpenTracing Shim
 
