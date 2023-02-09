@@ -45,6 +45,8 @@ public final class TracesAssert
   /**
    * Returns an assertion for a list of traces. The provided spans will be grouped into traces by
    * their trace ID.
+   *
+   * @since 1.23.0
    */
   public static TracesAssert assertThat(List<SpanData> spanData) {
     Map<String, List<SpanData>> traces =
