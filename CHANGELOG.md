@@ -72,17 +72,22 @@ This release is a notable release for metrics:
 
 #### Testing
 
-* Sort spans by start time (parents before children as tiebreaker) to avoid common causes for flaky
-  tests
-  ([#5026](https://github.com/open-telemetry/opentelemetry-java/pull/5026))
 * WARNING: Merge `opentelemetry-sdk-metrics-testing` into `opentelemetry-sdk-testing`. Stop
   publishing `opentelemetry-sdk-metrics-testing`.
   ([#5144](https://github.com/open-telemetry/opentelemetry-java/pull/5144))
+* Sort spans by start time (parents before children as tiebreaker) to avoid common causes for flaky
+  tests
+  ([#5026](https://github.com/open-telemetry/opentelemetry-java/pull/5026))
+* Add resource assertion methods to SpanDataAssert and MetricAssert
+  ([#5160](https://github.com/open-telemetry/opentelemetry-java/pull/5160))
+
 
 ### Semantic Conventions
 
 * Update the semantic conventions to v1.17.0
   ([#5134](https://github.com/open-telemetry/opentelemetry-java/pull/5134))
+* Update semconv to 1.18.0
+  ([#5188](https://github.com/open-telemetry/opentelemetry-java/pull/5188))
 
 ### OpenTracing Shim
 
