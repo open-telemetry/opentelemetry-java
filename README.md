@@ -255,13 +255,19 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 | [OTLP Exporters](./exporters/otlp/all)              | OTLP gRPC & HTTP exporters, including metrics and trace                             | `opentelemetry-exporter-otlp`         | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
 | [OTLP Log Exporters](./exporters/otlp/logs)         | OTLP gRPC & HTTP log exporters                                                      | `opentelemetry-exporter-otlp-logs`    | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
 | [OTLP Common](./exporters/otlp/common)              | Shared OTLP components (internal)                                                   | `opentelemetry-exporter-otlp-common`  | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
-| [Jaeger gRPC Exporter](./exporters/jaeger)          | Jaeger gRPC trace exporter                                                          | `opentelemetry-exporter-jaeger`       | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
-| [Jaeger Thrift Exporter](./exporters/jaeger-thrift) | Jaeger thrift trace exporter                                                        | `opentelemetry-exporter-jaeger-thift` | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
+| [Jaeger gRPC Exporter](./exporters/jaeger)          | Jaeger gRPC trace exporter (deprecated [1])                                         | `opentelemetry-exporter-jaeger`       | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
+| [Jaeger Thrift Exporter](./exporters/jaeger-thrift) | Jaeger thrift trace exporter (deprecated [1])                                       | `opentelemetry-exporter-jaeger-thift` | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
 | [Logging Exporter](./exporters/logging)             | Logging exporters, includings metrics, traces, and logs                             | `opentelemetry-exporter-logging`      | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
 | [OTLP Logging Exporter](./exporters/logging-otlp)   | Logging exporters in OTLP protobuf JSON format, including metrics, traces, and logs | `opentelemetry-exporter-logging-otlp` | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
 | [Zipkin Exporter](./exporters/zipkin)               | Zipkin trace exporter                                                               | `opentelemetry-exporter-zipkin`       | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
 | [Prometheus Exporter](./exporters/prometheus)       | Prometheus metric exporter                                                          | `opentelemetry-exporter-prometheus`   | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
 | [Exporter Common](./exporters/common)               | Shared exporter components (internal)                                               | `opentelemetry-exporter-common`       | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
+
+**[1]**: Jaeger now
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/) and jaeger
+exporters are now deprecated. `opentelemetry-exporter-jaeger-thrift` will continue to be published
+until 1.27.0 (July 2023). After 1.27.0, it will continue to receive patches for security
+vulnerabilities, and `io.opentelemetry:opentelemetry-bom` will reference the last published version.
 
 ### SDK Extensions
 

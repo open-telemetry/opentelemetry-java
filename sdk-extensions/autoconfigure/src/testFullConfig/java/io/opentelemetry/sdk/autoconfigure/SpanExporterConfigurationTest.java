@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.Test;
 class SpanExporterConfigurationTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Testing deprecated jaeger exporter
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpanExporterConfiguration.spanExporterSpiManager(
@@ -31,7 +31,7 @@ class SpanExporterConfigurationTest {
             SpanExporterConfigurationTest.class.getClassLoader());
 
     assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
-        .isInstanceOf(JaegerGrpcSpanExporter.class);
+        .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(LoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))

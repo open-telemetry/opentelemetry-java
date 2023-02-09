@@ -2,6 +2,12 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
+> **NOTICE**: Jaeger now
+> has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/) and jaeger
+> exporters are now deprecated. `opentelemetry-exporter-jaeger-thrift` will continue to be published until
+> 1.27.0 (July 2023). After 1.27.0, it will continue to receive patches for security vulnerabilities,
+> and `io.opentelemetry:opentelemetry-bom` will reference the last published version.
+
 This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over HTTP.
 
 ## Configuration
