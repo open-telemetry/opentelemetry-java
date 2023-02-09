@@ -55,10 +55,11 @@ class MetricAssertionsTest {
   private static final String SPAN_ID2 = "0000000000000004";
 
   private static final Resource RESOURCE =
-      Resource.create(Attributes.builder().put("dog", "bark").build());
+      Resource.create(Attributes.builder().put("dog", "bark").put("dog is cute", true).build());
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.builder("opentelemetry").setVersion("1.0").build();
 
+  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
   private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
   private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
   private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
@@ -221,7 +222,7 @@ class MetricAssertionsTest {
           ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
               // Points
-              Arrays.asList(HISTOGRAM_POINT_DATA)));
+              Collections.singletonList(HISTOGRAM_POINT_DATA)));
 
   private static final MetricData HISTOGRAM_METRIC_DELTA =
       ImmutableMetricData.createDoubleHistogram(
@@ -233,7 +234,7 @@ class MetricAssertionsTest {
           ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               // Points
-              Arrays.asList(HISTOGRAM_POINT_DATA)));
+              Collections.singletonList(HISTOGRAM_POINT_DATA)));
 
   private static final ExponentialHistogramPointData EXPONENTIAL_HISTOGRAM_POINT_DATA =
       ImmutableExponentialHistogramPointData.create(
@@ -291,12 +292,43 @@ class MetricAssertionsTest {
           /* unit= */ "1",
           ImmutableSummaryData.create(
               // Points
-              Arrays.asList(SUMMARY_POINT_DATA)));
+              Collections.singletonList(SUMMARY_POINT_DATA)));
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleGauge() {
     assertThat(DOUBLE_GAUGE_METRIC)
         .hasResource(RESOURCE)
+        .hasResourceSatisfying(
+            resource ->
+                resource
+                    .hasSchemaUrl(null)
+                    .hasAttribute(DOG, "bark")
+                    .hasAttributes(
+                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                    .hasAttributes(
+                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .hasSize(2)
+                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                                .hasEntrySatisfying(
+                                    AttributeKey.booleanKey("dog is cute"),
+                                    value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    satisfies(DOG, val -> val.startsWith("bar")),
+                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasName("gauge")
         .hasDescription("a gauge")
@@ -421,8 +453,82 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleGaugeFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasResource(Resource.empty()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes -> assertThat(attributes).hasSize(1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes ->
+                                    assertThat(attributes)
+                                        .containsEntry(AttributeKey.stringKey("dog"), "meow"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes ->
+                                    assertThat(attributes)
+                                        .containsEntry(
+                                            AttributeKey.booleanKey("dog is cute"), false))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                satisfies(DOG, val -> val.isEqualTo("meow")))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfyingExactly(
+                                satisfies(DOG, val -> val.isEqualTo("bark")))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -784,6 +890,7 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void doubleSumFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_SUM_METRIC).hasLongSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);
@@ -825,6 +932,7 @@ class MetricAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void longSumFailure() {
     assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasDoubleSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);
@@ -1045,6 +1153,12 @@ class MetricAssertionsTest {
   @Test
   void summary_failure() {
     assertThatThrownBy(() -> assertThat(SUMMARY_METRIC).hasHistogramSatisfying(histogram -> {}))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
