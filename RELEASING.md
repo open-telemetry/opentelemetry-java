@@ -6,9 +6,11 @@ directory. Additionally, ensure that appropriate `@since` annotations are added 
 the public APIs.
 
 When preparing the change log, you can use
-`git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent`
-or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/)
-to view a summary of all commits since last release as a reference.
+the [draft-change-log-entires.sh](./.github/scripts/draft-change-log-entries.sh) script to assist
+with drafting. Alternatively,
+use `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent` or
+the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/) to view a
+summary of all commits since last release as a reference.
 
 ## Release cadence
 
@@ -20,7 +22,6 @@ the first Monday of the month.
 * Close the release milestone if there is one.
 * Merge a pull request to `main` updating the `CHANGELOG.md`.
   * The heading for the unreleased entries should be `## Unreleased`.
-  * Can use the [draft-change-log-entires](./.github/scripts/draft-change-log-entries.sh) to assist preparing the changelog.
 * Run the [Prepare release branch workflow](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/prepare-release-branch.yml).
   * Press the "Run workflow" button, and leave the default branch `main` selected.
   * Review and merge the two pull requests that it creates
