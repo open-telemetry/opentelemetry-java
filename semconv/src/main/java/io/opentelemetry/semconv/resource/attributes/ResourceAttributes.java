@@ -18,7 +18,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.17.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.18.0";
 
   /**
    * Array of brand name and version separated by a space
@@ -728,7 +728,7 @@ public final class ResourceAttributes {
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APP_ENGINE = "gcp_app_engine";
     /** Red Hat OpenShift on Google Cloud. */
-    public static final String GOOGLE_CLOUD_OPENSHIFT = "google_cloud_openshift";
+    public static final String GCP_OPENSHIFT = "gcp_openshift";
     /** Red Hat OpenShift on IBM Cloud. */
     public static final String IBM_CLOUD_OPENSHIFT = "ibm_cloud_openshift";
     /** Tencent Cloud Cloud Virtual Machine (CVM). */
@@ -824,6 +824,14 @@ public final class ResourceAttributes {
 
     private TelemetrySdkLanguageValues() {}
   }
+
+  /**
+   * Red Hat OpenShift on Google Cloud.
+   *
+   * @deprecated This item has been removed as of 1.18.0 of the semantic conventions. Use {@link
+   *     ResourceAttributes#GCP_OPENSHIFT} instead.
+   */
+  @Deprecated public static final String GCP_OPENSHIFT = "gcp_openshift";
 
   private ResourceAttributes() {}
 }
