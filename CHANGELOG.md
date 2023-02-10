@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.23.0 (2023-02-10)
 
 This release is a notable release for metrics:
 
