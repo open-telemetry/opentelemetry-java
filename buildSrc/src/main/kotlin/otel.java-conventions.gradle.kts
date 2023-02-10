@@ -41,7 +41,8 @@ checkstyle {
 }
 
 dependencyCheck {
-  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor", "animalsniffer")
+  // spotless-1972451482 is a weird configuration that's only added in jaeger-proto
+  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor", "animalsniffer", "spotless-1972451482")
   failBuildOnCVSS = 7.0f // fail on high or critical CVE
   analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
 }
