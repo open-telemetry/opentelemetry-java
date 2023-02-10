@@ -18,13 +18,13 @@ This release is a notable release for metrics:
 
 #### Logs
 
-* WARNING: Split out Event API from Log API. Event API is now published in `opentelemetry-api-logs`.
+* WARNING: Split out Event API from Log API. Event API is now published in `opentelemetry-api-events`.
   API / SDK usage has also changed - see PR for details.
   ([#5049](https://github.com/open-telemetry/opentelemetry-java/pull/5049))
 
 ### SDK
 
-* Add shutdown / close to OpenTelemetrySdk
+* Add shutdown / close to `OpenTelemetrySdk`
   ([#5100](https://github.com/open-telemetry/opentelemetry-java/pull/5100))
 
 #### Metrics
@@ -36,11 +36,11 @@ This release is a notable release for metrics:
   ([#5120](https://github.com/open-telemetry/opentelemetry-java/pull/5120))
 * Add Base2 prefix to internal exponential histogram classes
   ([#5179](https://github.com/open-telemetry/opentelemetry-java/pull/5179))
-* Add MaxScale config parameter to Base2ExponentialHistogram
+* Add MaxScale config parameter to `Base2ExponentialBucketHistogram`
   ([#5044](https://github.com/open-telemetry/opentelemetry-java/pull/5044))
-* Add close method to MetricReader
+* Add close method to `MetricReader`
   ([#5109](https://github.com/open-telemetry/opentelemetry-java/pull/5109))
-* Reuse AggregatorHandle with cumulative temporality to reduce allocations
+* Reuse `AggregatorHandle` with cumulative temporality to reduce allocations
   ([#5142](https://github.com/open-telemetry/opentelemetry-java/pull/5142))
 * Delete notion of accumulation to reduce allocations
   ([#5154](https://github.com/open-telemetry/opentelemetry-java/pull/5154))
@@ -61,7 +61,7 @@ This release is a notable release for metrics:
   ([#5098](https://github.com/open-telemetry/opentelemetry-java/pull/5098))
 * Add autoconfigure support for "none" option for propagator value
   ([#5121](https://github.com/open-telemetry/opentelemetry-java/pull/5121))
-* Add autoconfigure support for parentbased_jaeger_remote sampler
+* Add autoconfigure support for `parentbased_jaeger_remote` sampler
   ([#5123](https://github.com/open-telemetry/opentelemetry-java/pull/5123))
 * Autoconfigure closes up autoconfigured resources in case of exception
   ([#5117](https://github.com/open-telemetry/opentelemetry-java/pull/5117))
@@ -78,7 +78,7 @@ This release is a notable release for metrics:
 * Sort spans by start time (parents before children as tiebreaker) to avoid common causes for flaky
   tests
   ([#5026](https://github.com/open-telemetry/opentelemetry-java/pull/5026))
-* Add resource assertion methods to SpanDataAssert and MetricAssert
+* Add resource assertion methods to `SpanDataAssert` and `MetricAssert`
   ([#5160](https://github.com/open-telemetry/opentelemetry-java/pull/5160))
 
 
@@ -90,7 +90,7 @@ This release is a notable release for metrics:
 
 ### OpenTracing Shim
 
-* Refactor to remove internal objects BaseShimObject and TelemetryInfo
+* Refactor to remove internal objects `BaseShimObject` and `TelemetryInfo`
   ([#5087](https://github.com/open-telemetry/opentelemetry-java/pull/5087))
 * WARNING: Minimize public surface area of OpenTracingShim. Remove `createTracerShim()`
   , `createTracerShim(Tracer)`, `createTracerShim(Tracer, OpenTracingPropagators)`.
