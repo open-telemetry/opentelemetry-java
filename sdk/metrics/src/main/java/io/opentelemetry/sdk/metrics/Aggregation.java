@@ -72,6 +72,8 @@ public interface Aggregation {
   /**
    * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM} using the
    * default {@code maxBuckets} and {@code maxScale}.
+   *
+   * @since 1.23.0
    */
   static Aggregation base2ExponentialBucketHistogram() {
     return Base2ExponentialHistogramAggregation.getDefault();
@@ -86,6 +88,7 @@ public interface Aggregation {
    *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
    *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
    *     performance of computing bucket index is improved when scale is {@code <= 0}.
+   * @since 1.23.0
    */
   static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
     return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale);

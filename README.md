@@ -221,12 +221,13 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 
 ### API
 
-| Component                         | Description                                                                                                                                        | Artifact ID              | Version                                                     |
-|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|-------------------------------------------------------------|
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                     | `opentelemetry-api`      | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
-| [Logs API](./api/logs)            | OpenTelemetry Log API for emitting events and bridging log frameworks (NOT a replacement for application logging frameworks like SLF4J, JUL, etc.) | `opentelemetry-api-logs` | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
-| [Context API](./context)          | OpenTelemetry context API                                                                                                                          | `opentelemetry-context`  | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
-| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                                              | `opentelemetry-semconv`  | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
+| Component                         | Description                                                                                                                    | Artifact ID                | Version                                                     |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------|----------------------------|-------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                 | `opentelemetry-api`        | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
+| [Events API](./api/logs)          | OpenTelemetry Event API for emitting events.                                                                                   | `opentelemetry-api-events` | <!--VERSION_UNSTABLE-->TODO<!--/VERSION_UNSTABLE-->         |
+| [Logs API](./api/logs)            | OpenTelemetry Log API for bridging log frameworks (NOT a replacement for application logging frameworks like SLF4J, JUL, etc.) | `opentelemetry-api-logs`   | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
+| [Context API](./context)          | OpenTelemetry context API                                                                                                      | `opentelemetry-context`    | <!--VERSION_STABLE-->1.22.0<!--/VERSION_STABLE-->           |
+| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions                                                                          | `opentelemetry-semconv`    | <!--VERSION_UNSTABLE-->1.22.0-alpha<!--/VERSION_UNSTABLE--> |
 
 ### API Extensions
 
