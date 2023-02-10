@@ -23,7 +23,7 @@ receivers:
           key_file: $MTLS_SERVER_KEY
 exporters:
   logging:
-    loglevel: $LOGGING_EXPORTER_LOG_lEVEL
+    verbosity: $LOGGING_EXPORTER_VERBOSITY_LEVEL
   otlp:
     endpoint: $OTLP_EXPORTER_ENDPOINT
     tls:
