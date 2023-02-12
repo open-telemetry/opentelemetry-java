@@ -1,0 +1,5 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.OpenTelemetrySdk  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) void close()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()

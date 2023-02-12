@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,13 +32,16 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
    * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
+  @SuppressWarnings("TooManyParameters")
   public static ImmutableHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
       double sum,
-      @Nullable Double min,
-      @Nullable Double max,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       List<Double> boundaries,
       List<Long> counts) {
     return create(
@@ -47,7 +49,9 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         epochNanos,
         attributes,
         sum,
+        hasMin,
         min,
+        hasMax,
         max,
         boundaries,
         counts,
@@ -61,13 +65,16 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
    * @return a HistogramPointData.
    * @throws IllegalArgumentException if the given boundaries/counts were invalid
    */
+  @SuppressWarnings("TooManyParameters")
   public static ImmutableHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
       double sum,
-      @Nullable Double min,
-      @Nullable Double max,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       List<Double> boundaries,
       List<Long> counts,
       List<DoubleExemplarData> exemplars) {
@@ -96,10 +103,10 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
         attributes,
         sum,
         totalCount,
-        min != null,
-        min != null ? min : -1,
-        max != null,
-        max != null ? max : -1,
+        hasMin,
+        min,
+        hasMax,
+        max,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
         Collections.unmodifiableList(new ArrayList<>(counts)),
         exemplars);

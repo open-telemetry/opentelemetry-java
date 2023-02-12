@@ -160,6 +160,18 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   }
 
   /**
+   * Asserts the span has a resource satisfying the given condition.
+   *
+   * @since 1.23.0
+   */
+  public SpanDataAssert hasResourceSatisfying(Consumer<ResourceAssert> resource) {
+    isNotNull();
+    resource.accept(
+        new ResourceAssert(actual.getResource(), String.format("span [%s]", actual.getName())));
+    return this;
+  }
+
+  /**
    * Asserts the span has the given {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}.
    *
    * @deprecated Use {@link #hasInstrumentationScopeInfo(InstrumentationScopeInfo)}.

@@ -276,5 +276,16 @@ public final class {{class}} {
 
   {% endif %}
 
+  {%- if class == "ResourceAttributes" %}
+
+  /**
+   * Red Hat OpenShift on Google Cloud.
+   * @deprecated This item has been removed as of 1.18.0 of the semantic conventions. Use {@link ResourceAttributes#GCP_OPENSHIFT} instead.
+   */
+  @Deprecated
+  public static final String GCP_OPENSHIFT = "gcp_openshift";
+
+  {% endif %}
+
   private {{class}}() {}
 }
