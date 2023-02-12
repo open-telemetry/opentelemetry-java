@@ -44,10 +44,11 @@ class TraceAssertionsTest {
   private static final String SPAN_ID2 = "0000000000000004";
   private static final TraceState TRACE_STATE = TraceState.builder().put("cat", "meow").build();
   private static final Resource RESOURCE =
-      Resource.create(Attributes.builder().put("dog", "bark").build());
+      Resource.create(Attributes.builder().put("dog", "bark").put("dog is cute", true).build());
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.builder("opentelemetry").setVersion("1.0").build();
 
+  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
   private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
   private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
   private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
@@ -132,6 +133,7 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void passing() {
     assertThat(SPAN1)
         .hasTraceId(TRACE_ID)
@@ -140,6 +142,36 @@ class TraceAssertionsTest {
         .hasTraceState(TRACE_STATE)
         .hasParentSpanId(SPAN_ID2)
         .hasResource(RESOURCE)
+        .hasResourceSatisfying(
+            resource ->
+                resource
+                    .hasSchemaUrl(null)
+                    .hasAttribute(DOG, "bark")
+                    .hasAttributes(
+                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                    .hasAttributes(
+                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .hasSize(2)
+                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                                .hasEntrySatisfying(
+                                    AttributeKey.booleanKey("dog is cute"),
+                                    value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    satisfies(DOG, val -> val.startsWith("bar")),
+                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
         .hasName("span")
         .hasKind(SpanKind.CLIENT)
@@ -270,10 +302,12 @@ class TraceAssertionsTest {
         .hasTotalRecordedLinks(400)
         .hasTotalAttributeCount(500);
 
-    assertThat(RESOURCE.getAttributes()).containsOnly(entry(AttributeKey.stringKey("dog"), "bark"));
+    assertThat(RESOURCE.getAttributes())
+        .containsOnly(entry(DOG, "bark"), entry(AttributeKey.booleanKey("dog is cute"), true));
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void failure() {
     assertThatThrownBy(() -> assertThat(SPAN1).hasTraceId("foo"))
         .isInstanceOf(AssertionError.class);
@@ -285,6 +319,79 @@ class TraceAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes -> assertThat(attributes).hasSize(1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes ->
+                                    assertThat(attributes)
+                                        .containsEntry(AttributeKey.stringKey("dog"), "meow"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes ->
+                                    assertThat(attributes)
+                                        .containsEntry(
+                                            AttributeKey.booleanKey("dog is cute"), false))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                satisfies(DOG, val -> val.isEqualTo("meow")))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfyingExactly(
+                                satisfies(DOG, val -> val.isEqualTo("bark")))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasInstrumentationScopeInfo(InstrumentationScopeInfo.empty()))
@@ -513,6 +620,7 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2MethodRef")
   void optionalAttributes() {
     assertThat(SPAN1)
         .hasAttributesSatisfyingExactly(

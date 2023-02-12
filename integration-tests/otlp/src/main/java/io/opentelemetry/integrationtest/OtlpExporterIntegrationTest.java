@@ -136,7 +136,7 @@ abstract class OtlpExporterIntegrationTest {
     collector =
         new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
             .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
+            .withEnv("LOGGING_EXPORTER_VERBOSITY_LEVEL", "normal")
             .withCopyFileToContainer(
                 MountableFile.forHostPath(serverTls.certificateFile().toPath(), 0555),
                 "/server.cert")
