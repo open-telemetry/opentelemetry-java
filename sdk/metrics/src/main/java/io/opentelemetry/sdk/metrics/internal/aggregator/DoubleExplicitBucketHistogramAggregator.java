@@ -133,8 +133,10 @@ public final class DoubleExplicitBucketHistogramAggregator
                 epochNanos,
                 attributes,
                 sum,
-                this.count > 0 ? this.min : null,
-                this.count > 0 ? this.max : null,
+                this.count > 0,
+                this.min,
+                this.count > 0,
+                this.max,
                 boundaryList,
                 PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
                 exemplars);

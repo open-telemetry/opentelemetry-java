@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -37,8 +36,10 @@ public abstract class ImmutableExponentialHistogramPointData
       int scale,
       double sum,
       long zeroCount,
-      @Nullable Double min,
-      @Nullable Double max,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
       ExponentialHistogramBuckets positiveBuckets,
       ExponentialHistogramBuckets negativeBuckets,
       long startEpochNanos,
@@ -56,10 +57,10 @@ public abstract class ImmutableExponentialHistogramPointData
         sum,
         count,
         zeroCount,
-        min != null,
-        min != null ? min : -1,
-        max != null,
-        max != null ? max : -1,
+        hasMin,
+        min,
+        hasMax,
+        max,
         positiveBuckets,
         negativeBuckets,
         exemplars);
