@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -105,6 +106,6 @@ class AggregationTest {
 
   private static InstrumentDescriptor descriptorForType(InstrumentType instrumentType) {
     return InstrumentDescriptor.create(
-        "name", "description", "unit", instrumentType, InstrumentValueType.DOUBLE);
+        "name", "description", "unit", instrumentType, InstrumentValueType.DOUBLE, Advice.empty());
   }
 }

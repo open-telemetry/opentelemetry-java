@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -44,7 +45,12 @@ public class SynchronousMetricStorageTest {
       InstrumentationScopeInfo.builder("test").setVersion("1.0").build();
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+          "name",
+          "description",
+          "unit",
+          InstrumentType.COUNTER,
+          InstrumentValueType.DOUBLE,
+          Advice.empty());
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
 

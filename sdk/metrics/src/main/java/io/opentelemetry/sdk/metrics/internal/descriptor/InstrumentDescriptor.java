@@ -29,8 +29,9 @@ public abstract class InstrumentDescriptor {
       String description,
       String unit,
       InstrumentType type,
-      InstrumentValueType valueType) {
-    return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType);
+      InstrumentValueType valueType,
+      Advice advice) {
+    return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType, advice);
   }
 
   InstrumentDescriptor() {}
@@ -44,6 +45,8 @@ public abstract class InstrumentDescriptor {
   public abstract InstrumentType getType();
 
   public abstract InstrumentValueType getValueType();
+
+  public abstract Advice getAdvice();
 
   /**
    * Debugging information for this instrument. Ignored from {@link #equals(Object)} and {@link

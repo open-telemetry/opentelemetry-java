@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import java.util.function.Consumer;
+
 /**
  * Builder class for {@link DoubleHistogram}.
  *
@@ -31,6 +33,12 @@ public interface DoubleHistogramBuilder {
    *     Unit</a>
    */
   DoubleHistogramBuilder setUnit(String unit);
+
+  /** Specify advice for histogram implementations. */
+  default DoubleHistogramBuilder setAggregationAdvice(
+      Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+    return this;
+  }
 
   /** Sets the Counter for recording {@code long} values. */
   LongHistogramBuilder ofLongs();

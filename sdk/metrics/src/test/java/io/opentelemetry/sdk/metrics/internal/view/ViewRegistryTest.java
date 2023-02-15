@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,14 +54,19 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG, Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.UP_DOWN_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
@@ -80,14 +86,24 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "overridden",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "default",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
@@ -113,13 +129,23 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "overridden",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Arrays.asList(registeredView1, registeredView2));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "default",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView2));
 
@@ -142,21 +168,36 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "overrides",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView));
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overrides", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                    "overrides",
+                    "",
+                    "",
+                    InstrumentType.UP_DOWN_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "default",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
@@ -187,7 +228,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "test", "", "", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+                    "test",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     // Histogram instrument named overridden should match the registered view, for which the
@@ -195,7 +241,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
+                    "overridden",
+                    "",
+                    "",
+                    InstrumentType.HISTOGRAM,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView));
     // Histogram instrument named default should match no views, and should receive a default view
@@ -204,7 +255,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
+                    "default",
+                    "",
+                    "",
+                    InstrumentType.HISTOGRAM,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(
             Collections.singletonList(
@@ -221,7 +277,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE),
+                    "default",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_GAUGE,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     logs.assertContains(
@@ -242,7 +303,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "test", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
+                    "test",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
@@ -256,31 +322,46 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG, Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.UP_DOWN_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
+                    "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG, Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_COUNTER, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_GAUGE,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
     assertThat(
@@ -290,7 +371,8 @@ class ViewRegistryTest {
                     "",
                     "",
                     InstrumentType.OBSERVABLE_UP_DOWN_COUNTER,
-                    InstrumentValueType.LONG),
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 

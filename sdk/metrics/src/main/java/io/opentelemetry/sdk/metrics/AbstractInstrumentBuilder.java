@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -28,6 +29,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   private final InstrumentValueType valueType;
   private String description;
   private String unit;
+  private Advice advice = Advice.empty();
 
   protected final MeterSharedState meterSharedState;
   protected final String instrumentName;
@@ -72,10 +74,14 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         meterProviderSharedState, meterSharedState, instrumentName, description, unit);
   }
 
+  protected void setAdvice(Advice advice) {
+    this.advice = advice;
+  }
+
   final <I extends AbstractInstrument> I buildSynchronousInstrument(
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
     InstrumentDescriptor descriptor =
-        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice);
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
     return instrumentFactory.apply(descriptor, storage);
@@ -103,7 +109,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   final SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
     InstrumentDescriptor descriptor =
-        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice);
     return meterSharedState.registerObservableMeasurement(descriptor);
   }
 
@@ -111,7 +117,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   public String toString() {
     return this.getClass().getSimpleName()
         + "{descriptor="
-        + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType)
+        + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice)
         + "}";
   }
 
