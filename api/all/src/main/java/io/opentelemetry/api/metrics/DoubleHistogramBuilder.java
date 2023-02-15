@@ -35,8 +35,7 @@ public interface DoubleHistogramBuilder {
   DoubleHistogramBuilder setUnit(String unit);
 
   /** Specify advice for histogram implementations. */
-  default DoubleHistogramBuilder setAggregationAdvice(
-      Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+  default DoubleHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
     return this;
   }
 

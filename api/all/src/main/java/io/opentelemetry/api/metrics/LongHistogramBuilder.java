@@ -34,8 +34,7 @@ public interface LongHistogramBuilder {
   LongHistogramBuilder setUnit(String unit);
 
   /** Specify advice for histogram implementations. */
-  default LongHistogramBuilder setAggregationAdvice(
-      Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+  default LongHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
     return this;
   }
 

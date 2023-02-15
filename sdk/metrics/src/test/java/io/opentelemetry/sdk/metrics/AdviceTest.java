@@ -63,7 +63,7 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAggregationAdvice(
+            .setAdvice(
                 advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 
@@ -104,7 +104,7 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAggregationAdvice(
+            .setAdvice(
                 advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 
@@ -140,7 +140,7 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAggregationAdvice(
+            .setAdvice(
                 advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 

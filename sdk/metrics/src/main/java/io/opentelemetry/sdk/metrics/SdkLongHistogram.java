@@ -81,8 +81,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public SdkLongHistogramBuilder setAggregationAdvice(
-        Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+    public SdkLongHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
       return this;
     }

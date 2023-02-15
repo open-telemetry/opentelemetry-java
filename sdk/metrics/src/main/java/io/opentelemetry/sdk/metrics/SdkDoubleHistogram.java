@@ -80,8 +80,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public SdkDoubleHistogramBuilder setAggregationAdvice(
-        Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+    public SdkDoubleHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
       return this;
     }
