@@ -378,10 +378,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
         closeables.add(loggerProvider);
 
-        if (registerShutdownHook) {
-          Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
-        }
-
         ContextPropagators propagators =
             PropagatorConfiguration.configurePropagators(
                 config, serviceClassLoader, propagatorCustomizer);
@@ -394,6 +390,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                 .setPropagators(propagators);
 
         openTelemetrySdk = sdkBuilder.build();
+      }
+
+      // NOTE: Shutdown hook registration is untested. Modify with caution.
+      if (registerShutdownHook) {
+        Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
       }
 
       if (setResultAsGlobal) {
@@ -454,6 +455,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       properties = properties.withOverrides(overrides);
     }
     return properties;
+  }
+
+  // Visible for testing
+  Thread shutdownHook(OpenTelemetrySdk sdk) {
+    return new Thread(sdk::close);
   }
 
   private static <I, O1, O2> BiFunction<I, ConfigProperties, O2> mergeCustomizer(
