@@ -378,10 +378,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
         closeables.add(loggerProvider);
 
-        if (registerShutdownHook) {
-          Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
-        }
-
         ContextPropagators propagators =
             PropagatorConfiguration.configurePropagators(
                 config, serviceClassLoader, propagatorCustomizer);
@@ -394,6 +390,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                 .setPropagators(propagators);
 
         openTelemetrySdk = sdkBuilder.build();
+      }
+
+      // NOTE: Shutdown hook registration is untested. Modify with caution.
+      if (registerShutdownHook) {
+        Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
       }
 
       if (setResultAsGlobal) {
