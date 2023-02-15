@@ -156,7 +156,8 @@ class FullConfigTest {
     String endpoint = "http://localhost:" + server.httpPort();
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.timeout", "10000");
-    // Set log exporter interval to a high value and rely on flushing to produce reliable export batches
+    // Set log exporter interval to a high value and rely on flushing to produce reliable export
+    // batches
     System.setProperty("otel.blrp.schedule.delay", "60000");
 
     // Initialize here so we can shutdown when done
