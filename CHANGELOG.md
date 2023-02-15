@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.23.1 (2023-02-15)
 
 * Fix bug that broke `AutoConfiguredOpenTelemetrySdk`'s shutdown hook.
   ([#5221](https://github.com/open-telemetry/opentelemetry-java/pull/5221))
