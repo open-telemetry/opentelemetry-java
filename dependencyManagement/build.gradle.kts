@@ -60,7 +60,6 @@ val DEPENDENCIES = listOf(
   "com.google.api.grpc:proto-google-common-protos:2.14.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
-  "com.lmax:disruptor:3.4.4",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.0.1",
   "com.uber.nullaway:nullaway:0.10.9",
