@@ -5,7 +5,7 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.HistogramAdviceConfigurer  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.HistogramAdviceConfigurer setExplicitBucketBoundaries(java.util.List)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.HistogramAdviceConfigurer setBoundaries(java.util.List)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongHistogramBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setAdvice(java.util.function.Consumer)
