@@ -11,5 +11,5 @@ import java.util.List;
 public interface HistogramAdviceConfigurer {
 
   /** Specify recommended set of explicit bucket boundaries for this histogram. */
-  HistogramAdviceConfigurer setExplicitBucketBoundaries(List<Double> bucketBoundaries);
+  HistogramAdviceConfigurer setBoundaries(List<Double> bucketBoundaries);
 }

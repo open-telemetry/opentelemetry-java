@@ -63,8 +63,9 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAdvice(
-                advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
+            .setUnit("foo")
+            .setDescription("bar")
+            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 
     doubleHistogram.record(5.0);
@@ -104,8 +105,7 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAdvice(
-                advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
+            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 
     doubleHistogram.record(5.0);
@@ -140,8 +140,7 @@ class AdviceTest {
         meterProvider
             .get("meter")
             .histogramBuilder("histogram")
-            .setAdvice(
-                advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
+            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
             .build();
 
     doubleHistogram.record(5.0);

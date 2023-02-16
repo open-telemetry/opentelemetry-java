@@ -92,7 +92,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public HistogramAdviceConfigurer setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
+    public HistogramAdviceConfigurer setBoundaries(List<Double> bucketBoundaries) {
       setAdvice(Advice.create(bucketBoundaries));
       return this;
     }
