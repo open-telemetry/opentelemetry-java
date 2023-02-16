@@ -17,11 +17,13 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
-import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,12 +48,23 @@ public final class ViewRegistry {
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
-  private final DefaultAggregationSelector defaultAggregationSelector;
+  private final Map<InstrumentType, RegisteredView> instrumentDefaultRegisteredView;
   private final List<RegisteredView> registeredViews;
 
   ViewRegistry(
       DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
-    this.defaultAggregationSelector = defaultAggregationSelector;
+    instrumentDefaultRegisteredView = new HashMap<>();
+    for (InstrumentType instrumentType : InstrumentType.values()) {
+      instrumentDefaultRegisteredView.put(
+          instrumentType,
+          RegisteredView.create(
+              InstrumentSelector.builder().setName("*").build(),
+              View.builder()
+                  .setAggregation(defaultAggregationSelector.getDefaultAggregation(instrumentType))
+                  .build(),
+              AttributesProcessor.noop(),
+              SourceInfo.noSourceInfo()));
+    }
     this.registeredViews = registeredViews;
   }
 
@@ -100,14 +113,14 @@ public final class ViewRegistry {
       return Collections.unmodifiableList(result);
     }
 
-    // No views matched, use default view
+    // Not views matched, use default view
     RegisteredView instrumentDefaultView =
-        defaultWithAdvice(descriptor.getType(), defaultAggregationSelector, descriptor.getAdvice());
+        Objects.requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+    AggregatorFactory viewAggregatorFactory =
+        (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
 
     // If the aggregation from default aggregation selector is compatible with the instrument, use
     // it
-    AggregatorFactory viewAggregatorFactory =
-        (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
     if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
       return Collections.singletonList(instrumentDefaultView);
     }
@@ -216,25 +229,5 @@ public final class ViewRegistry {
       patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
     }
     return Pattern.compile(patternBuilder.toString());
-  }
-
-  private static RegisteredView defaultWithAdvice(
-      InstrumentType instrumentType,
-      DefaultAggregationSelector defaultAggregationSelector,
-      Advice advice) {
-    Aggregation aggregation = defaultAggregationSelector.getDefaultAggregation(instrumentType);
-
-    if (!advice.equals(Advice.empty())
-        && advice.getExplicitBucketBoundaries() != null
-        && (aggregation == Aggregation.defaultAggregation()
-            || aggregation.equals(ExplicitBucketHistogramAggregation.getDefault()))) {
-      aggregation = Aggregation.explicitBucketHistogram(advice.getExplicitBucketBoundaries());
-    }
-
-    return RegisteredView.create(
-        InstrumentSelector.builder().setName("*").build(),
-        View.builder().setAggregation(aggregation).build(),
-        AttributesProcessor.noop(),
-        SourceInfo.noSourceInfo());
   }
 }

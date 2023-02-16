@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Explicit bucket histogram aggregation configuration.
@@ -71,25 +70,6 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
       default:
         return false;
     }
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    ExplicitBucketHistogramAggregation that = (ExplicitBucketHistogramAggregation) o;
-
-    return Objects.equals(bucketBoundaries, that.bucketBoundaries);
-  }
-
-  @Override
-  public int hashCode() {
-    return bucketBoundaries != null ? bucketBoundaries.hashCode() : 0;
   }
 
   @Override
