@@ -22,6 +22,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.netty:netty-bom:4.1.89.Final",
   "io.zipkin.brave:brave-bom:5.15.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
+  "org.assertj:assertj-bom:3.24.2",
   "org.junit:junit-bom:5.9.2",
   "org.testcontainers:testcontainers-bom:1.17.6",
   "org.snakeyaml:snakeyaml-engine:2.6"
@@ -73,7 +74,6 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.13.1",
-  "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.22",
