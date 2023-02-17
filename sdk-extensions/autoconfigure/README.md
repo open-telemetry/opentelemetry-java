@@ -238,7 +238,7 @@ For example, if you don't want to expose the name of the operating system throug
 can pass the following JVM argument:
 
 ```
--Dotel.java.disabled.resource.providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
+-Dotel.java.disabled.resource.providers=io.opentelemetry.instrumentation.resources.OsResourceProvider
 ```
 
 ## Batch span processor
