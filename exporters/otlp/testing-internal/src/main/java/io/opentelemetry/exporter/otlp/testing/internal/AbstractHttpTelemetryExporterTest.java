@@ -368,10 +368,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             () ->
                 exporterBuilder()
                     .setEndpoint(server.httpsUri() + path)
-                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
-                    .build())
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Could not set trusted certificate");
+        .hasMessageContaining("Error creating trust manager for OTLP HTTP connection");
   }
 
   @ParameterizedTest
@@ -555,8 +554,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(
-            () ->
-                exporterBuilder().setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+            () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
   }
 
