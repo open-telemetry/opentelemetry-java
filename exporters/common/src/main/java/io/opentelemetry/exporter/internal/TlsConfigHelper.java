@@ -32,6 +32,12 @@ public class TlsConfigHelper {
     return this;
   }
 
+  /**
+   * Creates a new X509TrustManager from the given cert content.
+   *
+   * @param trustedCertsPem Certificate in PEM format.
+   * @return this
+   */
   public TlsConfigHelper configureTrustManager(byte[] trustedCertsPem) {
     try {
       this.trustManager = TlsUtil.trustManager(trustedCertsPem);
@@ -43,6 +49,13 @@ public class TlsConfigHelper {
     return this;
   }
 
+  /**
+   * Creates a new X509KeyManager from the given private key and certificate, both in PEM format.
+   *
+   * @param privateKeyPem Private key content in PEM format.
+   * @param certificatePem Certificate content in PEM format.
+   * @return this
+   */
   public TlsConfigHelper configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
     try {
       if (keyManager != null) {
@@ -58,6 +71,11 @@ public class TlsConfigHelper {
     }
   }
 
+  /**
+   * Assigns the X509KeyManager.
+   *
+   * @return this
+   */
   public TlsConfigHelper setKeyManager(X509KeyManager keyManager) {
     if (this.keyManager != null) {
       logger.warning(
@@ -72,6 +90,7 @@ public class TlsConfigHelper {
     return this;
   }
 
+  /** Configures TLS for the provided OkHttp client builder by setting the SSL Socket Factory. */
   public void configure(OkHttpClient.Builder clientBuilder) {
     if (trustManager == null) {
       if (warnIfOtherComponentsConfigured()) {
