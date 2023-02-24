@@ -38,8 +38,10 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -285,22 +287,19 @@ class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  void validTrustedConfig() {
-    assertThatCode(
-            () ->
-                JaegerGrpcSpanExporter.builder()
-                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+  void validTrustedConfig() throws Exception {
+    byte[] cert = readResource("tls-test.pem");
+    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setTrustedCertificates(cert))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void validClientKeyConfig() {
-    assertThatCode(
-            () ->
-                JaegerGrpcSpanExporter.builder()
-                    .setClientTls(
-                        "foobar".getBytes(StandardCharsets.UTF_8),
-                        "foobar".getBytes(StandardCharsets.UTF_8)))
+  void validClientKeyConfig() throws Exception {
+
+    byte[] key = readResource("tls-test.key");
+    byte[] cert = readResource("tls-test.pem");
+
+    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setClientTls(key, cert))
         .doesNotThrowAnyException();
   }
 
@@ -398,5 +397,10 @@ class JaegerGrpcSpanExporterTest {
         .isFalse();
     assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
+  }
+
+  byte[] readResource(String name) throws Exception {
+    URI uri = Thread.currentThread().getContextClassLoader().getResource(name).toURI();
+    return Files.readAllBytes(Paths.get(uri));
   }
 }
