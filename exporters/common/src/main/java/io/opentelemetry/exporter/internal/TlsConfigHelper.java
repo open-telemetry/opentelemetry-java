@@ -11,13 +11,14 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import okhttp3.OkHttpClient;
 
 /**
  * Utility class to help with management of TLS related components. This class is ultimately
- * responsible for enabling TLS with the OkHttpClientBuilder by setting the sslSocketFactory. This
- * class is only intended for internal OpenTelemetry exporter usage and should not be used by
- * end-users.
+ * responsible for enabling TLS via callbacks passed to the configure[...]() methods. This class is
+ * only intended for internal OpenTelemetry exporter usage and should not be used by end-users.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public class TlsConfigHelper {
 
@@ -38,12 +39,12 @@ public class TlsConfigHelper {
    * @param trustedCertsPem Certificate in PEM format.
    * @return this
    */
-  public TlsConfigHelper configureTrustManager(byte[] trustedCertsPem) {
+  public TlsConfigHelper createTrustManager(byte[] trustedCertsPem) {
     try {
       this.trustManager = TlsUtil.trustManager(trustedCertsPem);
     } catch (SSLException e) {
       throw new IllegalStateException(
-          "Error creating trust manager for OTLP HTTP connection with provided certs. Are they valid X.509 in PEM format?",
+          "Error creating X509TrustManager with provided certs. Are they valid X.509 in PEM format?",
           e);
     }
     return this;
@@ -56,7 +57,7 @@ public class TlsConfigHelper {
    * @param certificatePem Certificate content in PEM format.
    * @return this
    */
-  public TlsConfigHelper configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
+  public TlsConfigHelper createKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
     try {
       if (keyManager != null) {
         logger.warning(
@@ -66,7 +67,7 @@ public class TlsConfigHelper {
       return this;
     } catch (SSLException e) {
       throw new IllegalStateException(
-          "Error creating key manager for TLS configuration of OTLP HTTP connection with provided certs. Are they valid X.509 in PEM format?",
+          "Error creating X509KeyManager with provided certs. Are they valid X.509 in PEM format?",
           e);
     }
   }
@@ -90,12 +91,47 @@ public class TlsConfigHelper {
     return this;
   }
 
-  /** Configures TLS for the provided OkHttp client builder by setting the SSL Socket Factory. */
-  public void configure(OkHttpClient.Builder clientBuilder) {
+  /**
+   * Functional wrapper type used in configure methods. Exists primarily to declare checked
+   * SSLException.
+   */
+  public interface SslSocketFactoryConfigurer {
+    void configure(SSLSocketFactory sslSocketFactory, X509TrustManager trustManager)
+        throws SSLException;
+  }
+
+  /**
+   * Functional wrapper type used in configure methods. Exists primarily to declare checked
+   * SSLException.
+   */
+  public interface KeyManagerConfigurer {
+    void configure(X509TrustManager trustManager, X509KeyManager keyManager) throws SSLException;
+  }
+
+  /**
+   * Configures TLS by invoking the given callback with the X509TrustManager and X509KeyManager.
+   * If the trust manager or key manager have not yet been configured, this method
+   * does nothing.
+   */
+  public void configureWithKeyManager(KeyManagerConfigurer configureMethod) {
+    if (trustManager == null || keyManager == null) {
+      return;
+    }
+    try {
+      configureMethod.configure(trustManager, keyManager);
+    } catch (SSLException e) {
+      wrapException(e);
+    }
+  }
+
+  /**
+   * Configures TLS by invoking the provided consumer with a new SSLSocketFactory and the
+   * preconfigured X509TrustManager. If the trust manager has not been configured, this
+   * method is effecting a noop.
+   */
+  public void configureWithSocketFactory(SslSocketFactoryConfigurer configureMethod) {
     if (trustManager == null) {
-      if (warnIfOtherComponentsConfigured()) {
-        logger.warning("An X509TrustManager must be configured for TLS to be configured.");
-      }
+      warnIfOtherComponentsConfigured();
       return;
     }
 
@@ -104,23 +140,24 @@ public class TlsConfigHelper {
       if (sslSocketFactory == null) {
         sslSocketFactory = TlsUtil.sslSocketFactory(keyManager, trustManager);
       }
-      clientBuilder.sslSocketFactory(sslSocketFactory, trustManager);
+      configureMethod.configure(sslSocketFactory, trustManager);
     } catch (SSLException e) {
-      throw new IllegalStateException(
-          "Could not set trusted certificate for OTLP HTTP connection, are they valid X.509 in PEM format?",
-          e);
+      wrapException(e);
     }
   }
 
-  private boolean warnIfOtherComponentsConfigured() {
+  private static void wrapException(SSLException e) {
+    throw new IllegalStateException(
+        "Could not configure TLS connection, are certs in valid X.509 in PEM format?", e);
+  }
+
+  private void warnIfOtherComponentsConfigured() {
     if (sslSocketFactory != null) {
       logger.warning("sslSocketFactory has been configured without an X509TrustManager.");
-      return true;
+      return;
     }
     if (keyManager != null) {
       logger.warning("An X509KeyManager has been configured without an X509TrustManager.");
-      return true;
     }
-    return false;
   }
 }

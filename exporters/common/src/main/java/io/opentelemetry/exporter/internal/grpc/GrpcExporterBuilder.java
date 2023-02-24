@@ -99,12 +99,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.configureTrustManager(trustedCertificatesPem);
+    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
     return this;
   }
 
   public GrpcExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.configureKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -133,7 +133,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
-    tlsConfigHelper.configure(clientBuilder);
+    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
 
     String endpoint = this.endpoint.resolve(grpcEndpointPath).toString();
     if (endpoint.startsWith("http://")) {

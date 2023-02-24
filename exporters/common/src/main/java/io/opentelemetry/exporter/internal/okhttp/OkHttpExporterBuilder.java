@@ -91,7 +91,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   }
 
   public OkHttpExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.configureTrustManager(trustedCertificatesPem);
+    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
     return this;
   }
 
@@ -101,7 +101,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
   }
 
   public OkHttpExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.configureKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -136,7 +136,7 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
             .dispatcher(OkHttpUtil.newDispatcher())
             .callTimeout(Duration.ofNanos(timeoutNanos));
 
-    tlsConfigHelper.configure(clientBuilder);
+    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 

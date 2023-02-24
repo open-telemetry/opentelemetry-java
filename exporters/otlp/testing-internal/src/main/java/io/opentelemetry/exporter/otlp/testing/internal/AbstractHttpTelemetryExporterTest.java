@@ -370,7 +370,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setEndpoint(server.httpsUri() + path)
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Error creating trust manager for OTLP HTTP connection");
+        .hasMessageContaining("Error creating X509TrustManager with provided certs");
   }
 
   @ParameterizedTest

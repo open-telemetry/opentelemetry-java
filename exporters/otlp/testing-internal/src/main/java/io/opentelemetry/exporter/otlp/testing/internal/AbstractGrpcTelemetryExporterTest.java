@@ -304,8 +304,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void tls() throws Exception {
     TelemetryExporter<T> exporter =
         exporterBuilder()
-            .setEndpoint(server.httpsUri().toString())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setClientTls(
+                certificate.privateKey().getEncoded(), certificate.certificate().getEncoded())
+            .setEndpoint(server.httpsUri().toString())
             .build();
     try {
       CompletableResultCode result =
@@ -339,7 +341,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setEndpoint(server.httpsUri().toString())
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Error creating trust manager for OTLP HTTP connection");
+        .hasMessageContaining("Error creating X509TrustManager with provided certs.");
   }
 
   @ParameterizedTest
@@ -651,8 +653,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(
-            () ->
-                exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
+            () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
   }
 

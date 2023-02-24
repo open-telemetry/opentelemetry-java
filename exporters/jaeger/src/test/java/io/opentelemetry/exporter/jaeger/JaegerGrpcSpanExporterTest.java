@@ -14,6 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
@@ -38,10 +39,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,6 +87,12 @@ class JaegerGrpcSpanExporterTest {
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcExporter.class);
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
 
   private static JaegerGrpcSpanExporter exporter;
 
@@ -288,18 +292,20 @@ class JaegerGrpcSpanExporterTest {
 
   @Test
   void validTrustedConfig() throws Exception {
-    byte[] cert = readResource("tls-test.pem");
-    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setTrustedCertificates(cert))
+    assertThatCode(
+            () ->
+                JaegerGrpcSpanExporter.builder()
+                    .setTrustedCertificates(serverTls.certificate().getEncoded()))
         .doesNotThrowAnyException();
   }
 
   @Test
   void validClientKeyConfig() throws Exception {
-
-    byte[] key = readResource("tls-test.key");
-    byte[] cert = readResource("tls-test.pem");
-
-    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setClientTls(key, cert))
+    assertThatCode(
+            () ->
+                JaegerGrpcSpanExporter.builder()
+                    .setClientTls(
+                        clientTls.privateKey().getEncoded(), serverTls.certificate().getEncoded()))
         .doesNotThrowAnyException();
   }
 
@@ -397,10 +403,5 @@ class JaegerGrpcSpanExporterTest {
         .isFalse();
     assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
-  }
-
-  byte[] readResource(String name) throws Exception {
-    URI uri = Thread.currentThread().getContextClassLoader().getResource(name).toURI();
-    return Files.readAllBytes(Paths.get(uri));
   }
 }
