@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -16,6 +18,7 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.netty.handler.ssl.ClientAuth;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
@@ -29,12 +32,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -61,7 +70,12 @@ class JaegerRemoteSamplerTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
 
+  @RegisterExtension
   @Order(2)
+  static final SelfSignedCertificateExtension clientCertificate =
+      new SelfSignedCertificateExtension();
+
+  @Order(3)
   @RegisterExtension
   static final ServerExtension server =
       new ServerExtension() {
@@ -98,6 +112,11 @@ class JaegerRemoteSamplerTest {
           sb.http(0);
           sb.https(0);
           sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tlsCustomizer(
+              ssl -> {
+                ssl.clientAuth(ClientAuth.OPTIONAL);
+                ssl.trustManager(clientCertificate.certificate());
+              });
         }
       };
 
@@ -137,6 +156,36 @@ class JaegerRemoteSamplerTest {
 
       // verify
       assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    }
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(ClientPrivateKeyProvider.class)
+  void clientTlsConnectionWorks(byte[] privateKey) throws IOException {
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpsUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setClientTls(
+                privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setServiceName(SERVICE_NAME)
+            .build()) {
+
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+      // verify
+      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    }
+  }
+
+  private static class ClientPrivateKeyProvider implements ArgumentsProvider {
+    @Override
+    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+      return Stream.of(
+          arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
+          arguments(named("DER", clientCertificate.privateKey().getEncoded())));
     }
   }
 

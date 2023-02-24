@@ -65,3 +65,6 @@ Comparing source compatibility of  against
 	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder clone()
 	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
 	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder setClientTls(byte[], byte[])
