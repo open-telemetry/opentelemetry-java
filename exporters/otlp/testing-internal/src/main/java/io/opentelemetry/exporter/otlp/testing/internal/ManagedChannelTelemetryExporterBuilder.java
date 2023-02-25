@@ -125,8 +125,10 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     requireNonNull(channelBuilder, "channel");
 
     tlsConfigHelper.configureWithKeyManager(
-        (tm, km) ->
-            ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(channelBuilder, tm, km));
+        (tm, km) -> {
+          requireNonNull(channelBuilder, "channel");
+          ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(channelBuilder, tm, km);
+        });
 
     ManagedChannel channel = channelBuilder.build();
     delegate.setChannel(channel);
