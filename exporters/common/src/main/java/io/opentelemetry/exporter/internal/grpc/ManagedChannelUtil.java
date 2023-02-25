@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
@@ -45,10 +46,11 @@ public final class ManagedChannelUtil {
    * @throws SSLException if error occur processing the certificates
    */
   public static void setClientKeysAndTrustedCertificatesPem(
-      ManagedChannelBuilder<?> managedChannelBuilder, X509TrustManager tmf, X509KeyManager kmf)
+      ManagedChannelBuilder<?> managedChannelBuilder,
+      X509TrustManager tmf,
+      @Nullable X509KeyManager kmf)
       throws SSLException {
     requireNonNull(managedChannelBuilder, "managedChannelBuilder");
-    requireNonNull(kmf, "X509KeyManager");
     requireNonNull(tmf, "X509TrustManager");
 
     // gRPC does not abstract TLS configuration so we need to check the implementation and act

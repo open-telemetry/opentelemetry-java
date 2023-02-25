@@ -105,7 +105,8 @@ public class TlsConfigHelper {
    * SSLException.
    */
   public interface KeyManagerConfigurer {
-    void configure(X509TrustManager trustManager, X509KeyManager keyManager) throws SSLException;
+    void configure(X509TrustManager trustManager, @Nullable X509KeyManager keyManager)
+        throws SSLException;
   }
 
   /**
@@ -113,7 +114,7 @@ public class TlsConfigHelper {
    * the trust manager or key manager have not yet been configured, this method does nothing.
    */
   public void configureWithKeyManager(KeyManagerConfigurer configureMethod) {
-    if (trustManager == null || keyManager == null) {
+    if (trustManager == null) {
       return;
     }
     try {
