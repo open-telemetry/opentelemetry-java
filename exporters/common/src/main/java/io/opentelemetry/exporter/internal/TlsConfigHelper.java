@@ -109,9 +109,8 @@ public class TlsConfigHelper {
   }
 
   /**
-   * Configures TLS by invoking the given callback with the X509TrustManager and X509KeyManager.
-   * If the trust manager or key manager have not yet been configured, this method
-   * does nothing.
+   * Configures TLS by invoking the given callback with the X509TrustManager and X509KeyManager. If
+   * the trust manager or key manager have not yet been configured, this method does nothing.
    */
   public void configureWithKeyManager(KeyManagerConfigurer configureMethod) {
     if (trustManager == null || keyManager == null) {
@@ -126,8 +125,8 @@ public class TlsConfigHelper {
 
   /**
    * Configures TLS by invoking the provided consumer with a new SSLSocketFactory and the
-   * preconfigured X509TrustManager. If the trust manager has not been configured, this
-   * method is effecting a noop.
+   * preconfigured X509TrustManager. If the trust manager has not been configured, this method is
+   * effectively a noop.
    */
   public void configureWithSocketFactory(SslSocketFactoryConfigurer configureMethod) {
     if (trustManager == null) {
