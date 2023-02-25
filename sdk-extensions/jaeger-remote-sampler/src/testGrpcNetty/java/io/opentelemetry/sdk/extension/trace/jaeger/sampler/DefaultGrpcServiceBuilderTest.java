@@ -8,14 +8,18 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class DefaultGrpcServiceBuilderTest {
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
 
   private static DefaultGrpcServiceBuilder<
           SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
@@ -52,8 +56,7 @@ class DefaultGrpcServiceBuilderTest {
         .doesNotThrowAnyException();
 
     assertThatCode(
-            () ->
-                exporterBuilder().setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+            () -> exporterBuilder().setTrustedCertificates(serverTls.certificate().getEncoded()))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addRetryPolicy(RetryPolicy.getDefault()))
