@@ -59,6 +59,7 @@ class ViewConfigTest {
               SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
               assertThat(selectorSpec.getInstrumentName()).isEqualTo("name1");
               assertThat(selectorSpec.getInstrumentType()).isEqualTo(InstrumentType.COUNTER);
+              assertThat(selectorSpec.getInstrumentUnit()).isEqualTo("ms");
               assertThat(selectorSpec.getMeterName()).isEqualTo("meterName1");
               assertThat(selectorSpec.getMeterVersion()).isEqualTo("1.0.0");
               assertThat(selectorSpec.getMeterSchemaUrl()).isEqualTo("http://example1.com");
@@ -72,6 +73,7 @@ class ViewConfigTest {
               SelectorSpecification selectorSpec = viewConfigSpec.getSelectorSpecification();
               assertThat(selectorSpec.getInstrumentName()).isEqualTo("name2");
               assertThat(selectorSpec.getInstrumentType()).isEqualTo(InstrumentType.COUNTER);
+              assertThat(selectorSpec.getInstrumentUnit()).isEqualTo("s");
               assertThat(selectorSpec.getMeterName()).isEqualTo("meterName2");
               assertThat(selectorSpec.getMeterVersion()).isEqualTo("2.0.0");
               assertThat(selectorSpec.getMeterSchemaUrl()).isEqualTo("http://example2.com");
@@ -153,22 +155,22 @@ class ViewConfigTest {
         .extracting(
             "attributesProcessor", as(InstanceOfAssertFactories.type(AttributesProcessor.class)))
         .satisfies(
-            attributesProcessor -> {
-              assertThat(
-                      attributesProcessor.process(
-                          Attributes.builder()
-                              .put("foo", "val")
-                              .put("bar", "val")
-                              .put("baz", "val")
-                              .build(),
-                          Context.current()))
-                  .containsEntry("foo", "val")
-                  .containsEntry("bar", "val")
-                  .satisfies(
-                      (Consumer<Attributes>)
-                          attributes ->
-                              assertThat(attributes.get(AttributeKey.stringKey("baz"))).isBlank());
-            });
+            attributesProcessor ->
+                assertThat(
+                        attributesProcessor.process(
+                            Attributes.builder()
+                                .put("foo", "val")
+                                .put("bar", "val")
+                                .put("baz", "val")
+                                .build(),
+                            Context.current()))
+                    .containsEntry("foo", "val")
+                    .containsEntry("bar", "val")
+                    .satisfies(
+                        (Consumer<Attributes>)
+                            attributes ->
+                                assertThat(attributes.get(AttributeKey.stringKey("baz")))
+                                    .isBlank()));
   }
 
   @Test
@@ -242,6 +244,7 @@ class ViewConfigTest {
             SelectorSpecification.builder()
                 .instrumentName("name")
                 .instrumentType(InstrumentType.COUNTER)
+                .instrumentUnit("ms")
                 .meterName("meterName")
                 .meterVersion("meterVersion")
                 .meterSchemaUrl("http://example.com")
@@ -249,6 +252,7 @@ class ViewConfigTest {
 
     assertThat(selector.getInstrumentName()).isEqualTo("name");
     assertThat(selector.getInstrumentType()).isEqualTo(InstrumentType.COUNTER);
+    assertThat(selector.getInstrumentUnit()).isEqualTo("ms");
     assertThat(selector.getMeterName()).isEqualTo("meterName");
     assertThat(selector.getMeterVersion()).isEqualTo("meterVersion");
     assertThat(selector.getMeterSchemaUrl()).isEqualTo("http://example.com");

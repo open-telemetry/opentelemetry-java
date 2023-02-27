@@ -32,11 +32,12 @@ public abstract class InstrumentSelector {
   static InstrumentSelector create(
       @Nullable InstrumentType instrumentType,
       @Nullable String instrumentName,
+      @Nullable String instrumentUnit,
       @Nullable String meterName,
       @Nullable String meterVersion,
       @Nullable String meterSchemaUrl) {
     return new AutoValue_InstrumentSelector(
-        instrumentType, instrumentName, meterName, meterVersion, meterSchemaUrl);
+        instrumentType, instrumentName, instrumentUnit, meterName, meterVersion, meterSchemaUrl);
   }
 
   InstrumentSelector() {}
@@ -58,6 +59,10 @@ public abstract class InstrumentSelector {
    */
   @Nullable
   public abstract String getInstrumentName();
+
+  /** Returns the selected instrument unit, or null if this selects all instrument units. */
+  @Nullable
+  public abstract String getInstrumentUnit();
 
   /** Returns the selected meter name, or null if this selects instruments from all meter names. */
   @Nullable
@@ -85,6 +90,9 @@ public abstract class InstrumentSelector {
     }
     if (getInstrumentName() != null) {
       joiner.add("instrumentName=" + getInstrumentName());
+    }
+    if (getInstrumentUnit() != null) {
+      joiner.add("instrumentUnit=" + getInstrumentUnit());
     }
     if (getMeterName() != null) {
       joiner.add("meterName=" + getMeterName());
