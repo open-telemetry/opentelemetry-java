@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
@@ -24,9 +25,20 @@ public class TlsConfigHelper {
 
   private static final Logger logger = Logger.getLogger(TlsConfigHelper.class.getName());
 
+  private final TlsUtility tlsUtil;
+
   @Nullable private X509KeyManager keyManager;
   @Nullable private X509TrustManager trustManager;
   @Nullable private SSLSocketFactory sslSocketFactory;
+
+  public TlsConfigHelper() {
+    this(new TlsUtility() {});
+  }
+
+  @VisibleForTesting
+  TlsConfigHelper(TlsUtility tlsUtil) {
+    this.tlsUtil = tlsUtil;
+  }
 
   public TlsConfigHelper setTrustManager(X509TrustManager trustManager) {
     this.trustManager = trustManager;
@@ -41,7 +53,7 @@ public class TlsConfigHelper {
    */
   public TlsConfigHelper createTrustManager(byte[] trustedCertsPem) {
     try {
-      this.trustManager = TlsUtil.trustManager(trustedCertsPem);
+      this.trustManager = tlsUtil.trustManager(trustedCertsPem);
     } catch (SSLException e) {
       throw new IllegalStateException(
           "Error creating X509TrustManager with provided certs. Are they valid X.509 in PEM format?",
@@ -63,7 +75,7 @@ public class TlsConfigHelper {
         logger.warning(
             "Previous X509 Key manager is being replaced. This is probably an error and should only be set once.");
       }
-      keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
+      keyManager = tlsUtil.keyManager(privateKeyPem, certificatePem);
       return this;
     } catch (SSLException e) {
       throw new IllegalStateException(
@@ -138,7 +150,7 @@ public class TlsConfigHelper {
     try {
       SSLSocketFactory sslSocketFactory = this.sslSocketFactory;
       if (sslSocketFactory == null) {
-        sslSocketFactory = TlsUtil.sslSocketFactory(keyManager, trustManager);
+        sslSocketFactory = tlsUtil.sslSocketFactory(keyManager, trustManager);
       }
       configureMethod.configure(sslSocketFactory, trustManager);
     } catch (SSLException e) {
@@ -158,6 +170,23 @@ public class TlsConfigHelper {
     }
     if (keyManager != null) {
       logger.warning("An X509KeyManager has been configured without an X509TrustManager.");
+    }
+  }
+
+  // Exists for testing
+  interface TlsUtility {
+    default SSLSocketFactory sslSocketFactory(
+        @Nullable X509KeyManager keyManager, X509TrustManager trustManager) throws SSLException {
+      return TlsUtil.sslSocketFactory(keyManager, trustManager);
+    }
+
+    default X509TrustManager trustManager(byte[] trustedCertificatesPem) throws SSLException {
+      return TlsUtil.trustManager(trustedCertificatesPem);
+    }
+
+    default X509KeyManager keyManager(byte[] privateKeyPem, byte[] certificatePem)
+        throws SSLException {
+      return TlsUtil.keyManager(privateKeyPem, certificatePem);
     }
   }
 }
