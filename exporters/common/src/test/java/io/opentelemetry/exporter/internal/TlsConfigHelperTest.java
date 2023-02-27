@@ -77,9 +77,9 @@ class TlsConfigHelperTest {
     helper.createKeyManager(key, cert);
     helper.createTrustManager(cert);
     helper.configureWithSocketFactory(
-        (socketFactory, tManager) -> {
-          seenTrustManager.set(tManager);
-          seenSocketFactory.set(socketFactory);
+        (sf, tm) -> {
+          seenTrustManager.set(tm);
+          seenSocketFactory.set(sf);
         });
     assertSame(trustManager, seenTrustManager.get());
     assertSame(sslSocketFactory, seenSocketFactory.get());
