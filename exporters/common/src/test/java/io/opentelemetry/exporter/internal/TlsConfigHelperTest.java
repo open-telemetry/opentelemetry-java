@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.github.netmikey.logunit.api.LogCapturer;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
@@ -30,6 +31,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TlsConfigHelperTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForLogger(TlsConfigHelper.class.getName());
 
   @Mock TlsConfigHelper.TlsUtility tlsUtil;
 
@@ -159,5 +163,39 @@ class TlsConfigHelperTest {
           fail();
         });
     verifyNoInteractions(tlsUtil);
+  }
+
+  @Test
+  void setKeyManagerReplacesAndWarns() {
+    X509KeyManager keyManager1 = mock(X509KeyManager.class);
+    X509KeyManager keyManager2 = mock(X509KeyManager.class);
+
+    TlsConfigHelper helper = new TlsConfigHelper(tlsUtil);
+
+    helper.setTrustManager(mock(X509TrustManager.class));
+    helper.setKeyManager(keyManager1);
+    helper.setKeyManager(keyManager2);
+
+    helper.configureWithKeyManager((tm, km) -> assertSame(km, keyManager2));
+    logs.assertContains("Previous X509 Key manager is being replaced");
+  }
+
+  @Test
+  void createKeyManagerReplacesAndWarns() throws Exception {
+    X509KeyManager keyManager1 = mock(X509KeyManager.class);
+    X509KeyManager keyManager2 = mock(X509KeyManager.class);
+
+    byte[] cert = serverTls.certificate().getEncoded();
+    byte[] key = serverTls.privateKey().getEncoded();
+
+    when(tlsUtil.keyManager(key, cert)).thenReturn(keyManager2);
+    TlsConfigHelper helper = new TlsConfigHelper(tlsUtil);
+
+    helper.setTrustManager(mock(X509TrustManager.class));
+    helper.setKeyManager(keyManager1);
+    helper.createKeyManager(key, cert);
+
+    helper.configureWithKeyManager((tm, km) -> assertSame(km, keyManager2));
+    logs.assertContains("Previous X509 Key manager is being replaced");
   }
 }
