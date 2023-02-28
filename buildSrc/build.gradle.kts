@@ -56,3 +56,11 @@ java {
     languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
+
+tasks {
+  withType<JavaCompile>().configureEach {
+    with(options) {
+      release.set(8)
+    }
+  }
+}
