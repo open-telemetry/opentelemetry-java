@@ -1,5 +1,6 @@
 import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
+import japicmp.model.JApiClass
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
 import japicmp.model.JApiMethod
@@ -34,11 +35,17 @@ val latestReleasedVersion: String by lazy {
 
 class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
-    if (member.compatibilityChanges == listOf(JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS) &&
+    val allowableAutovalueChanges = setOf(JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS, JApiCompatibilityChange.METHOD_ADDED_TO_PUBLIC_CLASS)
+    if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it) }.isEmpty() &&
       member is JApiMethod &&
       member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
     ) {
       return Violation.accept(member, "Autovalue will automatically add implementation")
+    }
+    if (member.compatibilityChanges.isEmpty() &&
+      member is JApiClass &&
+      member.newClass.get().getAnnotation(AutoValue::class.java) != null) {
+      return Violation.accept(member, "Autovalue class modification is allowed")
     }
     return null
   }

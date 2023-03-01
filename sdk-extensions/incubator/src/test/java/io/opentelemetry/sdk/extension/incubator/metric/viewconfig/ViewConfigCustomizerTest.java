@@ -30,15 +30,14 @@ class ViewConfigCustomizerTest {
     AutoConfiguredOpenTelemetrySdk.builder()
         .setResultAsGlobal(false)
         .addPropertiesSupplier(
-            () -> {
-              return ImmutableMap.of(
-                  "otel.traces.exporter",
-                  "none",
-                  "otel.metrics.exporter",
-                  "none",
-                  "otel.experimental.metrics.view.config",
-                  "classpath:/view-config-customizer-test.yaml");
-            })
+            () ->
+                ImmutableMap.of(
+                    "otel.traces.exporter",
+                    "none",
+                    "otel.metrics.exporter",
+                    "none",
+                    "otel.experimental.metrics.view.config",
+                    "classpath:/view-config-customizer-test.yaml"))
         .addMeterProviderCustomizer(
             (meterProviderBuilder, configProperties) ->
                 meterProviderBuilder.registerMetricReader(reader))

@@ -147,6 +147,10 @@ public final class ViewRegistry {
         && selector.getInstrumentType() != descriptor.getType()) {
       return false;
     }
+    if (selector.getInstrumentUnit() != null
+        && !selector.getInstrumentUnit().equals(descriptor.getUnit())) {
+      return false;
+    }
     if (selector.getInstrumentName() != null
         && !toGlobPatternPredicate(selector.getInstrumentName()).test(descriptor.getName())) {
       return false;
