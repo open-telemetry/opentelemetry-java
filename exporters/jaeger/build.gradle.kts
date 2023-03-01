@@ -42,6 +42,12 @@ wire {
   }
 }
 
+afterEvaluate {
+  tasks.getByName("generateMainProtos") {
+    setDependsOn(configurations.getByName("protoPath"))
+  }
+}
+
 // Declare sourcesJar dependency on proto generation so gradle doesn't complain about implicit dependency
 tasks.getByName("sourcesJar").dependsOn("generateMainProtos")
 
