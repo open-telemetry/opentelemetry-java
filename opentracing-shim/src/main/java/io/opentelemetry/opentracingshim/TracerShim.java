@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -16,6 +17,7 @@ import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -119,16 +121,30 @@ final class TracerShim implements Tracer {
     }
     isClosed = true;
 
+    TracerProvider provider = maybeUnobfuscate(this.provider);
     if (provider instanceof Closeable) {
       try {
         ((Closeable) provider).close();
       } catch (RuntimeException | IOException e) {
-        logger.log(
-            Level.INFO,
-            "Exception caught while closing TracerProvider. Ignoring. "
-                + "Exception: [{0}] Message: [{1}]",
-            new String[] {e.getClass().getName(), e.getMessage()});
+        logger.log(Level.INFO, "Exception caught while closing TracerProvider.", e);
       }
     }
+  }
+
+  private static TracerProvider maybeUnobfuscate(TracerProvider tracerProvider) {
+    if (!tracerProvider.getClass().getSimpleName().equals("ObfuscatedTracerProvider")) {
+      return tracerProvider;
+    }
+    try {
+      Field delegateField = tracerProvider.getClass().getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(tracerProvider);
+      if (delegate instanceof TracerProvider) {
+        return (TracerProvider) delegate;
+      }
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      logger.log(Level.INFO, "Error trying to unobfuscate SdkTracerProvider", e);
+    }
+    return tracerProvider;
   }
 }

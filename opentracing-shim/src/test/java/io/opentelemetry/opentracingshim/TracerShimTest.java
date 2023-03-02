@@ -8,15 +8,21 @@ package io.opentelemetry.opentracingshim;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.BooleanTag;
@@ -27,6 +33,7 @@ import io.opentracing.tag.Tags;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -45,11 +52,18 @@ class TracerShimTest {
 
   @BeforeEach
   void setUp() {
+    GlobalOpenTelemetry.resetForTest();
+    GlobalOpenTelemetry.set(otelTesting.getOpenTelemetry());
+
     provider = otelTesting.getOpenTelemetry().getTracerProvider();
     TextMapPropagator propagator =
         otelTesting.getOpenTelemetry().getPropagators().getTextMapPropagator();
-    ;
     tracerShim = new TracerShim(provider, propagator, propagator);
+  }
+
+  @AfterEach
+  void cleanup() {
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test
@@ -343,22 +357,47 @@ class TracerShimTest {
   }
 
   @Test
-  void close() {
+  void close_OpenTelemetrySdk() {
+    SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);
+    doThrow(new RuntimeException("testing error")).when(sdkProvider).close();
+
+    Tracer tracerShim =
+        OpenTracingShim.createTracerShim(
+            OpenTelemetrySdk.builder().setTracerProvider(sdkProvider).build());
     tracerShim.close();
+
+    verify(sdkProvider).close();
+
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
     assertThat(span.getSpanContext().isValid()).isFalse();
   }
 
   @Test
-  void close_doesNotCrash() {
-    // Need to explicitly use SdkTracerProvider as it implements Closeable,
-    // which we mock to throw an Exception.
-    io.opentelemetry.sdk.trace.SdkTracerProvider sdkProvider =
-        mock(io.opentelemetry.sdk.trace.SdkTracerProvider.class);
+  void close_GlobalOpenTelemetry() {
+    GlobalOpenTelemetry.resetForTest();
+    SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);
     doThrow(new RuntimeException("testing error")).when(sdkProvider).close();
-    tracerShim = new TracerShim(sdkProvider, TextMapPropagator.noop(), TextMapPropagator.noop());
+    GlobalOpenTelemetry.set(OpenTelemetrySdk.builder().setTracerProvider(sdkProvider).build());
+
+    Tracer tracerShim = OpenTracingShim.createTracerShim(GlobalOpenTelemetry.get());
     tracerShim.close();
+
+    verify(sdkProvider).close();
+
+    Span otSpan = tracerShim.buildSpan(null).start();
+    io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
+    assertThat(span.getSpanContext().isValid()).isFalse();
+  }
+
+  @Test
+  void close_NoopOpenTelemetry() {
+    Tracer tracerShim = OpenTracingShim.createTracerShim(OpenTelemetry.noop());
+    tracerShim.close();
+
+    Span otSpan = tracerShim.buildSpan(null).start();
+    io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
+    assertThat(span.getSpanContext().isValid()).isFalse();
   }
 
   @Test
@@ -402,7 +441,8 @@ class TracerShimTest {
 
   @Test
   void noopDoesNotCrash() {
-    tracerShim.close();
+    Tracer tracerShim = OpenTracingShim.createTracerShim(OpenTelemetry.noop());
+
     Span span =
         tracerShim
             .buildSpan("test")
