@@ -40,6 +40,7 @@ public class TlsConfigHelper {
     this.tlsUtil = tlsUtil;
   }
 
+  /** Sets the X509TrustManager. */
   public TlsConfigHelper setTrustManager(X509TrustManager trustManager) {
     this.trustManager = trustManager;
     return this;
@@ -98,6 +99,10 @@ public class TlsConfigHelper {
     return this;
   }
 
+  /**
+   * Sets the SSLSocketFactory, which is passed into the callback within
+   * configureWithSocketFactory().
+   */
   public TlsConfigHelper setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
     this.sslSocketFactory = sslSocketFactory;
     return this;
@@ -125,12 +130,12 @@ public class TlsConfigHelper {
    * Configures TLS by invoking the given callback with the X509TrustManager and X509KeyManager. If
    * the trust manager or key manager have not yet been configured, this method does nothing.
    */
-  public void configureWithKeyManager(KeyManagerConfigurer configureMethod) {
+  public void configureWithKeyManager(KeyManagerConfigurer configurer) {
     if (trustManager == null) {
       return;
     }
     try {
-      configureMethod.configure(trustManager, keyManager);
+      configurer.configure(trustManager, keyManager);
     } catch (SSLException e) {
       wrapException(e);
     }
@@ -138,10 +143,10 @@ public class TlsConfigHelper {
 
   /**
    * Configures TLS by invoking the provided consumer with a new SSLSocketFactory and the
-   * preconfigured X509TrustManager. If the trust manager has not been configured, this method is
-   * effectively a noop.
+   * preconfigured X509TrustManager. If the trust manager has not been configured, this method does
+   * nothing.
    */
-  public void configureWithSocketFactory(SslSocketFactoryConfigurer configureMethod) {
+  public void configureWithSocketFactory(SslSocketFactoryConfigurer configurer) {
     if (trustManager == null) {
       warnIfOtherComponentsConfigured();
       return;
@@ -152,7 +157,7 @@ public class TlsConfigHelper {
       if (sslSocketFactory == null) {
         sslSocketFactory = tlsUtil.sslSocketFactory(keyManager, trustManager);
       }
-      configureMethod.configure(sslSocketFactory, trustManager);
+      configurer.configure(sslSocketFactory, trustManager);
     } catch (SSLException e) {
       wrapException(e);
     }
