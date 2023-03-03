@@ -1,7 +1,5 @@
 # OpenTelemetry OpenCensus Shim
 
-[![Javadocs][javadoc-image]][javadoc-url]
-
 The OpenCensus shim allows applications and libraries that are instrumented
 with OpenTelemetry, but depend on other libraries instrumented with OpenCensus,
 to export trace spans from both OpenTelemetry and OpenCensus with the correct
@@ -24,33 +22,24 @@ To allow the shim to work for metrics, add the shim as a dependency.
 
 Applications also need to attach OpenCensus metrics to their metric readers on registration.
 
-```
+```java
+PeriodicMetricReader reader = ...
 SdkMeterProvider.builder()
-            .registerMetricReader(
-                OpenCensusMetrics.attachTo(readerFactory)
-            )
-        .buildAndRegisterGlobal();
+    .registerMetricReader(OpenCensusMetrics.attachTo(reader))
+    .buildAndRegisterGlobal();
 ```
 
 For example, if a logging exporter were configured, the following would be
 added:
 
-```
-LoggingMetricExporter metricExporter = new LoggingMetricExporter();
+```java
+LoggingMetricExporter metricExporter = LoggingMetricExporter.create();
 SdkMeterProvider.builder()
-            .registerMetricReader(
-                OpenCensusMetrics.attachTo(
-                  PeriodicMetricReader.builder(metricExporter)
-                  .newMetricReaderFactory()
-                )
-            )
-        .buildAndRegisterGlobal();
+    .registerMetricReader(OpenCensusMetrics.attachTo(PeriodicMetricReader.create(metricExporter)))
+    .build();
 ```
 
 ## Known Problems
 
 * OpenCensus links added after an OpenCensus span is created will not be
 exported, as OpenTelemetry only supports links added when a span is created.
-
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opencensus-shim.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opencensus-shim
