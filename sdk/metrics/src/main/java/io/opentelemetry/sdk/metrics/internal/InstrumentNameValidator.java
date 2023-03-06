@@ -3,23 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.sdk.metrics.internal;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * General internal validation utility methods.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * Utility for validating instrument names. This class is internal to the SDK and is not intended
+ * for public use.
  */
-public final class ValidationUtil {
+public class InstrumentNameValidator {
 
-  public static final String API_USAGE_LOGGER_NAME = "io.opentelemetry.ApiUsageLogging";
-
-  private static final Logger API_USAGE_LOGGER = Logger.getLogger(API_USAGE_LOGGER_NAME);
+  public static final String LOGGER_NAME = InstrumentNameValidator.class.getName();
+  private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
   /**
    * Instrument names MUST conform to the following syntax.
@@ -35,26 +32,6 @@ public final class ValidationUtil {
   private static final Pattern VALID_INSTRUMENT_NAME_PATTERN =
       Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,62}");
 
-  /**
-   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
-   *
-   * <p>Log at {@link Level#FINEST} and include a stack trace.
-   */
-  public static void log(String message) {
-    log(message, Level.FINEST);
-  }
-
-  /**
-   * Log the {@code message} to the {@link #API_USAGE_LOGGER_NAME API Usage Logger}.
-   *
-   * <p>Log includes a stack trace.
-   */
-  public static void log(String message, Level level) {
-    if (API_USAGE_LOGGER.isLoggable(level)) {
-      API_USAGE_LOGGER.log(level, message, new AssertionError());
-    }
-  }
-
   /** Check if the instrument name is valid. If invalid, log a warning. */
   public static boolean checkValidInstrumentName(String name) {
     return checkValidInstrumentName(name, "");
@@ -68,14 +45,14 @@ public final class ValidationUtil {
     if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
       return true;
     }
-    log(
+    LOGGER.log(
+        Level.FINER,
         "Instrument name \""
             + name
             + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."
-            + logSuffix,
-        Level.WARNING);
+            + logSuffix);
     return false;
   }
 
-  private ValidationUtil() {}
+  private InstrumentNameValidator() {}
 }

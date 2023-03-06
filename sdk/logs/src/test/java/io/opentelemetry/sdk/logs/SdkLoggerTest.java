@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
+import static io.opentelemetry.api.internal.ApiUsageLogger.LOGGER_NAME;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,8 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class SdkLoggerTest {
 
-  @RegisterExtension
-  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+  @RegisterExtension LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(LOGGER_NAME);
 
   @Test
   void logRecordBuilder() {

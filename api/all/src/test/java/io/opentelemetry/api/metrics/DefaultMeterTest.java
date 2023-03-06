@@ -6,7 +6,7 @@
 package io.opentelemetry.api.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
+import static io.opentelemetry.api.internal.ApiUsageLogger.LOGGER_NAME;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -15,12 +15,11 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
+@SuppressLogger(loggerName = LOGGER_NAME)
 public class DefaultMeterTest {
   private static final Meter METER = DefaultMeter.getInstance();
 
-  @RegisterExtension
-  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
+  @RegisterExtension LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(LOGGER_NAME);
 
   @Test
   void noopLongCounter_doesNotThrow() {

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static java.util.logging.Level.WARNING;
+
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -17,14 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Helper to make implementing builders easier. */
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
   static final String DEFAULT_UNIT = "";
-  public static final String LOGGER_NAME = AbstractInstrumentBuilder.class.getName();
+  public static final String LOGGER_NAME = "io.opentelemetry.sdk.metrics.AbstractInstrumentBuilder";
   private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
   private final MeterProviderSharedState meterProviderSharedState;
@@ -135,12 +136,15 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
       return true;
     }
-    LOGGER.log(
-        Level.WARNING,
-        "Unit \""
-            + unit
-            + "\" is invalid. Instrument unit must be 63 or fewer ASCII characters."
-            + logSuffix);
+    if (LOGGER.isLoggable(WARNING)) {
+      LOGGER.log(
+          WARNING,
+          "Unit \""
+              + unit
+              + "\" is invalid. Instrument unit must be 63 or fewer ASCII characters."
+              + logSuffix,
+          new AssertionError());
+    }
     return false;
   }
 
