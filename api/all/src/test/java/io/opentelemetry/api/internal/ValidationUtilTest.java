@@ -74,30 +74,4 @@ public class ValidationUtilTest {
     assertThat(ValidationUtil.checkValidInstrumentName(new String(new char[64]).replace('\0', 'a')))
         .isFalse();
   }
-
-  @Test
-  void checkValidInstrumentUnit_InvalidUnitLogs() {
-    assertThat(ValidationUtil.checkValidInstrumentUnit("日", " suffix")).isFalse();
-    apiUsageLogs.assertContains(
-        "Unit \"日\" is invalid. Instrument unit must be 63 or fewer ASCII characters." + " suffix");
-  }
-
-  @Test
-  void checkValidInstrumentUnit() {
-    assertThat(ValidationUtil.checkValidInstrumentUnit("a")).isTrue();
-    assertThat(ValidationUtil.checkValidInstrumentUnit("A")).isTrue();
-    assertThat(ValidationUtil.checkValidInstrumentUnit("foo129")).isTrue();
-    assertThat(ValidationUtil.checkValidInstrumentUnit("!@#$%^&*()")).isTrue();
-    assertThat(ValidationUtil.checkValidInstrumentUnit(new String(new char[63]).replace('\0', 'a')))
-        .isTrue();
-
-    // Empty and null not allowed
-    assertThat(ValidationUtil.checkValidInstrumentUnit(null)).isFalse();
-    assertThat(ValidationUtil.checkValidInstrumentUnit("")).isFalse();
-    // Non-ascii characters
-    assertThat(ValidationUtil.checkValidInstrumentUnit("日")).isFalse();
-    // Must be 63 characters or less
-    assertThat(ValidationUtil.checkValidInstrumentUnit(new String(new char[64]).replace('\0', 'a')))
-        .isFalse();
-  }
 }

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.internal;
 
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -73,31 +72,6 @@ public final class ValidationUtil {
         "Instrument name \""
             + name
             + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."
-            + logSuffix,
-        Level.WARNING);
-    return false;
-  }
-
-  /** Check if the instrument unit is valid. If invalid, log a warning. */
-  public static boolean checkValidInstrumentUnit(String unit) {
-    return checkValidInstrumentUnit(unit, "");
-  }
-
-  /**
-   * Check if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
-   * appended.
-   */
-  public static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
-    if (unit != null
-        && !unit.equals("")
-        && unit.length() < 64
-        && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
-      return true;
-    }
-    log(
-        "Unit \""
-            + unit
-            + "\" is invalid. Instrument unit must be 63 or fewer ASCII characters."
             + logSuffix,
         Level.WARNING);
     return false;
