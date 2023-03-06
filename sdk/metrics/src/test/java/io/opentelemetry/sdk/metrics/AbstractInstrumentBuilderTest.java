@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -15,8 +16,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class AbstractInstrumentBuilderTest {
+
+  @RegisterExtension
+  LogCapturer apiUsageLogs =
+      LogCapturer.create().captureForLogger(AbstractInstrumentBuilder.LOGGER_NAME);
 
   @Test
   void stringRepresentation() {
@@ -42,6 +48,36 @@ class AbstractInstrumentBuilderTest {
                 + "type=COUNTER, "
                 + "valueType=LONG"
                 + "}}");
+  }
+
+  @Test
+  void checkValidInstrumentUnit_InvalidUnitLogs() {
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("日", " suffix")).isFalse();
+    apiUsageLogs.assertContains(
+        "Unit \"日\" is invalid. Instrument unit must be 63 or fewer ASCII characters." + " suffix");
+  }
+
+  @Test
+  void checkValidInstrumentUnit() {
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("a")).isTrue();
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("A")).isTrue();
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("foo129")).isTrue();
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("!@#$%^&*()")).isTrue();
+    assertThat(
+            AbstractInstrumentBuilder.checkValidInstrumentUnit(
+                new String(new char[63]).replace('\0', 'a')))
+        .isTrue();
+
+    // Empty and null not allowed
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit(null)).isFalse();
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("")).isFalse();
+    // Non-ascii characters
+    assertThat(AbstractInstrumentBuilder.checkValidInstrumentUnit("日")).isFalse();
+    // Must be 63 characters or fewer
+    assertThat(
+            AbstractInstrumentBuilder.checkValidInstrumentUnit(
+                new String(new char[64]).replace('\0', 'a')))
+        .isFalse();
   }
 
   private static class TestInstrumentBuilder

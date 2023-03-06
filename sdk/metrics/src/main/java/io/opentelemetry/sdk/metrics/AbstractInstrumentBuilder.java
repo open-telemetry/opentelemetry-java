@@ -24,7 +24,8 @@ import java.util.logging.Logger;
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
   static final String DEFAULT_UNIT = "";
-  private static final Logger LOGGER = Logger.getLogger(AbstractInstrumentBuilder.class.getName());
+  public static final String LOGGER_NAME = AbstractInstrumentBuilder.class.getName();
+  private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentType type;
@@ -118,11 +119,16 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         + "}";
   }
 
+  /** Check if the instrument unit is valid. If invalid, log a warning. */
+  static boolean checkValidInstrumentUnit(String unit) {
+    return checkValidInstrumentUnit(unit, "");
+  }
+
   /**
    * Check if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
    * appended. This method should be removed and unit validation should not happen.
    */
-  private static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
+  static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
     if (unit != null
         && !unit.equals("")
         && unit.length() < 64
