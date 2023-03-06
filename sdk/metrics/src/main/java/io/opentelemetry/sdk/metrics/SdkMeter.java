@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.metrics.internal.InstrumentNameValidator.checkValidInstrumentName;
 
-import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.api.metrics.BatchCallback;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
@@ -38,8 +37,8 @@ final class SdkMeter implements Meter {
   private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
 
   /**
-   * Message appended to warnings when {@link ApiUsageLogger#checkValidInstrumentName(String,
-   * String)} is {@code false}.
+   * Message appended to warnings when {@link
+   * InstrumentNameValidator#checkValidInstrumentName(String, String)} is {@code false}.
    */
   private static final String NOOP_INSTRUMENT_WARNING = " Returning noop instrument.";
 

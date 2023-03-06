@@ -15,7 +15,8 @@ import java.util.regex.Pattern;
  */
 public class InstrumentNameValidator {
 
-  public static final String LOGGER_NAME = InstrumentNameValidator.class.getName();
+  public static final String LOGGER_NAME =
+      "io.opentelemetry.sdk.metrics.internal.InstrumentNameValidator";
   private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
   /**
@@ -45,12 +46,16 @@ public class InstrumentNameValidator {
     if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
       return true;
     }
-    LOGGER.log(
-        Level.FINER,
-        "Instrument name \""
-            + name
-            + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."
-            + logSuffix);
+    if (LOGGER.isLoggable(Level.WARNING)) {
+      LOGGER.log(
+          Level.WARNING,
+          "Instrument name \""
+              + name
+              + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter."
+              + logSuffix,
+          new AssertionError());
+    }
+
     return false;
   }
 

@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.event.LoggingEvent;
 
 @SuppressLogger(loggerName = LOGGER_NAME)
 @SuppressLogger(MetricStorageRegistry.class)
@@ -34,12 +33,11 @@ class SdkMeterTest {
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
-  private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
-  @RegisterExtension LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(LOGGER_NAME);
+  private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @Test
   void builder_InvalidName() {
@@ -87,14 +85,6 @@ class SdkMeterTest {
                 .gaugeBuilder(NOOP_INSTRUMENT_NAME)
                 .ofLongs()
                 .buildWithCallback(unused -> {}));
-
-    assertThat(apiUsageLogs.getEvents())
-        .extracting(LoggingEvent::getMessage)
-        .hasSize(12)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter. Returning noop instrument."));
   }
 
   @Test
@@ -127,14 +117,6 @@ class SdkMeterTest {
     // Gauge
     sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).buildWithCallback(unused -> {});
     sdkMeter.gaugeBuilder("my-instrument").setUnit(unit).ofLongs().buildWithCallback(unused -> {});
-
-    assertThat(apiUsageLogs.getEvents())
-        .hasSize(12)
-        .extracting(LoggingEvent::getMessage)
-        .allMatch(
-            log ->
-                log.equals(
-                    "Unit \"日\" is invalid. Instrument unit must be 63 or fewer ASCII characters. Using \"\" for instrument my-instrument instead."));
   }
 
   @Test
