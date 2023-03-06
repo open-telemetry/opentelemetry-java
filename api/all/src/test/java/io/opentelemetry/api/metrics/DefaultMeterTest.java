@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @SuppressLogger(loggerName = API_USAGE_LOGGER_NAME)
 public class DefaultMeterTest {
   private static final Meter METER = DefaultMeter.getInstance();
-  private static final String NOOP_INSTRUMENT_NAME = "noop";
 
   @RegisterExtension
   LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
