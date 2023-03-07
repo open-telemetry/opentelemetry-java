@@ -1,5 +1,6 @@
 import com.google.auto.value.AutoValue
 import japicmp.model.JApiChangeStatus
+import japicmp.model.JApiClass
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
 import japicmp.model.JApiMethod
@@ -41,6 +42,21 @@ class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() 
       return Violation.accept(member, "Autovalue will automatically add implementation")
     }
     return null
+  }
+}
+
+// TODO: remove after protobuf 3.22.0 upgrade
+class Protobuf3_22_Exception : AbstractRecordingSeenMembers() {
+  override fun maybeAddViolation(member: JApiCompatibility): Violation? {
+    if ((member is JApiMethod && isGeneratedMessageV3Builder(member.getjApiClass())) ||
+      member is JApiClass && isGeneratedMessageV3Builder(member)) {
+      return Violation.accept(member, "Methods moved to superlass")
+    }
+    return null
+  }
+
+  fun isGeneratedMessageV3Builder(member: JApiClass): Boolean {
+    return member.superclass.newSuperclassName.get().equals("com.google.protobuf.GeneratedMessageV3\$Builder")
   }
 }
 
@@ -123,6 +139,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           addRule(JApiChangeStatus.UNCHANGED, UnchangedMemberRule::class.java)
           // Allow new abstract methods on autovalue
           addRule(AllowNewAbstractMethodOnAutovalueClasses::class.java)
+          addRule(Protobuf3_22_Exception::class.java)
           addRule(BinaryIncompatibleRule::class.java)
           // Disallow source incompatible changes, which are allowed by default for some reason
           addRule(SourceIncompatibleRule::class.java)
