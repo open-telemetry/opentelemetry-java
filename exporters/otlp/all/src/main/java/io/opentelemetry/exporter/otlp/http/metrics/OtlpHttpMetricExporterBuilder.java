@@ -99,7 +99,7 @@ public final class OtlpHttpMetricExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpHttpMetricExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    delegate.configureTrustManager(trustedCertificatesPem);
     return this;
   }
 
@@ -108,7 +108,7 @@ public final class OtlpHttpMetricExporterBuilder {
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    delegate.configureKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 

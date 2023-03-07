@@ -109,13 +109,13 @@ public final class JaegerGrpcSpanExporterBuilder {
    * use the system default trusted certificates.
    */
   public JaegerGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    delegate.configureTrustManager(trustedCertificatesPem);
     return this;
   }
 
   /** Sets the client key and chain to use for verifying servers when mTLS is enabled. */
   public JaegerGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    delegate.configureKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
