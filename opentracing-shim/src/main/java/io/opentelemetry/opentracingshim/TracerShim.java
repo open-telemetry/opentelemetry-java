@@ -18,6 +18,7 @@ import io.opentracing.propagation.TextMapInject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -29,7 +30,7 @@ final class TracerShim implements Tracer {
   private final io.opentelemetry.api.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
-  private volatile boolean isClosed;
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   TracerShim(
       io.opentelemetry.api.trace.TracerProvider provider,
@@ -68,7 +69,7 @@ final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    if (isClosed) {
+    if (isShutdown.get()) {
       return new NoopSpanBuilderShim(operationName);
     }
 
@@ -116,10 +117,9 @@ final class TracerShim implements Tracer {
 
   @Override
   public void close() {
-    if (isClosed) {
+    if (!isShutdown.compareAndSet(false, true)) {
       return;
     }
-    isClosed = true;
 
     TracerProvider provider = maybeUnobfuscate(this.provider);
     if (provider instanceof Closeable) {
