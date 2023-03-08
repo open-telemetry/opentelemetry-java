@@ -25,7 +25,8 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
-  testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.google.guava:guava:31.1-jre")
+  testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("org.testcontainers:junit-jupiter")
@@ -37,8 +38,7 @@ testing {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":exporters:common"))
-
-        implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.google.protobuf:protobuf-java")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
         implementation("org.testcontainers:junit-jupiter")
