@@ -48,7 +48,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.logging.Logger;
 
-class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.Span, ProxyingSpan {
+class OpenTelemetrySpanImpl extends Span
+    implements io.opentelemetry.api.trace.Span, DelegatingSpan {
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySpanImpl.class.getName());
   private static final EnumSet<Span.Options> RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.of(Span.Options.RECORD_EVENTS);
@@ -63,7 +64,7 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   // otel
 
   @Override
-  public io.opentelemetry.api.trace.Span getProxied() {
+  public io.opentelemetry.api.trace.Span getDelegate() {
     return otelSpan;
   }
 
@@ -74,10 +75,10 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
     value.match(
-        arg -> ProxyingSpan.super.setAttribute(key, arg),
-        arg -> ProxyingSpan.super.setAttribute(key, arg),
-        arg -> ProxyingSpan.super.setAttribute(key, arg),
-        arg -> ProxyingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
         arg -> null);
   }
 
@@ -91,14 +92,14 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
     AttributesBuilder attributesBuilder = Attributes.builder();
     mapAttributes(attributes, attributesBuilder);
-    ProxyingSpan.super.addEvent(description, attributesBuilder.build());
+    DelegatingSpan.super.addEvent(description, attributesBuilder.build());
   }
 
   @Override
   public void addAnnotation(Annotation annotation) {
     AttributesBuilder attributesBuilder = Attributes.builder();
     mapAttributes(annotation.getAttributes(), attributesBuilder);
-    ProxyingSpan.super.addEvent(annotation.getDescription(), attributesBuilder.build());
+    DelegatingSpan.super.addEvent(annotation.getDescription(), attributesBuilder.build());
   }
 
   @Override
@@ -108,7 +109,7 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
 
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {
-    ProxyingSpan.super.addEvent(
+    DelegatingSpan.super.addEvent(
         String.valueOf(messageEvent.getMessageId()),
         Attributes.of(
             AttributeKey.stringKey(MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE),
@@ -122,22 +123,22 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    ProxyingSpan.super.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
+    DelegatingSpan.super.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
-    return ProxyingSpan.super.setStatus(canonicalCode, description);
+    return DelegatingSpan.super.setStatus(canonicalCode, description);
   }
 
   @Override
   public void end(EndSpanOptions options) {
-    ProxyingSpan.super.end();
+    DelegatingSpan.super.end();
   }
 
   @Override
   public SpanContext getSpanContext() {
-    return ProxyingSpan.super.getSpanContext();
+    return DelegatingSpan.super.getSpanContext();
   }
 
   @Override

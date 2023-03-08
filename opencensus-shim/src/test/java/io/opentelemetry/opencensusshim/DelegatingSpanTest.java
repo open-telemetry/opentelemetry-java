@@ -31,7 +31,7 @@ import org.mockito.verification.VerificationMode;
  * and as instrumented via the javaagent. Details <a
  * href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/6876">here</a>.
  */
-class ProxyingSpanTest {
+class DelegatingSpanTest {
 
   /*
   Verifies all methods on the otel Span interface are under test.
@@ -41,7 +41,7 @@ class ProxyingSpanTest {
   @Test
   void verifyAllMethodsAreUnderTest() {
     List<Method> methods =
-        proxyMethodsProvider()
+        delegateMethodsProvider()
             .map(
                 pm -> {
                   try {
@@ -62,13 +62,13 @@ class ProxyingSpanTest {
   }
 
   @ParameterizedTest
-  @MethodSource("proxyMethodsProvider")
+  @MethodSource("delegateMethodsProvider")
   void testit(String name, Class<?>[] params, VerificationMode timesCalled)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Method method = getInterfaceMethod(Span.class, name, params);
     Span mockedSpan = Mockito.spy(Span.current());
     OpenTelemetrySpanImpl span = new OpenTelemetrySpanImpl(mockedSpan);
-    assertProxied(span, mockedSpan, method, timesCalled);
+    assertDelegated(span, mockedSpan, method, timesCalled);
   }
 
   static List<Method> allInterfaceMethods(Class<?> clazz) {
@@ -77,8 +77,7 @@ class ProxyingSpanTest {
         .collect(Collectors.toList());
   }
 
-  static Stream<Arguments> proxyMethodsProvider() {
-    // todo fill in remaining methods
+  static Stream<Arguments> delegateMethodsProvider() {
     return Stream.of(
         Arguments.of("end", new Class<?>[] {}, times(1)),
         Arguments.of(
@@ -145,7 +144,7 @@ class ProxyingSpanTest {
         // called never -- it's shared between OC and Otel Span types and is always true, so returns
         // `true`
         Arguments.of("isRecording", new Class<?>[] {}, times(0)),
-        // called twice: once in constructor, then once during proxy
+        // called twice: once in constructor, then once during delegation
         Arguments.of("getSpanContext", new Class<?>[] {}, times(2)));
   }
 
@@ -175,14 +174,14 @@ class ProxyingSpanTest {
     }
   }
 
-  static <T> Method getInterfaceMethod(Class<T> proxy, String name, Class<?>[] params)
+  static <T> Method getInterfaceMethod(Class<T> clazz, String name, Class<?>[] params)
       throws NoSuchMethodException {
-    Method method = proxy.getMethod(name, params);
+    Method method = clazz.getMethod(name, params);
     assertThat(method).isNotNull();
     return method;
   }
 
-  static <T> void assertProxied(T proxy, T delegate, Method method, VerificationMode mode)
+  static <T> void assertDelegated(T proxy, T delegate, Method method, VerificationMode mode)
       throws InvocationTargetException, IllegalAccessException {
     // Get parameters for method
     Class<?>[] parameterTypes = method.getParameterTypes();
