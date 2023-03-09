@@ -14,7 +14,7 @@
   ([#5184](https://github.com/open-telemetry/opentelemetry-java/pull/5184))
 * Stop ignoring long measurements in HistogramExemplarReservoir
   ([#5216](https://github.com/open-telemetry/opentelemetry-java/pull/5216))
-* Remove validations for noop instrument names and units  
+* Remove validations for noop instrument names and units
   ([#5146](https://github.com/open-telemetry/opentelemetry-java/pull/5146))
 * Allow views to select on instrument unit
   ([#5255](https://github.com/open-telemetry/opentelemetry-java/pull/5255))
