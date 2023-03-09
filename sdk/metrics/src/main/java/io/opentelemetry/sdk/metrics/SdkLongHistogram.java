@@ -6,10 +6,10 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.HistogramAdviceConfigurer;
 import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
+import io.opentelemetry.extension.incubator.metrics.HistogramAdviceConfigurer;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -57,14 +57,15 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
 
   static final class SdkLongHistogramBuilder
       extends AbstractInstrumentBuilder<SdkLongHistogramBuilder>
-      implements LongHistogramBuilder, HistogramAdviceConfigurer {
+      implements ExtendedLongHistogramBuilder, HistogramAdviceConfigurer {
 
     SdkLongHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
-        String unit) {
+        String unit,
+        Advice advice) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -72,7 +73,8 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
           InstrumentValueType.LONG,
           name,
           description,
-          unit);
+          unit,
+          advice);
     }
 
     @Override
@@ -92,7 +94,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public HistogramAdviceConfigurer setBoundaries(List<Double> bucketBoundaries) {
+    public HistogramAdviceConfigurer setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
       setAdvice(Advice.create(bucketBoundaries));
       return this;
     }

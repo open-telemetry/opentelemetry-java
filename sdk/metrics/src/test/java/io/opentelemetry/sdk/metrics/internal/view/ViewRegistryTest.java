@@ -61,7 +61,12 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                    "",
+                    "",
+                    "",
+                    InstrumentType.UP_DOWN_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
@@ -81,7 +86,7 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
-                    "", "", "ms", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                    "", "", "ms", InstrumentType.COUNTER, InstrumentValueType.LONG, Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(registeredView));
     // this one doesn't match, so it gets the default still.

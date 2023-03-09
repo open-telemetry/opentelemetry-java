@@ -5,16 +5,27 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
+import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 class AdviceTest {
 
@@ -25,18 +36,17 @@ class AdviceTest {
     meterProvider.close();
   }
 
-  @Test
-  void histogramWithoutAdvice() {
+  @ParameterizedTest
+  @ArgumentsSource(HistogramWithoutAdviceProvider.class)
+  void histogramWithoutAdvice(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
-
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
-    DoubleHistogram doubleHistogram =
-        meterProvider.get("meter").histogramBuilder("histogram").build();
 
-    doubleHistogram.record(5.0);
-    doubleHistogram.record(15.0);
-    doubleHistogram.record(25.0);
-    doubleHistogram.record(35.0);
+    Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);
+    histogramRecorder.accept(5L);
+    histogramRecorder.accept(15L);
+    histogramRecorder.accept(25L);
+    histogramRecorder.accept(35L);
 
     // Should use default bucket bounds
     assertThat(reader.collectAllMetrics())
@@ -55,23 +65,17 @@ class AdviceTest {
                                             1_000d, 2_500d, 5_000d, 7_500d, 10_000d))));
   }
 
-  @Test
-  void histogramWithAdvice() {
+  @ParameterizedTest
+  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  void histogramWithAdvice(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
-    DoubleHistogram doubleHistogram =
-        meterProvider
-            .get("meter")
-            .histogramBuilder("histogram")
-            .setUnit("foo")
-            .setDescription("bar")
-            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
-            .build();
 
-    doubleHistogram.record(5.0);
-    doubleHistogram.record(15.0);
-    doubleHistogram.record(25.0);
-    doubleHistogram.record(35.0);
+    Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);
+    histogramRecorder.accept(5L);
+    histogramRecorder.accept(15L);
+    histogramRecorder.accept(25L);
+    histogramRecorder.accept(35L);
 
     // Bucket bounds from advice should be used
     assertThat(reader.collectAllMetrics())
@@ -88,8 +92,9 @@ class AdviceTest {
                                         .hasBucketBoundaries(10.0, 20.0, 30.0))));
   }
 
-  @Test
-  void histogramWithAdviceAndViews() {
+  @ParameterizedTest
+  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  void histogramWithAdviceAndViews(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider =
         SdkMeterProvider.builder()
@@ -97,21 +102,15 @@ class AdviceTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(
-                        Aggregation.explicitBucketHistogram(Collections.singletonList(50.0)))
+                    .setAggregation(explicitBucketHistogram(Collections.singletonList(50.0)))
                     .build())
             .build();
-    DoubleHistogram doubleHistogram =
-        meterProvider
-            .get("meter")
-            .histogramBuilder("histogram")
-            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
-            .build();
 
-    doubleHistogram.record(5.0);
-    doubleHistogram.record(15.0);
-    doubleHistogram.record(25.0);
-    doubleHistogram.record(35.0);
+    Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);
+    histogramRecorder.accept(5L);
+    histogramRecorder.accept(15L);
+    histogramRecorder.accept(25L);
+    histogramRecorder.accept(35L);
 
     // View should take priority over bucket bounds from advice
     assertThat(reader.collectAllMetrics())
@@ -125,28 +124,24 @@ class AdviceTest {
                                 point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
   }
 
-  @Test
-  void histogramWithAdviceAndReaderAggregationPreference() {
+  @ParameterizedTest
+  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  void histogramWithAdviceAndReaderAggregationPreference(
+      Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader =
         InMemoryMetricReader.create(
             AggregationTemporalitySelector.alwaysCumulative(),
             DefaultAggregationSelector.getDefault()
                 .with(
                     InstrumentType.HISTOGRAM,
-                    io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram(
-                        Collections.singletonList(50.0))));
+                    explicitBucketHistogram(Collections.singletonList(50.0))));
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
-    DoubleHistogram doubleHistogram =
-        meterProvider
-            .get("meter")
-            .histogramBuilder("histogram")
-            .setAdvice(advice -> advice.setBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
-            .build();
 
-    doubleHistogram.record(5.0);
-    doubleHistogram.record(15.0);
-    doubleHistogram.record(25.0);
-    doubleHistogram.record(35.0);
+    Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);
+    histogramRecorder.accept(5L);
+    histogramRecorder.accept(15L);
+    histogramRecorder.accept(25L);
+    histogramRecorder.accept(35L);
 
     // Reader aggregation preference should take priority over bucket bounds from advice
     assertThat(reader.collectAllMetrics())
@@ -158,5 +153,61 @@ class AdviceTest {
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
+  }
+
+  static class HistogramWithoutAdviceProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+      return Stream.of(
+          Arguments.of(
+              (Function<SdkMeterProvider, Consumer<Long>>)
+                  meterProvider -> {
+                    DoubleHistogram build =
+                        meterProvider.get("meter").histogramBuilder("histogram").build();
+                    return build::record;
+                  }),
+          Arguments.of(
+              (Function<SdkMeterProvider, Consumer<Long>>)
+                  meterProvider -> {
+                    LongHistogram build =
+                        meterProvider.get("meter").histogramBuilder("histogram").ofLongs().build();
+                    return build::record;
+                  }));
+    }
+  }
+
+  static class HistogramWithAdviceProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+      return Stream.of(
+          Arguments.of(
+              (Function<SdkMeterProvider, Consumer<Long>>)
+                  meterProvider -> {
+                    DoubleHistogram build =
+                        ((ExtendedDoubleHistogramBuilder)
+                                meterProvider.get("meter").histogramBuilder("histogram"))
+                            .setAdvice(
+                                advice ->
+                                    advice.setExplicitBucketBoundaries(
+                                        Arrays.asList(10.0, 20.0, 30.0)))
+                            .build();
+                    return build::record;
+                  }),
+          Arguments.of(
+              (Function<SdkMeterProvider, Consumer<Long>>)
+                  meterProvider -> {
+                    LongHistogram build =
+                        ((ExtendedLongHistogramBuilder)
+                                meterProvider.get("meter").histogramBuilder("histogram").ofLongs())
+                            .setAdvice(
+                                advice ->
+                                    advice.setExplicitBucketBoundaries(
+                                        Arrays.asList(10.0, 20.0, 30.0)))
+                            .build();
+                    return build::record;
+                  }));
+    }
   }
 }

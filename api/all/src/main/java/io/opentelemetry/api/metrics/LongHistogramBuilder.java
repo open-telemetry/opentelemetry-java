@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import java.util.function.Consumer;
-
 /**
  * Builder class for {@link LongHistogram}.
  *
@@ -32,11 +30,6 @@ public interface LongHistogramBuilder {
    *     Unit</a>
    */
   LongHistogramBuilder setUnit(String unit);
-
-  /** Specify advice for histogram implementations. */
-  default LongHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
-    return this;
-  }
 
   /**
    * Builds and returns a Histogram instrument with the configuration.

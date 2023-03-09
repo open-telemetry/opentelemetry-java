@@ -34,7 +34,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   private final InstrumentValueType valueType;
   private String description;
   private String unit;
-  private Advice advice = Advice.empty();
+  private Advice advice;
 
   protected final MeterSharedState meterSharedState;
   protected final String instrumentName;
@@ -47,6 +47,26 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
       String name,
       String description,
       String unit) {
+    this(
+        meterProviderSharedState,
+        meterSharedState,
+        type,
+        valueType,
+        name,
+        description,
+        unit,
+        Advice.empty());
+  }
+
+  AbstractInstrumentBuilder(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentType type,
+      InstrumentValueType valueType,
+      String name,
+      String description,
+      String unit,
+      Advice advice) {
     this.type = type;
     this.valueType = valueType;
     this.instrumentName = name;
@@ -54,6 +74,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
     this.unit = unit;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
+    this.advice = advice;
   }
 
   protected abstract BuilderT getThis();
@@ -76,7 +97,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   protected <T> T swapBuilder(SwapBuilder<T> swapper) {
     return swapper.newBuilder(
-        meterProviderSharedState, meterSharedState, instrumentName, description, unit);
+        meterProviderSharedState, meterSharedState, instrumentName, description, unit, advice);
   }
 
   protected void setAdvice(Advice advice) {
@@ -161,6 +182,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         MeterSharedState meterSharedState,
         String name,
         String description,
-        String unit);
+        String unit,
+        Advice advice);
   }
 }
