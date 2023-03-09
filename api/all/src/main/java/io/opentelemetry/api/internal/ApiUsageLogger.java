@@ -16,12 +16,10 @@ import java.util.logging.Logger;
  */
 public final class ApiUsageLogger {
 
-  public static final String LOGGER_NAME = "io.opentelemetry.ApiUsageLogger";
-
-  private static final Logger API_USAGE_LOGGER = Logger.getLogger(LOGGER_NAME);
+  private static final Logger API_USAGE_LOGGER = Logger.getLogger(ApiUsageLogger.class.getName());
 
   /**
-   * Log the {@code message} to the {@link #LOGGER_NAME API Usage Logger}.
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER API Usage Logger}.
    *
    * <p>Log at {@link Level#FINEST} and include a stack trace.
    */
@@ -30,7 +28,7 @@ public final class ApiUsageLogger {
   }
 
   /**
-   * Log the {@code message} to the {@link #LOGGER_NAME API Usage Logger}.
+   * Log the {@code message} to the {@link #API_USAGE_LOGGER API Usage Logger}.
    *
    * <p>Log includes a stack trace.
    */
