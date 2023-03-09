@@ -16,6 +16,8 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
@@ -108,10 +110,8 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled.
-   */
-  public OtlpHttpMetricExporterBuilder setTrustManager(X509TrustManager trustManager){
+  /** Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled. */
+  public OtlpHttpMetricExporterBuilder setTrustManager(X509TrustManager trustManager) {
     delegate.setTrustManager(trustManager);
     return this;
   }
@@ -136,19 +136,20 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing
-   * key manager that has been configured with this method, or with setClientTls().
+   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing key manager
+   * that has been configured with this method, or with setClientTls().
    */
-  public OtlpHttpMetricExporterBuilder setKeyManager(X509KeyManager x509KeyManager){
+  public OtlpHttpMetricExporterBuilder setKeyManager(X509KeyManager x509KeyManager) {
     delegate.setKeyManager(x509KeyManager);
     return this;
   }
 
   /**
    * Sets the SSLSocketFactory to use when TLS is enabled. If a preconfigured SSLSocketFactory is
-   * provided, a trust manager must also be provided via setTrustManager() or setTrustedCertificates().
+   * provided, a trust manager must also be provided via setTrustManager() or
+   * setTrustedCertificates().
    */
-  public OtlpHttpMetricExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory){
+  public OtlpHttpMetricExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
     delegate.setSslSocketFactory(sslSocketFactory);
     return this;
   }
