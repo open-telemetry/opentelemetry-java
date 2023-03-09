@@ -13,6 +13,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLSocketFactory;
@@ -94,8 +97,17 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled.
+   */
+  public OtlpHttpSpanExporterBuilder setTrustManager(X509TrustManager trustManager) {
+    delegate.setTrustManager(trustManager);
+    return this;
+  }
+
+  /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
-   * The key must be PKCS8, and both must be in PEM format.
+   * The key must be PKCS8, and both must be in PEM format. This will replace any other key manager
+   * that has been configured with this method or with setKeyManager().
    */
   public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
@@ -109,6 +121,25 @@ public final class OtlpHttpSpanExporterBuilder {
   public OtlpHttpSpanExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
     delegate.setSslSocketFactory(sslSocketFactory, trustManager);
+    return this;
+  }
+
+  /**
+   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing
+   * key manager that has been configured with this method, or with setClientTls().
+   */
+  public OtlpHttpSpanExporterBuilder setKeyManager(X509KeyManager keyManager){
+    delegate.setKeyManager(keyManager);
+    return this;
+  }
+
+
+  /**
+   * Sets the SSLSocketFactory to use when TLS is enabled. If a preconfigured SSLSocketFactory is
+   * provided, a trust manager must also be provided via setTrustManager() or setTrustedCertificates().
+   */
+  public OtlpHttpSpanExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory){
+    delegate.setSslSocketFactory(sslSocketFactory);
     return this;
   }
 
