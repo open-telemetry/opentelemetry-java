@@ -23,6 +23,11 @@ class HistogramExemplarReservoir extends FixedSizeExemplarReservoir<DoubleExempl
         ReservoirCell::getAndResetDouble);
   }
 
+  @Override
+  public void offerLongMeasurement(long value, Attributes attributes, Context context) {
+    super.offerDoubleMeasurement((double) value, attributes, context);
+  }
+
   static class HistogramCellSelector implements ReservoirCellSelector {
 
     private final double[] boundaries;

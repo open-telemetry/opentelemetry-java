@@ -20,6 +20,9 @@ class InstrumentSelectorTest {
     assertThatThrownBy(() -> InstrumentSelector.builder().setName(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("name");
+    assertThatThrownBy(() -> InstrumentSelector.builder().setUnit(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
     assertThatThrownBy(() -> InstrumentSelector.builder().setMeterName(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("meterName");
@@ -49,6 +52,12 @@ class InstrumentSelectorTest {
     InstrumentSelector selector =
         InstrumentSelector.builder().setName("foo").setName("bar").build();
     assertThat(selector.getInstrumentName()).isEqualTo("bar");
+  }
+
+  @Test
+  void instrumentUnit() {
+    InstrumentSelector selector = InstrumentSelector.builder().setName("ms").setName("s").build();
+    assertThat(selector.getInstrumentName()).isEqualTo("s");
   }
 
   @Test
@@ -83,6 +92,7 @@ class InstrumentSelectorTest {
             InstrumentSelector.builder()
                 .setType(InstrumentType.COUNTER)
                 .setName("name")
+                .setUnit("unit")
                 .setMeterName("meter")
                 .setMeterVersion("version")
                 .setMeterSchemaUrl("http://url.com")
@@ -92,6 +102,7 @@ class InstrumentSelectorTest {
             "InstrumentSelector{"
                 + "instrumentType=COUNTER, "
                 + "instrumentName=name, "
+                + "instrumentUnit=unit, "
                 + "meterName=meter, "
                 + "meterVersion=version, "
                 + "meterSchemaUrl=http://url.com"

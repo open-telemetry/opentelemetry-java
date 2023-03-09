@@ -10,7 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.ValidationUtil;
+import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import java.time.Instant;
@@ -43,7 +43,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span fromContext(Context context) {
     if (context == null) {
-      ValidationUtil.log("context is null");
+      ApiUsageLogger.log("context is null");
       return Span.getInvalid();
     }
     Span span = context.get(SpanContextKey.KEY);
@@ -57,7 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
-      ValidationUtil.log("context is null");
+      ApiUsageLogger.log("context is null");
       return null;
     }
     return context.get(SpanContextKey.KEY);
@@ -78,7 +78,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null) {
-      ValidationUtil.log("context is null");
+      ApiUsageLogger.log("context is null");
       return getInvalid();
     }
     if (!spanContext.isValid()) {

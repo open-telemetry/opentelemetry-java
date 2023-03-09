@@ -10,10 +10,12 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -372,6 +374,29 @@ class AutoConfiguredOpenTelemetrySdkTest {
         .isInstanceOf(SdkEventEmitterProvider.class)
         .extracting("delegateLoggerProvider")
         .isSameAs(openTelemetry.getSdkLoggerProvider());
+  }
+
+  @Test
+  void builder_registersShutdownHook() {
+    builder = spy(builder);
+    Thread thread = new Thread();
+    doReturn(thread).when(builder).shutdownHook(any());
+
+    OpenTelemetrySdk sdk = builder.setResultAsGlobal(false).build().getOpenTelemetrySdk();
+
+    verify(builder, times(1)).shutdownHook(sdk);
+    assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+  }
+
+  @Test
+  void shutdownHook() throws InterruptedException {
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+
+    Thread thread = builder.shutdownHook(sdk);
+    thread.start();
+    thread.join();
+
+    verify(sdk).close();
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

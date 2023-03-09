@@ -46,11 +46,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 
-class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.Span {
+class OpenTelemetrySpanImpl extends Span
+    implements io.opentelemetry.api.trace.Span, DelegatingSpan {
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySpanImpl.class.getName());
   private static final EnumSet<Span.Options> RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.of(Span.Options.RECORD_EVENTS);
@@ -62,15 +61,24 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
     this.otelSpan = otelSpan;
   }
 
+  // otel
+
+  @Override
+  public io.opentelemetry.api.trace.Span getDelegate() {
+    return otelSpan;
+  }
+
+  // opencensus
+
   @Override
   public void putAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
     value.match(
-        arg -> otelSpan.setAttribute(key, arg),
-        arg -> otelSpan.setAttribute(key, arg),
-        arg -> otelSpan.setAttribute(key, arg),
-        arg -> otelSpan.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
+        arg -> DelegatingSpan.super.setAttribute(key, arg),
         arg -> null);
   }
 
@@ -84,14 +92,14 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
     AttributesBuilder attributesBuilder = Attributes.builder();
     mapAttributes(attributes, attributesBuilder);
-    otelSpan.addEvent(description, attributesBuilder.build());
+    DelegatingSpan.super.addEvent(description, attributesBuilder.build());
   }
 
   @Override
   public void addAnnotation(Annotation annotation) {
     AttributesBuilder attributesBuilder = Attributes.builder();
     mapAttributes(annotation.getAttributes(), attributesBuilder);
-    otelSpan.addEvent(annotation.getDescription(), attributesBuilder.build());
+    DelegatingSpan.super.addEvent(annotation.getDescription(), attributesBuilder.build());
   }
 
   @Override
@@ -101,7 +109,7 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
 
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {
-    otelSpan.addEvent(
+    DelegatingSpan.super.addEvent(
         String.valueOf(messageEvent.getMessageId()),
         Attributes.of(
             AttributeKey.stringKey(MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE),
@@ -115,70 +123,22 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    otelSpan.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
+    DelegatingSpan.super.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
-    return otelSpan.setStatus(canonicalCode, description);
+    return DelegatingSpan.super.setStatus(canonicalCode, description);
   }
 
   @Override
   public void end(EndSpanOptions options) {
-    otelSpan.end();
-  }
-
-  @Override
-  @SuppressWarnings("ParameterPackage")
-  public void end(long timestamp, TimeUnit unit) {
-    otelSpan.end(timestamp, unit);
-  }
-
-  @Override
-  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nonnull T value) {
-    return otelSpan.setAttribute(key, value);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span addEvent(String name) {
-    return otelSpan.addEvent(name);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span addEvent(String name, long timestamp, TimeUnit unit) {
-    return otelSpan.addEvent(name, timestamp, unit);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span addEvent(String name, Attributes attributes) {
-    return otelSpan.addEvent(name, attributes);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span addEvent(
-      String name, Attributes attributes, long timestamp, TimeUnit unit) {
-    return otelSpan.addEvent(name, attributes, timestamp, unit);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span recordException(Throwable exception) {
-    return otelSpan.recordException(exception);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span recordException(
-      Throwable exception, Attributes additionalAttributes) {
-    return otelSpan.recordException(exception, additionalAttributes);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span updateName(String name) {
-    return otelSpan.updateName(name);
+    DelegatingSpan.super.end();
   }
 
   @Override
   public SpanContext getSpanContext() {
-    return otelSpan.getSpanContext();
+    return DelegatingSpan.super.getSpanContext();
   }
 
   @Override

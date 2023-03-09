@@ -16,6 +16,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -25,7 +26,6 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLException;
 
 final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMarshaler>
     implements GrpcServiceBuilder<ReqT, ResT> {
@@ -39,10 +39,8 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   private URI endpoint;
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
-  @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] certificatePem;
   @Nullable private RetryPolicy retryPolicy;
+  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
 
   // Visible for testing
   DefaultGrpcServiceBuilder(
@@ -101,14 +99,13 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
   public DefaultGrpcServiceBuilder<ReqT, ResT> setTrustedCertificates(
       byte[] trustedCertificatesPem) {
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
-    this.trustedCertificatesPem = trustedCertificatesPem;
+    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
     return this;
   }
 
   @Override
   public GrpcServiceBuilder<ReqT, ResT> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    this.privateKeyPem = privateKeyPem;
-    this.certificatePem = certificatePem;
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -147,17 +144,10 @@ final class DefaultGrpcServiceBuilder<ReqT extends Marshaler, ResT extends UnMar
         managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
       }
 
-      if (trustedCertificatesPem != null) {
-        try {
-          ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
-              managedChannelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
-        } catch (SSLException e) {
-          throw new IllegalStateException(
-              "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                  + "X.509 in PEM format?",
-              e);
-        }
-      }
+      tlsConfigHelper.configureWithKeyManager(
+          (tm, km) ->
+              ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
+                  managedChannelBuilder, tm, km));
 
       if (retryPolicy != null) {
         managedChannelBuilder.defaultServiceConfig(toServiceConfig(grpcServiceName, retryPolicy));

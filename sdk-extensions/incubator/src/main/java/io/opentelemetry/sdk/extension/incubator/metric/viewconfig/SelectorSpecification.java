@@ -23,6 +23,9 @@ abstract class SelectorSpecification {
   abstract InstrumentType getInstrumentType();
 
   @Nullable
+  abstract String getInstrumentUnit();
+
+  @Nullable
   abstract String getMeterName();
 
   @Nullable
@@ -36,6 +39,8 @@ abstract class SelectorSpecification {
     Builder instrumentName(@Nullable String instrumentName);
 
     Builder instrumentType(@Nullable InstrumentType instrumentType);
+
+    Builder instrumentUnit(@Nullable String instrumentUnit);
 
     Builder meterName(@Nullable String meterName);
 

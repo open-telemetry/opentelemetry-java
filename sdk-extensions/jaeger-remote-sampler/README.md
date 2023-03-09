@@ -1,7 +1,5 @@
 # Jaeger Remote Sampler
 
-[![Javadocs][javadoc-image]][javadoc-url]
-
 This module implements [Jaeger remote sampler](https://www.jaegertracing.io/docs/latest/sampling/#collector-sampling-configuration).
 The sampler configuration is received from collector's gRPC endpoint.
 
@@ -18,6 +16,3 @@ return SdkTracerProvider.builder()
     .setSampler(sampler)
     .build();
 ```
-
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler

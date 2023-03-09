@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -18,7 +19,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLException;
 
 /**
  * Wraps a {@link TelemetryExporterBuilder}, delegating methods to upstream gRPC's {@link
@@ -40,9 +40,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Nullable private ManagedChannelBuilder<?> channelBuilder;
 
-  @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] certificatePem;
-  @Nullable private byte[] trustedCertificatesPem;
+  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
 
   @Override
   public TelemetryExporterBuilder<T> setEndpoint(String endpoint) {
@@ -89,14 +87,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
-    this.trustedCertificatesPem = certificates;
+    tlsConfigHelper.createTrustManager(certificates);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    this.privateKeyPem = privateKeyPem;
-    this.certificatePem = certificatePem;
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -126,15 +123,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporter<T> build() {
     requireNonNull(channelBuilder, "channel");
-    if (trustedCertificatesPem != null) {
-      try {
-        ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
-            channelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
-      } catch (SSLException e) {
-        throw new IllegalStateException(
-            "Could not set trusted certificates, are they valid X.509 in PEM format?", e);
-      }
-    }
+
+    tlsConfigHelper.configureWithKeyManager(
+        (tm, km) -> {
+          requireNonNull(channelBuilder, "channel");
+          ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(channelBuilder, tm, km);
+        });
+
     ManagedChannel channel = channelBuilder.build();
     delegate.setChannel(channel);
     TelemetryExporter<T> delegateExporter = delegate.build();
