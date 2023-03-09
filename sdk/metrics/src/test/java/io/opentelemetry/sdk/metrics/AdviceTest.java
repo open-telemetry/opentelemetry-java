@@ -21,11 +21,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class AdviceTest {
 
@@ -37,7 +35,7 @@ class AdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(HistogramWithoutAdviceProvider.class)
+  @MethodSource("histogramsWithoutAdvice")
   void histogramWithoutAdvice(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
@@ -66,7 +64,7 @@ class AdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  @MethodSource("histogramsWithAdvice")
   void histogramWithAdvice(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
@@ -93,7 +91,7 @@ class AdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  @MethodSource("histogramsWithAdvice")
   void histogramWithAdviceAndViews(Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider =
@@ -125,7 +123,7 @@ class AdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(HistogramWithAdviceProvider.class)
+  @MethodSource("histogramsWithAdvice")
   void histogramWithAdviceAndReaderAggregationPreference(
       Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader =
@@ -155,59 +153,51 @@ class AdviceTest {
                                 point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
   }
 
-  static class HistogramWithoutAdviceProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of(
-              (Function<SdkMeterProvider, Consumer<Long>>)
-                  meterProvider -> {
-                    DoubleHistogram build =
-                        meterProvider.get("meter").histogramBuilder("histogram").build();
-                    return build::record;
-                  }),
-          Arguments.of(
-              (Function<SdkMeterProvider, Consumer<Long>>)
-                  meterProvider -> {
-                    LongHistogram build =
-                        meterProvider.get("meter").histogramBuilder("histogram").ofLongs().build();
-                    return build::record;
-                  }));
-    }
+  private static Stream<Arguments> histogramsWithoutAdvice() {
+    return Stream.of(
+        Arguments.of(
+            (Function<SdkMeterProvider, Consumer<Long>>)
+                meterProvider -> {
+                  DoubleHistogram build =
+                      meterProvider.get("meter").histogramBuilder("histogram").build();
+                  return build::record;
+                }),
+        Arguments.of(
+            (Function<SdkMeterProvider, Consumer<Long>>)
+                meterProvider -> {
+                  LongHistogram build =
+                      meterProvider.get("meter").histogramBuilder("histogram").ofLongs().build();
+                  return build::record;
+                }));
   }
 
-  static class HistogramWithAdviceProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of(
-              (Function<SdkMeterProvider, Consumer<Long>>)
-                  meterProvider -> {
-                    DoubleHistogram build =
-                        ((ExtendedDoubleHistogramBuilder)
-                                meterProvider.get("meter").histogramBuilder("histogram"))
-                            .setAdvice(
-                                advice ->
-                                    advice.setExplicitBucketBoundaries(
-                                        Arrays.asList(10.0, 20.0, 30.0)))
-                            .build();
-                    return build::record;
-                  }),
-          Arguments.of(
-              (Function<SdkMeterProvider, Consumer<Long>>)
-                  meterProvider -> {
-                    LongHistogram build =
-                        ((ExtendedLongHistogramBuilder)
-                                meterProvider.get("meter").histogramBuilder("histogram").ofLongs())
-                            .setAdvice(
-                                advice ->
-                                    advice.setExplicitBucketBoundaries(
-                                        Arrays.asList(10.0, 20.0, 30.0)))
-                            .build();
-                    return build::record;
-                  }));
-    }
+  private static Stream<Arguments> histogramsWithAdvice() {
+    return Stream.of(
+        Arguments.of(
+            (Function<SdkMeterProvider, Consumer<Long>>)
+                meterProvider -> {
+                  DoubleHistogram build =
+                      ((ExtendedDoubleHistogramBuilder)
+                              meterProvider.get("meter").histogramBuilder("histogram"))
+                          .setAdvice(
+                              advice ->
+                                  advice.setExplicitBucketBoundaries(
+                                      Arrays.asList(10.0, 20.0, 30.0)))
+                          .build();
+                  return build::record;
+                }),
+        Arguments.of(
+            (Function<SdkMeterProvider, Consumer<Long>>)
+                meterProvider -> {
+                  LongHistogram build =
+                      ((ExtendedLongHistogramBuilder)
+                              meterProvider.get("meter").histogramBuilder("histogram").ofLongs())
+                          .setAdvice(
+                              advice ->
+                                  advice.setExplicitBucketBoundaries(
+                                      Arrays.asList(10.0, 20.0, 30.0)))
+                          .build();
+                  return build::record;
+                }));
   }
 }
