@@ -13,11 +13,11 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Builder utility for {@link OtlpHttpSpanExporter}.
@@ -94,9 +94,7 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled.
-   */
+  /** Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled. */
   public OtlpHttpSpanExporterBuilder setTrustManager(X509TrustManager trustManager) {
     delegate.setTrustManager(trustManager);
     return this;
@@ -113,20 +111,20 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing
-   * key manager that has been configured with this method, or with setClientTls().
+   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing key manager
+   * that has been configured with this method, or with setClientTls().
    */
-  public OtlpHttpSpanExporterBuilder setKeyManager(X509KeyManager keyManager){
+  public OtlpHttpSpanExporterBuilder setKeyManager(X509KeyManager keyManager) {
     delegate.setKeyManager(keyManager);
     return this;
   }
 
-
   /**
    * Sets the SSLSocketFactory to use when TLS is enabled. If a preconfigured SSLSocketFactory is
-   * provided, a trust manager must also be provided via setTrustManager() or setTrustedCertificates().
+   * provided, a trust manager must also be provided via setTrustManager() or
+   * setTrustedCertificates().
    */
-  public OtlpHttpSpanExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory){
+  public OtlpHttpSpanExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
     delegate.setSslSocketFactory(sslSocketFactory);
     return this;
   }
