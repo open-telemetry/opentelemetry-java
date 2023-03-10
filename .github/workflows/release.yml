@@ -22,8 +22,6 @@ jobs:
           java-version: 17
 
       - name: Build and publish artifacts
-        # Skip publish artifacts step to finish partial release
-        if: false
         uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
