@@ -68,6 +68,8 @@ public final class JaegerRemoteSamplerBuilder {
   /**
    * Sets the client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
+   *
+   * @since 1.24.0
    */
   public JaegerRemoteSamplerBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setClientTls(privateKeyPem, certificatePem);

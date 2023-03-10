@@ -60,7 +60,11 @@ public abstract class InstrumentSelector {
   @Nullable
   public abstract String getInstrumentName();
 
-  /** Returns the selected instrument unit, or null if this selects all instrument units. */
+  /**
+   * Returns the selected instrument unit, or null if this selects all instrument units.
+   *
+   * @since 1.24.0
+   */
   @Nullable
   public abstract String getInstrumentUnit();
 
