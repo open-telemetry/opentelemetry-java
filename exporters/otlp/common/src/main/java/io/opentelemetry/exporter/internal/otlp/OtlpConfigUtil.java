@@ -178,10 +178,8 @@ public final class OtlpConfigUtil {
     if (defaultHistogramAggregation == null) {
       return;
     }
-    // TODO(jack-berg): remove EXPONENTIAL_BUCKET_HISTOGRAM in 1.24.0
-    if (defaultHistogramAggregation.equalsIgnoreCase("EXPONENTIAL_BUCKET_HISTOGRAM")
-        || AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-            .equalsIgnoreCase(defaultHistogramAggregation)) {
+    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
       defaultAggregationSelectorConsumer.accept(
           DefaultAggregationSelector.getDefault()
               .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));

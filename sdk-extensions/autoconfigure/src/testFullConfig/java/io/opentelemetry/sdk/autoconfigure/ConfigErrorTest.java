@@ -38,7 +38,6 @@ class ConfigErrorTest {
   @Test
   @SetSystemProperty(key = "otel.propagators", value = "cat")
   void invalidPropagator() {
-    // TODO(jack-berg): confirm log warnings go away once exporters are properly shutdown (#5113)
     assertThatThrownBy(AutoConfiguredOpenTelemetrySdk::initialize)
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
