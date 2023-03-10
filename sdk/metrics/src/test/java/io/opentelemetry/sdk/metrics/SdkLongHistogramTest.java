@@ -273,9 +273,7 @@ class SdkLongHistogramTest {
     LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkLongHistogram) longHistogram)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -312,9 +310,7 @@ class SdkLongHistogramTest {
     LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkLongHistogram) longHistogram)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     IntStream.range(0, 4)
         .forEach(
