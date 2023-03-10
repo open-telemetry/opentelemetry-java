@@ -1,0 +1,8 @@
+Comparing source compatibility of  against 
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.InstrumentSelector  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getInstrumentUnit()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder setUnit(java.lang.String)
