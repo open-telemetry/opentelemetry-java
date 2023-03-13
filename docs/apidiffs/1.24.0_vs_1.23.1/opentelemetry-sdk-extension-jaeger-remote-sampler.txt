@@ -1,0 +1,70 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$OperationSamplingStrategy$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$PerOperationSamplingStrategies$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$ProbabilisticSamplingStrategy$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$RateLimitingSamplingStrategy$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---  REMOVED METHOD: PUBLIC(-) FINAL(-) com.google.protobuf.UnknownFieldSet getUnknownFields()
+***! MODIFIED CLASS: PUBLIC STATIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder clone()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyResponse$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder setClientTls(byte[], byte[])
