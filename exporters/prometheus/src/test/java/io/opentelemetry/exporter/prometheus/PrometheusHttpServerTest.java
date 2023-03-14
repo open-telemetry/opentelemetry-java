@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -312,12 +313,16 @@ class PrometheusHttpServerTest {
   }
 
   @Test
-  void customExecutor() {
+  void customExecutor() throws IOException {
     ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(10);
+    int port;
+    try (ServerSocket socket2 = new ServerSocket(0)) {
+      port = socket2.getLocalPort();
+    }
     PrometheusHttpServer server =
         PrometheusHttpServer.builder()
             .setHost("localhost")
-            .setPort(9464)
+            .setPort(port)
             .setExecutor(scheduledExecutor)
             .build();
     assertThat(server)
