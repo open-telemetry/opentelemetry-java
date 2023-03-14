@@ -5,12 +5,12 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
 
 /** A builder for {@link PrometheusHttpServer}. */
 public final class PrometheusHttpServerBuilder {
