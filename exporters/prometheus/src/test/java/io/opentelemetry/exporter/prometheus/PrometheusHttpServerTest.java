@@ -305,20 +305,21 @@ class PrometheusHttpServerTest {
   void defaultExecutor() {
     assertThat(prometheusServer)
         .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-        .satisfies(executor -> {
-          assertThat(executor.getCorePoolSize()).isEqualTo(5);
+        .satisfies(
+            executor -> {
+              assertThat(executor.getCorePoolSize()).isEqualTo(5);
         });
   }
 
   @Test
   void customExecutor() {
     ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(10);
-    PrometheusHttpServer server = PrometheusHttpServer.builder().setHost("localhost")
-        .setPort(9464).setExecutor(scheduledExecutor).build();
+    PrometheusHttpServer server = PrometheusHttpServer.builder().setHost("localhost").setPort(9464).setExecutor(scheduledExecutor).build();
     assertThat(server)
         .extracting("executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
-        .satisfies(executor -> {
-          assertThat(executor.getCorePoolSize()).isEqualTo(10);
+        .satisfies(
+            executor -> {
+              assertThat(executor.getCorePoolSize()).isEqualTo(10);
         });
   }
 

@@ -51,7 +51,7 @@ public final class PrometheusHttpServerBuilder {
    */
   public PrometheusHttpServer build() {
     ExecutorService executorService = this.executor;
-    if (executorService==null) {
+    if (executorService == null) {
       executorService = getDefaultExecutor();
     }
     return new PrometheusHttpServer(host, port, executorService);
