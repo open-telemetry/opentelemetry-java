@@ -5,6 +5,10 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
@@ -16,6 +20,8 @@ public final class PrometheusHttpServerBuilder {
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
+
+  private ExecutorService executor;
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
   public PrometheusHttpServerBuilder setHost(String host) {
@@ -32,13 +38,29 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
+  public PrometheusHttpServerBuilder setExecutor(ExecutorService executor) {
+    requireNonNull(executor, "executor");
+    this.executor = executor;
+    return this;
+  }
+
   /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
   public PrometheusHttpServer build() {
-    return new PrometheusHttpServer(host, port);
+    ExecutorService executorService = this.executor;
+    if (executorService==null) {
+      executorService = getDefaultExecutor();
+    }
+    return new PrometheusHttpServer(host, port, executorService);
   }
 
-  PrometheusHttpServerBuilder() {}
+  PrometheusHttpServerBuilder() {
+    this.executor = getDefaultExecutor();
+  }
+
+  private static ExecutorService getDefaultExecutor() {
+    return Executors.newFixedThreadPool(5, new DaemonThreadFactory("prometheus-http"));
+  }
 }
