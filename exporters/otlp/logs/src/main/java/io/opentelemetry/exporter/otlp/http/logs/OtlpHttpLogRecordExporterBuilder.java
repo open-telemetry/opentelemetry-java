@@ -16,7 +16,6 @@ import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 /** Builder utility for {@link OtlpHttpLogRecordExporter}. */
@@ -90,12 +89,6 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Sets the preconfigured X509TrustManager to be used to verify servers when TLS is enabled. */
-  public OtlpHttpLogRecordExporterBuilder setTrustManager(X509TrustManager trustManager) {
-    delegate.setTrustManager(trustManager);
-    return this;
-  }
-
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
@@ -107,21 +100,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the X509KeyManager to use when TLS is enabled. This will replace any existing key manager
-   * that has been configured with this method, or with setClientTls().
+   * Sets the SSLSocketFactory to use when TLS is enabled. When providing a preconfigured
+   * SSLSocketFactory, a trust manager must also be provided.
    */
-  public OtlpHttpLogRecordExporterBuilder setKeyManager(X509KeyManager keyManager) {
-    delegate.setKeyManager(keyManager);
-    return this;
-  }
-
-  /**
-   * Sets the SSLSocketFactory to use when TLS is enabled. If a preconfigured SSLSocketFactory is
-   * provided, a trust manager must also be provided via setTrustManager() or
-   * setTrustedCertificates().
-   */
-  public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+  public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(
+      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
     delegate.setSslSocketFactory(sslSocketFactory);
+    delegate.setTrustManager(trustManager);
     return this;
   }
 
