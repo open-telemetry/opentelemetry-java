@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,8 +36,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -293,6 +299,27 @@ class PrometheusHttpServerTest {
   void stringRepresentation() {
     assertThat(prometheusServer.toString())
         .isEqualTo("PrometheusHttpServer{address=" + prometheusServer.getAddress() + "}");
+  }
+
+  @Test
+  void defaultExecutor() {
+    assertThat(prometheusServer)
+        .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
+        .satisfies(executor -> {
+          assertThat(executor.getCorePoolSize()).isEqualTo(5);
+        });
+  }
+
+  @Test
+  void customExecutor() {
+    ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(10);
+    PrometheusHttpServer server = PrometheusHttpServer.builder().setHost("localhost")
+        .setPort(9464).setExecutor(scheduledExecutor).build();
+    assertThat(server)
+        .extracting("executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
+        .satisfies(executor -> {
+          assertThat(executor.getCorePoolSize()).isEqualTo(10);
+        });
   }
 
   private static List<MetricData> generateTestData() {
