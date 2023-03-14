@@ -62,7 +62,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
 
-  GrpcExporterBuilder(
+  public GrpcExporterBuilder(
       String exporterName,
       String type,
       long defaultTimeoutSecs,
