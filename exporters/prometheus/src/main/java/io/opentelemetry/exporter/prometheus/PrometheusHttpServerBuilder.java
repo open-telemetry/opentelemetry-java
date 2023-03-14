@@ -38,6 +38,7 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
+  /** Sets the {@link ExecutorService} to be used for {@link PrometheusHttpServer}. */
   public PrometheusHttpServerBuilder setExecutor(ExecutorService executor) {
     requireNonNull(executor, "executor");
     this.executor = executor;
