@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,20 +131,19 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     // Grab aggregated points.
     points.clear();
-    for (Attributes attributes :
-        ((Map<Attributes, AggregatorHandle<T, U>>) aggregatorHandles).keySet()) {
-      AggregatorHandle<T, U> handle = Objects.requireNonNull(aggregatorHandles.get(attributes));
-      T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
-      if (reset) {
-        aggregatorHandles.remove(attributes, handle);
-        // Return the aggregator to the pool.
-        aggregatorHandlePool.offer(handle);
-      }
-      if (point == null) {
-        continue;
-      }
-      points.add(point);
-    }
+    List<T> points = new ArrayList<>(aggregatorHandles.size());
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
+          if (reset) {
+            aggregatorHandles.remove(attributes, handle);
+            // Return the aggregator to the pool.
+            aggregatorHandlePool.offer(handle);
+          }
+          if (point != null) {
+            points.add(point);
+          }
+        });
 
     // Trim pool down if needed. pool.size() will only exceed MAX_CARDINALITY if new handles are
     // created during collection.

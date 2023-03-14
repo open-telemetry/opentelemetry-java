@@ -2,6 +2,66 @@
 
 ## Unreleased
 
+## Version 1.24.0 (2023-03-10)
+
+### SDK
+
+#### Metrics
+
+* Optimize DefaultSynchronousMetricStorage iteration to reduce allocations
+  ([#5183](https://github.com/open-telemetry/opentelemetry-java/pull/5183))
+* Avoid exemplar allocations if there are no measurements
+  ([#5182](https://github.com/open-telemetry/opentelemetry-java/pull/5182))
+* Remove boxed primitives from aggregations to reduce allocations
+  ([#5184](https://github.com/open-telemetry/opentelemetry-java/pull/5184))
+* Stop ignoring long measurements in HistogramExemplarReservoir
+  ([#5216](https://github.com/open-telemetry/opentelemetry-java/pull/5216))
+* Remove validations for noop instrument names and units
+  ([#5146](https://github.com/open-telemetry/opentelemetry-java/pull/5146))
+* Allow views to select on instrument unit
+  ([#5255](https://github.com/open-telemetry/opentelemetry-java/pull/5255))
+
+#### Exporter
+
+* Add (internal) TlsConfigHelper for additional TLS configurability
+  ([#5246](https://github.com/open-telemetry/opentelemetry-java/pull/5246))
+
+#### SDK Extensions
+
+* Introduce mTLS support for JaegerRemoteSamplerBuilder (#5209)
+  ([#5248](https://github.com/open-telemetry/opentelemetry-java/pull/5248))
+
+### OpenTracing Shim
+
+* OpenTracing Shim: Update Tracer.close()
+  ([#5151](https://github.com/open-telemetry/opentelemetry-java/pull/5151))
+
+* Update version to 1.24.0
+  ([#5198](https://github.com/open-telemetry/opentelemetry-java/pull/5198))
+* Post release 1.23.0
+  ([#5202](https://github.com/open-telemetry/opentelemetry-java/pull/5202))
+
+### OpenCensus Shim
+
+* Addresses opencensus-shim trace issues under otel javaagent
+  ([#4900](https://github.com/open-telemetry/opentelemetry-java/pull/4900))
+
+### Project tooling
+
+* Cleanup readmes
+  ([#5263](https://github.com/open-telemetry/opentelemetry-java/pull/5263))
+* Upgrade to gradle 8.0.1
+  ([#5256](https://github.com/open-telemetry/opentelemetry-java/pull/5256))
+* Fixed example resource provider classname.
+  ([#5235](https://github.com/open-telemetry/opentelemetry-java/pull/5235))
+* Fix case of bug label in open issue workflow
+  ([#5268](https://github.com/open-telemetry/opentelemetry-java/pull/5268))
+
+## Version 1.23.1 (2023-02-15)
+
+* Fix bug that broke `AutoConfiguredOpenTelemetrySdk`'s shutdown hook.
+  ([#5221](https://github.com/open-telemetry/opentelemetry-java/pull/5221))
+
 ## Version 1.23.0 (2023-02-10)
 
 This release is a notable release for metrics:

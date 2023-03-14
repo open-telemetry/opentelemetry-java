@@ -87,7 +87,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    delegate.configureTrustManager(trustedCertificatesPem);
     return this;
   }
 
@@ -96,7 +96,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    delegate.configureKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 

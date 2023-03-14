@@ -89,7 +89,7 @@ public final class TlsUtil {
   }
 
   /**
-   * Creates {@link KeyManager} initiaded by keystore containing single private key with matching
+   * Creates {@link KeyManager} initiated by keystore containing single private key with matching
    * certificate chain.
    */
   public static X509KeyManager keyManager(byte[] privateKeyPem, byte[] certificatePem)

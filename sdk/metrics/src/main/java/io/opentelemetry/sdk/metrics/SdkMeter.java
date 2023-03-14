@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.internal.ValidationUtil;
+import static io.opentelemetry.sdk.metrics.internal.InstrumentNameValidator.checkValidInstrumentName;
+
 import io.opentelemetry.api.metrics.BatchCallback;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
@@ -36,8 +37,8 @@ final class SdkMeter implements Meter {
   private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
 
   /**
-   * Message appended to warnings when {@link ValidationUtil#checkValidInstrumentName(String,
-   * String)} is {@code false}.
+   * Message appended to warnings when {@link
+   * InstrumentNameValidator#checkValidInstrumentName(String, String)} is {@code false}.
    */
   private static final String NOOP_INSTRUMENT_WARNING = " Returning noop instrument.";
 
@@ -74,7 +75,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongCounter.SdkLongCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -82,7 +83,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -90,7 +91,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleHistogram.SdkDoubleHistogramBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -98,7 +99,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
   }

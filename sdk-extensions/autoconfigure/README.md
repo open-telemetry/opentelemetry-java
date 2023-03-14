@@ -1,7 +1,5 @@
 # OpenTelemetry SDK Autoconfigure
 
-[![Javadocs][javadoc-image]][javadoc-url]
-
 This artifact implements environment-based autoconfiguration of the OpenTelemetry SDK. This can be
 an alternative to programmatic configuration using the normal SDK builders.
 
@@ -238,7 +236,7 @@ For example, if you don't want to expose the name of the operating system throug
 can pass the following JVM argument:
 
 ```
--Dotel.java.disabled.resource.providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
+-Dotel.java.disabled.resource.providers=io.opentelemetry.instrumentation.resources.OsResourceProvider
 ```
 
 ## Batch span processor
@@ -314,6 +312,3 @@ These properties can be used to control the maximum size of spans by placing lim
 Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
-
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure
