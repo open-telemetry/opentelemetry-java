@@ -131,7 +131,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     // Grab aggregated points.
     points.clear();
-    List<T> points = new ArrayList<>(aggregatorHandles.size());
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
