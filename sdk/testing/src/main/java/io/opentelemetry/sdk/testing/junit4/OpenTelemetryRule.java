@@ -29,7 +29,7 @@ import org.junit.rules.ExternalResource;
  *
  * <pre>{@code
  * // public class CoolTest {
- * //   @Rule public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //   @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
  * //
  * //   private Tracer tracer;
  * //   private Meter meter;
