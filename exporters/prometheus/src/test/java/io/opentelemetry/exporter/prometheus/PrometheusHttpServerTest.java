@@ -306,32 +306,27 @@ class PrometheusHttpServerTest {
   void defaultExecutor() {
     assertThat(prometheusServer)
         .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-        .satisfies(
-            executor -> {
-              assertThat(executor.getCorePoolSize()).isEqualTo(5);
-            });
+        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(5));
   }
 
   @Test
   void customExecutor() throws IOException {
     ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(10);
     int port;
-    try (ServerSocket socket2 = new ServerSocket(0)) {
-      port = socket2.getLocalPort();
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
     }
-    PrometheusHttpServer server =
+    try (PrometheusHttpServer server =
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
             .setExecutor(scheduledExecutor)
-            .build();
-    assertThat(server)
-        .extracting(
-            "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
-        .satisfies(
-            executor -> {
-              assertThat(executor).isSameAs(scheduledExecutor);
-            });
+            .build()) {
+      assertThat(server)
+          .extracting(
+              "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
+          .satisfies(executor -> assertThat(executor).isSameAs(scheduledExecutor));
+    }
   }
 
   private static List<MetricData> generateTestData() {
