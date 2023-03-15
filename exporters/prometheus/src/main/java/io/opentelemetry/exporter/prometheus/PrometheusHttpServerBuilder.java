@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import javax.annotation.Nullable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,7 +22,7 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
 
-  private ExecutorService executor;
+  @Nullable private ExecutorService executor;
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
   public PrometheusHttpServerBuilder setHost(String host) {
@@ -57,9 +58,7 @@ public final class PrometheusHttpServerBuilder {
     return new PrometheusHttpServer(host, port, executorService);
   }
 
-  PrometheusHttpServerBuilder() {
-    this.executor = getDefaultExecutor();
-  }
+  PrometheusHttpServerBuilder() {}
 
   private static ExecutorService getDefaultExecutor() {
     return Executors.newFixedThreadPool(5, new DaemonThreadFactory("prometheus-http"));
