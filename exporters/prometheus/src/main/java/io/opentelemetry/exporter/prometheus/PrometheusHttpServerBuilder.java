@@ -9,9 +9,9 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import javax.annotation.Nullable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.annotation.Nullable;
 
 /** A builder for {@link PrometheusHttpServer}. */
 public final class PrometheusHttpServerBuilder {
