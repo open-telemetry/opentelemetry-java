@@ -330,7 +330,7 @@ class PrometheusHttpServerTest {
             "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
         .satisfies(
             executor -> {
-              assertThat(executor.getCorePoolSize()).isEqualTo(10);
+              assertThat(executor).isSameAs(scheduledExecutor);
             });
   }
 
