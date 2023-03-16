@@ -47,6 +47,8 @@ public final class JaegerRemoteSamplerBuilder {
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
 
+  JaegerRemoteSamplerBuilder() {}
+
   /**
    * Sets the service name to be used by this exporter. Required.
    *
