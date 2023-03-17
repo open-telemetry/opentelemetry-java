@@ -652,7 +652,7 @@ abstract class Serializer {
 
   private static String metricName(String rawMetricName, PrometheusType type) {
     String name = NameSanitizer.INSTANCE.apply(rawMetricName);
-    if (type == PrometheusType.COUNTER&& !name.endsWith("_total")) {
+    if (type == PrometheusType.COUNTER && !name.endsWith("_total")) {
       name = name + "_total";
     }
     return name;
