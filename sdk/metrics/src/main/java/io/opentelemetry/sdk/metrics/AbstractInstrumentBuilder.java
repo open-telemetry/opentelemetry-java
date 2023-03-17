@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.logging.Level.WARNING;
-
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -15,18 +13,14 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /** Helper to make implementing builders easier. */
 abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuilder<?>> {
 
   static final String DEFAULT_UNIT = "";
-  public static final String LOGGER_NAME = "io.opentelemetry.sdk.metrics.AbstractInstrumentBuilder";
-  private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentType type;
@@ -57,13 +51,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    if (!checkValidInstrumentUnit(
-        unit,
-        " Using \"" + DEFAULT_UNIT + "\" for instrument " + this.instrumentName + " instead.")) {
-      this.unit = DEFAULT_UNIT;
-    } else {
-      this.unit = unit;
-    }
+    this.unit = unit;
     return getThis();
   }
 
@@ -118,34 +106,6 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         + "{descriptor="
         + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType)
         + "}";
-  }
-
-  /** Check if the instrument unit is valid. If invalid, log a warning. */
-  static boolean checkValidInstrumentUnit(String unit) {
-    return checkValidInstrumentUnit(unit, "");
-  }
-
-  /**
-   * Check if the instrument unit is valid. If invalid, log a warning with the {@code logSuffix}
-   * appended. This method should be removed and unit validation should not happen.
-   */
-  static boolean checkValidInstrumentUnit(String unit, String logSuffix) {
-    if (unit != null
-        && !unit.equals("")
-        && unit.length() < 64
-        && StandardCharsets.US_ASCII.newEncoder().canEncode(unit)) {
-      return true;
-    }
-    if (LOGGER.isLoggable(WARNING)) {
-      LOGGER.log(
-          WARNING,
-          "Unit \""
-              + unit
-              + "\" is invalid. Instrument unit must be 63 or fewer ASCII characters."
-              + logSuffix,
-          new AssertionError());
-    }
-    return false;
   }
 
   @FunctionalInterface

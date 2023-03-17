@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressLogger(TlsConfigHelper.class)
 class TlsConfigHelperTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
