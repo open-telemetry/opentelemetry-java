@@ -513,7 +513,7 @@ abstract class Serializer {
 
     @Override
     String headerName(String name, PrometheusType type) {
-      if (type == PrometheusType.COUNTER) {
+      if (type == PrometheusType.COUNTER && !name.endsWith("_total")) {
         return name + "_total";
       }
       return name;
@@ -652,7 +652,7 @@ abstract class Serializer {
 
   private static String metricName(String rawMetricName, PrometheusType type) {
     String name = NameSanitizer.INSTANCE.apply(rawMetricName);
-    if (type == PrometheusType.COUNTER) {
+    if (type == PrometheusType.COUNTER&& !name.endsWith("_total")) {
       name = name + "_total";
     }
     return name;
