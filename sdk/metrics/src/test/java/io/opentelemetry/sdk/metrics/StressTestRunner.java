@@ -19,8 +19,6 @@ import javax.annotation.concurrent.Immutable;
 abstract class StressTestRunner {
   abstract ImmutableList<Operation> getOperations();
 
-  abstract AbstractInstrument getInstrument();
-
   abstract int getCollectionIntervalMs();
 
   final void run() {
@@ -68,8 +66,6 @@ abstract class StressTestRunner {
 
   @AutoValue.Builder
   abstract static class Builder {
-    // TODO: Change this to MeterSdk when collect is available for the entire Meter.
-    abstract Builder setInstrument(AbstractInstrument meterSdk);
 
     abstract ImmutableList.Builder<Operation> operationsBuilder();
 

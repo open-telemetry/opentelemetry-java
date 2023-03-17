@@ -171,9 +171,7 @@ class SdkDoubleCounterTest {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleCounter) doubleCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -209,9 +207,7 @@ class SdkDoubleCounterTest {
     DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleCounter) doubleCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     IntStream.range(0, 4)
         .forEach(

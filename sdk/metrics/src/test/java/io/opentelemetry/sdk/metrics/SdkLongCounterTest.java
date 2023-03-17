@@ -169,9 +169,7 @@ class SdkLongCounterTest {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkLongCounter) longCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -208,9 +206,7 @@ class SdkLongCounterTest {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkLongCounter) longCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     IntStream.range(0, 4)
         .forEach(
