@@ -390,20 +390,6 @@ class OtlpConfigUtilTest {
                         "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM"))
                 .getDefaultAggregation(InstrumentType.HISTOGRAM))
         .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
-    assertThat(
-            configureHistogramDefaultAggregation(
-                    ImmutableMap.of(
-                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
-                        "exponential_bucket_histogram"))
-                .getDefaultAggregation(InstrumentType.HISTOGRAM))
-        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
-    assertThat(
-            configureHistogramDefaultAggregation(
-                    ImmutableMap.of(
-                        "otel.exporter.otlp.metrics.default.histogram.aggregation",
-                        "EXPONENTIAL_BUCKET_HISTOGRAM"))
-                .getDefaultAggregation(InstrumentType.HISTOGRAM))
-        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
 
     assertThat(
             configureHistogramDefaultAggregation(
