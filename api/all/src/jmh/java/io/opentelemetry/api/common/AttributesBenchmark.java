@@ -25,11 +25,30 @@ public class AttributesBenchmark {
   // pre-allocate the keys & values to remove one possible confounding factor
   private static final List<AttributeKey<String>> keys = new ArrayList<>(10);
   private static final List<String> values = new ArrayList<>(10);
+  private static final List<Attributes> attributes = new ArrayList<>();
 
   static {
     for (int i = 0; i < 10; i++) {
       keys.add(AttributeKey.stringKey("key" + i));
       values.add("value" + i);
+      AttributesBuilder builder = Attributes.builder();
+      for (int j = 0; j <= i; j++) {
+        builder.put(keys.get(j), values.get(j));
+      }
+      attributes.add(builder.build());
+    }
+  }
+
+  @Benchmark
+  @BenchmarkMode({Mode.AverageTime})
+  @Fork(1)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @Warmup(iterations = 5, time = 1)
+  @SuppressWarnings("ReturnValueIgnored")
+  public void computeHashCode() {
+    for (Attributes attributes : attributes) {
+      attributes.hashCode();
     }
   }
 
