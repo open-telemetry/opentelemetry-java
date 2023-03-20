@@ -60,7 +60,7 @@
 ### Semantic Conventions
 
 * Update semconv to 1.19.0
-  ([#TODO](https://github.com/open-telemetry/opentelemetry-java/pull/TODO))
+  ([#5311](https://github.com/open-telemetry/opentelemetry-java/pull/5311))
 
 ## Version 1.23.1 (2023-02-15)
 
