@@ -57,6 +57,11 @@
 * Fix case of bug label in open issue workflow
   ([#5268](https://github.com/open-telemetry/opentelemetry-java/pull/5268))
 
+### Semantic Conventions
+
+* Update semconv to 1.19.0
+  ([#TODO](https://github.com/open-telemetry/opentelemetry-java/pull/TODO))
+
 ## Version 1.23.1 (2023-02-15)
 
 * Fix bug that broke `AutoConfiguredOpenTelemetrySdk`'s shutdown hook.
