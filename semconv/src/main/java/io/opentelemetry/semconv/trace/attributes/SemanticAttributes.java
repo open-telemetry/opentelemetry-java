@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.17.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.19.0";
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
@@ -36,6 +36,34 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> EXCEPTION_STACKTRACE = stringKey("exception.stacktrace");
 
+  /** HTTP request method. */
+  public static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
+
+  /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response status code</a>. */
+  public static final AttributeKey<Long> HTTP_STATUS_CODE = longKey("http.status_code");
+
+  /** Kind of HTTP protocol used. */
+  public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
+
+  /** The URI scheme identifying the used protocol. */
+  public static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
+
+  /**
+   * The matched route (path template in the format used by the respective server framework). See
+   * note below
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>MUST NOT be populated when this is not supported by the HTTP server framework as the
+   *       route attribute should have low-cardinality and the URI path can NOT substitute it.
+   *       SHOULD include the <a
+   *       href="/specification/trace/semantic_conventions/http.md#http-server-definitions">application
+   *       root</a> if there is one.
+   * </ul>
+   */
+  public static final AttributeKey<String> HTTP_ROUTE = stringKey("http.route");
+
   /** The name identifies the event. */
   public static final AttributeKey<String> EVENT_NAME = stringKey("event.name");
 
@@ -51,28 +79,6 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> EVENT_DOMAIN = stringKey("event.domain");
 
-  /** The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP). */
-  public static final AttributeKey<String> OTEL_SCOPE_NAME = stringKey("otel.scope.name");
-
-  /** The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP). */
-  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
-
-  /**
-   * Deprecated, use the {@code otel.scope.name} attribute.
-   *
-   * @deprecated Deprecated, use the `otel.scope.name` attribute.
-   */
-  @Deprecated
-  public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
-
-  /**
-   * Deprecated, use the {@code otel.scope.version} attribute.
-   *
-   * @deprecated Deprecated, use the `otel.scope.version` attribute.
-   */
-  @Deprecated
-  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
-
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
    * Lambda-Runtime-Invoked-Function-Arn} header on the {@code /runtime/invocation/next}
@@ -81,7 +87,7 @@ public final class SemanticAttributes {
    * <p>Notes:
    *
    * <ul>
-   *   <li>This may be different from {@code faas.id} if an alias is involved.
+   *   <li>This may be different from {@code cloud.resource_id} if an alias is involved.
    * </ul>
    */
   public static final AttributeKey<String> AWS_LAMBDA_INVOKED_ARN =
@@ -300,7 +306,7 @@ public final class SemanticAttributes {
       stringKey("otel.status_description");
 
   /**
-   * Type of the trigger which caused this function execution.
+   * Type of the trigger which caused this function invocation.
    *
    * <p>Notes:
    *
@@ -315,8 +321,8 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> FAAS_TRIGGER = stringKey("faas.trigger");
 
-  /** The execution ID of the current function execution. */
-  public static final AttributeKey<String> FAAS_EXECUTION = stringKey("faas.execution");
+  /** The invocation ID of the current function invocation. */
+  public static final AttributeKey<String> FAAS_INVOCATION_ID = stringKey("faas.invocation_id");
 
   /**
    * The name of the source on which the triggering operation was performed. For example, in Cloud
@@ -578,30 +584,6 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Long> CODE_COLUMN = longKey("code.column");
 
-  /** HTTP request method. */
-  public static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
-
-  /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response status code</a>. */
-  public static final AttributeKey<Long> HTTP_STATUS_CODE = longKey("http.status_code");
-
-  /**
-   * Kind of HTTP protocol used.
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>If {@code net.transport} is not specified, it can be assumed to be {@code IP.TCP} except
-   *       if {@code http.flavor} is {@code QUIC}, in which case {@code IP.UDP} is assumed.
-   * </ul>
-   */
-  public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
-
-  /**
-   * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
-   * User-Agent</a> header sent by the client.
-   */
-  public static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
-
   /**
    * The size of the request payload body in bytes. This is the number of bytes transferred
    * excluding headers and is often, but not always, present as the <a
@@ -648,25 +630,8 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Long> HTTP_RESEND_COUNT = longKey("http.resend_count");
 
-  /** The URI scheme identifying the used protocol. */
-  public static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
-
   /** The full request target as passed in a HTTP request line or equivalent. */
   public static final AttributeKey<String> HTTP_TARGET = stringKey("http.target");
-
-  /**
-   * The matched route (path template in the format used by the respective server framework). See
-   * note below
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>'http.route' MUST NOT be populated when this is not supported by the HTTP server
-   *       framework as the route attribute should have low-cardinality and the URI path can NOT
-   *       substitute it.
-   * </ul>
-   */
-  public static final AttributeKey<String> HTTP_ROUTE = stringKey("http.route");
 
   /**
    * The IP address of the original client behind all proxies, if known (e.g. from <a
@@ -1130,6 +1095,13 @@ public final class SemanticAttributes {
       longKey("message.uncompressed_size");
 
   /**
+   * The <a href="https://connect.build/docs/protocol/#error-codes">error codes</a> of the Connect
+   * request. Error codes are always string values.
+   */
+  public static final AttributeKey<String> RPC_CONNECT_RPC_ERROR_CODE =
+      stringKey("rpc.connect_rpc.error_code");
+
+  /**
    * SHOULD be set to true if the exception event is recorded at a point where it is known that the
    * exception is escaping the scope of the span.
    *
@@ -1152,7 +1124,30 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
 
+  /**
+   * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
+   * User-Agent</a> header sent by the client.
+   */
+  public static final AttributeKey<String> USER_AGENT_ORIGINAL = stringKey("user_agent.original");
+
   // Enum definitions
+  public static final class HttpFlavorValues {
+    /** HTTP/1.0. */
+    public static final String HTTP_1_0 = "1.0";
+    /** HTTP/1.1. */
+    public static final String HTTP_1_1 = "1.1";
+    /** HTTP/2. */
+    public static final String HTTP_2_0 = "2.0";
+    /** HTTP/3. */
+    public static final String HTTP_3_0 = "3.0";
+    /** SPDY protocol. */
+    public static final String SPDY = "SPDY";
+    /** QUIC protocol. */
+    public static final String QUIC = "QUIC";
+
+    private HttpFlavorValues() {}
+  }
+
   public static final class EventDomainValues {
     /** Events from browser apps. */
     public static final String BROWSER = "browser";
@@ -1178,6 +1173,8 @@ public final class SemanticAttributes {
     public static final String OTHER_SQL = "other_sql";
     /** Microsoft SQL Server. */
     public static final String MSSQL = "mssql";
+    /** Microsoft SQL Server Compact. */
+    public static final String MSSQLCOMPACT = "mssqlcompact";
     /** MySQL. */
     public static final String MYSQL = "mysql";
     /** Oracle Database. */
@@ -1272,6 +1269,8 @@ public final class SemanticAttributes {
     public static final String OPENSEARCH = "opensearch";
     /** ClickHouse. */
     public static final String CLICKHOUSE = "clickhouse";
+    /** Cloud Spanner. */
+    public static final String SPANNER = "spanner";
 
     private DbSystemValues() {}
   }
@@ -1452,23 +1451,6 @@ public final class SemanticAttributes {
     private NetHostConnectionSubtypeValues() {}
   }
 
-  public static final class HttpFlavorValues {
-    /** HTTP/1.0. */
-    public static final String HTTP_1_0 = "1.0";
-    /** HTTP/1.1. */
-    public static final String HTTP_1_1 = "1.1";
-    /** HTTP/2. */
-    public static final String HTTP_2_0 = "2.0";
-    /** HTTP/3. */
-    public static final String HTTP_3_0 = "3.0";
-    /** SPDY protocol. */
-    public static final String SPDY = "SPDY";
-    /** QUIC protocol. */
-    public static final String QUIC = "QUIC";
-
-    private HttpFlavorValues() {}
-  }
-
   public static final class GraphqlOperationTypeValues {
     /** GraphQL query. */
     public static final String QUERY = "query";
@@ -1540,6 +1522,8 @@ public final class SemanticAttributes {
     public static final String DOTNET_WCF = "dotnet_wcf";
     /** Apache Dubbo. */
     public static final String APACHE_DUBBO = "apache_dubbo";
+    /** Connect RPC. */
+    public static final String CONNECT_RPC = "connect_rpc";
 
     private RpcSystemValues() {}
   }
@@ -1590,6 +1574,43 @@ public final class SemanticAttributes {
     public static final String RECEIVED = "RECEIVED";
 
     private MessageTypeValues() {}
+  }
+
+  public static final class RpcConnectRpcErrorCodeValues {
+    /** cancelled. */
+    public static final String CANCELLED = "cancelled";
+    /** unknown. */
+    public static final String UNKNOWN = "unknown";
+    /** invalid_argument. */
+    public static final String INVALID_ARGUMENT = "invalid_argument";
+    /** deadline_exceeded. */
+    public static final String DEADLINE_EXCEEDED = "deadline_exceeded";
+    /** not_found. */
+    public static final String NOT_FOUND = "not_found";
+    /** already_exists. */
+    public static final String ALREADY_EXISTS = "already_exists";
+    /** permission_denied. */
+    public static final String PERMISSION_DENIED = "permission_denied";
+    /** resource_exhausted. */
+    public static final String RESOURCE_EXHAUSTED = "resource_exhausted";
+    /** failed_precondition. */
+    public static final String FAILED_PRECONDITION = "failed_precondition";
+    /** aborted. */
+    public static final String ABORTED = "aborted";
+    /** out_of_range. */
+    public static final String OUT_OF_RANGE = "out_of_range";
+    /** unimplemented. */
+    public static final String UNIMPLEMENTED = "unimplemented";
+    /** internal. */
+    public static final String INTERNAL = "internal";
+    /** unavailable. */
+    public static final String UNAVAILABLE = "unavailable";
+    /** data_loss. */
+    public static final String DATA_LOSS = "data_loss";
+    /** unauthenticated. */
+    public static final String UNAUTHENTICATED = "unauthenticated";
+
+    private RpcConnectRpcErrorCodeValues() {}
   }
 
   // Manually defined and not YET in the YAML
