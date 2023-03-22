@@ -187,8 +187,12 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
 
   @Override
   public void close() throws IOException {
-    output.flush();
-    idCache.clear();
+    try {
+      output.flush();
+      idCache.clear();
+    } catch (IOException e) {
+      throw new IOException(e);
+    }
   }
 
   private static Map<String, byte[]> getIdCache() {
