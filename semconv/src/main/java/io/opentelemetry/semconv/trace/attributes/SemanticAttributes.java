@@ -1801,5 +1801,41 @@ public final class SemanticAttributes {
   public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELAY_TIME_LEVEL =
       longKey("messaging.rocketmq.delay_time_level");
 
+  /**
+   * The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP).
+   *
+   * @deprecated This item has been moved, use {@link ResourceAttributes#OTEL_SCOPE_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_SCOPE_NAME = ResourceAttributes.OTEL_SCOPE_NAME;
+
+  /**
+   * The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP).
+   *
+   * @deprecated This item has been moved, use {@link ResourceAttributes#OTEL_SCOPE_VERSION}
+   *     instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_SCOPE_VERSION =
+      ResourceAttributes.OTEL_SCOPE_VERSION;
+
+  /**
+   * The execution ID of the current function execution.
+   *
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use
+   *     {@link SemanticAttributes#FAAS_INVOCATION_ID} instead.
+   */
+  @Deprecated public static final AttributeKey<String> FAAS_EXECUTION = stringKey("faas.execution");
+
+  /**
+   * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
+   * User-Agent</a> header sent by the client.
+   *
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use
+   *     {@link SemanticAttributes#USER_AGENT_ORIGINAL} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
+
   private SemanticAttributes() {}
 }
