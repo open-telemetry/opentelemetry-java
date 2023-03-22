@@ -134,8 +134,7 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    delegate.setSslSocketFactory(sslSocketFactory);
-    delegate.setTrustManager(trustManager);
+    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
     return this;
   }
 

@@ -99,8 +99,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
-   * The key must be PKCS8, and both must be in PEM format. This will replace any other key manager
-   * that has been configured with this method or with setKeyManager().
+   * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
@@ -123,8 +122,7 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    delegate.setSslSocketFactory(sslSocketFactory);
-    delegate.setTrustManager(trustManager);
+    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
     return this;
   }
 

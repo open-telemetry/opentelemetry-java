@@ -119,8 +119,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
    */
   public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    delegate.setSslSocketFactory(sslSocketFactory);
-    delegate.setTrustManager(trustManager);
+    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
     return this;
   }
 
