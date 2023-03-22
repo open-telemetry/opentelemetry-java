@@ -142,6 +142,16 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager. Users should call this _or_
+   * set raw certificate bytes, but not both.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setSslSocketFactory(
+      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+    delegate.setSslSocketFactory(socketFactory, trustManager);
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcLogRecordExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    *

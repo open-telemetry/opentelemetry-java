@@ -141,6 +141,16 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager. Users should call this _or_
+   * set raw certificate bytes, but not both.
+   */
+  public OtlpGrpcSpanExporterBuilder setSslSocketFactory(
+      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not called.
    *

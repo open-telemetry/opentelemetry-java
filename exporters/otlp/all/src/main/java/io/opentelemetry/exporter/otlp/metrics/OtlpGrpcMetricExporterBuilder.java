@@ -157,6 +157,16 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager. Users should call this _or_
+   * set raw certificate bytes, but not both.
+   */
+  public OtlpGrpcMetricExporterBuilder setSslSocketFactory(
+      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    *
