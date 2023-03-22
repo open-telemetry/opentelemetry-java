@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 
 class OtlpHttpMetricExporterTest
@@ -117,6 +119,13 @@ class OtlpHttpMetricExporterTest
       @Override
       public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> setSslSocketFactory(
+          SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+        builder.setSslSocketFactory(socketFactory, trustManager);
         return this;
       }
 

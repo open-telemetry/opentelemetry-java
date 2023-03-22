@@ -12,6 +12,8 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder<MetricData> {
   private final OtlpGrpcMetricExporterBuilder builder;
@@ -60,6 +62,13 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   public TelemetryExporterBuilder<MetricData> setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     builder.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setSslSocketFactory(
+      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+    builder.setSslSocketFactory(socketFactory, trustManager);
     return this;
   }
 

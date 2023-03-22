@@ -18,6 +18,8 @@ import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 /** Builder for {@link OtlpGrpcLogRecordExporter}. */
 public final class OtlpGrpcLogRecordExporterBuilder {
@@ -126,6 +128,16 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   public OtlpGrpcLogRecordExporterBuilder setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager. Users should call this _or_
+   * set raw certificate bytes, but not both.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setSslSocketFactory(
+      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+    delegate.setSslSocketFactory(socketFactory, trustManager);
     return this;
   }
 

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -100,6 +101,14 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setSslSocketFactory(
+      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslSocketFactory(socketFactory);
+    tlsConfigHelper.setTrustManager(trustManager);
     return this;
   }
 

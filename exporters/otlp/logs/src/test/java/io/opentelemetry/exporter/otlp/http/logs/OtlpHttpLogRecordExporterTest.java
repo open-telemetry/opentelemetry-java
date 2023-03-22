@@ -18,6 +18,8 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 class OtlpHttpLogRecordExporterTest
     extends AbstractHttpTelemetryExporterTest<LogRecordData, ResourceLogs> {
@@ -63,6 +65,13 @@ class OtlpHttpLogRecordExporterTest
       @Override
       public TelemetryExporterBuilder<LogRecordData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<LogRecordData> setSslSocketFactory(
+          SSLSocketFactory socketFactory, X509TrustManager trustManager) {
+        builder.setSslSocketFactory(socketFactory, trustManager);
         return this;
       }
 
