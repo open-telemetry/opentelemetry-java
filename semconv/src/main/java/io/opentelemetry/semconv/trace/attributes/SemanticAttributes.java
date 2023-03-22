@@ -1837,5 +1837,21 @@ public final class SemanticAttributes {
   @Deprecated
   public static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
 
+  /**
+   * Deprecated, use the {@link SemanticAttributes#OTEL_SCOPE_NAME} attribute.
+   *
+   * @deprecated Deprecated, use the `{@link SemanticAttributes#OTEL_SCOPE_NAME} attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
+
+  /**
+   * Deprecated, use the {@link SemanticAttributes#OTEL_SCOPE_VERSION} attribute.
+   *
+   * @deprecated Deprecated, use the {@link SemanticAttributes#OTEL_SCOPE_VERSION} attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
+
   private SemanticAttributes() {}
 }
