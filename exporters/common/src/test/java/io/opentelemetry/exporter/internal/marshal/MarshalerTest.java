@@ -1,14 +1,19 @@
-package io.opentelemetry.exporter.internal.marshal;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import org.junit.jupiter.api.Test;
-import java.io.IOException;
-import java.io.OutputStream;
+package io.opentelemetry.exporter.internal.marshal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import org.junit.jupiter.api.Test;
 
 class MarshalerTest {
 
