@@ -874,7 +874,8 @@ public final class ResourceAttributes {
    * </ul>
    *
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use
-   *     {@link SemanticAttributes#USER_AGENT_ORIGINAL} instead.
+   *     {@link io.opentelemetry.semconv.trace.attributes.SemanticAttributes#USER_AGENT_ORIGINAL}
+   *     instead.
    */
   @Deprecated
   public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
