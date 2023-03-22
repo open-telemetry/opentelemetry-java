@@ -147,8 +147,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager. Users should call this _or_
-   * set raw certificate bytes, but not both.
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager for use with TLS. Users should
+   * call this _or_ set raw certificate bytes, but not both.
    */
   public OtlpGrpcMetricExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {

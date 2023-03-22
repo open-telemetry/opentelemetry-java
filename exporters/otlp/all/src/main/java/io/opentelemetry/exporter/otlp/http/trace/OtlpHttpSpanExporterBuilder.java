@@ -103,8 +103,8 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the SSLSocketFactory to use when TLS is enabled. When providing a preconfigured
-   * SSLSocketFactory, a trust manager must also be provided.
+   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager for use with TLS. Users should
+   * call this _or_ set raw certificate bytes, but not both.
    */
   public OtlpHttpSpanExporterBuilder setSslSocketFactory(
       SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
