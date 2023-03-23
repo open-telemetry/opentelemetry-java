@@ -191,6 +191,10 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
       output.flush();
       idCache.clear();
     } catch (IOException e) {
+      // If close is called automatically as part of try-with-resources, it's possible that
+      // output.flush() will throw the same exception. Re-throwing the same exception in a finally
+      // block triggers an IllegalArgumentException indicating illegal self suppression. To avoid
+      // this, we wrap the exception so a different instance is thrown.
       throw new IOException(e);
     }
   }

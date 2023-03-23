@@ -42,9 +42,8 @@ class MarshalerTest {
     doThrow(error).when(os).flush();
 
     // If an exception is thrown writing bytes, and that same exception is thrown in the #close
-    // method
-    // cleaning up the AutoCloseable resource, an IllegalArgumentException will be thrown indicating
-    // illegal self suppression. Ensure an IOException is thrown instead.
+    // method cleaning up the AutoCloseable resource, an IllegalArgumentException will be thrown
+    // indicating illegal self suppression. Ensure an IOException is thrown instead.
     assertThatThrownBy(() -> marshaler.writeBinaryTo(os)).isInstanceOf(IOException.class);
     assertThatThrownBy(() -> marshaler.writeJsonTo(os)).isInstanceOf(IOException.class);
   }
