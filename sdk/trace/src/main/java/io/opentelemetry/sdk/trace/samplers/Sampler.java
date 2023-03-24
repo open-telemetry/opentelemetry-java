@@ -58,6 +58,22 @@ public interface Sampler {
   }
 
   /**
+   * Returns a {@link Sampler} that samples if and only if one span link {@link Span} is sampled.
+   * If there are no links, the Sampler uses the provided Sampler delegate
+   * to determine the sampling decision.
+   *
+   * <p>This method is equivalent to calling {@code #linksBasedBuilder(Sampler).build()}
+   *
+   * @param root the {@code Sampler} which is used to make the sampling decisions if no span links
+   *     exist.
+   * @return a {@code Sampler} that samples if and only if at least one span link is sampled.
+   *     If no span links exist, then it delegates the decision to the root's sample decision.
+   */
+  static Sampler linksBased(Sampler root) {
+    return new LinksBasedSampler(root);
+  }
+
+  /**
    * Returns a {@link ParentBasedSamplerBuilder} that enables configuration of the parent-based
    * sampling strategy. The parent's sampling decision is used if a parent span exists, otherwise
    * this strategy uses the root sampler's decision. There are a several options available on the
