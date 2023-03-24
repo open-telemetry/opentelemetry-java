@@ -265,6 +265,7 @@ Supported values for `otel.traces.sampler` are
 - "parentbased_always_on": ParentBased(root=AlwaysOnSampler)
 - "parentbased_always_off": ParentBased(root=AlwaysOffSampler)
 - "parentbased_traceidratio": ParentBased(root=TraceIdRatioBased). `otel.traces.sampler.arg` sets the ratio.
+- "linksbased_parentbased_always_on": LinksBased(root=ParentBased(root=AlwaysOnSampler))
 
 ## Attribute limits
 

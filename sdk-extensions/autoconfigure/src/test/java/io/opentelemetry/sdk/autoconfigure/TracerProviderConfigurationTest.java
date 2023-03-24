@@ -231,6 +231,10 @@ class TracerProviderConfigurationTest {
                 EMPTY,
                 TracerProviderConfiguration.class.getClassLoader()))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(1.0d)));
+    assertThat(
+        TracerProviderConfiguration.configureSampler(
+            "linksbased_parentbased_always_on", EMPTY, TracerProviderConfiguration.class.getClassLoader()))
+        .isEqualTo(Sampler.linksBased(Sampler.parentBased(Sampler.alwaysOn())));
 
     assertThatThrownBy(
             () ->

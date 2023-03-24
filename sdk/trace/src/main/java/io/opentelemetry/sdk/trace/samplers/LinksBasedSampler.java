@@ -41,13 +41,11 @@ final class LinksBasedSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     if (parentLinks.size() > 0) {
-
       for (LinkData linkData: parentLinks) {
         if (linkData.getSpanContext().isSampled()) {
           return POSITIVE_SAMPLING_RESULT;
         }
       }
-
       return NEGATIVE_SAMPLING_RESULT;
     }
 

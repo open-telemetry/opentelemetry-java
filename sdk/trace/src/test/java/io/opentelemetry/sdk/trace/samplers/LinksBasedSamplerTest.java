@@ -28,6 +28,7 @@ class LinksBasedSamplerTest {
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
 
+
   private final SpanContext sampledSpanContext1 =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
 
@@ -41,6 +42,8 @@ class LinksBasedSamplerTest {
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault());
 
   private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext1));
+
+  private final SpanContext invalidParentContext = SpanContext.getInvalid();
 
   @Test
   void testEmptyAlwaysTrueRoot() {
