@@ -46,7 +46,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.0")
-  implementation("org.owasp:dependency-check-gradle:8.2.0")
+  implementation("org.owasp:dependency-check-gradle:8.2.1")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
