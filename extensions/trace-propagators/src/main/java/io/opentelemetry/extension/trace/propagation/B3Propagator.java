@@ -12,8 +12,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -113,15 +111,11 @@ public final class B3Propagator implements TextMapPropagator {
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
-    return Stream.<Supplier<Optional<Context>>>of(
-            () -> singleHeaderExtractor.extract(context, carrier, getter),
-            () -> multipleHeadersExtractor.extract(context, carrier, getter),
-            () -> Optional.of(context))
-        .map(Supplier::get)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .findFirst()
-        .get();
+    Optional<Context> ctx = singleHeaderExtractor.extract(context, carrier, getter);
+    if (ctx.isPresent()) {
+      return ctx.get();
+    }
+    return multipleHeadersExtractor.extract(context, carrier, getter).orElse(context);
   }
 
   @Override
