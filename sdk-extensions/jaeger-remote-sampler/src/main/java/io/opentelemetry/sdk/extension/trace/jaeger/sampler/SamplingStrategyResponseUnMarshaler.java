@@ -9,7 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.CodedInputStream;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
-class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
+class SamplingStrategyResponseUnMarshaler {
 
   @Nullable private SamplingStrategyResponse samplingStrategyResponse;
 
@@ -18,7 +18,6 @@ class SamplingStrategyResponseUnMarshaler extends UnMarshaler {
     return samplingStrategyResponse;
   }
 
-  @Override
   public void read(byte[] payload) throws IOException {
     SamplingStrategyResponse.Builder responseBuilder = new SamplingStrategyResponse.Builder();
     try {

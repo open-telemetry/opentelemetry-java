@@ -36,13 +36,10 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private volatile Sampler sampler;
 
-  private final GrpcService<
-          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
-      delegate;
+  private final GrpcService delegate;
 
   JaegerRemoteSampler(
-      GrpcService<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
-          delegate,
+      GrpcService delegate,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler) {
