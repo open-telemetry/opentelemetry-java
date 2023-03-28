@@ -186,8 +186,6 @@ final class TracerProviderConfiguration {
               "parentbased_jaeger_remote configured but opentelemetry-sdk-extension-jaeger-remote-sampler not on classpath");
         }
         return Sampler.parentBased(jaegerRemote);
-      case "linksbased_parentbased_always_on":
-        return Sampler.linksBased(Sampler.parentBased(Sampler.alwaysOn()));
       default:
         Sampler spiSampler = spiSamplersManager.getByName(sampler);
         if (spiSampler == null) {
