@@ -41,7 +41,7 @@ final class LinksBasedSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     if (parentLinks.size() > 0) {
-      for (LinkData linkData: parentLinks) {
+      for (LinkData linkData : parentLinks) {
         if (linkData.getSpanContext().isSampled()) {
           return POSITIVE_SAMPLING_RESULT;
         }
@@ -49,15 +49,12 @@ final class LinksBasedSampler implements Sampler {
       return NEGATIVE_SAMPLING_RESULT;
     }
 
-    return this.root.shouldSample(
-        parentContext, traceId, name, spanKind, attributes, parentLinks);
+    return this.root.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
   @Override
   public String getDescription() {
-    return String.format(
-        "LinksBased{root:%s}",
-        this.root.getDescription());
+    return String.format("LinksBased{root:%s}", this.root.getDescription());
   }
 
   @Override

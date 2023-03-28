@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -14,12 +16,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.LinkData;
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class LinksBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
@@ -27,7 +27,6 @@ class LinksBasedSamplerTest {
   private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
-
 
   private final SpanContext sampledSpanContext1 =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
@@ -48,30 +47,30 @@ class LinksBasedSamplerTest {
   @Test
   void testEmptyAlwaysTrueRoot() {
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOn())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOn())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test
   void testEmptyAlwaysFalseRoot() {
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOff())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOff())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
         .isEqualTo(SamplingDecision.DROP);
   }
 
@@ -81,15 +80,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(sampledSpanContext1));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOff())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOff())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
@@ -99,15 +98,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(unsampledSpanContext1));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOn())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOn())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.DROP);
   }
 
@@ -118,15 +117,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(unsampledSpanContext1));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOff())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOff())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
@@ -137,15 +136,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(sampledSpanContext1));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOff())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOff())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
@@ -156,15 +155,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(sampledSpanContext2));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOff())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOff())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
@@ -175,15 +174,15 @@ class LinksBasedSamplerTest {
     linkData.add(LinkData.create(unsampledSpanContext2));
 
     assertThat(
-        Sampler.linksBased(Sampler.alwaysOn())
-            .shouldSample(
-                sampledParentContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                linkData)
-            .getDecision())
+            Sampler.linksBased(Sampler.alwaysOn())
+                .shouldSample(
+                    sampledParentContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    linkData)
+                .getDecision())
         .isEqualTo(SamplingDecision.DROP);
   }
 }
