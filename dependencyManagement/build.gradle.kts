@@ -33,7 +33,7 @@ val errorProneVersion = "2.18.0"
 val jmhVersion = "1.36"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.6"
+val slf4jVersion = "2.0.7"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 
@@ -58,7 +58,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.14.3",
+  "com.google.api.grpc:proto-google-common-protos:2.15.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
@@ -76,7 +76,7 @@ val DEPENDENCIES = listOf(
   "nl.jqno.equalsverifier:equalsverifier:3.14.1",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.22",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.23",
   "org.jctools:jctools-core:4.0.1",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.skyscreamer:jsonassert:1.5.1",
