@@ -33,7 +33,7 @@ val errorProneVersion = "2.18.0"
 val jmhVersion = "1.36"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.6"
+val slf4jVersion = "2.0.7"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 
