@@ -9,11 +9,19 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.TlsConfigHelper;
+import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 
 /** A builder for {@link JaegerRemoteSampler}. */
 public final class JaegerRemoteSamplerBuilder {
@@ -27,15 +35,19 @@ public final class JaegerRemoteSamplerBuilder {
   private static final int DEFAULT_POLLING_INTERVAL_MILLIS = 60000;
   private static final Sampler INITIAL_SAMPLER =
       Sampler.parentBased(Sampler.traceIdRatioBased(0.001));
-
-  @Nullable private String serviceName;
-  private Sampler initialSampler = INITIAL_SAMPLER;
-  private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private final GrpcServiceBuilder<
-          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
-      delegate;
+  private URI endpoint = DEFAULT_ENDPOINT;
+  private Sampler initialSampler = INITIAL_SAMPLER;
+  private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
+  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
+
+  @Nullable private String serviceName;
+
+  // Use Object type since gRPC may not be on the classpath.
+  @Nullable private Object grpcChannel;
+
+  JaegerRemoteSamplerBuilder() {}
 
   /**
    * Sets the service name to be used by this exporter. Required.
@@ -54,14 +66,14 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSamplerBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    delegate.setEndpoint(endpoint);
+    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
   /** Sets trusted certificate. */
   public JaegerRemoteSamplerBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
     return this;
   }
 
@@ -72,7 +84,9 @@ public final class JaegerRemoteSamplerBuilder {
    * @since 1.24.0
    */
   public JaegerRemoteSamplerBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    requireNonNull(privateKeyPem, "privateKeyPem");
+    requireNonNull(certificatePem, "certificatePem");
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -116,7 +130,7 @@ public final class JaegerRemoteSamplerBuilder {
   @Deprecated
   public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
     requireNonNull(channel, "channel");
-    delegate.setChannel(channel);
+    this.grpcChannel = channel;
     return this;
   }
 
@@ -126,24 +140,47 @@ public final class JaegerRemoteSamplerBuilder {
    * @return the remote sampler instance.
    */
   public JaegerRemoteSampler build() {
+    if (grpcChannel != null) {
+      return new JaegerRemoteSampler(
+          UpstreamGrpcExporterFactory.buildWithChannel((ManagedChannel) grpcChannel),
+          serviceName,
+          pollingIntervalMillis,
+          initialSampler);
+    }
+
+    OkHttpClient.Builder clientBuilder =
+        new OkHttpClient.Builder().dispatcher(OkHttpUtil.newDispatcher());
+
+    clientBuilder.callTimeout(Duration.ofNanos(TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS)));
+
+    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
+
+    String endpoint = this.endpoint.resolve(GRPC_ENDPOINT_PATH).toString();
+    if (endpoint.startsWith("http://")) {
+      clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
+    } else {
+      clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+    }
+
+    Headers.Builder headers = new Headers.Builder();
+    headers.add("te", "trailers");
+
     return new JaegerRemoteSampler(
-        delegate.build(), serviceName, pollingIntervalMillis, initialSampler);
+        new OkHttpGrpcService("remoteSampling", clientBuilder.build(), endpoint, headers.build()),
+        serviceName,
+        pollingIntervalMillis,
+        initialSampler);
   }
 
-  JaegerRemoteSamplerBuilder() {
-    delegate =
-        GrpcService.builder(
-            "remoteSampling",
-            DEFAULT_TIMEOUT_SECS,
-            DEFAULT_ENDPOINT,
-            () -> MarshallerRemoteSamplerServiceGrpc::newFutureStub,
-            GRPC_SERVICE_NAME,
-            GRPC_ENDPOINT_PATH);
-  }
-
-  // Visible for testing
-  GrpcServiceBuilder<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
-      getDelegate() {
-    return delegate;
+  // Use an inner class to ensure GrpcExporterBuilder does not have classloading dependencies on
+  // upstream gRPC.
+  private static class UpstreamGrpcExporterFactory {
+    private static GrpcService buildWithChannel(ManagedChannel channel) {
+      return new UpstreamGrpcService(
+          "remoteSampling",
+          channel,
+          MarshallerRemoteSamplerServiceGrpc.newFutureStub(channel),
+          TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS));
+    }
   }
 }

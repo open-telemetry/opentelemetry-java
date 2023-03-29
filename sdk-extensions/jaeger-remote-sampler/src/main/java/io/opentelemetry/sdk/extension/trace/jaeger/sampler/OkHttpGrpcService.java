@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcRequestBody;
 import io.opentelemetry.exporter.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -28,8 +27,7 @@ import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 
-final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
-    implements GrpcService<ReqMarshalerT, ResUnMarshalerT> {
+final class OkHttpGrpcService implements GrpcService {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -40,28 +38,22 @@ final class OkHttpGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT e
   private final OkHttpClient client;
   private final HttpUrl url;
   private final Headers headers;
-  private final boolean compressionEnabled;
 
   /** Creates a new {@link OkHttpGrpcService}. */
-  OkHttpGrpcService(
-      String type,
-      OkHttpClient client,
-      String endpoint,
-      Headers headers,
-      boolean compressionEnabled) {
+  OkHttpGrpcService(String type, OkHttpClient client, String endpoint, Headers headers) {
     this.type = type;
     this.client = client;
     this.url = HttpUrl.get(endpoint);
     this.headers = headers;
-    this.compressionEnabled = compressionEnabled;
   }
 
   @Override
-  public ResUnMarshalerT execute(
-      ReqMarshalerT exportRequest, ResUnMarshalerT responseUnmarshaller) {
+  public SamplingStrategyResponseUnMarshaler execute(
+      SamplingStrategyParametersMarshaler exportRequest,
+      SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
-    RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
+    RequestBody requestBody = new GrpcRequestBody(exportRequest, false);
     requestBuilder.post(requestBody);
 
     try {

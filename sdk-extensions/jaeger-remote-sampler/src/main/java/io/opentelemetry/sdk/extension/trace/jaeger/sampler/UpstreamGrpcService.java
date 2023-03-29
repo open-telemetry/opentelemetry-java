@@ -10,27 +10,29 @@ import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class DefaultGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT extends UnMarshaler>
-    implements GrpcService<ReqMarshalerT, ResUnMarshalerT> {
+final class UpstreamGrpcService implements GrpcService {
 
-  private static final Logger logger = Logger.getLogger(DefaultGrpcService.class.getName());
+  private static final Logger logger = Logger.getLogger(UpstreamGrpcService.class.getName());
 
   private final String type;
   private final ManagedChannel managedChannel;
-  private final MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub;
+  private final MarshalerServiceStub<
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
+      stub;
   private final long timeoutNanos;
 
-  /** Creates a new {@link DefaultGrpcService}. */
-  DefaultGrpcService(
+  /** Creates a new {@link UpstreamGrpcService}. */
+  UpstreamGrpcService(
       String type,
       ManagedChannel channel,
-      MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub,
+      MarshalerServiceStub<
+              SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
+          stub,
       long timeoutNanos) {
     this.type = type;
     this.managedChannel = channel;
@@ -39,9 +41,12 @@ final class DefaultGrpcService<ReqMarshalerT extends Marshaler, ResUnMarshalerT 
   }
 
   @Override
-  public ResUnMarshalerT execute(
-      ReqMarshalerT exportRequest, ResUnMarshalerT responseUnmarshaller) {
-    MarshalerServiceStub<ReqMarshalerT, ResUnMarshalerT, ?> stub = this.stub;
+  public SamplingStrategyResponseUnMarshaler execute(
+      SamplingStrategyParametersMarshaler exportRequest,
+      SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
+    MarshalerServiceStub<
+            SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
+        stub = this.stub;
     if (timeoutNanos > 0) {
       stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     }

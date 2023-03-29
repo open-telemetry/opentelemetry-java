@@ -10,7 +10,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
+        # TODO(jack-berg): use latest when config file reading bug is fixed: https://github.com/tcort/markdown-link-check/issues/246
+        run: npm install -g markdown-link-check@3.10.3
 
       - name: Run markdown-link-check
         run: |
