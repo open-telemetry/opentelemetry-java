@@ -9,6 +9,8 @@ dependencies {
   jmh("org.openjdk.jmh:jmh-generator-bytecode")
 }
 
+val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
+
 // invoke jmh on a single benchmark class like so:
 //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
 jmh {
@@ -21,6 +23,14 @@ jmh {
   val jmhIncludeSingleClass: String? by project
   if (jmhIncludeSingleClass != null) {
     includes.add(jmhIncludeSingleClass as String)
+  }
+
+  if (testJavaVersion != null) {
+    var toolchain = javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+    };
+    javaLauncher.set(toolchain)
+    jvm.set(toolchain.map { it -> it.executablePath.asFile.absolutePath }.orNull)
   }
 }
 

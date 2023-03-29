@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.time.Duration;
@@ -21,16 +21,16 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/logs";
 
-  private final OkHttpExporterBuilder<LogsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<LogsRequestMarshaler> delegate;
 
   OtlpHttpLogRecordExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
+    delegate = new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
-   * defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpLogRecordExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -41,7 +41,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
-   * defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpLogRecordExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");

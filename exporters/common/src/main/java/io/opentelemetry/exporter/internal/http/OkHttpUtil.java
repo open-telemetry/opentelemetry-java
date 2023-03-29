@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.okhttp;
+package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.concurrent.SynchronousQueue;

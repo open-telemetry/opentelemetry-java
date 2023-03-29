@@ -60,4 +60,36 @@ sourceSets {
   main {
     java.srcDir("$buildDir/generated/source/wire")
   }
+
+  create("java11") {
+    java {
+      setSrcDirs(listOf("src/main/java11"))
+    }
+  }
+}
+
+configurations {
+  named("java11Implementation") {
+    extendsFrom(configurations["implementation"])
+  }
+  named("java11CompileOnly") {
+    extendsFrom(configurations["compileOnly"])
+  }
+}
+
+tasks {
+  named<JavaCompile>("compileJava11Java") {
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
+    options.release.set(11)
+  }
+
+  withType(Jar::class) {
+    into("META-INF/versions/11") {
+      from(sourceSets["java11"].output)
+    }
+    manifest.attributes(
+      "Multi-Release" to "true",
+    )
+  }
 }

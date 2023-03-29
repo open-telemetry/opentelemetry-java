@@ -163,7 +163,34 @@ public class TlsConfigHelper {
     }
   }
 
-  private static void wrapException(SSLException e) {
+  /** Return the {@link SSLSocketFactory}. */
+  @Nullable
+  public SSLSocketFactory getSslSocketFactory() {
+    if (trustManager == null) {
+      return null;
+    }
+    try {
+      SSLSocketFactory sslSocketFactory = this.sslSocketFactory;
+      if (sslSocketFactory == null) {
+        sslSocketFactory = tlsUtil.sslSocketFactory(keyManager, trustManager);
+      }
+      return sslSocketFactory;
+    } catch (SSLException e) {
+      throw wrapException(e);
+    }
+  }
+
+  @Nullable
+  public X509TrustManager getTrustManager() {
+    return trustManager;
+  }
+
+  @Nullable
+  public X509KeyManager getKeyManager() {
+    return keyManager;
+  }
+
+  private static RuntimeException wrapException(SSLException e) {
     throw new IllegalStateException(
         "Could not configure TLS connection, are certs in valid X.509 in PEM format?", e);
   }

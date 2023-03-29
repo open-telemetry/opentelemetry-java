@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.time.Duration;
@@ -25,16 +25,16 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
 
-  private final OkHttpExporterBuilder<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
 
   OtlpHttpSpanExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
+    delegate = new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -45,7 +45,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
