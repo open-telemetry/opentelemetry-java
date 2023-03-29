@@ -10,6 +10,3 @@ Comparing source compatibility of  against
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW INTERFACE: io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc$AsyncService
 	---  REMOVED METHOD: PUBLIC(-) void getSamplingStrategy(io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters, io.grpc.stub.StreamObserver)
-***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	***! MODIFIED METHOD: PACKAGE_PROTECTED (<- PUBLIC) io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder setServiceName(java.lang.String)
