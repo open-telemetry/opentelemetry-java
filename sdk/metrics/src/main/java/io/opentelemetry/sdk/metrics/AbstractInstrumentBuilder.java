@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -52,13 +51,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    if (!ValidationUtil.checkValidInstrumentUnit(
-        unit,
-        " Using \"" + DEFAULT_UNIT + "\" for instrument " + this.instrumentName + " instead.")) {
-      this.unit = DEFAULT_UNIT;
-    } else {
-      this.unit = unit;
-    }
+    this.unit = unit;
     return getThis();
   }
 

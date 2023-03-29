@@ -83,7 +83,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpHttpLogRecordExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    delegate.configureTrustManager(trustedCertificatesPem);
     return this;
   }
 
@@ -93,7 +93,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
    */
   public OtlpHttpLogRecordExporterBuilder setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    delegate.configureKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 

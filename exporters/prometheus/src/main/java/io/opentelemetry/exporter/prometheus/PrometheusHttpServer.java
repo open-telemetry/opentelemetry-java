@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -76,7 +75,7 @@ public final class PrometheusHttpServer implements MetricReader {
     return new PrometheusHttpServerBuilder();
   }
 
-  PrometheusHttpServer(String host, int port) {
+  PrometheusHttpServer(String host, int port, ExecutorService executor) {
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
@@ -87,8 +86,7 @@ public final class PrometheusHttpServer implements MetricReader {
     server.createContext("/", metricsHandler);
     server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
-
-    executor = Executors.newFixedThreadPool(5, THREAD_FACTORY);
+    this.executor = executor;
     server.setExecutor(executor);
 
     start();

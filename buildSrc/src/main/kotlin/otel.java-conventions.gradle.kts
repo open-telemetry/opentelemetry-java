@@ -205,16 +205,6 @@ dependencies {
   compileOnly("javax.annotation:javax.annotation-api")
 }
 
-class TestArgumentsProvider(
-  @InputFile
-  @PathSensitive(PathSensitivity.RELATIVE)
-  val loggingProperties: File,
-) : CommandLineArgumentProvider {
-  override fun asArguments() = listOf(
-    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
-  )
-}
-
 testing {
   suites.withType(JvmTestSuite::class).configureEach {
     dependencies {

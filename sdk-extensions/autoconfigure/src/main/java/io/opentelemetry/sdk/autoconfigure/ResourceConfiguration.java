@@ -38,9 +38,6 @@ final class ResourceConfiguration {
 
     Set<String> enabledProviders =
         new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
-    // TODO(anuraaga): We use a hyphen only once in this artifact, for
-    // otel.java.disabled.resource-providers. But fetching by the dot version is the simplest way
-    // to implement it for now.
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
     for (ResourceProvider resourceProvider :

@@ -44,6 +44,6 @@ public final class OpenTracingShim {
       TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
-    return new TracerShim(provider.get("opentracing-shim"), textMapPropagator, httpPropagator);
+    return new TracerShim(provider, textMapPropagator, httpPropagator);
   }
 }

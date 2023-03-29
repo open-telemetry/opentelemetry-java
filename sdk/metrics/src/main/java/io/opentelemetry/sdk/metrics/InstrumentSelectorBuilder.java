@@ -50,7 +50,11 @@ public final class InstrumentSelectorBuilder {
     return this;
   }
 
-  /** Select instruments with the given {@code unit}. */
+  /**
+   * Select instruments with the given {@code unit}.
+   *
+   * @since 1.24.0
+   */
   public InstrumentSelectorBuilder setUnit(String unit) {
     requireNonNull(unit, "unit");
     this.instrumentUnit = unit;

@@ -14,7 +14,7 @@ import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
@@ -29,9 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -55,9 +52,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private URI endpoint;
   private boolean compressionEnabled = false;
   private final Map<String, String> headers = new HashMap<>();
-  @Nullable private byte[] trustedCertificatesPem;
-  @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] certificatePem;
+  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
@@ -103,14 +98,13 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setTrustedCertificates(byte[] trustedCertificatesPem) {
-    this.trustedCertificatesPem = trustedCertificatesPem;
+  public GrpcExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
+    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    this.privateKeyPem = privateKeyPem;
-    this.certificatePem = certificatePem;
+  public GrpcExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
+    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -139,20 +133,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
-    if (trustedCertificatesPem != null) {
-      try {
-        X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
-        X509KeyManager keyManager = null;
-        if (privateKeyPem != null && certificatePem != null) {
-          keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
-        }
-        clientBuilder.sslSocketFactory(
-            TlsUtil.sslSocketFactory(keyManager, trustManager), trustManager);
-      } catch (SSLException e) {
-        throw new IllegalStateException(
-            "Could not set trusted certificates, are they valid X.509 in PEM format?", e);
-      }
-    }
+    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
 
     String endpoint = this.endpoint.resolve(grpcEndpointPath).toString();
     if (endpoint.startsWith("http://")) {

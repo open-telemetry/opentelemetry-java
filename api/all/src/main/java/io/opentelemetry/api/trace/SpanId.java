@@ -5,9 +5,9 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.internal.TemporaryBuffers;
-import io.opentelemetry.api.internal.ValidationUtil;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -73,7 +73,7 @@ public final class SpanId {
    */
   public static String fromBytes(byte[] spanIdBytes) {
     if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
-      ValidationUtil.log("spanIdBytes is null or too short");
+      ApiUsageLogger.log("spanIdBytes is null or too short");
       return INVALID;
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);

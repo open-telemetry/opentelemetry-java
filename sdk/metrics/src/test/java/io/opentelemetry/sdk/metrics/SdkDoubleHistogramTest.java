@@ -271,9 +271,7 @@ class SdkDoubleHistogramTest {
     DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testHistogram").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleHistogram) doubleHistogram)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -310,9 +308,7 @@ class SdkDoubleHistogramTest {
     DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testHistogram").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleHistogram) doubleHistogram)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     IntStream.range(0, 4)
         .forEach(
