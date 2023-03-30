@@ -1,2 +1,12 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) io.grpc.ServerServiceDefinition bindService(io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc$AsyncService)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc$AsyncService  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) void getSamplingStrategy(io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters, io.grpc.stub.StreamObserver)
+***  MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc$SamplingManagerImplBase  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc$AsyncService
+	---  REMOVED METHOD: PUBLIC(-) void getSamplingStrategy(io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling$SamplingStrategyParameters, io.grpc.stub.StreamObserver)
