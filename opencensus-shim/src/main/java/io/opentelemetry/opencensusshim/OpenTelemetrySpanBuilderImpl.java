@@ -50,8 +50,8 @@ import javax.annotation.Nullable;
 
 class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   private static final Tracer OTEL_TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim",
-          OpenCensusLibraryInformation.VERSION);
+      GlobalOpenTelemetry.getTracer(
+          "io.opentelemetry.opencensusshim", OpenCensusLibraryInformation.VERSION);
   private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
   private static final TraceOptions OC_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
@@ -120,14 +120,14 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     }
     TraceOptions ocTraceOptions =
         makeSamplingDecision(
-            ocParentContext,
-            hasRemoteParent,
-            name,
-            ocSampler,
-            ocParentLinks,
-            ocTraceId,
-            ocSpanId,
-            ocActiveTraceParams)
+                ocParentContext,
+                hasRemoteParent,
+                name,
+                ocSampler,
+                ocParentLinks,
+                ocTraceId,
+                ocSpanId,
+                ocActiveTraceParams)
             ? OC_SAMPLED_TRACE_OPTIONS
             : OC_NOT_SAMPLED_TRACE_OPTIONS;
     if (!ocTraceOptions.isSampled()) {
