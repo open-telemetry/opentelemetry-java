@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.internal.http;
 
+import com.linecorp.armeria.common.AggregationOptions;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.Server;
@@ -52,12 +54,29 @@ public class OltpExporterBenchmark {
           .service(
               OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
               (ctx, req) ->
-                  HttpResponse.builder()
-                      .status(200)
-                      .trailers(GRPC_TRAILERS)
-                      .content(GRPC_PROTO, GRPC_CONTENT)
-                      .build())
-          .service("/v1/traces", (ctx, req) -> HttpResponse.builder().status(200).build())
+                  HttpResponse.from(
+                      req.aggregate(AggregationOptions.builder().usePooledObjects().build())
+                          .thenApply(
+                              aggregatedHttpRequest -> {
+                                try (HttpData unused = aggregatedHttpRequest.content()) {
+                                  return HttpResponse.builder()
+                                      .status(200)
+                                      .trailers(GRPC_TRAILERS)
+                                      .content(GRPC_PROTO, GRPC_CONTENT)
+                                      .build();
+                                }
+                              })))
+          .service(
+              "/v1/traces",
+              (ctx, req) ->
+                  HttpResponse.from(
+                      req.aggregate(AggregationOptions.builder().usePooledObjects().build())
+                          .thenApply(
+                              aggregatedHttpRequest -> {
+                                try (HttpData unused = aggregatedHttpRequest.content()) {
+                                  return HttpResponse.builder().status(200).build();
+                                }
+                              })))
           .http(0)
           .build();
 

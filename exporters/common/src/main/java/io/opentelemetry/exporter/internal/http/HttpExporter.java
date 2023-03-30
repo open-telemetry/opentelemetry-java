@@ -114,7 +114,8 @@ public final class HttpExporter<T extends Marshaler> {
               "Failed to export "
                   + type
                   + "s. The request could not be executed. Full error message: "
-                  + e.getMessage());
+                  + e.getMessage(),
+              e);
           result.fail();
         });
 

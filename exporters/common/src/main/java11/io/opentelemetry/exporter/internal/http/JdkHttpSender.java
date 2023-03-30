@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -44,6 +46,8 @@ public class JdkHttpSender implements HttpSender {
 
   private static final ThreadLocal<NoCopyByteArrayOutputStream> threadLocalBaos =
       ThreadLocal.withInitial(NoCopyByteArrayOutputStream::new);
+  private static final ThreadLocal<ByteBufferPool> threadLocalByteBufPool =
+      ThreadLocal.withInitial(ByteBufferPool::new);
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(5);
   private final HttpClient client;
@@ -59,8 +63,7 @@ public class JdkHttpSender implements HttpSender {
       @Nullable RetryPolicyCopy retryPolicyCopy,
       @Nullable X509TrustManager trustManager,
       @Nullable X509KeyManager keyManager) {
-    HttpClient.Builder builder =
-        HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).executor(executorService);
+    HttpClient.Builder builder = HttpClient.newBuilder().executor(executorService);
     maybeConfigSsl(builder, trustManager, keyManager);
     this.client = builder.build();
     try {
@@ -132,7 +135,9 @@ public class JdkHttpSender implements HttpSender {
     } else {
       marshaler.accept(os);
     }
-    requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(os.buf()));
+
+    ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();
+    requestBuilder.POST(new BodyPublisher(os.buf(), os.size(), byteBufferPool::getBuffer));
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicyCopy.initialBackoff.toNanos();
@@ -140,6 +145,7 @@ public class JdkHttpSender implements HttpSender {
       try {
         HttpResponse<byte[]> httpResponse =
             client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
+        byteBufferPool.resetPool();
 
         attempt++;
         if (attempt >= retryPolicyCopy.maxAttempts
@@ -190,6 +196,32 @@ public class JdkHttpSender implements HttpSender {
         return response.body();
       }
     };
+  }
+
+  private static class ByteBufferPool {
+
+    // TODO: make configurable?
+    private static final int BUF_SIZE = 16 * 1024;
+
+    private final ConcurrentLinkedQueue<ByteBuffer> pool = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ByteBuffer> out = new ConcurrentLinkedQueue<>();
+
+    private ByteBuffer getBuffer() {
+      ByteBuffer buffer = pool.poll();
+      if (buffer == null) {
+        buffer = ByteBuffer.allocate(BUF_SIZE);
+      }
+      out.offer(buffer);
+      return buffer;
+    }
+
+    private void resetPool() {
+      ByteBuffer buf = out.poll();
+      while (buf != null) {
+        pool.offer(buf);
+        buf = out.poll();
+      }
+    }
   }
 
   @Override

@@ -256,7 +256,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void multipleItems() {
     List<T> telemetry = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 500; i++) {
       telemetry.add(generateFakeTelemetry());
     }
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
