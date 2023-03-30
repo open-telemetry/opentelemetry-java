@@ -37,7 +37,8 @@ final class TracerShim implements Tracer {
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
     this.provider = provider;
-    this.tracer = provider.get("opentracing-shim");
+    // hard code the version for instrumentation scope as no metadata class exists like for opencensus
+    this.tracer = provider.get("opentracing-shim", "0.33.0");
     this.propagation = new Propagation(textMapPropagator, httpPropagator);
     this.scopeManagerShim = new ScopeManagerShim();
   }
