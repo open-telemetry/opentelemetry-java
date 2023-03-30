@@ -274,6 +274,53 @@ public final class {{class}} {
   public static final AttributeKey<Long> MESSAGING_ROCKETMQ_DELAY_TIME_LEVEL =
       longKey("messaging.rocketmq.delay_time_level");
 
+  /** 
+   * The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP).
+   * @deprecated This item has been moved, use {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_SCOPE_NAME = stringKey("otel.scope.name");
+
+  /** 
+   * The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP).
+   * @deprecated This item has been moved, use {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_VERSION} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");;
+
+  /**
+   * The execution ID of the current function execution.
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
+   * Use {@link SemanticAttributes#FAAS_INVOCATION_ID} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> FAAS_EXECUTION = stringKey("faas.execution");
+
+  /**
+   * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
+   * User-Agent</a> header sent by the client.
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
+   * Use {@link SemanticAttributes#USER_AGENT_ORIGINAL} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
+
+  /**
+   * Deprecated.
+   *
+   * @deprecated Deprecated, use the {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_NAME} attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
+
+  /**
+   * Deprecated.
+   *
+   * @deprecated Deprecated, use the {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_VERSION} attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");  
+
   {% endif %}
 
   {%- if class == "ResourceAttributes" %}
@@ -284,6 +331,51 @@ public final class {{class}} {
    */
   @Deprecated
   public static final String GCP_OPENSHIFT = "gcp_openshift";
+
+  /**
+   * Full user-agent string provided by the browser
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The user-agent value SHOULD be provided only from browsers that do not have a mechanism
+   *       to retrieve brands and platform individually from the User-Agent Client Hints API. To
+   *       retrieve the value, the legacy {@code navigator.userAgent} API can be used.
+   * </ul>
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use {@link io.opentelemetry.semconv.trace.attributes.SemanticAttributes#USER_AGENT_ORIGINAL} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
+
+  /**
+   * The unique ID of the single function that this runtime instance executes.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
+   *       consider setting {@code faas.id} as a span attribute instead.
+   *   <li>The exact value to use for {@code faas.id} depends on the cloud provider:
+   *   <li><strong>AWS Lambda:</strong> The function <a
+   *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
+   *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
+   *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
+   *       suffix</a> with the resolved function version, as the same runtime instance may be
+   *       invokable with multiple different aliases.
+   *   <li><strong>GCP:</strong> The <a
+   *       href="https://cloud.google.com/iam/docs/full-resource-names">URI of the resource</a>
+   *   <li><strong>Azure:</strong> The <a
+   *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
+   *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
+   *       the form {@code
+   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+   *       This means that a span attribute MUST be used, as an Azure function app can host multiple
+   *       functions that would usually share a TracerProvider.
+   * </ul>
+   * @deprecated This item has been removed in 1.19.0 version of the semantic conventions. Use {@link ResourceAttributes#CLOUD_RESOURCE_ID} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> FAAS_ID = stringKey("faas.id");
 
   {% endif %}
 
