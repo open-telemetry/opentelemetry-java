@@ -41,7 +41,7 @@ class OpenTracingShimTest {
         .isSameAs(textMapPropagator);
     assertThat(tracerShim.propagation().getPropagator(Format.Builtin.HTTP_HEADERS))
         .isSameAs(textMapPropagator);
-    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracing-shim"));
+    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracing-shim", "0.33.0"));
   }
 
   @Test
@@ -75,6 +75,6 @@ class OpenTracingShimTest {
         .isSameAs(textMapPropagator);
     assertThat(tracerShim.propagation().getPropagator(Format.Builtin.HTTP_HEADERS))
         .isSameAs(httpHeadersPropagator);
-    assertThat(tracerShim.tracer()).isSameAs(sdk.get("opentracing-shim"));
+    assertThat(tracerShim.tracer()).isSameAs(sdk.get("opentracing-shim", "0.33.0"));
   }
 }
