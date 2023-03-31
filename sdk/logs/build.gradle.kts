@@ -10,9 +10,10 @@ description = "OpenTelemetry Log SDK"
 otelJava.moduleName.set("io.opentelemetry.sdk.logs")
 
 dependencies {
-  api(project(":api:logs"))
-  api(project(":api:events"))
+  api(project(":api:all"))
   api(project(":sdk:common"))
+
+  implementation(project(":api:events"))
 
   testImplementation(project(":sdk:logs-testing"))
 

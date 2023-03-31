@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs;
+package io.opentelemetry.sdk.logs.internal;
 
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;

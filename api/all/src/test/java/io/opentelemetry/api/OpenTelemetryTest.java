@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -33,6 +34,7 @@ class OpenTelemetryTest {
     assertThat(OpenTelemetry.noop().getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(OpenTelemetry.noop().getPropagators()).isSameAs(ContextPropagators.noop());
     assertThat(OpenTelemetry.noop().getMeterProvider()).isSameAs(MeterProvider.noop());
+    assertThat(OpenTelemetry.noop().getLoggerProvider()).isSameAs(LoggerProvider.noop());
   }
 
   @Test
@@ -42,6 +44,7 @@ class OpenTelemetryTest {
 
     assertThat(openTelemetry.getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(openTelemetry.getMeterProvider()).isSameAs(MeterProvider.noop());
+    assertThat(openTelemetry.getLoggerProvider()).isSameAs(LoggerProvider.noop());
     assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 

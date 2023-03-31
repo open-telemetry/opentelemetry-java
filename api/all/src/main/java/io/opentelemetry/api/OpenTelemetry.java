@@ -5,6 +5,9 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerBuilder;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -111,6 +114,52 @@ public interface OpenTelemetry {
    */
   default MeterBuilder meterBuilder(String instrumentationScopeName) {
     return getMeterProvider().meterBuilder(instrumentationScopeName);
+  }
+
+  /**
+   * Returns the {@link LoggerProvider} for this {@link OpenTelemetry}.
+   *
+   * <p>The OpenTelemetry logging API exists to enable the creation of log appenders, which bridge
+   * logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via
+   * {@link Logger#logRecordBuilder()}. It is <b>NOT</b> a replacement log framework.
+   *
+   * @since 1.26.0
+   */
+  default LoggerProvider getLoggerProvider() {
+    return LoggerProvider.noop();
+  }
+
+  /**
+   * Gets or creates a named logger instance from the {@link MeterProvider} for this {@link
+   * OpenTelemetry}.
+   *
+   * <p>The OpenTelemetry logging API exists to enable the creation of log appenders, which bridge
+   * logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via
+   * {@link Logger#logRecordBuilder()}. It is <b>NOT</b> a replacement log framework.
+   *
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
+   * @return a Logger instance.
+   * @since 1.26.0
+   */
+  default Logger getLogger(String instrumentationScopeName) {
+    return getLoggerProvider().get(instrumentationScopeName);
+  }
+
+  /**
+   * Creates a {@link LoggerBuilder} for a named {@link Tracer} instance.
+   *
+   * <p>The OpenTelemetry logging API exists to enable the creation of log appenders, which bridge
+   * logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via
+   * {@link Logger#logRecordBuilder()}. It is <b>NOT</b> a replacement log framework.
+   *
+   * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
+   *     the instrumentation library, package, or fully qualified class name. Must not be null.
+   * @return a LoggerBuilder instance.
+   * @since 1.26.0
+   */
+  default LoggerBuilder loggerBuilder(String instrumentationScopeName) {
+    return getLoggerProvider().loggerBuilder(instrumentationScopeName);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
