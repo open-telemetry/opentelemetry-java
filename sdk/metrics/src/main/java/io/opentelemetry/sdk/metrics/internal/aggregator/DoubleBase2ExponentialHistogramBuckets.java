@@ -124,58 +124,6 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     this.base2ExponentialHistogramIndexer = Base2ExponentialHistogramIndexer.get(this.scale);
   }
 
-  /**
-   * This method merges this instance with another set of buckets. It alters the underlying bucket
-   * counts and scale of this instance only, so it is to be used with caution.
-   *
-   * <p>The bucket counts of this instance will be added to or subtracted from depending on the
-   * additive parameter.
-   *
-   * <p>This algorithm for merging is adapted from NrSketch.
-   *
-   * @param other the histogram that will be merged into this one
-   */
-  void mergeInto(DoubleBase2ExponentialHistogramBuckets other) {
-    if (other.counts.isEmpty()) {
-      return;
-    }
-
-    // Find the common scale, and the extended window required to merge the two bucket sets
-    int commonScale = Math.min(this.scale, other.scale);
-
-    // Deltas are changes in scale
-    int deltaThis = this.scale - commonScale;
-    int deltaOther = other.scale - commonScale;
-
-    long newWindowStart;
-    long newWindowEnd;
-    if (this.counts.isEmpty()) {
-      newWindowStart = other.getOffset() >> deltaOther;
-      newWindowEnd = other.counts.getIndexEnd() >> deltaOther;
-    } else {
-      newWindowStart = Math.min(this.getOffset() >> deltaThis, other.getOffset() >> deltaOther);
-      newWindowEnd =
-          Math.max(
-              (this.counts.getIndexEnd() >> deltaThis), (other.counts.getIndexEnd() >> deltaOther));
-    }
-
-    // downscale to fit new window
-    deltaThis += getScaleReduction(newWindowStart, newWindowEnd);
-    this.downscale(deltaThis);
-
-    // since we changed scale of this, we need to know the new difference between the two scales
-    deltaOther = other.scale - this.scale;
-
-    // do actual merging of other into this.
-    for (int i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
-      if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
-        // This should never occur if scales and windows are calculated without bugs
-        throw new IllegalStateException("Failed to merge exponential histogram buckets.");
-      }
-    }
-    this.totalCount += other.totalCount;
-  }
-
   @Override
   public int getScale() {
     return scale;
