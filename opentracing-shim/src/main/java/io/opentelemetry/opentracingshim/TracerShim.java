@@ -18,6 +18,7 @@ import io.opentracing.propagation.TextMapInject;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,8 @@ import javax.annotation.Nullable;
 
 final class TracerShim implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
+
+  static final String OPENTRACINGSHIM_VERSION = readVersion();
 
   private final io.opentelemetry.api.trace.TracerProvider provider;
   private final io.opentelemetry.api.trace.Tracer tracer;
@@ -37,7 +40,7 @@ final class TracerShim implements Tracer {
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
     this.provider = provider;
-    this.tracer = provider.get("opentracing-shim");
+    this.tracer = provider.get("opentracing-shim", OPENTRACINGSHIM_VERSION);
     this.propagation = new Propagation(textMapPropagator, httpPropagator);
     this.scopeManagerShim = new ScopeManagerShim();
   }
@@ -146,5 +149,19 @@ final class TracerShim implements Tracer {
       logger.log(Level.INFO, "Error trying to unobfuscate SdkTracerProvider", e);
     }
     return tracerProvider;
+  }
+
+  private static String readVersion() {
+    Properties properties = new Properties();
+    String version;
+    try {
+      properties.load(
+          TracerShim.class.getResourceAsStream(
+              "/io/opentelemetry/opentracingshim/version.properties"));
+      version = properties.getProperty("sdk.version", "unknown");
+    } catch (Exception e) {
+      version = "unknown";
+    }
+    return version;
   }
 }
