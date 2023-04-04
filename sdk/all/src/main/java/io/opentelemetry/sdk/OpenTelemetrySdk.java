@@ -78,7 +78,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   }
 
   @Override
-  public LoggerProvider getLoggerProvider() {
+  public LoggerProvider getLogsBridge() {
     return loggerProvider;
   }
 

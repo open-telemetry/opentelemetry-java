@@ -63,6 +63,4 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.logs.Severity[] values()
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.Logger getLogger(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerProvider getLoggerProvider()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerBuilder loggerBuilder(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerProvider getLogsBridge()

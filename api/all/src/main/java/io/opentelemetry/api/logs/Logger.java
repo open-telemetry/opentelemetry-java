@@ -12,6 +12,10 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Obtain a {@link #logRecordBuilder()}, add properties using the setters, and emit it via {@link
  * LogRecordBuilder#emit()}.
+ *
+ * <p>The OpenTelemetry logs bridge API exists to enable bridging logs from other log frameworks
+ * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
+ * API.
  */
 @ThreadSafe
 public interface Logger {

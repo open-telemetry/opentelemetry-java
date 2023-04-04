@@ -283,8 +283,8 @@ public final class GlobalOpenTelemetry {
     }
 
     @Override
-    public LoggerProvider getLoggerProvider() {
-      return delegate.getLoggerProvider();
+    public LoggerProvider getLogsBridge() {
+      return delegate.getLogsBridge();
     }
 
     @Override

@@ -34,7 +34,7 @@ class OpenTelemetryTest {
     assertThat(OpenTelemetry.noop().getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(OpenTelemetry.noop().getPropagators()).isSameAs(ContextPropagators.noop());
     assertThat(OpenTelemetry.noop().getMeterProvider()).isSameAs(MeterProvider.noop());
-    assertThat(OpenTelemetry.noop().getLoggerProvider()).isSameAs(LoggerProvider.noop());
+    assertThat(OpenTelemetry.noop().getLogsBridge()).isSameAs(LoggerProvider.noop());
   }
 
   @Test
@@ -44,7 +44,7 @@ class OpenTelemetryTest {
 
     assertThat(openTelemetry.getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(openTelemetry.getMeterProvider()).isSameAs(MeterProvider.noop());
-    assertThat(openTelemetry.getLoggerProvider()).isSameAs(LoggerProvider.noop());
+    assertThat(openTelemetry.getLogsBridge()).isSameAs(LoggerProvider.noop());
     assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 

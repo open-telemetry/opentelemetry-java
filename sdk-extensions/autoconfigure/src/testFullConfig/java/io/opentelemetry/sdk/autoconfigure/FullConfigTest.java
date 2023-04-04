@@ -204,7 +204,7 @@ class FullConfigTest {
         .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    Logger logger = GlobalOpenTelemetry.get().getLogger("test");
+    Logger logger = GlobalOpenTelemetry.get().getLogsBridge().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
