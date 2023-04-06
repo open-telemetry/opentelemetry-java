@@ -3,6 +3,10 @@
 Repository settings in addition to what's documented already at
 <https://github.com/open-telemetry/community/blob/main/docs/how-to-configure-new-repository.md>.
 
+## General > Pull Requests
+
+* Allow squash merging > Default to pull request title
+
 ## Actions > General
 
 * Fork pull request workflows from outside collaborators:
