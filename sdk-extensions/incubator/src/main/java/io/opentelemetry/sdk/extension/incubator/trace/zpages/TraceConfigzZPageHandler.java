@@ -210,39 +210,39 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "Sampler",
-        /* paramValue=*/ configSupplier.getSampler().getDescription(),
+        /* paramValue= */ configSupplier.getSampler().getDescription(),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributes",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributes()),
+        /* paramValue= */ Integer.toString(configSupplier.get().getMaxNumberOfAttributes()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfEvents",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfEvents()),
+        /* paramValue= */ Integer.toString(configSupplier.get().getMaxNumberOfEvents()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfLinks",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfLinks()),
+        /* paramValue= */ Integer.toString(configSupplier.get().getMaxNumberOfLinks()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerEvent",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerEvent()),
+        /* paramValue= */ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerEvent()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerLink",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerLink()),
+        /* paramValue= */ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerLink()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
-        /* zebraStripe=*/ true);
+        /* zebraStripe= */ true);
     out.print("</table>");
   }
 
