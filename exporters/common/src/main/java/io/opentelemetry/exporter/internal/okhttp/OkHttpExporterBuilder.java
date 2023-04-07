@@ -18,8 +18,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -95,23 +94,14 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setTrustManager(X509TrustManager trustManager) {
-    tlsConfigHelper.setTrustManager(trustManager);
-    return this;
-  }
-
   public OkHttpExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
     tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
     return this;
   }
 
-  public OkHttpExporterBuilder<T> setKeyManager(X509KeyManager keyManager) {
-    tlsConfigHelper.setKeyManager(keyManager);
-    return this;
-  }
-
-  public OkHttpExporterBuilder<T> setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
-    tlsConfigHelper.setSslSocketFactory(sslSocketFactory);
+  public OkHttpExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
 
@@ -136,7 +126,11 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
             .dispatcher(OkHttpUtil.newDispatcher())
             .callTimeout(Duration.ofNanos(timeoutNanos));
 
-    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
+    SSLContext sslContext = tlsConfigHelper.getSslContext();
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (sslContext != null && trustManager != null) {
+      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    }
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 

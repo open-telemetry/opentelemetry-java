@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -133,7 +135,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
-    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
+    SSLContext sslContext = tlsConfigHelper.getSslContext();
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (sslContext != null && trustManager != null) {
+      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    }
 
     String endpoint = this.endpoint.resolve(grpcEndpointPath).toString();
     if (endpoint.startsWith("http://")) {
