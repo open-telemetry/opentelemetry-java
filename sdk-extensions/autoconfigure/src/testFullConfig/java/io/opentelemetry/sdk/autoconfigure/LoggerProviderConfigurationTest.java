@@ -63,7 +63,7 @@ class LoggerProviderConfigurationTest {
                           worker -> {
                             assertThat(worker)
                                 .extracting("scheduleDelayNanos")
-                                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(200));
+                                .isEqualTo(TimeUnit.SECONDS.toNanos(1));
                             assertThat(worker)
                                 .extracting("exporterTimeoutNanos")
                                 .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
