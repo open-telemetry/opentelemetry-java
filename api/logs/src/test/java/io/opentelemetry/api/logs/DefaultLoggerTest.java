@@ -24,6 +24,8 @@ class DefaultLoggerTest {
                     .logRecordBuilder()
                     .setEpoch(100, TimeUnit.SECONDS)
                     .setEpoch(Instant.now())
+                    .setObservedEpoch(100, TimeUnit.SECONDS)
+                    .setObservedEpoch(Instant.now())
                     .setContext(Context.root())
                     .setSeverity(Severity.DEBUG)
                     .setSeverityText("debug")

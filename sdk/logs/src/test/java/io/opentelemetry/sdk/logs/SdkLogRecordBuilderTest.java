@@ -57,7 +57,9 @@ class SdkLogRecordBuilderTest {
 
   @Test
   void emit_AllFields() {
-    Instant now = Instant.now();
+    Instant timestamp = Instant.now();
+    Instant observedTimestamp = Instant.now().plusNanos(100);
+
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
@@ -70,7 +72,9 @@ class SdkLogRecordBuilderTest {
 
     builder.setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
-    builder.setEpoch(now);
+    builder.setEpoch(timestamp);
+    builder.setObservedEpoch(456, TimeUnit.SECONDS);
+    builder.setObservedEpoch(observedTimestamp);
     builder.setAttribute(null, null);
     builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
     builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
@@ -82,7 +86,10 @@ class SdkLogRecordBuilderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
-        .hasEpochNanos(TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano())
+        .hasTimestamp(TimeUnit.SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano())
+        .hasObservedTimestamp(
+            TimeUnit.SECONDS.toNanos(observedTimestamp.getEpochSecond())
+                + observedTimestamp.getNano())
         .hasAttributes(Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build())
         .hasSpanContext(spanContext)
         .hasSeverity(severity)
@@ -101,7 +108,8 @@ class SdkLogRecordBuilderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())
-        .hasEpochNanos(10L)
+        .hasTimestamp(10L)
+        .hasObservedTimestamp(10L)
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);

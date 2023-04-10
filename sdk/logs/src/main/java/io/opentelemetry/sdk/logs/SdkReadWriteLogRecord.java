@@ -25,6 +25,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final long epochNanos;
+  private final long observedEpochNanos;
   private final SpanContext spanContext;
   private final Severity severity;
   @Nullable private final String severityText;
@@ -40,6 +41,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
+      long observedEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
@@ -49,6 +51,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.epochNanos = epochNanos;
+    this.observedEpochNanos = observedEpochNanos;
     this.spanContext = spanContext;
     this.severity = severity;
     this.severityText = severityText;
@@ -62,6 +65,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
+      long observedEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
@@ -72,6 +76,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         resource,
         instrumentationScopeInfo,
         epochNanos,
+        observedEpochNanos,
         spanContext,
         severity,
         severityText,
@@ -111,6 +116,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           resource,
           instrumentationScopeInfo,
           epochNanos,
+          observedEpochNanos,
           spanContext,
           severity,
           severityText,

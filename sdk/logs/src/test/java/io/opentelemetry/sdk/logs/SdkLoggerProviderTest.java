@@ -260,7 +260,7 @@ class SdkLoggerProviderTest {
     assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
-        .hasEpochNanos(100)
+        .hasTimestamp(100)
         .hasSpanContext(spanContext)
         .hasSeverity(Severity.DEBUG)
         .hasSeverityText("debug")
