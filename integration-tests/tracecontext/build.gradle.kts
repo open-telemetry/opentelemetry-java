@@ -13,7 +13,6 @@ dependencies {
 
   compileOnly("com.google.errorprone:error_prone_annotations")
 
-  implementation("com.linecorp.armeria:armeria-junit5")
   implementation("com.linecorp.armeria:armeria")
 
   testImplementation("org.testcontainers:junit-jupiter")
