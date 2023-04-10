@@ -16,7 +16,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.sdk.common.OtelVersion;
+import io.opentelemetry.sdk.common.internal.OtelVersion;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;

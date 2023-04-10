@@ -31,9 +31,9 @@ class OtelVersionClassPlugin : Plugin<Project> {
     val group = "${project.group}".replace('.', '/')
     val projectName = project.name.replace('-', '/')
     val outDir = buildOutDir(project)
-    val filename = "$group/$projectName/OtelVersion.java"
+    val filename = "$group/$projectName/internal/OtelVersion.java"
     val outFile = File(outDir, filename)
-    val packageName = "${project.group}.${project.name.replace('-', '.')}"
+    val packageName = "${project.group}.${project.name.replace('-', '.')}.internal"
     val classBody = getClassBody("${project.version}", packageName)
 
     outFile.parentFile.mkdirs()
