@@ -248,7 +248,7 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider
         .get("test")
         .logRecordBuilder()
-        .setEpoch(100, TimeUnit.NANOSECONDS)
+        .setTimestamp(100, TimeUnit.NANOSECONDS)
         .setContext(Span.wrap(spanContext).storeInContext(Context.root()))
         .setSeverity(Severity.DEBUG)
         .setSeverityText("debug")
@@ -260,7 +260,7 @@ class SdkLoggerProviderTest {
     assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
-        .hasEpochNanos(100)
+        .hasTimestamp(100)
         .hasSpanContext(spanContext)
         .hasSeverity(Severity.DEBUG)
         .hasSeverityText("debug")
@@ -347,7 +347,7 @@ class SdkLoggerProviderTest {
             .build();
     sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
     assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).toLogRecordData().getEpochNanos()).isEqualTo(now);
+    assertThat(seenLogs.get(0).toLogRecordData().getTimestampEpochNanos()).isEqualTo(now);
   }
 
   @Test

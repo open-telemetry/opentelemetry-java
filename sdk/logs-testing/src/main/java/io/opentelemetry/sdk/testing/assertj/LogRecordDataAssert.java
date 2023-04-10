@@ -57,16 +57,16 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return this;
   }
 
-  /** Asserts the log has the given epoch timestamp. */
-  public LogRecordDataAssert hasEpochNanos(long epochNanos) {
+  /** Asserts the log has the given epoch {@code timestamp}. */
+  public LogRecordDataAssert hasTimestamp(long timestampEpochNanos) {
     isNotNull();
-    if (actual.getEpochNanos() != epochNanos) {
+    if (actual.getTimestampEpochNanos() != timestampEpochNanos) {
       failWithActualExpectedAndMessage(
-          actual.getEpochNanos(),
-          epochNanos,
-          "Expected log to have epoch <%s> nanos but was <%s>",
-          epochNanos,
-          actual.getEpochNanos());
+          actual.getTimestampEpochNanos(),
+          timestampEpochNanos,
+          "Expected log to have timestamp <%s> nanos but was <%s>",
+          timestampEpochNanos,
+          actual.getTimestampEpochNanos());
     }
     return this;
   }
