@@ -16,6 +16,7 @@ final class SdkLoggerBuilder implements LoggerBuilder {
   private final String instrumentationScopeName;
   @Nullable private String instrumentationScopeVersion;
   @Nullable private String schemaUrl;
+  private boolean includeTraceContext = true;
 
   SdkLoggerBuilder(ComponentRegistry<SdkLogger> registry, String instrumentationScopeName) {
     this.registry = registry;
@@ -35,8 +36,15 @@ final class SdkLoggerBuilder implements LoggerBuilder {
   }
 
   @Override
+  public LoggerBuilder excludeTraceContext() {
+    this.includeTraceContext = false;
+    return this;
+  }
+
+  @Override
   public SdkLogger build() {
-    return registry.get(
-        instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty());
+    return registry
+        .get(instrumentationScopeName, instrumentationScopeVersion, schemaUrl, Attributes.empty())
+        .withIncludeTraceContext(includeTraceContext);
   }
 }

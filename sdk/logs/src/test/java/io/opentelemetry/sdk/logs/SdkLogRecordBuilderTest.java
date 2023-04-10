@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
@@ -38,9 +39,22 @@ class SdkLogRecordBuilderTest {
 
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
+  private static final SpanContext SPAN_CONTEXT1 =
+      SpanContext.create(
+          "33333333333333333333333333333333",
+          "7777777777777777",
+          TraceFlags.getSampled(),
+          TraceState.getDefault());
+  private static final SpanContext SPAN_CONTEXT2 =
+      SpanContext.create(
+          "44444444444444444444444444444444",
+          "8888888888888888",
+          TraceFlags.getSampled(),
+          TraceState.getDefault());
 
   @Mock LoggerSharedState loggerSharedState;
 
+  private final AtomicReference<Context> emittedContext = new AtomicReference<>();
   private final AtomicReference<ReadWriteLogRecord> emittedLog = new AtomicReference<>();
   private SdkLogRecordBuilder builder;
 
@@ -48,11 +62,16 @@ class SdkLogRecordBuilderTest {
   void setup() {
     when(loggerSharedState.getLogLimits()).thenReturn(LogLimits.getDefault());
     when(loggerSharedState.getLogRecordProcessor())
-        .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
+        .thenReturn(
+            (context, logRecord) -> {
+              emittedContext.set(context);
+              emittedLog.set(logRecord);
+            });
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
 
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
+    builder =
+        new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, /* includeTraceContext= */ true);
   }
 
   @Test
@@ -61,12 +80,6 @@ class SdkLogRecordBuilderTest {
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
-    SpanContext spanContext =
-        SpanContext.create(
-            "33333333333333333333333333333333",
-            "7777777777777777",
-            TraceFlags.getSampled(),
-            TraceState.getDefault());
 
     builder.setBody(bodyStr);
     builder.setEpoch(123, TimeUnit.SECONDS);
@@ -74,7 +87,7 @@ class SdkLogRecordBuilderTest {
     builder.setAttribute(null, null);
     builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
     builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
-    builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
+    builder.setContext(Span.wrap(SPAN_CONTEXT1).storeInContext(Context.root()));
     builder.setSeverity(severity);
     builder.setSeverityText(sevText);
     builder.emit();
@@ -84,7 +97,7 @@ class SdkLogRecordBuilderTest {
         .hasBody(bodyStr)
         .hasEpochNanos(TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano())
         .hasAttributes(Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build())
-        .hasSpanContext(spanContext)
+        .hasSpanContext(SPAN_CONTEXT1)
         .hasSeverity(severity)
         .hasSeverityText(sevText);
   }
@@ -105,5 +118,67 @@ class SdkLogRecordBuilderTest {
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  @Test
+  void emit_ImplicitContext_IncludeTraceContext() {
+    Context context = Span.wrap(SPAN_CONTEXT1).storeInContext(Context.root());
+    try (Scope unused = context.makeCurrent()) {
+      builder.emit();
+    }
+
+    // Implicit context should be emitted to processor and corresponding trace context should be
+    // included on the log record
+    assertThat(emittedContext.get()).isEqualTo(context);
+    assertThat(emittedLog.get().toLogRecordData()).hasSpanContext(SPAN_CONTEXT1);
+  }
+
+  @Test
+  void emit_ImplicitContext_ExcludeTraceContext() {
+    builder =
+        new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, /* includeTraceContext= */ false);
+
+    Context context = Span.wrap(SPAN_CONTEXT1).storeInContext(Context.root());
+    try (Scope unused = context.makeCurrent()) {
+      builder.emit();
+    }
+
+    // Implicit context should be emitted to processor, but trace context should NOT be
+    // automatically included on the log record
+    assertThat(emittedContext.get()).isEqualTo(context);
+    assertThat(emittedLog.get().toLogRecordData()).hasSpanContext(SpanContext.getInvalid());
+  }
+
+  @Test
+  void emit_ExplicitContext_IncludeTraceContext() {
+    Context context1 = Span.wrap(SPAN_CONTEXT1).storeInContext(Context.root());
+    Context context2 = Span.wrap(SPAN_CONTEXT2).storeInContext(Context.root());
+    try (Scope unused = context1.makeCurrent()) {
+      builder.setContext(context2);
+      builder.emit();
+    }
+
+    // Explicit context should overrule implicit context, and be emitted to processor and included
+    // on the log record
+    assertThat(emittedContext.get()).isEqualTo(context2);
+    assertThat(emittedLog.get().toLogRecordData()).hasSpanContext(SPAN_CONTEXT2);
+  }
+
+  @Test
+  void emit_ExplicitContext_ExcludeTraceContext() {
+    builder =
+        new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, /* includeTraceContext= */ false);
+    Context context1 = Span.wrap(SPAN_CONTEXT1).storeInContext(Context.root());
+    Context context2 = Span.wrap(SPAN_CONTEXT2).storeInContext(Context.root());
+
+    try (Scope unused = context1.makeCurrent()) {
+      builder.setContext(context2);
+      builder.emit();
+    }
+
+    // Explicit context should overrule implicit context, and be emitted to processor and included
+    // on the log record
+    assertThat(emittedContext.get()).isEqualTo(context2);
+    assertThat(emittedLog.get().toLogRecordData()).hasSpanContext(SPAN_CONTEXT2);
   }
 }

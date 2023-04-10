@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -216,6 +217,29 @@ class SdkLoggerProviderTest {
   }
 
   @Test
+  void loggerBuilder_ExcludeTraceContext() {
+    Logger loggerWithTraceContext = sdkLoggerProvider.loggerBuilder("test").build();
+    Logger loggerWithoutTraceContext =
+        sdkLoggerProvider.loggerBuilder("test").excludeTraceContext().build();
+
+    assertThat(loggerWithTraceContext)
+        .isSameAs(sdkLoggerProvider.loggerBuilder("test").build())
+        .isNotSameAs(loggerWithoutTraceContext);
+    assertThat(loggerWithoutTraceContext)
+        // includeTraceContext is not part of InstrumentationScopeInfo so obtaining a logger with
+        // .excludeTraceContext() always results in a new instance
+        .isNotSameAs(sdkLoggerProvider.loggerBuilder("test").excludeTraceContext().build())
+        .isNotSameAs(loggerWithTraceContext);
+
+    assertThat(loggerWithTraceContext.logRecordBuilder())
+        .extracting("includeTraceContext")
+        .isEqualTo(true);
+    assertThat(loggerWithoutTraceContext.logRecordBuilder())
+        .extracting("includeTraceContext")
+        .isEqualTo(false);
+  }
+
+  @Test
   void loggerBuilder_NoProcessor_UsesNoop() {
     assertThat(SdkLoggerProvider.builder().build().loggerBuilder("test"))
         .isSameAs(LoggerProvider.noop().loggerBuilder("test"));
@@ -299,15 +323,13 @@ class SdkLoggerProviderTest {
         .hasAttributes(entry(AttributeKey.stringKey("my-context-key"), "context-value1"));
 
     // With explicit context
-    try (Scope unused = Context.current().with(contextKey, "context-value2").makeCurrent()) {
-      sdkLoggerProvider
-          .loggerBuilder("test")
-          .build()
-          .logRecordBuilder()
-          .setContext(Context.current())
-          .setBody("log message2")
-          .emit();
-    }
+    sdkLoggerProvider
+        .loggerBuilder("test")
+        .build()
+        .logRecordBuilder()
+        .setContext(Context.current().with(contextKey, "context-value2"))
+        .setBody("log message2")
+        .emit();
     assertThat(logRecordData.get())
         .hasBody("log message2")
         .hasAttributes(entry(AttributeKey.stringKey("my-context-key"), "context-value2"));

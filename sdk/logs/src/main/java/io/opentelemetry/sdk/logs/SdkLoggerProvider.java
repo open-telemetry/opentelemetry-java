@@ -50,7 +50,9 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
         new LoggerSharedState(resource, logLimitsSupplier, logRecordProcessor, clock);
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationScopeInfo -> new SdkLogger(sharedState, instrumentationScopeInfo));
+            instrumentationScopeInfo ->
+                new SdkLogger(
+                    sharedState, instrumentationScopeInfo, /* includeTraceContext= */ true));
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
   }
 

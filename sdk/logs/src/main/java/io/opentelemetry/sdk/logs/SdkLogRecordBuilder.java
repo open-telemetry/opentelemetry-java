@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -24,6 +25,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final boolean includeTraceContext;
   private long epochNanos;
   @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
@@ -32,10 +34,13 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      boolean includeTraceContext) {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.includeTraceContext = includeTraceContext;
   }
 
   @Override
@@ -93,7 +98,18 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
     if (loggerSharedState.hasBeenShutdown()) {
       return;
     }
-    Context context = this.context == null ? Context.current() : this.context;
+    SpanContext spanContext;
+    Context context;
+    if (this.context == null) {
+      context = Context.current();
+      spanContext =
+          includeTraceContext
+              ? Span.fromContext(context).getSpanContext()
+              : SpanContext.getInvalid();
+    } else {
+      context = this.context;
+      spanContext = Span.fromContext(context).getSpanContext();
+    }
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(
@@ -103,7 +119,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
                 this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
-                Span.fromContext(context).getSpanContext(),
+                spanContext,
                 severity,
                 severityText,
                 body,

@@ -46,7 +46,7 @@ class SdkLoggerTest {
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
     when(state.getClock()).thenReturn(clock);
 
-    SdkLogger logger = new SdkLogger(state, info);
+    SdkLogger logger = new SdkLogger(state, info, true);
     LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
     logRecordBuilder.setBody("foo");
 

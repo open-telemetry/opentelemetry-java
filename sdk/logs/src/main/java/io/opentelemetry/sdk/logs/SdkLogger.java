@@ -14,16 +14,28 @@ final class SdkLogger implements Logger {
 
   private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final boolean includeTraceContext;
 
   SdkLogger(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      boolean includeTraceContext) {
     this.loggerSharedState = loggerSharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.includeTraceContext = includeTraceContext;
+  }
+
+  SdkLogger withIncludeTraceContext(boolean includeTraceContext) {
+    if (this.includeTraceContext != includeTraceContext) {
+      return new SdkLogger(loggerSharedState, instrumentationScopeInfo, includeTraceContext);
+    }
+    return this;
   }
 
   @Override
   public LogRecordBuilder logRecordBuilder() {
-    return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
+    return new SdkLogRecordBuilder(
+        loggerSharedState, instrumentationScopeInfo, includeTraceContext);
   }
 
   // VisibleForTesting

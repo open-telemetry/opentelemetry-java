@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.context.Context;
+
 /**
  * Builder class for creating {@link Logger} instances.
  *
@@ -31,6 +33,14 @@ public interface LoggerBuilder {
    * @return this
    */
   LoggerBuilder setInstrumentationVersion(String instrumentationScopeVersion);
+
+  /**
+   * Specify that emitted log records SHOULD NOT automatically include trace context from the {@link
+   * Context#current()}.
+   *
+   * @return this
+   */
+  LoggerBuilder excludeTraceContext();
 
   /**
    * Gets or creates a {@link Logger} instance.

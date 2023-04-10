@@ -34,6 +34,11 @@ class DefaultLoggerProvider implements LoggerProvider {
     }
 
     @Override
+    public LoggerBuilder excludeTraceContext() {
+      return this;
+    }
+
+    @Override
     public Logger build() {
       return DefaultLogger.getInstance();
     }
