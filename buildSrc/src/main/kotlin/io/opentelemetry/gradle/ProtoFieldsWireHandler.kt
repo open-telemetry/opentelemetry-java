@@ -155,7 +155,7 @@ class ProtoFieldsWireHandler : SchemaHandler() {
 
       for (field in type.fieldsAndOneOfFields) {
         builder.addField(
-          FieldSpec.builder(PROTO_FIELD_INFO, field.name.toUpperCase(), PUBLIC, STATIC, FINAL)
+          FieldSpec.builder(PROTO_FIELD_INFO, field.name.uppercase(), PUBLIC, STATIC, FINAL)
             .initializer("\$T.create(\$L, \$L, \"\$L\")",
               PROTO_FIELD_INFO,
               field.tag,
