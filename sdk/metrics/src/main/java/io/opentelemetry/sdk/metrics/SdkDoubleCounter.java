@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -62,7 +63,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         MeterSharedState sharedState,
         String name,
         String description,
-        String unit) {
+        String unit,
+        Advice advice) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -70,7 +72,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
           InstrumentValueType.DOUBLE,
           name,
           description,
-          unit);
+          unit,
+          advice);
     }
 
     @Override

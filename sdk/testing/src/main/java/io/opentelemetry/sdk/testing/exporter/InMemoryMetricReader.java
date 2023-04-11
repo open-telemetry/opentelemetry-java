@@ -6,10 +6,13 @@
 package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;
@@ -45,22 +48,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 1.14.0
  */
 public class InMemoryMetricReader implements MetricReader {
-  private final AggregationTemporality aggregationTemporality;
+  private final AggregationTemporalitySelector aggregationTemporalitySelector;
+  private final DefaultAggregationSelector defaultAggregationSelector;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private volatile MetricProducer metricProducer = MetricProducer.noop();
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
-    return new InMemoryMetricReader(AggregationTemporality.CUMULATIVE);
+    return new InMemoryMetricReader(
+        AggregationTemporalitySelector.alwaysCumulative(), DefaultAggregationSelector.getDefault());
+  }
+
+  /** Returns a new {@link InMemoryMetricReader}. */
+  public static InMemoryMetricReader create(
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector) {
+    return new InMemoryMetricReader(aggregationTemporalitySelector, defaultAggregationSelector);
   }
 
   /** Creates a new {@link InMemoryMetricReader} that prefers DELTA aggregation. */
   public static InMemoryMetricReader createDelta() {
-    return new InMemoryMetricReader(AggregationTemporality.DELTA);
+    return new InMemoryMetricReader(
+        unused -> AggregationTemporality.DELTA, DefaultAggregationSelector.getDefault());
   }
 
-  private InMemoryMetricReader(AggregationTemporality aggregationTemporality) {
-    this.aggregationTemporality = aggregationTemporality;
+  private InMemoryMetricReader(
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector) {
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -78,7 +94,12 @@ public class InMemoryMetricReader implements MetricReader {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return aggregationTemporality;
+    return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
   @Override
@@ -95,6 +116,6 @@ public class InMemoryMetricReader implements MetricReader {
 
   @Override
   public String toString() {
-    return "InMemoryMetricReader{aggregationTemporality=" + aggregationTemporality + "}";
+    return "InMemoryMetricReader{}";
   }
 }
