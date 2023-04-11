@@ -18,10 +18,10 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Utility class to help with management of TLS related components. TLS config consists {@link
  * #keyManager}, {@link #trustManager}, which combine to form {@link #sslContext}. These components
- * can be configured via higher level APIs ({@link #createTrustManager(byte[])} and {@link
- * #createKeyManager(byte[], byte[])}) which parse keys in PEM format, or the lower level API {@link
- * #setSslContext(SSLContext, X509TrustManager)} in which the components are directly set, but NOT
- * both. Attempts to reconfigure components which have already been configured throw {@link
+ * can be configured via higher level APIs ({@link #setTrustManagerFromCerts(byte[])} and {@link
+ * #setKeyManagerFromCerts(byte[], byte[])}) which parse keys in PEM format, or the lower level API
+ * {@link #setSslContext(SSLContext, X509TrustManager)} in which the components are directly set,
+ * but NOT both. Attempts to reconfigure components which have already been configured throw {@link
  * IllegalStateException}. Consumers access components via any combination of {@link
  * #getKeyManager()}, {@link #getTrustManager()}, and {@link #getSslContext()}.
  *
@@ -44,7 +44,7 @@ public class TlsConfigHelper {
    *
    * @param trustedCertsPem Certificate in PEM format.
    */
-  public void createTrustManager(byte[] trustedCertsPem) {
+  public void setTrustManagerFromCerts(byte[] trustedCertsPem) {
     if (trustManager != null) {
       throw new IllegalStateException("trustManager has been previously configured");
     }
@@ -68,7 +68,7 @@ public class TlsConfigHelper {
    * @param privateKeyPem Private key content in PEM format.
    * @param certificatePem Certificate content in PEM format.
    */
-  public void createKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
+  public void setKeyManagerFromCerts(byte[] privateKeyPem, byte[] certificatePem) {
     if (keyManager != null) {
       throw new IllegalStateException("keyManager has been previously configured");
     }
@@ -85,8 +85,8 @@ public class TlsConfigHelper {
   /**
    * Configure the {@link SSLContext} and {@link X509TrustManager}.
    *
-   * <p>Must not be called multiple times, or if {@link #createTrustManager(byte[])} or {@link
-   * #createKeyManager(byte[], byte[])} has been previously called.
+   * <p>Must not be called multiple times, or if {@link #setTrustManagerFromCerts(byte[])} or {@link
+   * #setKeyManagerFromCerts(byte[], byte[])} has been previously called.
    *
    * @param sslContext the SSL context.
    * @param trustManager the trust manager.
@@ -119,8 +119,7 @@ public class TlsConfigHelper {
     }
 
     try {
-      SSLContext sslContext;
-      sslContext = SSLContext.getInstance("TLS");
+      SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(
           keyManager == null ? null : new KeyManager[] {keyManager},
           trustManager == null ? null : new TrustManager[] {trustManager},

@@ -75,7 +75,7 @@ public final class JaegerRemoteSamplerBuilder {
   /** Sets trusted certificate. */
   public JaegerRemoteSamplerBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
-    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
@@ -88,7 +88,7 @@ public final class JaegerRemoteSamplerBuilder {
   public JaegerRemoteSamplerBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     requireNonNull(privateKeyPem, "privateKeyPem");
     requireNonNull(certificatePem, "certificatePem");
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 

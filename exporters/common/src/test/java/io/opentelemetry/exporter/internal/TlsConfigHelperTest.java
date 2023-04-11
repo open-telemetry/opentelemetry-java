@@ -28,29 +28,29 @@ class TlsConfigHelperTest {
 
   @Test
   void createTrustManager() throws CertificateEncodingException {
-    helper.createTrustManager(serverTls.certificate().getEncoded());
+    helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
 
     assertThat(helper.getTrustManager()).isNotNull();
   }
 
   @Test
   void createTrustManager_AlreadyExists_Throws() throws Exception {
-    helper.createTrustManager(serverTls.certificate().getEncoded());
-    assertThatThrownBy(() -> helper.createTrustManager(serverTls.certificate().getEncoded()))
+    helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
+    assertThatThrownBy(() -> helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("trustManager has been previously configured");
 
     helper = new TlsConfigHelper();
     helper.setSslContext(
         SSLContext.getInstance("TLS"), TlsUtil.trustManager(serverTls.certificate().getEncoded()));
-    assertThatThrownBy(() -> helper.createTrustManager(serverTls.certificate().getEncoded()))
+    assertThatThrownBy(() -> helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("trustManager has been previously configured");
   }
 
   @Test
   void createKeyManager() throws CertificateEncodingException {
-    helper.createKeyManager(
+    helper.setKeyManagerFromCerts(
         serverTls.privateKey().getEncoded(), serverTls.certificate().getEncoded());
 
     assertThat(helper.getKeyManager()).isNotNull();
@@ -58,11 +58,11 @@ class TlsConfigHelperTest {
 
   @Test
   void createKeyManager_AlreadyExists_Throws() throws Exception {
-    helper.createKeyManager(
+    helper.setKeyManagerFromCerts(
         serverTls.privateKey().getEncoded(), serverTls.certificate().getEncoded());
     assertThatThrownBy(
             () ->
-                helper.createKeyManager(
+                helper.setKeyManagerFromCerts(
                     serverTls.privateKey().getEncoded(), serverTls.certificate().getEncoded()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("keyManager has been previously configured");
@@ -89,7 +89,7 @@ class TlsConfigHelperTest {
         .hasMessageContaining("sslContext or trustManager has been previously configured");
 
     helper = new TlsConfigHelper();
-    helper.createTrustManager(serverTls.certificate().getEncoded());
+    helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
     assertThatThrownBy(() -> helper.setSslContext(sslContext, trustManager))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("sslContext or trustManager has been previously configured");

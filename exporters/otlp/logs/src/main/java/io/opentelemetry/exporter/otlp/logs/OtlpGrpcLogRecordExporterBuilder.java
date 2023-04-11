@@ -115,7 +115,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpGrpcLogRecordExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.configureTrustManager(trustedCertificatesPem);
+    delegate.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
@@ -125,7 +125,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.configureKeyManager(privateKeyPem, certificatePem);
+    delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 

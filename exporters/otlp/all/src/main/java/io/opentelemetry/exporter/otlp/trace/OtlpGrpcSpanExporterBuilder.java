@@ -115,7 +115,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.configureTrustManager(trustedCertificatesPem);
+    delegate.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
@@ -124,7 +124,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpGrpcSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.configureKeyManager(privateKeyPem, certificatePem);
+    delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 

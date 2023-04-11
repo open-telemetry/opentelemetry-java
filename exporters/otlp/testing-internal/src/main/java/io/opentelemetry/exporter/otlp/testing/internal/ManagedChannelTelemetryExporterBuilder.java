@@ -93,13 +93,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
-    tlsConfigHelper.createTrustManager(certificates);
+    tlsConfigHelper.setTrustManagerFromCerts(certificates);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -167,7 +167,6 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   private static void setSslContext(
       ManagedChannelBuilder<?> managedChannelBuilder, TlsConfigHelper tlsConfigHelper)
       throws SSLException {
-    requireNonNull(managedChannelBuilder, "managedChannelBuilder");
     X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
     if (trustManager == null) {
       return;

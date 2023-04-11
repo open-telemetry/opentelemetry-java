@@ -89,13 +89,14 @@ public final class OkHttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public OkHttpExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
+  public OkHttpExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public OkHttpExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+  public OkHttpExporterBuilder<T> setKeyManagerFromCerts(
+      byte[] privateKeyPem, byte[] certificatePem) {
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 

@@ -100,13 +100,14 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
+  public GrpcExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public GrpcExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+  public GrpcExporterBuilder<T> setKeyManagerFromCerts(
+      byte[] privateKeyPem, byte[] certificatePem) {
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
