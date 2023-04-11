@@ -48,7 +48,7 @@ class OtlpJsonLoggingLogRecordExporterTest {
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
+          .setTimestamp(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setSpanContext(
               SpanContext.create(
@@ -66,7 +66,7 @@ class OtlpJsonLoggingLogRecordExporterTest {
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setEpoch(1631533710L, TimeUnit.MILLISECONDS)
+          .setTimestamp(1631533710L, TimeUnit.MILLISECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
           .setSpanContext(
               SpanContext.create(

@@ -534,7 +534,7 @@ abstract class OtlpExporterIntegrationTest {
           .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
-          .setEpoch(Instant.now())
+          .setTimestamp(Instant.now())
           .setContext(Context.current())
           .emit();
       eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());

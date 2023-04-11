@@ -24,7 +24,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private long epochNanos;
+  private long timestampEpochNanos;
   @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
@@ -39,14 +39,15 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
-  public SdkLogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
-    this.epochNanos = unit.toNanos(timestamp);
+  public SdkLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+    this.timestampEpochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
-  public SdkLogRecordBuilder setEpoch(Instant instant) {
-    this.epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+  public SdkLogRecordBuilder setTimestamp(Instant instant) {
+    this.timestampEpochNanos =
+        TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
   }
 
@@ -102,7 +103,9 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
+                this.timestampEpochNanos == 0
+                    ? this.loggerSharedState.getClock().now()
+                    : this.timestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
                 severity,
                 severityText,

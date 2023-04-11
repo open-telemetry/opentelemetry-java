@@ -27,7 +27,7 @@ public abstract class TestLogRecordData implements LogRecordData {
     return new AutoValue_TestLogRecordData.Builder()
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
-        .setEpoch(0, TimeUnit.NANOSECONDS)
+        .setTimestamp(0, TimeUnit.NANOSECONDS)
         .setSpanContext(SpanContext.getInvalid())
         .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
         .setBody("")
@@ -55,18 +55,31 @@ public abstract class TestLogRecordData implements LogRecordData {
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
 
-    /** Set the epoch timestamp to the {@code instant}. */
-    public Builder setEpoch(Instant instant) {
-      return setEpochNanos(TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano());
+    /**
+     * Set the epoch {@code timestamp}, using the instant.
+     *
+     * <p>The {@code timestamp} is the time at which the log record occurred.
+     */
+    public Builder setTimestamp(Instant instant) {
+      return setTimestampEpochNanos(
+          TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano());
     }
 
-    /** Set the epoch timestamp. */
-    public Builder setEpoch(long timestamp, TimeUnit unit) {
-      return setEpochNanos(unit.toNanos(timestamp));
+    /**
+     * Set the epoch {@code timestamp}, using the timestamp and unit.
+     *
+     * <p>The {@code timestamp} is the time at which the log record occurred.
+     */
+    public Builder setTimestamp(long timestamp, TimeUnit unit) {
+      return setTimestampEpochNanos(unit.toNanos(timestamp));
     }
 
-    /** Set the epoch timestamp in nanos. */
-    abstract Builder setEpochNanos(long epochNanos);
+    /**
+     * Set the epoch {@code timestamp}.
+     *
+     * <p>The {@code timestamp} is the time at which the log record occurred.
+     */
+    abstract Builder setTimestampEpochNanos(long epochNanos);
 
     /** Set the span context. */
     public abstract Builder setSpanContext(SpanContext spanContext);
