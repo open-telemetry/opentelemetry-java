@@ -1,0 +1,6 @@
+Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.opentracingshim.OpenTracingShim  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentracing.Tracer createTracerShim(io.opentelemetry.api.OpenTelemetry)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentracing.Tracer createTracerShim(io.opentelemetry.api.trace.TracerProvider, io.opentelemetry.context.propagation.TextMapPropagator, io.opentelemetry.context.propagation.TextMapPropagator)
