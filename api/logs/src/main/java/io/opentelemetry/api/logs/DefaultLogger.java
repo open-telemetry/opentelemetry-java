@@ -41,6 +41,16 @@ class DefaultLogger implements Logger {
     }
 
     @Override
+    public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+      return this;
+    }
+
+    @Override
+    public LogRecordBuilder setObservedTimestamp(Instant instant) {
+      return this;
+    }
+
+    @Override
     public LogRecordBuilder setContext(Context context) {
       return this;
     }

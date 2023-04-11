@@ -28,6 +28,7 @@ public abstract class TestLogRecordData implements LogRecordData {
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
         .setTimestamp(0, TimeUnit.NANOSECONDS)
+        .setObservedTimestamp(0, TimeUnit.NANOSECONDS)
         .setSpanContext(SpanContext.getInvalid())
         .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
         .setBody("")
@@ -80,6 +81,32 @@ public abstract class TestLogRecordData implements LogRecordData {
      * <p>The {@code timestamp} is the time at which the log record occurred.
      */
     abstract Builder setTimestampEpochNanos(long epochNanos);
+
+    /**
+     * Set the {@code observedTimestamp}, using the instant.
+     *
+     * <p>The {@code observedTimestamp} is the time at which the log record was observed.
+     */
+    public Builder setObservedTimestamp(Instant instant) {
+      return setObservedTimestampEpochNanos(
+          TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano());
+    }
+
+    /**
+     * Set the epoch {@code observedTimestamp}, using the timestamp and unit.
+     *
+     * <p>The {@code observedTimestamp} is the time at which the log record was observed.
+     */
+    public Builder setObservedTimestamp(long timestamp, TimeUnit unit) {
+      return setObservedTimestampEpochNanos(unit.toNanos(timestamp));
+    }
+
+    /**
+     * Set the epoch {@code observedTimestamp}.
+     *
+     * <p>The {@code observedTimestamp} is the time at which the log record was observed.
+     */
+    abstract Builder setObservedTimestampEpochNanos(long epochNanos);
 
     /** Set the span context. */
     public abstract Builder setSpanContext(SpanContext spanContext);

@@ -35,6 +35,26 @@ public interface LogRecordBuilder {
    */
   LogRecordBuilder setTimestamp(Instant instant);
 
+  /**
+   * Set the epoch {@code observedTimestamp}, using the timestamp and unit.
+   *
+   * <p>The {@code observedTimestamp} is the time at which the log record was observed. If unset, it
+   * will be set to the {@code timestamp}. {@code observedTimestamp} may be different from {@code
+   * timestamp} if logs are being processed asynchronously (e.g. from a file or on a different
+   * thread).
+   */
+  LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit);
+
+  /**
+   * Set the {@code observedTimestamp}, using the instant.
+   *
+   * <p>The {@code observedTimestamp} is the time at which the log record was observed. If unset, it
+   * will be set to the {@code timestamp}. {@code observedTimestamp} may be different from {@code
+   * timestamp} if logs are being processed asynchronously (e.g. from a file or on a different
+   * thread).
+   */
+  LogRecordBuilder setObservedTimestamp(Instant instant);
+
   /** Set the context. */
   LogRecordBuilder setContext(Context context);
 
