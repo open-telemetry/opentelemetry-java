@@ -425,7 +425,12 @@ class BatchLogRecordProcessorTest {
     when(mockLogRecordExporter.toString()).thenReturn("MockLogRecordExporter");
     assertThat(BatchLogRecordProcessor.builder(mockLogRecordExporter).build().toString())
         .isEqualTo(
-            "BatchLogRecordProcessor{logRecordExporter=MockLogRecordExporter, scheduleDelayNanos=200000000, maxExportBatchSize=512, exporterTimeoutNanos=30000000000}");
+            "BatchLogRecordProcessor{"
+                + "logRecordExporter=MockLogRecordExporter"
+                + ", scheduleDelayNanos=1000000000"
+                + ", maxExportBatchSize=512"
+                + ", exporterTimeoutNanos=30000000000"
+                + "}");
   }
 
   private static final class BlockingLogRecordExporter implements LogRecordExporter {

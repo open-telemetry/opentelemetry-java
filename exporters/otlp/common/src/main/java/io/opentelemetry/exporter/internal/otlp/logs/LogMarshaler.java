@@ -46,7 +46,7 @@ final class LogMarshaler extends MarshalerWithSize {
 
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
-        logRecordData.getEpochNanos(),
+        logRecordData.getTimestampEpochNanos(),
         toProtoSeverityNumber(logRecordData.getSeverity()),
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
         anyValueMarshaler,

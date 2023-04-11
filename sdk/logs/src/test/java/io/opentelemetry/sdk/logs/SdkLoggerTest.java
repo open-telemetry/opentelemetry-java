@@ -52,7 +52,7 @@ class SdkLoggerTest {
 
     // Have to test through the builder
     logRecordBuilder.emit();
-    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasEpochNanos(5);
+    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasTimestamp(5);
   }
 
   @Test

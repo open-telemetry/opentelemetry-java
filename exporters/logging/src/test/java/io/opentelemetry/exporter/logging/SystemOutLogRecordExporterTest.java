@@ -69,7 +69,7 @@ class SystemOutLogRecordExporterTest {
         .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
         .setBody("message")
         .setSeverity(Severity.ERROR3)
-        .setEpoch(timestamp, TimeUnit.MILLISECONDS)
+        .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
         .setSpanContext(
             SpanContext.create(
                 "00000000000000010000000000000002",
