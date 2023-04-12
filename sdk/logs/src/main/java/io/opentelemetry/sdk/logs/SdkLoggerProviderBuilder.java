@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ public final class SdkLoggerProviderBuilder {
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
-  private Clock clock = Clock.getDefault();
 
   SdkLoggerProviderBuilder() {}
 
@@ -72,27 +70,11 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Assign a {@link Clock}. The {@link Clock} may be used to determine "now" in the event that the
-   * epoch millis are not set directly.
-   *
-   * <p>The {@code clock} must be thread-safe and return immediately (no remote calls, as contention
-   * free as possible).
-   *
-   * @param clock The clock to use for all temporal needs.
-   * @return this
-   */
-  public SdkLoggerProviderBuilder setClock(Clock clock) {
-    requireNonNull(clock, "clock");
-    this.clock = clock;
-    return this;
-  }
-
-  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
-    return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
+    return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors);
   }
 }

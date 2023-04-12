@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,13 +24,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -105,23 +101,6 @@ class SdkLoggerProviderTest {
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogLimits)
         .isSameAs(logLimits);
-  }
-
-  @Test
-  void builder_defaultClock() {
-    assertThat(SdkLoggerProvider.builder().build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
-        .extracting(LoggerSharedState::getClock)
-        .isSameAs(Clock.getDefault());
-  }
-
-  @Test
-  void builder_clockProvided() {
-    Clock clock = mock(Clock.class);
-    assertThat(SdkLoggerProvider.builder().setClock(clock).build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
-        .extracting(LoggerSharedState::getClock)
-        .isSameAs(clock);
   }
 
   @Test
@@ -334,29 +313,11 @@ class SdkLoggerProviderTest {
   }
 
   @Test
-  void canSetClock() {
-    long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    Clock clock = mock(Clock.class);
-    when(clock.now()).thenReturn(now);
-    List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
-    logRecordProcessor = (context, logRecord) -> seenLogs.add(logRecord);
-    sdkLoggerProvider =
-        SdkLoggerProvider.builder()
-            .setClock(clock)
-            .addLogRecordProcessor(logRecordProcessor)
-            .build();
-    sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
-    assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).toLogRecordData().getTimestampEpochNanos()).isEqualTo(now);
-  }
-
-  @Test
   void toString_Valid() {
     when(logRecordProcessor.toString()).thenReturn("MockLogRecordProcessor");
     assertThat(sdkLoggerProvider.toString())
         .isEqualTo(
             "SdkLoggerProvider{"
-                + "clock=SystemClock{}, "
                 + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
                 + "logRecordProcessor=MockLogRecordProcessor"
