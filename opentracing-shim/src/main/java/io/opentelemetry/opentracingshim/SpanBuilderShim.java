@@ -197,7 +197,7 @@ final class SpanBuilderShim implements SpanBuilder {
       builder.setNoParent();
       baggage = Baggage.empty();
     } else if (mainParent != null) {
-      builder.setParent(Context.root().with(io.opentelemetry.api.trace.Span.wrap(mainParent)));
+      builder.setParent(Context.root().with(PropagatedOpenTelemetrySpan.create(mainParent)));
       baggage = getAllBaggage(allParents);
     } else {
       // No explicit parent Span, but extracted baggage may be available.

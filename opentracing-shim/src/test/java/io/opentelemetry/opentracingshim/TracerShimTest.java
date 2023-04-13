@@ -357,6 +357,23 @@ class TracerShimTest {
   }
 
   @Test
+  void extract_onlySampledTraceFlags() {
+    CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    tracerShim = new TracerShim(provider, textMapPropagator, TextMapPropagator.noop());
+
+    Map<String, String> carrier = new HashMap<>();
+    carrier.put(CustomTextMapPropagator.DEBUG_HEADER, "test");
+    SpanContext spanContext =
+        tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(carrier));
+    SpanContextShim spanContextShim = (SpanContextShim) spanContext;
+
+    assertThat(spanContextShim.getSpanContext().isValid()).isFalse();
+    assertThat(spanContextShim.getSpanContext().isSampled()).isTrue();
+    assertThat(spanContextShim.getBaggage())
+        .isEqualTo(io.opentelemetry.api.baggage.Baggage.empty());
+  }
+
+  @Test
   void close_OpenTelemetrySdk() {
     SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);
     doThrow(new RuntimeException("testing error")).when(sdkProvider).close();

@@ -11,9 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -22,6 +26,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
@@ -317,6 +322,36 @@ class SpanBuilderShimTest {
   }
 
   @Test
+  void parent_invalidSpanContextWithSampledFlags() {
+    SpanContext otelSpanContext =
+        SpanContext.create(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.getSampled(),
+            TraceState.builder().put(DebugSampler.DEBUG_ID_TAG, "test-debug-id").build());
+    SpanShim parentSpan = new SpanShim(PropagatedOpenTelemetrySpan.create(otelSpanContext));
+    try {
+      SdkTracerProvider tracerSdkFactory =
+          SdkTracerProvider.builder().setSampler(DebugSampler.INSTANCE).build();
+      Tracer tracer = tracerSdkFactory.get("SpanShimTest");
+      SpanBuilderShim spanBuilder = new SpanBuilderShim(tracer, SPAN_NAME);
+      SpanShim span = (SpanShim) spanBuilder.asChildOf(parentSpan).start();
+      SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
+
+      try {
+        assertThat(span.getSpan().isRecording()).isTrue();
+        assertThat(span.getSpan().getSpanContext().isSampled()).isTrue();
+        assertThat(spanData.getAttributes().get(AttributeKey.stringKey(DebugSampler.DEBUG_ID_TAG)))
+            .isEqualTo("test-debug-id");
+      } finally {
+        span.finish();
+      }
+    } finally {
+      parentSpan.finish();
+    }
+  }
+
+  @Test
   void withStartTimestamp() {
     long micros = 123447307984L;
     SpanShim spanShim =
@@ -431,6 +466,37 @@ class SpanBuilderShimTest {
       }
 
       return SamplingResult.recordAndSample();
+    }
+  }
+
+  static final class DebugSampler implements Sampler {
+    static final DebugSampler INSTANCE = new DebugSampler();
+    static final String DEBUG_ID_TAG = "jaeger-debug-id";
+
+    @Override
+    public String getDescription() {
+      return "DebugSampler";
+    }
+
+    @Override
+    public SamplingResult shouldSample(
+        Context parentContext,
+        String traceId,
+        String name,
+        SpanKind spanKind,
+        Attributes attributes,
+        List<LinkData> parentLinks) {
+      SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
+      if (parentSpanContext.isSampled()
+          && parentSpanContext.getTraceState().get(DEBUG_ID_TAG) != null) {
+        return SamplingResult.create(
+            SamplingDecision.RECORD_AND_SAMPLE,
+            Attributes.of(
+                AttributeKey.stringKey(DEBUG_ID_TAG),
+                parentSpanContext.getTraceState().get(DEBUG_ID_TAG)));
+      }
+
+      return SamplingResult.drop();
     }
   }
 }
